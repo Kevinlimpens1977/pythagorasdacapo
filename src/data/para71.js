@@ -125,12 +125,12 @@ export const para71Slides = [
         { id: "b2", label: "De langste zijde in △ABC is", answer: "AC", hint: "Dit is de zijde tegenover de rechte hoek." },
         { id: "b3", label: "In △ACD zijn de rechthoekszijden", answer: "AD en DC", hint: "Dit zijn de twee zijden die aan de rechte hoek D liggen." },
         { id: "b4", label: "De langste zijde in △ACD is", answer: "AC", hint: "Dit is de zijde tegenover de rechte hoek." },
-        { id: "b5", label: "In △EFG zijn de rechthoekszijden", answer: "EF en FG", hint: "Dit zijn de twee zijden die aan de rechte hoek F liggen." },
-        { id: "b6", label: "De langste zijde in △EFG is", answer: "EG", hint: "Dit is de zijde tegenover de rechte hoek." },
+        { id: "b5", label: "In △EFG zijn de rechthoekszijden", answer: ["EF en EG", "EG en EF"], hint: "Dit zijn de twee zijden die aan de rechte hoek E liggen." },
+        { id: "b6", label: "De langste zijde in △EFG is", answer: "FG", hint: "Dit is de zijde tegenover de rechte hoek." },
         { id: "c1", label: "C) In driehoek HIJ zijn de rechthoekszijden", answer: ["HI en IJ", "IJ en HI"], hint: "Dit zijn de twee zijden die aan de rechte hoek I liggen." },
         { id: "c2", label: "De langste zijde in driehoek HIJ is", answer: "HJ", hint: "Dit is de zijde tegenover de rechte hoek." },
-        { id: "c3", label: "In driehoek KLM zijn de rechthoekszijden", answer: ["KL en KM", "KM en KL"], hint: "Dit zijn de twee zijden die aan de rechte hoek K liggen." },
-        { id: "c4", label: "De langste zijde in driehoek KLM is", answer: "LM", hint: "Dit is de zijde tegenover de rechte hoek." }
+        { id: "c3", label: "In driehoek KLM zijn de rechthoekszijden", answer: ["KM en LM", "LM en KM"], hint: "Dit zijn de twee zijden die aan de rechte hoek M liggen." },
+        { id: "c4", label: "De langste zijde in driehoek KLM is", answer: "KL", hint: "Dit is de zijde tegenover de rechte hoek." }
       ],
       maxAttempts: 3
     }

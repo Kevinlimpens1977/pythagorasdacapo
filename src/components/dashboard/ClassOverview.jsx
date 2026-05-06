@@ -392,9 +392,9 @@ export default function ClassOverview() {
                   <div className="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all ${
-                        Math.abs(measurement.bc - 4.24) < 0.3 ? 'bg-green-500' : 'bg-amber-500'
+                        Math.abs(measurement.bc - 5) < 0.2 ? 'bg-green-500' : 'bg-amber-500'
                       }`}
-                      style={{ width: `${Math.min((measurement.bc / 5) * 100, 100)}%` }}
+                      style={{ width: `${Math.min((measurement.bc / 6) * 100, 100)}%` }}
                     />
                   </div>
                 </div>

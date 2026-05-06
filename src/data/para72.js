@@ -10,7 +10,7 @@ export const para72Slides = [
     id: "p72_02",
     type: "theory",
     heading: "De stelling ontdekken",
-    content: "In deze paragraaf gaan we samen de stelling van Pythagoras **ontdekken** door zelf te meten en te berekenen.\n\nJe gaat stap voor stap een rechthoekige driehoek tekenen met AB = 3 cm en AC = 3 cm, dan BC opmeten, en kijken wat het verband is.",
+    content: "In deze paragraaf gaan we samen de stelling van Pythagoras **ontdekken** door zelf te meten en te berekenen.\n\nJe gaat stap voor stap een rechthoekige driehoek tekenen met AB = 3 cm en AC = 4 cm, dan BC opmeten, en kijken wat het verband is.",
     image: "/images/p72_teaser.svg"
   },
   {
@@ -32,40 +32,40 @@ export const para72Slides = [
           id: "step2_draw_ac",
           type: "instruction",
           heading: "Stap 2: Teken zijde AC",
-          instruction: "Teken vanuit punt **A** een **verticale** lijn van **exact 3 cm** omhoog (90 graden).\nZorg dat dit ook op de millimeter nauwkeurig is!\n\nLabel het einde van deze lijn als **C**.\n\nDruk OK wanneer je klaar bent.",
+          instruction: "Teken vanuit punt **A** een **verticale** lijn van **exact 4 cm** omhoog (90 graden).\nZorg dat dit ook op de millimeter nauwkeurig is!\n\nLabel het einde van deze lijn als **C**.\n\nDruk OK wanneer je klaar bent.",
           image: "/images/p72_step2.svg"
         },
         {
           id: "step3_measure_bc",
           type: "input",
           heading: "Stap 3: Meet BC",
-          instruction: "Teken nu een **recht lijnstuk** van **B** naar **C**.\n\nMeet dit lijnstuk **nauwkeurig** met je lineaal en vul de lengte in (in cm, bijvoorbeeld 4.2):",
+          instruction: "Teken nu een **recht lijnstuk** van **B** naar **C**.\n\nMeet dit lijnstuk **nauwkeurig** met je lineaal en vul de lengte in (in cm, bijvoorbeeld 5.0):",
           inputLabel: "Lengte BC (cm):",
-          answer: "4.24", // Theoretical value is √(3² + 3²) = √18 ≈ 4.24
-          tolerance: 0.3, // Accept answers within ±0.3 cm
-          hint: "Meet voorzichtig! BC zou rond de 4.2-4.3 cm moeten zijn."
+          answer: "5", // Theoretical value is √(3² + 4²) = √25 = 5
+          tolerance: 0.2, // Accept answers within ±0.2 cm
+          hint: "Meet voorzichtig! BC zou precies 5 cm moeten zijn."
         },
         {
           id: "step4_squares",
           type: "instruction",
           heading: "Stap 4: Kwadraten van de zijden",
-          instruction: "Zet nu bij elke zijde het **kwadraat** van de lengte:\n\n• **AB² = 3² = 9**\n• **AC² = 3² = 9**\n• **BC² = ?** (dit gaan we berekenen)\n\nDruk OK wanneer je dit hebt opgeschreven.",
+          instruction: "Zet nu bij elke zijde het **kwadraat** van de lengte:\n\n• **AB² = 3² = 9**\n• **AC² = 4² = 16**\n• **BC² = ?** (dit gaan we berekenen)\n\nDruk OK wanneer je dit hebt opgeschreven.",
           image: "/images/p72_step4.svg"
         },
         {
           id: "step5_add",
           type: "input",
           heading: "Stap 5: Tel op!",
-          instruction: "Tel de kwadraten van **AB** en **AC** bij elkaar op:\n\n**AB² + AC² = 9 + 9 = ?**",
+          instruction: "Tel de kwadraten van **AB** en **AC** bij elkaar op:\n\n**AB² + AC² = 9 + 16 = ?**",
           inputLabel: "AB² + AC² =",
-          answer: "18",
-          hint: "9 + 9 = ?"
+          answer: "25",
+          hint: "9 + 16 = ?"
         },
         {
           id: "step6_compare",
           type: "instruction",
           heading: "Stap 6: Vergelijk!",
-          instruction: "Kijk eens naar je antwoorden!\n\n• Je gemeten BC was ongeveer **4.24 cm**\n• BC² zou dus zijn: **4.24² ≈ 18**\n• En AB² + AC² = **18**\n\n**Ze zijn gelijk!** Dit is de stelling van Pythagoras! 🎉",
+          instruction: "Kijk eens naar je antwoorden!\n\n• Je gemeten BC was **5 cm**\n• BC² zou dus zijn: **5² = 25**\n• En AB² + AC² = **25**\n\n**Ze zijn gelijk!** Dit is de stelling van Pythagoras! 🎉",
           image: "/images/p72_step6.svg"
         }
       ]
@@ -74,9 +74,9 @@ export const para72Slides = [
   {
     id: "p72_04",
     type: "theory",
-    heading: "De Stelling van Pythagoras",
-    content: "In elke **rechthoekige driehoek** geldt:\n\n## **a² + b² = c²**\n\nWaar:\n- **a** en **b** = de rechthoekszijden\n- **c** = de langste zijde (de hypotenusa)\n\nDe som van de kwadraten van de rechthoekszijden is altijd gelijk aan het kwadraat van de langste zijde!",
-    image: "/images/p72_theorem.svg"
+    heading: "Het Pythagoras-schema",
+    content: "Met het **Pythagoras-schema** kun je makkelijk zien hoe de zijden en hun kwadraten met elkaar samenhangen.",
+    image: "/images/schemapythagoras.jpg"
   },
   {
     id: "p72_05",
