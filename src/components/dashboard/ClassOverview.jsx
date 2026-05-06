@@ -27,6 +27,7 @@ export default function ClassOverview() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [viewingExercise, setViewingExercise] = useState(null);
+  const [showPythagorasMeasurements, setShowPythagorasMeasurements] = useState(false);
 
   useEffect(() => {
     const q = query(
@@ -330,6 +331,78 @@ export default function ClassOverview() {
           <div className="text-3xl font-bold text-amber-700">{warningCount}</div>
         </div>
       </div>
+
+      {/* Live Pythagorean Theorem Measurements Table */}
+      {(() => {
+        const bcMeasurements = students
+          .filter(s => {
+            const bcValue = s.exerciseData?.['para_72']?.['p72_03']?.['bc_measurement'];
+            return bcValue !== undefined && bcValue !== null;
+          })
+          .map(s => ({
+            name: s.displayName || 'Naamloos',
+            bc: s.exerciseData?.['para_72']?.['p72_03']?.['bc_measurement'],
+            timestamp: s.exerciseData?.['para_72']?.['p72_03']?.['timestamp']
+          }))
+          .sort((a, b) => {
+            const dateB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
+            const dateA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
+            return dateB - dateA;
+          });
+
+        return bcMeasurements.length > 0 ? (
+          <div className="mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-6 overflow-hidden">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="font-bold text-slate-700 text-lg flex items-center gap-2">
+                  📏 Pythagoras Metingen (BC-lengte)
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">Live updates van leerlingen</p>
+              </div>
+              <div className="text-right">
+                <div className="text-3xl font-black text-blue-600">{bcMeasurements.length}</div>
+                <div className="text-xs text-slate-500 uppercase tracking-wider">Gemeten</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {bcMeasurements.map((measurement, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm animate-in fade-in zoom-in-95"
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-bold text-slate-800">{measurement.name}</div>
+                      <div className="text-xs text-slate-400 mt-1">
+                        {measurement.timestamp
+                          ? new Date(
+                              measurement.timestamp.toDate ? measurement.timestamp.toDate() : measurement.timestamp
+                            ).toLocaleTimeString('nl-NL')
+                          : '—'}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-black text-indigo-600">{measurement.bc.toFixed(2)}</div>
+                      <div className="text-xs text-slate-400">cm</div>
+                    </div>
+                  </div>
+                  {/* Visual indicator: expected value is ~4.24 cm */}
+                  <div className="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${
+                        Math.abs(measurement.bc - 4.24) < 0.3 ? 'bg-green-500' : 'bg-amber-500'
+                      }`}
+                      style={{ width: `${Math.min((measurement.bc / 5) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      })()}
 
       {/* Students Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

@@ -10,6 +10,7 @@ import TheorySlide from './TheorySlide';
 import ExerciseSlide from './ExerciseSlide';
 import DemoSlide from './DemoSlide';
 import SummarySlide from './SummarySlide';
+import PythagorasProofSlide from './PythagorasProofSlide';
 import FormattedText from '../common/FormattedText';
 
 export default function SlideRenderer() {
@@ -117,17 +118,30 @@ export default function SlideRenderer() {
     switch (currentSlide.type) {
       case 'theory': return <TheorySlide key={currentSlide.id} slide={currentSlide} />;
       case 'exercise': return (
-        <ExerciseSlide 
+        <ExerciseSlide
           key={currentSlide.id}
-          slide={currentSlide} 
-          chapterId={chapterId} 
+          slide={currentSlide}
+          chapterId={chapterId}
           isCompleted={isCompleted}
-          onVerified={() => handleSlideVerified(currentSlide.id)} 
+          onVerified={() => handleSlideVerified(currentSlide.id)}
         />
       );
       case 'demo_exercise': return <DemoSlide key={currentSlide.id} slide={currentSlide} />;
       case 'summary': return <SummarySlide key={currentSlide.id} slide={currentSlide} />;
-      default: return <div className="text-center p-8 text-slate-500">Onbekend slide type: {currentSlide.id}</div>;
+      default:
+        // Check if it's an exercise with special type
+        if (currentSlide.type === 'exercise' && currentSlide.exercise?.type === 'pythagoras_proof') {
+          return (
+            <PythagorasProofSlide
+              key={currentSlide.id}
+              slide={currentSlide}
+              chapterId={chapterId}
+              isCompleted={isCompleted}
+              onVerified={() => handleSlideVerified(currentSlide.id)}
+            />
+          );
+        }
+        return <div className="text-center p-8 text-slate-500">Onbekend slide type: {currentSlide.id}</div>;
     }
   };
 

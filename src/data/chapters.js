@@ -1,5 +1,6 @@
 import { voorkennisSlides } from './voorkennis';
 import { para71Slides } from './para71';
+import { para72Slides } from './para72';
 
 export const CHAPTERS = [
   { id: 'voorkennis', title: 'Voorkennis', totalSlides: voorkennisSlides.length, isLocked: false },
@@ -17,6 +18,8 @@ export const getChapterSlides = (chapterId) => {
       return voorkennisSlides;
     case 'para_71':
       return para71Slides;
+    case 'para_72':
+      return para72Slides;
     default:
       return [];
   }
