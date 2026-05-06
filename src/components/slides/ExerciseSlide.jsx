@@ -116,20 +116,20 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
     if (allCorrect || newAttempts >= 3) {
       if (onVerified) onVerified(true);
       
-      // Save detailed results to Firestore
+      // Save detailed results to Firestore with proper nested structure
       if (currentUser && !isAdmin) {
         const userRef = doc(db, 'users', currentUser.uid);
-        const resultKey = `exerciseData.${chapterId}.${slide.id}`;
-        
-        updateDoc(userRef, {
-          [resultKey]: {
-            answers: answers,
-            attempts: newAttempts,
-            isCorrect: allCorrect,
-            timestamp: new Date()
-          },
+
+        // Use dot notation for nested Firestore fields
+        const updateData = {
+          [`exerciseData.${chapterId}.${slide.id}.answers`]: answers,
+          [`exerciseData.${chapterId}.${slide.id}.attempts`]: newAttempts,
+          [`exerciseData.${chapterId}.${slide.id}.isCorrect`]: allCorrect,
+          [`exerciseData.${chapterId}.${slide.id}.timestamp`]: new Date(),
           warning: allCorrect ? null : `Moeite met "${slide.heading}" (${newAttempts} pogingen)`
-        }).catch(err => console.error("Error saving detailed results:", err));
+        };
+
+        updateDoc(userRef, updateData).catch(err => console.error("Error saving detailed results:", err));
       }
     } else {
       setShowHints(true);

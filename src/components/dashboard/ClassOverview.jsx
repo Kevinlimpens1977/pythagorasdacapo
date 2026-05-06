@@ -30,23 +30,31 @@ export default function ClassOverview() {
 
   useEffect(() => {
     const q = query(
-      collection(db, 'users'), 
+      collection(db, 'users'),
       where('role', '==', 'student'),
       orderBy('lastActive', 'desc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const studentData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const studentData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Ensure exerciseData is included
+        console.log(`Student ${data.displayName} exerciseData:`, data.exerciseData);
+        return {
+          id: doc.id,
+          ...data
+        };
+      });
       setStudents(studentData);
       setLoading(false);
-      
-      // Update selected student if they were already open
+
+      // Update selected student if they were already open - this is critical for showing latest data
       if (selectedStudent) {
         const updated = studentData.find(s => s.id === selectedStudent.id);
-        if (updated) setSelectedStudent(updated);
+        if (updated) {
+          console.log(`Updated selected student ${updated.displayName}:`, updated);
+          setSelectedStudent(updated);
+        }
       }
     }, (error) => {
       console.error("Error fetching students:", error);
@@ -54,7 +62,7 @@ export default function ClassOverview() {
     });
 
     return () => unsubscribe();
-  }, [selectedStudent?.id]);
+  }, []);
 
   const filteredStudents = students.filter(s => 
     (s.displayName || "Naamloos").toLowerCase().includes(searchQuery.toLowerCase())
@@ -132,7 +140,18 @@ export default function ClassOverview() {
                     
                     <div className="grid gap-6">
                       {exercises.map(ex => {
-                        const result = selectedStudent.exerciseData?.[chapter.id]?.[ex.id];
+                        // Handle both nested object structure and flat dot-notation structure
+                        let result = selectedStudent.exerciseData?.[chapter.id]?.[ex.id];
+
+                        // If not found as nested object, check for flat structure with dot notation
+                        if (!result) {
+                          const flatKey = `${chapter.id}.${ex.id}`;
+                          const exerciseDataObj = selectedStudent.exerciseData;
+                          if (exerciseDataObj && exerciseDataObj[flatKey]) {
+                            result = exerciseDataObj[flatKey];
+                          }
+                        }
+
                         return (
                           <div key={ex.id} className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                             <div className="flex-1">
