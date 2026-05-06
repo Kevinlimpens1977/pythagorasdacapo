@@ -1,10 +1,13 @@
 import { Outlet, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
+import NameSetupModal from '../auth/NameSetupModal';
 import { LogOut, User, LayoutDashboard, BookOpen } from 'lucide-react';
 
 export default function AppShell() {
   const { currentUser, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const [nameSetupDone, setNameSetupDone] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -13,6 +16,9 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
+      {/* Name Setup Modal for users without displayName */}
+      <NameSetupModal onComplete={() => setNameSetupDone(true)} />
+
       {/* Header - Premium Glassmorphism */}
       <header className="sticky top-0 z-[100] h-20 bg-white/70 backdrop-blur-2xl border-b border-slate-200/60 px-6 md:px-12 flex items-center justify-between shadow-[0_2px_20px_-10px_rgba(0,0,0,0.05)]">
         <div className="flex items-center gap-8">

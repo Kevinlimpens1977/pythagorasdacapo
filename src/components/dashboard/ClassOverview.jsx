@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, Search, CheckCircle, Clock } from 'lucide-react';
 import { db } from '../../services/firebase';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 import { CHAPTERS, getChapterSlides } from '../../data/chapters';
 
@@ -30,32 +30,32 @@ export default function ClassOverview() {
   const [showPythagorasMeasurements, setShowPythagorasMeasurements] = useState(false);
 
   useEffect(() => {
+    // Query only students (no orderBy to avoid composite index requirement)
     const q = query(
       collection(db, 'users'),
-      where('role', '==', 'student'),
-      orderBy('lastActive', 'desc')
+      where('role', '==', 'student')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const studentData = snapshot.docs.map(doc => {
-        const data = doc.data();
-        // Ensure exerciseData is included
-        console.log(`Student ${data.displayName} exerciseData:`, data.exerciseData);
-        return {
-          id: doc.id,
-          ...data
-        };
+      const studentData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Sort by lastActive in JavaScript instead of Firebase query
+      studentData.sort((a, b) => {
+        const dateA = a.lastActive?.toDate ? a.lastActive.toDate() : new Date(a.lastActive || 0);
+        const dateB = b.lastActive?.toDate ? b.lastActive.toDate() : new Date(b.lastActive || 0);
+        return dateB - dateA;
       });
+
       setStudents(studentData);
       setLoading(false);
 
-      // Update selected student if they were already open - this is critical for showing latest data
+      // Update selected student if they were already open
       if (selectedStudent) {
         const updated = studentData.find(s => s.id === selectedStudent.id);
-        if (updated) {
-          console.log(`Updated selected student ${updated.displayName}:`, updated);
-          setSelectedStudent(updated);
-        }
+        if (updated) setSelectedStudent(updated);
       }
     }, (error) => {
       console.error("Error fetching students:", error);
@@ -440,10 +440,12 @@ export default function ClassOverview() {
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                          {(student.displayName || "N").charAt(0)}
+                          {(student.displayName || student.email || "?").charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-medium text-slate-800">{student.displayName || "Naamloos"}</span>
+                          <span className={`font-medium ${!student.displayName ? 'text-amber-600 italic' : 'text-slate-800'}`}>
+                            {student.displayName && student.displayName.trim() ? student.displayName : '⚠️ Naam ontbreekt'}
+                          </span>
                           <span className="text-[10px] text-slate-400 truncate max-w-[150px]">{student.email}</span>
                         </div>
                         {student.warning && (

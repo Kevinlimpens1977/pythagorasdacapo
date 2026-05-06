@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
             if (role === 'admin' && data.role !== 'admin') {
               await setDoc(userRef, { role: 'admin' }, { merge: true });
             }
-            
+
             const updates = { lastActive: new Date() };
             if (!data.displayName && user.displayName) {
               updates.displayName = user.displayName;
@@ -54,7 +54,8 @@ export function AuthProvider({ children }) {
               createdAt: new Date(),
               lastActive: new Date(),
               completedChapters: [],
-              completedSlides: []
+              completedSlides: [],
+              needsNameSetup: !user.displayName || user.displayName.trim() === ''
             };
             await setDoc(userRef, initialData);
           }
