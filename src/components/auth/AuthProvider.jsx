@@ -25,6 +25,15 @@ export function AuthProvider({ children }) {
               const data = docSnap.data();
               setUserData(data);
               setUserRole(data.role || 'student');
+
+              // Sync displayName from Auth to Firestore if out of sync
+              if (user.displayName && user.displayName.trim() && (!data.displayName || data.displayName.trim() === '')) {
+                console.log(`Syncing displayName for ${user.email}: "${user.displayName}"`);
+                setDoc(userRef, {
+                  displayName: user.displayName,
+                  needsNameSetup: false
+                }, { merge: true }).catch(err => console.error('Error syncing displayName:', err));
+              }
             }
           });
 
@@ -42,7 +51,13 @@ export function AuthProvider({ children }) {
             }
 
             const updates = { lastActive: new Date() };
-            if (!data.displayName && user.displayName) {
+            // Always sync displayName from Auth to Firestore if Auth has it
+            if (user.displayName && user.displayName.trim()) {
+              updates.displayName = user.displayName;
+              updates.needsNameSetup = false;
+            }
+            // If Firestore has no displayName but Auth does, update it
+            if (!data.displayName && user.displayName && user.displayName.trim()) {
               updates.displayName = user.displayName;
             }
             await setDoc(userRef, updates, { merge: true });
