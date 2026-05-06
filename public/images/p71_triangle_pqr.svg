@@ -1,0 +1,12 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Triangle PQR with right angle at R -->
+  <path d="M 100 100 L 100 300 L 350 300 Z" fill="#e0f2fe" stroke="black" stroke-width="3" />
+  
+  <!-- Right angle square at R (100, 300) -->
+  <rect x="100" y="270" width="30" height="30" fill="none" stroke="black" stroke-width="2" />
+  
+  <!-- Labels -->
+  <text x="80" y="90" font-family="Arial, sans-serif" font-size="32" font-weight="bold">P</text>
+  <text x="70" y="320" font-family="Arial, sans-serif" font-size="32" font-weight="bold">R</text>
+  <text x="360" y="320" font-family="Arial, sans-serif" font-size="32" font-weight="bold">Q</text>
+</svg>

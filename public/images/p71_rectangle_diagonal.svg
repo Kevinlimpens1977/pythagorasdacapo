@@ -1,0 +1,21 @@
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rectangle EFGH -->
+  <rect x="100" y="100" width="400" height="200" fill="#fef08a" stroke="black" stroke-width="2" />
+  
+  <!-- Diagonal FH -->
+  <line x1="500" y1="300" x2="100" y2="100" stroke="red" stroke-width="2" />
+  
+  <!-- Right angles -->
+  <rect x="100" y="275" width="25" height="25" fill="none" stroke="black" stroke-width="1.5" /> <!-- E -->
+  <rect x="475" y="100" width="25" height="25" fill="none" stroke="black" stroke-width="1.5" /> <!-- G -->
+  
+  <!-- Labels -->
+  <text x="80" y="325" font-family="Arial" font-size="24" font-weight="bold">E</text>
+  <text x="510" y="325" font-family="Arial" font-size="24" font-weight="bold">F</text>
+  <text x="510" y="90" font-family="Arial" font-size="24" font-weight="bold">G</text>
+  <text x="80" y="90" font-family="Arial" font-size="24" font-weight="bold">H</text>
+  
+  <!-- Dimensions -->
+  <text x="280" y="330" font-family="Arial" font-size="20">5 cm</text>
+  <text x="520" y="210" font-family="Arial" font-size="20">2 cm</text>
+</svg>

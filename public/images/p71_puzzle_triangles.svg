@@ -1,0 +1,36 @@
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="600" height="400" fill="#f8fafc" rx="20"/>
+  
+  <g transform="translate(50, 50)">
+    <!-- Outer Triangle ABC -->
+    <path d="M 0 300 L 500 300 L 250 0 Z" fill="#f1f5f9" stroke="#1e293b" stroke-width="4"/>
+    
+    <!-- Altitude CD -->
+    <line x1="250" y1="0" x2="250" y2="300" stroke="#1e293b" stroke-width="4"/>
+    
+    <!-- Horizontal line FG -->
+    <line x1="125" y1="150" x2="375" y2="150" stroke="#1e293b" stroke-width="4"/>
+    
+    <!-- Right angle markers at point D -->
+    <rect x="235" y="285" width="15" height="15" fill="none" stroke="#1e293b" stroke-width="2"/>
+    <rect x="250" y="285" width="15" height="15" fill="none" stroke="#1e293b" stroke-width="2"/>
+
+    <!-- Lines AE and BE to create 6 right-angled triangles total -->
+    <line x1="0" y1="300" x2="250" y2="150" stroke="#1e293b" stroke-width="4"/>
+    <line x1="500" y1="300" x2="250" y2="150" stroke="#1e293b" stroke-width="4"/>
+    
+    <!-- NO squares in the middle intersection (E) as requested -->
+    
+    <!-- Labels following "links beneden A" rule -->
+    <text x="-20" y="330" font-family="Inter, sans-serif" font-weight="bold" font-size="24" fill="#1e293b">A</text>
+    <text x="510" y="330" font-family="Inter, sans-serif" font-weight="bold" font-size="24" fill="#1e293b">B</text>
+    <text x="250" y="-15" text-anchor="middle" font-family="Inter, sans-serif" font-weight="bold" font-size="24" fill="#1e293b">C</text>
+    <text x="250" y="335" text-anchor="middle" font-family="Inter, sans-serif" font-weight="bold" font-size="20" fill="#64748b">D</text>
+    <text x="265" y="145" font-family="Inter, sans-serif" font-weight="bold" font-size="20" fill="#64748b">E</text>
+    <text x="100" y="155" font-family="Inter, sans-serif" font-weight="bold" font-size="20" fill="#64748b">F</text>
+    <text x="385" y="155" font-family="Inter, sans-serif" font-weight="bold" font-size="20" fill="#64748b">G</text>
+    
+    <text x="250" y="370" text-anchor="middle" font-family="Inter, sans-serif" font-size="18" fill="#94a3b8">Opgave 5: De Puzzel</text>
+  </g>
+</svg>

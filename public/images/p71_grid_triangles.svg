@@ -1,0 +1,26 @@
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Grid -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid)" />
+
+  <!-- Triangle ABC (A at 120,320, B at 360,320, C at 120,200) -->
+  <path d="M 120 320 L 360 320 L 120 200 Z" fill="#fee2e2" stroke="black" stroke-width="2" />
+  <rect x="120" y="295" width="25" height="25" fill="none" stroke="black" stroke-width="1.5" />
+  <text x="100" y="345" font-family="Arial" font-size="24" font-weight="bold">A</text>
+  <text x="370" y="345" font-family="Arial" font-size="24" font-weight="bold">B</text>
+  <text x="100" y="190" font-family="Arial" font-size="24" font-weight="bold">C</text>
+
+  <!-- Triangle DEF (D at 480,200, E at 600,320, F at 720,200) -->
+  <path d="M 480 200 L 600 320 L 720 200 Z" fill="#fee2e2" stroke="black" stroke-width="2" />
+  <!-- Right angle at E -->
+  <g transform="translate(600,320) rotate(-45)">
+    <rect x="-15" y="-15" width="25" height="25" fill="none" stroke="black" stroke-width="1.5" />
+  </g>
+  <text x="460" y="190" font-family="Arial" font-size="24" font-weight="bold">D</text>
+  <text x="590" y="360" font-family="Arial" font-size="24" font-weight="bold">E</text>
+  <text x="730" y="190" font-family="Arial" font-size="24" font-weight="bold">F</text>
+</svg>

@@ -1,0 +1,22 @@
+<svg width="600" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="400" fill="#f8fafc" rx="20"/>
+  
+  <g transform="translate(150, 100)">
+    <!-- Constructing EFG: EF=4cm (400px), EG=3cm (300px) -->
+    <!-- Scale: 1cm = 80px -->
+    <path d="M 0 240 L 320 240 L 0 0 Z" fill="#faf5ff" stroke="#a855f7" stroke-width="4"/>
+    
+    <!-- Labels -->
+    <text x="-30" y="270" font-family="Inter" font-weight="bold" font-size="28">E</text>
+    <text x="330" y="270" font-family="Inter" font-weight="bold" font-size="28">F</text>
+    <text x="-30" y="-10" font-family="Inter" font-weight="bold" font-size="28">G</text>
+    
+    <!-- Right angle at E -->
+    <rect x="0" y="220" width="20" height="20" fill="none" stroke="#a855f7" stroke-width="2"/>
+    
+    <!-- Dimensions -->
+    <text x="160" y="280" text-anchor="middle" font-family="Inter" font-size="20" fill="#64748b">4 cm</text>
+    <text x="-50" y="120" text-anchor="middle" font-family="Inter" font-size="20" fill="#64748b" transform="rotate(-90, -50, 120)">3 cm</text>
+  </g>
+  <text x="300" y="40" text-anchor="middle" font-family="Inter" font-size="18" font-weight="500" fill="#94a3b8">Opgave 6: Constructie EFG</text>
+</svg>
