@@ -29,7 +29,10 @@ export const voorkennisSlides = [
       fields: [
         { id: "q1", label: "5² =", answer: "25", hint: "5 × 5" },
         { id: "q2", label: "7² =", answer: "49", hint: "7 × 7" },
-        { id: "q3", label: "12² =", answer: "144", hint: "12 × 12" }
+        { id: "q3", label: "12² =", answer: "144", hint: "12 × 12" },
+        { id: "q4", label: "(-6)² =", answer: "36", hint: "(-6) × (-6) = positief!" },
+        { id: "q5", label: "-6² =", answer: "-36", hint: "Dit is -(6²) = -(36)" },
+        { id: "q6", label: "0² =", answer: "0", hint: "0 × 0" }
       ],
       maxAttempts: 3
     }
@@ -72,9 +75,39 @@ export const voorkennisSlides = [
     }
   },
   {
+    id: "vk_08",
+    type: "exercise",
+    heading: "Nu jij! Stapje voor stapje",
+    content: "Los dit op stap voor stap: **√(80 + (6² - 4²))**\n\nFollow each step carefully!",
+    exercise: {
+      type: "multi_input",
+      fields: [
+        { id: "s1", label: "Stap 1: Bereken 6² =", answer: "36", hint: "6 × 6" },
+        { id: "s2", label: "Stap 2: Bereken 4² =", answer: "16", hint: "4 × 4" },
+        { id: "s3", label: "Stap 3: Bereken 6² - 4² =", answer: "20", hint: "36 - 16" },
+        { id: "s4", label: "Stap 4: Bereken 80 + (antwoord stap 3) =", answer: "100", hint: "80 + 20" },
+        { id: "s5", label: "Stap 5: Bereken √100 =", answer: "10", hint: "Welk getal × zichzelf is 100?" }
+      ],
+      maxAttempts: 3
+    }
+  },
+  {
+    id: "vk_09_challenge",
+    type: "exercise",
+    heading: "Zelf berekenen: De echte test!",
+    content: "Los dit volledig zelf op. Geen tussenstappen, alleen het eindantwoord invullen:\n\n**√(5² + 12²) = ?**\n\nReken zelf uit stap voor stap en vul je antwoord in.",
+    exercise: {
+      type: "multi_input",
+      fields: [
+        { id: "result", label: "Wat is √(5² + 12²) =", answer: "13", hint: "Bereken eerst de kwadraten, tel ze op, en neem de wortel." }
+      ],
+      maxAttempts: 3
+    }
+  },
+  {
     id: "vk_10",
     type: "summary",
     heading: "Klaar voor Pythagoras!",
-    content: "✅ Kwadraat = Getal × Zichzelf\n✅ Wortel = De weg terug\n\nJe bent nu een expert in de basis. \n\nLaten we naar de Stelling gaan!"
+    content: "✅ Kwadraat = Getal × Zichzelf\n✅ Wortel = De weg terug\n✅ Je kunt samengestelde sommen stap voor stap oplossen\n✅ Je kunt sommen ook helemaal zelfstandig uitrekenen\n\nJe bent nu een expert in de basis. \n\nLaten we naar de Stelling gaan!"
   }
 ];
