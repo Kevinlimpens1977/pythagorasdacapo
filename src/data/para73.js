@@ -56,8 +56,9 @@ export const para73Slides = [
     id: "p73_14b",
     type: "exercise",
     heading: "Opdracht 14b: Tabel invullen",
-    content: "Vul de tabel in met de zijden en oppervlakten van de vierkanten.",
-    image: "/boekafbeeldingen/cropped/q14b_table.jpg",
+    content: "Vul de tabel in met de zijden en oppervlakten van de vierkanten.\n\n**Kijk naar de vierkanten uit opdracht 14a!**",
+    images: ["/boekafbeeldingen/cropped/q14_squares.jpg", "/boekafbeeldingen/cropped/q14b_table.jpg"],
+    image: "/boekafbeeldingen/cropped/q14_squares.jpg",
     exercise: {
       type: "multi_input",
       fields: [

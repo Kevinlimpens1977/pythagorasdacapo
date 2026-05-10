@@ -170,11 +170,19 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
           </div>
         </div>
 
-        <div className={`flex flex-col ${slide.image ? 'lg:flex-row' : ''} gap-16 lg:gap-32 items-center justify-center`}>
-          {slide.image && (
-            <div className="w-full lg:w-1/2 flex justify-center">
-              <div className="relative w-full">
-                <img src={slide.image} alt="Opgave afbeelding" className="relative rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.15)] border-[8px] border-white w-full object-contain max-h-[50vh]" />
+        <div className={`flex flex-col ${slide.image || slide.images ? 'lg:flex-row' : ''} gap-16 lg:gap-32 items-center justify-center`}>
+          {(slide.image || slide.images) && (
+            <div className="w-full lg:w-1/2 flex flex-col gap-8 justify-center">
+              <div className="relative w-full space-y-4">
+                {/* Single image */}
+                {slide.image && !slide.images && (
+                  <img src={slide.image} alt="Opgave afbeelding" className="relative rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.15)] border-[8px] border-white w-full object-contain max-h-[50vh]" />
+                )}
+
+                {/* Multiple images */}
+                {slide.images && slide.images.map((imgSrc, idx) => (
+                  <img key={idx} src={imgSrc} alt={`Opgave afbeelding ${idx + 1}`} className="relative rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.15)] border-[8px] border-white w-full object-contain max-h-[40vh]" />
+                ))}
               </div>
             </div>
           )}
