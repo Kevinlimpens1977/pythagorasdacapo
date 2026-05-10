@@ -61,6 +61,16 @@ function getPresentationViewedTime(student, chapterId) {
   return viewed.firstViewedAt.toDate ? viewed.firstViewedAt.toDate() : new Date(viewed.firstViewedAt);
 }
 
+// Helper functie voor evaluatiescore
+function getEvaluationScore(student, chapterId) {
+  const evalData = student.evaluationData?.[chapterId];
+  if (!evalData) return null;
+  const results = Object.values(evalData);
+  if (results.length === 0) return null;
+  const correct = results.filter(r => r.isCorrect).length;
+  return { correct, total: results.length };
+}
+
 export default function ClassOverview() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -577,6 +587,9 @@ export default function ClassOverview() {
                     <th className="py-4 px-6 font-medium text-slate-500 text-sm">
                       Presentatie
                     </th>
+                    <th className="py-4 px-6 font-medium text-slate-500 text-sm">
+                      📋 Evaluatie
+                    </th>
                   </>
                 )}
                 <th className="py-4 px-6 font-medium text-slate-500 text-sm">Laatst Actief</th>
@@ -656,6 +669,27 @@ export default function ClassOverview() {
                                 <span className="text-slate-400 text-xs">Nog niet</span>
                               </div>
                             )}
+                          </td>
+                          <td className="py-4 px-6 text-sm">
+                            {(() => {
+                              const evalScore = getEvaluationScore(student, selectedChapterForClass);
+                              if (!evalScore) {
+                                return (
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 rounded border-2 border-slate-300" />
+                                    <span className="text-slate-400 text-xs">—</span>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-slate-700">{evalScore.correct}/{evalScore.total}</span>
+                                  <span className={`text-xs font-medium ${evalScore.correct === evalScore.total ? 'text-green-600' : 'text-amber-600'}`}>
+                                    {Math.round((evalScore.correct / evalScore.total) * 100)}%
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </td>
                         </>
                       )}

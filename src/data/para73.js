@@ -622,5 +622,94 @@ export const para73Slides = [
     heading: "Klaar met 7.3!",
     content: "Je hebt nu:\n✔️ De lengte van de langste zijde berekend in verschillende situaties\n✔️ Het Pythagoras-schema gebruikt\n✔️ Met wortels en kwadraten gewerkt\n\nJe bent nu klaar voor paragraaf 7.4!",
     image: "/images/p73_done.svg"
+  },
+  // Evaluation questions section
+  {
+    id: "p73_eval_intro",
+    type: "theory",
+    heading: "📋 Evaluatie",
+    content: "Je hebt veel geleerd! Laten we checken of je het begrepen hebt.\n\nBeantwoord de volgende 4 vragen. Je hebt per vraag één poging. Succes!"
+  },
+  {
+    id: "p73_eval_01",
+    type: "evaluation",
+    heading: "Evaluatievraag 1",
+    content: "Bereken de langste zijde van een rechthoekige driehoek met zijdes a = 9 cm en b = 12 cm.\n\nGebruik: c² = a² + b²",
+    questionNumber: 1,
+    totalQuestions: 4,
+    exercise: {
+      type: "multi_input",
+      fields: [
+        {
+          id: "eval01_c",
+          label: "c =",
+          answer: ["15", "15,0"],
+          hint: "9² + 12² = 81 + 144 = 225, dus c = √225"
+        }
+      ]
+    }
+  },
+  {
+    id: "p73_eval_02",
+    type: "evaluation",
+    heading: "Evaluatievraag 2",
+    content: "Vul het Pythagoras-schema in voor driehoek DEF met DE = 5 cm, EF = 12 cm en DF = ?",
+    questionNumber: 2,
+    totalQuestions: 4,
+    exercise: {
+      type: "multi_input",
+      fields: [
+        {
+          id: "eval02_sum",
+          label: "DE² + EF² =",
+          answer: ["169", "169,0"],
+          hint: "5² + 12² = 25 + 144"
+        },
+        {
+          id: "eval02_df",
+          label: "DF = √169 =",
+          answer: ["13", "13,0"],
+          hint: "√169 = 13 (want 13 × 13 = 169)"
+        }
+      ]
+    }
+  },
+  {
+    id: "p73_eval_03",
+    type: "evaluation",
+    heading: "Evaluatievraag 3",
+    content: "Een rechthoek heeft lengte 6 m en breedte 8 m. Bereken de diagonaal.",
+    questionNumber: 3,
+    totalQuestions: 4,
+    exercise: {
+      type: "multi_input",
+      fields: [
+        {
+          id: "eval03_diag",
+          label: "Diagonaal =",
+          answer: ["10", "10,0"],
+          hint: "6² + 8² = 36 + 64 = 100, dus diagonaal = √100"
+        }
+      ]
+    }
+  },
+  {
+    id: "p73_eval_04",
+    type: "evaluation",
+    heading: "Evaluatievraag 4",
+    content: "Bij een rechthoekige driehoek ken je beide rechthoekzijdes. Welke zijde kun je met het Pythagoras-schema berekenen?",
+    questionNumber: 4,
+    totalQuestions: 4,
+    exercise: {
+      type: "multi_input",
+      fields: [
+        {
+          id: "eval04_answer",
+          label: "Antwoord:",
+          answer: ["hypotenusa", "langste zijde", "c"],
+          hint: "Met a² + b² = c² bereken je de hypotenusa (langste zijde)"
+        }
+      ]
+    }
   }
 ];

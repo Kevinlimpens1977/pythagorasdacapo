@@ -12,6 +12,7 @@ import DemoSlide from './DemoSlide';
 import SummarySlide from './SummarySlide';
 import PythagorasProofSlide from './PythagorasProofSlide';
 import PresentationSlide from './PresentationSlide';
+import EvaluationSlide from './EvaluationSlide';
 import FormattedText from '../common/FormattedText';
 
 export default function SlideRenderer() {
@@ -63,8 +64,8 @@ export default function SlideRenderer() {
   useEffect(() => {
     const isCompleted = userData?.completedSlides?.includes(slides[currentIndex]?.id) || false;
 
-    // Only lock if it's an exercise slide and not already completed
-    if (slides[currentIndex]?.type === 'exercise' && !isCompleted) {
+    // Lock if it's an exercise or evaluation slide and not already completed
+    if ((slides[currentIndex]?.type === 'exercise' || slides[currentIndex]?.type === 'evaluation') && !isCompleted) {
       setIsUnlocked(false);
     } else {
       setIsUnlocked(true);
@@ -121,6 +122,15 @@ export default function SlideRenderer() {
       case 'theory': return <TheorySlide key={currentSlide.id} slide={currentSlide} />;
       case 'exercise': return (
         <ExerciseSlide
+          key={currentSlide.id}
+          slide={currentSlide}
+          chapterId={chapterId}
+          isCompleted={isCompleted}
+          onVerified={() => handleSlideVerified(currentSlide.id)}
+        />
+      );
+      case 'evaluation': return (
+        <EvaluationSlide
           key={currentSlide.id}
           slide={currentSlide}
           chapterId={chapterId}
