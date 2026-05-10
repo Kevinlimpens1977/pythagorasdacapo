@@ -40,7 +40,7 @@ export default function TableOfContents() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-12 px-8">
+    <div className="w-full max-w-6xl mx-auto pad-content">
       {/* Admin-only login instructions */}
       {isAdmin && (
         <div className="mb-8 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl shadow-md border-2 border-amber-200 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
@@ -132,8 +132,8 @@ export default function TableOfContents() {
           <p className="text-slate-300 ml-11 text-lg">Hoofdstuk 7</p>
         </div>
 
-        <div className="p-2 sm:p-4">
-          <div className="space-y-2">
+        <div className="p-6 md:p-8">
+          <div className="space-y-4 md:space-y-6">
             {CHAPTERS.map((chapter) => {
               const status = getChapterStatus(chapter);
               const locked = status === 'locked';

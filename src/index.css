@@ -59,3 +59,71 @@ input[type=number] {
   animation: shake 0.2s ease-in-out 0s 2;
 }
 
+/* PHASE 1: DESIGN SYSTEM UTILITIES */
+
+/* Standard Button Styles - Consistent Across App */
+.btn-primary {
+  @apply px-8 py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 active:shadow-md hover:shadow-lg text-white font-bold rounded-lg transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2;
+}
+
+.btn-primary:disabled {
+  @apply bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 hover:shadow-none hover:translate-y-0;
+}
+
+/* Standard Input Styles - Consistent Across App */
+.input-standard {
+  @apply px-4 py-3 bg-white border-2 border-slate-300 text-slate-900 rounded-lg transition-all focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200;
+}
+
+.input-standard:disabled {
+  @apply bg-slate-100 text-slate-400 cursor-not-allowed opacity-60;
+}
+
+/* Standard Card Styles - Consistent Shadows & Borders */
+.card-base {
+  @apply rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow;
+}
+
+/* Spacing Scale Utilities */
+.spacing-tight {
+  @apply gap-4 space-y-4;
+}
+
+.spacing-normal {
+  @apply gap-6 space-y-6 md:gap-8 md:space-y-8;
+}
+
+.spacing-loose {
+  @apply gap-8 space-y-8 md:gap-12 md:space-y-12;
+}
+
+/* Component Padding Standards */
+.pad-content {
+  @apply px-6 sm:px-8 py-8 md:py-12;
+}
+
+.pad-compact {
+  @apply px-4 py-3 md:px-6 md:py-4;
+}
+
+/* Typography Standards */
+.heading-xl {
+  @apply text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight;
+}
+
+.heading-lg {
+  @apply text-3xl md:text-4xl font-black text-slate-900 tracking-tight;
+}
+
+.heading-md {
+  @apply text-2xl md:text-3xl font-bold text-slate-900;
+}
+
+.text-secondary {
+  @apply text-slate-600;
+}
+
+.text-tertiary {
+  @apply text-slate-500;
+}
+
