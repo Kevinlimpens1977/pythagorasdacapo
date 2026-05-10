@@ -101,7 +101,7 @@ export default function PythagorasProofSlide({ slide, chapterId, onVerified, isC
       {/* Current step content */}
       <div className="flex-1 flex flex-col">
         <div className="text-center mb-12">
-          <h2 className="text-6xl md:text-7xl lg:text-8xl font-black text-slate-900 mb-8 tracking-tighter">
+          <h2 className="slide-heading mb-6">
             {currentStepData.heading}
           </h2>
           <div className="text-2xl md:text-3xl lg:text-4xl text-slate-700 font-medium whitespace-pre-wrap leading-tight">
