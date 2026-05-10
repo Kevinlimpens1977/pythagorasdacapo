@@ -28,11 +28,11 @@ export default function ImageModal({ src, alt = 'Afbeelding' }) {
       {/* Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-auto animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="relative max-w-5xl max-h-[90vh] animate-in zoom-in-95 duration-300"
+            className="relative animate-in zoom-in-95 duration-300 my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -44,11 +44,17 @@ export default function ImageModal({ src, alt = 'Afbeelding' }) {
               <X size={32} strokeWidth={3} />
             </button>
 
-            {/* Image */}
+            {/* Image - 175% zoom */}
             <img
               src={src}
               alt={alt}
-              className="w-full h-auto rounded-2xl shadow-2xl"
+              className="rounded-2xl shadow-2xl"
+              style={{
+                maxWidth: '175vw',
+                maxHeight: '175vh',
+                width: 'auto',
+                height: 'auto'
+              }}
             />
 
             {/* Instructions */}
