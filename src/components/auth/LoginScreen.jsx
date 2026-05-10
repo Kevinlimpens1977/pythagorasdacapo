@@ -102,23 +102,23 @@ export default function LoginScreen() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Voornaam</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="input-auth"
                   placeholder="Bijv. Jan"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Achternaam</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="input-auth"
                   placeholder="Bijv. Jansen"
                 />
               </div>
@@ -127,31 +127,31 @@ export default function LoginScreen() {
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">E-mailadres</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="input-auth"
               placeholder="naam@school.nl"
             />
           </div>
           
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Wachtwoord</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="input-auth"
               placeholder="••••••••"
             />
           </div>
 
-          <button 
+          <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all transform active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
+            className="btn-primary-lg"
           >
             {isSignUp ? <UserPlus size={20} /> : <LogIn size={20} />}
             {isSignUp ? 'Account maken' : 'Inloggen'}
@@ -162,16 +162,16 @@ export default function LoginScreen() {
           <p className="text-slate-500 text-sm mb-4">
             {isSignUp ? 'Heb je al een account?' : 'Nieuw hier? Start als leerling'}
           </p>
-          <button 
+          <button
             onClick={() => setIsSignUp(!isSignUp)}
-            className="w-full py-3 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-all"
+            className="btn-secondary"
           >
             {isSignUp ? 'Terug naar inloggen' : 'Maak een account aan'}
           </button>
         </div>
 
         <div className="mt-8 pt-6 border-t border-slate-100">
-          <button 
+          <button
             onClick={handleGoogleLogin}
             className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-3 shadow-sm text-sm"
           >

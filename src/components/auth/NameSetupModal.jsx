@@ -74,7 +74,7 @@ export default function NameSetupModal({ onComplete }) {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="Bijv. Jan"
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-lg"
+              className="input-auth text-lg"
               disabled={loading}
               autoFocus
             />
@@ -90,7 +90,7 @@ export default function NameSetupModal({ onComplete }) {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               placeholder="Bijv. Jansen"
-              className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-lg"
+              className="input-auth text-lg"
               disabled={loading}
             />
           </div>
@@ -98,7 +98,7 @@ export default function NameSetupModal({ onComplete }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 rounded-xl transition-all text-lg"
+            className="btn-primary-lg !py-3 text-lg"
           >
             {loading ? 'Bezig...' : 'Verder'}
           </button>
