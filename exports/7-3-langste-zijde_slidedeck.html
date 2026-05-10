@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.3 Langste zijde berekenen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #c94b4b 0%, #4b134f 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .meta {
+            background: #f0f4ff;
+            padding: 15px 30px;
+            border-bottom: 2px solid #667eea;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-item strong {
+            color: #667eea;
+            display: block;
+            font-size: 0.9em;
+        }
+
+        .meta-item span {
+            display: block;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .slide {
+            margin-bottom: 50px;
+            padding: 30px;
+            background: #fafafa;
+            border-left: 5px solid #667eea;
+            border-radius: 8px;
+            page-break-inside: avoid;
+        }
+
+        .slide.title-slide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            border: none;
+        }
+
+        .slide-number {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .slide h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .slide.title-slide h2 {
+            color: white;
+            font-size: 2.2em;
+        }
+
+        .slide h3 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .key-points {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .key-points li {
+            margin: 8px 0;
+            margin-left: 20px;
+        }
+
+        .formula {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .solution-steps {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .calculation {
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .question {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .question h4 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .answer-box {
+            background: #f1f8e9;
+            border: 2px solid #4CAF50;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .answer-box strong {
+            color: #2e7d32;
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .warning {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            color: #c62828;
+        }
+
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .source-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .source-tag.ai-suggestion {
+            background: #ff9800;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .footer {
+            background: #f0f4ff;
+            padding: 20px 30px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #ddd;
+        }
+
+        .objectives, .mistakes {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .objectives li, .mistakes li {
+            margin: 8px 0;
+            margin-left: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .slide {
+                padding: 20px;
+            }
+
+            .meta {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .slide {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>7.3 Langste zijde berekenen</h1>
+            <p>Met de stelling van Pythagoras!</p>
+        </div>
+
+        <!-- Metadata -->
+        <div class="meta">
+            <div class="meta-item">
+                <strong>Niveau</strong>
+                <span>VMBO 1-2</span>
+            </div>
+            <div class="meta-item">
+                <strong>Duur</strong>
+                <span>±20 minuten</span>
+            </div>
+            <div class="meta-item">
+                <strong>Vak</strong>
+                <span>Wiskunde - Meetkunde</span>
+            </div>
+            <div class="meta-item">
+                <strong>Slides</strong>
+                <span>8 slides</span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Slide 1 -->
+            <div class="slide title-slide">
+                <div class="slide-number">Slide 1 / 8</div>
+                <h2>7.3 Langste zijde berekenen</h2>
+                <p style="font-size: 1.3em; margin-top: 20px;">Met de stelling van Pythagoras!</p>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide">
+                <div class="slide-number">Slide 2 / 8</div>
+                <h2>Wat gaan we leren?</h2>
+                <span class="source-tag">SOURCE_BASED</span>
+                <p style="margin-top: 15px;">Je leert hoe je de <strong>langste zijde</strong> van een rechthoekige driehoek berekent.</p>
+                <div class="key-points">
+                    <ul>
+                        <li>De langste zijde is de <strong>SCHUINE zijde</strong></li>
+                        <li>We gebruiken de <strong>stelling van Pythagoras</strong></li>
+                        <li><strong>c</strong> is altijd de langste zijde</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide">
+                <div class="slide-number">Slide 3 / 8</div>
+                <h2>De stelling van Pythagoras</h2>
+                <span class="source-tag">SOURCE_BASED</span>
+                <div class="formula">a² + b² = c²</div>
+                <p><strong>Waar:</strong></p>
+                <div class="key-points">
+                    <ul>
+                        <li><strong>a en b</strong> = rechthoekszijden (korte zijden)</li>
+                        <li><strong>c</strong> = schuine zijde (langste zijde)</li>
+                    </ul>
+                </div>
+                <div class="warning">
+                    <strong>⚠️ Belangrijk:</strong> Dit werkt ALLEEN voor rechthoekige driehoeken!
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide">
+                <div class="slide-number">Slide 4 / 8</div>
+                <h2>3-Stappen Aanpak</h2>
+                <span class="source-tag">SOURCE_BASED</span>
+                <div class="solution-steps">
+                    <div class="step">
+                        <strong>1️⃣ Maak een schema</strong>
+                        Teken de driehoek, zet de getallen erbij.
+                    </div>
+                    <div class="step">
+                        <strong>2️⃣ Bereken de kwadraten</strong>
+                        Kwadrateer beide korte zijden en tel ze op.
+                    </div>
+                    <div class="step">
+                        <strong>3️⃣ Trek de wortel</strong>
+                        Vind de langste zijde.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide">
+                <div class="slide-number">Slide 5 / 8</div>
+                <h2>Voorbeeld: Bereken AC</h2>
+                <span class="source-tag">SOURCE_BASED</span>
+                <div class="question">
+                    <h4>Rechthoekige driehoek ABC</h4>
+                    <p><strong>AB = 5 cm, BC = 3 cm</strong><br>Bereken: AC = ?</p>
+                </div>
+                <div class="solution-steps">
+                    <div class="step">
+                        <strong>Stap 1: Schrijf op</strong>
+                        <div class="calculation">AC² = AB² + BC²</div>
+                    </div>
+                    <div class="step">
+                        <strong>Stap 2: Reken uit</strong>
+                        <div class="calculation">AC² = 5² + 3²<br>AC² = 25 + 9 = 34</div>
+                    </div>
+                    <div class="step">
+                        <strong>Stap 3: Wortel</strong>
+                        <div class="calculation">AC = √34 ≈ 5,8 cm</div>
+                    </div>
+                </div>
+                <div class="answer-box">
+                    <strong>✓ Antwoord: AC ≈ 5,8 cm</strong>
+                </div>
+            </div>
+
+            <!-- Slide 6 -->
+            <div class="slide">
+                <div class="slide-number">Slide 6 / 8</div>
+                <h2>Inoefenvraag 1</h2>
+                <span class="source-tag">SOURCE_BASED</span>
+                <div class="question">
+                    <h4>Vraag 1:</h4>
+                    <p>Bereken de langste zijde van de rechthoekige driehoek.<br>De rechthoekszijden zijn <strong>3 cm</strong> en <strong>4 cm</strong>.</p>
+                </div>
+                <div class="answer-box">
+                    <strong>Antwoord: 5 cm</strong>
+                    <p><strong>Uitwerking:</strong></p>
+                    <div class="calculation">c² = 3² + 4² = 9 + 16 = 25<br>c = √25 = 5 cm</div>
+                    <p style="margin-top: 10px; font-size: 0.9em;"><em>Dit is een beroemde driehoek (3-4-5)!</em></p>
+                </div>
+            </div>
+
+            <!-- Slide 7 -->
+            <div class="slide">
+                <div class="slide-number">Slide 7 / 8</div>
+                <h2>Inoefenvraag 2 (Praktijk)</h2>
+                <span class="source-tag">SOURCE_BASED</span>
+                <div class="question">
+                    <h4>Vraag 2:</h4>
+                    <p>Het beeldscherm is <strong>106 cm breed</strong> en <strong>60 cm hoog</strong>.<br>Hoe lang is de <strong>diagonaal</strong>?</p>
+                </div>
+                <div class="answer-box">
+                    <strong>Antwoord: ≈122 cm</strong>
+                    <p><strong>Uitwerking:</strong></p>
+                    <div class="calculation">d² = 106² + 60²<br>d² = 11.236 + 3.600 = 14.836<br>d = √14.836 ≈ 121,8 cm ≈ 122 cm</div>
+                </div>
+            </div>
+
+            <!-- Slide 8 -->
+            <div class="slide">
+                <div class="slide-number">Slide 8 / 8</div>
+                <h2>Exit-Ticket</h2>
+                <span class="source-tag ai-suggestion">AI_SUGGESTION</span>
+                <div class="question">
+                    <h4>Waar of Onwaar?</h4>
+                    <p>"De stelling van Pythagoras kan je gebruiken voor <strong>elke driehoek</strong>."</p>
+                </div>
+                <div class="answer-box">
+                    <strong>❌ ONWAAR</strong>
+                    <p>De stelling van Pythagoras werkt <strong>ALLEEN voor rechthoekige driehoeken</strong> (met één hoek van 90°).</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">Andere driehoeken gebruiken andere regels.</p>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="slide">
+                <h2>Samenvatting</h2>
+                <table>
+                    <tr>
+                        <th>Concept</th>
+                        <th>Uitleg</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Pythagoras</strong></td>
+                        <td>a² + b² = c²</td>
+                    </tr>
+                    <tr>
+                        <td><strong>a, b</strong></td>
+                        <td>Korte zijden</td>
+                    </tr>
+                    <tr>
+                        <td><strong>c</strong></td>
+                        <td>Lange zijde (hypotenusa)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Stap 1</strong></td>
+                        <td>Teken en label</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Stap 2</strong></td>
+                        <td>Kwadrateer en tel op</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Stap 3</strong></td>
+                        <td>Trek de wortel</td>
+                    </tr>
+                </table>
+
+                <h3>Lesdoelen:</h3>
+                <div class="objectives">
+                    <ul>
+                        <li>Je kan de stelling van Pythagoras toepassen</li>
+                        <li>Je kan de langste zijde berekenen</li>
+                        <li>Je kan praktische problemen met Pythagoras oplossen</li>
+                    </ul>
+                </div>
+
+                <h3>Veelgemaakte fouten:</h3>
+                <div class="mistakes">
+                    <ul>
+                        <li>❌ Vergeten dat c² = a² + b² (NIET c = a + b)</li>
+                        <li>❌ De wortels niet nemen</li>
+                        <li>❌ Pythagoras op niet-rechthoekige driehoeken gebruiken</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>7.3 Langste zijde berekenen</strong> — VMBO 1-2 Wiskunde</p>
+            <p>Bronnen: Noordhoff Uitgevers | Gemaakt: 2026-05-10</p>
+            <p style="margin-top: 10px; font-size: 0.85em; opacity: 0.7;">
+                📄 PDF • 📋 JSON • 🌐 HTML
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+{
+  "metadata": {
+    "title": "7.3 Langste zijde berekenen",
+    "description": "Hoe je de langste zijde (hypotenusa) in een rechthoekige driehoek berekent met de stelling van Pythagoras",
+    "level": "vmbo-1-2",
+    "subject": "Wiskunde - Meetkunde",
+    "duration_minutes": 20,
+    "slides_count": 8,
+    "created_date": "2026-05-10",
+    "source": "boekafbeeldingen/7.3.1.jpg, 7.3.2.jpg, 7.3.3.jpg",
+    "source_type": "jpg_images",
+    "source_tags_summary": {
+      "SOURCE_BASED": 6,
+      "AI_SUGGESTION": 2
+    },
+    "export_format": "json",
+    "questions_count": 3,
+    "theory_slides": 3,
+    "practice_slides": 4,
+    "assessment_type": "formative"
+  },
+  "slides": [
+    {
+      "number": 1,
+      "title": "7.3 Langste zijde berekenen",
+      "type": "title",
+      "content": "Met de stelling van Pythagoras!",
+      "subtitle": "Wiskunde - Meetkunde",
+      "level": "VMBO 1-2",
+      "source_tag": "AI_SUGGESTION",
+      "layout": "title_only",
+      "visual_elements": ["big_title"]
+    },
+    {
+      "number": 2,
+      "title": "Wat gaan we leren?",
+      "type": "theory",
+      "content": "Je leert hoe je de langste zijde van een rechthoekige driehoek berekent.",
+      "key_points": [
+        "De langste zijde is de SCHUINE zijde",
+        "We gebruiken de stelling van Pythagoras: a² + b² = c²",
+        "c is altijd de langste zijde"
+      ],
+      "illustration": "right_triangle_labeled",
+      "source_tag": "SOURCE_BASED",
+      "visual_elements": ["colored_rectangle", "labeled_diagram"]
+    },
+    {
+      "number": 3,
+      "title": "De stelling van Pythagoras",
+      "type": "theory",
+      "content": "In een rechthoekige driehoek geldt:\n\na² + b² = c²\n\nwaar:\n• a en b = rechthoekszijden (korte zijden)\n• c = schuine zijde (langste zijde, hypotenusa)\n\nDe kwadraten van de twee korte zijden tellen op tot het kwadraat van de lange zijde.",
+      "key_points": [
+        "Alleen voor rechthoekige driehoeken!",
+        "Let op: c is ALTIJD de langste zijde"
+      ],
+      "illustration": "pythagoras_squares_diagram",
+      "source_tag": "SOURCE_BASED",
+      "visual_elements": ["large_formula_box", "color_coded_squares"]
+    },
+    {
+      "number": 4,
+      "title": "3-Stappen Aanpak",
+      "type": "theory",
+      "content": "Zo bereken je de langste zijde:\n\n1️⃣ Maak een schema en schrijf de zijden op\n2️⃣ Bereken de kwadraten van de rechthoekszijden\n3️⃣ Tel op en neem de wortel\n\nExample: AB = 5, BC = 3 → AC = ?",
+      "illustration": "step_by_step_visual",
+      "source_tag": "SOURCE_BASED",
+      "visual_elements": ["numbered_steps", "visual_guide"]
+    },
+    {
+      "number": 5,
+      "title": "Voorbeeld: Bereken AC",
+      "type": "example",
+      "problem": "Rechthoekige driehoek ABC. AB = 5 cm, BC = 3 cm.\nBereken de lengte van AC (de langste zijde).",
+      "illustration": "triangle_5_3_unknown",
+      "solution_steps": [
+        {
+          "step": 1,
+          "action": "Schrijf de stelling op",
+          "calculation": "AC² = AB² + BC²"
+        },
+        {
+          "step": 2,
+          "action": "Reken de kwadraten uit",
+          "calculation": "AC² = 5² + 3² = 25 + 9 = 34"
+        },
+        {
+          "step": 3,
+          "action": "Neem de wortel",
+          "calculation": "AC = √34 ≈ 5,8 cm"
+        }
+      ],
+      "final_answer": "AC ≈ 5,8 cm",
+      "source_tag": "SOURCE_BASED",
+      "visual_elements": ["calculation_steps", "formula_progression"]
+    },
+    {
+      "number": 6,
+      "title": "Inoefenvraag 1",
+      "type": "question",
+      "question_number": "Q1",
+      "content": "Bereken de langste zijde van de rechthoekige driehoek.\nDe rechthoekszijden zijn 3 cm en 4 cm.",
+      "question_type": "open",
+      "difficulty": "basic",
+      "answer": "5 cm",
+      "explanation": "c² = 3² + 4² = 9 + 16 = 25\nc = √25 = 5 cm",
+      "illustration": "3_4_5_triangle",
+      "source_tag": "SOURCE_BASED",
+      "visual_elements": ["labeled_triangle_2d"]
+    },
+    {
+      "number": 7,
+      "title": "Inoefenvraag 2 (Praktijk)",
+      "type": "question",
+      "question_number": "Q2",
+      "content": "Het beeldscherm van de computer is 106 cm breed en 60 cm hoog.\nHoe lang is de diagonaal (de schuine lijn)?",
+      "question_type": "open",
+      "difficulty": "applied",
+      "answer": "≈122 cm (of 120,5 cm precies)",
+      "explanation": "d² = 106² + 60² = 11.236 + 3.600 = 14.836\nd = √14.836 ≈ 121,8 cm ≈ 122 cm",
+      "illustration": "screen_diagonal_rectangle",
+      "source_tag": "SOURCE_BASED",
+      "visual_elements": ["real_world_diagram"]
+    },
+    {
+      "number": 8,
+      "title": "Exit-Ticket: Checkvraag",
+      "type": "assessment",
+      "question_number": "EXIT",
+      "content": "Waar of onwaar?\n\nDe stelling van Pythagoras kan je gebruiken voor elke driehoek.",
+      "question_type": "true_false",
+      "correct_answer": "Onwaar (false)",
+      "explanation": "De stelling van Pythagoras werkt ALLEEN voor rechthoekige driehoeken! Die hebben één hoek van 90°.",
+      "illustration": "non_right_triangle_x",
+      "source_tag": "AI_SUGGESTION",
+      "visual_elements": ["warning_icon", "comparison_diagram"]
+    }
+  ],
+  "teaching_notes": {
+    "objectives": [
+      "Leerling kan de stelling van Pythagoras toepassen",
+      "Leerling kan de langste zijde berekenen",
+      "Leerling kan praktische problemen oplossen met Pythagoras"
+    ],
+    "key_vocabulary": [
+      "rechthoekige driehoek",
+      "schuine zijde / hypotenusa",
+      "rechthoekszijden",
+      "kwadrateren",
+      "worteltrekken"
+    ],
+    "common_mistakes": [
+      "Vergeten dat c² = a² + b² (niet c = a + b)",
+      "De wortels niet nemen",
+      "Pythagoras gebruiken op niet-rechthoekige driehoeken"
+    ],
+    "extension_activities": [
+      "Meten van echte rechthoekige voorwerpen (deur, venster)",
+      "Ladder-tegen-muur problemen",
+      "Diagonalen van rechthoeken berekenen"
+    ]
+  }
+}

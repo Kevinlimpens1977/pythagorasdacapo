@@ -11,6 +11,7 @@ import ExerciseSlide from './ExerciseSlide';
 import DemoSlide from './DemoSlide';
 import SummarySlide from './SummarySlide';
 import PythagorasProofSlide from './PythagorasProofSlide';
+import PresentationSlide from './PresentationSlide';
 import FormattedText from '../common/FormattedText';
 
 export default function SlideRenderer() {
@@ -116,6 +117,7 @@ export default function SlideRenderer() {
     const isCompleted = userData?.completedSlides?.includes(currentSlide.id) || false;
 
     switch (currentSlide.type) {
+      case 'presentation': return <PresentationSlide key={currentSlide.id} slide={currentSlide} chapterId={chapterId} />;
       case 'theory': return <TheorySlide key={currentSlide.id} slide={currentSlide} />;
       case 'exercise': return (
         <ExerciseSlide

@@ -5,6 +5,7 @@ import FormattedText from '../common/FormattedText';
 import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { isAnswerCorrect } from '../../lib/answerNormalization';
 
 export default function ExerciseSlide({ slide, chapterId, onVerified, isCompleted }) {
   const { currentUser, isAdmin } = useAuth();
@@ -52,32 +53,6 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
     }
   };
 
-  const normalize = (str) => {
-    if (!str) return '';
-    // 1. Replace separators with a common one (|)
-    let normalized = str.toLowerCase()
-      .replace(/\s+en\s+/g, '|')
-      .replace(/\+/g, '|')
-      .replace(/&/g, '|')
-      .replace(/,/g, '|')
-      .replace(/;/g, '|');
-
-    // 2. Split into parts
-    let parts = normalized.split('|').map(p => {
-      // 3. For each part, remove all whitespace
-      let clean = p.replace(/\s+/g, '');
-      
-      // 4. If it's a side (length 2 letters), sort the letters alphabetically
-      if (clean.length === 2 && /^[a-z]{2}$/.test(clean)) {
-        return clean.split('').sort().join('');
-      }
-      return clean;
-    }).filter(p => p !== '');
-
-    // 5. Sort the parts alphabetically and join
-    return parts.sort().join(' ');
-  };
-
   const handleCheck = () => {
     if (isRevealed) return;
 
@@ -86,13 +61,10 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
 
     // Standard fields
     const checkField = (f) => {
-      const val = normalize(answers[f.id]);
-      const possibleAnswers = Array.isArray(f.answer) ? f.answer : [f.answer];
-      
-      const isCorrect = possibleAnswers.some(ans => normalize(ans.toString()) === val);
-      
-      newStatus[f.id] = isCorrect ? 'correct' : 'incorrect';
-      if (!isCorrect) allCorrect = false;
+      const correct = isAnswerCorrect(answers[f.id], f.answer);
+
+      newStatus[f.id] = correct ? 'correct' : 'incorrect';
+      if (!correct) allCorrect = false;
     };
 
     // Standard fields
