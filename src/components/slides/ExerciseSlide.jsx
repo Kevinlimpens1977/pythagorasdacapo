@@ -164,8 +164,8 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
     <div className="flex flex-col xl:flex-row w-full h-full animate-in fade-in slide-in-from-bottom-8 duration-700 bg-white">
       <div className={`flex-1 flex flex-col justify-center ${showAITutor ? 'max-w-[70%]' : 'w-full'} p-8 lg:p-12`}>
         <div className="text-center mb-12">
-          <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-slate-900 mb-8 tracking-tighter leading-[0.85] break-words"><FormattedText text={slide.heading} /></h2>
-          <div className="text-2xl md:text-3xl lg:text-5xl text-slate-700 whitespace-pre-wrap font-medium w-full leading-tight">
+          <h2 className="slide-heading mb-6"><FormattedText text={slide.heading} /></h2>
+          <div className="text-2xl md:text-3xl lg:text-4xl text-slate-700 whitespace-pre-wrap font-medium w-full leading-tight">
             <FormattedText text={slide.content} />
           </div>
         </div>

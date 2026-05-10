@@ -7,8 +7,8 @@ export default function SummarySlide({ slide }) {
       <div className="w-40 h-40 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-12 shadow-[0_30px_60px_-10px_rgba(34,197,94,0.3)] border-[8px] border-white animate-bounce">
         <CheckCircle size={100} strokeWidth={4} />
       </div>
-      <h2 className="text-6xl lg:text-9xl font-black text-slate-900 mb-12 tracking-tighter leading-none break-words w-full"><FormattedText text={slide.heading} /></h2>
-      <div className="text-3xl lg:text-6xl leading-tight text-slate-800 whitespace-pre-wrap text-left bg-slate-50 p-12 lg:p-24 rounded-[3.5rem] border-[10px] border-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] w-full">
+      <h2 className="slide-heading mb-12 break-words w-full"><FormattedText text={slide.heading} /></h2>
+      <div className="slide-content whitespace-pre-wrap text-left bg-slate-50 p-12 lg:p-24 rounded-[3.5rem] border-[10px] border-white shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] w-full">
         <FormattedText text={slide.content} />
       </div>
     </div>

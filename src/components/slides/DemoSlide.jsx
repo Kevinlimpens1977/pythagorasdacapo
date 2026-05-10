@@ -15,8 +15,8 @@ export default function DemoSlide({ slide }) {
   return (
     <div className="flex flex-col w-full h-full animate-in fade-in slide-in-from-right-8 duration-700 bg-white">
       <div className="text-center py-12 px-8 lg:py-16 lg:px-12 bg-slate-50 border-b border-slate-100">
-        <h2 className="text-6xl lg:text-8xl font-black text-slate-900 mb-4 tracking-tighter leading-none"><FormattedText text={slide.heading} /></h2>
-        <div className="text-2xl lg:text-4xl text-slate-700 whitespace-pre-wrap font-medium max-w-[90%] mx-auto leading-tight">
+        <h2 className="slide-heading mb-4"><FormattedText text={slide.heading} /></h2>
+        <div className="text-2xl lg:text-3xl text-slate-700 whitespace-pre-wrap font-medium max-w-[90%] mx-auto leading-tight">
           <FormattedText text={slide.content} />
         </div>
       </div>

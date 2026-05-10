@@ -5,10 +5,10 @@ export default function TheorySlide({ slide }) {
     <div className="flex flex-col md:flex-row items-stretch justify-center min-h-[calc(100vh-160px)] w-full h-full animate-in fade-in zoom-in-95 duration-700">
       {/* Tekst Gedeelte */}
       <div className={`flex flex-col justify-center ${slide.image ? 'w-full md:w-1/2' : 'w-full text-center'} bg-white p-8 md:p-16 lg:p-24`}>
-        <h2 className="text-6xl md:text-8xl lg:text-[10rem] font-black text-slate-900 mb-12 tracking-tighter leading-[0.8] break-words">
+        <h2 className="slide-heading mb-8 md:mb-12">
           <FormattedText text={slide.heading} />
         </h2>
-        <div className="text-4xl md:text-5xl lg:text-7xl leading-[1.05] text-slate-700 whitespace-pre-wrap font-medium w-full">
+        <div className="slide-content whitespace-pre-wrap w-full">
           <FormattedText text={slide.content} />
         </div>
       </div>
