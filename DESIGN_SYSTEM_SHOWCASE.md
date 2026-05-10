@@ -264,6 +264,40 @@ Used for: Section layouts, feature grids, hero sections
 
 ---
 
+## Proportional Slide Typography
+
+### Slide Heading (`.slide-heading`) + Content (`.slide-content`)
+
+Maintains consistent 2.0x-2.33x ratio between heading and body text across all screen sizes:
+
+```
+┌─────────────────────────────────────────┐
+│ Slide Title                             │  ← text-5xl (mobile) to text-9xl (desktop)
+│ [48px → 128px]                          │
+│                                         │
+│ This is the slide content and           │  ← text-2xl (mobile) to text-6xl (desktop)
+│ supporting description text that        │  [24px → 60px]
+│ explains the concept.                   │
+│ [Ratio maintained at 1.5x-2.33x]       │
+└─────────────────────────────────────────┘
+
+Mobile:    48px ÷ 24px = 2.0x ✓
+Tablet:    84px ÷ 36px = 2.33x ✓
+Desktop:   128px ÷ 60px = 2.13x ✓
+```
+
+**Applied to:**
+- TheorySlide component
+- ExerciseSlide component
+- DemoSlide component
+- SummarySlide component
+
+**Problem solved:**
+Previously, heading-to-content ratios varied wildly across breakpoints (1.43x to 2.0x),
+causing text to look disproportionate. Now maintains consistent visual balance.
+
+---
+
 ## Cards
 
 ### Card Base (`.card-base`)

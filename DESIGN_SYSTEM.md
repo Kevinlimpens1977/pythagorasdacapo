@@ -187,6 +187,65 @@ Medium heading for subsections.
 
 ---
 
+## Slide Typography Utilities
+
+### `.slide-heading`
+Proportionally-scaled heading for slide content (Theory, Exercise, Demo, Summary slides).
+
+**Usage:**
+```jsx
+<h2 className="slide-heading mb-8">Slide Title</h2>
+```
+
+**Styles:**
+- Mobile: `text-5xl` (48px)
+- Small: `sm:text-6xl` (60px)
+- Tablet: `md:text-7xl` (84px)
+- Desktop: `lg:text-9xl` (128px)
+- Weight: `font-black` (900)
+- Color: `text-slate-900`
+- Spacing: `tracking-tighter leading-[0.85]`
+
+**When to use:**
+- Main heading on Theory/Exercise/Demo/Summary slides
+- Maintains consistent heading-to-content ratio across all breakpoints
+- Replaces inline text-6xl/text-8xl/text-[10rem] styling
+
+---
+
+### `.slide-content`
+Proportionally-scaled body content for slides, maintains 1.5x-1.75x ratio to heading.
+
+**Usage:**
+```jsx
+<div className="slide-content whitespace-pre-wrap">
+  Slide description and content text
+</div>
+```
+
+**Styles:**
+- Mobile: `text-2xl` (24px)
+- Small: `sm:text-3xl` (30px)
+- Tablet: `md:text-4xl` (36px)
+- Desktop: `lg:text-6xl` (60px)
+- Line height: `leading-[1.15]`
+- Color: `text-slate-700`
+- Weight: `font-medium` (500)
+
+**When to use:**
+- Body/descriptive text on slides
+- Always pair with `.slide-heading` for visual consistency
+- Replaces inline text-4xl/text-5xl/text-7xl styling
+
+**Proportional Relationship:**
+The heading-to-content size ratio is consistent across all breakpoints:
+- Mobile: 48px ÷ 24px = 2.0x
+- Small: 60px ÷ 30px = 2.0x
+- Tablet: 84px ÷ 36px = 2.33x
+- Desktop: 128px ÷ 60px = 2.13x
+
+---
+
 ## Text Color Utilities
 
 ### `.text-secondary`
