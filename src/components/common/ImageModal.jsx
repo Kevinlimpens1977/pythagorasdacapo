@@ -28,39 +28,37 @@ export default function ImageModal({ src, alt = 'Afbeelding' }) {
       {/* Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-sm overflow-auto animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
         >
+          {/* Close button - fixed position */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="fixed top-4 right-4 text-white hover:text-blue-400 transition-colors z-[1001] bg-black/50 hover:bg-black/70 rounded-full p-2"
+            title="Sluit afbeelding (of druk ESC)"
+          >
+            <X size={32} strokeWidth={3} />
+          </button>
+
+          {/* Image container - centered with padding */}
           <div
-            className="relative animate-in zoom-in-95 duration-300 my-auto"
+            className="flex items-center justify-center min-h-screen p-4 animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute -top-12 right-0 text-white hover:text-blue-400 transition-colors z-[1000]"
-              title="Sluit afbeelding (of druk ESC)"
-            >
-              <X size={32} strokeWidth={3} />
-            </button>
-
-            {/* Image - 175% zoom */}
             <img
               src={src}
               alt={alt}
-              className="rounded-2xl shadow-2xl"
+              className="rounded-2xl shadow-2xl max-h-[90vh] w-auto"
               style={{
-                maxWidth: '175vw',
-                maxHeight: '175vh',
-                width: 'auto',
-                height: 'auto'
+                transform: 'scale(1.75)',
+                transformOrigin: 'center center'
               }}
             />
+          </div>
 
-            {/* Instructions */}
-            <div className="text-center mt-4 text-white text-sm font-medium">
-              Klik om te sluiten of druk ESC
-            </div>
+          {/* Instructions - fixed position */}
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 text-white text-sm font-medium bg-black/50 px-6 py-3 rounded-full">
+            Klik om te sluiten of druk ESC
           </div>
         </div>
       )}
