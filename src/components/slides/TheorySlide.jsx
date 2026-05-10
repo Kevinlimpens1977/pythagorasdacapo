@@ -1,4 +1,5 @@
 import FormattedText from '../common/FormattedText';
+import ImageModal from '../common/ImageModal';
 
 export default function TheorySlide({ slide }) {
   return (
@@ -16,12 +17,10 @@ export default function TheorySlide({ slide }) {
       {/* Afbeelding Gedeelte (indien aanwezig) */}
       {slide.image && (
         <div className="w-full md:w-1/2 flex justify-center items-center bg-slate-50/30 p-8 lg:p-16">
-          <div className="relative w-full h-full flex items-center justify-center">
-            <img 
-              src={slide.image} 
-              alt={slide.heading} 
-              className="rounded-[3rem] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] object-contain w-full h-full border-[8px] border-white max-h-[75vh]"
-            />
+          <div className="relative w-full h-full flex items-center justify-center max-h-[75vh]">
+            <div className="w-full">
+              <ImageModal src={slide.image} alt={slide.heading} />
+            </div>
           </div>
         </div>
       )}

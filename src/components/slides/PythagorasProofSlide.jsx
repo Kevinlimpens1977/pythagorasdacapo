@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import FormattedText from '../common/FormattedText';
+import ImageModal from '../common/ImageModal';
 import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -111,12 +112,8 @@ export default function PythagorasProofSlide({ slide, chapterId, onVerified, isC
 
         {/* Image if available */}
         {currentStepData.image && (
-          <div className="mb-12 flex justify-center">
-            <img
-              src={currentStepData.image}
-              alt="Instructie afbeelding"
-              className="rounded-[2rem] shadow-lg max-h-[40vh] object-contain"
-            />
+          <div className="mb-12 flex justify-center max-w-xl">
+            <ImageModal src={currentStepData.image} alt="Instructie afbeelding" />
           </div>
         )}
 

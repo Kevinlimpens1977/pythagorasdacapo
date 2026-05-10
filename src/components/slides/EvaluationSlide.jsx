@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, X, HelpCircle } from 'lucide-react';
 import FormattedText from '../common/FormattedText';
+import ImageModal from '../common/ImageModal';
 import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -113,12 +114,8 @@ export default function EvaluationSlide({ slide, chapterId, onVerified, isComple
 
           {/* Image if present */}
           {slide.image && (
-            <div className="mb-12 flex justify-center">
-              <img
-                src={slide.image}
-                alt="Evaluatie afbeelding"
-                className="rounded-[2rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.15)] border-[8px] border-white max-h-[50vh] object-contain"
-              />
+            <div className="mb-12 flex justify-center max-w-xl">
+              <ImageModal src={slide.image} alt="Evaluatie afbeelding" />
             </div>
           )}
 

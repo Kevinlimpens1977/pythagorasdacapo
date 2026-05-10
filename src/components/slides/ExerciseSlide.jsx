@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check, X, HelpCircle, Bot } from 'lucide-react';
 import AITutorChat from './AITutorChat';
 import FormattedText from '../common/FormattedText';
+import ImageModal from '../common/ImageModal';
 import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -176,12 +177,12 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
               <div className="relative w-full space-y-4">
                 {/* Single image */}
                 {slide.image && !slide.images && (
-                  <img src={slide.image} alt="Opgave afbeelding" className="relative rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.15)] border-[8px] border-white w-full object-contain max-h-[50vh]" />
+                  <ImageModal src={slide.image} alt="Opgave afbeelding" />
                 )}
 
                 {/* Multiple images */}
                 {slide.images && slide.images.map((imgSrc, idx) => (
-                  <img key={idx} src={imgSrc} alt={`Opgave afbeelding ${idx + 1}`} className="relative rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.15)] border-[8px] border-white w-full object-contain max-h-[40vh]" />
+                  <ImageModal key={idx} src={imgSrc} alt={`Opgave afbeelding ${idx + 1}`} />
                 ))}
               </div>
             </div>
