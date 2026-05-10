@@ -20,7 +20,7 @@ export default function WelcomeSlide({ onStart }) {
 
         {/* Instructions Box */}
         <div className="bg-white rounded-[3rem] shadow-2xl border-4 border-slate-100 p-12 mb-12">
-          <h2 className="text-4xl font-black text-slate-800 mb-12">
+          <h2 className="heading-lg mb-12">
             📚 Hoe begin je?
           </h2>
 
