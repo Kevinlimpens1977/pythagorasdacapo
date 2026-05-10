@@ -168,7 +168,7 @@ export default function ClassOverview() {
         </button>
 
         <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-8">
-          <div className="p-8 bg-slate-900 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="pad-content bg-slate-900 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex items-center gap-6">
               <div className="w-20 h-20 rounded-2xl bg-blue-500 flex items-center justify-center text-3xl font-black">
                 {(selectedStudent.displayName || "N").charAt(0)}
@@ -190,16 +190,16 @@ export default function ClassOverview() {
             </div>
           </div>
 
-          <div className="p-8">
+          <div className="pad-content">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-              <h3 className="text-2xl font-black text-slate-800">Gemaakte opdrachten</h3>
+              <h3 className="heading-lg">Gemaakte opdrachten</h3>
 
               <div className="w-full md:w-64">
                 <label className="block text-sm font-bold text-slate-600 mb-2">Paragraaf filteren</label>
                 <select
                   value={selectedChapter || ""}
                   onChange={(e) => setSelectedChapter(e.target.value || null)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="input-standard w-full"
                 >
                   <option value="">Alles tonen</option>
                   {CHAPTERS.map(chapter => (
@@ -263,8 +263,8 @@ export default function ClassOverview() {
                                     )}
                                   </div>
                                   <div className="border-l border-slate-100 pl-8 h-12 flex flex-col justify-center">
-                                     <button 
-                                       className="text-blue-600 font-bold hover:underline"
+                                     <button
+                                       className="btn-link"
                                        onClick={() => setViewingExercise({ ex, result })}
                                       >
                                        Bekijk details
@@ -290,7 +290,7 @@ export default function ClassOverview() {
         {viewingExercise && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="pad-compact border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <div>
                   <h4 className="text-2xl font-black text-slate-800">{viewingExercise.ex.heading}</h4>
                   <p className="text-slate-500 font-medium">Gedetailleerde antwoorden</p>
@@ -303,7 +303,7 @@ export default function ClassOverview() {
                 </button>
               </div>
               
-              <div className="p-8 max-h-[60vh] overflow-y-auto">
+              <div className="pad-compact max-h-[60vh] overflow-y-auto">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
