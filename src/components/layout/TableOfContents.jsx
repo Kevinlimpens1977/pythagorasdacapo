@@ -173,6 +173,20 @@ export default function TableOfContents() {
                       )}
                     </div>
                   </div>
+                  {/* Evaluation score badge if available */}
+                  {!locked && (() => {
+                    const evalData = userData?.evaluationData?.[chapter.id];
+                    if (!evalData) return null;
+                    const results = Object.values(evalData);
+                    if (results.length === 0) return null;
+                    const correct = results.filter(r => r.isCorrect).length;
+                    const total = results.length;
+                    return (
+                      <div className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold whitespace-nowrap">
+                        📋 {correct}/{total}
+                      </div>
+                    );
+                  })()}
 
                   <div className="flex items-center gap-4">
                     {!locked && (

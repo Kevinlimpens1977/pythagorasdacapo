@@ -13,6 +13,7 @@ import SummarySlide from './SummarySlide';
 import PythagorasProofSlide from './PythagorasProofSlide';
 import PresentationSlide from './PresentationSlide';
 import EvaluationSlide from './EvaluationSlide';
+import EvaluationSummarySlide from './EvaluationSummarySlide';
 import FormattedText from '../common/FormattedText';
 
 export default function SlideRenderer() {
@@ -71,6 +72,20 @@ export default function SlideRenderer() {
       setIsUnlocked(true);
     }
   }, [currentIndex, slides, userData]);
+
+  // Keyboard navigation: arrow left/right to navigate slides
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') {
+        goNext();
+      } else if (e.key === 'ArrowLeft') {
+        goPrev();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isUnlocked, isAdmin, currentIndex, slides.length]);
 
   if (!slides || slides.length === 0) {
     return (
@@ -138,6 +153,7 @@ export default function SlideRenderer() {
           onVerified={() => handleSlideVerified(currentSlide.id)}
         />
       );
+      case 'evaluation_summary': return <EvaluationSummarySlide key={currentSlide.id} userData={userData} chapterId={chapterId} />;
       case 'demo_exercise': return <DemoSlide key={currentSlide.id} slide={currentSlide} />;
       case 'summary': return <SummarySlide key={currentSlide.id} slide={currentSlide} />;
       default:
@@ -162,7 +178,7 @@ export default function SlideRenderer() {
       {/* Slide Container - Edge to Edge */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col pb-32">
+        <div key={currentSlide.id} className="flex-1 overflow-y-auto custom-scrollbar flex flex-col pb-32 animate-in fade-in duration-300">
            {renderSlideContent()}
         </div>
 

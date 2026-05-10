@@ -777,5 +777,11 @@ export const para73Slides = [
         }
       ]
     }
+  },
+  {
+    id: "p73_eval_summary",
+    type: "evaluation_summary",
+    heading: "Jouw evaluatieresultaat",
+    content: "Hieronder zie je je totaalscore voor de evaluatievragen."
   }
 ];
