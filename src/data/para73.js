@@ -634,17 +634,35 @@ export const para73Slides = [
     id: "p73_eval_01",
     type: "evaluation",
     heading: "Evaluatievraag 1",
-    content: "Bereken de langste zijde van een rechthoekige driehoek met zijdes a = 9 cm en b = 12 cm.\n\nGebruik: c² = a² + b²",
+    content: "Driehoek PQR heeft rechthoekszijdes PQ = 9 cm en QR = 12 cm.\nVul het Pythagoras-schema in om PR te berekenen.",
     questionNumber: 1,
     totalQuestions: 4,
     exercise: {
       type: "multi_input",
       fields: [
         {
-          id: "eval01_c",
-          label: "c =",
+          id: "eval01_pq2",
+          label: "PQ² =",
+          answer: ["81"],
+          hint: "9 × 9 = 81"
+        },
+        {
+          id: "eval01_qr2",
+          label: "QR² =",
+          answer: ["144"],
+          hint: "12 × 12 = 144"
+        },
+        {
+          id: "eval01_sum",
+          label: "PQ² + QR² =",
+          answer: ["225"],
+          hint: "81 + 144 = 225"
+        },
+        {
+          id: "eval01_pr",
+          label: "PR = √225 =",
           answer: ["15", "15,0"],
-          hint: "9² + 12² = 81 + 144 = 225, dus c = √225"
+          hint: "15 × 15 = 225"
         }
       ]
     }
@@ -653,23 +671,35 @@ export const para73Slides = [
     id: "p73_eval_02",
     type: "evaluation",
     heading: "Evaluatievraag 2",
-    content: "Vul het Pythagoras-schema in voor driehoek DEF met DE = 5 cm, EF = 12 cm en DF = ?",
+    content: "Driehoek DEF heeft rechthoekszijdes DE = 5 cm en EF = 12 cm.\nVul het schema in om DF te berekenen.",
     questionNumber: 2,
     totalQuestions: 4,
     exercise: {
       type: "multi_input",
       fields: [
         {
+          id: "eval02_de2",
+          label: "DE² =",
+          answer: ["25"],
+          hint: "5 × 5 = 25"
+        },
+        {
+          id: "eval02_ef2",
+          label: "EF² =",
+          answer: ["144"],
+          hint: "12 × 12 = 144"
+        },
+        {
           id: "eval02_sum",
           label: "DE² + EF² =",
-          answer: ["169", "169,0"],
-          hint: "5² + 12² = 25 + 144"
+          answer: ["169"],
+          hint: "25 + 144 = 169"
         },
         {
           id: "eval02_df",
           label: "DF = √169 =",
           answer: ["13", "13,0"],
-          hint: "√169 = 13 (want 13 × 13 = 169)"
+          hint: "13 × 13 = 169"
         }
       ]
     }
@@ -678,17 +708,35 @@ export const para73Slides = [
     id: "p73_eval_03",
     type: "evaluation",
     heading: "Evaluatievraag 3",
-    content: "Een rechthoek heeft lengte 6 m en breedte 8 m. Bereken de diagonaal.",
+    content: "Een rechthoek is 6 m lang en 8 m breed.\nGebruik het Pythagoras-schema om de diagonaal te berekenen.",
     questionNumber: 3,
     totalQuestions: 4,
     exercise: {
       type: "multi_input",
       fields: [
         {
+          id: "eval03_a2",
+          label: "6² =",
+          answer: ["36"],
+          hint: "6 × 6 = 36"
+        },
+        {
+          id: "eval03_b2",
+          label: "8² =",
+          answer: ["64"],
+          hint: "8 × 8 = 64"
+        },
+        {
+          id: "eval03_sum",
+          label: "6² + 8² =",
+          answer: ["100"],
+          hint: "36 + 64 = 100"
+        },
+        {
           id: "eval03_diag",
-          label: "Diagonaal =",
+          label: "Diagonaal = √100 =",
           answer: ["10", "10,0"],
-          hint: "6² + 8² = 36 + 64 = 100, dus diagonaal = √100"
+          hint: "10 × 10 = 100"
         }
       ]
     }
@@ -697,17 +745,35 @@ export const para73Slides = [
     id: "p73_eval_04",
     type: "evaluation",
     heading: "Evaluatievraag 4",
-    content: "Bij een rechthoekige driehoek ken je beide rechthoekzijdes. Welke zijde kun je met het Pythagoras-schema berekenen?",
+    content: "Driehoek ABC heeft rechthoekszijdes AB = 20 cm en BC = 21 cm.\nBereken de langste zijde AC via het schema.",
     questionNumber: 4,
     totalQuestions: 4,
     exercise: {
       type: "multi_input",
       fields: [
         {
-          id: "eval04_answer",
-          label: "Antwoord:",
-          answer: ["hypotenusa", "langste zijde", "c"],
-          hint: "Met a² + b² = c² bereken je de hypotenusa (langste zijde)"
+          id: "eval04_ab2",
+          label: "AB² =",
+          answer: ["400"],
+          hint: "20 × 20 = 400"
+        },
+        {
+          id: "eval04_bc2",
+          label: "BC² =",
+          answer: ["441"],
+          hint: "21 × 21 = 441"
+        },
+        {
+          id: "eval04_sum",
+          label: "AB² + BC² =",
+          answer: ["841"],
+          hint: "400 + 441 = 841"
+        },
+        {
+          id: "eval04_ac",
+          label: "AC = √841 =",
+          answer: ["29", "29,0"],
+          hint: "29 × 29 = 841"
         }
       ]
     }
