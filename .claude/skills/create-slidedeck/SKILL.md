@@ -201,6 +201,107 @@ python notebooklm_cli.py upload-json ./exports/pythagoras_slidedeck.json --lesso
 
 ---
 
-**Last updated:** 2026-05-10  
-**Version:** 1.0  
-**Created by:** Claude Code + NotebookLM Integration
+## 🆕 Browser Automation Fallback (Tier 2)
+
+**Status:** Production Ready ✓  
+**When it activates:** If NotebookLM API returns no artifact_id (automatic)
+
+The system uses a **two-tier approach**:
+
+1. **Tier 1 (Primary):** CLI/API generation (fast, 2-5min)
+   - Uses NotebookLM Python library
+   - Automatic, no user interaction
+
+2. **Tier 2 (Fallback):** Browser automation via Chromium/Playwright (reliable, 3-8min)
+   - Opens Chromium browser
+   - Automates NotebookLM GUI
+   - Persistent login (stored in `~/.notebooklm/browser_context/`)
+   - **Success rate:** ~90%
+
+### Usage - Direct Python Command
+
+For local generation with fallback:
+
+```bash
+cd c:\Projecten\stelling\ van\ pythagoras
+
+# Syntax
+python notebooklm_upload_and_generate.py \
+  --source <file1> <file2> <file3> \
+  --title "Lesson Title" \
+  --slides 12 \
+  --questions 0
+
+# Example: Para 7.1
+python notebooklm_upload_and_generate.py \
+  --source "boekafbeeldingen/7punt11.jpg" \
+           "boekafbeeldingen/7punt12.jpg" \
+           "boekafbeeldingen/7punt13.jpg" \
+  --title "7.1 Rechthoekige Driehoeken" \
+  --slides 12 \
+  --questions 0
+```
+
+**Important:** Use relative paths without `@` prefix (e.g., `"boekafbeeldingen/7punt11.jpg"` not `@boekafbeeldingen/7punt11.jpg`)
+
+### What Happens (Automated)
+
+1. **Tier 1 Attempt** (silent, ~5 minutes)
+   - Authenticates with NotebookLM
+   - Combines images → PDF
+   - Uploads sources via CLI
+   - Attempts API-based generation
+   
+2. **If Tier 1 Fails** → **Tier 2 Activates** (automatic)
+   - Opens Chromium browser
+   - Navigates to NotebookLM
+   - Finds/creates notebook
+   - Uploads sources via GUI
+   - Clicks Generate → Slidedeck
+   - Enters description
+   - Waits for completion
+   - Downloads PDF
+
+3. **Output** (either tier)
+   - `exports/7-1-rechthoekige-driehoeken_slidedeck.pdf` ✅
+   - `exports/7-1-rechthoekige-driehoeken_metadata.json`
+   - `sources/7-1-rechthoekige-driehoeken_combined.pdf`
+
+### First-Time Setup
+
+```bash
+# Install Playwright
+pip install playwright
+playwright install chromium
+
+# Verify
+python test_browser_automation.py
+```
+
+Expected output:
+```
+Passed: 6/6
+
+[OK] All tests passed! System is ready for browser automation.
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "File not found" | Use relative paths: `"folder/file.jpg"` not `@folder/file.jpg` |
+| "Playwright not installed" | `pip install playwright && playwright install` |
+| Chromium window opens but stuck | This is normal; let it complete (may take 10+ min) |
+| "No persistent context" | First run will ask for Google login (one-time only) |
+
+### Documentation
+
+- **Full guide:** `BROWSER_AUTOMATION.md`
+- **Quick reference:** `QUICK_START_BROWSER_AUTOMATION.md`
+- **Test suite:** `python test_browser_automation.py`
+
+---
+
+**Last updated:** 2026-05-11  
+**Version:** 2.0  
+**Created by:** Claude Code + NotebookLM Integration + Browser Automation

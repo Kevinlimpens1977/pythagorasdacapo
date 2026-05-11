@@ -5,13 +5,15 @@ import AppShell from './components/layout/AppShell';
 import TableOfContents from './components/layout/TableOfContents';
 import SlideRenderer from './components/slides/SlideRenderer';
 import ClassOverview from './components/dashboard/ClassOverview';
+import AdminCropToolPage from './pages/AdminCropToolPage';
+import AdminCmsPage from './pages/AdminCmsPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { currentUser, isAdmin } = useAuth();
-  
+
   if (!currentUser) return <Navigate to="/login" />;
   if (requireAdmin && !isAdmin) return <Navigate to="/" />;
-  
+
   return children;
 };
 
@@ -25,6 +27,16 @@ function AppRoutes() {
         <Route path="dashboard" element={
           <PrivateRoute requireAdmin={true}>
             <ClassOverview />
+          </PrivateRoute>
+        } />
+        <Route path="admin/crop-tool" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminCropToolPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/cms" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminCmsPage />
           </PrivateRoute>
         } />
       </Route>

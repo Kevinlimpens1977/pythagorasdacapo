@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown } from 'lucide-react';
+import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown, Scissors, Zap, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 import { CHAPTERS, getChapterSlides } from '../../data/chapters';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
+import { createDummyData, deleteDummyData, dummyDataExists } from '../../services/dummyDataService';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -72,6 +74,7 @@ function getEvaluationScore(student, chapterId) {
 }
 
 export default function ClassOverview() {
+  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,6 +85,22 @@ export default function ClassOverview() {
   const [selectedChapterForClass, setSelectedChapterForClass] = useState(null);
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [dummyDataActive, setDummyDataActive] = useState(false);
+  const [dummyDataLoading, setDummyDataLoading] = useState(false);
+  const [showDummyConfirmDialog, setShowDummyConfirmDialog] = useState(null);
+
+  // Check if dummy data exists on mount
+  useEffect(() => {
+    const checkDummyData = async () => {
+      try {
+        const exists = await dummyDataExists();
+        setDummyDataActive(exists);
+      } catch (error) {
+        console.error('Error checking dummy data:', error);
+      }
+    };
+    checkDummyData();
+  }, []);
 
   useEffect(() => {
     // Query only students (no orderBy to avoid composite index requirement)
@@ -147,9 +166,44 @@ export default function ClassOverview() {
   }).length;
 
   const warningCount = students.filter(s => s.warning).length;
-  const avgProgress = students.length > 0 
+  const avgProgress = students.length > 0
     ? Math.round(students.reduce((acc, curr) => acc + (curr.progress || 0), 0) / students.length)
     : 0;
+
+  const handleToggleDummyData = async () => {
+    if (dummyDataActive) {
+      // Show confirmation dialog before deleting
+      setShowDummyConfirmDialog('delete');
+    } else {
+      // Create dummy data
+      setDummyDataLoading(true);
+      try {
+        await createDummyData();
+        setDummyDataActive(true);
+        alert('✅ Dummy data created! Go to /admin/cms to test.');
+      } catch (error) {
+        console.error('Error creating dummy data:', error);
+        alert('❌ Error creating dummy data. Check console.');
+      } finally {
+        setDummyDataLoading(false);
+      }
+    }
+  };
+
+  const handleConfirmDeleteDummy = async () => {
+    setDummyDataLoading(true);
+    try {
+      await deleteDummyData();
+      setDummyDataActive(false);
+      setShowDummyConfirmDialog(null);
+      alert('✅ Dummy data deleted!');
+    } catch (error) {
+      console.error('Error deleting dummy data:', error);
+      alert('❌ Error deleting dummy data. Check console.');
+    } finally {
+      setDummyDataLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -407,7 +461,72 @@ export default function ClassOverview() {
           </h1>
           <p className="text-slate-500 mt-1">Real-time overzicht van je leerlingen</p>
         </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate('/admin/crop-tool')}
+            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-md"
+          >
+            <Scissors size={20} />
+            Crop Tool
+          </button>
+          <button
+            onClick={handleToggleDummyData}
+            disabled={dummyDataLoading}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-colors shadow-md disabled:opacity-50 ${
+              dummyDataActive
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-purple-600 hover:bg-purple-700 text-white'
+            }`}
+          >
+            {dummyDataActive ? (
+              <>
+                <Trash2 size={20} />
+                Dummy Data Verwijderen
+              </>
+            ) : (
+              <>
+                <Zap size={20} />
+                Dummy Data Laden
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Confirmation Dialog for Deleting Dummy Data */}
+      {showDummyConfirmDialog === 'delete' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="pad-compact bg-red-50 border-b border-red-200">
+              <h3 className="text-xl font-bold text-red-900">Dummy Data Verwijderen?</h3>
+              <p className="text-red-700 text-sm mt-2">
+                Dit verwijdert al je test data. Je bestaande data (h7, etc.) blijft intact.
+              </p>
+            </div>
+            <div className="pad-compact space-y-4">
+              <p className="text-slate-600 text-sm">
+                Weet je zeker dat je de dummy test data wilt verwijderen?
+              </p>
+            </div>
+            <div className="pad-compact bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+              <button
+                onClick={() => setShowDummyConfirmDialog(null)}
+                disabled={dummyDataLoading}
+                className="px-6 py-2 rounded-lg font-medium bg-slate-200 text-slate-800 hover:bg-slate-300 transition-colors disabled:opacity-50"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={handleConfirmDeleteDummy}
+                disabled={dummyDataLoading}
+                className="px-6 py-2 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {dummyDataLoading ? 'Verwijderen...' : 'Verwijderen'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

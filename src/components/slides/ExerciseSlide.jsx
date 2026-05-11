@@ -1,16 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, X, HelpCircle, Bot } from 'lucide-react';
 import AITutorChat from './AITutorChat';
 import FormattedText from '../common/FormattedText';
 import ImageModal from '../common/ImageModal';
 import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
 
 export default function ExerciseSlide({ slide, chapterId, onVerified, isCompleted }) {
   const { currentUser, isAdmin } = useAuth();
   const fields = slide.exercise?.fields || [];
+  const [crops, setCrops] = useState([]);
+
+  // Load crops from Firestore (shadow document model)
+  useEffect(() => {
+    const loadCrops = async () => {
+      try {
+        // Convert chapterId 'para_73' to paragraphId '7.3'
+        const paragraphId = chapterId.replace('para_', '').replace('_', '.');
+
+        // Path: questionMetadata/{paragraphId}/questions/{questionId}
+        const docRef = doc(db, 'questionMetadata', paragraphId, 'questions', slide.id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists() && docSnap.data().crops) {
+          const sortedCrops = docSnap.data().crops.sort((a, b) => (a.order || 0) - (b.order || 0));
+          setCrops(sortedCrops);
+        }
+      } catch (error) {
+        console.warn(`Failed to load crops for ${slide.id}:`, error);
+      }
+    };
+
+    loadCrops();
+  }, [slide.id, chapterId]);
   
   // Initialize answers with correct answers if already completed
   const [answers, setAnswers] = useState(() => {
@@ -171,12 +195,22 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
           </div>
         </div>
 
-        <div className={`flex flex-col ${slide.image || slide.images ? 'lg:flex-row' : ''} gap-16 lg:gap-32 items-center justify-center`}>
-          {(slide.image || slide.images) && (
+        <div className={`flex flex-col ${slide.image || slide.images || crops.length > 0 ? 'lg:flex-row' : ''} gap-16 lg:gap-32 items-center justify-center`}>
+          {(slide.image || slide.images || crops.length > 0) && (
             <div className="w-full lg:w-1/2 flex flex-col gap-8 justify-center">
               <div className="relative w-full space-y-4">
-                {/* Single image */}
-                {slide.image && !slide.images && (
+                {/* Crops from Firestore (priority) */}
+                {crops.length > 0 && (
+                  crops.map((crop, idx) => (
+                    <div key={crop.cropId}>
+                      <ImageModal src={crop.downloadURL} alt={`Crop ${crop.label || idx + 1}`} />
+                      {crop.label && <p className="text-xs text-gray-600 mt-2 text-center">Afb. {crop.label}</p>}
+                    </div>
+                  ))
+                )}
+
+                {/* Single image (fallback) */}
+                {crops.length === 0 && slide.image && !slide.images && (
                   <ImageModal src={slide.image} alt="Opgave afbeelding" />
                 )}
 
