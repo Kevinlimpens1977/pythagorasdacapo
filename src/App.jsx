@@ -5,6 +5,7 @@ import AppShell from './components/layout/AppShell';
 import TableOfContents from './components/layout/TableOfContents';
 import SlideRenderer from './components/slides/SlideRenderer';
 import ClassOverview from './components/dashboard/ClassOverview';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminCropToolPage from './pages/AdminCropToolPage';
 import AdminCmsPage from './pages/AdminCmsPage';
 
@@ -24,6 +25,11 @@ function AppRoutes() {
       <Route path="/" element={<PrivateRoute><AppShell /></PrivateRoute>}>
         <Route index element={<TableOfContents />} />
         <Route path="chapter/:chapterId" element={<SlideRenderer />} />
+        <Route path="admin" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminDashboardPage />
+          </PrivateRoute>
+        } />
         <Route path="dashboard" element={
           <PrivateRoute requireAdmin={true}>
             <ClassOverview />
