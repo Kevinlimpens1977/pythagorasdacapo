@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
-import { LogOut, User, LayoutDashboard, BookOpen } from 'lucide-react';
+import { LogOut, User, LayoutDashboard, BookOpen, SettingsIcon } from 'lucide-react';
 
 export default function AppShell() {
   const { currentUser, isAdmin, logout } = useAuth();
@@ -22,12 +22,12 @@ export default function AppShell() {
       {/* Header - Premium Glassmorphism */}
       <header className="sticky top-0 z-[100] h-20 bg-white/70 backdrop-blur-2xl border-b border-slate-200/60 px-6 md:px-12 flex items-center justify-between shadow-[0_2px_20px_-10px_rgba(0,0,0,0.05)]">
         <div className="flex items-center gap-8">
-          <h1 
+          <h1
             onClick={() => navigate('/')}
             className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity group"
           >
-            <span className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform -rotate-6 group-hover:rotate-0 transition-transform">📐</span> 
-            <span className="tracking-tight hidden sm:inline">Pythagoras</span>
+            <span className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform -rotate-6 group-hover:rotate-0 transition-transform">📐</span>
+            <span className="tracking-tight hidden sm:inline">Digitaal Leerplatform</span>
           </h1>
           
           <nav className="flex gap-2 p-1 bg-slate-100/50 rounded-2xl border border-slate-200/50">
@@ -43,16 +43,28 @@ export default function AppShell() {
             </button>
             
             {isAdmin && (
-              <button 
-                onClick={() => navigate('/dashboard')}
-                className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
-                  window.location.pathname === '/dashboard' 
-                  ? 'bg-amber-100 text-amber-700 shadow-sm border border-amber-200' 
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                }`}
-              >
-                <LayoutDashboard size={18} /> <span className="hidden md:inline">Klas Dashboard</span>
-              </button>
+              <>
+                <button
+                  onClick={() => navigate('/admin')}
+                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                    window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/')
+                      ? 'bg-purple-100 text-purple-700 shadow-sm border border-purple-200'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                  }`}
+                >
+                  <SettingsIcon size={18} /> <span className="hidden md:inline">Admin Hub</span>
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                    window.location.pathname === '/dashboard'
+                      ? 'bg-amber-100 text-amber-700 shadow-sm border border-amber-200'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                  }`}
+                >
+                  <LayoutDashboard size={18} /> <span className="hidden md:inline">Klas Dashboard</span>
+                </button>
+              </>
             )}
           </nav>
         </div>
