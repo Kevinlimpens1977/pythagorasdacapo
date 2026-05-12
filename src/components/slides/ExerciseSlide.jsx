@@ -7,9 +7,10 @@ import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
+import * as voortgangService from '../../services/voortgangService';
 
 export default function ExerciseSlide({ slide, chapterId, onVerified, isCompleted }) {
-  const { currentUser, isAdmin } = useAuth();
+  const { currentUser, isAdmin, klasData } = useAuth();
   const fields = slide.exercise?.fields || [];
   const [crops, setCrops] = useState([]);
 
@@ -114,7 +115,24 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
       // Correct answer - unlock slide
       if (onVerified) onVerified(true);
 
-      // Save detailed results to Firestore with proper nested structure
+      // Save progress to voortgang collection (new system)
+      if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && klasData?.klasId) {
+        voortgangService.saveVoortgang(
+          currentUser.uid,
+          slide.id,
+          slide.paragraafId,
+          slide.hoofdstukId,
+          klasData.klasId,
+          {
+            completed: true,
+            isCorrect: true,
+            attempts: newAttempts,
+            lastAnswer: answers
+          }
+        ).catch(err => console.error('Error saving voortgang:', err));
+      }
+
+      // Save detailed results to Firestore with proper nested structure (legacy)
       if (currentUser && !isAdmin) {
         const userRef = doc(db, 'users', currentUser.uid);
 
@@ -134,7 +152,24 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
       setShowHints(true);
       setShowAITutor(true);
 
-      // Save attempt to Firestore
+      // Save progress to voortgang collection (new system)
+      if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && klasData?.klasId) {
+        voortgangService.saveVoortgang(
+          currentUser.uid,
+          slide.id,
+          slide.paragraafId,
+          slide.hoofdstukId,
+          klasData.klasId,
+          {
+            completed: false,
+            isCorrect: false,
+            attempts: newAttempts,
+            lastAnswer: answers
+          }
+        ).catch(err => console.error('Error saving voortgang:', err));
+      }
+
+      // Save attempt to Firestore (legacy)
       if (currentUser && !isAdmin) {
         const userRef = doc(db, 'users', currentUser.uid);
         const updateData = {

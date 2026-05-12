@@ -6,9 +6,10 @@ import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
+import * as voortgangService from '../../services/voortgangService';
 
 export default function EvaluationSlide({ slide, chapterId, onVerified, isCompleted }) {
-  const { currentUser, isAdmin } = useAuth();
+  const { currentUser, isAdmin, klasData } = useAuth();
   const fields = slide.exercise?.fields || [];
 
   // Initialize answers with correct answers if already completed
@@ -66,7 +67,24 @@ export default function EvaluationSlide({ slide, chapterId, onVerified, isComple
     setIsEvaluationDone(true);
     if (onVerified) onVerified(true);
 
-    // Save evaluation results to Firestore
+    // Save progress to voortgang collection (new system)
+    if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && klasData?.klasId) {
+      voortgangService.saveVoortgang(
+        currentUser.uid,
+        slide.id,
+        slide.paragraafId,
+        slide.hoofdstukId,
+        klasData.klasId,
+        {
+          completed: true,
+          isCorrect: allCorrect,
+          attempts: newAttempts,
+          lastAnswer: answers
+        }
+      ).catch(err => console.error('Error saving voortgang:', err));
+    }
+
+    // Save evaluation results to Firestore (legacy)
     if (currentUser && !isAdmin) {
       const userRef = doc(db, 'users', currentUser.uid);
       const updateData = {
