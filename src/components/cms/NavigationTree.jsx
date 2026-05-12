@@ -60,7 +60,7 @@ const TreeNode = ({
         <Icon size={16} className="flex-shrink-0" />
 
         {/* Label */}
-        <span className="flex-1 truncate text-sm font-medium">{label}</span>
+        <span className="flex-1 text-sm font-medium">{label}</span>
 
         {/* Create button (hover) */}
         {onCreateChild && level < 5 && (

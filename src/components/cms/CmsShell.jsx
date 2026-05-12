@@ -117,41 +117,53 @@ export default function CmsShell() {
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm flex items-start justify-between">
-        <div className="flex-1">
+        <div className="flex-1 flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">📚 CMS Platform</h1>
 
-          {/* Breadcrumb */}
-          {breadcrumbItems.length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              {breadcrumbItems.map((item, idx) => (
-                <React.Fragment key={item.id}>
-                  <span className="truncate max-w-xs">{item.label}</span>
-                  {idx < breadcrumbItems.length - 1 && (
-                    <ChevronRight size={16} className="flex-shrink-0" />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
+          {/* Header Toggle - Visible when sidebar open */}
+          {sidebarOpen && (
+            <button
+              onClick={handleToggleSidebar}
+              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+              title="Collapse sidebar"
+            >
+              ◄
+            </button>
           )}
         </div>
 
-        {/* Sidebar Toggle Button */}
-        <button
-          onClick={handleToggleSidebar}
-          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 ml-4"
-          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-        >
-          {sidebarOpen ? '◄' : '►'}
-        </button>
+        {/* Breadcrumb */}
+        {breadcrumbItems.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            {breadcrumbItems.map((item, idx) => (
+              <React.Fragment key={item.id}>
+                <span className="truncate max-w-xs">{item.label}</span>
+                {idx < breadcrumbItems.length - 1 && (
+                  <ChevronRight size={16} className="flex-shrink-0" />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Toggle Button - Fixed Left Edge (when sidebar closed) */}
+        {!sidebarOpen && (
+          <button
+            onClick={handleToggleSidebar}
+            className="fixed left-0 top-1/2 transform -translate-y-1/2 z-40 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-r-lg transition-all"
+            title="Expand sidebar"
+          >
+            ►
+          </button>
+        )}
+
         {/* Left Sidebar - Navigation Tree (Collapsible) */}
         <div className={`
-          border-r border-gray-200 bg-white overflow-y-auto transition-all duration-300 ease-in-out
-          ${sidebarOpen ? 'w-80 opacity-100' : 'w-0 opacity-0'}
-          ${!sidebarOpen && 'hidden'}
+          border-r border-gray-200 bg-white overflow-y-auto transition-all duration-300 ease-in-out flex-shrink-0
+          ${sidebarOpen ? 'w-80' : 'w-0'}
         `}>
           <NavigationTree
             vakken={cms.vakken}
