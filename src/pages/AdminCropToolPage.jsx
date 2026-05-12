@@ -8,14 +8,13 @@ import { AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import ImageCanvasEditor from '../components/admin/ImageCanvasEditor';
 import FloatingCropPanel from '../components/admin/FloatingCropPanel';
-import { para71Slides } from '../data/para71';
-import { para73Slides } from '../data/para73';
 
-// Map paragraph IDs to slide data
+// DEPRECATED: This page previously used hardcoded slide data
+// Now all crop management is done via the CMS (DualPanelEditor with integrated crop tool)
+// Legacy paragraph data imports removed
 const PARAGRAPH_DATA = {
-  '7.1': para71Slides,
-  '7.3': para73Slides
-  // More paragraphs can be added here
+  // Crop tool now integrated into CMS DualPanelEditor
+  // Use Admin → CMS → select paragraaf → create vraag → use built-in crop tool
 };
 
 export default function AdminCropToolPage() {

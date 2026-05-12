@@ -4,32 +4,21 @@
  * CMS content is LEADING - chapters that should be migrated must be in Firestore
  */
 
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
-import { getChapterSlides } from '../data/chapters';
-
-// Chapters that have been migrated to Firestore (no fallback)
-const MIGRATED_CHAPTERS = ['voorkennis', 'para_71', 'para_72', 'para_73'];
-
-// Chapters that still use hardcoded data (with fallback allowed)
-const HARDCODED_CHAPTERS = ['para_74', 'para_75', 'para_76'];
 
 /**
  * Get all slides for a chapter
- * MIGRATED chapters: Load from Firestore ONLY (no fallback)
- * HARDCODED chapters: Load from Firestore if available, fallback to hardcoded
+ * All chapters load from Firestore (CMS database)
  *
- * @param {string} chapterId - Chapter ID (e.g., 'voorkennis', 'para_71')
+ * @param {string} chapterId - Chapter ID (e.g., 'para_71')
  * @returns {Promise<Array>} Array of slide objects
  */
 export const getSlidesForChapter = async (chapterId) => {
-  const isMigrated = MIGRATED_CHAPTERS.includes(chapterId);
-  const isHardcoded = HARDCODED_CHAPTERS.includes(chapterId);
-
   try {
-    console.log(`📖 [SlideService] Loading slides for chapter "${chapterId}"${isMigrated ? ' [MIGRATED - no fallback]' : isHardcoded ? ' [HARDCODED - fallback allowed]' : ''}`);
+    console.log(`📖 [SlideService] Loading slides for chapter "${chapterId}"`);
 
-    // Query Firestore for slides in this chapter (no orderBy to avoid composite index requirement)
+    // Query Firestore for slides in this chapter
     const q = query(
       collection(db, 'vraag'),
       where('paragraafId', '==', chapterId)
@@ -45,33 +34,14 @@ export const getSlidesForChapter = async (chapterId) => {
     });
 
     if (snapshot.size > 0) {
-      console.log(`✅ [SlideService] Loaded ${snapshot.size} slides for "${chapterId}" from Firestore`);
+      console.log(`✅ [SlideService] Loaded ${snapshot.size} slides for "${chapterId}"`);
       return docs.map(doc => mapVraagToSlide(doc.data()));
     }
 
-    // No Firestore slides found
-    if (isMigrated) {
-      console.error(`❌ [SlideService] MIGRATED chapter "${chapterId}" has NO Firestore slides! This is an error.`);
-      console.error(`Check Firestore 'vraag' collection - should have documents with paragraafId="${chapterId}"`);
-      return [];
-    }
-
-    if (isHardcoded) {
-      console.warn(`⚠️ [SlideService] No Firestore slides for hardcoded chapter "${chapterId}", using fallback...`);
-      return getChapterSlides(chapterId);
-    }
-
-    // Unknown chapter
-    console.warn(`⚠️ [SlideService] Unknown chapter "${chapterId}" - not in MIGRATED or HARDCODED lists`);
+    console.warn(`⚠️ [SlideService] No slides found for chapter "${chapterId}"`);
     return [];
   } catch (error) {
-    console.error(`❌ [SlideService] Firestore query failed for "${chapterId}":`, error.message);
-
-    if (isHardcoded) {
-      console.warn(`⚠️ [SlideService] Falling back to hardcoded for "${chapterId}"`);
-      return getChapterSlides(chapterId);
-    }
-
+    console.error(`❌ [SlideService] Error loading slides for "${chapterId}":`, error.message);
     return [];
   }
 };

@@ -1,29 +1,21 @@
-import { voorkennisSlides } from './voorkennis';
-import { para71Slides } from './para71';
-import { para72Slides } from './para72';
-import { para73Slides } from './para73';
+/**
+ * CHAPTERS Constant (CMS-driven)
+ *
+ * This file provides compatibility for components that reference CHAPTERS.
+ * In the new system, chapters are loaded from Firestore (CMS database).
+ * This fallback returns an empty array when no chapters exist.
+ *
+ * Legacy: Previously loaded from hardcoded para71.js, para72.js, etc.
+ * New: All chapter data comes from CMS via Firestore 'hoofdstuk' collection
+ */
 
-export const CHAPTERS = [
-  { id: 'voorkennis', title: 'Voorkennis', totalSlides: voorkennisSlides.length, isLocked: false },
-  { id: 'para_71', title: '7.1 Rechthoekige driehoeken', totalSlides: para71Slides.length, prerequisite: 'voorkennis' },
-  { id: 'para_72', title: '7.2 Het Pythagoras-schema', totalSlides: 12, prerequisite: 'para_71' },
-  { id: 'para_73', title: '7.3 Langste zijde berekenen', totalSlides: para73Slides.length, prerequisite: 'para_72' },
-  { id: 'para_74', title: '7.4 Rechthoekszijde berekenen', totalSlides: 14, prerequisite: 'para_73' },
-  { id: 'para_75', title: '7.5 Door elkaar oefenen', totalSlides: 20, prerequisite: 'para_74' },
-  { id: 'para_76', title: '7.6 Pythagoras in het echt', totalSlides: 10, prerequisite: 'para_75' },
-];
+export const CHAPTERS = [];
 
+/**
+ * Legacy function - kept for backwards compatibility
+ * Returns empty array as all chapters now come from CMS
+ */
 export const getChapterSlides = (chapterId) => {
-  switch (chapterId) {
-    case 'voorkennis':
-      return voorkennisSlides;
-    case 'para_71':
-      return para71Slides;
-    case 'para_72':
-      return para72Slides;
-    case 'para_73':
-      return para73Slides;
-    default:
-      return [];
-  }
+  console.warn(`getChapterSlides() is deprecated. Chapters should be loaded from CMS/Firestore.`);
+  return [];
 };
