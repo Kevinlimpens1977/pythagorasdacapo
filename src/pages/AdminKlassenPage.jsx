@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Settings, Trash2, Users, BookMarked } from 'lucide-react';
+import { Plus, Settings, Trash2, Users, BookMarked, ChevronDown } from 'lucide-react';
 import * as klasService from '../services/klasService';
+import * as cmsService from '../services/cmsService';
 import { useAuth } from '../components/auth/AuthProvider';
-import { CHAPTERS } from '../data/chapters';
 
 export default function AdminKlassenPage() {
   const { currentUser } = useAuth();
@@ -13,6 +13,10 @@ export default function AdminKlassenPage() {
   const [error, setError] = useState(null);
   const [selectedKlasId, setSelectedKlasId] = useState(null);
   const [klassesWithStudents, setKlassesWithStudents] = useState({});
+  const [cmsContent, setCmsContent] = useState({});
+  const [contentLoading, setContentLoading] = useState(false);
+  const [expandedHoofdstukken, setExpandedHoofdstukken] = useState({});
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Load all classes
   const loadKlassen = async () => {
@@ -38,6 +42,7 @@ export default function AdminKlassenPage() {
 
   useEffect(() => {
     loadKlassen();
+    loadCmsContent();
   }, []);
 
   const handleCreateClass = async (e) => {
@@ -91,21 +96,119 @@ export default function AdminKlassenPage() {
     }
   };
 
-  const handleToggleChapter = async (klasId, chapterId) => {
+  // Load CMS content hierarchy (Vak > Leerjaar > Niveau > Hoofdstuk > Paragraaf)
+  const loadCmsContent = async () => {
+    try {
+      setContentLoading(true);
+      const vakken = await cmsService.getVakken();
+
+      const content = {};
+      for (const vak of vakken) {
+        const leerjaren = await cmsService.getLeerjaren(vak.id);
+        content[vak.id] = { vak, leerjaren: {} };
+
+        for (const leerjaar of leerjaren) {
+          const niveaus = await cmsService.getNiveaus(leerjaar.id);
+          content[vak.id].leerjaren[leerjaar.id] = { leerjaar, niveaus: {} };
+
+          for (const niveau of niveaus) {
+            const hoofdstukken = await cmsService.getHoofdstukken(niveau.id);
+            content[vak.id].leerjaren[leerjaar.id].niveaus[niveau.id] = { niveau, hoofdstukken: {} };
+
+            for (const hoofdstuk of hoofdstukken) {
+              const paragrafen = await cmsService.getParagrafen(hoofdstuk.id);
+              content[vak.id].leerjaren[leerjaar.id].niveaus[niveau.id].hoofdstukken[hoofdstuk.id] = {
+                hoofdstuk,
+                paragrafen: paragrafen || []
+              };
+            }
+          }
+        }
+      }
+      setCmsContent(content);
+    } catch (err) {
+      console.error('Error loading CMS content:', err);
+      setError('Kon content niet laden');
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
+  // Toggle paragraph for class
+  const handleToggleParagraaf = async (klasId, paragraafId) => {
     try {
       const klas = klassen.find(k => k.id === klasId);
       if (!klas) return;
 
-      const newEnabledChapters = {
-        ...klas.enabledChapters,
-        [chapterId]: !klas.enabledChapters[chapterId]
-      };
+      const currentParagrafen = klas.enabledParagrafen || [];
+      const newParagrafen = currentParagrafen.includes(paragraafId)
+        ? currentParagrafen.filter(id => id !== paragraafId)
+        : [...currentParagrafen, paragraafId];
 
-      await klasService.updateKlasChapters(klasId, newEnabledChapters);
+      await klasService.updateKlasEnabledParagrafen(klasId, newParagrafen);
       await loadKlassen();
     } catch (err) {
-      console.error('Error updating chapters:', err);
-      setError(err.message || 'Kon chapters niet bijwerken');
+      console.error('Error updating paragraaf:', err);
+      setError(err.message || 'Kon paragraaf niet bijwerken');
+    }
+  };
+
+  // Toggle all paragraphs in a chapter
+  const handleToggleHoofdstuk = async (klasId, hoofdstukId) => {
+    try {
+      const klas = klassen.find(k => k.id === klasId);
+      if (!klas) return;
+
+      const paragraafIds = getAllParagrafenForHoofdstuk(hoofdstukId);
+      const currentParagrafen = klas.enabledParagrafen || [];
+
+      const allEnabled = paragraafIds.every(id => currentParagrafen.includes(id));
+
+      let newParagrafen;
+      if (allEnabled) {
+        // Disable all
+        newParagrafen = currentParagrafen.filter(id => !paragraafIds.includes(id));
+      } else {
+        // Enable all
+        newParagrafen = [...new Set([...currentParagrafen, ...paragraafIds])];
+      }
+
+      await klasService.updateKlasEnabledParagrafen(klasId, newParagrafen);
+      await loadKlassen();
+    } catch (err) {
+      console.error('Error updating hoofdstuk:', err);
+      setError(err.message || 'Kon hoofdstuk niet bijwerken');
+    }
+  };
+
+  // Get all paragraph IDs for a chapter
+  const getAllParagrafenForHoofdstuk = (hoofdstukId) => {
+    const result = [];
+    Object.values(cmsContent).forEach(vak => {
+      Object.values(vak.leerjaren).forEach(leerjaar => {
+        Object.values(leerjaar.niveaus).forEach(niveau => {
+          if (niveau.hoofdstukken[hoofdstukId]?.paragrafen) {
+            result.push(...niveau.hoofdstukken[hoofdstukId].paragrafen.map(p => p.id));
+          }
+        });
+      });
+    });
+    return result;
+  };
+
+  // Set student override for extra content
+  const handleSetStudentOverride = async (klasId, studentUid, extraParagraafIds) => {
+    try {
+      if (extraParagraafIds.length === 0) {
+        await klasService.removeStudentOverride(klasId, studentUid);
+      } else {
+        await klasService.setStudentOverride(klasId, studentUid, extraParagraafIds);
+      }
+      await loadKlassen();
+      setSelectedStudent(null);
+    } catch (err) {
+      console.error('Error setting student override:', err);
+      setError(err.message || 'Kon student override niet bijwerken');
     }
   };
 
@@ -263,30 +366,116 @@ export default function AdminKlassenPage() {
                   </div>
                 </div>
 
-                {/* Beschikbare Chapters */}
+                {/* Beschikbare Content (CMS) */}
                 <div className="p-6 border-b border-gray-200">
                   <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <BookMarked size={16} /> Beschikbare Chapters
+                    <BookMarked size={16} /> Lesstof Toewijzing
                   </h4>
 
-                  <div className="space-y-2">
-                    {CHAPTERS.map(chapter => (
-                      <label
-                        key={chapter.id}
-                        className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedKlas.enabledChapters?.[chapter.id] || false}
-                          onChange={() => handleToggleChapter(selectedKlas.id, chapter.id)}
-                          className="w-5 h-5 rounded cursor-pointer"
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">{chapter.title}</div>
+                  {contentLoading ? (
+                    <div className="text-sm text-gray-500">Content laden...</div>
+                  ) : Object.keys(cmsContent).length === 0 ? (
+                    <div className="text-sm text-gray-500">Geen content beschikbaar</div>
+                  ) : (
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {Object.entries(cmsContent).map(([vakId, vakData]) => (
+                        <div key={vakId} className="border border-gray-200 rounded-lg">
+                          {/* Vak Header */}
+                          <div className="bg-gray-50 px-4 py-3 font-semibold text-gray-900">
+                            {vakData.vak?.title || 'Vak'}
+                          </div>
+
+                          {/* Leerjaren */}
+                          <div className="divide-y">
+                            {Object.entries(vakData.leerjaren).map(([leerjaargId, leerjaargData]) => (
+                              <div key={leerjaargId} className="px-4 py-3">
+                                <div className="text-sm font-medium text-gray-700 mb-3">
+                                  📚 {leerjaargData.leerjaar?.title || `Leerjaar ${leerjaargData.leerjaar?.year}`}
+                                </div>
+
+                                {/* Niveaus */}
+                                <div className="space-y-3 ml-4">
+                                  {Object.entries(leerjaargData.niveaus).map(([niveauId, niveauData]) => (
+                                    <div key={niveauId}>
+                                      <div className="text-xs font-semibold text-gray-600 mb-2">
+                                        {niveauData.niveau?.title || 'Niveau'}
+                                      </div>
+
+                                      {/* Hoofdstukken */}
+                                      <div className="space-y-2 ml-3">
+                                        {Object.entries(niveauData.hoofdstukken).map(([hoofdstukId, { hoofdstuk, paragrafen }]) => {
+                                          const currentParagrafen = selectedKlas?.enabledParagrafen || [];
+                                          const paragraafIds = paragrafen.map(p => p.id);
+                                          const allEnabled = paragraafIds.every(id => currentParagrafen.includes(id));
+                                          const someEnabled = paragraafIds.some(id => currentParagrafen.includes(id));
+
+                                          return (
+                                            <div key={hoofdstukId}>
+                                              {/* Hoofdstuk Toggle */}
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <button
+                                                  onClick={() => setExpandedHoofdstukken(prev => ({
+                                                    ...prev,
+                                                    [hoofdstukId]: !prev[hoofdstukId]
+                                                  }))}
+                                                  className="p-1 hover:bg-gray-100 rounded"
+                                                >
+                                                  <ChevronDown
+                                                    size={16}
+                                                    className={`transition-transform ${expandedHoofdstukken[hoofdstukId] ? 'rotate-180' : ''}`}
+                                                  />
+                                                </button>
+                                                <label className="flex items-center gap-2 flex-1 cursor-pointer">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={allEnabled}
+                                                    onChange={() => handleToggleHoofdstuk(selectedKlas.id, hoofdstukId)}
+                                                    className="w-4 h-4 rounded"
+                                                  />
+                                                  <span className="text-sm font-medium text-gray-800">
+                                                    {hoofdstuk?.number && `${hoofdstuk.number}. `}{hoofdstuk?.title}
+                                                  </span>
+                                                </label>
+                                              </div>
+
+                                              {/* Paragrafen */}
+                                              {expandedHoofdstukken[hoofdstukId] && (
+                                                <div className="ml-6 space-y-1 mb-3">
+                                                  {paragrafen.map(paragraaf => {
+                                                    const isEnabled = currentParagrafen.includes(paragraaf.id);
+                                                    return (
+                                                      <label
+                                                        key={paragraaf.id}
+                                                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded text-sm"
+                                                      >
+                                                        <input
+                                                          type="checkbox"
+                                                          checked={isEnabled}
+                                                          onChange={() => handleToggleParagraaf(selectedKlas.id, paragraaf.id)}
+                                                          className="w-4 h-4 rounded"
+                                                        />
+                                                        <span className="text-gray-700">
+                                                          {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                                                        </span>
+                                                      </label>
+                                                    );
+                                                  })}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </label>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Students */}
@@ -302,11 +491,16 @@ export default function AdminKlassenPage() {
                   ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
                       {selectedStudents.map(student => (
-                        <div
+                        <button
                           key={student.uid}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          onClick={() => setSelectedStudent(selectedStudent?.uid === student.uid ? null : student)}
+                          className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
+                            selectedStudent?.uid === student.uid
+                              ? 'bg-blue-50 border-2 border-blue-300'
+                              : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                          }`}
                         >
-                          <div>
+                          <div className="text-left">
                             <div className="font-medium text-gray-900">
                               {student.displayName || 'Geen naam'}
                             </div>
@@ -314,8 +508,72 @@ export default function AdminKlassenPage() {
                               {student.email}
                             </div>
                           </div>
-                        </div>
+                          <div className="text-xs text-gray-500">
+                            {selectedStudent?.uid === student.uid ? '👇' : '👉'}
+                          </div>
+                        </button>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Student Override Panel */}
+                  {selectedStudent && (
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                      <h5 className="font-semibold text-gray-900 mb-3">
+                        Extra taken voor {selectedStudent.displayName}
+                      </h5>
+                      <p className="text-xs text-gray-600 mb-3">
+                        Selecteer aanvullende taken boven op de klasinstelling
+                      </p>
+
+                      <div className="space-y-2 max-h-48 overflow-y-auto mb-3">
+                        {Object.entries(cmsContent).flatMap(([vakId, vakData]) =>
+                          Object.entries(vakData.leerjaren).flatMap(([leerjaargId, leerjaargData]) =>
+                            Object.entries(leerjaargData.niveaus).flatMap(([niveauId, niveauData]) =>
+                              Object.entries(niveauData.hoofdstukken).flatMap(([hoofdstukId, { paragrafen }]) =>
+                                paragrafen.map(paragraaf => {
+                                  const classDefault = selectedKlas?.enabledParagrafen?.includes(paragraaf.id) || false;
+                                  const override = selectedKlas?.studentOverrides?.[selectedStudent.uid]?.extraParagrafen?.includes(paragraaf.id) || false;
+
+                                  return (
+                                    <label
+                                      key={paragraaf.id}
+                                      className="flex items-center gap-2 p-2 hover:bg-white rounded cursor-pointer text-sm"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={override}
+                                        onChange={(e) => {
+                                          const current = selectedKlas?.studentOverrides?.[selectedStudent.uid]?.extraParagrafen || [];
+                                          let updated;
+                                          if (e.target.checked) {
+                                            updated = [...new Set([...current, paragraaf.id])];
+                                          } else {
+                                            updated = current.filter(id => id !== paragraaf.id);
+                                          }
+                                          handleSetStudentOverride(selectedKlas.id, selectedStudent.uid, updated);
+                                        }}
+                                        className="w-4 h-4 rounded"
+                                      />
+                                      <span className={override ? 'font-medium text-gray-900' : 'text-gray-700'}>
+                                        {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                                      </span>
+                                      {classDefault && <span className="text-xs bg-gray-300 px-2 py-0.5 rounded">Klas</span>}
+                                    </label>
+                                  );
+                                })
+                              )
+                            )
+                          )
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => setSelectedStudent(null)}
+                        className="w-full px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium text-gray-900 transition-colors"
+                      >
+                        Gereed
+                      </button>
                     </div>
                   )}
                 </div>
