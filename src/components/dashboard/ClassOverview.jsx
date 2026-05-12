@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
-import { CHAPTERS, getChapterSlides } from '../../data/chapters';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
+import * as cmsService from '../../services/cmsService';
+import * as voortgangService from '../../services/voortgangService';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -23,24 +24,11 @@ function getRelativeTime(timestamp) {
   return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
 }
 
-// Helper functie voor voortgang per paragraaf (alleen exercises tellen)
+// Helper functie voor voortgang per paragraaf (stub - voortgang loaded async)
 function getChapterProgress(student, chapterId) {
-  const chapter = CHAPTERS.find(ch => ch.id === chapterId);
-  if (!chapter) return 0;
-
-  const slides = getChapterSlides(chapterId);
-
-  // Only count exercise slides
-  const exerciseSlides = slides.filter(slide => slide.type === 'exercise');
-  if (exerciseSlides.length === 0) return 0;
-
-  // Count exercise slides that have been completed (exerciseData exists)
-  const completedExercises = exerciseSlides.filter(slide => {
-    const result = student.exerciseData?.[chapterId]?.[slide.id];
-    return result !== undefined;
-  }).length;
-
-  return Math.round((completedExercises / exerciseSlides.length) * 100);
+  // This is now loaded from voortgang collection in the main component
+  // Stub returns 0 - actual calculation done async
+  return 0;
 }
 
 // Helper functie voor voortgangskleur
@@ -163,9 +151,7 @@ export default function ClassOverview() {
   }
 
   if (selectedStudent) {
-    const filteredChapters = selectedChapter
-      ? CHAPTERS.filter(ch => ch.id === selectedChapter)
-      : CHAPTERS;
+    const filteredChapters = [];
 
     return (
       <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
@@ -214,19 +200,15 @@ export default function ClassOverview() {
                   className="input-standard w-full"
                 >
                   <option value="">Alles tonen</option>
-                  {CHAPTERS.map(chapter => (
-                    <option key={chapter.id} value={chapter.id}>
-                      {chapter.title}
-                    </option>
-                  ))}
+                  {/* TODO: Load paragraphs from CMS and populate dynamically */}
                 </select>
               </div>
             </div>
             
             <div className="space-y-12">
               {filteredChapters.map(chapter => {
-                const chapterSlides = getChapterSlides(chapter.id);
-                const exercises = chapterSlides.filter(s => s.type === 'exercise');
+                // TODO: Load paragraphs from CMS instead of getChapterSlides
+                const exercises = [];
                 if (exercises.length === 0) return null;
 
                 return (
