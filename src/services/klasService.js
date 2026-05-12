@@ -13,7 +13,9 @@ import {
   where,
   updateDoc,
   deleteDoc,
-  serverTimestamp
+  deleteField,
+  serverTimestamp,
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -219,6 +221,123 @@ export const deleteKlas = async (klasId) => {
   }
 };
 
+/**
+ * Update enabled paragraphs for a class (new system)
+ * @param {string} klasId
+ * @param {Array<string>} paragraafIds - Array of paragraph IDs (Firestore document IDs)
+ * @returns {Promise<void>}
+ */
+export const updateKlasEnabledParagrafen = async (klasId, paragraafIds) => {
+  if (!klasId || !Array.isArray(paragraafIds)) {
+    throw new Error('klasId and paragraafIds array are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      enabledParagrafen: paragraafIds,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to update class paragraphs: ${error.message}`);
+  }
+};
+
+/**
+ * Set per-student content override (extra paragraphs beyond class default)
+ * @param {string} klasId
+ * @param {string} userId - Student user ID
+ * @param {Array<string>} extraParagraafIds - Extra paragraphs for this student
+ * @returns {Promise<void>}
+ */
+export const setStudentOverride = async (klasId, userId, extraParagraafIds) => {
+  if (!klasId || !userId || !Array.isArray(extraParagraafIds)) {
+    throw new Error('klasId, userId, and extraParagraafIds array are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      [`studentOverrides.${userId}.extraParagrafen`]: extraParagraafIds,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to set student override: ${error.message}`);
+  }
+};
+
+/**
+ * Remove per-student content override
+ * @param {string} klasId
+ * @param {string} userId - Student user ID
+ * @returns {Promise<void>}
+ */
+export const removeStudentOverride = async (klasId, userId) => {
+  if (!klasId || !userId) {
+    throw new Error('klasId and userId are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      [`studentOverrides.${userId}`]: deleteField()
+    });
+  } catch (error) {
+    throw new Error(`Failed to remove student override: ${error.message}`);
+  }
+};
+
+/**
+ * Get effective paragraphs for a student (class default + student overrides)
+ * Pure function - no async needed
+ * @param {Object} klasData - Klas document from Firestore
+ * @param {string} userId - Student user ID
+ * @returns {Array<string>} Array of paragraaf IDs visible to this student
+ */
+export const getStudentEffectiveParagrafen = (klasData, userId) => {
+  if (!klasData || !userId) {
+    return [];
+  }
+
+  // Start with class default enabledParagrafen
+  const baseParagrafen = klasData.enabledParagrafen || [];
+
+  // Add student-specific overrides
+  const studentOverrides = klasData.studentOverrides?.[userId];
+  const extraParagrafen = studentOverrides?.extraParagrafen || [];
+
+  // Merge and deduplicate
+  return [...new Set([...baseParagrafen, ...extraParagrafen])];
+};
+
+/**
+ * Subscribe to klas document changes in real-time
+ * @param {string} klasId
+ * @param {Function} callback - Called with klas data on changes
+ * @returns {Function} Unsubscribe function
+ */
+export const subscribeToKlas = (klasId, callback) => {
+  if (!klasId || typeof callback !== 'function') {
+    throw new Error('klasId and callback function are required');
+  }
+
+  const klasRef = doc(db, 'klassen', klasId);
+  return onSnapshot(
+    klasRef,
+    (docSnap) => {
+      if (docSnap.exists()) {
+        callback({ ...docSnap.data(), id: docSnap.id });
+      } else {
+        callback(null);
+      }
+    },
+    (error) => {
+      console.error('Error subscribing to klas:', error);
+      callback(null);
+    }
+  );
+};
+
 export default {
   createKlas,
   getAvailableKlassen,
@@ -227,5 +346,10 @@ export default {
   getKlasStudents,
   updateKlasSettings,
   updateKlasChapters,
-  deleteKlas
+  deleteKlas,
+  updateKlasEnabledParagrafen,
+  setStudentOverride,
+  removeStudentOverride,
+  getStudentEffectiveParagrafen,
+  subscribeToKlas
 };
