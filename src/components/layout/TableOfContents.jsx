@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Lock, PlayCircle, CheckCircle2, HelpCircle } from 'lucide-react';
+import { Lock, PlayCircle, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import { CHAPTERS } from '../../data/chapters';
 
@@ -46,87 +46,6 @@ export default function TableOfContents() {
 
   return (
     <div className="w-full max-w-6xl mx-auto pad-content">
-      {/* Admin-only login instructions */}
-      {isAdmin && (
-        <div className="mb-8 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl shadow-md border-2 border-amber-200 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-6 flex items-center gap-3">
-            <HelpCircle size={32} />
-            <h2 className="text-2xl font-black">Leerlingen inloggen uitleg</h2>
-          </div>
-
-          <div className="p-8">
-            <p className="text-lg text-slate-600 mb-8">
-              Deel deze instructies met je leerlingen zodat zij correct kunnen inloggen:
-            </p>
-
-            <div className="space-y-6 bg-white rounded-xl p-8 border-2 border-amber-100">
-              <div className="flex gap-6 items-start">
-                <div className="w-12 h-12 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center flex-shrink-0 font-black text-lg">
-                  1
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-800 mb-2">Account aanmaken</h3>
-                  <p className="text-slate-600 text-lg">
-                    Ga naar <strong className="text-blue-600 font-bold">pythagorasdacapo.vercel.app</strong>
-                  </p>
-                  <p className="text-slate-600 text-lg">
-                    Klik op "Account aanmaken"
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-6 items-start">
-                <div className="w-12 h-12 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center flex-shrink-0 font-black text-lg">
-                  2
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-800 mb-2">Vul je gegevens in</h3>
-                  <div className="space-y-2 text-slate-600 text-lg">
-                    <p>• <strong>Naam:</strong> Je volledige naam</p>
-                    <p>• <strong>Schoolemail:</strong> .....@leerling.dacapo-college.nl</p>
-                    <p>• <strong>Wachtwoord:</strong> Een sterk, veilig wachtwoord</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-6 items-start">
-                <div className="w-12 h-12 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center flex-shrink-0 font-black text-lg">
-                  3
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-800 mb-2">Inloggen</h3>
-                  <p className="text-slate-600 text-lg">
-                    Log in met je emailadres en wachtwoord
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-6 items-start">
-                <div className="w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center flex-shrink-0 font-black text-lg">
-                  4
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-800 mb-2">Begin met de opgaven</h3>
-                  <p className="text-slate-600 text-lg mb-3">
-                    Volg deze volgorde:
-                  </p>
-                  <div className="space-y-2 text-slate-600 text-lg font-medium">
-                    <p>✓ <strong>Voorkennis</strong> - maak alles</p>
-                    <p>✓ <strong>Paragraaf 7.1</strong> - maak alles</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-              <p className="text-slate-700 font-medium">
-                💡 <strong>Tip:</strong> Je kunt de voortgang van leerlingen volgen via het "Klas Dashboard"
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         
         <div className="bg-slate-800 text-white p-6 sm:p-8">
