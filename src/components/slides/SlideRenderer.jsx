@@ -32,8 +32,11 @@ export default function SlideRenderer() {
       setLoading(true);
       try {
         // Check class-based access (unless admin)
-        if (!isAdmin && klasData && klasData.enabledChapters) {
-          const hasAccess = klasData.enabledChapters[chapterId] === true;
+        if (!isAdmin && klasData) {
+          // New system: enabledParagrafen array
+          // Fallback: enabledChapters map (legacy)
+          const hasAccess = klasData.enabledParagrafen?.includes(chapterId) ||
+                            klasData.enabledChapters?.[chapterId] === true;
           if (!hasAccess) {
             console.warn(`❌ [SlideRenderer] Student denied access to chapter ${chapterId}`);
             alert(`❌ Dit chapter is nog niet beschikbaar voor jouw klas. Neem contact op met je docent.`);

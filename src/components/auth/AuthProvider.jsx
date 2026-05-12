@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
-import * as klasService from '../../services/klasService';
 
 const AuthContext = createContext();
 
@@ -14,7 +13,7 @@ export function AuthProvider({ children }) {
   const [klasData, setKlasData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load klas data when klasId changes
+  // Real-time listener for klas data when klasId changes
   useEffect(() => {
     if (!userData?.klasId) {
       setKlasId(null);
@@ -22,18 +21,22 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    const loadKlasData = async () => {
-      try {
-        const klas = await klasService.getKlas(userData.klasId);
-        setKlasId(userData.klasId);
-        setKlasData(klas);
-      } catch (error) {
-        console.error('Error loading klas data:', error);
+    setKlasId(userData.klasId);
+
+    // Subscribe to klas document changes in real-time
+    const klasRef = doc(db, 'klassen', userData.klasId);
+    const unsubscribeKlas = onSnapshot(klasRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setKlasData({ ...docSnap.data(), id: docSnap.id });
+      } else {
         setKlasData(null);
       }
-    };
+    }, (error) => {
+      console.error('Error loading klas data:', error);
+      setKlasData(null);
+    });
 
-    loadKlasData();
+    return () => unsubscribeKlas();
   }, [userData?.klasId]);
 
   useEffect(() => {

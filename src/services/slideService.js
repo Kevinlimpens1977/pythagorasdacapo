@@ -4,7 +4,7 @@
  * CMS content is LEADING - chapters that should be migrated must be in Firestore
  */
 
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 /**
@@ -17,6 +17,18 @@ import { db } from './firebase';
 export const getSlidesForChapter = async (chapterId) => {
   try {
     console.log(`📖 [SlideService] Loading slides for chapter "${chapterId}"`);
+
+    // Load paragraph to get hoofdstukId
+    let paragraaf = null;
+    try {
+      const paragraafRef = doc(db, 'paragraaf', chapterId);
+      const paragraafSnap = await getDoc(paragraafRef);
+      if (paragraafSnap.exists()) {
+        paragraaf = { id: paragraafSnap.id, ...paragraafSnap.data() };
+      }
+    } catch (error) {
+      console.warn(`⚠️ [SlideService] Could not load paragraph ${chapterId}:`, error.message);
+    }
 
     // Query Firestore for slides in this chapter
     const q = query(
@@ -35,7 +47,9 @@ export const getSlidesForChapter = async (chapterId) => {
 
     if (snapshot.size > 0) {
       console.log(`✅ [SlideService] Loaded ${snapshot.size} slides for "${chapterId}"`);
-      return docs.map(doc => mapVraagToSlide(doc.data()));
+      return docs.map(vraagDoc =>
+        mapVraagToSlide(vraagDoc.data(), chapterId, paragraaf?.hoofdstukId)
+      );
     }
 
     console.warn(`⚠️ [SlideService] No slides found for chapter "${chapterId}"`);
@@ -49,10 +63,12 @@ export const getSlidesForChapter = async (chapterId) => {
 /**
  * Map a Firestore vraag document to slide schema
  * @param {Object} vraagDoc - Firestore vraag document
+ * @param {string} paragraafId - Parent paragraph ID
+ * @param {string} hoofdstukId - Parent chapter ID
  * @returns {Object} Slide object compatible with SlideRenderer
  * @private
  */
-export const mapVraagToSlide = (vraagDoc) => {
+export const mapVraagToSlide = (vraagDoc, paragraafId = null, hoofdstukId = null) => {
   return {
     // Identity
     id: vraagDoc.id,
@@ -81,6 +97,10 @@ export const mapVraagToSlide = (vraagDoc) => {
 
     // Hints and settings
     hints: vraagDoc.vraagMetadata?.hints || [],
+
+    // Progress tracking (for voortgangService)
+    paragraafId: paragraafId || vraagDoc.paragraafId || null,
+    hoofdstukId: hoofdstukId || null,
 
     // Raw Firestore data (for reference)
     _firestoreId: vraagDoc.id,
