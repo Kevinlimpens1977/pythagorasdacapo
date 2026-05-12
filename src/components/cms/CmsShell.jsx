@@ -162,8 +162,8 @@ export default function CmsShell() {
 
         {/* Left Sidebar - Navigation Tree (Collapsible) */}
         <div className={`
-          border-r border-gray-200 bg-white overflow-y-auto transition-all duration-300 ease-in-out
-          ${sidebarOpen ? 'w-auto min-w-80 max-w-2xl flex-shrink' : 'w-0 overflow-hidden'}
+          border-r border-gray-200 bg-white overflow-y-auto transition-all duration-300 ease-in-out flex-shrink-0
+          ${sidebarOpen ? 'w-auto min-w-80 max-w-2xl translate-x-0' : '-translate-x-full'}
         `}>
           <NavigationTree
             vakken={cms.vakken}
