@@ -31,28 +31,33 @@ export default function CropSelectionOverlay({
     y: Math.round((y - panOffset.y) / zoom / imageData.canvasHeight * imageData.height)
   });
 
-  // Convert original image space to display coordinates
+  // Convert original image space to SVG coordinates (NOT including zoom - zoom is applied by CSS transform)
   const originalToDisplay = (origX, origY) => ({
-    x: origX / imageData.width * imageData.canvasWidth * zoom + panOffset.x,
-    y: origY / imageData.height * imageData.canvasHeight * zoom + panOffset.y
+    x: origX / imageData.width * imageData.canvasWidth + panOffset.x / zoom,
+    y: origY / imageData.height * imageData.canvasHeight + panOffset.y / zoom
   });
 
-  // Get mouse position relative to SVG (accounting for zoom and pan)
+  // Get mouse position relative to SVG (accounting for zoom, pan, and browser zoom)
   const getMousePos = (e) => {
     const svg = svgRef.current;
     if (!svg) return { x: 0, y: 0 };
-    const rect = svg.getBoundingClientRect();
 
-    // Visual coordinates on screen (what we see)
-    const visualX = e.clientX - rect.left;
-    const visualY = e.clientY - rect.top;
+    // Use SVG's native point transformation to handle all zoom levels correctly
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
 
-    // Convert to SVG internal coordinates by accounting for zoom and pan
-    // Parent div has: transform: translate(panOffset) scale(zoom)
-    // So: svg_coords = (visual_coords - panOffset) / zoom
+    // Get the CTM (Current Transformation Matrix) of the SVG
+    // This accounts for all CSS transforms including browser zoom
+    const screenCTM = svg.getScreenCTM();
+    if (!screenCTM) return { x: 0, y: 0 };
+
+    // Invert the transformation to get SVG coordinates
+    const svgPoint = point.matrixTransform(screenCTM.inverse());
+
     return {
-      x: (visualX - panOffset.x) / zoom,
-      y: (visualY - panOffset.y) / zoom
+      x: svgPoint.x,
+      y: svgPoint.y
     };
   };
 

@@ -2,16 +2,86 @@
  * CmsShell Component
  * Main layout for CMS
  * Left: Navigation tree
- * Right: Content editor (placeholder for now)
+ * Right: Content editor or detail panel
  */
 
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronRight, Plus, Trash2 } from 'lucide-react';
 import NavigationTree from './NavigationTree';
+import DualPanelEditor from './DualPanelEditor';
+import CreateQuestionModal from './CreateQuestionModal';
+import CreateContentModal from './CreateContentModal';
 import useCms from '../../hooks/useCms';
+import * as cmsService from '../../services/cmsService';
+import { auth } from '../../services/firebase';
 
 export default function CmsShell() {
   const cms = useCms();
+  const [isEditing, setIsEditing] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createModal, setCreateModal] = useState(null); // { type, parentId }
+  const [archiveLoading, setArchiveLoading] = useState(false);
+
+  // Unified selection handler for tree
+  const handleSelect = (selection) => {
+    switch (selection.type) {
+      case 'vak':
+        cms.setVak(selection.id);
+        break;
+      case 'leerjaar':
+        cms.setLeerjaar(selection.id);
+        break;
+      case 'niveau':
+        cms.setNiveau(selection.id);
+        break;
+      case 'hoofdstuk':
+        cms.setHoofdstuk(selection.id);
+        break;
+      case 'paragraaf':
+        cms.setParagraaf(selection.id);
+        break;
+      case 'vraag':
+        cms.setVraag(selection.id);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Handle archiving
+  const handleArchive = async (type, id) => {
+    if (!window.confirm(`Are you sure you want to archive this ${type}?`)) {
+      return;
+    }
+
+    try {
+      setArchiveLoading(true);
+      switch (type) {
+        case 'vak':
+          await cmsService.archiveVak(id);
+          cms.loadVakken();
+          break;
+        case 'leerjaar':
+          await cmsService.archiveLeerjaar(id);
+          cms.loadLeerjaren(cms.selectedVakId);
+          break;
+        case 'niveau':
+          await cmsService.archiveNiveau(id);
+          cms.loadNiveaus(cms.selectedLeerjaarId);
+          break;
+        case 'hoofdstuk':
+          await cmsService.archiveHoofdstuk(id);
+          cms.loadHoofdstukken(cms.selectedNiveauId);
+          break;
+        default:
+          break;
+      }
+    } catch (err) {
+      alert('Error archiving: ' + err.message);
+    } finally {
+      setArchiveLoading(false);
+    }
+  };
 
   // Build breadcrumb
   const breadcrumbItems = [
@@ -61,17 +131,20 @@ export default function CmsShell() {
             selectedHoofdstukId={cms.selectedHoofdstukId}
             selectedParagraafId={cms.selectedParagraafId}
             selectedVraagId={cms.selectedVraagId}
-            onSelectVak={cms.setVak}
-            onSelectLeerjaar={cms.setLeerjaar}
-            onSelectNiveau={cms.setNiveau}
-            onSelectHoofdstuk={cms.setHoofdstuk}
-            onSelectParagraaf={cms.setParagraaf}
-            onSelectVraag={cms.setVraag}
-            loading={cms.loading}
+            onSelect={handleSelect}
+            onCreateVak={() => setCreateModal({ type: 'vak', parentId: null })}
+            onCreateLeerjaar={(vakId) => setCreateModal({ type: 'leerjaar', parentId: vakId })}
+            onCreateNiveau={(leerjaarId) => setCreateModal({ type: 'niveau', parentId: leerjaarId })}
+            onCreateHoofdstuk={(niveauId) => setCreateModal({ type: 'hoofdstuk', parentId: niveauId })}
+            onCreateParagraaf={(hoofdstukId) => setCreateModal({ type: 'paragraaf', parentId: hoofdstukId })}
+            onCreateVraag={(paragraafId) => {
+              cms.setParagraaf(paragraafId);
+              setShowCreateModal(true);
+            }}
           />
         </div>
 
-        {/* Right Panel - Content Editor */}
+        {/* Right Panel - Content Editor or Detail Panel */}
         <div className="flex-1 overflow-y-auto p-6">
           {cms.loading && (
             <div className="flex items-center justify-center h-full">
@@ -86,100 +159,288 @@ export default function CmsShell() {
             </div>
           )}
 
-          {!cms.loading && !cms.error && cms.selectedVraagId && cms.currentVraag && (
+          {/* VAK Detail Panel */}
+          {!cms.loading && !cms.error && cms.selectedVakId && !cms.selectedLeerjaarId && cms.currentVak && (
+            <div className="max-w-2xl">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">📚 {cms.currentVak.name}</h2>
+                <p className="text-gray-600 text-sm mb-6">{cms.currentVak.description || 'No description'}</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCreateModal({ type: 'leerjaar', parentId: cms.selectedVakId })}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    <Plus size={16} />
+                    Voeg Schooljaar toe
+                  </button>
+                  <button
+                    onClick={() => handleArchive('vak', cms.selectedVakId)}
+                    disabled={archiveLoading}
+                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    <Trash2 size={16} />
+                    Archiveren
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* LEERJAAR Detail Panel */}
+          {!cms.loading && !cms.error && cms.selectedLeerjaarId && !cms.selectedNiveauId && cms.currentLeerjaar && (
+            <div className="max-w-2xl">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">📅 Jaar {cms.currentLeerjaar.year}</h2>
+                <p className="text-gray-600 text-sm mb-6">{cms.currentLeerjaar.label || ''}</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCreateModal({ type: 'niveau', parentId: cms.selectedLeerjaarId })}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    <Plus size={16} />
+                    Voeg Niveau toe
+                  </button>
+                  <button
+                    onClick={() => handleArchive('leerjaar', cms.selectedLeerjaarId)}
+                    disabled={archiveLoading}
+                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    <Trash2 size={16} />
+                    Archiveren
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* NIVEAU Detail Panel */}
+          {!cms.loading && !cms.error && cms.selectedNiveauId && !cms.selectedHoofdstukId && cms.currentNiveau && (
+            <div className="max-w-2xl">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-1">📊 {cms.currentNiveau.label}</h2>
+                <p className="text-gray-600 text-sm mb-6">{cms.currentNiveau.description || 'No description'}</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCreateModal({ type: 'hoofdstuk', parentId: cms.selectedNiveauId })}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    <Plus size={16} />
+                    Voeg Hoofdstuk toe
+                  </button>
+                  <button
+                    onClick={() => handleArchive('niveau', cms.selectedNiveauId)}
+                    disabled={archiveLoading}
+                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    <Trash2 size={16} />
+                    Archiveren
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* HOOFDSTUK Detail Panel */}
+          {!cms.loading && !cms.error && cms.selectedHoofdstukId && !cms.selectedParagraafId && cms.currentHoofdstuk && (
+            <div className="max-w-2xl">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-1">📖 {cms.currentHoofdstuk.number}. {cms.currentHoofdstuk.title}</h2>
+                <p className="text-gray-600 text-sm mb-6">{cms.currentHoofdstuk.description || 'No description'}</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-blue-900"><strong>Paragrafen:</strong> {cms.paragrafen.length}</p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCreateModal({ type: 'paragraaf', parentId: cms.selectedHoofdstukId })}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    <Plus size={16} />
+                    Voeg Paragraaf toe
+                  </button>
+                  <button
+                    onClick={() => handleArchive('hoofdstuk', cms.selectedHoofdstukId)}
+                    disabled={archiveLoading}
+                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    <Trash2 size={16} />
+                    Archiveren
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PARAGRAAF Detail Panel with Questions */}
+          {!cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
             <div className="max-w-4xl">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  {cms.currentVraag.number}. {cms.currentVraag.title}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-1">
+                  {cms.currentParagraaf.code}. {cms.currentParagraaf.title}
                 </h2>
+                <p className="text-gray-500 text-sm mb-8">{cms.currentParagraaf.beschrijving}</p>
 
-                <div className="text-sm text-gray-600 mb-6">
-                  <p>Type: <span className="font-semibold text-gray-900">{cms.currentVraag.vraagtype}</span></p>
-                  <p>Status: <span className="font-semibold text-gray-900">{cms.currentVraag.status || 'draft'}</span></p>
-                </div>
-
-                <div className="border-t border-gray-200 pt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Question Content</h3>
-                  <div className="bg-gray-50 p-4 rounded-lg text-gray-700 text-sm">
-                    {cms.currentVraag.content?.text ? (
-                      <div dangerouslySetInnerHTML={{ __html: cms.currentVraag.content.text }} />
-                    ) : (
-                      <p className="text-gray-500">No content yet</p>
-                    )}
+                <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4 mb-8 border border-gray-100">
+                  <div>
+                    <p className="text-sm text-gray-600">Questions in this paragraph</p>
+                    <p className="text-2xl font-bold text-gray-900">{cms.vragen.length}</p>
                   </div>
+                  <div className="text-4xl text-gray-300">❓</div>
                 </div>
 
-                {cms.currentVraag.vraagMetadata && (
-                  <div className="border-t border-gray-200 pt-6 mt-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Metadata</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Difficulty</p>
-                        <p className="font-semibold text-gray-900">
-                          {'⭐'.repeat(cms.currentVraag.vraagMetadata.difficulty || 3)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Calculator</p>
-                        <p className="font-semibold text-gray-900">
-                          {cms.currentVraag.vraagMetadata.showCalculator ? '✓ Yes' : '✗ No'}
-                        </p>
-                      </div>
-                      {cms.currentVraag.vraagMetadata.hints?.length > 0 && (
-                        <div className="col-span-2">
-                          <p className="text-sm text-gray-600">Hints ({cms.currentVraag.vraagMetadata.hints.length})</p>
-                          <ul className="text-sm text-gray-700 space-y-1">
-                            {cms.currentVraag.vraagMetadata.hints.map((hint, idx) => (
-                              <li key={idx} className="text-gray-600">• {hint}</li>
-                            ))}
-                          </ul>
-                        </div>
+                <div>
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+                    <Plus size={16} />
+                    Add Question
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VRAAG Edit/View Mode */}
+          {!cms.loading && !cms.error && cms.selectedVraagId && cms.currentVraag && (
+            <>
+              {isEditing ? (
+                // Dual-panel edit mode
+                <DualPanelEditor
+                  vraag={cms.currentVraag}
+                  paragraafId={cms.selectedParagraafId}
+                  paragraafCode={cms.currentParagraaf?.code}
+                  onSave={() => {
+                    setIsEditing(false);
+                    cms.loadVragen(cms.selectedParagraafId);
+                  }}
+                  onCancel={() => setIsEditing(false)}
+                />
+              ) : (
+                // Read-only mode
+                <div className="max-w-4xl">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-900 mb-1">
+                        Vraag {cms.currentVraag.number}
+                      </h2>
+                      <p className="text-gray-500 text-sm">{cms.currentVraag.title}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                        {cms.currentVraag.vraagtype}
+                      </span>
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                        cms.currentVraag.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                      }`}>
+                        {cms.currentVraag.status || 'draft'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mb-8 pb-8 border-b border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Question Content</h3>
+                    <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+                      {cms.currentVraag.content?.text ? (
+                        <div dangerouslySetInnerHTML={{ __html: cms.currentVraag.content.text }} />
+                      ) : (
+                        <p className="text-gray-400 italic">No content added yet</p>
                       )}
                     </div>
                   </div>
-                )}
 
-                <div className="border-t border-gray-200 pt-6 mt-6">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                    Edit Question
-                  </button>
+                  {cms.currentVraag.vraagMetadata && (
+                    <div className="mb-8 pb-8 border-b border-gray-200">
+                      <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Settings</h3>
+                      <div className="grid grid-cols-3 gap-6">
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Difficulty</p>
+                          <p className="text-lg">{'⭐'.repeat(cms.currentVraag.vraagMetadata.difficulty || 3)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Calculator</p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {cms.currentVraag.vraagMetadata.showCalculator ? '✓ Enabled' : '✗ Disabled'}
+                          </p>
+                        </div>
+                        {cms.currentVraag.vraagMetadata.hints?.length > 0 && (
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Hints</p>
+                            <p className="text-sm font-medium text-gray-900">{cms.currentVraag.vraagMetadata.hints.length} hint{cms.currentVraag.vraagMetadata.hints.length !== 1 ? 's' : ''}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                      ✏️ Edit Question
+                    </button>
+                  </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
 
-          {!cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
-            <div className="max-w-4xl">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  {cms.currentParagraaf.code}. {cms.currentParagraaf.title}
-                </h2>
-                <p className="text-gray-600 mb-6">{cms.currentParagraaf.beschrijving}</p>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-blue-900">
-                    <span className="font-semibold">Questions in this paragraph:</span> {cms.vragen.length}
-                  </p>
-                </div>
-
-                <div className="mt-6">
-                  <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                    + Add Question
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!cms.loading && !cms.error && !cms.selectedParagraafId && (
+          {/* Empty State */}
+          {!cms.loading && !cms.error && !cms.selectedVakId && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <p className="text-gray-500 text-lg">Select a paragraph to get started</p>
+                <p className="text-gray-500 text-lg">Select content from the tree to get started</p>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Create Content Modal (for vak, leerjaar, niveau, hoofdstuk, paragraaf) */}
+      {createModal && (
+        <CreateContentModal
+          type={createModal.type}
+          parentId={createModal.parentId}
+          onCreated={async (newId, type) => {
+            // Refresh parent data and auto-select new item
+            switch (type) {
+              case 'vak':
+                await cms.loadVakken();
+                cms.setVak(newId);
+                break;
+              case 'leerjaar':
+                await cms.loadLeerjaren(createModal.parentId);
+                cms.setLeerjaar(newId);
+                break;
+              case 'niveau':
+                await cms.loadNiveaus(createModal.parentId);
+                cms.setNiveau(newId);
+                break;
+              case 'hoofdstuk':
+                await cms.loadHoofdstukken(createModal.parentId);
+                cms.setHoofdstuk(newId);
+                break;
+              case 'paragraaf':
+                await cms.loadParagrafen(createModal.parentId);
+                cms.setParagraaf(newId);
+                break;
+              default:
+                break;
+            }
+            setCreateModal(null);
+          }}
+          onClose={() => setCreateModal(null)}
+        />
+      )}
+
+      {/* Create Question Modal */}
+      {showCreateModal && (
+        <CreateQuestionModal
+          paragraafId={cms.selectedParagraafId}
+          existingVragen={cms.vragen}
+          onQuestionCreated={async (vraagId) => {
+            // Wait for vragen to load before selecting
+            await cms.loadVragen(cms.selectedParagraafId);
+            cms.setVraag(vraagId);
+            // Auto-open editor for new question
+            setShowCreateModal(false);
+            setIsEditing(true);
+          }}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
     </div>
   );
 }

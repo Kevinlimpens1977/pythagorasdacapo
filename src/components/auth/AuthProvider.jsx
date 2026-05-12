@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
+import * as klasService from '../../services/klasService';
 
 const AuthContext = createContext();
 
@@ -9,7 +10,31 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [klasId, setKlasId] = useState(null);
+  const [klasData, setKlasData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Load klas data when klasId changes
+  useEffect(() => {
+    if (!userData?.klasId) {
+      setKlasId(null);
+      setKlasData(null);
+      return;
+    }
+
+    const loadKlasData = async () => {
+      try {
+        const klas = await klasService.getKlas(userData.klasId);
+        setKlasId(userData.klasId);
+        setKlasData(klas);
+      } catch (error) {
+        console.error('Error loading klas data:', error);
+        setKlasData(null);
+      }
+    };
+
+    loadKlasData();
+  }, [userData?.klasId]);
 
   useEffect(() => {
     let unsubscribeSnapshot = null;
@@ -18,7 +43,7 @@ export function AuthProvider({ children }) {
       if (user) {
         try {
           const userRef = doc(db, 'users', user.uid);
-          
+
           // Set up real-time listener for user data
           unsubscribeSnapshot = onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
@@ -70,13 +95,14 @@ export function AuthProvider({ children }) {
               lastActive: new Date(),
               completedChapters: [],
               completedSlides: [],
-              needsNameSetup: !user.displayName || user.displayName.trim() === ''
+              needsNameSetup: !user.displayName || user.displayName.trim() === '',
+              klasId: null
             };
             await setDoc(userRef, initialData);
           }
         } catch (error) {
           console.error("Error fetching/creating user doc:", error);
-          setUserRole(user.email === 'kevlimpens@gmail.com' ? 'admin' : 'student'); 
+          setUserRole(user.email === 'kevlimpens@gmail.com' ? 'admin' : 'student');
         }
         setCurrentUser(user);
       } else {
@@ -84,6 +110,8 @@ export function AuthProvider({ children }) {
         setCurrentUser(null);
         setUserData(null);
         setUserRole(null);
+        setKlasId(null);
+        setKlasData(null);
       }
       setLoading(false);
     });
@@ -110,6 +138,8 @@ export function AuthProvider({ children }) {
     currentUser,
     userRole,
     userData,
+    klasId,
+    klasData,
     isAdmin: userRole === 'admin',
     isStudent: userRole === 'student',
     loginAsRole,

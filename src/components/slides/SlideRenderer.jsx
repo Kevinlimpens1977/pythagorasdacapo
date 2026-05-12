@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ArrowLeftCircle, ArrowRightCircle, CheckCircle } from 'lucide-react';
-import { getChapterSlides } from '../../data/chapters';
+import { getSlidesForChapter } from '../../services/slideService';
 import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
@@ -19,12 +19,44 @@ import FormattedText from '../common/FormattedText';
 export default function SlideRenderer() {
   const { chapterId } = useParams();
   const navigate = useNavigate();
-  const { currentUser, isAdmin, userData } = useAuth();
+  const { currentUser, isAdmin, userData, klasData } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isUnlocked, setIsUnlocked] = useState(true);
   const [showLockWarning, setShowLockWarning] = useState(false);
-  
-  const slides = getChapterSlides(chapterId);
+  const [slides, setSlides] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load slides from Firestore & check access
+  useEffect(() => {
+    const loadSlides = async () => {
+      setLoading(true);
+      try {
+        // Check class-based access (unless admin)
+        if (!isAdmin && klasData && klasData.enabledChapters) {
+          const hasAccess = klasData.enabledChapters[chapterId] === true;
+          if (!hasAccess) {
+            console.warn(`❌ [SlideRenderer] Student denied access to chapter ${chapterId}`);
+            alert(`❌ Dit chapter is nog niet beschikbaar voor jouw klas. Neem contact op met je docent.`);
+            navigate('/');
+            return;
+          }
+        }
+
+        const loadedSlides = await getSlidesForChapter(chapterId);
+        setSlides(loadedSlides);
+        setCurrentIndex(0);
+      } catch (error) {
+        console.error('Error loading slides:', error);
+        setSlides([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (chapterId) {
+      loadSlides();
+    }
+  }, [chapterId, isAdmin, klasData, navigate]);
 
   // Reset warnings when slide changes
   useEffect(() => {
@@ -87,13 +119,23 @@ export default function SlideRenderer() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isUnlocked, isAdmin, currentIndex, slides.length]);
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col p-8 items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Slides laden...</h2>
+        </div>
+      </div>
+    );
+  }
+
   if (!slides || slides.length === 0) {
     return (
       <div className="flex-1 flex flex-col p-8 items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
           <h2 className="text-2xl font-bold text-slate-800 mb-4">Hoofdstuk niet gevonden</h2>
           <p className="text-slate-500 mb-6">Er zijn geen slides beschikbaar voor deze sectie.</p>
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="px-6 py-2 bg-slate-800 text-white rounded-xl font-medium"
           >

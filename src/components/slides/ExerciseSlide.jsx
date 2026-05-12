@@ -109,10 +109,11 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
     setStatus(newStatus);
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
-    
-    if (allCorrect || newAttempts >= 3) {
+
+    if (allCorrect) {
+      // Correct answer - unlock slide
       if (onVerified) onVerified(true);
-      
+
       // Save detailed results to Firestore with proper nested structure
       if (currentUser && !isAdmin) {
         const userRef = doc(db, 'users', currentUser.uid);
@@ -123,13 +124,28 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
           [`exerciseData.${chapterId}.${slide.id}.attempts`]: newAttempts,
           [`exerciseData.${chapterId}.${slide.id}.isCorrect`]: allCorrect,
           [`exerciseData.${chapterId}.${slide.id}.timestamp`]: new Date(),
-          warning: allCorrect ? null : `Moeite met "${slide.heading}" (${newAttempts} pogingen)`
+          warning: null
         };
 
         updateDoc(userRef, updateData).catch(err => console.error("Error saving detailed results:", err));
       }
     } else {
+      // Wrong answer - show hints and auto-open AI tutor
       setShowHints(true);
+      setShowAITutor(true);
+
+      // Save attempt to Firestore
+      if (currentUser && !isAdmin) {
+        const userRef = doc(db, 'users', currentUser.uid);
+        const updateData = {
+          [`exerciseData.${chapterId}.${slide.id}.answers`]: answers,
+          [`exerciseData.${chapterId}.${slide.id}.attempts`]: newAttempts,
+          [`exerciseData.${chapterId}.${slide.id}.isCorrect`]: false,
+          [`exerciseData.${chapterId}.${slide.id}.timestamp`]: new Date(),
+          warning: `Moeite met "${slide.heading}" (${newAttempts} pogingen)`
+        };
+        updateDoc(userRef, updateData).catch(err => console.error("Error saving attempt:", err));
+      }
     }
   };
 
@@ -324,11 +340,8 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
               )}
 
               {attempts > 0 && !showAITutor && !isRevealed && (
-                <button 
-                  onClick={() => {
-                    setToast("Deze knop werkt vandaag nog niet");
-                    setTimeout(() => setToast(null), 3000);
-                  }}
+                <button
+                  onClick={() => setShowAITutor(true)}
                   className="px-10 py-6 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-4 border-indigo-100 text-3xl lg:text-4xl font-black rounded-[2.5rem] shadow-xl transition-all hover:-translate-y-2 flex items-center gap-6"
                 >
                   <Bot size={36} /> AI Hulp
@@ -341,7 +354,11 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
       
       {showAITutor && (
         <div className="w-full xl:w-[500px] flex-shrink-0 animate-in fade-in slide-in-from-right-8 duration-300">
-          <AITutorChat onClose={() => setShowAITutor(false)} contextHeading={slide.heading} />
+          <AITutorChat
+            onClose={() => setShowAITutor(false)}
+            contextHeading={slide.heading}
+            hints={slide.hints || []}
+          />
         </div>
       )}
 

@@ -29,18 +29,24 @@ import { db } from './firebase';
  */
 export const getVakken = async () => {
   try {
+    console.log('🔍 [CMS] Fetching vakken from "vak" collection...');
     const q = query(
       collection(db, 'vak'),
       where('isActive', '==', true),
       orderBy('order', 'asc')
     );
     const querySnapshot = await getDocs(q);
+    console.log(`✅ [CMS] Fetched ${querySnapshot.docs.length} vakken`);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
   } catch (error) {
-    console.error('Error fetching vakken:', error);
+    console.error('❌ [CMS] Error fetching vakken:', {
+      code: error.code,
+      message: error.message,
+      fullError: error,
+    });
     return [];
   }
 };
@@ -239,17 +245,24 @@ export const getParagraaf = async (paragraafId) => {
  */
 export const getVragen = async (paragraafId) => {
   try {
+    // Simplified query - no orderBy to avoid index requirement
+    // We'll sort in JavaScript instead
     const q = query(
       collection(db, 'vraag'),
       where('paragraafId', '==', paragraafId),
-      where('isArchived', '==', false),
-      orderBy('order', 'asc')
+      where('isArchived', '==', false)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+
+    // Sort by order field in memory
+    const vragen = querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    return vragen;
   } catch (error) {
     console.error(`Error fetching vragen for ${paragraafId}:`, error);
     return [];
@@ -442,6 +455,330 @@ export const archiveVraag = async (vraagId) => {
   }
 };
 
+/**
+ * ==================== NEW WRITE OPERATIONS: VAK, LEERJAAR, NIVEAU, HOOFDSTUK ====================
+ */
+
+/**
+ * Create a new subject (vak)
+ * @param {Object} data - { name, description, order }
+ * @param {string} userId - Admin user ID
+ * @returns {Promise<string>} New vak ID
+ */
+export const createVak = async (data, userId) => {
+  try {
+    const vakId = `vak-${data.name.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+
+    // Get next order
+    const vakken = await getVakken();
+    const nextOrder = Math.max(...vakken.map(v => v.order || 0), 0) + 1;
+
+    await setDoc(doc(db, 'vak', vakId), {
+      id: vakId,
+      name: data.name,
+      description: data.description || '',
+      order: data.order || nextOrder,
+      isActive: true,
+      createdBy: userId,
+      createdAt: serverTimestamp()
+    });
+
+    return vakId;
+  } catch (error) {
+    console.error('Error creating vak:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a subject (vak)
+ * @param {string} vakId
+ * @param {Object} data - Fields to update
+ * @returns {Promise<void>}
+ */
+export const updateVak = async (vakId, data) => {
+  try {
+    await updateDoc(doc(db, 'vak', vakId), {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error(`Error updating vak ${vakId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Archive a subject (soft delete)
+ * @param {string} vakId
+ * @returns {Promise<void>}
+ */
+export const archiveVak = async (vakId) => {
+  try {
+    await updateVak(vakId, { isActive: false });
+  } catch (error) {
+    console.error(`Error archiving vak ${vakId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new school year (leerjaar)
+ * @param {string} vakId - Parent vak ID
+ * @param {Object} data - { year, label }
+ * @param {string} userId - Admin user ID
+ * @returns {Promise<string>} New leerjaar ID
+ */
+export const createLeerjaar = async (vakId, data, userId) => {
+  try {
+    const vak = await getVak(vakId);
+    if (!vak) throw new Error('Vak not found');
+
+    const leerjaarId = `leerjaar-${vakId}-jaar${data.year}-${Date.now()}`;
+
+    // Get next order
+    const leerjaren = await getLeerjaren(vakId);
+    const nextOrder = Math.max(...leerjaren.map(l => l.order || 0), 0) + 1;
+
+    await setDoc(doc(db, 'leerjaar', leerjaarId), {
+      id: leerjaarId,
+      vakId,
+      year: data.year,
+      label: data.label || `Jaar ${data.year}`,
+      order: nextOrder,
+      isActive: true,
+      createdBy: userId,
+      createdAt: serverTimestamp()
+    });
+
+    return leerjaarId;
+  } catch (error) {
+    console.error('Error creating leerjaar:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a school year (leerjaar)
+ * @param {string} leerjaarId
+ * @param {Object} data - Fields to update
+ * @returns {Promise<void>}
+ */
+export const updateLeerjaar = async (leerjaarId, data) => {
+  try {
+    await updateDoc(doc(db, 'leerjaar', leerjaarId), {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error(`Error updating leerjaar ${leerjaarId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Archive a school year (soft delete)
+ * @param {string} leerjaarId
+ * @returns {Promise<void>}
+ */
+export const archiveLeerjaar = async (leerjaarId) => {
+  try {
+    await updateLeerjaar(leerjaarId, { isActive: false });
+  } catch (error) {
+    console.error(`Error archiving leerjaar ${leerjaarId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new level (niveau)
+ * @param {string} leerjaarId - Parent leerjaar ID
+ * @param {Object} data - { label, name, description }
+ * @param {string} userId - Admin user ID
+ * @returns {Promise<string>} New niveau ID
+ */
+export const createNiveau = async (leerjaarId, data, userId) => {
+  try {
+    const leerjaar = await getLeerjaar(leerjaarId);
+    if (!leerjaar) throw new Error('Leerjaar not found');
+
+    const niveauId = `niveau-${leerjaarId}-${data.label.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+
+    // Get next order
+    const niveaus = await getNiveaus(leerjaarId);
+    const nextOrder = Math.max(...niveaus.map(n => n.order || 0), 0) + 1;
+
+    await setDoc(doc(db, 'niveau', niveauId), {
+      id: niveauId,
+      leerjaarId,
+      vakId: leerjaar.vakId,
+      label: data.label,
+      name: data.name || data.label,
+      description: data.description || '',
+      order: nextOrder,
+      isActive: true,
+      createdBy: userId,
+      createdAt: serverTimestamp()
+    });
+
+    return niveauId;
+  } catch (error) {
+    console.error('Error creating niveau:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a level (niveau)
+ * @param {string} niveauId
+ * @param {Object} data - Fields to update
+ * @returns {Promise<void>}
+ */
+export const updateNiveau = async (niveauId, data) => {
+  try {
+    await updateDoc(doc(db, 'niveau', niveauId), {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error(`Error updating niveau ${niveauId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Archive a level (soft delete)
+ * @param {string} niveauId
+ * @returns {Promise<void>}
+ */
+export const archiveNiveau = async (niveauId) => {
+  try {
+    await updateNiveau(niveauId, { isActive: false });
+  } catch (error) {
+    console.error(`Error archiving niveau ${niveauId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new chapter (hoofdstuk)
+ * @param {string} niveauId - Parent niveau ID
+ * @param {Object} data - { number, title, description }
+ * @param {string} userId - Admin user ID
+ * @returns {Promise<string>} New hoofdstuk ID
+ */
+export const createHoofdstuk = async (niveauId, data, userId) => {
+  try {
+    const niveau = await getNiveau(niveauId);
+    if (!niveau) throw new Error('Niveau not found');
+
+    const hoofdstukId = `hoofdstuk-${niveauId}-${data.number}-${Date.now()}`;
+
+    // Get next order
+    const hoofdstukken = await getHoofdstukken(niveauId);
+    const nextOrder = Math.max(...hoofdstukken.map(h => h.order || 0), 0) + 1;
+
+    await setDoc(doc(db, 'hoofdstuk', hoofdstukId), {
+      id: hoofdstukId,
+      niveauId,
+      leerjaarId: niveau.leerjaarId,
+      vakId: niveau.vakId,
+      number: data.number,
+      title: data.title,
+      description: data.description || '',
+      order: data.order || nextOrder,
+      published: false,  // Draft by default
+      isArchived: false,
+      createdBy: userId,
+      createdAt: serverTimestamp()
+    });
+
+    return hoofdstukId;
+  } catch (error) {
+    console.error('Error creating hoofdstuk:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update a chapter (hoofdstuk)
+ * @param {string} hoofdstukId
+ * @param {Object} data - Fields to update
+ * @returns {Promise<void>}
+ */
+export const updateHoofdstuk = async (hoofdstukId, data) => {
+  try {
+    await updateDoc(doc(db, 'hoofdstuk', hoofdstukId), {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error(`Error updating hoofdstuk ${hoofdstukId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Archive a chapter (soft delete)
+ * @param {string} hoofdstukId
+ * @returns {Promise<void>}
+ */
+export const archiveHoofdstuk = async (hoofdstukId) => {
+  try {
+    await updateHoofdstuk(hoofdstukId, { isArchived: true });
+  } catch (error) {
+    console.error(`Error archiving hoofdstuk ${hoofdstukId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get all chapters for admin (without published filter)
+ * @param {string} niveauId
+ * @returns {Promise<Array>} Array of hoofdstuk documents
+ */
+export const getHoofdstukkenForAdmin = async (niveauId) => {
+  try {
+    const q = query(
+      collection(db, 'hoofdstuk'),
+      where('niveauId', '==', niveauId),
+      where('isArchived', '==', false),
+      orderBy('order', 'asc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error(`Error fetching hoofdstukken for admin:`, error);
+    return [];
+  }
+};
+
+/**
+ * Get all chapters across all niveaus (for klassen page)
+ * @returns {Promise<Array>} Array of all hoofdstuk documents
+ */
+export const getAllHoofdstukken = async () => {
+  try {
+    const q = query(
+      collection(db, 'hoofdstuk'),
+      where('isArchived', '==', false),
+      orderBy('vakId', 'asc'),
+      orderBy('order', 'asc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error fetching all hoofdstukken:', error);
+    return [];
+  }
+};
+
 export default {
   // Read
   getVakken,
@@ -452,11 +789,29 @@ export default {
   getNiveau,
   getHoofdstukken,
   getHoofdstuk,
+  getHoofdstukkenForAdmin,
+  getAllHoofdstukken,
   getParagrafen,
   getParagraaf,
   getVragen,
   getVraag,
-  // Write
+  // Write - Vak
+  createVak,
+  updateVak,
+  archiveVak,
+  // Write - Leerjaar
+  createLeerjaar,
+  updateLeerjaar,
+  archiveLeerjaar,
+  // Write - Niveau
+  createNiveau,
+  updateNiveau,
+  archiveNiveau,
+  // Write - Hoofdstuk
+  createHoofdstuk,
+  updateHoofdstuk,
+  archiveHoofdstuk,
+  // Write - Paragraaf & Vraag
   createParagraaf,
   createVraag,
   updateParagraaf,

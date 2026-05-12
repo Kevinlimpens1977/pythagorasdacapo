@@ -8,6 +8,9 @@ import ClassOverview from './components/dashboard/ClassOverview';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminCropToolPage from './pages/AdminCropToolPage';
 import AdminCmsPage from './pages/AdminCmsPage';
+import AdminKlassenPage from './pages/AdminKlassenPage';
+import AdminDigibordPage from './pages/AdminDigibordPage';
+import ClassSelectionModal from './components/auth/ClassSelectionModal';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { currentUser, isAdmin } = useAuth();
@@ -45,8 +48,27 @@ function AppRoutes() {
             <AdminCmsPage />
           </PrivateRoute>
         } />
+        <Route path="admin/klassen" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminKlassenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/digibord" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminDigibordPage />
+          </PrivateRoute>
+        } />
       </Route>
     </Routes>
+  );
+}
+
+function AppWithModal() {
+  return (
+    <>
+      <AppRoutes />
+      <ClassSelectionModal />
+    </>
   );
 }
 
@@ -54,7 +76,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <AppRoutes />
+        <AppWithModal />
       </Router>
     </AuthProvider>
   );

@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, X } from 'lucide-react';
 import { askAiTutorCall } from '../../lib/api';
 
-export default function AITutorChat({ onClose, contextHeading }) {
+export default function AITutorChat({ onClose, contextHeading, hints = [] }) {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: `Hallo! Ik zie dat je vastloopt bij "${contextHeading}". Waar kan ik je precies mee helpen?` }
+    { role: 'assistant', content: `Hallo! Je hebt een fout antwoord gegeven bij "${contextHeading}". Ik help je het zelf te bedenken — ik geef je het antwoord niet direct. Je kunt de volgende vraag pas openen als je het juiste antwoord hebt. Vertel me: waar ben je nu?` }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showHints, setShowHints] = useState(hints.length > 0);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -32,7 +33,7 @@ export default function AITutorChat({ onClose, contextHeading }) {
       // Stuur alle voorgaande berichten mee (behalve het huidige user bericht)
       const previousMessages = currentMessages.slice(0, -1).map(m => ({ role: m.role, content: m.content }));
 
-      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages);
+      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints);
       
       if (response && response.success) {
         setMessages(prev => [...prev, { 
@@ -68,6 +69,27 @@ export default function AITutorChat({ onClose, contextHeading }) {
           <X size={20} />
         </button>
       </div>
+
+      {/* Hints Section */}
+      {hints.length > 0 && (
+        <div className="bg-blue-50 border-b border-blue-200 p-4">
+          <button
+            onClick={() => setShowHints(!showHints)}
+            className="w-full text-left font-semibold text-blue-700 text-sm hover:text-blue-800 transition-colors"
+          >
+            {showHints ? '▼' : '▶'} Beschikbare hints ({hints.length})
+          </button>
+          {showHints && (
+            <div className="mt-3 space-y-2">
+              {hints.map((hint, idx) => (
+                <div key={idx} className="bg-white border border-blue-200 rounded-lg p-2 text-sm text-slate-700">
+                  <span className="font-semibold text-blue-600">💡 Hint {idx + 1}:</span> {hint}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

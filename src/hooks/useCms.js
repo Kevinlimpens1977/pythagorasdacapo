@@ -172,6 +172,27 @@ export const useCms = () => {
     }
   }, []);
 
+  // ============ LOAD ALL VRAGEN FOR ENTIRE HOOFDSTUK (for tree rendering) ============
+  useEffect(() => {
+    if (selectedHoofdstukId && paragrafen.length > 0) {
+      loadAllVragenForHoofdstuk(paragrafen);
+    }
+  }, [selectedHoofdstukId, paragrafen]);
+
+  const loadAllVragenForHoofdstuk = useCallback(async (paragraafList) => {
+    try {
+      // Load vragen for all paragrafen in this hoofdstuk
+      const allVragen = [];
+      for (const paragraaf of paragraafList) {
+        const data = await cmsService.getVragen(paragraaf.id);
+        allVragen.push(...data);
+      }
+      setVragen(allVragen);
+    } catch (err) {
+      console.error('Failed to load all vragen for hoofdstuk:', err);
+    }
+  }, []);
+
   // ============ LOAD VRAGEN (when paragraaf changes) ============
   useEffect(() => {
     if (selectedParagraafId) {
@@ -188,12 +209,9 @@ export const useCms = () => {
       setError(null);
       const data = await cmsService.getVragen(paragraafId);
       setVragen(data);
-      // Auto-select first vraag
-      if (data.length > 0) {
-        setSelectedVraagId(data[0].id);
-      } else {
-        setSelectedVraagId(null);
-      }
+      // DON'T auto-select first vraag - show paragraaf overview instead
+      // User can click on a specific vraag in the tree if needed
+      setSelectedVraagId(null);
     } catch (err) {
       setError('Failed to load vragen: ' + err.message);
       console.error(err);

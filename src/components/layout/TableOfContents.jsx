@@ -5,7 +5,12 @@ import { CHAPTERS } from '../../data/chapters';
 
 export default function TableOfContents() {
   const navigate = useNavigate();
-  const { isAdmin, userData } = useAuth();
+  const { isAdmin, userData, klasData } = useAuth();
+
+  // Filter chapters based on class settings
+  const visibleChapters = isAdmin
+    ? CHAPTERS
+    : CHAPTERS.filter(ch => klasData?.enabledChapters?.[ch.id] === true || !klasData);
 
   const isChapterLocked = (chapter) => {
     if (isAdmin) return false;
@@ -134,7 +139,7 @@ export default function TableOfContents() {
 
         <div className="p-6 md:p-8">
           <div className="space-y-4 md:space-y-6">
-            {CHAPTERS.map((chapter) => {
+            {visibleChapters.map((chapter) => {
               const status = getChapterStatus(chapter);
               const locked = status === 'locked';
               

@@ -1,10 +1,11 @@
 /**
- * NavigationTree Component
- * Expandable hierarchy: Vak → Leerjaar → Niveau → Hoofdstuk → Paragraaf → Vraag
+ * NavigationTree Component (ENHANCED)
+ * Expandable hierarchy with inline "+ Create" buttons
+ * Vak → Leerjaar → Niveau → Hoofdstuk → Paragraaf → Vraag
  */
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, BookOpen, BarChart3, Layers, FileText, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, BookOpen, BarChart3, Layers, FileText, HelpCircle, Plus } from 'lucide-react';
 
 const TreeNode = ({
   label,
@@ -15,7 +16,8 @@ const TreeNode = ({
   isSelected,
   onSelect,
   expandedIds,
-  onToggleExpand
+  onToggleExpand,
+  onCreateChild
 }) => {
   const isExpanded = expandedIds.includes(id);
   const hasChildren = children.length > 0;
@@ -25,10 +27,10 @@ const TreeNode = ({
       {/* Node Row */}
       <div
         className={`
-          flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg transition-colors
+          flex items-center gap-2 px-3 py-2 cursor-pointer rounded-md transition-all border-l-3 group
           ${isSelected
-            ? 'bg-blue-500 text-white font-semibold'
-            : 'hover:bg-gray-100 text-gray-800'
+            ? 'bg-gray-50 text-gray-900 font-semibold border-l-blue-500'
+            : 'hover:bg-gray-50 text-gray-700 border-l-transparent'
           }
         `}
         onClick={() => onSelect(id)}
@@ -49,7 +51,7 @@ const TreeNode = ({
             )}
           </button>
         ) : (
-          <div className="w-4" /> // Spacer
+          <div className="w-4" />
         )}
 
         {/* Icon */}
@@ -57,6 +59,20 @@ const TreeNode = ({
 
         {/* Label */}
         <span className="flex-1 truncate text-sm font-medium">{label}</span>
+
+        {/* Create button (hover) */}
+        {onCreateChild && level < 5 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCreateChild(id);
+            }}
+            className="p-1 opacity-0 group-hover:opacity-100 transition-opacity text-blue-600 hover:bg-blue-50 rounded"
+            title="Create child"
+          >
+            <Plus size={14} />
+          </button>
+        )}
 
         {/* Level indicator (badge) */}
         <span className="text-xs opacity-60 flex-shrink-0">
@@ -76,10 +92,9 @@ const TreeNode = ({
             <TreeNode
               key={child.id}
               {...child}
-              isSelected={child.id === (typeof child.isSelected === 'function' ? child.isSelected(child.id) : child.isSelected)}
-              onSelect={onSelect}
               expandedIds={expandedIds}
               onToggleExpand={onToggleExpand}
+              onCreateChild={onCreateChild}
             />
           ))}
         </div>
@@ -101,152 +116,163 @@ export default function NavigationTree({
   selectedHoofdstukId,
   selectedParagraafId,
   selectedVraagId,
-  onSelectVak,
-  onSelectLeerjaar,
-  onSelectNiveau,
-  onSelectHoofdstuk,
-  onSelectParagraaf,
-  onSelectVraag,
-  loading
+  onSelect,
+  onCreateVak,
+  onCreateLeerjaar,
+  onCreateNiveau,
+  onCreateHoofdstuk,
+  onCreateParagraaf,
+  onCreateVraag
 }) {
   const [expandedIds, setExpandedIds] = useState([]);
 
-  const handleToggleExpand = (id) => {
-    setExpandedIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id]
+  const toggleExpand = (id) => {
+    setExpandedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
+  };
+
+  const handleCreateChild = (parentId) => {
+    // Determine parent type and call appropriate handler
+    const vak = vakken.find(v => v.id === parentId);
+    if (vak) {
+      onCreateLeerjaar?.(parentId);
+      return;
+    }
+
+    const leerjaar = leerjaren.find(l => l.id === parentId);
+    if (leerjaar) {
+      onCreateNiveau?.(parentId);
+      return;
+    }
+
+    const niveau = niveaus.find(n => n.id === parentId);
+    if (niveau) {
+      onCreateHoofdstuk?.(parentId);
+      return;
+    }
+
+    const hoofdstuk = hoofdstukken.find(h => h.id === parentId);
+    if (hoofdstuk) {
+      onCreateParagraaf?.(parentId);
+      return;
+    }
+
+    const paragraaf = paragrafen.find(p => p.id === parentId);
+    if (paragraaf) {
+      onCreateVraag?.(parentId);
+    }
   };
 
   // Build tree structure
-  const buildTree = () => {
-    return vakken.map((vak) => {
-      const vakLeerjaren = leerjaren.filter((l) => l.vakId === vak.id);
-      const vakNiveaus = niveaus.filter((n) =>
-        vakLeerjaren.find((l) => l.id === n.leerjaarId)
-      );
-      const vakHoofdstukken = hoofdstukken.filter((h) =>
-        vakNiveaus.find((n) => n.id === h.niveauId)
-      );
-      const vakParagrafen = paragrafen.filter((p) =>
-        vakHoofdstukken.find((h) => h.id === p.hoofdstukId)
-      );
-
-      const leerjaarNodes = vakLeerjaren.map((leerjaar) => {
-        const leerjaarNiveaus = niveaus.filter((n) => n.leerjaarId === leerjaar.id);
-        const leerjaarHoofdstukken = hoofdstukken.filter((h) =>
-          leerjaarNiveaus.find((n) => n.id === h.niveauId)
-        );
-
-        const niveauNodes = leerjaarNiveaus.map((niveau) => {
-          const niveauHoofdstukken = hoofdstukken.filter(
-            (h) => h.niveauId === niveau.id
-          );
-
-          const hoofdstukNodes = niveauHoofdstukken.map((hoofdstuk) => {
-            const hoofdstukParagrafen = paragrafen.filter(
-              (p) => p.hoofdstukId === hoofdstuk.id
-            );
-
-            const paragraafNodes = hoofdstukParagrafen.map((paragraaf) => {
-              const paragraafVragen = vragen.filter(
-                (v) => v.paragraafId === paragraaf.id
-              );
-
-              return {
-                id: paragraaf.id,
-                label: `${paragraaf.code} ${paragraaf.title}`,
-                icon: FileText,
-                level: 4,
-                isSelected: paragraaf.id === selectedParagraafId,
-                onSelect: onSelectParagraaf,
-                children: paragraafVragen.map((vraag) => ({
-                  id: vraag.id,
-                  label: `${vraag.number} ${vraag.title}`,
-                  icon: HelpCircle,
-                  level: 5,
-                  isSelected: vraag.id === selectedVraagId,
-                  onSelect: onSelectVraag,
-                  children: []
-                }))
-              };
-            });
-
-            return {
-              id: hoofdstuk.id,
-              label: `${hoofdstuk.number}. ${hoofdstuk.title}`,
-              icon: BookOpen,
-              level: 3,
-              isSelected: hoofdstuk.id === selectedHoofdstukId,
-              onSelect: onSelectHoofdstuk,
-              children: paragraafNodes
-            };
-          });
-
-          return {
-            id: niveau.id,
-            label: niveau.label,
-            icon: Layers,
-            level: 2,
-            isSelected: niveau.id === selectedNiveauId,
-            onSelect: onSelectNiveau,
-            children: hoofdstukNodes
-          };
-        });
-
+  const tree = vakken.map(vak => {
+    const vakLeerjaren = leerjaren.filter(l => l.vakId === vak.id);
+    return {
+      ...vak,
+      icon: BookOpen,
+      level: 0,
+      isSelected: selectedVakId === vak.id,
+      onSelect: (id) => onSelect({ type: 'vak', id }),
+      children: vakLeerjaren.map(leerjaar => {
+        const leerjaarniveaus = niveaus.filter(n => n.leerjaarId === leerjaar.id);
         return {
-          id: leerjaar.id,
-          label: leerjaar.label,
+          ...leerjaar,
           icon: BarChart3,
           level: 1,
-          isSelected: leerjaar.id === selectedLeerjaarId,
-          onSelect: onSelectLeerjaar,
-          children: niveauNodes
+          isSelected: selectedLeerjaarId === leerjaar.id,
+          onSelect: (id) => onSelect({ type: 'leerjaar', id }),
+          children: leerjaarniveaus.map(niveau => {
+            const niveauHoofdstukken = hoofdstukken.filter(h => h.niveauId === niveau.id);
+            return {
+              ...niveau,
+              label: `${niveau.label} - ${niveau.name}`,
+              icon: Layers,
+              level: 2,
+              isSelected: selectedNiveauId === niveau.id,
+              onSelect: (id) => onSelect({ type: 'niveau', id }),
+              children: niveauHoofdstukken.map(hoofdstuk => {
+                const hoofdstukParagrafen = paragrafen.filter(p => p.hoofdstukId === hoofdstuk.id);
+                return {
+                  ...hoofdstuk,
+                  label: `${hoofdstuk.number}. ${hoofdstuk.title}`,
+                  icon: FileText,
+                  level: 3,
+                  isSelected: selectedHoofdstukId === hoofdstuk.id,
+                  onSelect: (id) => onSelect({ type: 'hoofdstuk', id }),
+                  children: hoofdstukParagrafen.map(paragraaf => {
+                    const paragraafVragen = vragen.filter(v => v.paragraafId === paragraaf.id);
+                    return {
+                      ...paragraaf,
+                      label: `${paragraaf.code}. ${paragraaf.title}`,
+                      icon: HelpCircle,
+                      level: 4,
+                      isSelected: selectedParagraafId === paragraaf.id,
+                      onSelect: (id) => onSelect({ type: 'paragraaf', id }),
+                      children: paragraafVragen.map(vraag => ({
+                        ...vraag,
+                        label: `Q${vraag.number}: ${vraag.title || 'Untitled'}`,
+                        icon: HelpCircle,
+                        level: 5,
+                        isSelected: selectedVraagId === vraag.id,
+                        onSelect: (id) => onSelect({ type: 'vraag', id }),
+                        children: []
+                      }))
+                    };
+                  })
+                };
+              })
+            };
+          })
         };
-      });
-
-      return {
-        id: vak.id,
-        label: vak.name,
-        icon: BookOpen,
-        level: 0,
-        isSelected: vak.id === selectedVakId,
-        onSelect: onSelectVak,
-        children: leerjaarNodes
-      };
-    });
-  };
-
-  const tree = buildTree();
-
-  if (loading) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        <p>Loading navigation...</p>
-      </div>
-    );
-  }
-
-  if (vakken.length === 0) {
-    return (
-      <div className="p-4 text-center text-gray-500">
-        <p>No subjects found. Create one to get started.</p>
-      </div>
-    );
-  }
+      })
+    };
+  });
 
   return (
-    <div className="h-full overflow-y-auto bg-white">
-      <div className="p-3 space-y-1">
-        {tree.map((vakNode) => (
-          <TreeNode
-            key={vakNode.id}
-            {...vakNode}
-            expandedIds={expandedIds}
-            onToggleExpand={handleToggleExpand}
-          />
-        ))}
+    <div className="flex flex-col h-full bg-white border-r border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+          <BookOpen size={18} />
+          Inhoud
+        </h3>
+        {onCreateVak && (
+          <button
+            onClick={() => onCreateVak()}
+            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Create new subject"
+          >
+            <Plus size={18} />
+          </button>
+        )}
+      </div>
+
+      {/* Tree */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-1">
+        {tree.length === 0 ? (
+          <div className="p-4 text-center text-gray-500 text-sm">
+            <p className="mb-3">Nog geen vakken aangemaakt</p>
+            {onCreateVak && (
+              <button
+                onClick={() => onCreateVak()}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium inline-flex items-center gap-2 transition-colors"
+              >
+                <Plus size={16} />
+                Maak eerste vak aan
+              </button>
+            )}
+          </div>
+        ) : (
+          tree.map(vak => (
+            <TreeNode
+              key={vak.id}
+              {...vak}
+              expandedIds={expandedIds}
+              onToggleExpand={toggleExpand}
+              onCreateChild={handleCreateChild}
+            />
+          ))
+        )}
       </div>
     </div>
   );
