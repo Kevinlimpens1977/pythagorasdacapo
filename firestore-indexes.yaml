@@ -1,0 +1,13 @@
+indexes:
+  - collectionId: voortgang
+    fields:
+      - fieldPath: userId
+        order: ASCENDING
+      - fieldPath: paragraafId
+        order: ASCENDING
+  - collectionId: voortgang
+    fields:
+      - fieldPath: klasId
+        order: ASCENDING
+      - fieldPath: vraagId
+        order: ASCENDING

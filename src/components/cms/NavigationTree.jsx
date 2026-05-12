@@ -4,8 +4,10 @@
  * Vak → Leerjaar → Niveau → Hoofdstuk → Paragraaf → Vraag
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, BookOpen, BarChart3, Layers, FileText, HelpCircle, Plus } from 'lucide-react';
+
+const STORAGE_KEY = 'cms-tree-expanded-ids';
 
 const TreeNode = ({
   label,
@@ -124,7 +126,25 @@ export default function NavigationTree({
   onCreateParagraaf,
   onCreateVraag
 }) {
-  const [expandedIds, setExpandedIds] = useState([]);
+  // Load initial state from localStorage
+  const [expandedIds, setExpandedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch (err) {
+      console.error('Error loading expanded state:', err);
+      return [];
+    }
+  });
+
+  // Persist to localStorage whenever expandedIds changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(expandedIds));
+    } catch (err) {
+      console.error('Error saving expanded state:', err);
+    }
+  }, [expandedIds]);
 
   const toggleExpand = (id) => {
     setExpandedIds(prev =>

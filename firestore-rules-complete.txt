@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Gebruikers documenten
+    match /users/{userId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Antwoorden - leerlingen schrijven hun eigen, admins overal
+    match /userAnswers/{docId} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+      allow write: if request.auth != null && (
+        request.auth.uid == resource.data.userId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    // CMS Collections - PERMISSIEF FOR TESTING
+    match /vakken/{document=**} {
+      allow read, write, delete: if request.auth != null;
+    }
+
+    match /vak/{document=**} {
+      allow read, write, delete: if request.auth != null;
+    }
+
+    match /leerjaar/{document=**} {
+      allow read, write, delete: if request.auth != null;
+    }
+
+    match /niveau/{document=**} {
+      allow read, write, delete: if request.auth != null;
+    }
+
+    match /hoofdstuk/{document=**} {
+      allow read, write, delete: if request.auth != null;
+    }
+
+    match /paragraaf/{document=**} {
+      allow read, write, delete: if request.auth != null;
+    }
+
+    match /vraag/{document=**} {
+      allow read, write, delete: if request.auth != null;
+    }
+
+    // Klassen (classes)
+    match /klassen/{klasId} {
+      allow read: if request.auth != null;
+      allow write, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Voortgang (student progress)
+    match /voortgang/{document=**} {
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+      allow create, update: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Crop metadata
+    match /questionMetadata/{paragraphId}/questions/{questionId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

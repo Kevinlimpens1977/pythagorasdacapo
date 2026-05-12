@@ -96,7 +96,7 @@ export default function CreateContentModal({
   const getTitle = () => {
     const titles = {
       vak: 'Nieuw vak aanmaken',
-      leerjaar: 'Nieuw schooljaar aanmaken',
+      leerjaar: 'Nieuw leerjaar aanmaken',
       niveau: 'Nieuw niveau aanmaken',
       hoofdstuk: 'Nieuw hoofdstuk aanmaken',
       paragraaf: 'Nieuwe paragraaf aanmaken'
@@ -162,7 +162,7 @@ export default function CreateContentModal({
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Schooljaar
+                  Leerjaar (Klas)
                 </label>
                 <select
                   value={year}
@@ -182,7 +182,7 @@ export default function CreateContentModal({
                   type="text"
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
-                  placeholder="bijv. Eerste Jaar"
+                  placeholder="bijv. VMBO Jaar 1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>

@@ -11,6 +11,7 @@ import NavigationTree from './NavigationTree';
 import DualPanelEditor from './DualPanelEditor';
 import CreateQuestionModal from './CreateQuestionModal';
 import CreateContentModal from './CreateContentModal';
+import InlineEdit from './InlineEdit';
 import useCms from '../../hooks/useCms';
 import * as cmsService from '../../services/cmsService';
 import { auth } from '../../services/firebase';
@@ -170,7 +171,7 @@ export default function CmsShell() {
                     onClick={() => setCreateModal({ type: 'leerjaar', parentId: cms.selectedVakId })}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
                     <Plus size={16} />
-                    Voeg Schooljaar toe
+                    Voeg Leerjaar toe
                   </button>
                   <button
                     onClick={() => handleArchive('vak', cms.selectedVakId)}
@@ -238,7 +239,23 @@ export default function CmsShell() {
           {!cms.loading && !cms.error && cms.selectedHoofdstukId && !cms.selectedParagraafId && cms.currentHoofdstuk && (
             <div className="max-w-2xl">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-1">📖 {cms.currentHoofdstuk.number}. {cms.currentHoofdstuk.title}</h2>
+                <div className="flex items-start gap-3 mb-6">
+                  <span className="text-3xl">📖</span>
+                  <InlineEdit
+                    value={`${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`}
+                    onSave={async (newValue) => {
+                      // Parse number and title from input (format: "7. Stelling van Pythagoras")
+                      const parts = newValue.match(/^(\d+)\.\s*(.+)$/);
+                      if (parts) {
+                        await cmsService.updateHoofdstuk(cms.selectedHoofdstukId, {
+                          number: parseInt(parts[1]),
+                          title: parts[2]
+                        });
+                        await cms.loadHoofdstukken(cms.selectedNiveauId);
+                      }
+                    }}
+                  />
+                </div>
                 <p className="text-gray-600 text-sm mb-6">{cms.currentHoofdstuk.description || 'No description'}</p>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <p className="text-sm text-blue-900"><strong>Paragrafen:</strong> {cms.paragrafen.length}</p>
@@ -266,9 +283,20 @@ export default function CmsShell() {
           {!cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
             <div className="max-w-4xl">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-1">
-                  {cms.currentParagraaf.code}. {cms.currentParagraaf.title}
-                </h2>
+                <InlineEdit
+                  value={`${cms.currentParagraaf.code}. ${cms.currentParagraaf.title}`}
+                  onSave={async (newValue) => {
+                    // Parse code and title from input (format: "7.1. Rechthoekige driehoeken")
+                    const parts = newValue.match(/^([\d.]+)\.\s*(.+)$/);
+                    if (parts) {
+                      await cmsService.updateParagraaf(cms.selectedParagraafId, {
+                        code: parts[1],
+                        title: parts[2]
+                      });
+                      await cms.loadParagrafen(cms.selectedHoofdstukId);
+                    }
+                  }}
+                />
                 <p className="text-gray-500 text-sm mb-8">{cms.currentParagraaf.beschrijving}</p>
 
                 <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4 mb-8 border border-gray-100">

@@ -163,7 +163,6 @@ export const getHoofdstukken = async (niveauId) => {
     const q = query(
       collection(db, 'hoofdstuk'),
       where('niveauId', '==', niveauId),
-      where('published', '==', true),
       where('isArchived', '==', false),
       orderBy('order', 'asc')
     );
