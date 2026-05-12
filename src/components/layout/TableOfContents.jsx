@@ -2,14 +2,16 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, PlayCircle, CheckCircle2, BookOpen } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import * as cmsService from '../../services/cmsService';
+import * as voortgangService from '../../services/voortgangService';
 import { useState, useEffect } from 'react';
 
 export default function TableOfContents() {
   const navigate = useNavigate();
-  const { klasData } = useAuth();
+  const { klasData, currentUser } = useAuth();
   const [paragrafen, setParagrafen] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
+  const [voortgangMap, setVoortgangMap] = useState({});
 
   // Load paragraphs and their details when klasData changes
   useEffect(() => {
@@ -23,6 +25,7 @@ export default function TableOfContents() {
         if (!enabledParagraafIds || enabledParagraafIds.length === 0) {
           setParagrafen([]);
           setHoofdstukkenMap({});
+          setVoortgangMap({});
           setLoading(false);
           return;
         }
@@ -48,6 +51,23 @@ export default function TableOfContents() {
           })
         );
 
+        // Load voortgang (progress) for each paragraph if user is logged in
+        let progressMap = {};
+        if (currentUser && klasData?.klasId) {
+          for (const paragraaf of paragraafWithQuestions) {
+            try {
+              const voortgang = await voortgangService.getVoortgangForParagraaf(
+                currentUser.uid,
+                paragraaf.id
+              );
+              progressMap[paragraaf.id] = voortgang || [];
+            } catch (error) {
+              console.error(`Error loading voortgang for ${paragraaf.id}:`, error);
+              progressMap[paragraaf.id] = [];
+            }
+          }
+        }
+
         // Load hoofdstuk details for grouping
         const hoofdstukIds = [...new Set(paragraafWithQuestions.map(p => p.hoofdstukId))];
         const hoofdstukDetailsPromises = hoofdstukIds.map(id =>
@@ -64,6 +84,7 @@ export default function TableOfContents() {
 
         setParagrafen(paragraafWithQuestions);
         setHoofdstukkenMap(hmapTemp);
+        setVoortgangMap(progressMap);
         setLoading(false);
       } catch (error) {
         console.error('Error loading paragraphs:', error);
@@ -73,7 +94,7 @@ export default function TableOfContents() {
     };
 
     loadParagrafen();
-  }, [klasData]);
+  }, [klasData, currentUser]);
 
   // Group paragraphs by hoofdstuk
   const paragraafsByHoofdstuk = {};
@@ -166,9 +187,9 @@ export default function TableOfContents() {
 
                   <div className="space-y-4">
                     {paragraafenInHoofdstuk.map((paragraaf) => {
-                      // Calculate progress based on question completion
-                      // For now, show 0% since voortgangService doesn't exist yet
-                      const completedQuestions = 0;
+                      // Calculate progress based on completed questions from voortgang
+                      const voortgang = voortgangMap[paragraaf.id] || [];
+                      const completedQuestions = voortgang.filter(v => v.completed === true).length;
                       const totalQuestions = paragraaf.vragenCount || 0;
                       const progressPercent =
                         totalQuestions > 0 ? (completedQuestions / totalQuestions) * 100 : 0;
