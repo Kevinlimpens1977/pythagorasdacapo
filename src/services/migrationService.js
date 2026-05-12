@@ -41,12 +41,22 @@ export const deleteAllCmsContent = async () => {
 };
 
 /**
+ * Check if Pythagoras content has been migrated to Firestore
+ * DEPRECATED: Always returns false now (legacy system removed)
+ */
+export const isPythagorasMigrated = async () => {
+  console.warn('⚠️ [MIGRATE] isPythagorasMigrated() is deprecated!');
+  return false; // Legacy system removed, return false
+};
+
+/**
  * Delete entire Pythagoras hierarchy (soft delete via archive flag)
- * @deprecated This no longer works - use deleteAllCmsContent instead
+ * DEPRECATED: Use deleteAllCmsContent instead
  */
 export const deletePythagorasMigration = async () => {
   console.warn('⚠️ [MIGRATE] deletePythagorasMigration() is deprecated!');
-  throw new Error('Use deleteAllCmsContent() instead');
+  console.warn('Use deleteAllCmsContent() instead');
+  return deleteAllCmsContent();
 };
 
 /**
