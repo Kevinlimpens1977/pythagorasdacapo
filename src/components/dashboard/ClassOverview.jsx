@@ -72,6 +72,45 @@ export default function ClassOverview() {
   const [selectedChapterForClass, setSelectedChapterForClass] = useState(null);
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [paragraphen, setParagraphen] = useState([]);
+  const [studentVoortgang, setStudentVoortgang] = useState({});
+
+  // Load all paragraphs from CMS hierarchy
+  useEffect(() => {
+    const loadParagraphen = async () => {
+      try {
+        const vakken = await cmsService.getVakken();
+        const allParagraphen = [];
+
+        for (const vak of vakken) {
+          const leerjaren = await cmsService.getLeerjaren(vak.id);
+          for (const leerjaar of leerjaren) {
+            const niveaus = await cmsService.getNiveaus(leerjaar.id);
+            for (const niveau of niveaus) {
+              const hoofdstukken = await cmsService.getHoofdstukken(niveau.id);
+              for (const hoofdstuk of hoofdstukken) {
+                const paragrafen = await cmsService.getParagrafen(hoofdstuk.id);
+                allParagraphen.push(...paragrafen.map(p => ({
+                  ...p,
+                  vakId: vak.id,
+                  leerjaarId: leerjaar.id,
+                  niveauId: niveau.id,
+                  hoofdstukId: hoofdstuk.id,
+                  hoofdstukTitle: hoofdstuk.title
+                })));
+              }
+            }
+          }
+        }
+
+        setParagraphen(allParagraphen);
+      } catch (error) {
+        console.error('Error loading paragraphen:', error);
+      }
+    };
+
+    loadParagraphen();
+  }, []);
 
   useEffect(() => {
     // Query only students (no orderBy to avoid composite index requirement)
@@ -96,6 +135,9 @@ export default function ClassOverview() {
       setStudents(studentData);
       setLoading(false);
 
+      // Load voortgang data for all students
+      loadVoortgangForStudents(studentData);
+
       // Update selected student if they were already open
       if (selectedStudent) {
         const updated = studentData.find(s => s.id === selectedStudent.id);
@@ -108,6 +150,22 @@ export default function ClassOverview() {
 
     return () => unsubscribe();
   }, []);
+
+  // Load voortgang data for all students
+  const loadVoortgangForStudents = async (studentList) => {
+    try {
+      const voortgangMap = {};
+      for (const student of studentList) {
+        if (paragraphen.length > 0) {
+          const voortgang = await voortgangService.getStudentVoortgang(student.id, student.klasId);
+          voortgangMap[student.id] = voortgang;
+        }
+      }
+      setStudentVoortgang(voortgangMap);
+    } catch (error) {
+      console.error('Error loading voortgang:', error);
+    }
+  };
 
   const filteredStudents = students
     .filter(s =>
@@ -137,8 +195,18 @@ export default function ClassOverview() {
   }).length;
 
   const warningCount = students.filter(s => s.warning).length;
+
+  // Calculate average progress from voortgang data
   const avgProgress = students.length > 0
-    ? Math.round(students.reduce((acc, curr) => acc + (curr.progress || 0), 0) / students.length)
+    ? Math.round(
+        students.reduce((acc, student) => {
+          const voortgang = studentVoortgang[student.id] || [];
+          const totalVragen = voortgang.length;
+          const completedVragen = voortgang.filter(v => v.completed === true).length;
+          const studentProgress = totalVragen > 0 ? (completedVragen / totalVragen) * 100 : 0;
+          return acc + studentProgress;
+        }, 0) / students.length
+      )
     : 0;
 
   if (loading) {
@@ -151,7 +219,28 @@ export default function ClassOverview() {
   }
 
   if (selectedStudent) {
-    const filteredChapters = [];
+    // Get voortgang for this student
+    const studentProgress = studentVoortgang[selectedStudent.id] || [];
+
+    // Group paragraphs by hoofdstuk
+    const paragraafsByHoofdstuk = {};
+    paragraphen.forEach(paragraaf => {
+      const key = paragraaf.hoofdstukId;
+      if (!paragraafsByHoofdstuk[key]) {
+        paragraafsByHoofdstuk[key] = [];
+      }
+      paragraafsByHoofdstuk[key].push(paragraaf);
+    });
+
+    // Filter by selected chapter if set
+    const filteredHoofdstukken = selectedChapter
+      ? Object.fromEntries(Object.entries(paragraafsByHoofdstuk).filter(([key]) => key === selectedChapter))
+      : paragraafsByHoofdstuk;
+
+    // Calculate overall progress
+    const totalVragen = studentProgress.length;
+    const completedVragen = studentProgress.filter(v => v.completed === true).length;
+    const overallProgress = totalVragen > 0 ? Math.round((completedVragen / totalVragen) * 100) : 0;
 
     return (
       <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
@@ -179,95 +268,87 @@ export default function ClassOverview() {
             <div className="flex gap-4">
               <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
                 <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Voortgang</div>
-                <div className="text-2xl font-black text-blue-400">{selectedStudent.progress || 0}%</div>
+                <div className="text-2xl font-black text-blue-400">{overallProgress}%</div>
               </div>
               <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
                 <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Laatst Actief</div>
                 <div className="text-2xl font-black">{getRelativeTime(selectedStudent.lastActive)}</div>
+              </div>
+              <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
+                <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Vragen</div>
+                <div className="text-2xl font-black text-emerald-400">{completedVragen}/{totalVragen}</div>
               </div>
             </div>
           </div>
 
           <div className="pad-content">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-              <h3 className="heading-lg">Gemaakte opdrachten</h3>
+              <h3 className="heading-lg">Voortgang per Paragraaf</h3>
 
               <div className="w-full md:w-64">
-                <label className="block text-sm font-bold text-slate-600 mb-2">Paragraaf filteren</label>
+                <label className="block text-sm font-bold text-slate-600 mb-2">Filteren op Hoofdstuk</label>
                 <select
                   value={selectedChapter || ""}
                   onChange={(e) => setSelectedChapter(e.target.value || null)}
                   className="input-standard w-full"
                 >
                   <option value="">Alles tonen</option>
-                  {/* TODO: Load paragraphs from CMS and populate dynamically */}
+                  {Object.entries(paragraafsByHoofdstuk).map(([hId, paras]) => {
+                    const title = paras[0]?.hoofdstukTitle || `Hoofdstuk ${hId}`;
+                    return (
+                      <option key={hId} value={hId}>
+                        {title}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             </div>
-            
-            <div className="space-y-12">
-              {filteredChapters.map(chapter => {
-                // TODO: Load paragraphs from CMS instead of getChapterSlides
-                const exercises = [];
-                if (exercises.length === 0) return null;
+
+            <div className="space-y-8">
+              {Object.entries(filteredHoofdstukken).map(([hoofdstukId, paragrafen]) => {
+                const firstPara = paragrafen[0];
+                const hoofdstukTitle = firstPara?.hoofdstukTitle || `Hoofdstuk`;
 
                 return (
-                  <div key={chapter.id} className="bg-slate-50 rounded-[2.5rem] p-8 border-2 border-slate-100">
-                    <h4 className="text-xl font-black text-slate-600 mb-6 flex items-center gap-3">
+                  <div key={hoofdstukId}>
+                    <h4 className="text-xl font-black text-slate-600 mb-4 flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                      {chapter.title}
+                      {hoofdstukTitle}
                     </h4>
-                    
-                    <div className="grid gap-6">
-                      {exercises.map(ex => {
-                        // Handle both nested object structure and flat dot-notation structure
-                        let result = selectedStudent.exerciseData?.[chapter.id]?.[ex.id];
 
-                        // If not found as nested object, check for flat structure with dot notation
-                        if (!result) {
-                          const flatKey = `${chapter.id}.${ex.id}`;
-                          const exerciseDataObj = selectedStudent.exerciseData;
-                          if (exerciseDataObj && exerciseDataObj[flatKey]) {
-                            result = exerciseDataObj[flatKey];
-                          }
-                        }
+                    <div className="space-y-3 ml-4">
+                      {paragrafen.map(paragraaf => {
+                        const paraVoortgang = studentProgress.filter(v => v.paragraafId === paragraaf.id);
+                        const completedInPara = paraVoortgang.filter(v => v.completed === true).length;
+                        const totalInPara = paraVoortgang.length;
+                        const progressPercent = totalInPara > 0 ? Math.round((completedInPara / totalInPara) * 100) : 0;
 
                         return (
-                          <div key={ex.id} className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                          <div key={paragraaf.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex items-center justify-between">
                             <div className="flex-1">
-                              <h5 className="text-lg font-black text-slate-800 mb-1">{ex.heading}</h5>
-                              <p className="text-slate-500 text-sm italic">{ex.content.substring(0, 100)}...</p>
+                              <h5 className="font-bold text-slate-800">
+                                {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                              </h5>
+                              <p className="text-sm text-slate-500 mt-1">
+                                {completedInPara} / {totalInPara} vragen afgerond
+                              </p>
                             </div>
-                            
-                            <div className="flex items-center gap-8">
-                              {result ? (
-                                <>
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase mb-1">Pogingen</span>
-                                    <span className={`text-xl font-black ${result.attempts >= 3 ? 'text-amber-500' : 'text-slate-700'}`}>
-                                      {result.attempts}
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase mb-1">Status</span>
-                                    {result.isCorrect ? (
-                                      <CheckCircle className="text-green-500" size={32} />
-                                    ) : (
-                                      <AlertTriangle className="text-amber-500" size={32} />
-                                    )}
-                                  </div>
-                                  <div className="border-l border-slate-100 pl-8 h-12 flex flex-col justify-center">
-                                     <button
-                                       className="btn-link"
-                                       onClick={() => setViewingExercise({ ex, result })}
-                                      >
-                                       Bekijk details
-                                     </button>
-                                  </div>
-                                </>
-                              ) : (
-                                <span className="text-slate-300 font-bold italic">Nog niet gemaakt</span>
-                              )}
+
+                            <div className="flex items-center gap-6 ml-4">
+                              <div className="w-32">
+                                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all ${
+                                      progressPercent === 100 ? 'bg-green-500' : 'bg-blue-500'
+                                    }`}
+                                    style={{ width: `${progressPercent}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                              <div className="text-right min-w-[60px]">
+                                <div className="font-bold text-slate-800">{progressPercent}%</div>
+                              </div>
                             </div>
                           </div>
                         );
@@ -524,9 +605,9 @@ export default function ClassOverview() {
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               >
                 <option value="">Alle paragrafen (totaal voortgang)</option>
-                {CHAPTERS.map(chapter => (
-                  <option key={chapter.id} value={chapter.id}>
-                    {chapter.title}
+                {paragraphen.map((para) => (
+                  <option key={para.id} value={para.id}>
+                    {para.number && `${para.number}. `}{para.title}
                   </option>
                 ))}
               </select>
@@ -597,7 +678,20 @@ export default function ClassOverview() {
             <tbody className="divide-y divide-slate-100">
               {filteredStudents.length > 0 ? (
                 filteredStudents.map(student => {
-                  const chapterProgress = selectedChapterForClass ? getChapterProgress(student, selectedChapterForClass) : null;
+                  // Calculate progress from voortgang data
+                  const voortgang = studentVoortgang[student.id] || [];
+                  const totalVragen = voortgang.length;
+                  const completedVragen = voortgang.filter(v => v.completed === true).length;
+                  const totalProgress = totalVragen > 0 ? Math.round((completedVragen / totalVragen) * 100) : 0;
+
+                  // Calculate progress for selected paragraph if applicable
+                  let paraProgress = null;
+                  if (selectedChapterForClass) {
+                    const paraVoortgang = voortgang.filter(v => v.paragraafId === selectedChapterForClass);
+                    const paraTotalVragen = paraVoortgang.length;
+                    const paraCompletedVragen = paraVoortgang.filter(v => v.completed === true).length;
+                    paraProgress = paraTotalVragen > 0 ? Math.round((paraCompletedVragen / paraTotalVragen) * 100) : 0;
+                  }
 
                   return (
                     <tr
@@ -625,7 +719,7 @@ export default function ClassOverview() {
                               </div>
                             </div>
                           )}
-                          {student.progress === 100 && (
+                          {totalProgress === 100 && (
                             <CheckCircle size={18} className="text-green-500" />
                           )}
                         </div>
@@ -634,11 +728,11 @@ export default function ClassOverview() {
                         <div className="flex items-center gap-3">
                           <div className="w-full max-w-[120px] h-2.5 bg-slate-100 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-all duration-500 ${getProgressColor(student.progress || 0)}`}
-                              style={{ width: `${student.progress || 0}%` }}
+                              className={`h-full rounded-full transition-all duration-500 ${getProgressColor(totalProgress)}`}
+                              style={{ width: `${totalProgress}%` }}
                             />
                           </div>
-                          <span className="text-sm font-semibold text-slate-600">{student.progress || 0}%</span>
+                          <span className="text-sm font-semibold text-slate-600">{totalProgress}%</span>
                         </div>
                       </td>
                       {selectedChapterForClass && (
@@ -647,11 +741,11 @@ export default function ClassOverview() {
                             <div className="flex items-center gap-3">
                               <div className="w-full max-w-[120px] h-2.5 bg-slate-100 rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full rounded-full transition-all duration-500 ${getProgressColor(chapterProgress)}`}
-                                  style={{ width: `${chapterProgress}%` }}
+                                  className={`h-full rounded-full transition-all duration-500 ${getProgressColor(paraProgress)}`}
+                                  style={{ width: `${paraProgress}%` }}
                                 />
                               </div>
-                              <span className="text-sm font-semibold text-slate-600">{chapterProgress}%</span>
+                              <span className="text-sm font-semibold text-slate-600">{paraProgress}%</span>
                             </div>
                           </td>
                           <td className="py-4 px-6 text-sm">
