@@ -23,6 +23,25 @@ export default function CmsShell() {
   const [createModal, setCreateModal] = useState(null); // { type, parentId }
   const [archiveLoading, setArchiveLoading] = useState(false);
 
+  // Sidebar state (load from localStorage)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cms-sidebar-open');
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch {
+      return true;
+    }
+  });
+
+  // Persist sidebar state
+  const handleToggleSidebar = () => {
+    setSidebarOpen(prev => {
+      const newState = !prev;
+      localStorage.setItem('cms-sidebar-open', JSON.stringify(newState));
+      return newState;
+    });
+  };
+
   // Unified selection handler for tree
   const handleSelect = (selection) => {
     switch (selection.type) {
@@ -97,28 +116,43 @@ export default function CmsShell() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">📚 CMS Platform</h1>
+      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm flex items-start justify-between">
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">📚 CMS Platform</h1>
 
-        {/* Breadcrumb */}
-        {breadcrumbItems.length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            {breadcrumbItems.map((item, idx) => (
-              <React.Fragment key={item.id}>
-                <span className="truncate max-w-xs">{item.label}</span>
-                {idx < breadcrumbItems.length - 1 && (
-                  <ChevronRight size={16} className="flex-shrink-0" />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        )}
+          {/* Breadcrumb */}
+          {breadcrumbItems.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              {breadcrumbItems.map((item, idx) => (
+                <React.Fragment key={item.id}>
+                  <span className="truncate max-w-xs">{item.label}</span>
+                  {idx < breadcrumbItems.length - 1 && (
+                    <ChevronRight size={16} className="flex-shrink-0" />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar Toggle Button */}
+        <button
+          onClick={handleToggleSidebar}
+          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 ml-4"
+          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {sidebarOpen ? '◄' : '►'}
+        </button>
       </div>
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar - Navigation Tree */}
-        <div className="w-80 border-r border-gray-200 bg-white overflow-y-auto">
+        {/* Left Sidebar - Navigation Tree (Collapsible) */}
+        <div className={`
+          border-r border-gray-200 bg-white overflow-y-auto transition-all duration-300 ease-in-out
+          ${sidebarOpen ? 'w-80 opacity-100' : 'w-0 opacity-0'}
+          ${!sidebarOpen && 'hidden'}
+        `}>
           <NavigationTree
             vakken={cms.vakken}
             leerjaren={cms.leerjaren}

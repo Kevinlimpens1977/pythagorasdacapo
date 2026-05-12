@@ -256,15 +256,26 @@ export default function NavigationTree({
           <BookOpen size={18} />
           Inhoud
         </h3>
-        {onCreateVak && (
-          <button
-            onClick={() => onCreateVak()}
-            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Create new subject"
-          >
-            <Plus size={18} />
-          </button>
-        )}
+        <div className="flex items-center gap-1">
+          {expandedIds.length > 0 && (
+            <button
+              onClick={() => setExpandedIds([])}
+              className="px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              title="Collapse all"
+            >
+              Inklappen
+            </button>
+          )}
+          {onCreateVak && (
+            <button
+              onClick={() => onCreateVak()}
+              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Create new subject"
+            >
+              <Plus size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tree */}
