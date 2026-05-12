@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { 
-  signInWithEmailAndPassword, 
+import { useState, useEffect } from 'react';
+import {
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
-  signInWithPopup, 
-  GoogleAuthProvider 
+  signInWithPopup,
+  GoogleAuthProvider
 } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 import { useAuth } from './AuthProvider';
@@ -18,13 +18,25 @@ export default function LoginScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
-  const { loginAsRole } = useAuth();
+  const { loginAsRole, isAdmin, currentUser, loading } = useAuth();
   const navigate = useNavigate();
+
+  // Auto-redirect when user is authenticated and ready
+  useEffect(() => {
+    if (!loading && currentUser) {
+      // Wait for user data to be set
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [loading, currentUser, isAdmin, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     try {
       if (isSignUp) {
         if (!firstName || !lastName) {
@@ -38,7 +50,7 @@ export default function LoginScreen() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      navigate('/');
+      // Navigation handled automatically via useEffect when currentUser changes
     } catch (err) {
       console.error(err);
       if (err.code === 'auth/email-already-in-use') {
@@ -57,14 +69,13 @@ export default function LoginScreen() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      
+
       if (result.user.email !== 'kevlimpens@gmail.com') {
         await auth.signOut();
         setError('Toegang geweigerd: Alleen de administrator kan inloggen met Google.');
         return;
       }
-      
-      navigate('/');
+      // Navigation handled automatically via useEffect when currentUser changes
     } catch (err) {
       setError('Google login mislukt.');
     }
@@ -72,7 +83,7 @@ export default function LoginScreen() {
 
   const handleTestBypass = (role) => {
     loginAsRole(role);
-    navigate('/');
+    // Navigation handled automatically via useEffect when currentUser changes
   };
 
   // Check if test mode is enabled via environment

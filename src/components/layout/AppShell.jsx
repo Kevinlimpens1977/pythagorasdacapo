@@ -1,5 +1,5 @@
-import { Outlet, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
 import { LogOut, User, LayoutDashboard, BookOpen, SettingsIcon } from 'lucide-react';
@@ -7,7 +7,15 @@ import { LogOut, User, LayoutDashboard, BookOpen, SettingsIcon } from 'lucide-re
 export default function AppShell() {
   const { currentUser, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [nameSetupDone, setNameSetupDone] = useState(false);
+
+  // Redirect admin to /admin if they're viewing student home
+  useEffect(() => {
+    if (isAdmin && location.pathname === '/') {
+      navigate('/admin', { replace: true });
+    }
+  }, [isAdmin, location.pathname, navigate]);
 
   const handleLogout = () => {
     logout();
