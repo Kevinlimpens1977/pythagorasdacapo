@@ -10,6 +10,8 @@ import AdminCropToolPage from './pages/AdminCropToolPage';
 import AdminCmsPage from './pages/AdminCmsPage';
 import AdminKlassenPage from './pages/AdminKlassenPage';
 import AdminDigibordPage from './pages/AdminDigibordPage';
+import TakenToewijzenPage from './pages/TakenToewijzenPage';
+import StudentProfilePage from './pages/StudentProfilePage';
 import ClassSelectionModal from './components/auth/ClassSelectionModal';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
@@ -27,6 +29,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/" element={<PrivateRoute><AppShell /></PrivateRoute>}>
         <Route index element={<TableOfContents />} />
+        <Route path="profiel" element={<StudentProfilePage />} />
         <Route path="chapter/:chapterId" element={<SlideRenderer />} />
         <Route path="admin" element={
           <PrivateRoute requireAdmin={true}>
@@ -56,6 +59,11 @@ function AppRoutes() {
         <Route path="admin/digibord" element={
           <PrivateRoute requireAdmin={true}>
             <AdminDigibordPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/taken-toewijzen" element={
+          <PrivateRoute requireAdmin={true}>
+            <TakenToewijzenPage />
           </PrivateRoute>
         } />
       </Route>

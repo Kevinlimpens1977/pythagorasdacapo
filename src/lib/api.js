@@ -66,7 +66,7 @@ export const extractTextViaOCR = async (imageBlob) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'HTTP-Referer': window.location.href,
-        'X-Title': 'Stelling van Pythagoras CMS'
+        'X-Title': 'HELIX CMS'
       },
       body: JSON.stringify({
         model: 'gpt-4o',

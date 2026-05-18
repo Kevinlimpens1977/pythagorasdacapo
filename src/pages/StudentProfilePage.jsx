@@ -1,0 +1,290 @@
+import { useEffect, useMemo, useState } from 'react';
+import { AlertCircle, BarChart3, BookOpen, CheckCircle2, GraduationCap, Mail, UserCircle } from 'lucide-react';
+import { useAuth } from '../components/auth/AuthProvider';
+import * as cmsService from '../services/cmsService';
+import * as klasService from '../services/klasService';
+import * as voortgangService from '../services/voortgangService';
+import { buildStudentProgressSummary } from '../lib/progressSummary';
+
+const ProgressBar = ({ value, tone = 'blue' }) => {
+  const barColor = tone === 'green' ? 'bg-green-500' : 'bg-blue-500';
+
+  return (
+    <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+      <div
+        className={`h-full rounded-full ${barColor} transition-all duration-500`}
+        style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
+      />
+    </div>
+  );
+};
+
+const EmptyState = ({ icon: Icon, title, description }) => (
+  <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
+    <Icon size={44} className="mx-auto mb-4 text-slate-300" />
+    <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
+  </div>
+);
+
+export default function StudentProfilePage() {
+  const { currentUser, userData, klasData } = useAuth();
+  const [paragrafen, setParagrafen] = useState([]);
+  const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
+  const [voortgangMap, setVoortgangMap] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const displayName = userData?.displayName || currentUser?.displayName || 'Leerling';
+  const email = userData?.email || currentUser?.email || 'Geen e-mail bekend';
+  const klasName = klasData?.name || 'Geen klas gekozen';
+
+  useEffect(() => {
+    const loadProfileData = async () => {
+      if (!currentUser?.uid) {
+        setLoading(false);
+        return;
+      }
+
+      if (!klasData?.klasId) {
+        setParagrafen([]);
+        setHoofdstukkenMap({});
+        setVoortgangMap({});
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const effectiveParagraafIds = klasService.getStudentEffectiveParagrafen(
+          klasData,
+          currentUser.uid
+        );
+
+        if (effectiveParagraafIds.length === 0) {
+          setParagrafen([]);
+          setHoofdstukkenMap({});
+          setVoortgangMap({});
+          setLoading(false);
+          return;
+        }
+
+        const paragraafDetails = await Promise.all(
+          effectiveParagraafIds.map((id) => cmsService.getParagraaf(id).catch(() => null))
+        );
+
+        const validParagrafen = paragraafDetails.filter(Boolean);
+        const paragrafenWithQuestions = await Promise.all(
+          validParagrafen.map(async (paragraaf) => {
+            const vragen = await cmsService.getVragen(paragraaf.id).catch(() => []);
+            return {
+              ...paragraaf,
+              vragen: vragen || []
+            };
+          })
+        );
+
+        const progressEntries = await Promise.all(
+          paragrafenWithQuestions.map(async (paragraaf) => {
+            const voortgang = await voortgangService.getVoortgangForParagraaf(
+              currentUser.uid,
+              paragraaf.id
+            );
+            return [paragraaf.id, voortgang || []];
+          })
+        );
+
+        const hoofdstukIds = [...new Set(paragrafenWithQuestions.map((p) => p.hoofdstukId))];
+        const hoofdstukDetails = await Promise.all(
+          hoofdstukIds.map((id) => cmsService.getHoofdstuk(id).catch(() => null))
+        );
+
+        const nextHoofdstukkenMap = {};
+        hoofdstukDetails.forEach((hoofdstuk) => {
+          if (hoofdstuk) nextHoofdstukkenMap[hoofdstuk.id] = hoofdstuk;
+        });
+
+        setParagrafen(paragrafenWithQuestions);
+        setVoortgangMap(Object.fromEntries(progressEntries));
+        setHoofdstukkenMap(nextHoofdstukkenMap);
+      } catch (err) {
+        console.error('Error loading student profile:', err);
+        setError('Kon je profielgegevens niet laden. Probeer het later opnieuw.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, [currentUser?.uid, klasData]);
+
+  const summary = useMemo(
+    () => buildStudentProgressSummary(paragrafen, hoofdstukkenMap, voortgangMap),
+    [paragrafen, hoofdstukkenMap, voortgangMap]
+  );
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-6xl mx-auto pad-content">
+        <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+          <div className="h-8 w-48 animate-pulse rounded bg-slate-200" />
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="h-32 animate-pulse rounded-lg bg-slate-100" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!klasData?.klasId) {
+    return (
+      <div className="w-full max-w-6xl mx-auto pad-content">
+        <EmptyState
+          icon={GraduationCap}
+          title="Kies eerst je klas"
+          description="Je profiel wordt gevuld zodra je aan een klas bent gekoppeld. De klaskeuze verschijnt automatisch als je nog geen klas hebt."
+        />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full max-w-6xl mx-auto pad-content">
+        <EmptyState icon={AlertCircle} title="Profiel niet geladen" description={error} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-6xl mx-auto pad-content">
+      <div className="mb-8">
+        <p className="text-sm font-black uppercase tracking-widest text-blue-600">Mijn profiel</p>
+        <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+          {displayName}
+        </h1>
+      </div>
+
+      <section className="grid gap-5 lg:grid-cols-[1.1fr_1.9fr]">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+              <UserCircle size={38} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900">{displayName}</h2>
+              <p className="text-sm font-semibold text-blue-600">Leerling</p>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-3 text-sm">
+            <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3">
+              <Mail size={18} className="text-slate-400" />
+              <span className="font-medium text-slate-700">{email}</span>
+            </div>
+            <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3">
+              <GraduationCap size={18} className="text-slate-400" />
+              <span className="font-medium text-slate-700">{klasName}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-900 p-6 text-white shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-black uppercase tracking-widest text-blue-200">
+                Mijn voortgang
+              </p>
+              <h2 className="mt-2 text-3xl font-black">{summary.progressPercent}% afgerond</h2>
+            </div>
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-blue-100">
+              <BarChart3 size={30} />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <ProgressBar value={summary.progressPercent} tone="green" />
+            <div className="mt-3 flex items-center justify-between text-sm text-slate-300">
+              <span>{summary.completedQuestions} afgerond</span>
+              <span>{summary.totalQuestions} vragen totaal</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        {summary.chapterGroups.length === 0 ? (
+          <EmptyState
+            icon={BookOpen}
+            title="Nog geen taken klaarstaan"
+            description="Je docent heeft nog geen lesmateriaal aan jouw klas gekoppeld."
+          />
+        ) : (
+          <div className="space-y-6">
+            {summary.chapterGroups.map((chapter) => (
+              <div key={chapter.id} className="rounded-lg border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 px-6 py-5">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <h2 className="text-xl font-black text-slate-900">
+                        {chapter.number && `${chapter.number}. `}{chapter.title}
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {chapter.completedQuestions} van {chapter.totalQuestions} vragen afgerond
+                      </p>
+                    </div>
+                    <div className="min-w-40">
+                      <div className="mb-2 text-right text-sm font-bold text-slate-700">
+                        {chapter.progressPercent}%
+                      </div>
+                      <ProgressBar value={chapter.progressPercent} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="divide-y divide-slate-100">
+                  {chapter.paragrafen.map((paragraaf) => {
+                    const isComplete =
+                      paragraaf.totalQuestions > 0 &&
+                      paragraaf.completedQuestions === paragraaf.totalQuestions;
+
+                    return (
+                      <div key={paragraaf.id} className="px-6 py-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                                isComplete ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                              }`}
+                            >
+                              {isComplete ? <CheckCircle2 size={20} /> : <BookOpen size={20} />}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-slate-900">
+                                {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                              </h3>
+                              <p className="text-sm text-slate-500">
+                                {paragraaf.completedQuestions} / {paragraaf.totalQuestions} vragen
+                              </p>
+                            </div>
+                          </div>
+                          <div className="md:w-48">
+                            <ProgressBar value={paragraaf.progressPercent} tone={isComplete ? 'green' : 'blue'} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

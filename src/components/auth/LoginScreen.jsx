@@ -94,9 +94,9 @@ export default function LoginScreen() {
       <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-slate-100">
         <div className="text-center mb-8">
           <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-inner border border-slate-50 overflow-hidden p-2">
-            <img src="/logo.svg" alt="Pythagoras Logo" className="w-full h-full object-contain" />
+            <img src="/logo.svg" alt="Helix Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Pythagoras Digibord</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Helix Leerplatform</h1>
           <p className="text-slate-500 mt-2">
             {isSignUp ? 'Maak een account aan om te starten' : 'Log in om verder te gaan met je les'}
           </p>

@@ -47,7 +47,7 @@ Spreek de leerling aan in de je-vorm.`;
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": "https://stellingvanpythagoras.nl", 
-        "X-Title": "Stelling van Pythagoras App"
+        "X-Title": "HELIX App"
       },
       body: JSON.stringify({
         model: "google/gemini-2.0-flash-001",

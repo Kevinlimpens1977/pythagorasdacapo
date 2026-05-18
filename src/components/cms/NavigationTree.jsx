@@ -14,6 +14,7 @@ const TreeNode = ({
   id,
   icon: Icon,
   level,
+  emoji,
   children = [],
   isSelected,
   onSelect,
@@ -78,12 +79,16 @@ const TreeNode = ({
 
         {/* Level indicator (badge) */}
         <span className="text-xs opacity-60 flex-shrink-0">
-          {level === 0 && '📚'}
-          {level === 1 && '📅'}
-          {level === 2 && '📊'}
-          {level === 3 && '📖'}
-          {level === 4 && '📝'}
-          {level === 5 && '❓'}
+          {emoji || (
+            <>
+              {level === 0 && '📚'}
+              {level === 1 && '📅'}
+              {level === 2 && '📊'}
+              {level === 3 && '📖'}
+              {level === 4 && '📝'}
+              {level === 5 && '❓'}
+            </>
+          )}
         </span>
       </div>
 

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, PlayCircle, CheckCircle2, BookOpen } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import * as cmsService from '../../services/cmsService';
+import * as klasService from '../../services/klasService';
 import * as voortgangService from '../../services/voortgangService';
 import { useState, useEffect } from 'react';
 
@@ -19,8 +20,10 @@ export default function TableOfContents() {
       setLoading(true);
 
       try {
-        // Get list of enabled paragraph IDs for this class
-        const enabledParagraafIds = klasData?.enabledParagrafen || [];
+        // Get class defaults plus any per-student extra paragraphs
+        const enabledParagraafIds = currentUser?.uid
+          ? klasService.getStudentEffectiveParagrafen(klasData, currentUser.uid)
+          : klasData?.enabledParagrafen || [];
 
         if (!enabledParagraafIds || enabledParagraafIds.length === 0) {
           setParagrafen([]);
@@ -119,10 +122,10 @@ export default function TableOfContents() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="bg-slate-800 text-white p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">📐</span>
-              <h1 className="text-2xl sm:text-3xl font-bold">Stelling van Pythagoras</h1>
+              <span className="text-3xl">🧬</span>
+              <h1 className="text-2xl sm:text-3xl font-bold">HELIX</h1>
             </div>
-            <p className="text-slate-300 ml-11 text-lg">Hoofdstuk 7</p>
+            <p className="text-slate-300 ml-11 text-lg">Leeromgeving</p>
           </div>
           <div className="p-6 md:p-8">
             <div className="text-center text-slate-500">
@@ -141,10 +144,10 @@ export default function TableOfContents() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="bg-slate-800 text-white p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">📐</span>
-              <h1 className="text-2xl sm:text-3xl font-bold">Stelling van Pythagoras</h1>
+              <span className="text-3xl">🧬</span>
+              <h1 className="text-2xl sm:text-3xl font-bold">HELIX</h1>
             </div>
-            <p className="text-slate-300 ml-11 text-lg">Hoofdstuk 7</p>
+            <p className="text-slate-300 ml-11 text-lg">Leeromgeving</p>
           </div>
           <div className="p-6 md:p-8">
             <div className="text-center py-12">
@@ -167,10 +170,10 @@ export default function TableOfContents() {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="bg-slate-800 text-white p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">📐</span>
-            <h1 className="text-2xl sm:text-3xl font-bold">Stelling van Pythagoras</h1>
+            <span className="text-3xl">🧬</span>
+            <h1 className="text-2xl sm:text-3xl font-bold">HELIX</h1>
           </div>
-          <p className="text-slate-300 ml-11 text-lg">Hoofdstuk 7</p>
+          <p className="text-slate-300 ml-11 text-lg">Leeromgeving</p>
         </div>
 
         <div className="p-6 md:p-8">

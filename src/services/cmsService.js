@@ -478,6 +478,8 @@ export const createVak = async (data, userId) => {
       description: data.description || '',
       order: data.order || nextOrder,
       isActive: true,
+      color: data.color || null,
+      emoji: data.emoji || null,
       createdBy: userId,
       createdAt: serverTimestamp()
     });
@@ -546,6 +548,8 @@ export const createLeerjaar = async (vakId, data, userId) => {
       label: data.label || `Jaar ${data.year}`,
       order: nextOrder,
       isActive: true,
+      color: data.color || null,
+      emoji: data.emoji || null,
       createdBy: userId,
       createdAt: serverTimestamp()
     });
@@ -616,6 +620,8 @@ export const createNiveau = async (leerjaarId, data, userId) => {
       description: data.description || '',
       order: nextOrder,
       isActive: true,
+      color: data.color || null,
+      emoji: data.emoji || null,
       createdBy: userId,
       createdAt: serverTimestamp()
     });
@@ -688,6 +694,8 @@ export const createHoofdstuk = async (niveauId, data, userId) => {
       order: data.order || nextOrder,
       published: false,  // Draft by default
       isArchived: false,
+      color: data.color || null,
+      emoji: data.emoji || null,
       createdBy: userId,
       createdAt: serverTimestamp()
     });

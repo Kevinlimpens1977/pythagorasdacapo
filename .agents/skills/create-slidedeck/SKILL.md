@@ -5,7 +5,7 @@ Generate a professional Dutch VMBO-level educational slide deck from:
 - **PDF/JPG/screenshot** (upload directly)
 - **Method paragraph** (copy-paste text)
 
-Claude uses NotebookLM for source analysis, then structures content as:
+Codex uses NotebookLM for source analysis, then structures content as:
 - **15-20 slides** (standaard), laagdrempelig Nederlands
 - **3-5 inoefenvragen** verspreid door de slidedeck
 - **Flexibele theorie-kaders** (1-3 tot 8+ regels per slide)
@@ -134,7 +134,7 @@ Claude uses NotebookLM for source analysis, then structures content as:
 | Tag | Betekenis | Handeling |
 |-----|-----------|-----------|
 | `SOURCE_BASED` | Rechtstreeks uit bron-PDF/methodeparagraaf | Gebruik als-is |
-| `AI_SUGGESTION` | Claude structureert/vult aan | Review voordatje het deelt |
+| `AI_SUGGESTION` | Codex structureert/vult aan | Review voordatje het deelt |
 | `NEEDS_REVIEW` | Onduidelijk of conflicterende info | Vraag expert of herstructureer |
 | `TEACHER_DECISION` | Didactische keuze (level, orde, toetsvraag) | Beslis per geval |
 
@@ -144,19 +144,19 @@ Claude uses NotebookLM for source analysis, then structures content as:
 ```bash
 /create-slidedeck "stelling van pythagoras"
 ```
-→ Claude gebruikt NotebookLM om je notebook te analyseren → structureert slides
+→ Codex gebruikt NotebookLM om je notebook te analyseren → structureert slides
 
 ### 2. **PDF/JPG source**
 ```bash
 /create-slidedeck @boek-pagina-28.pdf
 ```
-→ Claude uploadt naar NotebookLM → analyseert inhoud → genereert slides
+→ Codex uploadt naar NotebookLM → analyseert inhoud → genereert slides
 
 ### 3. **Text source**
 ```bash
 /create-slidedeck "Pythagoras zei dat in rechthoekige driehoeken a² + b² = c²..."
 ```
-→ Claude structureert direct → genereert slides
+→ Codex structureert direct → genereert slides
 
 ## Integration with Learning Platform
 
@@ -304,4 +304,4 @@ Passed: 6/6
 
 **Last updated:** 2026-05-11  
 **Version:** 2.0  
-**Created by:** Claude Code + NotebookLM Integration + Browser Automation
+**Created by:** Codex + NotebookLM Integration + Browser Automation

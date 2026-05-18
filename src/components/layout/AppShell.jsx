@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
 import { LogOut, User, LayoutDashboard, BookOpen, SettingsIcon } from 'lucide-react';
@@ -8,7 +8,6 @@ export default function AppShell() {
   const { currentUser, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [nameSetupDone, setNameSetupDone] = useState(false);
 
   // Redirect admin to /admin if they're viewing student home
   useEffect(() => {
@@ -25,7 +24,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
       {/* Name Setup Modal for users without displayName */}
-      <NameSetupModal onComplete={() => setNameSetupDone(true)} />
+      <NameSetupModal />
 
       {/* Header - Premium Glassmorphism */}
       <header className="sticky top-0 z-[100] h-20 bg-white/70 backdrop-blur-2xl border-b border-slate-200/60 px-6 md:px-12 flex items-center justify-between shadow-[0_2px_20px_-10px_rgba(0,0,0,0.05)]">
@@ -78,14 +77,28 @@ export default function AppShell() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden lg:flex flex-col items-end mr-2">
-            <span className="text-sm font-bold text-slate-800">{currentUser?.displayName || 'Gebruiker'}</span>
-            {isAdmin ? (
+          {!isAdmin ? (
+            <button
+              onClick={() => navigate('/profiel')}
+              className={`flex items-center gap-3 rounded-xl border p-2.5 text-left transition-all focus:outline-none focus:ring-4 focus:ring-blue-200 lg:px-3 lg:py-2 ${
+                location.pathname === '/profiel'
+                  ? 'border-blue-200 bg-blue-50 text-blue-700'
+                  : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-white'
+              }`}
+              title="Mijn profiel"
+            >
+              <User size={22} />
+              <span className="hidden flex-col items-end lg:flex">
+                <span className="text-sm font-bold">{currentUser?.displayName || 'Gebruiker'}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Leerling</span>
+              </span>
+            </button>
+          ) : (
+            <div className="hidden lg:flex flex-col items-end mr-2">
+              <span className="text-sm font-bold text-slate-800">{currentUser?.displayName || 'Gebruiker'}</span>
               <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2 rounded-md">Administrator</span>
-            ) : (
-              <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-2 rounded-md">Leerling</span>
-            )}
-          </div>
+            </div>
+          )}
           
           <button 
             onClick={handleLogout}

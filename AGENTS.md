@@ -1,9 +1,9 @@
-# Claude Code Guide - Stelling van Pythagoras Project
+# Codex Guide - Stelling van Pythagoras Project
 
 ## Slidedeck Workflow
 
-**Skill:** `.claude/skills/create-slidedeck/SKILL.md`  
-**Preferences:** `.claude/preferences/slidedeck-preferences.md`
+**Skill:** `.Codex/skills/create-slidedeck/SKILL.md`  
+**Preferences:** `.Codex/preferences/slidedeck-preferences.md`
 
 ### Quick Start
 
@@ -46,7 +46,7 @@ Each chapter (7.3, 7.4, 7.5, 7.6) follows Phase-based rollout:
 ## Key Notes
 
 - NotebookLM (local): PDF/JPG analysis
-- Claude Code: Content structure & exports
+- Codex: Content structure & exports
 - Firebase: Lesson platform (separate setup)
 - Source tags: `SOURCE_BASED` | `AI_SUGGESTION` | `NEEDS_REVIEW` | `TEACHER_DECISION`
 - **PDF Integration:** Hybrid approach with Phase-based rollout (see Implementation Plan)

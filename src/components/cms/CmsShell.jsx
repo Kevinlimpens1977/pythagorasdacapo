@@ -6,12 +6,13 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { ChevronRight, Plus, Trash2, Palette } from 'lucide-react';
 import NavigationTree from './NavigationTree';
 import DualPanelEditor from './DualPanelEditor';
 import CreateQuestionModal from './CreateQuestionModal';
 import CreateContentModal from './CreateContentModal';
 import InlineEdit from './InlineEdit';
+import ColorEmojiPicker from './ColorEmojiPicker';
 import useCms from '../../hooks/useCms';
 import * as cmsService from '../../services/cmsService';
 import { auth } from '../../services/firebase';
@@ -22,6 +23,7 @@ export default function CmsShell() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createModal, setCreateModal] = useState(null); // { type, parentId }
   const [archiveLoading, setArchiveLoading] = useState(false);
+  const [editingColor, setEditingColor] = useState(null); // { type, id } when editing color/emoji
 
   // Sidebar state (load from localStorage)
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -100,6 +102,36 @@ export default function CmsShell() {
       alert('Error archiving: ' + err.message);
     } finally {
       setArchiveLoading(false);
+    }
+  };
+
+  // Handle saving color/emoji
+  const handleSaveColorEmoji = async (type, id, { colorId, emoji }) => {
+    try {
+      const updateMap = { color: colorId, emoji };
+      switch (type) {
+        case 'vak':
+          await cmsService.updateVak(id, updateMap);
+          await cms.loadVakken();
+          break;
+        case 'leerjaar':
+          await cmsService.updateLeerjaar(id, updateMap);
+          await cms.loadLeerjaren(cms.selectedVakId);
+          break;
+        case 'niveau':
+          await cmsService.updateNiveau(id, updateMap);
+          await cms.loadNiveaus(cms.selectedLeerjaarId);
+          break;
+        case 'hoofdstuk':
+          await cmsService.updateHoofdstuk(id, updateMap);
+          await cms.loadHoofdstukken(cms.selectedNiveauId);
+          break;
+        default:
+          break;
+      }
+      setEditingColor(null);
+    } catch (err) {
+      alert('Error saving color/emoji: ' + err.message);
     }
   };
 
@@ -210,7 +242,31 @@ export default function CmsShell() {
           {!cms.loading && !cms.error && cms.selectedVakId && !cms.selectedLeerjaarId && cms.currentVak && (
             <div className="max-w-2xl">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">📚 {cms.currentVak.name}</h2>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-3xl">{cms.currentVak.emoji || '📚'}</span>
+                  <h2 className="text-3xl font-bold text-gray-900">{cms.currentVak.name}</h2>
+                  <button
+                    onClick={() => setEditingColor({ type: 'vak', id: cms.selectedVakId })}
+                    className="ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Edit color & emoji"
+                  >
+                    <Palette size={20} />
+                  </button>
+                </div>
+
+                {/* Color/Emoji Picker (inline) */}
+                {editingColor?.type === 'vak' && editingColor?.id === cms.selectedVakId && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <ColorEmojiPicker
+                      colorId={cms.currentVak.color}
+                      emoji={cms.currentVak.emoji}
+                      itemName={cms.currentVak.name}
+                      onChange={(data) => handleSaveColorEmoji('vak', cms.selectedVakId, data)}
+                      onClose={() => setEditingColor(null)}
+                    />
+                  </div>
+                )}
+
                 <p className="text-gray-600 text-sm mb-6">{cms.currentVak.description || 'No description'}</p>
                 <div className="flex gap-3">
                   <button
@@ -235,7 +291,31 @@ export default function CmsShell() {
           {!cms.loading && !cms.error && cms.selectedLeerjaarId && !cms.selectedNiveauId && cms.currentLeerjaar && (
             <div className="max-w-2xl">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">📅 Jaar {cms.currentLeerjaar.year}</h2>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-3xl">{cms.currentLeerjaar.emoji || '📅'}</span>
+                  <h2 className="text-3xl font-bold text-gray-900">Jaar {cms.currentLeerjaar.year}</h2>
+                  <button
+                    onClick={() => setEditingColor({ type: 'leerjaar', id: cms.selectedLeerjaarId })}
+                    className="ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Edit color & emoji"
+                  >
+                    <Palette size={20} />
+                  </button>
+                </div>
+
+                {/* Color/Emoji Picker (inline) */}
+                {editingColor?.type === 'leerjaar' && editingColor?.id === cms.selectedLeerjaarId && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <ColorEmojiPicker
+                      colorId={cms.currentLeerjaar.color}
+                      emoji={cms.currentLeerjaar.emoji}
+                      itemName={`Jaar ${cms.currentLeerjaar.year}`}
+                      onChange={(data) => handleSaveColorEmoji('leerjaar', cms.selectedLeerjaarId, data)}
+                      onClose={() => setEditingColor(null)}
+                    />
+                  </div>
+                )}
+
                 <p className="text-gray-600 text-sm mb-6">{cms.currentLeerjaar.label || ''}</p>
                 <div className="flex gap-3">
                   <button
@@ -260,7 +340,31 @@ export default function CmsShell() {
           {!cms.loading && !cms.error && cms.selectedNiveauId && !cms.selectedHoofdstukId && cms.currentNiveau && (
             <div className="max-w-2xl">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-1">📊 {cms.currentNiveau.label}</h2>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-3xl">{cms.currentNiveau.emoji || '📊'}</span>
+                  <h2 className="text-3xl font-bold text-gray-900">{cms.currentNiveau.label}</h2>
+                  <button
+                    onClick={() => setEditingColor({ type: 'niveau', id: cms.selectedNiveauId })}
+                    className="ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Edit color & emoji"
+                  >
+                    <Palette size={20} />
+                  </button>
+                </div>
+
+                {/* Color/Emoji Picker (inline) */}
+                {editingColor?.type === 'niveau' && editingColor?.id === cms.selectedNiveauId && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <ColorEmojiPicker
+                      colorId={cms.currentNiveau.color}
+                      emoji={cms.currentNiveau.emoji}
+                      itemName={cms.currentNiveau.label}
+                      onChange={(data) => handleSaveColorEmoji('niveau', cms.selectedNiveauId, data)}
+                      onClose={() => setEditingColor(null)}
+                    />
+                  </div>
+                )}
+
                 <p className="text-gray-600 text-sm mb-6">{cms.currentNiveau.description || 'No description'}</p>
                 <div className="flex gap-3">
                   <button
@@ -286,11 +390,11 @@ export default function CmsShell() {
             <div className="max-w-2xl">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
                 <div className="flex items-start gap-3 mb-6">
-                  <span className="text-3xl">📖</span>
+                  <span className="text-3xl">{cms.currentHoofdstuk.emoji || '📖'}</span>
                   <InlineEdit
                     value={`${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`}
                     onSave={async (newValue) => {
-                      // Parse number and title from input (format: "7. Stelling van Pythagoras")
+                      // Parse number and title from input (format: "7. HELIX")
                       const parts = newValue.match(/^(\d+)\.\s*(.+)$/);
                       if (parts) {
                         await cmsService.updateHoofdstuk(cms.selectedHoofdstukId, {
@@ -301,7 +405,27 @@ export default function CmsShell() {
                       }
                     }}
                   />
+                  <button
+                    onClick={() => setEditingColor({ type: 'hoofdstuk', id: cms.selectedHoofdstukId })}
+                    className="ml-auto p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                    title="Edit color & emoji"
+                  >
+                    <Palette size={20} />
+                  </button>
                 </div>
+
+                {/* Color/Emoji Picker (inline) */}
+                {editingColor?.type === 'hoofdstuk' && editingColor?.id === cms.selectedHoofdstukId && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <ColorEmojiPicker
+                      colorId={cms.currentHoofdstuk.color}
+                      emoji={cms.currentHoofdstuk.emoji}
+                      itemName={`${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`}
+                      onChange={(data) => handleSaveColorEmoji('hoofdstuk', cms.selectedHoofdstukId, data)}
+                      onClose={() => setEditingColor(null)}
+                    />
+                  </div>
+                )}
                 <p className="text-gray-600 text-sm mb-6">{cms.currentHoofdstuk.description || 'No description'}</p>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <p className="text-sm text-blue-900"><strong>Paragrafen:</strong> {cms.paragrafen.length}</p>

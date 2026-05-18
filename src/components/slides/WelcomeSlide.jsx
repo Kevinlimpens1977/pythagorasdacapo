@@ -11,7 +11,7 @@ export default function WelcomeSlide({ onStart }) {
             Welkom! 👋
           </div>
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-slate-900 mb-6 tracking-tighter">
-            Stelling van Pythagoras
+            HELIX
           </h1>
           <p className="text-2xl md:text-3xl text-slate-600 font-medium">
             Leer de beroemdste stelling uit de wiskunde

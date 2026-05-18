@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { X, Loader } from 'lucide-react';
 import * as cmsService from '../../services/cmsService';
 import { auth } from '../../services/firebase';
+import ColorEmojiPicker from './ColorEmojiPicker';
 
 export default function CreateContentModal({
   type, // 'vak' | 'leerjaar' | 'niveau' | 'hoofdstuk' | 'paragraaf'
@@ -25,6 +26,9 @@ export default function CreateContentModal({
   const [number, setNumber] = useState('');
   const [code, setCode] = useState('');
   const [title, setTitle] = useState('');
+  const [color, setColor] = useState(null);
+  const [emoji, setEmoji] = useState('');
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -42,7 +46,7 @@ export default function CreateContentModal({
       switch (type) {
         case 'vak':
           newId = await cmsService.createVak(
-            { name, description },
+            { name, description, color, emoji },
             auth.currentUser.uid
           );
           break;
@@ -50,7 +54,7 @@ export default function CreateContentModal({
         case 'leerjaar':
           newId = await cmsService.createLeerjaar(
             parentId,
-            { year: parseInt(year), label: label || `Jaar ${year}` },
+            { year: parseInt(year), label: label || `Jaar ${year}`, color, emoji },
             auth.currentUser.uid
           );
           break;
@@ -58,7 +62,7 @@ export default function CreateContentModal({
         case 'niveau':
           newId = await cmsService.createNiveau(
             parentId,
-            { label, name: label, description },
+            { label, name: label, description, color, emoji },
             auth.currentUser.uid
           );
           break;
@@ -66,7 +70,7 @@ export default function CreateContentModal({
         case 'hoofdstuk':
           newId = await cmsService.createHoofdstuk(
             parentId,
-            { number: parseInt(number), title, description },
+            { number: parseInt(number), title, description, color, emoji },
             auth.currentUser.uid
           );
           break;
@@ -247,7 +251,7 @@ export default function CreateContentModal({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="bijv. Stelling van Pythagoras"
+                  placeholder="bijv. HELIX Basis"
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
@@ -310,6 +314,33 @@ export default function CreateContentModal({
                 />
               </div>
             </>
+          )}
+
+          {/* Color & Emoji Picker (for vak, leerjaar, niveau, hoofdstuk) */}
+          {['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(type) && (
+            <div className="pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setShowColorPicker(!showColorPicker)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium mb-2"
+              >
+                {showColorPicker ? '▼ Verberg kleur & emoji' : '▶ Kies kleur & emoji'}
+              </button>
+              {showColorPicker && (
+                <div className="mt-3">
+                  <ColorEmojiPicker
+                    colorId={color}
+                    emoji={emoji}
+                    itemName={name || label || title || ''}
+                    onChange={({ colorId, emoji: newEmoji }) => {
+                      setColor(colorId);
+                      setEmoji(newEmoji);
+                    }}
+                    onClose={() => setShowColorPicker(false)}
+                  />
+                </div>
+              )}
+            </div>
           )}
 
           {/* Buttons */}
