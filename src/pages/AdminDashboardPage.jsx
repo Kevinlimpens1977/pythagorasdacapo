@@ -1,142 +1,359 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, BookOpen, Users2, Presentation, MessageSquare, CheckSquare } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  CheckSquare,
+  GraduationCap,
+  LayoutDashboard,
+  MessageSquare,
+  Presentation,
+  Users,
+  Users2
+} from 'lucide-react';
 import StudentLoginInfoModal from '../components/admin/StudentLoginInfoModal';
+import * as klasService from '../services/klasService';
+import { buildAdminDashboardStats } from '../lib/adminDashboardStats';
+
+const statConfig = [
+  {
+    key: 'classCount',
+    label: 'Klassen',
+    description: 'Aangemaakt in het platform',
+    icon: GraduationCap,
+    tone: 'text-blue-600 bg-blue-50'
+  },
+  {
+    key: 'studentCount',
+    label: 'Leerlingen',
+    description: 'Gekoppeld aan klassen',
+    icon: Users,
+    tone: 'text-emerald-600 bg-emerald-50'
+  },
+  {
+    key: 'activeParagraphCount',
+    label: 'Actieve paragrafen',
+    description: 'Toegewezen aan minstens één klas',
+    icon: BookOpen,
+    tone: 'text-amber-600 bg-amber-50'
+  }
+];
+
+const quickActions = [
+  {
+    title: 'Taken toewijzen',
+    description: 'Zet paragrafen klaar voor klassen of individuele leerlingen.',
+    actionLabel: 'Wijs taken toe',
+    icon: CheckSquare,
+    path: '/admin/taken-toewijzen',
+    tone: 'bg-blue-600 text-white hover:bg-blue-700'
+  },
+  {
+    title: 'CMS openen',
+    description: 'Beheer vakken, hoofdstukken, paragrafen en vragen.',
+    actionLabel: 'Open CMS',
+    icon: BookOpen,
+    path: '/admin/cms',
+    tone: 'bg-slate-900 text-white hover:bg-slate-800'
+  },
+  {
+    title: 'Digibord starten',
+    description: 'Open presentaties voor klassikale uitleg.',
+    actionLabel: 'Open digibord',
+    icon: Presentation,
+    path: '/admin/digibord',
+    tone: 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-200'
+  }
+];
+
+const workflowGroups = [
+  {
+    title: 'Lesinhoud',
+    description: 'Maak en presenteer lesmateriaal.',
+    items: [
+      {
+        title: 'CMS Platform',
+        description: 'Beheer je lesinhoud en vragen.',
+        actionLabel: 'Open CMS',
+        icon: BookOpen,
+        path: '/admin/cms',
+        tone: 'text-violet-600 bg-violet-50'
+      },
+      {
+        title: 'Digibord',
+        description: 'Presenteer slides fullscreen.',
+        actionLabel: 'Open digibord',
+        icon: Presentation,
+        path: '/admin/digibord',
+        tone: 'text-blue-600 bg-blue-50'
+      }
+    ]
+  },
+  {
+    title: 'Klassen',
+    description: 'Organiseer groepen en lesstof.',
+    items: [
+      {
+        title: 'Klassen beheer',
+        description: 'Maak klassen en beheer instellingen.',
+        actionLabel: 'Beheer klassen',
+        icon: Users2,
+        path: '/admin/klassen',
+        tone: 'text-amber-600 bg-amber-50'
+      },
+      {
+        title: 'Taken toewijzen',
+        description: 'Wijs content toe aan klassen en leerlingen.',
+        actionLabel: 'Wijs taken toe',
+        icon: CheckSquare,
+        path: '/admin/taken-toewijzen',
+        tone: 'text-emerald-600 bg-emerald-50'
+      }
+    ]
+  },
+  {
+    title: 'Inzicht',
+    description: 'Volg voortgang en signalen.',
+    items: [
+      {
+        title: 'Leerlingresultaten',
+        description: 'Monitor voortgang van je leerlingen.',
+        actionLabel: 'Bekijk resultaten',
+        icon: BarChart3,
+        path: '/dashboard',
+        tone: 'text-indigo-600 bg-indigo-50'
+      },
+      {
+        title: 'Klas dashboard',
+        description: 'Bekijk klassikale voortgang en gemiddelden.',
+        actionLabel: 'Open dashboard',
+        icon: LayoutDashboard,
+        path: '/dashboard',
+        tone: 'text-sky-600 bg-sky-50'
+      }
+    ]
+  },
+  {
+    title: 'Communicatie',
+    description: 'Help leerlingen snel starten.',
+    items: [
+      {
+        title: 'Publiceer info op bord',
+        description: 'Toon inloginstructies aan leerlingen.',
+        actionLabel: 'Toon info',
+        icon: MessageSquare,
+        modal: 'student-login-info',
+        tone: 'text-rose-600 bg-rose-50'
+      }
+    ]
+  }
+];
+
+const StatCard = ({ stat, value, loading }) => {
+  const Icon = stat.icon;
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-bold text-slate-500">{stat.label}</p>
+          <div className="mt-2 text-3xl font-black text-slate-900">
+            {loading ? <span className="block h-9 w-16 animate-pulse rounded bg-slate-200" /> : value}
+          </div>
+        </div>
+        <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${stat.tone}`}>
+          <Icon size={22} />
+        </div>
+      </div>
+      <p className="mt-4 text-sm leading-5 text-slate-500">{stat.description}</p>
+    </div>
+  );
+};
+
+const QuickAction = ({ action, onSelect }) => {
+  const Icon = action.icon;
+
+  return (
+    <button
+      onClick={() => onSelect(action)}
+      className={`group rounded-lg px-5 py-4 text-left shadow-sm transition-all focus:outline-none focus:ring-4 focus:ring-blue-200 ${action.tone}`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <Icon size={22} className="mt-0.5 shrink-0" />
+          <div>
+            <h3 className="font-black">{action.title}</h3>
+            <p className="mt-1 text-sm leading-5 opacity-80">{action.description}</p>
+          </div>
+        </div>
+        <ArrowRight size={18} className="mt-1 shrink-0 transition-transform group-hover:translate-x-0.5" />
+      </div>
+      <div className="mt-4 text-sm font-black">{action.actionLabel}</div>
+    </button>
+  );
+};
+
+const WorkflowItem = ({ item, onSelect }) => {
+  const Icon = item.icon;
+
+  return (
+    <button
+      onClick={() => onSelect(item)}
+      className="group flex w-full items-start justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-blue-200"
+    >
+      <div className="flex items-start gap-3">
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.tone}`}>
+          <Icon size={20} />
+        </div>
+        <div>
+          <h3 className="font-black text-slate-900">{item.title}</h3>
+          <p className="mt-1 text-sm leading-5 text-slate-500">{item.description}</p>
+          <p className="mt-3 text-sm font-black text-blue-600">{item.actionLabel}</p>
+        </div>
+      </div>
+      <ArrowRight size={18} className="mt-2 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-slate-500" />
+    </button>
+  );
+};
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [showStudentLoginInfo, setShowStudentLoginInfo] = useState(false);
+  const [klassenWithStudents, setKlassenWithStudents] = useState([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadStats = async () => {
+      try {
+        setStatsLoading(true);
+        setStatsError(null);
+
+        const klassen = await klasService.getAvailableKlassen();
+        const enrichedKlassen = await Promise.all(
+          klassen.map(async (klas) => {
+            try {
+              const students = await klasService.getKlasStudents(klas.id);
+              return { ...klas, students };
+            } catch (error) {
+              console.error(`Kon leerlingen voor klas ${klas.id} niet laden:`, error);
+              return { ...klas, students: [] };
+            }
+          })
+        );
+
+        if (isMounted) {
+          setKlassenWithStudents(enrichedKlassen);
+        }
+      } catch (error) {
+        console.error('Kon Admin Hub statistieken niet laden:', error);
+        if (isMounted) {
+          setStatsError('Statistieken konden niet worden geladen.');
+          setKlassenWithStudents([]);
+        }
+      } finally {
+        if (isMounted) {
+          setStatsLoading(false);
+        }
+      }
+    };
+
+    loadStats();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => buildAdminDashboardStats(klassenWithStudents),
+    [klassenWithStudents]
+  );
+
+  const handleSelect = (item) => {
+    if (item.modal === 'student-login-info') {
+      setShowStudentLoginInfo(true);
+      return;
+    }
+
+    navigate(item.path);
+  };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-black text-slate-900 mb-2">Admin Dashboard</h1>
-          <p className="text-slate-600 text-lg">Beheer je lesplatform</p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto w-full max-w-7xl px-6 py-10 md:px-8 md:py-12">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-black uppercase tracking-widest text-blue-600">Werkplek</p>
+            <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Admin Hub</h1>
+            <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
+              Beheer lessen, klassen en voortgang vanuit een rustige startplek.
+            </p>
+          </div>
+
+          {statsError && (
+            <div className="flex max-w-md items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <AlertCircle size={18} className="mt-0.5 shrink-0" />
+              <span>{statsError}</span>
+            </div>
+          )}
         </div>
 
-        {/* Main Dashboard Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {/* Leerlingresultaten Card */}
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
-            <div className="relative p-8 text-white h-full flex flex-col justify-between min-h-[280px]">
-              <div>
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
-                  <Users size={32} />
-                </div>
-                <h2 className="text-2xl font-black mb-2">Leerlingresultaten</h2>
-                <p className="text-white/80 text-sm">Monitor voortgang van je leerlingen</p>
-              </div>
-              <div className="text-white/60 text-xs font-medium">KLIK OM TE OPENEN →</div>
-            </div>
-          </button>
+        <section className="mt-8 grid gap-4 md:grid-cols-3">
+          {statConfig.map((stat) => (
+            <StatCard
+              key={stat.key}
+              stat={stat}
+              value={stats[stat.key]}
+              loading={statsLoading}
+            />
+          ))}
+        </section>
 
-{/* CMS Platform Card */}
-          <button
-            onClick={() => navigate('/admin/cms')}
-            className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
-            <div className="relative p-8 text-white h-full flex flex-col justify-between min-h-[280px]">
-              <div>
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
-                  <BookOpen size={32} />
-                </div>
-                <h2 className="text-2xl font-black mb-2">CMS Platform</h2>
-                <p className="text-white/80 text-sm">Beheer je lesinhoud en vragen</p>
-              </div>
-              <div className="text-white/60 text-xs font-medium">KLIK OM TE OPENEN →</div>
+        <section className="mt-10">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-black text-slate-900">Snel aan de slag</h2>
+              <p className="mt-1 text-sm text-slate-500">De acties die je op een lesdag het vaakst nodig hebt.</p>
             </div>
-          </button>
+          </div>
 
-          {/* Klassen Beheer Card */}
-          <button
-            onClick={() => navigate('/admin/klassen')}
-            className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-amber-600 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
-            <div className="relative p-8 text-white h-full flex flex-col justify-between min-h-[280px]">
-              <div>
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
-                  <Users2 size={32} />
+          <div className="grid gap-4 lg:grid-cols-3">
+            {quickActions.map((action) => (
+              <QuickAction key={action.title} action={action} onSelect={handleSelect} />
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-10">
+          <div className="mb-4">
+            <h2 className="text-xl font-black text-slate-900">Beheer</h2>
+            <p className="mt-1 text-sm text-slate-500">Alle adminonderdelen gegroepeerd per werkstroom.</p>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            {workflowGroups.map((group) => (
+              <div key={group.title} className="rounded-lg border border-slate-200 bg-white/60 p-5">
+                <div className="mb-4">
+                  <h2 className="text-lg font-black text-slate-900">{group.title}</h2>
+                  <p className="mt-1 text-sm text-slate-500">{group.description}</p>
                 </div>
-                <h2 className="text-2xl font-black mb-2">Klassen Beheer</h2>
-                <p className="text-white/80 text-sm">Creëer klassen en beheer instellingen</p>
-              </div>
-              <div className="text-white/60 text-xs font-medium">KLIK OM TE OPENEN →</div>
-            </div>
-          </button>
 
-          {/* Taken Toewijzen Card */}
-          <button
-            onClick={() => navigate('/admin/taken-toewijzen')}
-            className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-teal-600 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
-            <div className="relative p-8 text-white h-full flex flex-col justify-between min-h-[280px]">
-              <div>
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
-                  <CheckSquare size={32} />
+                <div className="space-y-3">
+                  {group.items.map((item) => (
+                    <WorkflowItem key={item.title} item={item} onSelect={handleSelect} />
+                  ))}
                 </div>
-                <h2 className="text-2xl font-black mb-2">Taken Toewijzen</h2>
-                <p className="text-white/80 text-sm">Wijs content toe aan klassen en leerlingen</p>
               </div>
-              <div className="text-white/60 text-xs font-medium">KLIK OM TE OPENEN →</div>
-            </div>
-          </button>
-
-          {/* Digibord Card */}
-          <button
-            onClick={() => navigate('/admin/digibord')}
-            className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-blue-600 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
-            <div className="relative p-8 text-white h-full flex flex-col justify-between min-h-[280px]">
-              <div>
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
-                  <Presentation size={32} />
-                </div>
-                <h2 className="text-2xl font-black mb-2">Digibord</h2>
-                <p className="text-white/80 text-sm">Presenteer slides fullscreen</p>
-              </div>
-              <div className="text-white/60 text-xs font-medium">KLIK OM TE OPENEN →</div>
-            </div>
-          </button>
-
-          {/* Publiceer Info op Bord Card */}
-          <button
-            onClick={() => setShowStudentLoginInfo(true)}
-            className="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-rose-500 to-pink-600 opacity-90 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity"></div>
-            <div className="relative p-8 text-white h-full flex flex-col justify-between min-h-[280px]">
-              <div>
-                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/30 transition-colors">
-                  <MessageSquare size={32} />
-                </div>
-                <h2 className="text-2xl font-black mb-2">Publiceer Info op Bord</h2>
-                <p className="text-white/80 text-sm">Toon inloggeninstructies aan leerlingen</p>
-              </div>
-              <div className="text-white/60 text-xs font-medium">KLIK OM TE OPENEN →</div>
-            </div>
-          </button>
-        </div>
-
+            ))}
+          </div>
+        </section>
       </div>
 
-
-      {/* Student Login Info Modal */}
       <StudentLoginInfoModal
         isOpen={showStudentLoginInfo}
         onClose={() => setShowStudentLoginInfo(false)}
