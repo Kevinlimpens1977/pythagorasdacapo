@@ -2,6 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
+import CmsResetButton from '../admin/CmsResetButton';
 import { BarChart3, BookOpen, Gamepad2, LogOut, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 
@@ -85,6 +86,8 @@ export default function AppShell() {
         </div>
 
         <div className="flex items-center gap-4">
+          {isAdmin && <CmsResetButton />}
+
           {isDevBypass && (
             <button
               onClick={handleLogout}
