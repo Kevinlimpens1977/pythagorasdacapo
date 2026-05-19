@@ -1,4 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import TiptapImage from '@tiptap/extension-image';
 import {
   ArrowDown,
   ArrowUp,
@@ -98,6 +102,73 @@ const StudioTextArea = ({ label, value, onChange, placeholder, className = '' })
   </div>
 );
 
+const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder }) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      TiptapImage.configure({
+        allowBase64: true,
+        inline: false
+      }),
+      Placeholder.configure({
+        placeholder
+      })
+    ],
+    content: value || '<p></p>',
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm max-w-none min-h-72 rounded-lg border border-slate-300 bg-white p-4 leading-7 focus:outline-none focus:ring-2 focus:ring-blue-500'
+      }
+    },
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    }
+  });
+
+  useEffect(() => {
+    if (editor) onEditorReady?.(editor);
+  }, [editor, onEditorReady]);
+
+  if (!editor) {
+    return <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Editor laden...</div>;
+  }
+
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-bold text-slate-700">{label}</label>
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+        <div className="flex flex-wrap gap-1 border-b border-slate-200 bg-slate-100 px-3 py-2">
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`rounded-md px-2.5 py-1 text-sm font-black ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+          >
+            B
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`rounded-md px-2.5 py-1 text-sm italic ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+          >
+            I
+          </button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={`rounded-md px-2.5 py-1 text-sm font-bold ${editor.isActive('bulletList') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+          >
+            Lijst
+          </button>
+        </div>
+        <EditorContent editor={editor} />
+      </div>
+      <p className="mt-2 text-xs leading-5 text-slate-500">
+        Zet je cursor waar de crop moet komen. OCR komt als tekst, afbeelding-crops komen als afbeelding in deze editor.
+      </p>
+    </div>
+  );
+};
+
 const LessonBlockStudio = ({
   block,
   paragraaf,
@@ -115,6 +186,7 @@ const LessonBlockStudio = ({
   const [linkedVraagId, setLinkedVraagId] = useState(block.linkedVraagId || '');
   const [imageData, setImageData] = useState(null);
   const [selections, setSelections] = useState([]);
+  const [blockEditor, setBlockEditor] = useState(null);
   const [saving, setSaving] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
@@ -198,7 +270,6 @@ const LessonBlockStudio = ({
           } catch (ocrError) {
             return {
               ...baseCrop,
-              type: 'image',
               ocrError: ocrError.message || 'OCR mislukt'
             };
           }
@@ -212,9 +283,37 @@ const LessonBlockStudio = ({
         userId
       );
 
-      setContent((current) => mergeCropResultsIntoBlockContent(block.type, current, mergedCrops));
+      for (const crop of mergedCrops) {
+        if (crop.type === 'text') {
+          const text = crop.text || `[OCR mislukt: ${crop.label || 'crop'}]`;
+          blockEditor
+            ?.chain()
+            .focus()
+            .insertContent(`<p>${text}</p>`)
+            .run();
+        } else if (crop.downloadURL) {
+          blockEditor
+            ?.chain()
+            .focus()
+            .insertContent({
+              type: 'image',
+              attrs: {
+                src: crop.downloadURL,
+                alt: crop.label || title
+              }
+            })
+            .run();
+        }
+      }
+
+      setContent((current) => {
+        const merged = mergeCropResultsIntoBlockContent(block.type, current, mergedCrops);
+        return {
+          ...merged,
+          html: blockEditor?.getHTML() || merged.html
+        };
+      });
       setSelections([]);
-      setImageData(null);
     } catch (processError) {
       console.error('Kon crops niet verwerken:', processError);
       setError(processError.message || 'Kon crops niet verwerken.');
@@ -324,12 +423,12 @@ const LessonBlockStudio = ({
 
       <div className="grid min-h-[34rem] gap-0 xl:grid-cols-[minmax(24rem,0.95fr)_minmax(28rem,1.05fr)]">
         <div className="space-y-4 bg-white p-5">
-          <StudioTextArea
+          <StudioRichEditor
             label={contentFieldLabels[block.type] || 'Inhoud'}
             value={content.html || ''}
             onChange={(html) => updateContent({ html })}
+            onEditorReady={setBlockEditor}
             placeholder="Schrijf hier de tekst voor leerlingen of voeg OCR-tekst toe via de bronzone."
-            className="min-h-48"
           />
 
           {block.type === 'example' && (

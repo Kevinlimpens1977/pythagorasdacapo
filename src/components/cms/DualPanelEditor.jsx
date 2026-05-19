@@ -4,8 +4,8 @@
  * Handles unified save of both crops and question content
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Save, X, ChevronDown } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Save } from 'lucide-react';
 import { auth } from '../../services/firebase';
 import QuestionEditor from './QuestionEditor';
 import CropEditorPanel from './CropEditorPanel';
@@ -17,7 +17,6 @@ import { extractTextViaOCR } from '../../lib/api';
 
 export default function DualPanelEditor({
   vraag,
-  paragraafId,
   paragraafCode,
   onSave,
   onCancel
@@ -30,7 +29,7 @@ export default function DualPanelEditor({
   // Editor references
   const editorRef = useRef(null);
   const questionEditorRef = useRef(null);
-  const [userId, setUserId] = useState(null);
+  const userId = auth.currentUser?.uid || null;
 
   // Crop state
   const [imageData, setImageData] = useState(null);
@@ -40,14 +39,6 @@ export default function DualPanelEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
   const [isDirty, setIsDirty] = useState(false);
-
-  // Get userId from Firebase
-  useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      setUserId(currentUser.uid);
-    }
-  }, []);
 
   // Unsaved changes warning
   useEffect(() => {
@@ -216,17 +207,10 @@ export default function DualPanelEditor({
               .insertContent(`<p><strong>[OCR: ${crop.label}]</strong></p><p>${ocrResults[idx].text}</p>`)
               .run();
           } else {
-            // Fallback: insert image if OCR fails
             editor
               .chain()
               .focus()
-              .insertContent({
-                type: 'image',
-                attrs: {
-                  src: crop.downloadURL,
-                  alt: `[OCR Failed] ${crop.label}`,
-                },
-              })
+              .insertContent(`<p><strong>[OCR mislukt: ${crop.label}]</strong></p>`)
               .run();
           }
         }
@@ -234,7 +218,6 @@ export default function DualPanelEditor({
 
       console.log('✅ [CMS] Crops verwerkt en ingevoegd');
       setSelections([]);
-      setImageData(null);
       setIsDirty(false);
     } catch (err) {
       console.error('Error processing crops:', err);

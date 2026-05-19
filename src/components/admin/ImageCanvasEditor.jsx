@@ -277,15 +277,31 @@ export default function ImageCanvasEditor({
         </div>
       )}
 
-      {/* Reset button */}
       {imageData && (
-        <button
-          onClick={handleReset}
-          className="absolute top-6 right-6 p-2 bg-white hover:bg-gray-100 rounded-lg shadow-lg transition-colors text-gray-700"
-          title="Reset image and selections"
-        >
-          <Trash2 size={20} />
-        </button>
+        <div className="absolute top-6 right-6 flex gap-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-bold text-gray-700 shadow-lg transition-colors hover:bg-gray-100"
+            title="Nieuwe referentie uploaden"
+          >
+            <Upload size={18} />
+            Nieuwe upload
+          </button>
+          <button
+            onClick={handleReset}
+            className="p-2 bg-white hover:bg-gray-100 rounded-lg shadow-lg transition-colors text-gray-700"
+            title="Reset image and selections"
+          >
+            <Trash2 size={20} />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
+            onChange={handleInputChange}
+            className="hidden"
+          />
+        </div>
       )}
 
       {/* Info overlay */}

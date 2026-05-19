@@ -1,5 +1,6 @@
-import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import app from '../services/firebase';
+import { DEFAULT_OCR_MODEL, buildOcrMessages, isOcrRefusalText } from './ocrUtils';
 
 // Get functions instance
 const functions = getFunctions(app, 'europe-west1');
@@ -55,7 +56,7 @@ export const extractTextViaOCR = async (imageBlob) => {
       throw new Error('OpenRouter API key not configured. Set VITE_OPENROUTER_API_KEY in .env.local');
     }
 
-    console.log('📤 [OCR] Sending request to OpenRouter with model: gpt-4o');
+    console.log(`[OCR] Sending request to OpenRouter with model: ${DEFAULT_OCR_MODEL}`);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
@@ -69,22 +70,8 @@ export const extractTextViaOCR = async (imageBlob) => {
         'X-Title': 'HELIX CMS'
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: 'Extract all text from this image. Return ONLY the text, nothing else. Preserve formatting and structure as much as possible.'
-              },
-              {
-                type: 'image',
-                image: `data:image/jpeg;base64,${base64Image}`
-              }
-            ]
-          }
-        ],
+        model: DEFAULT_OCR_MODEL,
+        messages: buildOcrMessages(base64Image, imageBlob?.type || 'image/jpeg'),
         max_tokens: 2000
       }),
       signal: controller.signal
@@ -116,7 +103,7 @@ export const extractTextViaOCR = async (imageBlob) => {
     }
 
     // Check if the response is an error message instead of actual text
-    if (extractedText.includes("can't view or extract") || extractedText.includes("I'm sorry")) {
+    if (isOcrRefusalText(extractedText)) {
       console.error('❌ [OCR] API returned error as text:', extractedText);
       throw new Error(`OCR service refused: ${extractedText}`);
     }
@@ -125,6 +112,6 @@ export const extractTextViaOCR = async (imageBlob) => {
     return extractedText;
   } catch (error) {
     console.error('❌ [OCR] Error extracting text:', error);
-    throw new Error(`OCR failed: ${error.message}`);
+    throw new Error(`OCR failed: ${error.message}`, { cause: error });
   }
 };
