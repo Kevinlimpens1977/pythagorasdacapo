@@ -15,6 +15,7 @@ import StudentProfilePage from './pages/StudentProfilePage';
 import ClassSelectionModal from './components/auth/ClassSelectionModal';
 import AdminLesstofPage from './pages/AdminLesstofPage';
 import AdminLeerlingenPage from './pages/AdminLeerlingenPage';
+import AdminSpellenPage from './pages/AdminSpellenPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { currentUser, isAdmin } = useAuth();
@@ -56,6 +57,11 @@ function AppRoutes() {
         <Route path="admin/leerlingen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminLeerlingenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/spellen" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminSpellenPage />
           </PrivateRoute>
         } />
         <Route path="admin/cms" element={

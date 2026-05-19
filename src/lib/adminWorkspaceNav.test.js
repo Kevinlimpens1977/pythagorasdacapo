@@ -15,6 +15,7 @@ test('getAdminWorkspaceForPath groups admin content routes under lesstof', () =>
 test('getAdminWorkspaceForPath maps dashboard and student routes to the right workspace', () => {
   assert.equal(getAdminWorkspaceForPath('/dashboard'), 'voortgang');
   assert.equal(getAdminWorkspaceForPath('/admin/leerlingen'), 'leerlingen');
+  assert.equal(getAdminWorkspaceForPath('/admin/spellen'), 'spellen');
   assert.equal(getAdminWorkspaceForPath('/admin'), 'beheer');
   assert.equal(getAdminWorkspaceForPath('/admin/klassen'), 'beheer');
   assert.equal(getAdminWorkspaceForPath('/admin/taken-toewijzen'), 'beheer');

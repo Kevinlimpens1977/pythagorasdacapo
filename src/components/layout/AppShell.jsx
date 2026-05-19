@@ -2,13 +2,14 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
-import { BarChart3, BookOpen, LogOut, SettingsIcon, User, Users } from 'lucide-react';
+import { BarChart3, BookOpen, Gamepad2, LogOut, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 
 const workspaceIcons = {
   lesstof: BookOpen,
   voortgang: BarChart3,
   leerlingen: Users,
+  spellen: Gamepad2,
   beheer: SettingsIcon
 };
 
