@@ -43,42 +43,42 @@ const statConfig = [
 
 const quickActions = [
   {
-    title: 'Taken toewijzen',
-    description: 'Zet paragrafen klaar voor klassen of individuele leerlingen.',
-    actionLabel: 'Wijs taken toe',
-    icon: CheckSquare,
-    path: '/admin/taken-toewijzen',
+    title: 'Lesstof bouwen',
+    description: 'Open de plek voor CMS, crops, teksten, afbeeldingen en Digibord.',
+    actionLabel: 'Open Lesstof',
+    icon: BookOpen,
+    path: '/admin/lesstof',
     tone: 'bg-blue-600 text-white hover:bg-blue-700'
   },
   {
-    title: 'CMS openen',
-    description: 'Beheer vakken, hoofdstukken, paragrafen en vragen.',
-    actionLabel: 'Open CMS',
-    icon: BookOpen,
-    path: '/admin/cms',
+    title: 'Voortgang bekijken',
+    description: 'Bekijk klasresultaten, leerlingvoortgang en signalen.',
+    actionLabel: 'Open Voortgang',
+    icon: BarChart3,
+    path: '/dashboard',
     tone: 'bg-slate-900 text-white hover:bg-slate-800'
   },
   {
-    title: 'Digibord starten',
-    description: 'Open presentaties voor klassikale uitleg.',
-    actionLabel: 'Open digibord',
-    icon: Presentation,
-    path: '/admin/digibord',
+    title: 'Leerlingen beheren',
+    description: 'Bekijk accounts, klaskoppeling en accountstatus.',
+    actionLabel: 'Open Leerlingen',
+    icon: Users,
+    path: '/admin/leerlingen',
     tone: 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-200'
   }
 ];
 
 const workflowGroups = [
   {
-    title: 'Lesinhoud',
-    description: 'Maak en presenteer lesmateriaal.',
+    title: 'Lesstof',
+    description: 'Maak, verrijk en presenteer lesmateriaal.',
     items: [
       {
-        title: 'CMS Platform',
-        description: 'Beheer je lesinhoud en vragen.',
-        actionLabel: 'Open CMS',
+        title: 'Lesstof werkplek',
+        description: 'Centrale plek voor CMS, crops, media en Digibord.',
+        actionLabel: 'Open Lesstof',
         icon: BookOpen,
-        path: '/admin/cms',
+        path: '/admin/lesstof',
         tone: 'text-violet-600 bg-violet-50'
       },
       {
@@ -92,8 +92,30 @@ const workflowGroups = [
     ]
   },
   {
-    title: 'Klassen',
-    description: 'Organiseer groepen en lesstof.',
+    title: 'Leerlingen',
+    description: 'Beheer accountoverzicht en klaskoppeling.',
+    items: [
+      {
+        title: 'Leerlingaccounts',
+        description: 'Bekijk leerlingen, e-mailadressen en gekoppelde klassen.',
+        actionLabel: 'Open Leerlingen',
+        icon: Users,
+        path: '/admin/leerlingen',
+        tone: 'text-emerald-600 bg-emerald-50'
+      },
+      {
+        title: 'Startinformatie',
+        description: 'Toon inloginstructies aan leerlingen.',
+        actionLabel: 'Toon info',
+        icon: MessageSquare,
+        modal: 'student-login-info',
+        tone: 'text-rose-600 bg-rose-50'
+      }
+    ]
+  },
+  {
+    title: 'Beheer',
+    description: 'Organiseer klassen, taken en instellingen.',
     items: [
       {
         title: 'Klassen beheer',
@@ -135,20 +157,6 @@ const workflowGroups = [
       }
     ]
   },
-  {
-    title: 'Communicatie',
-    description: 'Help leerlingen snel starten.',
-    items: [
-      {
-        title: 'Publiceer info op bord',
-        description: 'Toon inloginstructies aan leerlingen.',
-        actionLabel: 'Toon info',
-        icon: MessageSquare,
-        modal: 'student-login-info',
-        tone: 'text-rose-600 bg-rose-50'
-      }
-    ]
-  }
 ];
 
 const StatCard = ({ stat, value, loading }) => {
@@ -289,9 +297,9 @@ export default function AdminDashboardPage() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-widest text-blue-600">Werkplek</p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Admin Hub</h1>
+            <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Beheer</h1>
             <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
-              Beheer lessen, klassen en voortgang vanuit een rustige startplek.
+              Je rustige startplek voor klassen, taken, leerlingen en platformacties.
             </p>
           </div>
 

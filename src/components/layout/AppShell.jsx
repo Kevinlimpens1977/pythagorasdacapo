@@ -2,7 +2,15 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
-import { LogOut, User, LayoutDashboard, BookOpen, SettingsIcon } from 'lucide-react';
+import { BarChart3, BookOpen, LogOut, SettingsIcon, User, Users } from 'lucide-react';
+import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
+
+const workspaceIcons = {
+  lesstof: BookOpen,
+  voortgang: BarChart3,
+  leerlingen: Users,
+  beheer: SettingsIcon
+};
 
 export default function AppShell() {
   const { currentUser, isAdmin, logout } = useAuth();
@@ -38,40 +46,36 @@ export default function AppShell() {
           </h1>
           
           <nav className="flex gap-2 p-1 bg-slate-100/50 rounded-2xl border border-slate-200/50">
-            <button 
-              onClick={() => navigate('/')}
-              className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
-                window.location.pathname === '/' || window.location.pathname.includes('/chapter/') 
-                ? 'bg-white text-blue-600 shadow-sm border border-slate-200' 
-                : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <BookOpen size={18} /> <span className="hidden md:inline">Lesmateriaal</span>
-            </button>
-            
-            {isAdmin && (
-              <>
-                <button
-                  onClick={() => navigate('/admin')}
-                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
-                    window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/')
-                      ? 'bg-purple-100 text-purple-700 shadow-sm border border-purple-200'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                  }`}
-                >
-                  <SettingsIcon size={18} /> <span className="hidden md:inline">Admin Hub</span>
-                </button>
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
-                    window.location.pathname === '/dashboard'
-                      ? 'bg-amber-100 text-amber-700 shadow-sm border border-amber-200'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                  }`}
-                >
-                  <LayoutDashboard size={18} /> <span className="hidden md:inline">Klas Dashboard</span>
-                </button>
-              </>
+            {isAdmin ? (
+              ADMIN_WORKSPACES.map((workspace) => {
+                const Icon = workspaceIcons[workspace.id] || SettingsIcon;
+                const isActive = isAdminWorkspaceActive(workspace, location.pathname);
+
+                return (
+                  <button
+                    key={workspace.id}
+                    onClick={() => navigate(workspace.path)}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                      isActive
+                        ? 'bg-blue-100 text-blue-700 shadow-sm border border-blue-200'
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                    }`}
+                  >
+                    <Icon size={18} /> <span className="hidden md:inline">{workspace.label}</span>
+                  </button>
+                );
+              })
+            ) : (
+              <button
+                onClick={() => navigate('/')}
+                className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                  location.pathname === '/' || location.pathname.includes('/chapter/')
+                  ? 'bg-white text-blue-600 shadow-sm border border-slate-200'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                }`}
+              >
+                <BookOpen size={18} /> <span className="hidden md:inline">Lesmateriaal</span>
+              </button>
             )}
           </nav>
         </div>

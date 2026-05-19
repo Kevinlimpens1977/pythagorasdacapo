@@ -13,6 +13,8 @@ import AdminDigibordPage from './pages/AdminDigibordPage';
 import TakenToewijzenPage from './pages/TakenToewijzenPage';
 import StudentProfilePage from './pages/StudentProfilePage';
 import ClassSelectionModal from './components/auth/ClassSelectionModal';
+import AdminLesstofPage from './pages/AdminLesstofPage';
+import AdminLeerlingenPage from './pages/AdminLeerlingenPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { currentUser, isAdmin } = useAuth();
@@ -44,6 +46,16 @@ function AppRoutes() {
         <Route path="admin/crop-tool" element={
           <PrivateRoute requireAdmin={true}>
             <AdminCropToolPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/lesstof" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminLesstofPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/leerlingen" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminLeerlingenPage />
           </PrivateRoute>
         } />
         <Route path="admin/cms" element={
