@@ -4,7 +4,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Hand, MousePointer2, RotateCcw, Upload, ZoomIn, ZoomOut, Trash2 } from 'lucide-react';
+import { GripVertical, Hand, MousePointer2, RotateCcw, Upload, ZoomIn, ZoomOut, Trash2 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { loadImageData } from '../../services/cropService';
 import CropSelectionOverlay from './CropSelectionOverlay';
@@ -53,6 +53,9 @@ export default function ImageCanvasEditor({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(null);
   const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const toolbarRef = useRef(null);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: compact ? 16 : 24, y: null });
+  const [toolbarDrag, setToolbarDrag] = useState(null);
 
   const currentZoom = zoom ?? internalZoom;
   const currentPanOffset = panOffset ?? internalPanOffset;
@@ -146,6 +149,7 @@ export default function ImageCanvasEditor({
 
   // Pan (drag to move canvas)
   const handleMouseDown = useCallback((e) => {
+    if (e.target?.closest?.('[data-floating-toolbar]')) return;
     if (e.button === 2) e.preventDefault();
     const shouldPan = effectiveMode === 'hand' ? e.button === 0 || e.button === 1 || e.button === 2 : e.button === 1 || e.button === 2;
     if (!shouldPan) return;
@@ -174,6 +178,26 @@ export default function ImageCanvasEditor({
     setDragStart(null);
   }, []);
 
+  const handleToolbarMouseDown = (event) => {
+    if (event.button !== 0 || !canvasContainerRef.current || !toolbarRef.current) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const containerRect = canvasContainerRef.current.getBoundingClientRect();
+    const toolbarRect = toolbarRef.current.getBoundingClientRect();
+    const currentPosition = {
+      x: toolbarRect.left - containerRect.left,
+      y: toolbarRect.top - containerRect.top
+    };
+
+    setToolbarPosition(currentPosition);
+    setToolbarDrag({
+      startMouse: { x: event.clientX, y: event.clientY },
+      startPosition: currentPosition
+    });
+  };
+
   // Setup paste listener
   useEffect(() => {
     const container = canvasContainerRef.current;
@@ -201,6 +225,34 @@ export default function ImageCanvasEditor({
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+
+  useEffect(() => {
+    if (!toolbarDrag) return;
+
+    const handleMove = (event) => {
+      if (!canvasContainerRef.current || !toolbarRef.current) return;
+
+      const containerRect = canvasContainerRef.current.getBoundingClientRect();
+      const toolbarRect = toolbarRef.current.getBoundingClientRect();
+      const nextX = toolbarDrag.startPosition.x + event.clientX - toolbarDrag.startMouse.x;
+      const nextY = toolbarDrag.startPosition.y + event.clientY - toolbarDrag.startMouse.y;
+
+      setToolbarPosition({
+        x: Math.max(8, Math.min(containerRect.width - toolbarRect.width - 8, nextX)),
+        y: Math.max(8, Math.min(containerRect.height - toolbarRect.height - 8, nextY))
+      });
+    };
+
+    const handleUp = () => setToolbarDrag(null);
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, [toolbarDrag]);
 
   useEffect(() => {
     const isEditableTarget = (target) => {
@@ -343,7 +395,23 @@ export default function ImageCanvasEditor({
 
       {/* Zoom controls */}
       {imageData && (
-        <div className={`absolute ${compact ? 'bottom-4 left-4' : 'bottom-6 left-6'} flex items-center gap-2 rounded-lg bg-white p-2 shadow-lg`}>
+        <div
+          ref={toolbarRef}
+          data-floating-toolbar
+          className="absolute flex items-center gap-2 rounded-lg bg-white p-2 shadow-lg"
+          style={
+            toolbarPosition.y === null
+              ? { left: toolbarPosition.x, bottom: compact ? 16 : 24 }
+              : { left: toolbarPosition.x, top: toolbarPosition.y }
+          }
+        >
+          <button
+            onMouseDown={handleToolbarMouseDown}
+            className="cursor-grab rounded p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing"
+            title="Toolbar verplaatsen"
+          >
+            <GripVertical size={18} />
+          </button>
           <button
             onClick={() => onInteractionModeChange?.('hand')}
             className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-bold transition-colors ${interactionMode === 'hand' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-gray-100'}`}
