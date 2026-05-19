@@ -6,14 +6,14 @@
 import { useRef, useState } from 'react';
 import { validateAndClipCoordinates } from '../../services/cropService';
 
-const MIN_RECTANGLE_SIZE = 20;
+const MIN_RECTANGLE_SIZE = 6;
 
 export default function CropSelectionOverlay({
   imageData,
   selections,
   onSelectionsChanged,
-  zoom = 1,
-  panOffset = { x: 0, y: 0 }
+  interactionMode = 'select',
+  isTemporaryHandMode = false
 }) {
   const svgRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -21,14 +21,16 @@ export default function CropSelectionOverlay({
 
   if (!imageData) return null;
 
+  const isSelectionMode = interactionMode === 'select' && !isTemporaryHandMode;
+
   const displayToOriginal = (x, y) => ({
-    x: Math.round((x - panOffset.x) / zoom / imageData.canvasWidth * imageData.width),
-    y: Math.round((y - panOffset.y) / zoom / imageData.canvasHeight * imageData.height)
+    x: Math.round(x / imageData.canvasWidth * imageData.width),
+    y: Math.round(y / imageData.canvasHeight * imageData.height)
   });
 
   const originalToDisplay = (origX, origY) => ({
-    x: origX / imageData.width * imageData.canvasWidth + panOffset.x / zoom,
-    y: origY / imageData.height * imageData.canvasHeight + panOffset.y / zoom
+    x: origX / imageData.width * imageData.canvasWidth,
+    y: origY / imageData.height * imageData.canvasHeight
   });
 
   const getMousePos = (event) => {
@@ -47,6 +49,8 @@ export default function CropSelectionOverlay({
   };
 
   const handleMouseDown = (event) => {
+    if (!isSelectionMode || event.button !== 0) return;
+
     const pos = getMousePos(event);
     setIsDrawing(true);
     setCurrentRectangle({
@@ -58,7 +62,7 @@ export default function CropSelectionOverlay({
   };
 
   const handleMouseMove = (event) => {
-    if (!isDrawing || !currentRectangle) return;
+    if (!isSelectionMode || !isDrawing || !currentRectangle) return;
 
     const pos = getMousePos(event);
     setCurrentRectangle((previous) => ({
@@ -151,18 +155,31 @@ export default function CropSelectionOverlay({
   const renderDrawingRectangle = () => {
     if (!currentRectangle) return null;
 
+    const width = Math.abs(Math.round(currentRectangle.width / imageData.canvasWidth * imageData.width));
+    const height = Math.abs(Math.round(currentRectangle.height / imageData.canvasHeight * imageData.height));
+
     return (
-      <rect
-        x={currentRectangle.x}
-        y={currentRectangle.y}
-        width={currentRectangle.width}
-        height={currentRectangle.height}
-        fill="rgba(16, 185, 129, 0.1)"
-        stroke="#10b981"
-        strokeWidth={2}
-        strokeDasharray="5,5"
-        pointerEvents="none"
-      />
+      <g pointerEvents="none">
+        <rect
+          x={currentRectangle.x}
+          y={currentRectangle.y}
+          width={currentRectangle.width}
+          height={currentRectangle.height}
+          fill="rgba(16, 185, 129, 0.1)"
+          stroke="#10b981"
+          strokeWidth={2}
+          strokeDasharray="5,5"
+        />
+        <text
+          x={currentRectangle.x + 8}
+          y={currentRectangle.y + 22}
+          fontSize="13"
+          fontWeight="bold"
+          fill="#047857"
+        >
+          {width} x {height}px
+        </text>
+      </g>
     );
   };
 
@@ -172,7 +189,7 @@ export default function CropSelectionOverlay({
       width={imageData.canvasWidth}
       height={imageData.canvasHeight}
       className="absolute inset-0"
-      style={{ pointerEvents: 'auto', cursor: 'crosshair' }}
+      style={{ pointerEvents: isSelectionMode ? 'auto' : 'none', cursor: 'crosshair' }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

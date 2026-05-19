@@ -4,7 +4,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Upload, ZoomIn, ZoomOut, Trash2 } from 'lucide-react';
+import { Hand, MousePointer2, RotateCcw, Upload, ZoomIn, ZoomOut, Trash2 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { loadImageData } from '../../services/cropService';
 import CropSelectionOverlay from './CropSelectionOverlay';
@@ -13,7 +13,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
 const ZOOM_STEP = 0.2;
 const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 3;
+const MAX_ZOOM = 5;
 
 const renderFirstPdfPageToDataUrl = async (file) => {
   const buffer = await file.arrayBuffer();
@@ -34,16 +34,31 @@ export default function ImageCanvasEditor({
   onImageLoaded,
   onSelectionsChanged,
   selections = [],
-  imageData = null
+  imageData = null,
+  interactionMode = 'select',
+  onInteractionModeChange,
+  zoom,
+  onZoomChange,
+  panOffset,
+  onPanOffsetChange,
+  compact = false,
+  showTopActions = true
 }) {
   const canvasContainerRef = useRef(null);
   const fileInputRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [zoom, setZoom] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [internalZoom, setInternalZoom] = useState(1);
+  const [internalPanOffset, setInternalPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(null);
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+
+  const currentZoom = zoom ?? internalZoom;
+  const currentPanOffset = panOffset ?? internalPanOffset;
+  const setCurrentZoom = onZoomChange ?? setInternalZoom;
+  const setCurrentPanOffset = onPanOffsetChange ?? setInternalPanOffset;
+  const effectiveMode = isSpacePressed ? 'hand' : interactionMode;
 
   // Handle file upload
   const handleFileUpload = useCallback(async (file) => {
@@ -67,14 +82,14 @@ export default function ImageCanvasEditor({
         : file;
       const data = await loadImageData(source);
       onImageLoaded(data);
-      setZoom(1);
-      setPanOffset({ x: 0, y: 0 });
+      setCurrentZoom(1);
+      setCurrentPanOffset({ x: 0, y: 0 });
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
-  }, [onImageLoaded]);
+  }, [onImageLoaded, setCurrentPanOffset, setCurrentZoom]);
 
   // Handle paste from clipboard
   const handlePaste = useCallback((e) => {
@@ -99,19 +114,46 @@ export default function ImageCanvasEditor({
   };
 
   // Zoom in/out
-  const handleZoom = (direction) => {
-    setZoom(prev => {
-      const newZoom = direction === 'in' ? prev + ZOOM_STEP : prev - ZOOM_STEP;
-      return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
-    });
+  const handleZoom = (direction, focalPoint = null) => {
+    const nextZoom = Math.max(
+      MIN_ZOOM,
+      Math.min(MAX_ZOOM, direction === 'in' ? currentZoom + ZOOM_STEP : currentZoom - ZOOM_STEP)
+    );
+
+    if (nextZoom === currentZoom) return;
+
+    if (focalPoint && canvasContainerRef.current) {
+      const rect = canvasContainerRef.current.getBoundingClientRect();
+      const relativePoint = {
+        x: focalPoint.clientX - rect.left - rect.width / 2,
+        y: focalPoint.clientY - rect.top - rect.height / 2
+      };
+      const scaleRatio = nextZoom / currentZoom;
+
+      setCurrentPanOffset({
+        x: relativePoint.x - (relativePoint.x - currentPanOffset.x) * scaleRatio,
+        y: relativePoint.y - (relativePoint.y - currentPanOffset.y) * scaleRatio
+      });
+    }
+
+    setCurrentZoom(nextZoom);
+  };
+
+  const handleFitToView = () => {
+    setCurrentZoom(1);
+    setCurrentPanOffset({ x: 0, y: 0 });
   };
 
   // Pan (drag to move canvas)
   const handleMouseDown = useCallback((e) => {
-    if (e.button !== 1 && e.button !== 2) return; // Middle or right mouse button
+    if (e.button === 2) e.preventDefault();
+    const shouldPan = effectiveMode === 'hand' ? e.button === 0 || e.button === 1 || e.button === 2 : e.button === 1 || e.button === 2;
+    if (!shouldPan) return;
+
+    e.preventDefault();
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
-  }, []);
+  }, [effectiveMode]);
 
   const handleMouseMove = useCallback((e) => {
     if (!isDragging || !dragStart) return;
@@ -119,13 +161,13 @@ export default function ImageCanvasEditor({
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
 
-    setPanOffset(prev => ({
+    setCurrentPanOffset(prev => ({
       x: prev.x + deltaX,
       y: prev.y + deltaY
     }));
 
     setDragStart({ x: e.clientX, y: e.clientY });
-  }, [dragStart, isDragging]);
+  }, [dragStart, isDragging, setCurrentPanOffset]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -145,24 +187,70 @@ export default function ImageCanvasEditor({
   useEffect(() => {
     const container = canvasContainerRef.current;
     if (!container) return;
+    const preventContextMenu = (event) => event.preventDefault();
 
     container.addEventListener('mousedown', handleMouseDown);
+    container.addEventListener('contextmenu', preventContextMenu);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
       container.removeEventListener('mousedown', handleMouseDown);
+      container.removeEventListener('contextmenu', preventContextMenu);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
+  useEffect(() => {
+    const isEditableTarget = (target) => {
+      if (!(target instanceof HTMLElement)) return false;
+      return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+    };
+
+    const handleKeyDown = (event) => {
+      if (!imageData || isEditableTarget(event.target)) return;
+
+      if (event.key === ' ') {
+        setIsSpacePressed(true);
+        event.preventDefault();
+      }
+      if (event.key === '+' || event.key === '=') handleZoom('in');
+      if (event.key === '-') handleZoom('out');
+      if (event.key === '0') handleFitToView();
+    };
+
+    const handleKeyUp = (event) => {
+      if (isEditableTarget(event.target)) return;
+
+      if (event.key === ' ') {
+        setIsSpacePressed(false);
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  });
+
+  const handleWheel = (event) => {
+    if (!imageData) return;
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 'in' : 'out';
+    handleZoom(direction, event);
+  };
+
   // Reset
   const handleReset = () => {
     onImageLoaded(null);
     onSelectionsChanged([]);
-    setZoom(1);
-    setPanOffset({ x: 0, y: 0 });
+    setCurrentZoom(1);
+    setCurrentPanOffset({ x: 0, y: 0 });
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -173,6 +261,7 @@ export default function ImageCanvasEditor({
       className="relative w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden focus:outline-none"
       tabIndex={0}
       onPaste={handlePaste}
+      onWheel={handleWheel}
     >
       {/* Background grid pattern */}
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
@@ -185,12 +274,12 @@ export default function ImageCanvasEditor({
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{
-            cursor: isDragging ? 'grabbing' : 'grab'
+            cursor: effectiveMode === 'hand' ? (isDragging ? 'grabbing' : 'grab') : 'crosshair'
           }}
         >
           <div
             style={{
-              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
+              transform: `translate(${currentPanOffset.x}px, ${currentPanOffset.y}px) scale(${currentZoom})`,
               transformOrigin: 'center',
               transition: isDragging ? 'none' : 'transform 0.2s ease-out'
             }}
@@ -212,8 +301,8 @@ export default function ImageCanvasEditor({
               imageData={imageData}
               selections={selections}
               onSelectionsChanged={onSelectionsChanged}
-              zoom={zoom}
-              panOffset={panOffset}
+              interactionMode={interactionMode}
+              isTemporaryHandMode={isSpacePressed}
             />
           </div>
         </div>
@@ -254,30 +343,54 @@ export default function ImageCanvasEditor({
 
       {/* Zoom controls */}
       {imageData && (
-        <div className="absolute bottom-6 left-6 flex gap-2 bg-white rounded-lg shadow-lg p-2">
+        <div className={`absolute ${compact ? 'bottom-4 left-4' : 'bottom-6 left-6'} flex items-center gap-2 rounded-lg bg-white p-2 shadow-lg`}>
+          <button
+            onClick={() => onInteractionModeChange?.('hand')}
+            className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-bold transition-colors ${interactionMode === 'hand' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-gray-100'}`}
+            title="Hand-tool: afbeelding verschuiven"
+          >
+            <Hand size={18} />
+            {!compact && 'Hand'}
+          </button>
+          <button
+            onClick={() => onInteractionModeChange?.('select')}
+            className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-bold transition-colors ${interactionMode === 'select' ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-gray-100'}`}
+            title="Selectie-tool: crop tekenen"
+          >
+            <MousePointer2 size={18} />
+            {!compact && 'Selectie'}
+          </button>
+          <div className="mx-1 h-7 w-px bg-slate-200" />
           <button
             onClick={() => handleZoom('out')}
-            disabled={zoom <= MIN_ZOOM}
+            disabled={currentZoom <= MIN_ZOOM}
             className="p-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
-            title="Zoom out (-),"
+            title="Zoom uit (-)"
           >
             <ZoomOut size={20} />
           </button>
           <div className="px-3 py-2 text-sm font-medium text-gray-600 min-w-[60px] text-center">
-            {Math.round(zoom * 100)}%
+            {Math.round(currentZoom * 100)}%
           </div>
           <button
             onClick={() => handleZoom('in')}
-            disabled={zoom >= MAX_ZOOM}
+            disabled={currentZoom >= MAX_ZOOM}
             className="p-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
             title="Zoom in (+)"
           >
             <ZoomIn size={20} />
           </button>
+          <button
+            onClick={handleFitToView}
+            className="p-2 hover:bg-gray-100 rounded transition-colors"
+            title="Passend maken (0)"
+          >
+            <RotateCcw size={20} />
+          </button>
         </div>
       )}
 
-      {imageData && (
+      {imageData && showTopActions && (
         <div className="absolute top-6 right-6 flex gap-2">
           <button
             onClick={() => fileInputRef.current?.click()}

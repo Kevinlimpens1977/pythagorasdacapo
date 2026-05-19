@@ -507,6 +507,8 @@ const LessonBlockStudio = ({
               selections={selections}
               onSelectionsChanged={setSelections}
               onCropTypeChange={handleCropTypeChange}
+              onProcessCrops={handleProcessCrops}
+              processing={processing}
             />
           </div>
         </div>

@@ -363,6 +363,8 @@ export default function DualPanelEditor({
               setIsDirty(true);
             }}
             onCropTypeChange={handleCropTypeChange}
+            onProcessCrops={handleProcessCrops}
+            processing={isSaving}
           />
         </div>
       </div>
