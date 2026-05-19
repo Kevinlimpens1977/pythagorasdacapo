@@ -527,6 +527,7 @@ export default function ContentBlockBuilder({
   const [editingBlockId, setEditingBlockId] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [creatingType, setCreatingType] = useState(null);
+  const [confirmArchiveBlockId, setConfirmArchiveBlockId] = useState(null);
   const normalizedBlocks = useMemo(() => normalizeContentBlocks(blocks), [blocks]);
 
   const vragenById = useMemo(() => {
@@ -595,12 +596,11 @@ export default function ContentBlockBuilder({
   };
 
   const handleArchiveBlock = async (blockId) => {
-    if (!window.confirm('Weet je zeker dat je dit lesblok wilt archiveren?')) return;
-
     try {
       setActionError(null);
       await cmsService.archiveContentBlock(blockId);
       await onRefresh();
+      setConfirmArchiveBlockId(null);
     } catch (error) {
       console.error('Kon lesblok niet archiveren:', error);
       setActionError('Kon lesblok niet archiveren.');
@@ -718,13 +718,38 @@ export default function ContentBlockBuilder({
                     >
                       {isEditing ? 'Sluit studio' : 'Open studio'}
                     </button>
-                    <button
-                      onClick={() => handleArchiveBlock(block.id)}
-                      className="rounded-lg border border-red-100 bg-red-50 p-2 text-red-600 hover:bg-red-100"
-                      title="Archiveer"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setConfirmArchiveBlockId(confirmArchiveBlockId === block.id ? null : block.id)}
+                        className="rounded-lg border border-red-100 bg-red-50 p-2 text-red-600 hover:bg-red-100"
+                        title="Archiveer"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+
+                      {confirmArchiveBlockId === block.id && (
+                        <div className="absolute right-0 top-11 z-30 w-64 rounded-lg border border-red-100 bg-white p-3 text-left shadow-xl">
+                          <p className="text-sm font-black text-slate-900">Lesblok archiveren?</p>
+                          <p className="mt-1 text-xs leading-5 text-slate-500">
+                            Dit haalt het blok uit de lesroute. Je kunt deze actie later niet vanuit dit scherm terugdraaien.
+                          </p>
+                          <div className="mt-3 flex justify-end gap-2">
+                            <button
+                              onClick={() => setConfirmArchiveBlockId(null)}
+                              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                            >
+                              Annuleer
+                            </button>
+                            <button
+                              onClick={() => handleArchiveBlock(block.id)}
+                              className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                            >
+                              Archiveer
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
