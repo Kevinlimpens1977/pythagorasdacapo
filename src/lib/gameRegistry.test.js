@@ -61,9 +61,16 @@ test('createLocalGameResult produces the required V1 result contract without Fir
   });
 });
 
-test('GO 2A placeholder games do not enable cms embedding by default', () => {
+test('Pythagoras Trainer is not cms embeddable before GO 3', () => {
   const pythagorasTrainer = getGameById('pythagoras-trainer');
 
   assert.equal(pythagorasTrainer.cmsEmbeddable, false);
   assert.equal(pythagorasTrainer.supportedModes.includes('cmsBlock'), false);
+});
+
+test('GO 2B marks Pythagoras Trainer as the first playable prototype', () => {
+  const pythagorasTrainer = getGameById('pythagoras-trainer');
+
+  assert.equal(pythagorasTrainer.componentKey, 'pythagorasTrainer');
+  assert.equal(pythagorasTrainer.status, 'prototype');
 });

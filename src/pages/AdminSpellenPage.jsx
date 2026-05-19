@@ -33,18 +33,18 @@ export default function AdminSpellenPage() {
             <p className="text-sm font-black uppercase tracking-widest text-blue-600">Werkplek</p>
             <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Spellen</h1>
             <p className="mt-3 max-w-3xl text-lg leading-8 text-slate-600">
-              Bereid educatieve browsergames voor als zelfstandige oefenvormen. GO 2A toont de foundation, registry en lokale resultaatflow zonder Firebase-writes.
+              Test educatieve browsergames als zelfstandige oefenvormen. Resultaten blijven lokaal in de browser; tokens en Firebase-writes volgen pas later.
             </p>
           </div>
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-800">
-            GO 2A: foundation, nog geen echte game
+            GO 2B: eerste speelbare game
           </div>
         </div>
 
         <section className="mt-8 grid gap-4 md:grid-cols-3">
-          <StatCard label="Registry games" value={GAME_REGISTRY.length} description="Placeholder-items in code" icon={Gamepad2} />
+          <StatCard label="Registry games" value={GAME_REGISTRY.length} description="Games en placeholders in code" icon={Gamepad2} />
           <StatCard label="CMS-ready later" value={cmsReadyCount} description="Ondersteunt cmsBlock modus" icon={Layers3} />
-          <StatCard label="Prototypegames" value={prototypeCount} description="Nog niet gebouwd in GO 2A" icon={Sparkles} />
+          <StatCard label="Prototypegames" value={prototypeCount} description="Speelbaar of in testfase" icon={Sparkles} />
         </section>
 
         <section className="mt-8 grid gap-6 xl:grid-cols-[420px_1fr]">

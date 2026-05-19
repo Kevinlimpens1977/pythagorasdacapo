@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AlertCircle, Clock, Play, Trophy } from 'lucide-react';
+import PythagorasTrainerGame from './PythagorasTrainerGame';
 import {
   createLocalGameResult,
   GAME_RESULT_HANDLING,
@@ -57,6 +58,20 @@ export default function GamePlayer({
     onResult?.(result);
   };
 
+  const handleCompleteGame = ({ score, maxScore, startedAt: gameStartedAt, completedAt }) => {
+    const result = createLocalGameResult({
+      game,
+      context: normalizedContext,
+      score,
+      maxScore,
+      startedAt: gameStartedAt || startedAt || new Date().toISOString(),
+      completedAt: completedAt || new Date().toISOString()
+    });
+
+    setLastResult(result);
+    onResult?.(result);
+  };
+
   return (
     <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 p-6">
@@ -91,29 +106,33 @@ export default function GamePlayer({
       </div>
 
       <div className="border-t border-slate-200 p-6">
-        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-          <Trophy size={34} className="mx-auto text-slate-300" />
-          <p className="mt-3 font-black text-slate-900">Placeholder-player</p>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
-            Deze foundation toont de contracten en callback-flow. De echte speelbare game wordt pas in GO 2B gebouwd.
-          </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <button
-              onClick={handleStart}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200"
-            >
-              <Play size={17} />
-              Start placeholder
-            </button>
-            <button
-              onClick={handleCompletePlaceholder}
-              disabled={normalizedContext.resultHandling !== GAME_RESULT_HANDLING.LOCAL_ONLY}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              Maak lokaal GameResult
-            </button>
+        {game.componentKey === 'pythagorasTrainer' ? (
+          <PythagorasTrainerGame onStart={setStartedAt} onComplete={handleCompleteGame} />
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+            <Trophy size={34} className="mx-auto text-slate-300" />
+            <p className="mt-3 font-black text-slate-900">Placeholder-player</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
+              Deze game staat in de registry, maar heeft nog geen speelbare component.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={handleStart}
+                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-200"
+              >
+                <Play size={17} />
+                Start placeholder
+              </button>
+              <button
+                onClick={handleCompletePlaceholder}
+                disabled={normalizedContext.resultHandling !== GAME_RESULT_HANDLING.LOCAL_ONLY}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                Maak lokaal GameResult
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {lastResult && (
           <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4">

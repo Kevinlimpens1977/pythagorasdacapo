@@ -18,7 +18,7 @@ export const GAME_REGISTRY = [
   {
     gameId: 'pythagoras-trainer',
     title: 'Pythagoras Trainer',
-    description: 'Placeholder voor een korte trainer rond rechthoekige driehoeken, score en nauwkeurigheid.',
+    description: 'Speelbare trainer rond rechthoekige driehoeken, score en nauwkeurigheid.',
     subject: 'Wiskunde',
     topic: 'Stelling van Pythagoras',
     level: 'VMBO-GT jaar 1',
@@ -30,7 +30,7 @@ export const GAME_REGISTRY = [
     skills: ['rekenen', 'ruimtelijk inzicht', 'formule toepassen'],
     estimatedMinutes: 6,
     route: '/admin/spellen/pythagoras-trainer',
-    componentKey: 'placeholder',
+    componentKey: 'pythagorasTrainer',
     cmsEmbeddable: false,
     supportedModes: [GAME_MODES.STANDALONE],
     tokenRewardPotential: {
@@ -38,7 +38,7 @@ export const GAME_REGISTRY = [
       max: 25,
       basis: 'score_accuracy_completion'
     },
-    status: GAME_STATUSES.PLANNED
+    status: GAME_STATUSES.PROTOTYPE
   },
   {
     gameId: 'breuken-sprint',
