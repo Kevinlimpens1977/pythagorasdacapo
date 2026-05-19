@@ -1,106 +1,159 @@
-/**
- * NavigationTree Component (ENHANCED)
- * Expandable hierarchy with inline "+ Create" buttons
- * Vak → Leerjaar → Niveau → Hoofdstuk → Paragraaf → Vraag
- */
-
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, BookOpen, BarChart3, Layers, FileText, HelpCircle, Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  BarChart3,
+  BookOpen,
+  Boxes,
+  ChevronDown,
+  ChevronRight,
+  FileQuestion,
+  FileText,
+  Layers3,
+  Plus,
+  Search,
+  Sparkles,
+  X
+} from 'lucide-react';
+import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils';
+import { buildCmsNavigationTree } from '../../lib/cmsNavigationUtils';
 
 const STORAGE_KEY = 'cms-tree-expanded-ids';
 
+const typeConfig = {
+  vak: { icon: BookOpen, accent: 'text-blue-600', childLabel: 'jaren' },
+  leerjaar: { icon: BarChart3, accent: 'text-slate-600', childLabel: 'niveaus' },
+  niveau: { icon: Layers3, accent: 'text-violet-600', childLabel: 'hoofdstukken' },
+  hoofdstuk: { icon: FileText, accent: 'text-emerald-600', childLabel: 'paragrafen' },
+  paragraaf: { icon: Boxes, accent: 'text-amber-600', childLabel: 'lesblokken' },
+  vraag: { icon: FileQuestion, accent: 'text-rose-500', childLabel: 'vraag' }
+};
+
+const countLabel = (node) => {
+  if (node.type === 'vak') return `${node.counts.leerjaren} ${node.counts.leerjaren === 1 ? 'jaar' : 'jaren'}`;
+  if (node.type === 'leerjaar') return `${node.counts.niveaus} ${node.counts.niveaus === 1 ? 'niveau' : 'niveaus'}`;
+  if (node.type === 'niveau') return `${node.counts.hoofdstukken} ${node.counts.hoofdstukken === 1 ? 'hoofdstuk' : 'hoofdstukken'}`;
+  if (node.type === 'hoofdstuk') return `${node.counts.paragrafen} ${node.counts.paragrafen === 1 ? 'paragraaf' : 'paragrafen'}`;
+  if (node.type === 'paragraaf') {
+    const total = node.counts.blocks.total || node.counts.vragen || 0;
+    return `${total} ${total === 1 ? 'blok' : 'blokken'}`;
+  }
+  return null;
+};
+
+const blockTypePills = (node) => {
+  if (node.type !== 'paragraaf' || !node.counts.blocks?.total) return [];
+
+  return ['theory', 'example', 'question', 'media', 'summary']
+    .map((type) => ({ type, count: node.counts.blocks[type] || 0 }))
+    .filter((item) => item.count > 0)
+    .map((item) => `${CONTENT_BLOCK_LABELS[item.type][0]}${item.count}`);
+};
+
 const TreeNode = ({
-  label,
-  id,
-  icon: Icon,
+  node,
   level,
-  emoji,
-  children = [],
-  isSelected,
-  onSelect,
+  selectedIds,
   expandedIds,
+  forceExpanded,
   onToggleExpand,
+  onSelect,
   onCreateChild
 }) => {
-  const isExpanded = expandedIds.includes(id);
-  const hasChildren = children.length > 0;
+  const config = typeConfig[node.type] || typeConfig.vak;
+  const Icon = config.icon;
+  const isExpanded = forceExpanded || expandedIds.includes(node.id);
+  const hasChildren = node.children.length > 0;
+  const isSelected = selectedIds[node.type] === node.id;
+  const pills = blockTypePills(node);
+  const mutedCount = countLabel(node);
 
   return (
-    <div className="select-none">
-      {/* Node Row */}
+    <div>
       <div
-        className={`
-          flex items-center gap-2 px-3 py-2 cursor-pointer rounded-md transition-all border-l-3 group
-          ${isSelected
-            ? 'bg-gray-50 text-gray-900 font-semibold border-l-blue-500'
-            : 'hover:bg-gray-50 text-gray-700 border-l-transparent'
-          }
-        `}
-        onClick={() => onSelect(id)}
+        className={[
+          'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-all',
+          isSelected
+            ? 'bg-slate-900 text-white shadow-sm'
+            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+        ].join(' ')}
+        style={{ paddingLeft: `${10 + level * 14}px` }}
+        onClick={() => onSelect({ type: node.type, id: node.id })}
       >
-        {/* Expand/Collapse button */}
-        {hasChildren ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleExpand(id);
-            }}
-            className="p-0 flex-shrink-0"
-          >
-            {isExpanded ? (
-              <ChevronDown size={16} />
-            ) : (
-              <ChevronRight size={16} />
-            )}
-          </button>
-        ) : (
-          <div className="w-4" />
-        )}
+        <button
+          onClick={(event) => {
+            event.stopPropagation();
+            if (hasChildren) onToggleExpand(node.id);
+          }}
+          className={[
+            'flex h-6 w-6 items-center justify-center rounded-md transition-colors',
+            hasChildren ? 'hover:bg-white/70' : 'opacity-30'
+          ].join(' ')}
+          disabled={!hasChildren}
+          title={isExpanded ? 'Inklappen' : 'Uitklappen'}
+        >
+          {hasChildren && (isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />)}
+        </button>
 
-        {/* Icon */}
-        <Icon size={16} className="flex-shrink-0" />
+        <span
+          className={[
+            'flex h-7 w-7 items-center justify-center rounded-lg',
+            isSelected ? 'bg-white/15 text-white' : `bg-white ${config.accent} ring-1 ring-slate-200`
+          ].join(' ')}
+        >
+          <Icon size={15} />
+        </span>
 
-        {/* Label */}
-        <span className="flex-1 text-sm font-medium">{label}</span>
+        <span className="min-w-0">
+          <span className="block truncate font-semibold leading-5">{node.label}</span>
+          {pills.length > 0 && (
+            <span className={['mt-1 flex flex-wrap gap-1 text-[10px] font-black uppercase tracking-wide', isSelected ? 'text-slate-200' : 'text-slate-400'].join(' ')}>
+              {pills.map((pill) => (
+                <span key={pill}>{pill}</span>
+              ))}
+            </span>
+          )}
+        </span>
 
-        {/* Create button (hover) */}
-        {onCreateChild && level < 5 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreateChild(id);
-            }}
-            className="p-1 opacity-0 group-hover:opacity-100 transition-opacity text-blue-600 hover:bg-blue-50 rounded"
-            title="Create child"
-          >
-            <Plus size={14} />
-          </button>
-        )}
-
-        {/* Level indicator (badge) */}
-        <span className="text-xs opacity-60 flex-shrink-0">
-          {emoji || (
-            <>
-              {level === 0 && '📚'}
-              {level === 1 && '📅'}
-              {level === 2 && '📊'}
-              {level === 3 && '📖'}
-              {level === 4 && '📝'}
-              {level === 5 && '❓'}
-            </>
+        <span className="flex items-center gap-1.5">
+          {mutedCount && (
+            <span
+              className={[
+                'hidden rounded-md px-2 py-1 text-[11px] font-bold lg:inline-flex',
+                isSelected ? 'bg-white/10 text-slate-100' : 'bg-slate-100 text-slate-500'
+              ].join(' ')}
+            >
+              {mutedCount}
+            </span>
+          )}
+          {onCreateChild && node.type !== 'vraag' && (
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                onCreateChild(node.id);
+              }}
+              className={[
+                'flex h-7 w-7 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100',
+                isSelected ? 'bg-white/10 text-white hover:bg-white/20' : 'text-blue-600 hover:bg-blue-50'
+              ].join(' ')}
+              title={`Nieuw onderdeel toevoegen`}
+            >
+              <Plus size={15} />
+            </button>
           )}
         </span>
       </div>
 
-      {/* Children (collapsed by default) */}
       {hasChildren && isExpanded && (
-        <div className="ml-4 border-l border-gray-200">
-          {children.map((child) => (
+        <div className="mt-1 space-y-1">
+          {node.children.map((child) => (
             <TreeNode
               key={child.id}
-              {...child}
+              node={child}
+              level={level + 1}
+              selectedIds={selectedIds}
               expandedIds={expandedIds}
+              forceExpanded={forceExpanded}
               onToggleExpand={onToggleExpand}
+              onSelect={onSelect}
               onCreateChild={onCreateChild}
             />
           ))}
@@ -117,6 +170,7 @@ export default function NavigationTree({
   hoofdstukken = [],
   paragrafen = [],
   vragen = [],
+  contentBlocks = [],
   selectedVakId,
   selectedLeerjaarId,
   selectedNiveauId,
@@ -131,7 +185,7 @@ export default function NavigationTree({
   onCreateParagraaf,
   onCreateVraag
 }) {
-  // Load initial state from localStorage
+  const [query, setQuery] = useState('');
   const [expandedIds, setExpandedIds] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -142,7 +196,6 @@ export default function NavigationTree({
     }
   });
 
-  // Persist to localStorage whenever expandedIds changes
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(expandedIds));
@@ -151,165 +204,141 @@ export default function NavigationTree({
     }
   }, [expandedIds]);
 
+  const selectedIds = {
+    vak: selectedVakId,
+    leerjaar: selectedLeerjaarId,
+    niveau: selectedNiveauId,
+    hoofdstuk: selectedHoofdstukId,
+    paragraaf: selectedParagraafId,
+    vraag: selectedVraagId
+  };
+
+  const tree = useMemo(
+    () =>
+      buildCmsNavigationTree(
+        { vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks },
+        { query }
+      ),
+    [vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks, query]
+  );
+
+  const totals = useMemo(
+    () => ({
+      vakken: vakken.length,
+      paragrafen: paragrafen.length,
+      vragen: vragen.length,
+      blokken: contentBlocks.filter((block) => block.isArchived !== true).length
+    }),
+    [vakken.length, paragrafen.length, vragen.length, contentBlocks]
+  );
+
   const toggleExpand = (id) => {
-    setExpandedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((expandedId) => expandedId !== id) : [...prev, id]
     );
   };
 
   const handleCreateChild = (parentId) => {
-    // Determine parent type and call appropriate handler
-    const vak = vakken.find(v => v.id === parentId);
-    if (vak) {
-      onCreateLeerjaar?.(parentId);
-      return;
-    }
-
-    const leerjaar = leerjaren.find(l => l.id === parentId);
-    if (leerjaar) {
-      onCreateNiveau?.(parentId);
-      return;
-    }
-
-    const niveau = niveaus.find(n => n.id === parentId);
-    if (niveau) {
-      onCreateHoofdstuk?.(parentId);
-      return;
-    }
-
-    const hoofdstuk = hoofdstukken.find(h => h.id === parentId);
-    if (hoofdstuk) {
-      onCreateParagraaf?.(parentId);
-      return;
-    }
-
-    const paragraaf = paragrafen.find(p => p.id === parentId);
-    if (paragraaf) {
-      onCreateVraag?.(parentId);
-    }
+    if (vakken.some((vak) => vak.id === parentId)) return onCreateLeerjaar?.(parentId);
+    if (leerjaren.some((leerjaar) => leerjaar.id === parentId)) return onCreateNiveau?.(parentId);
+    if (niveaus.some((niveau) => niveau.id === parentId)) return onCreateHoofdstuk?.(parentId);
+    if (hoofdstukken.some((hoofdstuk) => hoofdstuk.id === parentId)) return onCreateParagraaf?.(parentId);
+    if (paragrafen.some((paragraaf) => paragraaf.id === parentId)) return onCreateVraag?.(parentId);
+    return null;
   };
 
-  // Build tree structure
-  const tree = vakken.map(vak => {
-    const vakLeerjaren = leerjaren.filter(l => l.vakId === vak.id);
-    return {
-      ...vak,
-      icon: BookOpen,
-      level: 0,
-      isSelected: selectedVakId === vak.id,
-      onSelect: (id) => onSelect({ type: 'vak', id }),
-      children: vakLeerjaren.map(leerjaar => {
-        const leerjaarniveaus = niveaus.filter(n => n.leerjaarId === leerjaar.id);
-        return {
-          ...leerjaar,
-          icon: BarChart3,
-          level: 1,
-          isSelected: selectedLeerjaarId === leerjaar.id,
-          onSelect: (id) => onSelect({ type: 'leerjaar', id }),
-          children: leerjaarniveaus.map(niveau => {
-            const niveauHoofdstukken = hoofdstukken.filter(h => h.niveauId === niveau.id);
-            return {
-              ...niveau,
-              label: `${niveau.label} - ${niveau.name}`,
-              icon: Layers,
-              level: 2,
-              isSelected: selectedNiveauId === niveau.id,
-              onSelect: (id) => onSelect({ type: 'niveau', id }),
-              children: niveauHoofdstukken.map(hoofdstuk => {
-                const hoofdstukParagrafen = paragrafen.filter(p => p.hoofdstukId === hoofdstuk.id);
-                return {
-                  ...hoofdstuk,
-                  label: `${hoofdstuk.number}. ${hoofdstuk.title}`,
-                  icon: FileText,
-                  level: 3,
-                  isSelected: selectedHoofdstukId === hoofdstuk.id,
-                  onSelect: (id) => onSelect({ type: 'hoofdstuk', id }),
-                  children: hoofdstukParagrafen.map(paragraaf => {
-                    const paragraafVragen = vragen.filter(v => v.paragraafId === paragraaf.id);
-                    return {
-                      ...paragraaf,
-                      label: `${paragraaf.code}. ${paragraaf.title}`,
-                      icon: HelpCircle,
-                      level: 4,
-                      isSelected: selectedParagraafId === paragraaf.id,
-                      onSelect: (id) => onSelect({ type: 'paragraaf', id }),
-                      children: paragraafVragen.map(vraag => ({
-                        ...vraag,
-                        label: `Q${vraag.number}: ${vraag.title || 'Untitled'}`,
-                        icon: HelpCircle,
-                        level: 5,
-                        isSelected: selectedVraagId === vraag.id,
-                        onSelect: (id) => onSelect({ type: 'vraag', id }),
-                        children: []
-                      }))
-                    };
-                  })
-                };
-              })
-            };
-          })
-        };
-      })
-    };
-  });
-
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200 overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-          <BookOpen size={18} />
-          Inhoud
-        </h3>
-        <div className="flex items-center gap-1">
-          {expandedIds.length > 0 && (
-            <button
-              onClick={() => setExpandedIds([])}
-              className="px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors"
-              title="Collapse all"
-            >
-              Inklappen
-            </button>
-          )}
-          {onCreateVak && (
-            <button
-              onClick={() => onCreateVak()}
-              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Create new subject"
-            >
-              <Plus size={18} />
+    <aside className="flex h-full flex-col overflow-hidden border-r border-slate-200 bg-slate-50/95">
+      <div className="border-b border-slate-200 bg-white px-4 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">CMS</p>
+            <h3 className="mt-1 flex items-center gap-2 text-lg font-black text-slate-950">
+              <BookOpen size={18} />
+              Inhoud
+            </h3>
+          </div>
+          <button
+            onClick={() => onCreateVak?.()}
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm transition-colors hover:bg-blue-700"
+            title="Nieuw vak"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-4 gap-2">
+          {Object.entries(totals).map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center">
+              <p className="text-sm font-black text-slate-900">{value}</p>
+              <p className="truncate text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-100">
+          <Search size={16} className="text-slate-400" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+            placeholder="Zoek lesmateriaal..."
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="text-slate-400 hover:text-slate-700" title="Zoekopdracht wissen">
+              <X size={15} />
             </button>
           )}
         </div>
+
+        {expandedIds.length > 0 && !query && (
+          <button
+            onClick={() => setExpandedIds([])}
+            className="mt-3 text-xs font-bold text-slate-500 hover:text-slate-900"
+          >
+            Alles inklappen
+          </button>
+        )}
       </div>
 
-      {/* Tree */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-1">
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-3 py-3">
         {tree.length === 0 ? (
-          <div className="p-4 text-center text-gray-500 text-sm">
-            <p className="mb-3">Nog geen vakken aangemaakt</p>
-            {onCreateVak && (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-5 text-center">
+            <Sparkles className="mx-auto text-blue-500" size={24} />
+            <p className="mt-3 text-sm font-black text-slate-900">
+              {query ? 'Geen resultaten' : 'Nog geen lesmateriaal'}
+            </p>
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              {query ? 'Probeer een andere zoekterm.' : 'Start met een vak en bouw daarna je hoofdstukken op.'}
+            </p>
+            {!query && onCreateVak && (
               <button
                 onClick={() => onCreateVak()}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium inline-flex items-center gap-2 transition-colors"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
               >
                 <Plus size={16} />
-                Maak eerste vak aan
+                Nieuw vak
               </button>
             )}
           </div>
         ) : (
-          tree.map(vak => (
-            <TreeNode
-              key={vak.id}
-              {...vak}
-              expandedIds={expandedIds}
-              onToggleExpand={toggleExpand}
-              onCreateChild={handleCreateChild}
-            />
-          ))
+          <div className="space-y-1">
+            {tree.map((node) => (
+              <TreeNode
+                key={node.id}
+                node={node}
+                level={0}
+                selectedIds={selectedIds}
+                expandedIds={expandedIds}
+                forceExpanded={Boolean(query)}
+                onToggleExpand={toggleExpand}
+                onSelect={onSelect}
+                onCreateChild={handleCreateChild}
+              />
+            ))}
+          </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

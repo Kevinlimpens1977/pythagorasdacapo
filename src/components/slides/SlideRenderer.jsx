@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ArrowLeftCircle, ArrowRightCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowLeftCircle, ArrowRightCircle, CheckCircle } from 'lucide-react';
 import { getSlidesForChapter } from '../../services/slideService';
+import * as cmsService from '../../services/cmsService';
+import { blocksToSlides, htmlToPlainText } from '../../lib/contentBlockUtils';
 import { useAuth } from '../auth/AuthProvider';
 import { db } from '../../services/firebase';
 import { doc, updateDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
@@ -14,7 +16,6 @@ import PythagorasProofSlide from './PythagorasProofSlide';
 import PresentationSlide from './PresentationSlide';
 import EvaluationSlide from './EvaluationSlide';
 import EvaluationSummarySlide from './EvaluationSummarySlide';
-import FormattedText from '../common/FormattedText';
 
 export default function SlideRenderer() {
   const { chapterId } = useParams();
@@ -25,6 +26,29 @@ export default function SlideRenderer() {
   const [showLockWarning, setShowLockWarning] = useState(false);
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const vraagToExerciseSlide = (block, vraag) => ({
+    id: block.id,
+    blockId: block.id,
+    type: 'exercise',
+    heading: vraag?.title || block.title || 'Vraag',
+    content: htmlToPlainText(vraag?.content?.text || block.content?.html || ''),
+    paragraafId: block.paragraafId,
+    hoofdstukId: block.hoofdstukId,
+    exercise: {
+      type: vraag?.vraagtype || 'open',
+      fields: vraag?.vraagtype === 'numeriek'
+        ? [
+            {
+              id: `${vraag.id}-antwoord`,
+              label: vraag.number || 'Antwoord',
+              answer: vraag.antwoord?.expected ?? vraag.antwoord?.correctValue ?? '',
+              hint: vraag.antwoord?.hintBijFout || vraag.vraagMetadata?.hints?.[0] || ''
+            }
+          ]
+        : []
+    }
+  });
 
   // Load slides from Firestore & check access
   useEffect(() => {
@@ -45,8 +69,29 @@ export default function SlideRenderer() {
           }
         }
 
-        const loadedSlides = await getSlidesForChapter(chapterId);
-        setSlides(loadedSlides);
+        const contentBlocks = await cmsService.getContentBlocks(chapterId, false);
+        if (contentBlocks.length > 0) {
+          const enrichedBlocks = await Promise.all(
+            contentBlocks.map(async (block) => {
+              if (block.type !== 'question' || !block.linkedVraagId) return block;
+              const vraag = await cmsService.getVraag(block.linkedVraagId);
+              return {
+                ...block,
+                content: {
+                  ...block.content,
+                  exercise: vraagToExerciseSlide(block, vraag).exercise,
+                  text: vraag?.content?.text || block.content?.html || ''
+                },
+                title: vraag?.title || block.title
+              };
+            })
+          );
+
+          setSlides(blocksToSlides(enrichedBlocks));
+        } else {
+          const loadedSlides = await getSlidesForChapter(chapterId);
+          setSlides(loadedSlides);
+        }
         setCurrentIndex(0);
       } catch (error) {
         console.error('Error loading slides:', error);

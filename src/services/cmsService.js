@@ -14,7 +14,6 @@ import {
   orderBy,
   setDoc,
   updateDoc,
-  deleteDoc,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -287,6 +286,34 @@ export const getVraag = async (vraagId) => {
 };
 
 /**
+ * Get all content blocks for a paragraph
+ * @param {string} paragraafId
+ * @param {boolean} includeDrafts
+ * @returns {Promise<Array>}
+ */
+export const getContentBlocks = async (paragraafId, includeDrafts = true) => {
+  try {
+    const q = query(
+      collection(db, 'contentBlocks'),
+      where('paragraafId', '==', paragraafId),
+      where('isArchived', '==', false)
+    );
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .filter(block => includeDrafts || block.status === 'published')
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  } catch (error) {
+    console.error(`Error fetching content blocks for ${paragraafId}:`, error);
+    return [];
+  }
+};
+
+/**
  * ==================== WRITE OPERATIONS ====================
  */
 
@@ -385,6 +412,48 @@ export const createVraag = async (paragraafId, data, userId) => {
 };
 
 /**
+ * Create a new content block in a paragraph
+ * @param {string} paragraafId
+ * @param {Object} data
+ * @param {string} userId
+ * @returns {Promise<string>}
+ */
+export const createContentBlock = async (paragraafId, data, userId) => {
+  try {
+    const paragraaf = await getParagraaf(paragraafId);
+    if (!paragraaf) throw new Error('Paragraaf not found');
+
+    const blocks = await getContentBlocks(paragraafId);
+    const nextOrder = Math.max(...blocks.map(block => block.order || 0), 0) + 1;
+    const blockId = `block-${paragraaf.code?.replace('.', '') || paragraafId}-${data.type}-${Date.now()}`;
+
+    await setDoc(doc(db, 'contentBlocks', blockId), {
+      id: blockId,
+      vakId: paragraaf.vakId,
+      leerjaarId: paragraaf.leerjaarId,
+      niveauId: paragraaf.niveauId,
+      hoofdstukId: paragraaf.hoofdstukId,
+      paragraafId,
+      type: data.type,
+      order: nextOrder,
+      title: data.title || 'Nieuw lesblok',
+      status: data.status || 'draft',
+      content: data.content || { html: '' },
+      linkedVraagId: data.linkedVraagId || null,
+      createdBy: userId,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      isArchived: false
+    });
+
+    return blockId;
+  } catch (error) {
+    console.error('Error creating content block:', error);
+    throw error;
+  }
+};
+
+/**
  * Update a paragraph
  * @param {string} paragraafId
  * @param {Object} data - Fields to update
@@ -421,6 +490,45 @@ export const updateVraag = async (vraagId, data) => {
 };
 
 /**
+ * Update a content block
+ * @param {string} blockId
+ * @param {Object} data
+ * @returns {Promise<void>}
+ */
+export const updateContentBlock = async (blockId, data) => {
+  try {
+    await updateDoc(doc(db, 'contentBlocks', blockId), {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error(`Error updating content block ${blockId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Persist block order after moving blocks up/down
+ * @param {Array<Object>} blocks
+ * @returns {Promise<void>}
+ */
+export const updateContentBlockOrder = async (blocks) => {
+  try {
+    await Promise.all(
+      blocks.map((block) =>
+        updateDoc(doc(db, 'contentBlocks', block.id), {
+          order: block.order,
+          updatedAt: serverTimestamp()
+        })
+      )
+    );
+  } catch (error) {
+    console.error('Error updating content block order:', error);
+    throw error;
+  }
+};
+
+/**
  * Archive a paragraph (soft delete)
  * @param {string} paragraafId
  * @returns {Promise<void>}
@@ -450,6 +558,20 @@ export const archiveVraag = async (vraagId) => {
     });
   } catch (error) {
     console.error(`Error archiving vraag ${vraagId}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Archive a content block (soft delete)
+ * @param {string} blockId
+ * @returns {Promise<void>}
+ */
+export const archiveContentBlock = async (blockId) => {
+  try {
+    await updateContentBlock(blockId, { isArchived: true });
+  } catch (error) {
+    console.error(`Error archiving content block ${blockId}:`, error);
     throw error;
   }
 };
@@ -802,6 +924,7 @@ export default {
   getParagraaf,
   getVragen,
   getVraag,
+  getContentBlocks,
   // Write - Vak
   createVak,
   updateVak,
@@ -821,8 +944,12 @@ export default {
   // Write - Paragraaf & Vraag
   createParagraaf,
   createVraag,
+  createContentBlock,
   updateParagraaf,
   updateVraag,
+  updateContentBlock,
+  updateContentBlockOrder,
   archiveParagraaf,
-  archiveVraag
+  archiveVraag,
+  archiveContentBlock
 };

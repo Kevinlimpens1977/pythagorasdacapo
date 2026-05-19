@@ -6,24 +6,27 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronRight, Plus, Trash2, Palette } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BookOpen, ChevronRight, Eye, PanelLeftClose, PanelLeftOpen, Palette, Plus, Trash2 } from 'lucide-react';
 import NavigationTree from './NavigationTree';
 import DualPanelEditor from './DualPanelEditor';
 import CreateQuestionModal from './CreateQuestionModal';
 import CreateContentModal from './CreateContentModal';
 import InlineEdit from './InlineEdit';
 import ColorEmojiPicker from './ColorEmojiPicker';
+import ContentBlockBuilder from './ContentBlockBuilder';
 import useCms from '../../hooks/useCms';
 import * as cmsService from '../../services/cmsService';
-import { auth } from '../../services/firebase';
 
 export default function CmsShell() {
   const cms = useCms();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createModal, setCreateModal] = useState(null); // { type, parentId }
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [editingColor, setEditingColor] = useState(null); // { type, id } when editing color/emoji
+  const showLegacyParagraafPanel = false;
 
   // Sidebar state (load from localStorage)
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -145,23 +148,42 @@ export default function CmsShell() {
     cms.currentVraag && { label: `Vraag ${cms.currentVraag.number}`, id: cms.selectedVraagId }
   ].filter(Boolean);
 
-  return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm flex items-start justify-between">
-        <div className="flex-1 flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">📚 CMS Platform</h1>
+  const currentContextLabel =
+    cms.currentParagraaf?.title ||
+    cms.currentHoofdstuk?.title ||
+    cms.currentNiveau?.label ||
+    cms.currentLeerjaar?.label ||
+    cms.currentVak?.name ||
+    'Contentstudio';
 
-          {/* Header Toggle - Visible when sidebar open */}
-          {sidebarOpen && (
+  const currentContextMeta = [
+    cms.vakken.length && `${cms.vakken.length} vakken`,
+    cms.paragrafen.length && `${cms.paragrafen.length} paragrafen`,
+    cms.vragen.length && `${cms.vragen.length} vragen`,
+    cms.contentBlocks.length && `${cms.contentBlocks.length} lesblokken`
+  ].filter(Boolean);
+
+  return (
+    <div className="flex h-screen flex-col bg-slate-100">
+      {/* Header */}
+      <div className="border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-4">
             <button
               onClick={handleToggleSidebar}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-              title="Collapse sidebar"
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-950"
+              title={sidebarOpen ? 'Inhoud verbergen' : 'Inhoud tonen'}
             >
-              ◄
+              {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
             </button>
-          )}
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">HELIX Contentstudio</p>
+              <h1 className="mt-1 flex items-center gap-2 text-2xl font-black tracking-tight text-slate-950">
+                <BookOpen size={22} />
+                CMS Platform
+              </h1>
+            </div>
+          </div>
         </div>
 
         {/* Breadcrumb */}
@@ -180,22 +202,23 @@ export default function CmsShell() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="relative flex flex-1 overflow-hidden">
         {/* Toggle Button - Fixed Left Edge (when sidebar closed) */}
         {!sidebarOpen && (
           <button
             onClick={handleToggleSidebar}
-            className="fixed left-0 top-1/2 transform -translate-y-1/2 z-40 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-r-lg transition-all"
-            title="Expand sidebar"
+            className="absolute left-0 top-6 z-40 flex items-center gap-2 rounded-r-lg border border-l-0 border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-950"
+            title="Inhoud tonen"
           >
-            ►
+            <PanelLeftOpen size={18} />
+            Inhoud
           </button>
         )}
 
         {/* Left Sidebar - Navigation Tree (Collapsible) */}
         <div className={`
-          border-r border-gray-200 bg-white overflow-y-auto transition-all duration-300 ease-in-out flex-shrink-0
-          ${sidebarOpen ? 'w-auto min-w-80 max-w-2xl translate-x-0' : '-translate-x-full'}
+          border-r border-gray-200 bg-white overflow-hidden transition-all duration-300 ease-in-out flex-shrink-0
+          ${sidebarOpen ? 'w-[25rem] opacity-100' : 'w-0 border-r-0 opacity-0'}
         `}>
           <NavigationTree
             vakken={cms.vakken}
@@ -204,6 +227,7 @@ export default function CmsShell() {
             hoofdstukken={cms.hoofdstukken}
             paragrafen={cms.paragrafen}
             vragen={cms.vragen}
+            contentBlocks={cms.contentBlocks}
             selectedVakId={cms.selectedVakId}
             selectedLeerjaarId={cms.selectedLeerjaarId}
             selectedNiveauId={cms.selectedNiveauId}
@@ -224,7 +248,45 @@ export default function CmsShell() {
         </div>
 
         {/* Right Panel - Content Editor or Detail Panel */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
+          <div className="mb-5 rounded-lg border border-slate-200 bg-white px-5 py-4 shadow-sm">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Werkvlak</p>
+                <h2 className="mt-1 text-xl font-black text-slate-950">{currentContextLabel}</h2>
+                {currentContextMeta.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {currentContextMeta.map((item) => (
+                      <span key={item} className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => cms.selectedParagraafId && navigate(`/chapter/${cms.selectedParagraafId}`)}
+                  disabled={!cms.selectedParagraafId}
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  title="Preview van de huidige lesroute"
+                >
+                  <Eye size={16} />
+                  Preview
+                </button>
+                <button
+                  onClick={() => {
+                    if (cms.selectedHoofdstukId) setCreateModal({ type: 'paragraaf', parentId: cms.selectedHoofdstukId });
+                    else setCreateModal({ type: 'vak', parentId: null });
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-slate-800"
+                >
+                  <Plus size={16} />
+                  {cms.selectedHoofdstukId ? 'Nieuwe paragraaf' : 'Nieuw vak'}
+                </button>
+              </div>
+            </div>
+          </div>
           {cms.loading && (
             <div className="flex items-center justify-center h-full">
               <p className="text-gray-500">Loading...</p>
@@ -449,8 +511,22 @@ export default function CmsShell() {
             </div>
           )}
 
-          {/* PARAGRAAF Detail Panel with Questions */}
+          {/* PARAGRAAF Detail Panel with Lesson Route Builder */}
           {!cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
+            <ContentBlockBuilder
+              paragraaf={cms.currentParagraaf}
+              blocks={cms.contentBlocks}
+              vragen={cms.vragen}
+              onRefresh={() => cms.loadContentBlocks(cms.selectedParagraafId)}
+              onEditVraag={(vraagId) => {
+                cms.setVraag(vraagId);
+                setIsEditing(true);
+              }}
+            />
+          )}
+
+          {/* Legacy paragraaf question panel (replaced by lesson route builder) */}
+          {showLegacyParagraafPanel && !cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
             <div className="max-w-4xl">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
                 <InlineEdit

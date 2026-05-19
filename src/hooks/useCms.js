@@ -24,6 +24,7 @@ export const useCms = () => {
   const [hoofdstukken, setHoofdstukken] = useState([]);
   const [paragrafen, setParagrafen] = useState([]);
   const [vragen, setVragen] = useState([]);
+  const [contentBlocks, setContentBlocks] = useState([]);
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -197,8 +198,10 @@ export const useCms = () => {
   useEffect(() => {
     if (selectedParagraafId) {
       loadVragen(selectedParagraafId);
+      loadContentBlocks(selectedParagraafId);
     } else {
       setVragen([]);
+      setContentBlocks([]);
       setSelectedVraagId(null);
     }
   }, [selectedParagraafId]);
@@ -214,6 +217,20 @@ export const useCms = () => {
       setSelectedVraagId(null);
     } catch (err) {
       setError('Failed to load vragen: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadContentBlocks = useCallback(async (paragraafId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await cmsService.getContentBlocks(paragraafId);
+      setContentBlocks(data);
+    } catch (err) {
+      setError('Failed to load content blocks: ' + err.message);
       console.error(err);
     } finally {
       setLoading(false);
@@ -280,6 +297,7 @@ export const useCms = () => {
     hoofdstukken,
     paragrafen,
     vragen,
+    contentBlocks,
 
     // Current selections (objects)
     currentVak: breadcrumb.vak,
@@ -302,7 +320,8 @@ export const useCms = () => {
     loadNiveaus,
     loadHoofdstukken,
     loadParagrafen,
-    loadVragen
+    loadVragen,
+    loadContentBlocks
   };
 };
 
