@@ -3,6 +3,10 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TiptapImage from '@tiptap/extension-image';
+import Color from '@tiptap/extension-color';
+import FontFamily from '@tiptap/extension-font-family';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Extension } from '@tiptap/core';
 import {
   ArrowDown,
   ArrowUp,
@@ -11,9 +15,11 @@ import {
   FileText,
   Image,
   Layers,
+  Maximize2,
   Save,
   Scissors,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import { auth } from '../../services/firebase';
 import * as cmsService from '../../services/cmsService';
@@ -54,6 +60,50 @@ const contentFieldLabels = {
   media: 'Toelichting',
   summary: 'Kernpunten'
 };
+
+const editorFontFamilies = [
+  { label: 'Standaard', value: '' },
+  { label: 'Inter', value: 'Inter, system-ui, sans-serif' },
+  { label: 'Arial', value: 'Arial, sans-serif' },
+  { label: 'Verdana', value: 'Verdana, sans-serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Times', value: '"Times New Roman", serif' },
+  { label: 'Courier', value: '"Courier New", monospace' },
+  { label: 'Comic', value: '"Comic Sans MS", cursive' }
+];
+
+const editorFontSizes = [
+  { label: 'Normaal', value: '' },
+  { label: '12', value: '12px' },
+  { label: '14', value: '14px' },
+  { label: '16', value: '16px' },
+  { label: '18', value: '18px' },
+  { label: '22', value: '22px' },
+  { label: '28', value: '28px' },
+  { label: '36', value: '36px' }
+];
+
+const FontSize = Extension.create({
+  name: 'fontSize',
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['textStyle'],
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: (element) => element.style.fontSize || null,
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) return {};
+              return { style: `font-size: ${attributes.fontSize}` };
+            }
+          }
+        }
+      }
+    ];
+  }
+});
 
 const getNextQuestionNumber = (vragen = []) => {
   const maxNumber = vragen.reduce((max, vraag) => {
@@ -102,10 +152,110 @@ const StudioTextArea = ({ label, value, onChange, placeholder, className = '' })
   </div>
 );
 
+const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
+  if (!editor) return null;
+
+  const applyFontSize = (value) => {
+    if (!value) {
+      editor.chain().focus().setMark('textStyle', { fontSize: null }).removeEmptyTextStyle().run();
+      return;
+    }
+    editor.chain().focus().setMark('textStyle', { fontSize: value }).run();
+  };
+
+  const applyFontFamily = (value) => {
+    if (!value) {
+      editor.chain().focus().unsetFontFamily().run();
+      return;
+    }
+    editor.chain().focus().setFontFamily(value).run();
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2">
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={`rounded-md px-2.5 py-1 text-sm font-black ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+        title="Vet"
+      >
+        B
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`rounded-md px-2.5 py-1 text-sm italic ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+        title="Cursief"
+      >
+        I
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`rounded-md px-2.5 py-1 text-sm font-bold ${editor.isActive('bulletList') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+        title="Lijst"
+      >
+        Lijst
+      </button>
+
+      <span className="mx-1 h-6 w-px bg-slate-300" />
+
+      <select
+        onChange={(event) => applyFontFamily(event.target.value)}
+        className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm font-bold text-slate-700"
+        defaultValue=""
+        title="Lettertype"
+      >
+        {editorFontFamilies.map((font) => (
+          <option key={font.label} value={font.value}>{font.label}</option>
+        ))}
+      </select>
+
+      <select
+        onChange={(event) => applyFontSize(event.target.value)}
+        className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm font-bold text-slate-700"
+        defaultValue=""
+        title="Fontgrootte"
+      >
+        {editorFontSizes.map((size) => (
+          <option key={size.label} value={size.value}>{size.label}</option>
+        ))}
+      </select>
+
+      <label className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-black uppercase tracking-wide text-slate-500">
+        Kleur
+        <input
+          type="color"
+          onChange={(event) => editor.chain().focus().setColor(event.target.value).run()}
+          className="h-6 w-8 cursor-pointer rounded border border-slate-200 bg-white"
+          title="Tekstkleur"
+        />
+      </label>
+
+      {!fullscreen && (
+        <button
+          type="button"
+          onClick={onOpenFullscreen}
+          className="ml-auto inline-flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-black text-blue-700 transition hover:bg-blue-100"
+          title="Editor groot openen"
+        >
+          <Maximize2 size={15} />
+          Open groot
+        </button>
+      )}
+    </div>
+  );
+};
+
 const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder }) => {
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const editor = useEditor({
     extensions: [
       StarterKit,
+      TextStyle,
+      Color,
+      FontFamily,
+      FontSize,
       TiptapImage.configure({
         allowBase64: true,
         inline: false
@@ -117,7 +267,7 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder }
     content: value || '<p></p>',
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none min-h-72 rounded-lg border border-slate-300 bg-white p-4 leading-7 focus:outline-none focus:ring-2 focus:ring-blue-500'
+        class: 'prose prose-sm max-w-none min-h-72 bg-white p-4 leading-7 focus:outline-none [&_img]:my-4 [&_img]:max-w-full [&_img]:rounded-md'
       }
     },
     onUpdate: ({ editor }) => {
@@ -135,36 +285,49 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder }
 
   return (
     <div>
-      <label className="mb-2 block text-sm font-bold text-slate-700">{label}</label>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label className="block text-sm font-bold text-slate-700">{label}</label>
+      </div>
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-        <div className="flex flex-wrap gap-1 border-b border-slate-200 bg-slate-100 px-3 py-2">
-          <button
-            type="button"
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`rounded-md px-2.5 py-1 text-sm font-black ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
-          >
-            B
-          </button>
-          <button
-            type="button"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`rounded-md px-2.5 py-1 text-sm italic ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
-          >
-            I
-          </button>
-          <button
-            type="button"
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`rounded-md px-2.5 py-1 text-sm font-bold ${editor.isActive('bulletList') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
-          >
-            Lijst
-          </button>
-        </div>
-        <EditorContent editor={editor} />
+        <EditorToolbar editor={editor} onOpenFullscreen={() => setIsFullscreenOpen(true)} />
+        {isFullscreenOpen ? (
+          <div className="flex min-h-72 items-center justify-center bg-white p-6 text-sm font-bold text-slate-500">
+            Editor staat groot open.
+          </div>
+        ) : (
+          <EditorContent editor={editor} />
+        )}
       </div>
       <p className="mt-2 text-xs leading-5 text-slate-500">
         Zet je cursor waar de crop moet komen. OCR komt als tekst, afbeelding-crops komen als afbeelding in deze editor.
       </p>
+
+      {isFullscreenOpen && (
+        <div className="fixed inset-0 z-[1000] flex flex-col bg-slate-950">
+          <div className="flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-950 px-5 py-3 text-white">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">Editor groot</p>
+              <h2 className="text-lg font-black">{label}</h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFullscreenOpen(false)}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-bold text-slate-100 transition-colors hover:bg-slate-900"
+            >
+              <X size={16} />
+              Sluit
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 bg-slate-100 p-6">
+            <div className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
+              <EditorToolbar editor={editor} fullscreen />
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <EditorContent editor={editor} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -461,13 +624,6 @@ const LessonBlockStudio = ({
                 <label className="mb-2 block text-sm font-bold text-slate-700">Bijschrift</label>
                 <input value={content.caption || ''} onChange={(event) => updateContent({ caption: event.target.value })} className="input-standard w-full" placeholder="Korte toelichting" />
               </div>
-            </div>
-          )}
-
-          {(content.imageUrl || content.mediaUrl) && (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="mb-2 text-xs font-black uppercase tracking-wide text-slate-500">Gekoppelde afbeelding</p>
-              <img src={content.imageUrl || content.mediaUrl} alt={content.altText || content.caption || title} className="max-h-56 rounded-lg border border-slate-200 bg-white object-contain" />
             </div>
           )}
 
