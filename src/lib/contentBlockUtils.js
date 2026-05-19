@@ -14,6 +14,22 @@ export const CONTENT_BLOCK_LABELS = {
   summary: 'Samenvatting'
 };
 
+export const getDefaultContentForBlockType = (type) => {
+  if (type === 'example') {
+    return { html: '', steps: [], imageUrl: '', crops: [] };
+  }
+
+  if (type === 'media') {
+    return { html: '', mediaUrl: '', caption: '', altText: '', crops: [] };
+  }
+
+  if (type === 'question') {
+    return { html: '', exercise: { fields: [] }, crops: [] };
+  }
+
+  return { html: '', imageUrl: '', crops: [] };
+};
+
 export const normalizeContentBlocks = (blocks = []) => {
   return [...blocks]
     .filter((block) => block && block.isArchived !== true)
@@ -54,6 +70,77 @@ export const htmlToPlainText = (html = '') => {
     .replace(/&gt;/g, '>')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+};
+
+const appendText = (existing = '', text = '') => {
+  const cleanExisting = String(existing || '').trim();
+  const cleanText = String(text || '').trim();
+  if (!cleanText) return cleanExisting;
+  return cleanExisting ? `${cleanExisting}\n\n${cleanText}` : cleanText;
+};
+
+export const mergeCropResultsIntoBlockContent = (type, content = {}, cropResults = []) => {
+  const text = cropResults
+    .filter((crop) => crop.type === 'text' && crop.text)
+    .map((crop) => crop.text.trim())
+    .filter(Boolean)
+    .join('\n\n');
+  const firstImage = cropResults.find((crop) => crop.type === 'image' && crop.downloadURL);
+  const nextContent = {
+    ...content,
+    crops: [
+      ...(Array.isArray(content.crops) ? content.crops : []),
+      ...cropResults
+    ]
+  };
+
+  if (type === 'media') {
+    if (text) {
+      nextContent.caption = appendText(nextContent.caption || nextContent.html || '', text);
+    }
+    if (firstImage?.downloadURL) {
+      nextContent.mediaUrl = firstImage.downloadURL;
+    }
+    return nextContent;
+  }
+
+  if (type === 'example') {
+    if (text) nextContent.html = appendText(nextContent.html || nextContent.text || '', text);
+    if (!Array.isArray(nextContent.steps)) nextContent.steps = [];
+    if (firstImage?.downloadURL) nextContent.imageUrl = firstImage.downloadURL;
+    return nextContent;
+  }
+
+  if (type === 'summary') {
+    if (text) nextContent.html = appendText(nextContent.html || nextContent.text || '', text);
+    if (firstImage?.downloadURL) nextContent.imageUrl = firstImage.downloadURL;
+    return nextContent;
+  }
+
+  if (text) nextContent.html = appendText(nextContent.html || nextContent.text || '', text);
+  if (firstImage?.downloadURL) nextContent.imageUrl = firstImage.downloadURL;
+  return nextContent;
+};
+
+export const buildContentBlockPreview = (block = {}) => {
+  if (block.type === 'question') {
+    return block.linkedVraagTitle || (block.linkedVraagId ? `Gekoppelde vraag: ${block.linkedVraagId}` : 'Nog geen vraag gekoppeld');
+  }
+
+  if (block.type === 'media') {
+    return htmlToPlainText(block.content?.caption || block.content?.html || '') || (block.content?.mediaUrl ? 'Media toegevoegd' : 'Nog geen media');
+  }
+
+  const text = htmlToPlainText(block.content?.html || block.content?.text || '');
+  const details = [];
+  if (Array.isArray(block.content?.steps) && block.content.steps.length > 0) {
+    details.push(`${block.content.steps.length} stappen`);
+  }
+  if (block.content?.imageUrl || block.content?.mediaUrl) {
+    details.push('afbeelding');
+  }
+
+  return [text, ...details].filter(Boolean).join(' ') || 'Nog leeg';
 };
 
 export const blockToSlide = (block) => {

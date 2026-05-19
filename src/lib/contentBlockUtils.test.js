@@ -2,7 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   blockToSlide,
+  buildContentBlockPreview,
+  getDefaultContentForBlockType,
   getReorderedBlocks,
+  mergeCropResultsIntoBlockContent,
   normalizeContentBlocks
 } from './contentBlockUtils.js';
 
@@ -55,4 +58,76 @@ test('blockToSlide maps supported content block types to slide types', () => {
   assert.equal(blockToSlide({ id: 'example-1', type: 'example' }).type, 'demo_exercise');
   assert.equal(blockToSlide({ id: 'media-1', type: 'media' }).type, 'theory');
   assert.equal(blockToSlide({ id: 'summary-1', type: 'summary' }).type, 'summary');
+});
+
+test('getDefaultContentForBlockType gives every studio block a stable editable shape', () => {
+  assert.deepEqual(getDefaultContentForBlockType('theory'), {
+    html: '',
+    imageUrl: '',
+    crops: []
+  });
+
+  assert.deepEqual(getDefaultContentForBlockType('example'), {
+    html: '',
+    steps: [],
+    imageUrl: '',
+    crops: []
+  });
+
+  assert.deepEqual(getDefaultContentForBlockType('media'), {
+    html: '',
+    mediaUrl: '',
+    caption: '',
+    altText: '',
+    crops: []
+  });
+});
+
+test('mergeCropResultsIntoBlockContent routes OCR text and images by block type', () => {
+  const cropResults = [
+    { type: 'text', text: 'Nieuwe uitleg uit OCR', label: 'A' },
+    { type: 'image', downloadURL: 'https://example.test/crop.jpg', label: 'B' }
+  ];
+
+  assert.deepEqual(
+    mergeCropResultsIntoBlockContent('theory', { html: 'Bestaande uitleg' }, cropResults),
+    {
+      html: 'Bestaande uitleg\n\nNieuwe uitleg uit OCR',
+      imageUrl: 'https://example.test/crop.jpg',
+      crops: [
+        { type: 'text', text: 'Nieuwe uitleg uit OCR', label: 'A' },
+        { type: 'image', downloadURL: 'https://example.test/crop.jpg', label: 'B' }
+      ]
+    }
+  );
+
+  assert.deepEqual(
+    mergeCropResultsIntoBlockContent('media', { caption: '', mediaUrl: '' }, cropResults),
+    {
+      caption: 'Nieuwe uitleg uit OCR',
+      mediaUrl: 'https://example.test/crop.jpg',
+      crops: [
+        { type: 'text', text: 'Nieuwe uitleg uit OCR', label: 'A' },
+        { type: 'image', downloadURL: 'https://example.test/crop.jpg', label: 'B' }
+      ]
+    }
+  );
+});
+
+test('buildContentBlockPreview shows useful route card text', () => {
+  assert.equal(
+    buildContentBlockPreview({
+      type: 'example',
+      content: { html: '<p>Lees de opgave.</p>', steps: ['Stap 1', 'Stap 2'] }
+    }),
+    'Lees de opgave. 2 stappen'
+  );
+
+  assert.equal(
+    buildContentBlockPreview({
+      type: 'question',
+      linkedVraagId: 'vraag-1'
+    }),
+    'Gekoppelde vraag: vraag-1'
+  );
 });

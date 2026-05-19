@@ -3,14 +3,32 @@
  * Handles image upload/paste and canvas rendering with rectangle selection overlay
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Upload, ZoomIn, ZoomOut, Trash2 } from 'lucide-react';
-import { loadImageData, validateAndClipCoordinates } from '../../services/cropService';
+import * as pdfjsLib from 'pdfjs-dist';
+import { loadImageData } from '../../services/cropService';
 import CropSelectionOverlay from './CropSelectionOverlay';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
 const ZOOM_STEP = 0.2;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
+
+const renderFirstPdfPageToDataUrl = async (file) => {
+  const buffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 2 });
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  await page.render({ canvasContext: context, viewport }).promise;
+  return canvas.toDataURL('image/jpeg', 0.9);
+};
 
 export default function ImageCanvasEditor({
   onImageLoaded,
@@ -28,9 +46,9 @@ export default function ImageCanvasEditor({
   const [dragStart, setDragStart] = useState(null);
 
   // Handle file upload
-  const handleFileUpload = async (file) => {
-    if (!file || !file.type.startsWith('image/')) {
-      setError('Please select an image file (JPG, PNG, WebP)');
+  const handleFileUpload = useCallback(async (file) => {
+    if (!file || (!file.type.startsWith('image/') && file.type !== 'application/pdf')) {
+      setError('Kies een afbeelding of PDF-bestand.');
       return;
     }
 
@@ -44,7 +62,10 @@ export default function ImageCanvasEditor({
     setError(null);
 
     try {
-      const data = await loadImageData(file);
+      const source = file.type === 'application/pdf'
+        ? await renderFirstPdfPageToDataUrl(file)
+        : file;
+      const data = await loadImageData(source);
       onImageLoaded(data);
       setZoom(1);
       setPanOffset({ x: 0, y: 0 });
@@ -53,10 +74,10 @@ export default function ImageCanvasEditor({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onImageLoaded]);
 
   // Handle paste from clipboard
-  const handlePaste = (e) => {
+  const handlePaste = useCallback((e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
 
@@ -67,7 +88,7 @@ export default function ImageCanvasEditor({
         break;
       }
     }
-  };
+  }, [handleFileUpload]);
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -86,13 +107,13 @@ export default function ImageCanvasEditor({
   };
 
   // Pan (drag to move canvas)
-  const handleMouseDown = (e) => {
+  const handleMouseDown = useCallback((e) => {
     if (e.button !== 1 && e.button !== 2) return; // Middle or right mouse button
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
-  };
+  }, []);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!isDragging || !dragStart) return;
 
     const deltaX = e.clientX - dragStart.x;
@@ -104,12 +125,12 @@ export default function ImageCanvasEditor({
     }));
 
     setDragStart({ x: e.clientX, y: e.clientY });
-  };
+  }, [dragStart, isDragging]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     setDragStart(null);
-  };
+  }, []);
 
   // Setup paste listener
   useEffect(() => {
@@ -118,7 +139,7 @@ export default function ImageCanvasEditor({
 
     container.addEventListener('paste', handlePaste);
     return () => container.removeEventListener('paste', handlePaste);
-  }, []);
+  }, [handlePaste]);
 
   // Setup mouse listeners for panning
   useEffect(() => {
@@ -134,7 +155,7 @@ export default function ImageCanvasEditor({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragStart]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
   // Reset
   const handleReset = () => {
@@ -200,9 +221,9 @@ export default function ImageCanvasEditor({
         /* Empty state - upload prompt */
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-8">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload or Paste Image</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload bronmateriaal</h2>
             <p className="text-gray-600 mb-4">
-              Select a JPG/PNG from your computer or paste from clipboard (Ctrl+V / Cmd+V)
+              Selecteer een JPG, PNG, WebP of PDF. Plakken vanaf je klembord kan ook.
             </p>
           </div>
 
@@ -212,7 +233,7 @@ export default function ImageCanvasEditor({
             className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
           >
             <Upload size={20} />
-            {isLoading ? 'Loading...' : 'Upload Image'}
+            {isLoading ? 'Laden...' : 'Upload bestand'}
           </button>
 
           {error && (
@@ -224,7 +245,7 @@ export default function ImageCanvasEditor({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,application/pdf"
             onChange={handleInputChange}
             className="hidden"
           />

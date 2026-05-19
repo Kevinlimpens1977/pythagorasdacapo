@@ -517,7 +517,10 @@ export default function CmsShell() {
               paragraaf={cms.currentParagraaf}
               blocks={cms.contentBlocks}
               vragen={cms.vragen}
-              onRefresh={() => cms.loadContentBlocks(cms.selectedParagraafId)}
+              onRefresh={async () => {
+                await cms.loadContentBlocks(cms.selectedParagraafId);
+                await cms.loadVragen(cms.selectedParagraafId);
+              }}
               onEditVraag={(vraagId) => {
                 cms.setVraag(vraagId);
                 setIsEditing(true);
@@ -577,6 +580,7 @@ export default function CmsShell() {
                   onSave={() => {
                     setIsEditing(false);
                     cms.loadVragen(cms.selectedParagraafId);
+                    cms.loadContentBlocks(cms.selectedParagraafId);
                   }}
                   onCancel={() => setIsEditing(false)}
                 />
