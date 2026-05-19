@@ -98,9 +98,18 @@ export const cropRectangleFromImage = async (
 
     img.onload = () => {
       try {
+        const clippedCoordinates = validateAndClipCoordinates(cropCoordinates, {
+          width: img.naturalWidth,
+          height: img.naturalHeight
+        });
+
+        if (!clippedCoordinates) {
+          throw new Error('Crop valt buiten de afbeelding');
+        }
+
         const canvas = document.createElement('canvas');
-        canvas.width = cropCoordinates.width;
-        canvas.height = cropCoordinates.height;
+        canvas.width = clippedCoordinates.width;
+        canvas.height = clippedCoordinates.height;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
@@ -110,14 +119,14 @@ export const cropRectangleFromImage = async (
         // Draw cropped region
         ctx.drawImage(
           img,
-          cropCoordinates.x,      // Source X
-          cropCoordinates.y,      // Source Y
-          cropCoordinates.width,  // Source width
-          cropCoordinates.height, // Source height
+          clippedCoordinates.x,      // Source X
+          clippedCoordinates.y,      // Source Y
+          clippedCoordinates.width,  // Source width
+          clippedCoordinates.height, // Source height
           0,                      // Dest X
           0,                      // Dest Y
-          cropCoordinates.width,  // Dest width
-          cropCoordinates.height  // Dest height
+          clippedCoordinates.width,  // Dest width
+          clippedCoordinates.height  // Dest height
         );
 
         // Convert to blob
@@ -212,12 +221,20 @@ export const validateAndClipCoordinates = (coords, imageBounds) => {
   // Check minimum size
   if (width < 1 || height < 1) return null;
 
-  // Clip to image bounds
+  const left = Math.max(0, Math.min(x, x + width));
+  const top = Math.max(0, Math.min(y, y + height));
+  const right = Math.min(imgWidth, Math.max(x, x + width));
+  const bottom = Math.min(imgHeight, Math.max(y, y + height));
+  const clippedWidth = Math.round(right - left);
+  const clippedHeight = Math.round(bottom - top);
+
+  if (clippedWidth < 1 || clippedHeight < 1) return null;
+
   return {
-    x: Math.max(0, Math.min(x, imgWidth - 1)),
-    y: Math.max(0, Math.min(y, imgHeight - 1)),
-    width: Math.min(width, imgWidth - Math.max(0, x)),
-    height: Math.min(height, imgHeight - Math.max(0, y))
+    x: Math.round(left),
+    y: Math.round(top),
+    width: clippedWidth,
+    height: clippedHeight
   };
 };
 
