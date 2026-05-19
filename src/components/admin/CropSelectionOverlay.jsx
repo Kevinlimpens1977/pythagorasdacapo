@@ -3,8 +3,7 @@
  * SVG layer for drawing and manipulating rectangles on canvas
  */
 
-import React, { useState, useRef } from 'react';
-import { ScaleCoordinates } from '../../types/crop.types';
+import { useState, useRef } from 'react';
 
 const MIN_RECTANGLE_SIZE = 20;
 const HANDLE_SIZE = 8;
@@ -20,8 +19,6 @@ export default function CropSelectionOverlay({
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentRectangle, setCurrentRectangle] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [draggingHandle, setDraggingHandle] = useState(null);
-  const [mode, setMode] = useState('draw'); // 'draw' | 'move' | 'none'
 
   if (!imageData) return null;
 
@@ -63,7 +60,7 @@ export default function CropSelectionOverlay({
 
   // Start drawing rectangle
   const handleMouseDown = (e) => {
-    if (mode === 'move' || mode === 'resize' || selectedIndex !== null) return;
+    if (selectedIndex !== null) return;
 
     const pos = getMousePos(e);
     setIsDrawing(true);
@@ -98,7 +95,7 @@ export default function CropSelectionOverlay({
     }
 
     // Ensure width/height are positive
-    let rect = currentRectangle;
+    let rect = { ...currentRectangle };
     if (rect.width < 0) {
       rect.x += rect.width;
       rect.width = Math.abs(rect.width);
@@ -270,7 +267,7 @@ export default function CropSelectionOverlay({
       className="absolute inset-0"
       style={{
         pointerEvents: 'auto',
-        cursor: mode === 'draw' ? 'crosshair' : 'default'
+        cursor: 'crosshair'
       }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

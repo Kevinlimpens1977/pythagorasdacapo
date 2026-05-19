@@ -4,8 +4,8 @@
  * Allows uploading images, drawing crop regions, and toggling crop type (image/text)
  */
 
-import React, { useState, useRef } from 'react';
-import { Type, Upload, ImageIcon } from 'lucide-react';
+import { useState } from 'react';
+import { ImageIcon, Trash2, Type } from 'lucide-react';
 import ImageCanvasEditor from '../admin/ImageCanvasEditor';
 
 export default function CropEditorPanel({
@@ -15,8 +15,18 @@ export default function CropEditorPanel({
   onSelectionsChanged,
   onCropTypeChange
 }) {
-  const fileInputRef = useRef(null);
   const [hoveredSelectionId, setHoveredSelectionId] = useState(null);
+
+  const handleDeleteSelection = (selectionId) => {
+    const nextSelections = selections
+      .filter((selection) => selection.id !== selectionId)
+      .map((selection, index) => ({
+        ...selection,
+        label: `${index + 1}`
+      }));
+
+    onSelectionsChanged?.(nextSelections);
+  };
 
   if (!imageData) {
     return (
@@ -97,6 +107,14 @@ export default function CropEditorPanel({
                   >
                     <Type size={14} />
                     OCR
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSelection(selection.id)}
+                    className="flex items-center gap-1 rounded bg-red-50 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-100"
+                    title={`Crop ${selection.label} verwijderen`}
+                  >
+                    <Trash2 size={14} />
+                    Wis
                   </button>
                 </div>
               </div>
