@@ -78,9 +78,9 @@ export default function CmsResetButton() {
             <div className="space-y-4 p-5">
               <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-900">
                 <p className="font-black">Dit verwijdert lesmateriaal permanent uit Firestore.</p>
-                <p className="mt-2">
-                  Vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, lesblokken en cropmetadata worden gewist.
-                  Leerlingen en klassen blijven bestaan, maar alle lesstof-toewijzingen worden leeggemaakt.
+                  <p className="mt-2">
+                    Vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, lesblokken en cropmetadata worden gewist.
+                    Leerlingen en klassen blijven bestaan, maar alle lesstof-toewijzingen en oude leerling-waarschuwingen worden leeggemaakt.
                 </p>
               </div>
 
@@ -109,7 +109,7 @@ export default function CmsResetButton() {
                   <p className="mt-1">
                     {Object.values(result.deleted).reduce((total, count) => total + count, 0)} documenten verwijderd,
                     {' '}
-                    {result.cleanedClasses} klassen opgeschoond.
+                    {result.cleanedClasses} klassen opgeschoond en {result.cleanedStudents} leerlingen ontdaan van oude lesstatus.
                   </p>
                   <button
                     onClick={() => window.location.assign('/admin/cms')}

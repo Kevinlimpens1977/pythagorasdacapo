@@ -189,7 +189,7 @@ export default function ClassOverview() {
     return diffInMinutes < 15;
   }).length;
 
-  const warningCount = students.filter(s => s.warning).length;
+  const warningCount = paragraphen.length > 0 ? students.filter(s => s.warning).length : 0;
 
   // Calculate average progress from voortgang data
   const avgProgress = students.length > 0
@@ -699,7 +699,7 @@ export default function ClassOverview() {
                             </span>
                             <span className="text-[10px] text-slate-400 truncate max-w-[150px]">{student.email}</span>
                           </div>
-                          {student.warning && (
+                          {paragraphen.length > 0 && student.warning && (
                             <div className="relative group/tooltip cursor-help">
                               <AlertTriangle size={18} className="text-amber-500" />
                               <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tooltip:block w-48 bg-slate-800 text-white text-xs rounded py-2 px-3 text-center z-10 shadow-xl border border-slate-700">

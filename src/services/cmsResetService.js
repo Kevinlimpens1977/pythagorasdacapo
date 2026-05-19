@@ -1,8 +1,11 @@
 import {
   collection,
   collectionGroup,
+  deleteField,
   getDocs,
+  query,
   serverTimestamp,
+  where,
   writeBatch
 } from 'firebase/firestore';
 import { CMS_RESET_COLLECTIONS, isQuestionMetadataPath } from '../lib/cmsResetConfig';
@@ -13,7 +16,8 @@ const BATCH_LIMIT = 450;
 export const resetCmsContentForDev = async () => {
   const totals = {
     deleted: {},
-    cleanedClasses: 0
+    cleanedClasses: 0,
+    cleanedStudents: 0
   };
 
   for (const collectionName of CMS_RESET_COLLECTIONS) {
@@ -22,6 +26,7 @@ export const resetCmsContentForDev = async () => {
 
   totals.deleted.questionMetadataQuestions = await deleteQuestionMetadataQuestions();
   totals.cleanedClasses = await clearClassLessonAssignments();
+  totals.cleanedStudents = await clearStudentLessonState();
 
   return totals;
 };
@@ -59,6 +64,24 @@ const clearClassLessonAssignments = async () => {
       enabledParagrafen: [],
       enabledChapters: {},
       studentOverrides: {},
+      updatedAt: serverTimestamp()
+    }
+  })));
+
+  return snapshot.size;
+};
+
+const clearStudentLessonState = async () => {
+  const snapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'student')));
+
+  await commitInChunks(snapshot.docs.map((documentSnapshot) => ({
+    type: 'update',
+    ref: documentSnapshot.ref,
+    data: {
+      warning: deleteField(),
+      exerciseData: deleteField(),
+      presentationViewed: deleteField(),
+      evaluationData: deleteField(),
       updatedAt: serverTimestamp()
     }
   })));
