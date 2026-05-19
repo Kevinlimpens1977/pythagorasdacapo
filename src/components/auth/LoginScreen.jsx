@@ -18,6 +18,7 @@ export default function LoginScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
+  const [testLoading, setTestLoading] = useState(null);
   const { loginAsRole, isAdmin, currentUser, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -81,9 +82,18 @@ export default function LoginScreen() {
     }
   };
 
-  const handleTestBypass = (role) => {
-    loginAsRole(role);
-    // Navigation handled automatically via useEffect when currentUser changes
+  const handleTestBypass = async (role) => {
+    try {
+      setError('');
+      setTestLoading(role);
+      await loginAsRole(role);
+      // Navigation handled automatically via useEffect when currentUser changes
+    } catch (err) {
+      console.error(err);
+      setError('Testlogin mislukt. Controleer of Anonymous Authentication aanstaat in Firebase.');
+    } finally {
+      setTestLoading(null);
+    }
   };
 
   // Check if test mode is enabled via environment
@@ -200,24 +210,26 @@ export default function LoginScreen() {
           <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Tijdelijke testmodus</p>
             <p className="mt-1 text-sm leading-5 text-amber-900">
-              Omzeilt alleen de React-login voor UI-tests. Firebase reads/writes blijven echte auth vereisen.
+              Maakt een echte anonieme Firebase sessie en tijdelijk gebruikersdocument aan voor dev-tests.
             </p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => handleTestBypass('admin')}
+                disabled={testLoading !== null}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800"
               >
                 <ShieldCheck size={17} />
-                Test admin
+                {testLoading === 'admin' ? 'Start...' : 'Firebase admin'}
               </button>
               <button
                 type="button"
                 onClick={() => handleTestBypass('student')}
+                disabled={testLoading !== null}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm font-bold text-amber-900 transition-colors hover:bg-amber-100"
               >
                 <UserRound size={17} />
-                Test leerling
+                {testLoading === 'student' ? 'Start...' : 'Firebase leerling'}
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 
@@ -10,10 +10,12 @@ const canUseDevBypass = () => {
   return import.meta.env.DEV || import.meta.env.VITE_TEST_MODE === 'true';
 };
 
-const buildBypassUser = (role) => ({
-  uid: `dev_${role}`,
+const buildBypassUser = (role, firebaseUser = null) => ({
+  ...(firebaseUser || {}),
+  uid: firebaseUser?.uid || `dev_${role}`,
   email: role === 'admin' ? 'dev-admin@helix.local' : 'dev-leerling@helix.local',
-  displayName: role === 'admin' ? 'Dev Admin' : 'Dev Leerling'
+  displayName: role === 'admin' ? 'Dev Admin' : 'Dev Leerling',
+  isAnonymous: firebaseUser?.isAnonymous ?? true
 });
 
 const buildBypassUserData = (role, user) => ({
@@ -86,10 +88,10 @@ export function AuthProvider({ children }) {
         : null;
 
       if (activeBypassRole && !user) {
-        const bypassUser = buildBypassUser(activeBypassRole);
-        setCurrentUser(bypassUser);
-        setUserData(buildBypassUserData(activeBypassRole, bypassUser));
-        setUserRole(activeBypassRole);
+        localStorage.removeItem(DEV_BYPASS_STORAGE_KEY);
+        setCurrentUser(null);
+        setUserData(null);
+        setUserRole(null);
         setLoading(false);
         return;
       }
@@ -118,15 +120,15 @@ export function AuthProvider({ children }) {
 
           // Initial check/creation
           const userDoc = await getDoc(userRef);
-          let role = 'student';
-          if (user.email === 'kevlimpens@gmail.com') {
+          let role = activeBypassRole || 'student';
+          if (!activeBypassRole && user.email === 'kevlimpens@gmail.com') {
             role = 'admin';
           }
 
           if (userDoc.exists()) {
             const data = userDoc.data();
-            if (role === 'admin' && data.role !== 'admin') {
-              await setDoc(userRef, { role: 'admin' }, { merge: true });
+            if (data.role !== role) {
+              await setDoc(userRef, { role }, { merge: true });
             }
 
             const updates = { lastActive: new Date() };
@@ -139,26 +141,34 @@ export function AuthProvider({ children }) {
             if (!data.displayName && user.displayName && user.displayName.trim()) {
               updates.displayName = user.displayName;
             }
+            if (activeBypassRole) {
+              updates.email = role === 'admin' ? 'dev-admin@helix.local' : 'dev-leerling@helix.local';
+              updates.displayName = role === 'admin' ? 'Dev Admin' : 'Dev Leerling';
+              updates.needsNameSetup = false;
+              updates.isDevBypass = true;
+            }
             await setDoc(userRef, updates, { merge: true });
           } else {
+            const bypassUser = activeBypassRole ? buildBypassUser(role, user) : user;
             const initialData = {
-              email: user.email,
-              displayName: user.displayName || '',
+              email: bypassUser.email,
+              displayName: bypassUser.displayName || '',
               role: role,
               createdAt: new Date(),
               lastActive: new Date(),
               completedChapters: [],
               completedSlides: [],
-              needsNameSetup: !user.displayName || user.displayName.trim() === '',
-              klasId: null
+              needsNameSetup: !bypassUser.displayName || bypassUser.displayName.trim() === '',
+              klasId: null,
+              isDevBypass: Boolean(activeBypassRole)
             };
             await setDoc(userRef, initialData);
           }
         } catch (error) {
           console.error("Error fetching/creating user doc:", error);
-          setUserRole(user.email === 'kevlimpens@gmail.com' ? 'admin' : 'student');
+          setUserRole(activeBypassRole || (user.email === 'kevlimpens@gmail.com' ? 'admin' : 'student'));
         }
-        setCurrentUser(user);
+        setCurrentUser(activeBypassRole ? buildBypassUser(activeBypassRole, user) : user);
       } else {
         if (unsubscribeSnapshot) unsubscribeSnapshot();
         setCurrentUser(null);
@@ -177,15 +187,20 @@ export function AuthProvider({ children }) {
   }, []);
 
   // For testing/bypass mode
-  const loginAsRole = (role) => {
-    const bypassUser = buildBypassUser(role);
-    try {
-      if (canUseDevBypass()) {
-        localStorage.setItem(DEV_BYPASS_STORAGE_KEY, role);
-      }
-    } catch {
-      // Local storage can be unavailable in strict privacy modes.
+  const loginAsRole = async (role) => {
+    if (!canUseDevBypass()) {
+      throw new Error('Testmodus is alleen beschikbaar in development.');
     }
+
+    try {
+      localStorage.setItem(DEV_BYPASS_STORAGE_KEY, role);
+    } catch {
+      throw new Error('Kon testmodus niet lokaal bewaren.');
+    }
+
+    const credential = await signInAnonymously(auth);
+    const bypassUser = buildBypassUser(role, credential.user);
+    await setDoc(doc(db, 'users', credential.user.uid), buildBypassUserData(role, bypassUser), { merge: true });
 
     setCurrentUser(bypassUser);
     setUserData(buildBypassUserData(role, bypassUser));
@@ -215,6 +230,7 @@ export function AuthProvider({ children }) {
     klasData,
     isAdmin: userRole === 'admin',
     isStudent: userRole === 'student',
+    isDevBypass: Boolean(userData?.isDevBypass),
     loginAsRole,
     logout
   };

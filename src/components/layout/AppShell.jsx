@@ -13,7 +13,7 @@ const workspaceIcons = {
 };
 
 export default function AppShell() {
-  const { currentUser, isAdmin, logout } = useAuth();
+  const { currentUser, isAdmin, isDevBypass, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -81,6 +81,16 @@ export default function AppShell() {
         </div>
 
         <div className="flex items-center gap-4">
+          {isDevBypass && (
+            <button
+              onClick={handleLogout}
+              className="hidden rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-black uppercase tracking-wide text-amber-700 transition-colors hover:bg-amber-100 lg:inline-flex"
+              title="Reset tijdelijke testmodus"
+            >
+              Reset testmodus
+            </button>
+          )}
+
           {!isAdmin ? (
             <button
               onClick={() => navigate('/profiel')}
