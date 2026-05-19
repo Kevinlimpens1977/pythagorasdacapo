@@ -39,10 +39,13 @@ export default function AppShell() {
         <div className="flex items-center gap-8">
           <h1
             onClick={() => navigate('/')}
-            className="text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity group"
+            className="helix-brand text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity group"
           >
             <span className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform -rotate-6 group-hover:rotate-0 transition-transform">📐</span>
-            <span className="tracking-tight hidden sm:inline">Digitaal Leerplatform</span>
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl shadow-lg shadow-blue-500/25 transition-transform group-hover:scale-105 md:h-12 md:w-12">
+              <img src="/logo.svg" alt="Helix logo" className="h-full w-full" />
+            </span>
+            <span className="tracking-tight hidden sm:inline">Helix</span>
           </h1>
           
           <nav className="flex gap-2 p-1 bg-slate-100/50 rounded-2xl border border-slate-200/50">

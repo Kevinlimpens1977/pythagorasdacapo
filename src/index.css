@@ -25,6 +25,10 @@ body {
   @apply bg-slate-50 text-slate-900 antialiased overflow-x-hidden;
 }
 
+.helix-brand > span:first-child {
+  display: none;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
@@ -164,4 +168,3 @@ input[type=number] {
 .text-tertiary {
   @apply text-slate-500;
 }
-
