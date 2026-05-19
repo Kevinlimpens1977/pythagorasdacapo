@@ -25,12 +25,13 @@ export default function CropSelectionOverlay({
   selections,
   onSelectionsChanged,
   interactionMode = 'select',
-  isTemporaryHandMode = false
+  isTemporaryHandMode = false,
+  activeSelectionId,
+  onActiveSelectionChange
 }) {
   const svgRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentRectangle, setCurrentRectangle] = useState(null);
-  const [activeSelectionId, setActiveSelectionId] = useState(null);
   const [editAction, setEditAction] = useState(null);
 
   if (!imageData) return null;
@@ -91,7 +92,7 @@ export default function CropSelectionOverlay({
   const handleMouseDown = (event) => {
     if (!isSelectionMode || event.button !== 0) return;
 
-    setActiveSelectionId(null);
+    onActiveSelectionChange?.(null);
     const pos = getMousePos(event);
     setIsDrawing(true);
     setCurrentRectangle({
@@ -106,7 +107,7 @@ export default function CropSelectionOverlay({
     if (!isSelectionMode || event.button !== 0) return;
 
     event.stopPropagation();
-    setActiveSelectionId(selection.id);
+    onActiveSelectionChange?.(selection.id);
 
     if (actionType === 'select') return;
 

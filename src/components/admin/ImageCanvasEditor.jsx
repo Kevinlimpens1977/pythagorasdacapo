@@ -42,7 +42,9 @@ export default function ImageCanvasEditor({
   panOffset,
   onPanOffsetChange,
   compact = false,
-  showTopActions = true
+  showTopActions = true,
+  activeSelectionId,
+  onActiveSelectionChange
 }) {
   const canvasContainerRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -355,6 +357,8 @@ export default function ImageCanvasEditor({
               onSelectionsChanged={onSelectionsChanged}
               interactionMode={interactionMode}
               isTemporaryHandMode={isSpacePressed}
+              activeSelectionId={activeSelectionId}
+              onActiveSelectionChange={onActiveSelectionChange}
             />
           </div>
         </div>

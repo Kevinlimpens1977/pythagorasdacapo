@@ -22,6 +22,7 @@ export default function CropEditorPanel({
   const [fullscreenInteractionMode, setFullscreenInteractionMode] = useState('hand');
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [activeSelectionId, setActiveSelectionId] = useState(null);
 
   const handleDeleteSelection = (selectionId) => {
     const nextSelections = selections
@@ -32,6 +33,9 @@ export default function CropEditorPanel({
       }));
 
     onSelectionsChanged?.(nextSelections);
+    if (activeSelectionId === selectionId) {
+      setActiveSelectionId(null);
+    }
   };
 
   const openFullscreen = () => {
@@ -42,14 +46,25 @@ export default function CropEditorPanel({
   const renderSelectionList = (dense = false) => (
     <div className="space-y-2">
       {selections.map((selection) => (
+        (() => {
+          const isActive = activeSelectionId === selection.id;
+
+          return (
         <div
           key={selection.id}
           onMouseEnter={() => setHoveredSelectionId(selection.id)}
           onMouseLeave={() => setHoveredSelectionId(null)}
-          className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 transition-colors ${
-            hoveredSelectionId === selection.id
-              ? 'border-gray-300 bg-gray-50'
-              : 'border-gray-200 bg-gray-50'
+          onClick={() => {
+            setActiveSelectionId(selection.id);
+            if (interactionMode !== 'select') setInteractionMode('select');
+            if (fullscreenInteractionMode !== 'select') setFullscreenInteractionMode('select');
+          }}
+          className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-2 transition-colors ${
+            isActive
+              ? 'border-blue-300 bg-blue-50 shadow-sm ring-2 ring-blue-100'
+              : hoveredSelectionId === selection.id
+                ? 'border-gray-300 bg-gray-50'
+                : 'border-gray-200 bg-gray-50'
           }`}
         >
           <div className="flex min-w-0 items-center gap-2">
@@ -67,7 +82,11 @@ export default function CropEditorPanel({
 
           <div className="flex shrink-0 gap-1">
             <button
-              onClick={() => onCropTypeChange?.(selection.id, 'image')}
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveSelectionId(selection.id);
+                onCropTypeChange?.(selection.id, 'image');
+              }}
               className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
                 selection.type === 'image'
                   ? 'bg-green-500 text-white'
@@ -78,7 +97,11 @@ export default function CropEditorPanel({
               {!dense && 'Afb'}
             </button>
             <button
-              onClick={() => onCropTypeChange?.(selection.id, 'text')}
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveSelectionId(selection.id);
+                onCropTypeChange?.(selection.id, 'text');
+              }}
               className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
                 selection.type === 'text'
                   ? 'bg-blue-500 text-white'
@@ -89,7 +112,10 @@ export default function CropEditorPanel({
               {!dense && 'OCR'}
             </button>
             <button
-              onClick={() => handleDeleteSelection(selection.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleDeleteSelection(selection.id);
+              }}
               className="flex items-center gap-1 rounded bg-red-50 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-100"
               title={`Crop ${selection.label} verwijderen`}
             >
@@ -98,6 +124,8 @@ export default function CropEditorPanel({
             </button>
           </div>
         </div>
+          );
+        })()
       ))}
     </div>
   );
@@ -116,6 +144,8 @@ export default function CropEditorPanel({
       onPanOffsetChange={setPanOffset}
       compact={!fullscreen}
       showTopActions
+      activeSelectionId={activeSelectionId}
+      onActiveSelectionChange={setActiveSelectionId}
     />
   );
 
