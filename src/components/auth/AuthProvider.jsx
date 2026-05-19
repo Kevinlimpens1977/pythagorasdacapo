@@ -4,11 +4,49 @@ import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 
 const AuthContext = createContext();
+const DEV_BYPASS_STORAGE_KEY = 'helix-dev-auth-bypass-role';
+
+const canUseDevBypass = () => {
+  return import.meta.env.DEV || import.meta.env.VITE_TEST_MODE === 'true';
+};
+
+const buildBypassUser = (role) => ({
+  uid: `dev_${role}`,
+  email: role === 'admin' ? 'dev-admin@helix.local' : 'dev-leerling@helix.local',
+  displayName: role === 'admin' ? 'Dev Admin' : 'Dev Leerling'
+});
+
+const buildBypassUserData = (role, user) => ({
+  email: user.email,
+  displayName: user.displayName,
+  role,
+  createdAt: new Date(),
+  lastActive: new Date(),
+  completedChapters: [],
+  completedSlides: [],
+  needsNameSetup: false,
+  klasId: null,
+  isDevBypass: true
+});
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const getInitialBypassRole = () => {
+    if (!canUseDevBypass()) return null;
+    try {
+      return localStorage.getItem(DEV_BYPASS_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  };
+
+  const initialBypassRole = getInitialBypassRole();
+  const initialBypassUser = initialBypassRole ? buildBypassUser(initialBypassRole) : null;
+
+  const [currentUser, setCurrentUser] = useState(initialBypassUser);
+  const [userRole, setUserRole] = useState(initialBypassRole);
+  const [userData, setUserData] = useState(
+    initialBypassUser ? buildBypassUserData(initialBypassRole, initialBypassUser) : null
+  );
   const [klasId, setKlasId] = useState(null);
   const [klasData, setKlasData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +81,19 @@ export function AuthProvider({ children }) {
     let unsubscribeSnapshot = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      const activeBypassRole = canUseDevBypass()
+        ? localStorage.getItem(DEV_BYPASS_STORAGE_KEY)
+        : null;
+
+      if (activeBypassRole && !user) {
+        const bypassUser = buildBypassUser(activeBypassRole);
+        setCurrentUser(bypassUser);
+        setUserData(buildBypassUserData(activeBypassRole, bypassUser));
+        setUserRole(activeBypassRole);
+        setLoading(false);
+        return;
+      }
+
       if (user) {
         try {
           const userRef = doc(db, 'users', user.uid);
@@ -127,14 +178,33 @@ export function AuthProvider({ children }) {
 
   // For testing/bypass mode
   const loginAsRole = (role) => {
-    setCurrentUser({ uid: `test_${role}`, email: `test@${role}.local`, displayName: `Test ${role}` });
+    const bypassUser = buildBypassUser(role);
+    try {
+      if (canUseDevBypass()) {
+        localStorage.setItem(DEV_BYPASS_STORAGE_KEY, role);
+      }
+    } catch {
+      // Local storage can be unavailable in strict privacy modes.
+    }
+
+    setCurrentUser(bypassUser);
+    setUserData(buildBypassUserData(role, bypassUser));
     setUserRole(role);
+    setLoading(false);
   };
 
   const logout = () => {
+    try {
+      localStorage.removeItem(DEV_BYPASS_STORAGE_KEY);
+    } catch {
+      // Ignore local storage failures during logout.
+    }
     auth.signOut();
     setCurrentUser(null);
+    setUserData(null);
     setUserRole(null);
+    setKlasId(null);
+    setKlasData(null);
   };
 
   const value = {

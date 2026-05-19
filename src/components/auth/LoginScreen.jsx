@@ -9,7 +9,7 @@ import {
 import { auth } from '../../services/firebase';
 import { useAuth } from './AuthProvider';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, UserCircle, UserPlus } from 'lucide-react';
+import { LogIn, ShieldCheck, UserRound, UserPlus } from 'lucide-react';
 
 export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -76,7 +76,7 @@ export default function LoginScreen() {
         return;
       }
       // Navigation handled automatically via useEffect when currentUser changes
-    } catch (err) {
+    } catch {
       setError('Google login mislukt.');
     }
   };
@@ -87,7 +87,7 @@ export default function LoginScreen() {
   };
 
   // Check if test mode is enabled via environment
-  const isTestMode = import.meta.env.VITE_TEST_MODE === 'true';
+  const isTestMode = import.meta.env.DEV || import.meta.env.VITE_TEST_MODE === 'true';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
@@ -195,6 +195,33 @@ export default function LoginScreen() {
             Inloggen als Administrator
           </button>
         </div>
+
+        {isTestMode && (
+          <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Tijdelijke testmodus</p>
+            <p className="mt-1 text-sm leading-5 text-amber-900">
+              Omzeilt alleen de React-login voor UI-tests. Firebase reads/writes blijven echte auth vereisen.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleTestBypass('admin')}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800"
+              >
+                <ShieldCheck size={17} />
+                Test admin
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTestBypass('student')}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm font-bold text-amber-900 transition-colors hover:bg-amber-100"
+              >
+                <UserRound size={17} />
+                Test leerling
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
