@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown, Scissors } from 'lucide-react';
+import { useCallback, useState, useEffect } from 'react';
+import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
@@ -25,7 +25,7 @@ function getRelativeTime(timestamp) {
 }
 
 // Helper functie voor voortgang per paragraaf (stub - voortgang loaded async)
-function getChapterProgress(student, chapterId) {
+function getChapterProgress() {
   // This is now loaded from voortgang collection in the main component
   // Stub returns 0 - actual calculation done async
   return 0;
@@ -67,7 +67,6 @@ export default function ClassOverview() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [viewingExercise, setViewingExercise] = useState(null);
-  const [showPythagorasMeasurements, setShowPythagorasMeasurements] = useState(false);
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedChapterForClass, setSelectedChapterForClass] = useState(null);
   const [sortBy, setSortBy] = useState("name");
@@ -112,6 +111,22 @@ export default function ClassOverview() {
     loadParagraphen();
   }, []);
 
+  // Load voortgang data for all students
+  const loadVoortgangForStudents = useCallback(async (studentList) => {
+    try {
+      const voortgangMap = {};
+      for (const student of studentList) {
+        if (paragraphen.length > 0) {
+          const voortgang = await voortgangService.getStudentVoortgang(student.id, student.klasId);
+          voortgangMap[student.id] = voortgang;
+        }
+      }
+      setStudentVoortgang(voortgangMap);
+    } catch (error) {
+      console.error('Error loading voortgang:', error);
+    }
+  }, [paragraphen]);
+
   useEffect(() => {
     // Query only students (no orderBy to avoid composite index requirement)
     const q = query(
@@ -134,38 +149,18 @@ export default function ClassOverview() {
 
       setStudents(studentData);
       setLoading(false);
-
-      // Load voortgang data for all students
       loadVoortgangForStudents(studentData);
-
-      // Update selected student if they were already open
-      if (selectedStudent) {
-        const updated = studentData.find(s => s.id === selectedStudent.id);
-        if (updated) setSelectedStudent(updated);
-      }
+      setSelectedStudent((current) => {
+        if (!current) return current;
+        return studentData.find(s => s.id === current.id) || current;
+      });
     }, (error) => {
       console.error("Error fetching students:", error);
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
-
-  // Load voortgang data for all students
-  const loadVoortgangForStudents = async (studentList) => {
-    try {
-      const voortgangMap = {};
-      for (const student of studentList) {
-        if (paragraphen.length > 0) {
-          const voortgang = await voortgangService.getStudentVoortgang(student.id, student.klasId);
-          voortgangMap[student.id] = voortgang;
-        }
-      }
-      setStudentVoortgang(voortgangMap);
-    } catch (error) {
-      console.error('Error loading voortgang:', error);
-    }
-  };
+  }, [loadVoortgangForStudents]);
 
   const filteredStudents = students
     .filter(s =>
@@ -211,7 +206,7 @@ export default function ClassOverview() {
 
   if (loading) {
     return (
-      <div className="w-full h-64 flex flex-col items-center justify-center gap-4 text-slate-500">
+      <div className="mx-auto flex h-64 w-full max-w-7xl flex-col items-center justify-center gap-4 px-6 text-slate-500 md:px-8">
         <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
         <p className="font-medium">Leerlinggegevens laden...</p>
       </div>
@@ -243,7 +238,7 @@ export default function ClassOverview() {
     const overallProgress = totalVragen > 0 ? Math.round((completedVragen / totalVragen) * 100) : 0;
 
     return (
-      <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 pb-20">
+      <div className="mx-auto w-full max-w-7xl animate-in fade-in slide-in-from-right-8 px-6 py-10 duration-500 md:px-8 md:py-12">
         <button
           onClick={() => {
             setSelectedStudent(null);
@@ -464,7 +459,8 @@ export default function ClassOverview() {
   }
 
   return (
-    <div className="w-full">
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto w-full max-w-7xl px-6 py-10 md:px-8 md:py-12">
       <div className="mb-8">
         <button
           onClick={() => navigate('/admin')}
@@ -479,13 +475,6 @@ export default function ClassOverview() {
             </h1>
             <p className="text-slate-500 mt-1">Real-time overzicht van je leerlingen</p>
           </div>
-          <button
-            onClick={() => navigate('/admin/crop-tool')}
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-md"
-          >
-            <Scissors size={20} />
-            Crop Tool
-          </button>
         </div>
       </div>
 
@@ -662,7 +651,7 @@ export default function ClassOverview() {
                 {selectedChapterForClass && (
                   <>
                     <th className="py-4 px-6 font-medium text-slate-500 text-sm">
-                      {CHAPTERS.find(ch => ch.id === selectedChapterForClass)?.title}
+                      {paragraphen.find(para => para.id === selectedChapterForClass)?.title || 'Paragraaf'}
                     </th>
                     <th className="py-4 px-6 font-medium text-slate-500 text-sm">
                       Presentatie
@@ -819,7 +808,7 @@ export default function ClassOverview() {
           </table>
         </div>
       </div>
+      </div>
     </div>
   );
 }
-
