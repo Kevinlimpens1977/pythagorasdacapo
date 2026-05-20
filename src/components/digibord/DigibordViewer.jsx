@@ -4,6 +4,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  FileText,
   Eye,
   EyeOff,
   Grid3X3,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 import cmsService from '../../services/cmsService';
 import { contentBlocksToDigibordSlides } from '../../lib/digibordSlideUtils';
+import PdfSlideDeckPresenter from './PdfSlideDeckPresenter';
 
 const getReadableType = (type) => {
   if (type === 'theory') return 'Theorie';
@@ -36,6 +38,7 @@ export default function DigibordViewer({ chapterId, onExit, title = 'Digibord' }
   const [showChrome, setShowChrome] = useState(false);
   const [showOverview, setShowOverview] = useState(false);
   const [revealedAnswers, setRevealedAnswers] = useState({});
+  const [activeSlidedeckSlide, setActiveSlidedeckSlide] = useState(null);
 
   useEffect(() => {
     const loadContentBlocks = async () => {
@@ -85,6 +88,8 @@ export default function DigibordViewer({ chapterId, onExit, title = 'Digibord' }
 
   useEffect(() => {
     const handleKeyDown = (event) => {
+      if (activeSlidedeckSlide) return;
+
       if (event.key === 'ArrowLeft') {
         setCurrentIndex((prev) => Math.max(0, prev - 1));
       }
@@ -109,7 +114,7 @@ export default function DigibordViewer({ chapterId, onExit, title = 'Digibord' }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onExit, showOverview, slides.length]);
+  }, [activeSlidedeckSlide, onExit, showOverview, slides.length]);
 
   const goToSlide = (index) => {
     setCurrentIndex(index);
@@ -230,6 +235,7 @@ export default function DigibordViewer({ chapterId, onExit, title = 'Digibord' }
             slide={currentSlide}
             answerVisible={Boolean(revealedAnswers[currentSlide.id])}
             onToggleAnswer={() => toggleAnswer(currentSlide.id)}
+            onOpenSlidedeck={() => setActiveSlidedeckSlide(currentSlide)}
           />
         </div>
 
@@ -311,11 +317,18 @@ export default function DigibordViewer({ chapterId, onExit, title = 'Digibord' }
           </div>
         </div>
       )}
+
+      {activeSlidedeckSlide && (
+        <PdfSlideDeckPresenter
+          slide={activeSlidedeckSlide}
+          onClose={() => setActiveSlidedeckSlide(null)}
+        />
+      )}
     </div>
   );
 }
 
-function SlideCanvas({ slide, answerVisible, onToggleAnswer }) {
+function SlideCanvas({ slide, answerVisible, onToggleAnswer, onOpenSlidedeck }) {
   if (slide.variant === 'question') {
     const hasAnswer = Boolean(slide.question?.answerHtml || slide.question?.explanationHtml);
 
@@ -391,36 +404,39 @@ function SlideCanvas({ slide, answerVisible, onToggleAnswer }) {
 
   if (slide.variant === 'slidedeck') {
     return (
-      <article className="mx-auto flex h-full max-h-[760px] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-8 py-6">
-          <div>
-            <SlideEyebrow label="Slidedeck" />
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">{slide.title}</h2>
-            <div
-              className="prose prose-sm mt-2 max-w-2xl text-slate-600"
-              dangerouslySetInnerHTML={{ __html: slide.html || '<p>Presentatie-PDF.</p>' }}
-            />
-          </div>
+      <article className="mx-auto flex h-full max-h-[760px] w-full max-w-6xl flex-col justify-center overflow-hidden rounded-3xl border border-blue-200 bg-white p-10 text-center shadow-2xl">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 text-blue-700">
+          <FileText size={42} />
+        </div>
+        <SlideEyebrow label="Slidedeck" />
+        <h2 className="mx-auto mt-3 max-w-4xl text-5xl font-black leading-tight tracking-tight text-slate-950">{slide.title}</h2>
+        <div
+          className="prose prose-lg mx-auto mt-6 max-w-3xl text-slate-600"
+          dangerouslySetInnerHTML={{ __html: slide.html || '<p>Open de presentatie om deze les klassikaal te bekijken.</p>' }}
+        />
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={onOpenSlidedeck}
+            disabled={!slide.imageUrl}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-4 text-base font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Maximize2 size={20} />
+            Open presentatie
+          </button>
           {slide.imageUrl && (
             <a
               href={slide.imageUrl}
               target="_blank"
               rel="noreferrer"
-              className="shrink-0 rounded-xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-4 text-base font-black text-slate-700 transition hover:bg-slate-50"
             >
-              Open PDF
+              Open PDF apart
             </a>
           )}
         </div>
-        <div className="min-h-0 flex-1 bg-slate-100">
-          {slide.imageUrl ? (
-            <iframe title={slide.title} src={`${slide.imageUrl}#toolbar=0`} className="h-full w-full border-0 bg-white" />
-          ) : (
-            <div className="flex h-full items-center justify-center text-sm font-bold text-slate-400">
-              Geen PDF gekoppeld.
-            </div>
-          )}
-        </div>
+        {!slide.imageUrl && (
+          <p className="mt-5 text-sm font-bold text-red-600">Geen presentatie-PDF gekoppeld.</p>
+        )}
       </article>
     );
   }
