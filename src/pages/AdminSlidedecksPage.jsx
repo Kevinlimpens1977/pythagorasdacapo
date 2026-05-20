@@ -37,6 +37,20 @@ const createImageItem = (file) => ({
   previewUrl: URL.createObjectURL(file)
 });
 
+const readableName = (item, fallback = 'Naamloos') =>
+  item?.name ||
+  item?.title ||
+  item?.naam ||
+  item?.label ||
+  item?.code ||
+  fallback;
+
+const readableCodeTitle = (item, fallback = 'Naamloos') => {
+  const code = item?.code || item?.number || '';
+  const name = readableName(item, '');
+  return `${code} ${name}`.trim() || fallback;
+};
+
 const formatDate = (value) => {
   if (!value) return 'Net aangemaakt';
   return new Intl.DateTimeFormat('nl-NL', {
@@ -120,7 +134,7 @@ export default function AdminSlidedecksPage() {
 
   const handleVakChange = async (vakId) => {
     const vak = vakken.find((item) => item.id === vakId);
-    setContext({ ...emptyContext, vakId, vakTitle: vak?.title || vak?.naam || '' });
+    setContext({ ...emptyContext, vakId, vakTitle: readableName(vak, '') });
     setLeerjaren([]);
     setNiveaus([]);
     setHoofdstukken([]);
@@ -133,7 +147,7 @@ export default function AdminSlidedecksPage() {
     setContext((current) => ({
       ...current,
       leerjaarId,
-      leerjaarTitle: leerjaar?.title || leerjaar?.naam || `Jaar ${leerjaar?.year || ''}`,
+      leerjaarTitle: readableName(leerjaar, leerjaar?.year ? `Jaar ${leerjaar.year}` : ''),
       niveauId: '',
       niveauTitle: '',
       hoofdstukId: '',
@@ -152,7 +166,7 @@ export default function AdminSlidedecksPage() {
     setContext((current) => ({
       ...current,
       niveauId,
-      niveauTitle: niveau?.title || niveau?.naam || '',
+      niveauTitle: readableName(niveau, ''),
       hoofdstukId: '',
       hoofdstukTitle: '',
       paragraafId: '',
@@ -168,7 +182,7 @@ export default function AdminSlidedecksPage() {
     setContext((current) => ({
       ...current,
       hoofdstukId,
-      hoofdstukTitle: hoofdstuk ? `${hoofdstuk.code || ''} ${hoofdstuk.title || ''}`.trim() : '',
+      hoofdstukTitle: hoofdstuk ? readableCodeTitle(hoofdstuk, '') : '',
       paragraafId: '',
       paragraafTitle: ''
     }));
@@ -181,7 +195,7 @@ export default function AdminSlidedecksPage() {
     setContext((current) => ({
       ...current,
       paragraafId,
-      paragraafTitle: paragraaf ? `${paragraaf.code || ''} ${paragraaf.title || ''}`.trim() : ''
+      paragraafTitle: paragraaf ? readableCodeTitle(paragraaf, '') : ''
     }));
   };
 
@@ -364,12 +378,15 @@ export default function AdminSlidedecksPage() {
               </div>
 
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <SelectBox label="Vak" value={context.vakId} onChange={handleVakChange} items={vakken} getLabel={(item) => item.title || item.naam} />
-                <SelectBox label="Leerjaar" value={context.leerjaarId} onChange={handleLeerjaarChange} items={leerjaren} getLabel={(item) => item.title || item.naam || `Jaar ${item.year}`} />
-                <SelectBox label="Niveau" value={context.niveauId} onChange={handleNiveauChange} items={niveaus} getLabel={(item) => item.title || item.naam} />
-                <SelectBox label="Hoofdstuk" value={context.hoofdstukId} onChange={handleHoofdstukChange} items={hoofdstukken} getLabel={(item) => `${item.code || ''} ${item.title || ''}`.trim()} />
-                <SelectBox label="Paragraaf" value={context.paragraafId} onChange={handleParagraafChange} items={paragrafen} getLabel={(item) => `${item.code || ''} ${item.title || ''}`.trim()} />
+                <SelectBox label="Vak" value={context.vakId} onChange={handleVakChange} items={vakken} getLabel={(item) => readableName(item)} />
+                <SelectBox label="Leerjaar" value={context.leerjaarId} onChange={handleLeerjaarChange} items={leerjaren} getLabel={(item) => readableName(item, item.year ? `Jaar ${item.year}` : 'Naamloos leerjaar')} />
+                <SelectBox label="Niveau" value={context.niveauId} onChange={handleNiveauChange} items={niveaus} getLabel={(item) => readableName(item)} />
+                <SelectBox label="Hoofdstuk" value={context.hoofdstukId} onChange={handleHoofdstukChange} items={hoofdstukken} getLabel={(item) => readableCodeTitle(item)} />
+                <SelectBox label="Paragraaf" value={context.paragraafId} onChange={handleParagraafChange} items={paragrafen} getLabel={(item) => readableCodeTitle(item)} />
               </div>
+              <p className="text-xs font-bold leading-5 text-slate-500">
+                Deze koppeling hoort bij de lesstofstructuur. Klassen krijgen lesstof later via taken/toewijzingen.
+              </p>
 
               <div>
                 <label className="mb-2 block text-sm font-bold text-slate-700">Leerdoelen</label>
