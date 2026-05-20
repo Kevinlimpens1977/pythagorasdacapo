@@ -120,3 +120,25 @@ test('game blocks become presentable game slides', () => {
   assert.equal(slides[0].sourceType, 'game');
   assert.match(slides[0].html, /trainer/);
 });
+
+test('slidedeck blocks become presentable PDF slides', () => {
+  const slides = contentBlocksToDigibordSlides([
+    {
+      id: 'deck-block',
+      type: 'slidedeck',
+      order: 1,
+      status: 'published',
+      title: 'Digitale vaardigheden',
+      content: {
+        deckTitle: 'Digitale vaardigheden',
+        generatedDeckUrl: 'https://example.test/deck.pdf',
+        html: '<p>Bekijk deze presentatie.</p>'
+      }
+    }
+  ]);
+
+  assert.equal(slides.length, 1);
+  assert.equal(slides[0].variant, 'slidedeck');
+  assert.equal(slides[0].sourceType, 'slidedeck');
+  assert.equal(slides[0].imageUrl, 'https://example.test/deck.pdf');
+});

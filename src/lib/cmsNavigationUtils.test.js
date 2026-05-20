@@ -20,20 +20,22 @@ const fixtures = {
     { id: 'b-2', paragraafId: 'p-1', type: 'example', status: 'draft' },
     { id: 'b-3', paragraafId: 'p-1', type: 'question', status: 'draft' },
     { id: 'b-4', paragraafId: 'p-1', type: 'media', isArchived: true },
-    { id: 'b-5', paragraafId: 'p-1', type: 'game', status: 'draft' }
+    { id: 'b-5', paragraafId: 'p-1', type: 'game', status: 'draft' },
+    { id: 'b-6', paragraafId: 'p-1', type: 'slidedeck', status: 'published' }
   ]
 };
 
 test('getContentBlockTypeCounts ignores archived blocks and counts types', () => {
   assert.deepEqual(getContentBlockTypeCounts(fixtures.contentBlocks), {
-    total: 4,
+    total: 5,
     theory: 1,
     example: 1,
     question: 1,
     media: 0,
     summary: 0,
     game: 1,
-    published: 1,
+    slidedeck: 1,
+    published: 2,
     draft: 3
   });
 });
@@ -49,7 +51,7 @@ test('buildCmsNavigationTree adds useful child and block counts', () => {
   assert.equal(niveau.counts.hoofdstukken, 1);
   assert.equal(hoofdstuk.counts.paragrafen, 1);
   assert.equal(paragraaf.counts.vragen, 2);
-  assert.equal(paragraaf.counts.blocks.total, 4);
+  assert.equal(paragraaf.counts.blocks.total, 5);
   assert.deepEqual(paragraaf.children, []);
 });
 

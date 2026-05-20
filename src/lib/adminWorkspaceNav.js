@@ -3,7 +3,7 @@ export const ADMIN_WORKSPACES = [
     id: 'lesstof',
     label: 'Lesstof',
     path: '/admin/lesstof',
-    routePrefixes: ['/admin/lesstof', '/admin/cms', '/admin/digibord']
+    routePrefixes: ['/admin/lesstof', '/admin/cms', '/admin/digibord', '/admin/slidedecks']
   },
   {
     id: 'voortgang',

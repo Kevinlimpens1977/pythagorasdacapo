@@ -22,6 +22,7 @@ const getReadableType = (type) => {
   if (type === 'media') return 'Media';
   if (type === 'summary') return 'Samenvatting';
   if (type === 'game') return 'Game';
+  if (type === 'slidedeck') return 'Slidedeck';
   return 'Lesblok';
 };
 
@@ -384,6 +385,42 @@ function SlideCanvas({ slide, answerVisible, onToggleAnswer }) {
           className="prose prose-xl mx-auto mt-8 max-w-3xl text-slate-700"
           dangerouslySetInnerHTML={{ __html: slide.html || '<p>Deze game staat klaar in de leerlingroute.</p>' }}
         />
+      </article>
+    );
+  }
+
+  if (slide.variant === 'slidedeck') {
+    return (
+      <article className="mx-auto flex h-full max-h-[760px] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-8 py-6">
+          <div>
+            <SlideEyebrow label="Slidedeck" />
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">{slide.title}</h2>
+            <div
+              className="prose prose-sm mt-2 max-w-2xl text-slate-600"
+              dangerouslySetInnerHTML={{ __html: slide.html || '<p>Presentatie-PDF.</p>' }}
+            />
+          </div>
+          {slide.imageUrl && (
+            <a
+              href={slide.imageUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 rounded-xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+            >
+              Open PDF
+            </a>
+          )}
+        </div>
+        <div className="min-h-0 flex-1 bg-slate-100">
+          {slide.imageUrl ? (
+            <iframe title={slide.title} src={`${slide.imageUrl}#toolbar=0`} className="h-full w-full border-0 bg-white" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm font-bold text-slate-400">
+              Geen PDF gekoppeld.
+            </div>
+          )}
+        </div>
       </article>
     );
   }

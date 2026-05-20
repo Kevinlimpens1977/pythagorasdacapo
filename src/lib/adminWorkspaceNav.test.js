@@ -10,6 +10,7 @@ test('getAdminWorkspaceForPath groups admin content routes under lesstof', () =>
   assert.equal(getAdminWorkspaceForPath('/admin/lesstof'), 'lesstof');
   assert.equal(getAdminWorkspaceForPath('/admin/cms'), 'lesstof');
   assert.equal(getAdminWorkspaceForPath('/admin/digibord'), 'lesstof');
+  assert.equal(getAdminWorkspaceForPath('/admin/slidedecks'), 'lesstof');
 });
 
 test('getAdminWorkspaceForPath maps dashboard and student routes to the right workspace', () => {

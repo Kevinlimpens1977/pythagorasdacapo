@@ -1,5 +1,6 @@
 export const CMS_RESET_COLLECTIONS = [
   'contentBlocks',
+  'slidedeckPackages',
   'vraag',
   'paragraaf',
   'hoofdstuk',

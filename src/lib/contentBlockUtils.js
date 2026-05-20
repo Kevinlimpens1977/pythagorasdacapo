@@ -4,7 +4,8 @@ export const CONTENT_BLOCK_TYPES = [
   'question',
   'media',
   'summary',
-  'game'
+  'game',
+  'slidedeck'
 ];
 
 export const CONTENT_BLOCK_LABELS = {
@@ -13,7 +14,8 @@ export const CONTENT_BLOCK_LABELS = {
   question: 'Vraag',
   media: 'Media',
   summary: 'Samenvatting',
-  game: 'Game'
+  game: 'Game',
+  slidedeck: 'Slidedeck'
 };
 
 export const getDefaultContentForBlockType = (type) => {
@@ -31,6 +33,10 @@ export const getDefaultContentForBlockType = (type) => {
 
   if (type === 'game') {
     return { html: '', gameId: '', settings: {}, crops: [] };
+  }
+
+  if (type === 'slidedeck') {
+    return { html: '', slidedeckPackageId: '', deckTitle: '', generatedDeckUrl: '', sourcePdfUrl: '' };
   }
 
   return { html: '', imageUrl: '', crops: [] };
@@ -137,6 +143,10 @@ export const buildContentBlockPreview = (block = {}) => {
     return block.content?.gameTitle || block.content?.gameId || 'Nog geen game gekozen';
   }
 
+  if (block.type === 'slidedeck') {
+    return block.content?.deckTitle || block.content?.slidedeckPackageId || 'Nog geen slidedeck gekozen';
+  }
+
   if (block.type === 'media') {
     return htmlToPlainText(block.content?.caption || block.content?.html || '') || (block.content?.mediaUrl ? 'Media toegevoegd' : 'Nog geen media');
   }
@@ -211,6 +221,17 @@ export const blockToSlide = (block) => {
       ...base,
       type: 'game',
       gameId: block.content?.gameId || null
+    };
+  }
+
+  if (block.type === 'slidedeck') {
+    return {
+      ...base,
+      type: 'slidedeck',
+      content: block.content?.html || '',
+      deckTitle: block.content?.deckTitle || block.title || 'Slidedeck',
+      pdfUrl: block.content?.generatedDeckUrl || '',
+      sourcePdfUrl: block.content?.sourcePdfUrl || ''
     };
   }
 

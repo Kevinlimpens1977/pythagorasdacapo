@@ -108,6 +108,7 @@ export default function SlideRenderer() {
 
   // Reset warnings when slide changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowLockWarning(false);
   }, [currentIndex]);
 
@@ -137,6 +138,7 @@ export default function SlideRenderer() {
 
   // Reset index and unlock state when chapter changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentIndex(0);
     setIsUnlocked(true);
   }, [chapterId]);
@@ -147,6 +149,7 @@ export default function SlideRenderer() {
 
     // Lock if it's an exercise or evaluation slide and not already completed
     if ((slides[currentIndex]?.type === 'exercise' || slides[currentIndex]?.type === 'evaluation') && !isCompleted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsUnlocked(false);
     } else {
       setIsUnlocked(true);
@@ -157,9 +160,11 @@ export default function SlideRenderer() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowRight') {
-        goNext();
+        if (isUnlocked || isAdmin) {
+          setCurrentIndex((prev) => Math.min(slides.length - 1, prev + 1));
+        }
       } else if (e.key === 'ArrowLeft') {
-        goPrev();
+        setCurrentIndex((prev) => Math.max(0, prev - 1));
       }
     };
 
@@ -246,6 +251,7 @@ export default function SlideRenderer() {
       case 'evaluation_summary': return <EvaluationSummarySlide key={currentSlide.id} userData={userData} chapterId={chapterId} />;
       case 'demo_exercise': return <DemoSlide key={currentSlide.id} slide={currentSlide} />;
       case 'summary': return <SummarySlide key={currentSlide.id} slide={currentSlide} />;
+      case 'slidedeck': return <SlidedeckSlide key={currentSlide.id} slide={currentSlide} />;
       default:
         // Check if it's an exercise with special type
         if (currentSlide.type === 'exercise' && currentSlide.exercise?.type === 'pythagoras_proof') {
@@ -351,6 +357,41 @@ export default function SlideRenderer() {
                <span className="text-green-600 font-black text-xl animate-pulse">KLAAR!</span>
              )}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SlidedeckSlide({ slide }) {
+  return (
+    <div className="flex min-h-full w-full flex-col bg-slate-50 p-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">Slidedeck</p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">{slide.deckTitle || slide.heading}</h1>
+            {slide.content && <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{slide.content}</p>}
+          </div>
+          {slide.pdfUrl && (
+            <a
+              href={slide.pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-xl bg-blue-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+            >
+              Open PDF
+            </a>
+          )}
+        </div>
+        <div className="min-h-[34rem] flex-1 bg-slate-100">
+          {slide.pdfUrl ? (
+            <iframe title={slide.deckTitle || slide.heading} src={`${slide.pdfUrl}#toolbar=0`} className="h-full min-h-[34rem] w-full border-0 bg-white" />
+          ) : (
+            <div className="flex h-full min-h-[34rem] items-center justify-center text-sm font-bold text-slate-400">
+              Geen PDF gekoppeld.
+            </div>
+          )}
         </div>
       </div>
     </div>

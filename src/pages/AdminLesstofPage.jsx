@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, Clapperboard, Crop, Image, Layers3 } from 'lucide-react';
+import { ArrowRight, BookOpen, Clapperboard, Crop, FileStack, Image, Layers3 } from 'lucide-react';
 
 const actions = [
   {
@@ -16,6 +16,14 @@ const actions = [
     actionLabel: 'Open Digibord',
     path: '/admin/digibord',
     icon: Clapperboard,
+    tone: 'bg-white text-slate-900 border border-slate-200'
+  },
+  {
+    title: 'Slidedecks / NotebookLM',
+    description: 'Maak bron-PDFs en prompts voor NotebookLM en upload gegenereerde presentatie-PDFs terug naar Helix.',
+    actionLabel: 'Open Slidedeckcreator',
+    path: '/admin/slidedecks',
+    icon: FileStack,
     tone: 'bg-white text-slate-900 border border-slate-200'
   }
 ];
@@ -40,7 +48,7 @@ export default function AdminLesstofPage() {
           </p>
         </div>
 
-        <section className="mt-8 grid gap-4 lg:grid-cols-2">
+        <section className="mt-8 grid gap-4 lg:grid-cols-3">
           {actions.map((action) => {
             const Icon = action.icon;
 

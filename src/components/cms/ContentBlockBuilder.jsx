@@ -12,6 +12,7 @@ import {
   ArrowUp,
   BookOpen,
   CheckSquare,
+  FileStack,
   FileText,
   Gamepad2,
   Image,
@@ -38,6 +39,7 @@ import {
   normalizeContentBlocks
 } from '../../lib/contentBlockUtils';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
+import { getDeckReadySlidedeckPackages } from '../../services/slidedeckService';
 import CropEditorPanel from './CropEditorPanel';
 
 const blockIcons = {
@@ -46,7 +48,8 @@ const blockIcons = {
   question: CheckSquare,
   media: Image,
   summary: FileText,
-  game: Gamepad2
+  game: Gamepad2,
+  slidedeck: FileStack
 };
 
 const blockDescriptions = {
@@ -55,7 +58,8 @@ const blockDescriptions = {
   question: 'Nieuwe of herbruikbare interactieve vraag met crop/OCR.',
   media: 'Afbeelding of crop met bijschrift en alt-tekst.',
   summary: 'Kernpunten, afsluiting en korte herhaling.',
-  game: 'Voeg een educatieve game toe aan de leerlingroute.'
+  game: 'Voeg een educatieve game toe aan de leerlingroute.',
+  slidedeck: 'Koppel een NotebookLM presentatie-PDF als slide deck.'
 };
 
 const contentFieldLabels = {
@@ -63,7 +67,8 @@ const contentFieldLabels = {
   example: 'Intro / opgave',
   media: 'Toelichting',
   summary: 'Kernpunten',
-  game: 'Instructie bij de game'
+  game: 'Instructie bij de game',
+  slidedeck: 'Instructie bij de presentatie'
 };
 
 const cmsEmbeddableGames = getCmsEmbeddableGames();
@@ -360,10 +365,22 @@ const LessonBlockStudio = ({
   const [saving, setSaving] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [slidedeckPackages, setSlidedeckPackages] = useState([]);
 
   const selectedVraag = vragen.find((vraag) => vraag.id === linkedVraagId);
   const selectedGame = cmsEmbeddableGames.find((game) => game.gameId === content.gameId);
+  const selectedSlidedeck = slidedeckPackages.find((deck) => deck.id === content.slidedeckPackageId);
   const Icon = blockIcons[block.type] || FileText;
+
+  useEffect(() => {
+    if (block.type !== 'slidedeck') return;
+    getDeckReadySlidedeckPackages()
+      .then(setSlidedeckPackages)
+      .catch((deckError) => {
+        console.error('Kon slidedecks niet laden:', deckError);
+        setError('Kon slidedecks niet laden. Controleer Firestore rules.');
+      });
+  }, [block.type]);
 
   const updateContent = (updates) => {
     setContent((current) => ({ ...current, ...updates }));
@@ -644,6 +661,101 @@ const LessonBlockStudio = ({
     );
   }
 
+  if (block.type === 'slidedeck') {
+    return (
+      <div className="overflow-hidden rounded-lg border border-blue-200 bg-blue-50/60">
+        <div className="border-b border-blue-100 bg-white px-5 py-4">
+          <div className="grid gap-3 md:grid-cols-[1fr_12rem]">
+            <div>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Bloktitel</label>
+              <input value={title} onChange={(event) => setTitle(event.target.value)} className="input-standard w-full" />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Status</label>
+              <StatusSelect value={status} onChange={setStatus} />
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-4 bg-white p-5">
+          <div>
+            <label className="mb-2 block text-sm font-bold text-slate-700">Slidedeck</label>
+            <select
+              value={content.slidedeckPackageId || ''}
+              onChange={(event) => {
+                const nextDeck = slidedeckPackages.find((deck) => deck.id === event.target.value);
+                updateContent({
+                  slidedeckPackageId: event.target.value,
+                  deckTitle: nextDeck?.title || '',
+                  generatedDeckUrl: nextDeck?.generatedDeckPdf?.downloadURL || '',
+                  sourcePdfUrl: nextDeck?.sourcePdf?.downloadURL || ''
+                });
+                if (nextDeck?.title) setTitle(nextDeck.title);
+              }}
+              className="input-standard w-full"
+            >
+              <option value="">Kies een geupload NotebookLM slidedeck</option>
+              {slidedeckPackages.map((deck) => (
+                <option key={deck.id} value={deck.id}>
+                  {deck.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedSlidedeck ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-black text-slate-900">{selectedSlidedeck.title}</p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Deze presentatie-PDF wordt in de leerlingroute en op het digibord getoond.
+                  </p>
+                </div>
+                <a
+                  href={selectedSlidedeck.generatedDeckPdf?.downloadURL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-black text-blue-700 hover:bg-blue-100"
+                >
+                  Bekijk PDF
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm font-bold text-slate-500">
+              Maak eerst een slidedeckpakket en upload de NotebookLM PDF via Lesstof &gt; Slidedecks.
+            </div>
+          )}
+
+          <StudioRichEditor
+            label={contentFieldLabels.slidedeck}
+            value={content.html || ''}
+            onChange={(html) => updateContent({ html })}
+            onEditorReady={setBlockEditor}
+            placeholder="Schrijf optioneel een korte introductie voordat leerlingen de presentatie openen."
+          />
+
+          <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
+            <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+              Sluit
+            </button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+              <Save size={16} />
+              {saving ? 'Opslaan...' : 'Blok opslaan'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-lg border border-blue-200 bg-blue-50/60">
       <div className="border-b border-blue-100 bg-white px-5 py-4">
@@ -882,7 +994,7 @@ export default function ContentBlockBuilder({
           </div>
         )}
 
-        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-7">
           {CONTENT_BLOCK_TYPES.map((type) => (
             <BlockTypeButton key={type} type={type} onClick={handleCreateBlock} disabled={creatingType !== null} />
           ))}
@@ -894,7 +1006,7 @@ export default function ContentBlockBuilder({
           <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
             <p className="text-lg font-black text-slate-900">Nog geen lesroute</p>
             <p className="mt-2 text-sm text-slate-500">
-              Voeg een theorieblok, voorbeeld, vraag, media, samenvatting of game toe om deze paragraaf op te bouwen.
+              Voeg een theorieblok, voorbeeld, vraag, media, samenvatting, game of slidedeck toe om deze paragraaf op te bouwen.
             </p>
           </div>
         ) : (

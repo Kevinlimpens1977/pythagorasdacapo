@@ -59,6 +59,7 @@ test('blockToSlide maps supported content block types to slide types', () => {
   assert.equal(blockToSlide({ id: 'media-1', type: 'media' }).type, 'theory');
   assert.equal(blockToSlide({ id: 'summary-1', type: 'summary' }).type, 'summary');
   assert.equal(blockToSlide({ id: 'game-1', type: 'game', content: { gameId: 'pythagoras-trainer' } }).type, 'game');
+  assert.equal(blockToSlide({ id: 'deck-1', type: 'slidedeck', content: { generatedDeckUrl: 'https://example.test/deck.pdf' } }).type, 'slidedeck');
 });
 
 test('getDefaultContentForBlockType gives every studio block a stable editable shape', () => {
@@ -88,6 +89,14 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
     gameId: '',
     settings: {},
     crops: []
+  });
+
+  assert.deepEqual(getDefaultContentForBlockType('slidedeck'), {
+    html: '',
+    slidedeckPackageId: '',
+    deckTitle: '',
+    generatedDeckUrl: '',
+    sourcePdfUrl: ''
   });
 });
 
@@ -137,5 +146,13 @@ test('buildContentBlockPreview shows useful route card text', () => {
       linkedVraagId: 'vraag-1'
     }),
     'Gekoppelde vraag: vraag-1'
+  );
+
+  assert.equal(
+    buildContentBlockPreview({
+      type: 'slidedeck',
+      content: { deckTitle: 'Digitale vaardigheden' }
+    }),
+    'Digitale vaardigheden'
   );
 });

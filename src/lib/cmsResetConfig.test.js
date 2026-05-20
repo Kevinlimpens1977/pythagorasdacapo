@@ -9,6 +9,7 @@ import {
 test('CMS reset targets only lesson content collections', () => {
   assert.deepEqual(CMS_RESET_COLLECTIONS, [
     'contentBlocks',
+    'slidedeckPackages',
     'vraag',
     'paragraaf',
     'hoofdstuk',

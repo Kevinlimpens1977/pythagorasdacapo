@@ -175,6 +175,15 @@ const buildSlidesForBlock = (block, linkedQuestions = {}) => {
     })];
   }
 
+  if (block.type === 'slidedeck') {
+    return [createBaseSlide(block, 'slidedeck', 1, {
+      title: block.title || content.deckTitle || 'Slidedeck',
+      html: content.html || '<p>Open de presentatie-PDF om deze les klassikaal te bekijken.</p>',
+      imageUrl: content.generatedDeckUrl || '',
+      altText: content.deckTitle || block.title || 'Slidedeck'
+    })];
+  }
+
   if (block.type === 'question') {
     return [buildQuestionSlide(block, linkedQuestions[block.linkedVraagId] || null)];
   }

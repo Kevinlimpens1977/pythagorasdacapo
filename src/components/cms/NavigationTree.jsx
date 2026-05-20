@@ -42,7 +42,7 @@ const countLabel = (node) => {
 const blockTypePills = (node) => {
   if (node.type !== 'paragraaf' || !node.counts.blocks?.total) return [];
 
-  return ['theory', 'example', 'question', 'media', 'summary', 'game']
+  return ['theory', 'example', 'question', 'media', 'summary', 'game', 'slidedeck']
     .map((type) => ({ type, count: node.counts.blocks[type] || 0 }))
     .filter((item) => item.count > 0)
     .map((item) => `${CONTENT_BLOCK_LABELS[item.type][0]}${item.count}`);
