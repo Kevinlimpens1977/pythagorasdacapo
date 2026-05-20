@@ -18,6 +18,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
   const rootRef = useRef(null);
   const canvasRef = useRef(null);
   const stageRef = useRef(null);
+  const renderTaskRef = useRef(null);
 
   const pdfUrl = slide?.imageUrl || '';
   const directStoragePath = slide?.pdfStoragePath || slide?.meta?.pdfStoragePath || '';
@@ -91,6 +92,8 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
     if (!pdf || !canvasRef.current || !stageRef.current) return;
 
     let cancelled = false;
+    renderTaskRef.current?.cancel?.();
+    renderTaskRef.current = null;
 
     const renderPage = async () => {
       try {
@@ -113,12 +116,16 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
         canvas.style.width = `${Math.floor(viewport.width)}px`;
         canvas.style.height = `${Math.floor(viewport.height)}px`;
 
-        await page.render({
+        const renderTask = page.render({
           canvasContext: context,
           viewport,
           transform: ratio !== 1 ? [ratio, 0, 0, ratio, 0, 0] : null
-        }).promise;
+        });
+        renderTaskRef.current = renderTask;
+
+        await renderTask.promise;
       } catch (renderError) {
+        if (renderError?.name === 'RenderingCancelledException') return;
         if (!cancelled) {
           console.error('Slidedeck PDF pagina kon niet renderen:', renderError);
           setError('Deze PDF-pagina kon niet worden weergegeven.');
@@ -132,6 +139,8 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
 
     return () => {
       cancelled = true;
+      renderTaskRef.current?.cancel?.();
+      renderTaskRef.current = null;
     };
   }, [pdf, pageNum, renderVersion]);
 
