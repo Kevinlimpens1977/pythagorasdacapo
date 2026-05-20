@@ -259,7 +259,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
   );
 };
 
-const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder }) => {
+const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder, helperText = null }) => {
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   const editor = useEditor({
     extensions: [
@@ -310,9 +310,11 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder }
           <EditorContent editor={editor} />
         )}
       </div>
-      <p className="mt-2 text-xs leading-5 text-slate-500">
-        Zet je cursor waar de crop moet komen. OCR komt als tekst, afbeelding-crops komen als afbeelding in deze editor.
-      </p>
+      {helperText && (
+        <p className="mt-2 text-xs leading-5 text-slate-500">
+          {helperText}
+        </p>
+      )}
 
       {isFullscreenOpen && (
         <div className="fixed inset-0 z-[1000] flex flex-col bg-slate-950">
@@ -790,6 +792,7 @@ const LessonBlockStudio = ({
             onChange={(html) => updateContent({ html })}
             onEditorReady={setBlockEditor}
             placeholder="Schrijf hier de tekst voor leerlingen of voeg OCR-tekst toe via de bronzone."
+            helperText="Zet je cursor waar de crop moet komen. OCR komt als tekst, afbeelding-crops komen als afbeelding in deze editor."
           />
 
           {block.type === 'example' && (
