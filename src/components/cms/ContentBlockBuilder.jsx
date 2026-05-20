@@ -696,7 +696,9 @@ const LessonBlockStudio = ({
                   slidedeckPackageId: event.target.value,
                   deckTitle: nextDeck?.title || '',
                   generatedDeckUrl: nextDeck?.generatedDeckPdf?.downloadURL || '',
-                  sourcePdfUrl: nextDeck?.sourcePdf?.downloadURL || ''
+                  generatedDeckStoragePath: nextDeck?.generatedDeckPdf?.storagePath || '',
+                  sourcePdfUrl: nextDeck?.sourcePdf?.downloadURL || '',
+                  sourcePdfStoragePath: nextDeck?.sourcePdf?.storagePath || ''
                 });
                 if (nextDeck?.title) setTitle(nextDeck.title);
               }}

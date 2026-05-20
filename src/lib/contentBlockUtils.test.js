@@ -96,7 +96,9 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
     slidedeckPackageId: '',
     deckTitle: '',
     generatedDeckUrl: '',
-    sourcePdfUrl: ''
+    generatedDeckStoragePath: '',
+    sourcePdfUrl: '',
+    sourcePdfStoragePath: ''
   });
 });
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPdfPageUrl, createPdfJsLoadOptions } from './pdfPresenterUtils.js';
+import { buildPdfPageUrl, createPdfJsDataLoadOptions, createPdfJsLoadOptions } from './pdfPresenterUtils.js';
 
 test('createPdfJsLoadOptions disables range and stream loading for storage URLs', () => {
   const options = createPdfJsLoadOptions('https://firebasestorage.googleapis.com/v0/b/demo/o/deck.pdf?alt=media');
@@ -17,6 +17,15 @@ test('buildPdfPageUrl replaces existing hash and targets a page in native PDF vi
     buildPdfPageUrl('https://example.test/deck.pdf#page=7', 3),
     'https://example.test/deck.pdf#page=3&toolbar=0&navpanes=0&scrollbar=0'
   );
+});
+
+test('createPdfJsDataLoadOptions normalizes ArrayBuffer to Uint8Array', () => {
+  const options = createPdfJsDataLoadOptions(new ArrayBuffer(4));
+
+  assert.equal(options.data instanceof Uint8Array, true);
+  assert.equal(options.disableRange, true);
+  assert.equal(options.disableStream, true);
+  assert.equal(options.disableAutoFetch, true);
 });
 
 test('buildPdfPageUrl clamps invalid page numbers to page one', () => {

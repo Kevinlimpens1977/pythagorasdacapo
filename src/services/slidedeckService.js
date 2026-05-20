@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -8,7 +9,7 @@ import {
   setDoc,
   updateDoc
 } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { getBytes, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from './firebase';
 import {
   DEFAULT_NOTEBOOK_PROMPT,
@@ -81,9 +82,33 @@ export const getSlidedeckPackages = async () => {
   return snapshot.docs.map(mapDoc);
 };
 
+export const getSlidedeckPackage = async (packageId) => {
+  if (!packageId) return null;
+  const snapshot = await getDoc(doc(db, 'slidedeckPackages', packageId));
+  if (!snapshot.exists()) return null;
+  return mapDoc(snapshot);
+};
+
 export const getDeckReadySlidedeckPackages = async () => {
   const packages = await getSlidedeckPackages();
   return packages.filter((item) => item.generatedDeckPdf?.downloadURL);
+};
+
+export const getSlidedeckPdfBytes = async ({ storagePath, downloadURL }) => {
+  if (storagePath) {
+    return getBytes(ref(storage, storagePath));
+  }
+
+  if (!downloadURL) {
+    throw new Error('Geen PDF-bron beschikbaar.');
+  }
+
+  const response = await fetch(downloadURL);
+  if (!response.ok) {
+    throw new Error(`PDF kon niet worden opgehaald (${response.status}).`);
+  }
+
+  return response.arrayBuffer();
 };
 
 const uploadBlob = async (storagePath, blob, contentType) => {
@@ -184,8 +209,10 @@ export default {
   ensureDefaultPromptTemplate,
   getPromptTemplates,
   createPromptTemplate,
+  getSlidedeckPackage,
   getSlidedeckPackages,
   getDeckReadySlidedeckPackages,
+  getSlidedeckPdfBytes,
   createSlidedeckPackage,
   uploadGeneratedDeckPdf
 };

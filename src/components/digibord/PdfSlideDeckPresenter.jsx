@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ExternalLink, Loader2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, Loader2, Maximize2, Minimize2, X } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
-import { buildPdfPageUrl, createPdfJsLoadOptions } from '../../lib/pdfPresenterUtils';
+import { createPdfJsDataLoadOptions, createPdfJsLoadOptions } from '../../lib/pdfPresenterUtils';
+import { getSlidedeckPackage, getSlidedeckPdfBytes } from '../../services/slidedeckService';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
@@ -12,23 +13,26 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
   const [loading, setLoading] = useState(true);
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState('');
-  const [useNativeViewer, setUseNativeViewer] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [renderVersion, setRenderVersion] = useState(0);
+  const rootRef = useRef(null);
   const canvasRef = useRef(null);
   const stageRef = useRef(null);
 
   const pdfUrl = slide?.imageUrl || '';
+  const directStoragePath = slide?.pdfStoragePath || slide?.meta?.pdfStoragePath || '';
+  const packageId = slide?.slidedeckPackageId || slide?.meta?.slidedeckPackageId || '';
 
   useEffect(() => {
     let cancelled = false;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError('');
-    setUseNativeViewer(false);
     setPageNum(1);
+    setTotalPages(0);
     setPdf(null);
 
-    if (!pdfUrl) {
+    if (!pdfUrl && !directStoragePath && !packageId) {
       setError('Geen PDF gekoppeld aan dit slidedeck.');
       setLoading(false);
       return () => {
@@ -36,28 +40,49 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
       };
     }
 
-    const loadingTask = pdfjsLib.getDocument(createPdfJsLoadOptions(pdfUrl));
+    let loadingTask = null;
 
-    loadingTask
-      .promise.then((pdfDocument) => {
+    const loadPdf = async () => {
+      try {
+        let storagePath = directStoragePath;
+        let downloadURL = pdfUrl;
+
+        if ((!storagePath || !downloadURL) && packageId) {
+          const deckPackage = await getSlidedeckPackage(packageId);
+          storagePath ||= deckPackage?.generatedDeckPdf?.storagePath || '';
+          downloadURL ||= deckPackage?.generatedDeckPdf?.downloadURL || '';
+        }
+
+        try {
+          const bytes = await getSlidedeckPdfBytes({ storagePath, downloadURL });
+          if (cancelled) return;
+          loadingTask = pdfjsLib.getDocument(createPdfJsDataLoadOptions(bytes));
+        } catch (bytesError) {
+          console.warn('Slidedeck PDF bytes konden niet worden geladen, probeer URL-load:', bytesError);
+          if (!downloadURL) throw bytesError;
+          loadingTask = pdfjsLib.getDocument(createPdfJsLoadOptions(downloadURL));
+        }
+
+        const pdfDocument = await loadingTask.promise;
         if (cancelled) return;
         setPdf(pdfDocument);
         setTotalPages(pdfDocument.numPages);
         setLoading(false);
-      })
-      .catch((loadError) => {
+      } catch (loadError) {
         if (cancelled) return;
         console.error('Slidedeck PDF kon niet laden:', loadError);
-        setUseNativeViewer(true);
-        setError('');
+        setError('Deze presentatie-PDF kon niet als losse dia’s worden geladen. Open de PDF apart om het bestand te controleren.');
         setLoading(false);
-      });
+      }
+    };
+
+    loadPdf();
 
     return () => {
       cancelled = true;
-      loadingTask.destroy?.();
+      loadingTask?.destroy?.();
     };
-  }, [pdfUrl]);
+  }, [directStoragePath, packageId, pdfUrl]);
 
   useEffect(() => {
     if (!pdf || !canvasRef.current || !stageRef.current) return;
@@ -122,7 +147,11 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onClose();
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.();
+        } else {
+          onClose();
+        }
         return;
       }
 
@@ -143,13 +172,32 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
   }, [onClose, totalPages]);
 
   const goPrev = () => setPageNum((current) => Math.max(1, current - 1));
-  const goNext = () => setPageNum((current) => {
-    if (!totalPages && useNativeViewer) return current + 1;
-    return Math.min(totalPages || current, current + 1);
-  });
+  const goNext = () => setPageNum((current) => Math.min(totalPages || current, current + 1));
+
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen?.();
+      } else {
+        await rootRef.current?.requestFullscreen?.();
+      }
+    } catch (fullscreenError) {
+      console.warn('Fullscreen schakelen is mislukt:', fullscreenError);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+      setRenderVersion((current) => current + 1);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   return (
-    <div className="fixed inset-0 z-[1200] flex flex-col bg-slate-950 text-white">
+    <div ref={rootRef} className="fixed inset-0 z-[1200] flex flex-col bg-slate-950 text-white">
       <header className="flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-950 px-6 py-4">
         <div className="min-w-0">
           <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-300">Slidedeck presentatie</p>
@@ -167,6 +215,13 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
               PDF
             </a>
           )}
+          <button
+            onClick={toggleFullscreen}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm font-black text-slate-100 transition hover:bg-slate-900"
+          >
+            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            {isFullscreen ? 'Venster' : 'Fullscreen'}
+          </button>
           <button
             onClick={onClose}
             className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm font-black text-slate-100 transition hover:bg-slate-900"
@@ -205,21 +260,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           </div>
         )}
 
-        {!loading && !error && useNativeViewer && (
-          <div className="h-full w-full bg-slate-900 p-4 md:p-6">
-            <iframe
-              key={`${pdfUrl}-${pageNum}`}
-              src={buildPdfPageUrl(pdfUrl, pageNum)}
-              title={slide.title || 'Slidedeck PDF'}
-              className="h-full w-full rounded-xl border border-slate-700 bg-white shadow-2xl shadow-black/40"
-            />
-            <div className="absolute left-1/2 top-6 -translate-x-1/2 rounded-xl bg-amber-100 px-4 py-2 text-center text-xs font-black uppercase tracking-wide text-amber-900 shadow-lg">
-              Compatibiliteitsweergave actief
-            </div>
-          </div>
-        )}
-
-        {!loading && !error && !useNativeViewer && (
+        {!loading && !error && (
           <div className="flex h-full w-full items-center justify-center p-6">
             <canvas ref={canvasRef} className="max-h-full max-w-full rounded-lg bg-white shadow-2xl shadow-black/40" />
             {rendering && (
@@ -245,13 +286,13 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           <div className="min-w-0 flex-1 text-center">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">PDF slide</p>
             <p className="mt-1 text-lg font-black text-slate-100">
-              {totalPages ? `${pageNum} / ${totalPages}` : useNativeViewer ? `${pageNum}` : '- / -'}
+              {totalPages ? `${pageNum} / ${totalPages}` : '- / -'}
             </p>
           </div>
 
           <button
             onClick={goNext}
-            disabled={(!useNativeViewer && pageNum >= totalPages) || loading || Boolean(error)}
+            disabled={pageNum >= totalPages || loading || Boolean(error)}
             className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-30"
           >
             Volgende

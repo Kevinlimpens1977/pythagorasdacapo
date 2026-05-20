@@ -36,7 +36,15 @@ export const getDefaultContentForBlockType = (type) => {
   }
 
   if (type === 'slidedeck') {
-    return { html: '', slidedeckPackageId: '', deckTitle: '', generatedDeckUrl: '', sourcePdfUrl: '' };
+    return {
+      html: '',
+      slidedeckPackageId: '',
+      deckTitle: '',
+      generatedDeckUrl: '',
+      generatedDeckStoragePath: '',
+      sourcePdfUrl: '',
+      sourcePdfStoragePath: ''
+    };
   }
 
   return { html: '', imageUrl: '', crops: [] };
@@ -231,6 +239,8 @@ export const blockToSlide = (block) => {
       content: block.content?.html || '',
       deckTitle: block.content?.deckTitle || block.title || 'Slidedeck',
       pdfUrl: block.content?.generatedDeckUrl || '',
+      pdfStoragePath: block.content?.generatedDeckStoragePath || '',
+      slidedeckPackageId: block.content?.slidedeckPackageId || '',
       sourcePdfUrl: block.content?.sourcePdfUrl || ''
     };
   }

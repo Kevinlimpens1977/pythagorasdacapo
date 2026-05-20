@@ -132,6 +132,8 @@ test('slidedeck blocks become presentable PDF slides', () => {
       content: {
         deckTitle: 'Digitale vaardigheden',
         generatedDeckUrl: 'https://example.test/deck.pdf',
+        generatedDeckStoragePath: 'slidedecks/package-1/generated-deck.pdf',
+        slidedeckPackageId: 'package-1',
         html: '<p>Bekijk deze presentatie.</p>'
       }
     }
@@ -141,4 +143,6 @@ test('slidedeck blocks become presentable PDF slides', () => {
   assert.equal(slides[0].variant, 'slidedeck');
   assert.equal(slides[0].sourceType, 'slidedeck');
   assert.equal(slides[0].imageUrl, 'https://example.test/deck.pdf');
+  assert.equal(slides[0].pdfStoragePath, 'slidedecks/package-1/generated-deck.pdf');
+  assert.equal(slides[0].slidedeckPackageId, 'package-1');
 });

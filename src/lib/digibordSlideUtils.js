@@ -56,12 +56,15 @@ const createBaseSlide = (block, variant, segmentIndex, overrides = {}) => ({
   title: overrides.title || block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok',
   html: overrides.html || '',
   imageUrl: overrides.imageUrl || '',
+  pdfStoragePath: overrides.pdfStoragePath || '',
+  slidedeckPackageId: overrides.slidedeckPackageId || '',
   altText: overrides.altText || '',
   question: overrides.question || null,
   meta: {
     blockOrder: block.order || 0,
     segmentIndex,
-    status: block.status || 'published'
+    status: block.status || 'published',
+    ...(overrides.meta || {})
   }
 });
 
@@ -180,7 +183,14 @@ const buildSlidesForBlock = (block, linkedQuestions = {}) => {
       title: block.title || content.deckTitle || 'Slidedeck',
       html: content.html || '<p>Open de presentatie-PDF om deze les klassikaal te bekijken.</p>',
       imageUrl: content.generatedDeckUrl || '',
-      altText: content.deckTitle || block.title || 'Slidedeck'
+      pdfStoragePath: content.generatedDeckStoragePath || '',
+      slidedeckPackageId: content.slidedeckPackageId || '',
+      altText: content.deckTitle || block.title || 'Slidedeck',
+      meta: {
+        pdfUrl: content.generatedDeckUrl || '',
+        pdfStoragePath: content.generatedDeckStoragePath || '',
+        slidedeckPackageId: content.slidedeckPackageId || ''
+      }
     })];
   }
 
