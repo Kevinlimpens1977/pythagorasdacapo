@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './components/auth/AuthProvider';
 import LoginScreen from './components/auth/LoginScreen';
 import AppShell from './components/layout/AppShell';
 import TableOfContents from './components/layout/TableOfContents';
-import SlideRenderer from './components/slides/SlideRenderer';
+import StudentLessonPage from './pages/StudentLessonPage';
 import ClassOverview from './components/dashboard/ClassOverview';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminCropToolPage from './pages/AdminCropToolPage';
@@ -34,7 +34,7 @@ function AppRoutes() {
       <Route path="/" element={<PrivateRoute><AppShell /></PrivateRoute>}>
         <Route index element={<TableOfContents />} />
         <Route path="profiel" element={<StudentProfilePage />} />
-        <Route path="chapter/:chapterId" element={<SlideRenderer />} />
+        <Route path="chapter/:chapterId" element={<StudentLessonPage />} />
         <Route path="admin" element={
           <PrivateRoute requireAdmin={true}>
             <AdminDashboardPage />

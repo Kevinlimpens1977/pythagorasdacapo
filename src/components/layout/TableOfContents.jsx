@@ -1,10 +1,11 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, PlayCircle, CheckCircle2, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, CheckCircle2, PlayCircle } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
 import * as cmsService from '../../services/cmsService';
 import * as klasService from '../../services/klasService';
 import * as voortgangService from '../../services/voortgangService';
-import { useState, useEffect } from 'react';
+import { calculateLessonProgress } from '../../lib/studentLessonProgress';
 
 export default function TableOfContents() {
   const navigate = useNavigate();
@@ -14,13 +15,11 @@ export default function TableOfContents() {
   const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
   const [voortgangMap, setVoortgangMap] = useState({});
 
-  // Load paragraphs and their details when klasData changes
   useEffect(() => {
     const loadParagrafen = async () => {
       setLoading(true);
 
       try {
-        // Get class defaults plus any per-student extra paragraphs
         const enabledParagraafIds = currentUser?.uid
           ? klasService.getStudentEffectiveParagrafen(klasData, currentUser.uid)
           : klasData?.enabledParagrafen || [];
@@ -33,37 +32,36 @@ export default function TableOfContents() {
           return;
         }
 
-        // Load all paragraph details in parallel
-        const paragraafDetailsPromises = enabledParagraafIds.map(id =>
-          cmsService.getParagraaf(id).catch(() => null)
+        const paragraafDetails = await Promise.all(
+          enabledParagraafIds.map((id) => cmsService.getParagraaf(id).catch(() => null))
         );
-        const paragraafDetails = await Promise.all(paragraafDetailsPromises);
 
-        // Filter out null results and load their questions
-        const validParagrafen = paragraafDetails.filter(p => p !== null);
-
-        // Load questions for each paragraph
-        const paragraafWithQuestions = await Promise.all(
+        const validParagrafen = paragraafDetails.filter(Boolean);
+        const paragraafWithContent = await Promise.all(
           validParagrafen.map(async (paragraaf) => {
-            const vragen = await cmsService.getVragen(paragraaf.id).catch(() => []);
+            const [vragen, contentBlocks] = await Promise.all([
+              cmsService.getVragen(paragraaf.id).catch(() => []),
+              cmsService.getContentBlocks(paragraaf.id, false).catch(() => [])
+            ]);
+
             return {
               ...paragraaf,
-              vragen: vragen || [],
-              vragenCount: (vragen || []).length
+              vragen,
+              vragenCount: vragen.length,
+              contentBlocks,
+              lesblokCount: contentBlocks.length
             };
           })
         );
 
-        // Load voortgang (progress) for each paragraph if user is logged in
-        let progressMap = {};
+        const progressMap = {};
         if (currentUser && klasData?.klasId) {
-          for (const paragraaf of paragraafWithQuestions) {
+          for (const paragraaf of paragraafWithContent) {
             try {
-              const voortgang = await voortgangService.getVoortgangForParagraaf(
+              progressMap[paragraaf.id] = await voortgangService.getVoortgangForParagraaf(
                 currentUser.uid,
                 paragraaf.id
               );
-              progressMap[paragraaf.id] = voortgang || [];
             } catch (error) {
               console.error(`Error loading voortgang for ${paragraaf.id}:`, error);
               progressMap[paragraaf.id] = [];
@@ -71,27 +69,23 @@ export default function TableOfContents() {
           }
         }
 
-        // Load hoofdstuk details for grouping
-        const hoofdstukIds = [...new Set(paragraafWithQuestions.map(p => p.hoofdstukId))];
-        const hoofdstukDetailsPromises = hoofdstukIds.map(id =>
-          cmsService.getHoofdstuk(id).catch(() => null)
+        const hoofdstukIds = [...new Set(paragraafWithContent.map((p) => p.hoofdstukId))];
+        const hoofdstukkendataArray = await Promise.all(
+          hoofdstukIds.map((id) => cmsService.getHoofdstuk(id).catch(() => null))
         );
-        const hoofdstukkendataArray = await Promise.all(hoofdstukDetailsPromises);
 
         const hmapTemp = {};
-        hoofdstukkendataArray.forEach(h => {
-          if (h) {
-            hmapTemp[h.id] = h;
-          }
+        hoofdstukkendataArray.forEach((hoofdstuk) => {
+          if (hoofdstuk) hmapTemp[hoofdstuk.id] = hoofdstuk;
         });
 
-        setParagrafen(paragraafWithQuestions);
+        setParagrafen(paragraafWithContent);
         setHoofdstukkenMap(hmapTemp);
         setVoortgangMap(progressMap);
-        setLoading(false);
       } catch (error) {
         console.error('Error loading paragraphs:', error);
         setParagrafen([]);
+      } finally {
         setLoading(false);
       }
     };
@@ -99,9 +93,8 @@ export default function TableOfContents() {
     loadParagrafen();
   }, [klasData, currentUser]);
 
-  // Group paragraphs by hoofdstuk
   const paragraafsByHoofdstuk = {};
-  paragrafen.forEach(paragraaf => {
+  paragrafen.forEach((paragraaf) => {
     const hid = paragraaf.hoofdstukId;
     if (!paragraafsByHoofdstuk[hid]) {
       paragraafsByHoofdstuk[hid] = [];
@@ -109,7 +102,6 @@ export default function TableOfContents() {
     paragraafsByHoofdstuk[hid].push(paragraaf);
   });
 
-  // Sort hoofdstukken by order
   const sortedHoofdstukIds = Object.keys(paragraafsByHoofdstuk).sort((a, b) => {
     const aOrder = hoofdstukkenMap[a]?.order || 999;
     const bOrder = hoofdstukkenMap[b]?.order || 999;
@@ -118,167 +110,143 @@ export default function TableOfContents() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl mx-auto pad-content">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-slate-800 text-white p-6 sm:p-8">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">🧬</span>
-              <h1 className="text-2xl sm:text-3xl font-bold">HELIX</h1>
-            </div>
-            <p className="text-slate-300 ml-11 text-lg">Leeromgeving</p>
-          </div>
-          <div className="p-6 md:p-8">
-            <div className="text-center text-slate-500">
-              <p>Taken laden...</p>
-            </div>
+      <StudentShell>
+        <div className="p-6 md:p-8">
+          <div className="text-center text-slate-500">
+            <p>Taken laden...</p>
           </div>
         </div>
-      </div>
+      </StudentShell>
     );
   }
 
-  // Empty state when no paragraphs are enabled for this class
   if (paragrafen.length === 0) {
     return (
-      <div className="w-full max-w-6xl mx-auto pad-content">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-slate-800 text-white p-6 sm:p-8">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">🧬</span>
-              <h1 className="text-2xl sm:text-3xl font-bold">HELIX</h1>
-            </div>
-            <p className="text-slate-300 ml-11 text-lg">Leeromgeving</p>
-          </div>
-          <div className="p-6 md:p-8">
-            <div className="text-center py-12">
-              <BookOpen size={48} className="mx-auto text-slate-300 mb-4" />
-              <p className="text-slate-600 text-lg font-medium">
-                Nog geen taken klaarstaan voor jouw klas
-              </p>
-              <p className="text-slate-500 text-sm mt-2">
-                Neem contact op met je docent om taken toe te voegen
-              </p>
-            </div>
+      <StudentShell>
+        <div className="p-6 md:p-8">
+          <div className="py-12 text-center">
+            <BookOpen size={48} className="mx-auto mb-4 text-slate-300" />
+            <p className="text-lg font-medium text-slate-600">
+              Nog geen taken klaarstaan voor jouw klas
+            </p>
+            <p className="mt-2 text-sm text-slate-500">
+              Je docent zet hier straks lessen voor je klaar.
+            </p>
           </div>
         </div>
-      </div>
+      </StudentShell>
     );
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto pad-content">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-slate-800 text-white p-6 sm:p-8">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">🧬</span>
-            <h1 className="text-2xl sm:text-3xl font-bold">HELIX</h1>
-          </div>
-          <p className="text-slate-300 ml-11 text-lg">Leeromgeving</p>
-        </div>
+    <StudentShell>
+      <div className="p-6 md:p-8">
+        <div className="space-y-8">
+          {sortedHoofdstukIds.map((hoofdstukId) => {
+            const hoofdstuk = hoofdstukkenMap[hoofdstukId];
+            const paragrafenInHoofdstuk = paragraafsByHoofdstuk[hoofdstukId];
 
-        <div className="p-6 md:p-8">
-          <div className="space-y-8">
-            {sortedHoofdstukIds.map((hoofdstukId) => {
-              const hoofdstuk = hoofdstukkenMap[hoofdstukId];
-              const paragraafenInHoofdstuk = paragraafsByHoofdstuk[hoofdstukId];
+            return (
+              <section key={hoofdstukId}>
+                <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold text-slate-800">
+                  {hoofdstuk?.number && `${hoofdstuk.number}. `}
+                  {hoofdstuk?.title || 'Hoofdstuk'}
+                </h2>
 
-              return (
-                <div key={hoofdstukId}>
-                  <h2 className="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200">
-                    {hoofdstuk?.number && `${hoofdstuk.number}. `}{hoofdstuk?.title || 'Untitled Chapter'}
-                  </h2>
+                <div className="space-y-3">
+                  {paragrafenInHoofdstuk.map((paragraaf) => {
+                    const voortgang = voortgangMap[paragraaf.id] || [];
+                    const hasLessonBlocks = paragraaf.lesblokCount > 0;
+                    const blockProgress = calculateLessonProgress(paragraaf.contentBlocks || [], voortgang);
+                    const completedQuestions = voortgang.filter((v) => v.completed === true && v.vraagId).length;
+                    const totalQuestions = paragraaf.vragenCount || 0;
+                    const totalItems = hasLessonBlocks ? blockProgress.totalBlocks : totalQuestions;
+                    const completedItems = hasLessonBlocks ? blockProgress.completedBlocks : completedQuestions;
+                    const progressPercent = hasLessonBlocks
+                      ? blockProgress.percentage
+                      : totalQuestions > 0
+                        ? Math.round((completedQuestions / totalQuestions) * 100)
+                        : 0;
+                    const isCompleted = totalItems > 0 && completedItems === totalItems;
 
-                  <div className="space-y-4">
-                    {paragraafenInHoofdstuk.map((paragraaf) => {
-                      // Calculate progress based on completed questions from voortgang
-                      const voortgang = voortgangMap[paragraaf.id] || [];
-                      const completedQuestions = voortgang.filter(v => v.completed === true).length;
-                      const totalQuestions = paragraaf.vragenCount || 0;
-                      const progressPercent =
-                        totalQuestions > 0 ? (completedQuestions / totalQuestions) * 100 : 0;
-                      const isCompleted = totalQuestions > 0 && completedQuestions === totalQuestions;
-                      const status = isCompleted ? 'completed' : 'available';
-
-                      return (
-                        <div
-                          key={paragraaf.id}
-                          onClick={() => navigate(`/chapter/${paragraaf.id}`)}
-                          className={`flex items-center justify-between p-4 rounded-xl transition-all ${
-                            status === 'completed'
-                              ? 'hover:bg-blue-50 cursor-pointer active:scale-[0.99] group border border-transparent hover:border-blue-100'
-                              : 'hover:bg-blue-50 cursor-pointer active:scale-[0.99] group border border-transparent hover:border-blue-100'
-                          }`}
-                        >
-                          <div className="flex items-center gap-4 flex-1">
-                            <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                status === 'completed'
-                                  ? 'bg-green-100 text-green-600'
-                                  : 'bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors'
-                              }`}
-                            >
-                              {status === 'completed' ? (
-                                <CheckCircle2 size={20} />
-                              ) : (
-                                <PlayCircle size={20} />
-                              )}
-                            </div>
-                            <div className="flex flex-col flex-1">
-                              <h3 className="font-semibold text-lg text-slate-800">
-                                {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
-                              </h3>
-                              {totalQuestions > 0 && (
-                                <span className="text-xs text-slate-500">
-                                  {totalQuestions} vraag{totalQuestions !== 1 ? 'en' : ''}
-                                </span>
-                              )}
-                            </div>
+                    return (
+                      <button
+                        key={paragraaf.id}
+                        onClick={() => navigate(`/chapter/${paragraaf.id}`)}
+                        className="group flex w-full items-center justify-between gap-4 rounded-xl border border-transparent p-4 text-left transition-all hover:border-blue-100 hover:bg-blue-50 active:scale-[0.99]"
+                      >
+                        <div className="flex min-w-0 flex-1 items-center gap-4">
+                          <div
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+                              isCompleted
+                                ? 'bg-green-100 text-green-600'
+                                : 'bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'
+                            }`}
+                          >
+                            {isCompleted ? <CheckCircle2 size={20} /> : <PlayCircle size={20} />}
                           </div>
+                          <div className="min-w-0">
+                            <h3 className="truncate text-lg font-semibold text-slate-800">
+                              {paragraaf.number && `${paragraaf.number}. `}
+                              {paragraaf.title}
+                            </h3>
+                            <span className="text-xs text-slate-500">
+                              {hasLessonBlocks
+                                ? `${paragraaf.lesblokCount} lesblok${paragraaf.lesblokCount !== 1 ? 'ken' : ''}`
+                                : totalQuestions > 0
+                                  ? `${totalQuestions} vraag${totalQuestions !== 1 ? 'en' : ''}`
+                                  : 'Nog geen gepubliceerde lesblokken'}
+                            </span>
+                          </div>
+                        </div>
 
-                          {totalQuestions > 0 && (
-                            <div className="flex items-center gap-4">
-                              <div className="flex flex-col items-end">
-                                <div className="text-xs font-medium text-slate-500 mb-1">
-                                  {completedQuestions} / {totalQuestions}
-                                </div>
-                                <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                  <div
-                                    className={`h-full rounded-full transition-all duration-500 ${
-                                      status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
-                                    }`}
-                                    style={{ width: `${progressPercent}%` }}
-                                  ></div>
-                                </div>
+                        <div className="flex items-center gap-4">
+                          {totalItems > 0 && (
+                            <div className="hidden flex-col items-end sm:flex">
+                              <div className="mb-1 text-xs font-medium text-slate-500">
+                                {completedItems} / {totalItems}
+                              </div>
+                              <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-200">
+                                <div
+                                  className={`h-full rounded-full transition-all duration-500 ${
+                                    isCompleted ? 'bg-green-500' : 'bg-blue-500'
+                                  }`}
+                                  style={{ width: `${progressPercent}%` }}
+                                />
                               </div>
                             </div>
                           )}
+                          <ArrowRight size={18} className="text-slate-300 group-hover:text-blue-600" />
                         </div>
-                      );
-                    })}
-                  </div>
+                      </button>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-slate-100 px-4 pb-2">
-            <h3 className="font-semibold text-slate-800 mb-4 text-lg">Toetsing</h3>
-            <div className="space-y-2">
-              <div className="flex items-center p-4 rounded-xl opacity-60 bg-slate-50 border border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-4">
-                  <Lock size={18} />
-                </div>
-                <h3 className="font-semibold text-lg text-slate-600">📝 Oefentoets</h3>
-              </div>
-              <div className="flex items-center p-4 rounded-xl opacity-60 bg-slate-50 border border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center mr-4">
-                  <Lock size={18} />
-                </div>
-                <h3 className="font-semibold text-lg text-slate-600">📝 Eindtoets</h3>
-              </div>
-            </div>
-          </div>
+              </section>
+            );
+          })}
         </div>
+
+        <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-sm font-semibold text-blue-900">
+          Tip: open een les en werk de blokken rustig stap voor stap af. Helix onthoudt waar je gebleven bent.
+        </div>
+      </div>
+    </StudentShell>
+  );
+}
+
+function StudentShell({ children }) {
+  return (
+    <div className="mx-auto w-full max-w-6xl pad-content">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="bg-slate-800 p-6 text-white sm:p-8">
+          <div className="mb-2 flex items-center gap-3">
+            <BookOpen size={30} className="text-blue-200" />
+            <h1 className="text-2xl font-bold sm:text-3xl">Helix</h1>
+          </div>
+          <p className="ml-11 text-lg text-slate-300">Leeromgeving</p>
+        </div>
+        {children}
       </div>
     </div>
   );

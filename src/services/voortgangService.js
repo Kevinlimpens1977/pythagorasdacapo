@@ -55,7 +55,7 @@ export const saveVoortgang = async (
       if (existing.exists()) {
         existingData = existing.data();
       }
-    } catch (error) {
+    } catch {
       // Doc doesn't exist yet, that's ok
     }
 
@@ -115,6 +115,65 @@ export const getVoortgangForParagraaf = async (userId, paragraafId) => {
   } catch (error) {
     console.error('❌ [Voortgang] Error fetching paragraph progress:', error);
     return [];
+  }
+};
+
+/**
+ * Save progress for a content block in a student lesson route.
+ * Document ID format: {userId}_{blockId}
+ *
+ * This keeps the newer lesson-route progress separate from the legacy
+ * question-only fields while still using the same voortgang collection.
+ */
+export const saveContentBlockVoortgang = async (
+  userId,
+  blockId,
+  paragraafId,
+  hoofdstukId,
+  klasId,
+  data = {}
+) => {
+  if (!userId || !blockId || !paragraafId || !klasId) {
+    throw new Error('userId, blockId, paragraafId, and klasId are required');
+  }
+
+  try {
+    const docId = `${userId}_${blockId}`;
+    const docRef = doc(db, 'voortgang', docId);
+
+    let existingData = {};
+    try {
+      const existing = await getDoc(docRef);
+      if (existing.exists()) {
+        existingData = existing.data();
+      }
+    } catch {
+      // Missing progress doc is fine for first visit.
+    }
+
+    const updates = {
+      userId,
+      blockId,
+      paragraafId,
+      hoofdstukId,
+      klasId,
+      progressType: 'contentBlock',
+      completed: data.completed || false,
+      isCorrect: data.isCorrect || false,
+      attempts: data.attempts || existingData.attempts || 1,
+      lastAnswer: data.lastAnswer || existingData.lastAnswer || null,
+      updatedAt: serverTimestamp(),
+      firstAttemptAt: existingData.firstAttemptAt || serverTimestamp()
+    };
+
+    if (data.completed && !existingData.completedAt) {
+      updates.completedAt = serverTimestamp();
+    }
+
+    await setDoc(docRef, updates, { merge: true });
+  } catch (error) {
+    console.error('❌ [Voortgang] Error saving content block progress:', error);
+    throw error;
   }
 };
 
@@ -229,6 +288,7 @@ export const getStudentVoortgang = async (userId, klasId) => {
 
 export default {
   saveVoortgang,
+  saveContentBlockVoortgang,
   getVoortgangForParagraaf,
   getLastIncompleteVraag,
   getKlasVoortgangForParagraaf,
