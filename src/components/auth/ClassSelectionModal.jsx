@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from './AuthProvider';
 import * as klasService from '../../services/klasService';
 
 export default function ClassSelectionModal() {
-  const { currentUser, userData, isStudent } = useAuth();
+  const { currentUser, userData, isStudent, isDevUser } = useAuth();
   const [klassen, setKlassen] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedKlasId, setSelectedKlasId] = useState(null);
@@ -12,6 +12,10 @@ export default function ClassSelectionModal() {
 
   // Load available classes
   useEffect(() => {
+    if (isDevUser) {
+      return;
+    }
+
     const loadKlassen = async () => {
       try {
         setLoading(true);
@@ -26,10 +30,10 @@ export default function ClassSelectionModal() {
     };
 
     loadKlassen();
-  }, []);
+  }, [isDevUser]);
 
   // Only show if student and no klasId
-  if (!currentUser || !isStudent || userData?.klasId) {
+  if (!currentUser || !isStudent || userData?.klasId || isDevUser) {
     return null;
   }
 

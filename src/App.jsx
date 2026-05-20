@@ -19,9 +19,9 @@ import AdminSpellenPage from './pages/AdminSpellenPage';
 import AdminSlidedecksPage from './pages/AdminSlidedecksPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
-  const { currentUser, isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
 
-  if (!currentUser) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/login" />;
   if (requireAdmin && !isAdmin) return <Navigate to="/" />;
 
   return children;

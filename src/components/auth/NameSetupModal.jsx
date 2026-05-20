@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { updateProfile } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '../../services/firebase';
+import { db } from '../../services/firebase';
 import { useAuth } from './AuthProvider';
 
 export default function NameSetupModal({ onComplete }) {
-  const { currentUser, userData } = useAuth();
+  const { currentUser, userData, isDevUser } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Only show if user needs name setup
-  if (!userData?.needsNameSetup) {
+  if (!userData?.needsNameSetup || isDevUser) {
     return null;
   }
 

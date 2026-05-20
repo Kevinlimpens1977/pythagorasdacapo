@@ -1,54 +1,26 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
+import {
+  clearDevUser,
+  createDevStudentUserData,
+  isDevLoginEnabled,
+  loadDevUser,
+  saveDevStudentUser
+} from './devAuth';
 
 const AuthContext = createContext();
-const DEV_BYPASS_STORAGE_KEY = 'helix-dev-auth-bypass-role';
-
-const canUseDevBypass = () => {
-  return import.meta.env.DEV || import.meta.env.VITE_TEST_MODE === 'true';
-};
-
-const buildBypassUser = (role, firebaseUser = null) => ({
-  ...(firebaseUser || {}),
-  uid: firebaseUser?.uid || `dev_${role}`,
-  email: role === 'admin' ? 'dev-admin@helix.local' : 'dev-leerling@helix.local',
-  displayName: role === 'admin' ? 'Dev Admin' : 'Dev Leerling',
-  isAnonymous: firebaseUser?.isAnonymous ?? true
-});
-
-const buildBypassUserData = (role, user) => ({
-  email: user.email,
-  displayName: user.displayName,
-  role,
-  createdAt: new Date(),
-  lastActive: new Date(),
-  completedChapters: [],
-  completedSlides: [],
-  needsNameSetup: false,
-  klasId: null,
-  isDevBypass: true
-});
 
 export function AuthProvider({ children }) {
-  const getInitialBypassRole = () => {
-    if (!canUseDevBypass()) return null;
-    try {
-      return localStorage.getItem(DEV_BYPASS_STORAGE_KEY);
-    } catch {
-      return null;
-    }
-  };
-
-  const initialBypassRole = getInitialBypassRole();
-  const initialBypassUser = initialBypassRole ? buildBypassUser(initialBypassRole) : null;
-
-  const [currentUser, setCurrentUser] = useState(initialBypassUser);
-  const [userRole, setUserRole] = useState(initialBypassRole);
-  const [userData, setUserData] = useState(
-    initialBypassUser ? buildBypassUserData(initialBypassRole, initialBypassUser) : null
-  );
+  const [devUser, setDevUser] = useState(() => loadDevUser());
+  const [currentUser, setCurrentUser] = useState(() => loadDevUser());
+  const [userRole, setUserRole] = useState(() => (loadDevUser() ? 'student' : null));
+  const [userData, setUserData] = useState(() => {
+    const initialDevUser = loadDevUser();
+    return initialDevUser ? createDevStudentUserData(initialDevUser) : null;
+  });
   const [klasId, setKlasId] = useState(null);
   const [klasData, setKlasData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +28,7 @@ export function AuthProvider({ children }) {
   // Real-time listener for klas data when klasId changes
   useEffect(() => {
     if (!userData?.klasId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setKlasId(null);
       setKlasData(null);
       return;
@@ -83,19 +56,6 @@ export function AuthProvider({ children }) {
     let unsubscribeSnapshot = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
-      const activeBypassRole = canUseDevBypass()
-        ? localStorage.getItem(DEV_BYPASS_STORAGE_KEY)
-        : null;
-
-      if (activeBypassRole && !user) {
-        localStorage.removeItem(DEV_BYPASS_STORAGE_KEY);
-        setCurrentUser(null);
-        setUserData(null);
-        setUserRole(null);
-        setLoading(false);
-        return;
-      }
-
       if (user) {
         try {
           const userRef = doc(db, 'users', user.uid);
@@ -120,8 +80,8 @@ export function AuthProvider({ children }) {
 
           // Initial check/creation
           const userDoc = await getDoc(userRef);
-          let role = activeBypassRole || 'student';
-          if (!activeBypassRole && user.email === 'kevlimpens@gmail.com') {
+          let role = 'student';
+          if (user.email === 'kevlimpens@gmail.com') {
             role = 'admin';
           }
 
@@ -141,41 +101,39 @@ export function AuthProvider({ children }) {
             if (!data.displayName && user.displayName && user.displayName.trim()) {
               updates.displayName = user.displayName;
             }
-            if (activeBypassRole) {
-              updates.email = role === 'admin' ? 'dev-admin@helix.local' : 'dev-leerling@helix.local';
-              updates.displayName = role === 'admin' ? 'Dev Admin' : 'Dev Leerling';
-              updates.needsNameSetup = false;
-              updates.isDevBypass = true;
-            }
             await setDoc(userRef, updates, { merge: true });
           } else {
-            const bypassUser = activeBypassRole ? buildBypassUser(role, user) : user;
             const initialData = {
-              email: bypassUser.email,
-              displayName: bypassUser.displayName || '',
+              email: user.email,
+              displayName: user.displayName || '',
               role: role,
               createdAt: new Date(),
               lastActive: new Date(),
               completedChapters: [],
               completedSlides: [],
-              needsNameSetup: !bypassUser.displayName || bypassUser.displayName.trim() === '',
+              needsNameSetup: !user.displayName || user.displayName.trim() === '',
               klasId: null,
-              isDevBypass: Boolean(activeBypassRole)
+              isDevUser: false
             };
             await setDoc(userRef, initialData);
           }
         } catch (error) {
           console.error("Error fetching/creating user doc:", error);
-          setUserRole(activeBypassRole || (user.email === 'kevlimpens@gmail.com' ? 'admin' : 'student'));
+          setUserRole(user.email === 'kevlimpens@gmail.com' ? 'admin' : 'student');
         }
-        setCurrentUser(activeBypassRole ? buildBypassUser(activeBypassRole, user) : user);
+        setDevUser(null);
+        setCurrentUser(user);
       } else {
         if (unsubscribeSnapshot) unsubscribeSnapshot();
-        setCurrentUser(null);
-        setUserData(null);
-        setUserRole(null);
-        setKlasId(null);
-        setKlasData(null);
+        const storedDevUser = loadDevUser();
+        setDevUser(storedDevUser);
+        setCurrentUser(storedDevUser);
+        setUserData(storedDevUser ? createDevStudentUserData(storedDevUser) : null);
+        setUserRole(storedDevUser ? 'student' : null);
+        if (!storedDevUser) {
+          setKlasId(null);
+          setKlasData(null);
+        }
       }
       setLoading(false);
     });
@@ -186,35 +144,23 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // For testing/bypass mode
-  const loginAsRole = async (role) => {
-    if (!canUseDevBypass()) {
-      throw new Error('Testmodus is alleen beschikbaar in development.');
-    }
-
-    try {
-      localStorage.setItem(DEV_BYPASS_STORAGE_KEY, role);
-    } catch {
-      throw new Error('Kon testmodus niet lokaal bewaren.');
-    }
-
-    const credential = await signInAnonymously(auth);
-    const bypassUser = buildBypassUser(role, credential.user);
-    await setDoc(doc(db, 'users', credential.user.uid), buildBypassUserData(role, bypassUser), { merge: true });
-
-    setCurrentUser(bypassUser);
-    setUserData(buildBypassUserData(role, bypassUser));
-    setUserRole(role);
+  const loginAsDevStudent = async () => {
+    const user = saveDevStudentUser();
+    setDevUser(user);
+    setCurrentUser(auth.currentUser || user);
+    setUserData(createDevStudentUserData(user));
+    setUserRole('student');
+    setKlasId(null);
+    setKlasData(null);
     setLoading(false);
   };
 
-  const logout = () => {
-    try {
-      localStorage.removeItem(DEV_BYPASS_STORAGE_KEY);
-    } catch {
-      // Ignore local storage failures during logout.
+  const logout = async () => {
+    clearDevUser();
+    setDevUser(null);
+    if (auth.currentUser) {
+      await auth.signOut();
     }
-    auth.signOut();
     setCurrentUser(null);
     setUserData(null);
     setUserRole(null);
@@ -223,6 +169,7 @@ export function AuthProvider({ children }) {
   };
 
   const value = {
+    user: currentUser,
     currentUser,
     userRole,
     userData,
@@ -230,8 +177,11 @@ export function AuthProvider({ children }) {
     klasData,
     isAdmin: userRole === 'admin',
     isStudent: userRole === 'student',
-    isDevBypass: Boolean(userData?.isDevBypass),
-    loginAsRole,
+    isDevUser: Boolean(devUser && currentUser?.isDevUser),
+    isDevBypass: Boolean(devUser && currentUser?.isDevUser),
+    isDevLoginEnabled: isDevLoginEnabled(),
+    loading,
+    loginAsDevStudent,
     logout
   };
 

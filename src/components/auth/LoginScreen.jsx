@@ -9,7 +9,7 @@ import {
 import { auth } from '../../services/firebase';
 import { useAuth } from './AuthProvider';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, ShieldCheck, UserRound, UserPlus } from 'lucide-react';
+import { Code2, LogIn, UserPlus } from 'lucide-react';
 
 export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -18,8 +18,8 @@ export default function LoginScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
-  const [testLoading, setTestLoading] = useState(null);
-  const { loginAsRole, isAdmin, currentUser, loading } = useAuth();
+  const [devLoginLoading, setDevLoginLoading] = useState(false);
+  const { loginAsDevStudent, isAdmin, currentUser, loading, isDevLoginEnabled } = useAuth();
   const navigate = useNavigate();
 
   // Auto-redirect when user is authenticated and ready
@@ -82,22 +82,19 @@ export default function LoginScreen() {
     }
   };
 
-  const handleTestBypass = async (role) => {
+  const handleDeveloperLogin = async () => {
     try {
       setError('');
-      setTestLoading(role);
-      await loginAsRole(role);
+      setDevLoginLoading(true);
+      await loginAsDevStudent();
       // Navigation handled automatically via useEffect when currentUser changes
     } catch (err) {
       console.error(err);
-      setError('Testlogin mislukt. Controleer of Anonymous Authentication aanstaat in Firebase.');
+      setError('Developer login is alleen beschikbaar in lokale development met VITE_ENABLE_DEV_LOGIN=true.');
     } finally {
-      setTestLoading(null);
+      setDevLoginLoading(false);
     }
   };
-
-  // Check if test mode is enabled via environment
-  const isTestMode = import.meta.env.DEV || import.meta.env.VITE_TEST_MODE === 'true';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
@@ -206,30 +203,21 @@ export default function LoginScreen() {
           </button>
         </div>
 
-        {isTestMode && (
+        {isDevLoginEnabled && (
           <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Tijdelijke testmodus</p>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Lokale developer login</p>
             <p className="mt-1 text-sm leading-5 text-amber-900">
-              Maakt een echte anonieme Firebase sessie en tijdelijk gebruikersdocument aan voor dev-tests.
+              Omzeilt Firebase Auth alleen lokaal voor browsertests. Er wordt geen Firebase-sessie gemaakt.
             </p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4">
               <button
                 type="button"
-                onClick={() => handleTestBypass('admin')}
-                disabled={testLoading !== null}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800"
+                onClick={handleDeveloperLogin}
+                disabled={devLoginLoading}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <ShieldCheck size={17} />
-                {testLoading === 'admin' ? 'Start...' : 'Firebase admin'}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTestBypass('student')}
-                disabled={testLoading !== null}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm font-bold text-amber-900 transition-colors hover:bg-amber-100"
-              >
-                <UserRound size={17} />
-                {testLoading === 'student' ? 'Start...' : 'Firebase leerling'}
+                <Code2 size={17} />
+                {devLoginLoading ? 'Start...' : 'Developer login'}
               </button>
             </div>
           </div>
