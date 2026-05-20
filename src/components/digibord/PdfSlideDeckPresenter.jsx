@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ExternalLink, Loader2, Maximize2, Minimize2, X } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
-import { createPdfJsDataLoadOptions, createPdfJsLoadOptions } from '../../lib/pdfPresenterUtils';
+import { createPdfJsDataLoadOptions, getPdfLoadErrorMessage, withTimeout } from '../../lib/pdfPresenterUtils';
 import { getSlidedeckPackage, getSlidedeckPdfBytes } from '../../services/slidedeckService';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
@@ -53,17 +53,20 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           downloadURL ||= deckPackage?.generatedDeckPdf?.downloadURL || '';
         }
 
-        try {
-          const bytes = await getSlidedeckPdfBytes({ storagePath, downloadURL });
-          if (cancelled) return;
-          loadingTask = pdfjsLib.getDocument(createPdfJsDataLoadOptions(bytes));
-        } catch (bytesError) {
-          console.warn('Slidedeck PDF bytes konden niet worden geladen, probeer URL-load:', bytesError);
-          if (!downloadURL) throw bytesError;
-          loadingTask = pdfjsLib.getDocument(createPdfJsLoadOptions(downloadURL));
-        }
+        const bytes = await withTimeout(
+          getSlidedeckPdfBytes({ storagePath, downloadURL }),
+          12000,
+          'PDF ophalen'
+        );
+        if (cancelled) return;
 
-        const pdfDocument = await loadingTask.promise;
+        loadingTask = pdfjsLib.getDocument(createPdfJsDataLoadOptions(bytes));
+
+        const pdfDocument = await withTimeout(
+          loadingTask.promise,
+          12000,
+          'PDF voorbereiden'
+        );
         if (cancelled) return;
         setPdf(pdfDocument);
         setTotalPages(pdfDocument.numPages);
@@ -71,7 +74,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
       } catch (loadError) {
         if (cancelled) return;
         console.error('Slidedeck PDF kon niet laden:', loadError);
-        setError('Deze presentatie-PDF kon niet als losse dia’s worden geladen. Open de PDF apart om het bestand te controleren.');
+        setError(getPdfLoadErrorMessage(loadError));
         setLoading(false);
       }
     };
