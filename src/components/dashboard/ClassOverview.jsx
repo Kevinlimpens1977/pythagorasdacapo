@@ -6,7 +6,13 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 import { isAnswerCorrect } from '../../lib/answerNormalization';
 import * as cmsService from '../../services/cmsService';
+import * as klasService from '../../services/klasService';
 import * as voortgangService from '../../services/voortgangService';
+import {
+  calculateAssignedProgress,
+  getEffectiveContentBlocks,
+  getStudentEffectiveParagrafen
+} from '../../lib/assignmentUtils';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -22,13 +28,6 @@ function getRelativeTime(timestamp) {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} uur geleden`;
 
   return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
-}
-
-// Helper functie voor voortgang per paragraaf (stub - voortgang loaded async)
-function getChapterProgress() {
-  // This is now loaded from voortgang collection in the main component
-  // Stub returns 0 - actual calculation done async
-  return 0;
 }
 
 // Helper functie voor voortgangskleur
@@ -72,6 +71,8 @@ export default function ClassOverview() {
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
   const [paragraphen, setParagraphen] = useState([]);
+  const [contentBlocksByParagraaf, setContentBlocksByParagraaf] = useState({});
+  const [klassenMap, setKlassenMap] = useState({});
   const [studentVoortgang, setStudentVoortgang] = useState({});
 
   // Load all paragraphs from CMS hierarchy
@@ -103,12 +104,33 @@ export default function ClassOverview() {
         }
 
         setParagraphen(allParagraphen);
+        const blockEntries = await Promise.all(
+          allParagraphen.map(async (paragraaf) => {
+            const blocks = await cmsService.getContentBlocks(paragraaf.id, false).catch(() => []);
+            return [paragraaf.id, blocks];
+          })
+        );
+        setContentBlocksByParagraaf(Object.fromEntries(blockEntries));
       } catch (error) {
         console.error('Error loading paragraphen:', error);
       }
     };
 
     loadParagraphen();
+  }, []);
+
+  useEffect(() => {
+    const loadKlassen = async () => {
+      try {
+        const klassen = await klasService.getAvailableKlassen();
+        setKlassenMap(Object.fromEntries(klassen.map((klas) => [klas.id || klas.klasId, klas])));
+      } catch (error) {
+        console.error('Error loading klassen for dashboard:', error);
+        setKlassenMap({});
+      }
+    };
+
+    loadKlassen();
   }, []);
 
   // Load voortgang data for all students
@@ -162,6 +184,39 @@ export default function ClassOverview() {
     return () => unsubscribe();
   }, [loadVoortgangForStudents]);
 
+  const getStudentAssignmentSummary = useCallback((student, paragraafFilterId = null) => {
+    const klasData = klassenMap[student.klasId];
+    if (!klasData) {
+      return {
+        assignedItems: 0,
+        startedItems: 0,
+        completedItems: 0,
+        percentage: 0,
+        startedPercentage: 0
+      };
+    }
+
+    const effectiveParagraafIds = getStudentEffectiveParagrafen(klasData, student.id);
+    const targetParagrafen = paragraphen.filter((paragraaf) =>
+      effectiveParagraafIds.includes(paragraaf.id) &&
+      (!paragraafFilterId || paragraaf.id === paragraafFilterId)
+    );
+    const assignments = targetParagrafen.map((paragraaf) => ({
+      paragraafId: paragraaf.id,
+      blocks: getEffectiveContentBlocks(
+        klasData,
+        student.id,
+        paragraaf.id,
+        contentBlocksByParagraaf[paragraaf.id] || []
+      )
+    }));
+
+    return calculateAssignedProgress({
+      assignments,
+      progressRecords: studentVoortgang[student.id] || []
+    });
+  }, [contentBlocksByParagraaf, klassenMap, paragraphen, studentVoortgang]);
+
   const filteredStudents = students
     .filter(s =>
       (s.displayName || "Naamloos").toLowerCase().includes(searchQuery.toLowerCase())
@@ -174,9 +229,9 @@ export default function ClassOverview() {
         const nameB = (b.displayName || "Naamloos").toLowerCase();
         compareValue = nameA.localeCompare(nameB);
       } else if (sortBy === "total") {
-        compareValue = (a.progress || 0) - (b.progress || 0);
+        compareValue = getStudentAssignmentSummary(a).percentage - getStudentAssignmentSummary(b).percentage;
       } else if (sortBy === "chapter") {
-        compareValue = getChapterProgress(a, selectedChapterForClass) - getChapterProgress(b, selectedChapterForClass);
+        compareValue = getStudentAssignmentSummary(a, selectedChapterForClass).percentage - getStudentAssignmentSummary(b, selectedChapterForClass).percentage;
       }
 
       return sortDirection === "asc" ? compareValue : -compareValue;
@@ -189,17 +244,16 @@ export default function ClassOverview() {
     return diffInMinutes < 15;
   }).length;
 
-  const warningCount = paragraphen.length > 0 ? students.filter(s => s.warning).length : 0;
+  const warningCount = students.filter((student) => {
+    const summary = getStudentAssignmentSummary(student);
+    return summary.assignedItems > 0 && summary.completedItems === 0;
+  }).length;
 
-  // Calculate average progress from voortgang data
+  // Calculate average progress from assigned work, not from loose progress records.
   const avgProgress = students.length > 0
     ? Math.round(
         students.reduce((acc, student) => {
-          const voortgang = studentVoortgang[student.id] || [];
-          const totalVragen = voortgang.length;
-          const completedVragen = voortgang.filter(v => v.completed === true).length;
-          const studentProgress = totalVragen > 0 ? (completedVragen / totalVragen) * 100 : 0;
-          return acc + studentProgress;
+          return acc + getStudentAssignmentSummary(student).percentage;
         }, 0) / students.length
       )
     : 0;
@@ -214,9 +268,6 @@ export default function ClassOverview() {
   }
 
   if (selectedStudent) {
-    // Get voortgang for this student
-    const studentProgress = studentVoortgang[selectedStudent.id] || [];
-
     // Group paragraphs by hoofdstuk
     const paragraafsByHoofdstuk = {};
     paragraphen.forEach(paragraaf => {
@@ -232,10 +283,9 @@ export default function ClassOverview() {
       ? Object.fromEntries(Object.entries(paragraafsByHoofdstuk).filter(([key]) => key === selectedChapter))
       : paragraafsByHoofdstuk;
 
-    // Calculate overall progress
-    const totalVragen = studentProgress.length;
-    const completedVragen = studentProgress.filter(v => v.completed === true).length;
-    const overallProgress = totalVragen > 0 ? Math.round((completedVragen / totalVragen) * 100) : 0;
+    // Calculate overall progress from assigned work.
+    const overallAssignmentSummary = getStudentAssignmentSummary(selectedStudent);
+    const overallProgress = overallAssignmentSummary.percentage;
 
     return (
       <div className="mx-auto w-full max-w-7xl animate-in fade-in slide-in-from-right-8 px-6 py-10 duration-500 md:px-8 md:py-12">
@@ -270,8 +320,10 @@ export default function ClassOverview() {
                 <div className="text-2xl font-black">{getRelativeTime(selectedStudent.lastActive)}</div>
               </div>
               <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
-                <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Vragen</div>
-                <div className="text-2xl font-black text-emerald-400">{completedVragen}/{totalVragen}</div>
+                <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Klaar</div>
+                <div className="text-2xl font-black text-emerald-400">
+                  {overallAssignmentSummary.completedItems}/{overallAssignmentSummary.assignedItems}
+                </div>
               </div>
             </div>
           </div>
@@ -314,10 +366,8 @@ export default function ClassOverview() {
 
                     <div className="space-y-3 ml-4">
                       {paragrafen.map(paragraaf => {
-                        const paraVoortgang = studentProgress.filter(v => v.paragraafId === paragraaf.id);
-                        const completedInPara = paraVoortgang.filter(v => v.completed === true).length;
-                        const totalInPara = paraVoortgang.length;
-                        const progressPercent = totalInPara > 0 ? Math.round((completedInPara / totalInPara) * 100) : 0;
+                        const paraSummary = getStudentAssignmentSummary(selectedStudent, paragraaf.id);
+                        const progressPercent = paraSummary.percentage;
 
                         return (
                           <div key={paragraaf.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex items-center justify-between">
@@ -326,7 +376,7 @@ export default function ClassOverview() {
                                 {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
                               </h5>
                               <p className="text-sm text-slate-500 mt-1">
-                                {completedInPara} / {totalInPara} vragen afgerond
+                                {paraSummary.completedItems} / {paraSummary.assignedItems} onderdelen afgerond
                               </p>
                             </div>
 
@@ -667,20 +717,13 @@ export default function ClassOverview() {
             <tbody className="divide-y divide-slate-100">
               {filteredStudents.length > 0 ? (
                 filteredStudents.map(student => {
-                  // Calculate progress from voortgang data
-                  const voortgang = studentVoortgang[student.id] || [];
-                  const totalVragen = voortgang.length;
-                  const completedVragen = voortgang.filter(v => v.completed === true).length;
-                  const totalProgress = totalVragen > 0 ? Math.round((completedVragen / totalVragen) * 100) : 0;
+                  const totalSummary = getStudentAssignmentSummary(student);
+                  const totalProgress = totalSummary.percentage;
 
                   // Calculate progress for selected paragraph if applicable
-                  let paraProgress = null;
-                  if (selectedChapterForClass) {
-                    const paraVoortgang = voortgang.filter(v => v.paragraafId === selectedChapterForClass);
-                    const paraTotalVragen = paraVoortgang.length;
-                    const paraCompletedVragen = paraVoortgang.filter(v => v.completed === true).length;
-                    paraProgress = paraTotalVragen > 0 ? Math.round((paraCompletedVragen / paraTotalVragen) * 100) : 0;
-                  }
+                  const paraProgress = selectedChapterForClass
+                    ? getStudentAssignmentSummary(student, selectedChapterForClass).percentage
+                    : null;
 
                   return (
                     <tr

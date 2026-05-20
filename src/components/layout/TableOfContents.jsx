@@ -6,6 +6,7 @@ import * as cmsService from '../../services/cmsService';
 import * as klasService from '../../services/klasService';
 import * as voortgangService from '../../services/voortgangService';
 import { calculateLessonProgress } from '../../lib/studentLessonProgress';
+import { getEffectiveContentBlocks } from '../../lib/assignmentUtils';
 
 export default function TableOfContents() {
   const navigate = useNavigate();
@@ -43,13 +44,16 @@ export default function TableOfContents() {
               cmsService.getVragen(paragraaf.id).catch(() => []),
               cmsService.getContentBlocks(paragraaf.id, false).catch(() => [])
             ]);
+            const visibleContentBlocks = currentUser?.uid
+              ? getEffectiveContentBlocks(klasData, currentUser.uid, paragraaf.id, contentBlocks)
+              : contentBlocks;
 
             return {
               ...paragraaf,
               vragen,
               vragenCount: vragen.length,
-              contentBlocks,
-              lesblokCount: contentBlocks.length
+              contentBlocks: visibleContentBlocks,
+              lesblokCount: visibleContentBlocks.length
             };
           })
         );

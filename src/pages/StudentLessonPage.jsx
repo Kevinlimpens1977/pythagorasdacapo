@@ -17,6 +17,7 @@ import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
+import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import { calculateLessonProgress, findResumeBlockIndex, getCompletedBlockIds } from '../lib/studentLessonProgress';
 import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
@@ -82,8 +83,13 @@ export default function StudentLessonPage() {
           return;
         }
 
+        const normalizedBlocks = normalizeContentBlocks(contentBlocks);
+        const visibleBlocks = !isAdmin && currentUser?.uid && klasData
+          ? getEffectiveContentBlocks(klasData, currentUser.uid, paragraafId, normalizedBlocks)
+          : normalizedBlocks;
+
         const enrichedBlocks = await Promise.all(
-          normalizeContentBlocks(contentBlocks).map(async (block) => {
+          visibleBlocks.map(async (block) => {
             if (block.type !== 'question' || !block.linkedVraagId) return block;
             const vraag = await cmsService.getVraag(block.linkedVraagId);
             return {

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, BookOpen, BarChart3, Layers, FileText, CheckSquare, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckSquare, AlertCircle } from 'lucide-react';
 import klasService from '../services/klasService';
 import cmsService from '../services/cmsService';
 import { getColorStyle } from '../lib/paletColors';
+import { CONTENT_BLOCK_LABELS, buildContentBlockPreview, normalizeContentBlocks } from '../lib/contentBlockUtils';
 
 export default function TakenToewijzenPage() {
   const navigate = useNavigate();
@@ -30,10 +32,13 @@ export default function TakenToewijzenPage() {
 
   // UI state
   const [assignedParagrafen, setAssignedParagrafen] = useState([]);
+  const [assignedContentBlocks, setAssignedContentBlocks] = useState({});
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [studentOverrides, setStudentOverrides] = useState({});
+  const [studentContentBlockOverrides, setStudentContentBlockOverrides] = useState({});
+  const [contentBlocksByParagraaf, setContentBlocksByParagraaf] = useState({});
   const [activeTab, setActiveTab] = useState('klas'); // 'klas' or 'leerlingen'
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Load vakken on mount (CMS data, no auth needed)
@@ -74,10 +79,15 @@ export default function TakenToewijzenPage() {
         const klas = await klasService.getKlas(selectedKlasId);
         setSelectedKlas(klas);
         setAssignedParagrafen(klas?.enabledParagrafen || []);
+        setAssignedContentBlocks(klas?.enabledContentBlocks || {});
 
         // Load student overrides
         setStudentOverrides(klas?.studentOverrides
           ? Object.fromEntries(Object.entries(klas.studentOverrides).map(([uid, v]) => [uid, v.extraParagrafen || []]))
+          : {}
+        );
+        setStudentContentBlockOverrides(klas?.studentOverrides
+          ? Object.fromEntries(Object.entries(klas.studentOverrides).map(([uid, v]) => [uid, v.extraContentBlocks || {}]))
           : {}
         );
 
@@ -148,7 +158,7 @@ export default function TakenToewijzenPage() {
         const h = await cmsService.getHoofdstukken(selectedNiveauId);
         setHoofdstukken(h);
         const nData = niveaus.find(n => n.id === selectedNiveauId);
-        setBreadcrumbs(prev => [...prev, { label: `${nData?.label} - ${nData?.name}` || 'Niveau', id: selectedNiveauId, type: 'niveau' }]);
+        setBreadcrumbs(prev => [...prev, { label: nData ? `${nData.label} - ${nData.name}` : 'Niveau', id: selectedNiveauId, type: 'niveau' }]);
       } catch (error) {
         console.error('Error loading hoofdstukken:', error);
       }
@@ -169,7 +179,7 @@ export default function TakenToewijzenPage() {
         const p = await cmsService.getParagrafen(selectedHoofdstukId);
         setParagrafen(p);
         const hData = hoofdstukken.find(h => h.id === selectedHoofdstukId);
-        setBreadcrumbs(prev => [...prev, { label: `${hData?.number}. ${hData?.title}` || 'Hoofdstuk', id: selectedHoofdstukId, type: 'hoofdstuk' }]);
+        setBreadcrumbs(prev => [...prev, { label: hData ? `${hData.number}. ${hData.title}` : 'Hoofdstuk', id: selectedHoofdstukId, type: 'hoofdstuk' }]);
       } catch (error) {
         console.error('Error loading paragrafen:', error);
       }
@@ -177,6 +187,36 @@ export default function TakenToewijzenPage() {
 
     loadParagrafen();
   }, [selectedHoofdstukId, hoofdstukken]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadContentBlocks = async () => {
+      if (paragrafen.length === 0) {
+        if (!cancelled) setContentBlocksByParagraaf({});
+        return;
+      }
+
+      try {
+        const entries = await Promise.all(
+          paragrafen.map(async (paragraaf) => {
+            const blocks = await cmsService.getContentBlocks(paragraaf.id, false).catch(() => []);
+            return [paragraaf.id, normalizeContentBlocks(blocks)];
+          })
+        );
+        if (!cancelled) setContentBlocksByParagraaf(Object.fromEntries(entries));
+      } catch (error) {
+        console.error('Error loading content blocks:', error);
+        if (!cancelled) setContentBlocksByParagraaf({});
+      }
+    };
+
+    loadContentBlocks();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [paragrafen]);
 
   const handleBreadcrumbClick = (index) => {
     if (index === 0) {
@@ -215,9 +255,91 @@ export default function TakenToewijzenPage() {
     }
   };
 
+  const toggleHoofdstukAssignment = async () => {
+    if (!selectedKlasId || paragrafen.length === 0) return;
+
+    try {
+      setSaving(true);
+      const chapterParagraafIds = paragrafen.map((p) => p.id);
+      const allAssigned = chapterParagraafIds.every((id) => assignedParagrafen.includes(id));
+      const newAssignments = allAssigned
+        ? assignedParagrafen.filter((id) => !chapterParagraafIds.includes(id))
+        : [...new Set([...assignedParagrafen, ...chapterParagraafIds])];
+
+      setAssignedParagrafen(newAssignments);
+      await klasService.updateKlasEnabledParagrafen(selectedKlasId, newAssignments);
+    } catch (error) {
+      console.error('Error updating chapter assignments:', error);
+      setAssignedParagrafen(selectedKlas?.enabledParagrafen || []);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleContentBlockAssignment = async (paragraafId, blockId) => {
+    if (!selectedKlasId || !paragraafId || !blockId) return;
+
+    try {
+      setSaving(true);
+      const blocks = contentBlocksByParagraaf[paragraafId] || [];
+
+      if (selectedStudentId) {
+        const studentBlocksByParagraaf = studentContentBlockOverrides[selectedStudentId] || {};
+        const current = studentBlocksByParagraaf[paragraafId] || [];
+        const next = current.includes(blockId)
+          ? current.filter((id) => id !== blockId)
+          : [...current, blockId];
+        const nextStudentOverrides = {
+          ...studentBlocksByParagraaf,
+          [paragraafId]: next
+        };
+
+        setStudentContentBlockOverrides((prev) => ({
+          ...prev,
+          [selectedStudentId]: nextStudentOverrides
+        }));
+        await klasService.setStudentContentBlockOverride(selectedKlasId, selectedStudentId, paragraafId, next);
+        return;
+      }
+
+      const hasExplicitSelection = Array.isArray(assignedContentBlocks[paragraafId]);
+      const current = hasExplicitSelection
+        ? assignedContentBlocks[paragraafId]
+        : blocks.map((block) => block.id);
+      const next = current.includes(blockId)
+        ? current.filter((id) => id !== blockId)
+        : [...current, blockId];
+
+      setAssignedContentBlocks((prev) => ({ ...prev, [paragraafId]: next }));
+      await klasService.updateKlasEnabledContentBlocks(selectedKlasId, paragraafId, next);
+    } catch (error) {
+      console.error('Error updating content block assignment:', error);
+      setAssignedContentBlocks(selectedKlas?.enabledContentBlocks || {});
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const clearContentBlockSelection = async (paragraafId) => {
+    if (!selectedKlasId || !paragraafId) return;
+
+    try {
+      setSaving(true);
+      setAssignedContentBlocks((prev) => {
+        const next = { ...prev };
+        delete next[paragraafId];
+        return next;
+      });
+      await klasService.clearKlasEnabledContentBlocks(selectedKlasId, paragraafId);
+    } catch (error) {
+      console.error('Error clearing content block selection:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const removeAssignment = async (paragraafId) => {
     if (!selectedKlasId) return;
-    const newAssignments = assignedParagrafen.filter(id => id !== paragraafId);
     await toggleParagraafAssignment(paragraafId);
   };
 
@@ -239,6 +361,9 @@ export default function TakenToewijzenPage() {
       setSaving(false);
     }
   };
+
+  const getAssignedBlockCount = () => Object.values(assignedContentBlocks)
+    .reduce((total, ids) => total + (Array.isArray(ids) ? ids.length : 0), 0);
 
   // Check if no klas is selected
   if (!selectedKlasId) {
@@ -482,6 +607,26 @@ export default function TakenToewijzenPage() {
               {/* Paragrafen */}
               {selectedHoofdstukId && (
                 <>
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="text-sm font-black text-slate-900">Hoofdstuk klaarzetten</h3>
+                        <p className="text-xs text-slate-600">
+                          Zet alle paragrafen uit dit hoofdstuk in een keer klaar.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={toggleHoofdstukAssignment}
+                        disabled={saving || selectedStudentId || paragrafen.length === 0}
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        title={selectedStudentId ? 'Bulkactie is alleen voor de klas. Kies losse extra paragrafen voor een leerling.' : ''}
+                      >
+                        Hoofdstuk aan/uit
+                      </button>
+                    </div>
+                  </div>
+
                   {paragrafen.length === 0 ? (
                     <div className="text-center text-slate-500 py-12">
                       <p>Geen paragrafen beschikbaar</p>
@@ -491,32 +636,101 @@ export default function TakenToewijzenPage() {
                       const isInClassDefault = assignedParagrafen.includes(para.id);
                       const studentExtras = studentOverrides[selectedStudentId] || [];
                       const isInStudentOverride = studentExtras.includes(para.id);
-                      const isChecked = selectedStudentId ? isInStudentOverride : isInClassDefault;
+                      const isChecked = selectedStudentId ? (isInClassDefault || isInStudentOverride) : isInClassDefault;
                       const isDisabled = selectedStudentId && isInClassDefault;
 
                       return (
                         <div
                           key={para.id}
-                          className={`p-4 border border-slate-200 rounded-lg transition-colors flex items-center gap-3 group ${
+                          className={`p-4 border border-slate-200 rounded-lg transition-colors group ${
                             isDisabled ? 'opacity-50' : 'hover:bg-slate-50'
                           }`}
                         >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => selectedStudentId ? toggleStudentOverride(para.id) : toggleParagraafAssignment(para.id)}
-                            disabled={saving || isDisabled}
-                            className="w-5 h-5 text-blue-600 rounded cursor-pointer"
-                            title={isDisabled ? "Al in klassestadaard" : ""}
-                          />
-                          <div className="flex-1">
-                            <div className="font-medium text-slate-900">{para.code}. {para.title}</div>
-                            {para.beschrijving && (
-                              <div className="text-xs text-slate-500 line-clamp-1">{para.beschrijving}</div>
+                          <div className="flex items-start gap-3">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => selectedStudentId ? toggleStudentOverride(para.id) : toggleParagraafAssignment(para.id)}
+                              disabled={saving || isDisabled}
+                              className="mt-1 h-5 w-5 cursor-pointer rounded text-blue-600"
+                              title={isDisabled ? "Al in klassestandaard" : ""}
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-slate-900">{para.code}. {para.title}</div>
+                              {para.beschrijving && (
+                                <div className="text-xs text-slate-500 line-clamp-1">{para.beschrijving}</div>
+                              )}
+                              <div className="mt-1 text-xs text-slate-500">
+                                {(contentBlocksByParagraaf[para.id] || []).length} lesblokken
+                                {Array.isArray(assignedContentBlocks[para.id]) && (
+                                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700">
+                                    {assignedContentBlocks[para.id].length} geselecteerd
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {isChecked && (
+                              <CheckSquare size={18} className="mt-1 flex-shrink-0 text-green-600" />
                             )}
                           </div>
-                          {isChecked && (
-                            <CheckSquare size={18} className="text-green-600 flex-shrink-0" />
+
+                          {isChecked && (contentBlocksByParagraaf[para.id] || []).length > 0 && (
+                            <div className="mt-4 border-t border-slate-100 pt-3">
+                              <div className="mb-2 flex items-center justify-between gap-3">
+                                <span className="text-xs font-black uppercase tracking-wide text-slate-500">
+                                  Onderdelen van deze paragraaf
+                                </span>
+                                {!selectedStudentId && Array.isArray(assignedContentBlocks[para.id]) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => clearContentBlockSelection(para.id)}
+                                    className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                                  >
+                                    Alle blokken tonen
+                                  </button>
+                                )}
+                              </div>
+                              <div className="space-y-2">
+                                {(contentBlocksByParagraaf[para.id] || []).map((block) => {
+                                  const classSelection = assignedContentBlocks[para.id];
+                                  const classHasExplicitSelection = Array.isArray(classSelection);
+                                  const isClassBlockSelected = classHasExplicitSelection
+                                    ? classSelection.includes(block.id)
+                                    : true;
+                                  const studentBlockExtras = studentContentBlockOverrides[selectedStudentId]?.[para.id] || [];
+                                  const isStudentBlockSelected = studentBlockExtras.includes(block.id);
+                                  const blockChecked = selectedStudentId ? isStudentBlockSelected : isClassBlockSelected;
+                                  const blockDisabled = selectedStudentId && isClassBlockSelected;
+
+                                  return (
+                                    <label
+                                      key={block.id}
+                                      className={`flex items-start gap-3 rounded-lg border px-3 py-2 text-sm ${
+                                        blockDisabled
+                                          ? 'border-slate-100 bg-slate-50 opacity-60'
+                                          : 'border-slate-200 bg-white hover:border-blue-200'
+                                      }`}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={blockChecked}
+                                        disabled={saving || blockDisabled}
+                                        onChange={() => toggleContentBlockAssignment(para.id, block.id)}
+                                        className="mt-1 h-4 w-4 cursor-pointer rounded text-blue-600"
+                                      />
+                                      <span className="flex-1">
+                                        <span className="block font-bold text-slate-900">
+                                          Stap {block.order || '-'} - {CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'} - {block.title || 'Naamloos'}
+                                        </span>
+                                        <span className="line-clamp-1 text-xs text-slate-500">
+                                          {buildContentBlockPreview(block)}
+                                        </span>
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           )}
                         </div>
                       );
@@ -557,6 +771,16 @@ export default function TakenToewijzenPage() {
             <div className="flex-1 overflow-y-auto p-4">
               {activeTab === 'klas' && (
                 <div className="space-y-2">
+                  <div className="mb-4 grid grid-cols-2 gap-2">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="text-2xl font-black text-slate-900">{assignedParagrafen.length}</div>
+                      <div className="text-xs font-bold uppercase text-slate-500">Paragrafen</div>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="text-2xl font-black text-slate-900">{getAssignedBlockCount()}</div>
+                      <div className="text-xs font-bold uppercase text-slate-500">Gekozen blokken</div>
+                    </div>
+                  </div>
                   {assignedParagrafen.length === 0 ? (
                     <p className="text-slate-500 text-sm text-center py-8">
                       Geen content toegewezen

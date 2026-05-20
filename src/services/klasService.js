@@ -18,6 +18,7 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { getStudentEffectiveParagrafen as getEffectiveParagrafenFromAssignments } from '../lib/assignmentUtils';
 
 /**
  * Generate a 6-character class code (e.g., "VMB1A")
@@ -71,7 +72,7 @@ export const createKlas = async (name, adminUid) => {
 
     return { klasId };
   } catch (error) {
-    throw new Error(`Failed to create class: ${error.message}`);
+    throw new Error(`Failed to create class: ${error.message}`, { cause: error });
   }
 };
 
@@ -111,7 +112,7 @@ export const joinKlas = async (userId, klasId) => {
       joinedKlasAt: serverTimestamp()
     });
   } catch (error) {
-    throw new Error(`Failed to join class: ${error.message}`);
+    throw new Error(`Failed to join class: ${error.message}`, { cause: error });
   }
 };
 
@@ -177,7 +178,7 @@ export const updateKlasSettings = async (klasId, settings) => {
       updatedAt: serverTimestamp()
     });
   } catch (error) {
-    throw new Error(`Failed to update class settings: ${error.message}`);
+    throw new Error(`Failed to update class settings: ${error.message}`, { cause: error });
   }
 };
 
@@ -199,7 +200,7 @@ export const updateKlasChapters = async (klasId, enabledChapters) => {
       updatedAt: serverTimestamp()
     });
   } catch (error) {
-    throw new Error(`Failed to update class chapters: ${error.message}`);
+    throw new Error(`Failed to update class chapters: ${error.message}`, { cause: error });
   }
 };
 
@@ -217,7 +218,7 @@ export const deleteKlas = async (klasId) => {
     const klasRef = doc(db, 'klassen', klasId);
     await deleteDoc(klasRef);
   } catch (error) {
-    throw new Error(`Failed to delete class: ${error.message}`);
+    throw new Error(`Failed to delete class: ${error.message}`, { cause: error });
   }
 };
 
@@ -239,7 +240,55 @@ export const updateKlasEnabledParagrafen = async (klasId, paragraafIds) => {
       updatedAt: serverTimestamp()
     });
   } catch (error) {
-    throw new Error(`Failed to update class paragraphs: ${error.message}`);
+    throw new Error(`Failed to update class paragraphs: ${error.message}`, { cause: error });
+  }
+};
+
+/**
+ * Update explicit content block selection for one paragraph in a class.
+ * If blockIds is an empty array, the paragraph remains assigned but no blocks are visible.
+ * Remove the field to fall back to all published blocks.
+ * @param {string} klasId
+ * @param {string} paragraafId
+ * @param {Array<string>} blockIds
+ * @returns {Promise<void>}
+ */
+export const updateKlasEnabledContentBlocks = async (klasId, paragraafId, blockIds) => {
+  if (!klasId || !paragraafId || !Array.isArray(blockIds)) {
+    throw new Error('klasId, paragraafId, and blockIds array are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      [`enabledContentBlocks.${paragraafId}`]: blockIds,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to update class content blocks: ${error.message}`, { cause: error });
+  }
+};
+
+/**
+ * Remove explicit class content block selection for one paragraph.
+ * The student flow then falls back to all published blocks in the assigned paragraph.
+ * @param {string} klasId
+ * @param {string} paragraafId
+ * @returns {Promise<void>}
+ */
+export const clearKlasEnabledContentBlocks = async (klasId, paragraafId) => {
+  if (!klasId || !paragraafId) {
+    throw new Error('klasId and paragraafId are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      [`enabledContentBlocks.${paragraafId}`]: deleteField(),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to clear class content blocks: ${error.message}`, { cause: error });
   }
 };
 
@@ -262,7 +311,32 @@ export const setStudentOverride = async (klasId, userId, extraParagraafIds) => {
       updatedAt: serverTimestamp()
     });
   } catch (error) {
-    throw new Error(`Failed to set student override: ${error.message}`);
+    throw new Error(`Failed to set student override: ${error.message}`, { cause: error });
+  }
+};
+
+/**
+ * Set extra content blocks for one student in one paragraph.
+ * These are additive on top of the class selection.
+ * @param {string} klasId
+ * @param {string} userId
+ * @param {string} paragraafId
+ * @param {Array<string>} blockIds
+ * @returns {Promise<void>}
+ */
+export const setStudentContentBlockOverride = async (klasId, userId, paragraafId, blockIds) => {
+  if (!klasId || !userId || !paragraafId || !Array.isArray(blockIds)) {
+    throw new Error('klasId, userId, paragraafId, and blockIds array are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      [`studentOverrides.${userId}.extraContentBlocks.${paragraafId}`]: blockIds,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to set student content block override: ${error.message}`, { cause: error });
   }
 };
 
@@ -283,7 +357,7 @@ export const removeStudentOverride = async (klasId, userId) => {
       [`studentOverrides.${userId}`]: deleteField()
     });
   } catch (error) {
-    throw new Error(`Failed to remove student override: ${error.message}`);
+    throw new Error(`Failed to remove student override: ${error.message}`, { cause: error });
   }
 };
 
@@ -295,19 +369,7 @@ export const removeStudentOverride = async (klasId, userId) => {
  * @returns {Array<string>} Array of paragraaf IDs visible to this student
  */
 export const getStudentEffectiveParagrafen = (klasData, userId) => {
-  if (!klasData || !userId) {
-    return [];
-  }
-
-  // Start with class default enabledParagrafen
-  const baseParagrafen = klasData.enabledParagrafen || [];
-
-  // Add student-specific overrides
-  const studentOverrides = klasData.studentOverrides?.[userId];
-  const extraParagrafen = studentOverrides?.extraParagrafen || [];
-
-  // Merge and deduplicate
-  return [...new Set([...baseParagrafen, ...extraParagrafen])];
+  return getEffectiveParagrafenFromAssignments(klasData, userId);
 };
 
 /**
@@ -348,7 +410,10 @@ export default {
   updateKlasChapters,
   deleteKlas,
   updateKlasEnabledParagrafen,
+  updateKlasEnabledContentBlocks,
+  clearKlasEnabledContentBlocks,
   setStudentOverride,
+  setStudentContentBlockOverride,
   removeStudentOverride,
   getStudentEffectiveParagrafen,
   subscribeToKlas
