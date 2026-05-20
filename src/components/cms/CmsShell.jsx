@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen, ChevronRight, Eye, PanelLeftClose, PanelLeftOpen, Palette, Plus, Trash2 } from 'lucide-react';
 import NavigationTree from './NavigationTree';
 import DualPanelEditor from './DualPanelEditor';
-import CreateQuestionModal from './CreateQuestionModal';
 import CreateContentModal from './CreateContentModal';
 import InlineEdit from './InlineEdit';
 import ColorEmojiPicker from './ColorEmojiPicker';
@@ -22,11 +21,11 @@ export default function CmsShell() {
   const cms = useCms();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [createModal, setCreateModal] = useState(null); // { type, parentId }
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [editingColor, setEditingColor] = useState(null); // { type, id } when editing color/emoji
   const showLegacyParagraafPanel = false;
+  const showLegacyQuestionPanel = false;
 
   // Sidebar state (load from localStorage)
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -63,10 +62,9 @@ export default function CmsShell() {
         cms.setHoofdstuk(selection.id);
         break;
       case 'paragraaf':
+        cms.setVraag(null);
         cms.setParagraaf(selection.id);
-        break;
-      case 'vraag':
-        cms.setVraag(selection.id);
+        setIsEditing(false);
         break;
       default:
         break;
@@ -145,7 +143,6 @@ export default function CmsShell() {
     cms.currentNiveau && { label: cms.currentNiveau.label, id: cms.selectedNiveauId },
     cms.currentHoofdstuk && { label: `${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`, id: cms.selectedHoofdstukId },
     cms.currentParagraaf && { label: `${cms.currentParagraaf.code} ${cms.currentParagraaf.title}`, id: cms.selectedParagraafId },
-    cms.currentVraag && { label: `Vraag ${cms.currentVraag.number}`, id: cms.selectedVraagId }
   ].filter(Boolean);
 
   const currentContextLabel =
@@ -240,10 +237,6 @@ export default function CmsShell() {
             onCreateNiveau={(leerjaarId) => setCreateModal({ type: 'niveau', parentId: leerjaarId })}
             onCreateHoofdstuk={(niveauId) => setCreateModal({ type: 'hoofdstuk', parentId: niveauId })}
             onCreateParagraaf={(hoofdstukId) => setCreateModal({ type: 'paragraaf', parentId: hoofdstukId })}
-            onCreateVraag={(paragraafId) => {
-              cms.setParagraaf(paragraafId);
-              setShowCreateModal(true);
-            }}
           />
         </div>
 
@@ -512,7 +505,7 @@ export default function CmsShell() {
           )}
 
           {/* PARAGRAAF Detail Panel with Lesson Route Builder */}
-          {!cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
+          {!cms.loading && !cms.error && cms.selectedParagraafId && (!cms.selectedVraagId || !showLegacyQuestionPanel) && cms.currentParagraaf && (
             <ContentBlockBuilder
               paragraaf={cms.currentParagraaf}
               blocks={cms.contentBlocks}
@@ -558,7 +551,7 @@ export default function CmsShell() {
 
                 <div>
                   <button
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={() => {}}
                     className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
                     <Plus size={16} />
                     Add Question
@@ -569,7 +562,7 @@ export default function CmsShell() {
           )}
 
           {/* VRAAG Edit/View Mode */}
-          {!cms.loading && !cms.error && cms.selectedVraagId && cms.currentVraag && (
+          {showLegacyQuestionPanel && !cms.loading && !cms.error && cms.selectedVraagId && cms.currentVraag && (
             <>
               {isEditing ? (
                 // Dual-panel edit mode
@@ -703,22 +696,6 @@ export default function CmsShell() {
         />
       )}
 
-      {/* Create Question Modal */}
-      {showCreateModal && (
-        <CreateQuestionModal
-          paragraafId={cms.selectedParagraafId}
-          existingVragen={cms.vragen}
-          onQuestionCreated={async (vraagId) => {
-            // Wait for vragen to load before selecting
-            await cms.loadVragen(cms.selectedParagraafId);
-            cms.setVraag(vraagId);
-            // Auto-open editor for new question
-            setShowCreateModal(false);
-            setIsEditing(true);
-          }}
-          onClose={() => setShowCreateModal(false)}
-        />
-      )}
     </div>
   );
 }

@@ -42,7 +42,7 @@ const countLabel = (node) => {
 const blockTypePills = (node) => {
   if (node.type !== 'paragraaf' || !node.counts.blocks?.total) return [];
 
-  return ['theory', 'example', 'question', 'media', 'summary']
+  return ['theory', 'example', 'question', 'media', 'summary', 'game']
     .map((type) => ({ type, count: node.counts.blocks[type] || 0 }))
     .filter((item) => item.count > 0)
     .map((item) => `${CONTENT_BLOCK_LABELS[item.type][0]}${item.count}`);
@@ -65,6 +65,7 @@ const TreeNode = ({
   const isSelected = selectedIds[node.type] === node.id;
   const pills = blockTypePills(node);
   const mutedCount = countLabel(node);
+  const canCreateChild = ['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(node.type);
 
   return (
     <div>
@@ -124,7 +125,7 @@ const TreeNode = ({
               {mutedCount}
             </span>
           )}
-          {onCreateChild && node.type !== 'vraag' && (
+          {onCreateChild && canCreateChild && (
             <button
               onClick={(event) => {
                 event.stopPropagation();
@@ -182,8 +183,7 @@ export default function NavigationTree({
   onCreateLeerjaar,
   onCreateNiveau,
   onCreateHoofdstuk,
-  onCreateParagraaf,
-  onCreateVraag
+  onCreateParagraaf
 }) {
   const [query, setQuery] = useState('');
   const [expandedIds, setExpandedIds] = useState(() => {
@@ -243,7 +243,6 @@ export default function NavigationTree({
     if (leerjaren.some((leerjaar) => leerjaar.id === parentId)) return onCreateNiveau?.(parentId);
     if (niveaus.some((niveau) => niveau.id === parentId)) return onCreateHoofdstuk?.(parentId);
     if (hoofdstukken.some((hoofdstuk) => hoofdstuk.id === parentId)) return onCreateParagraaf?.(parentId);
-    if (paragrafen.some((paragraaf) => paragraaf.id === parentId)) return onCreateVraag?.(parentId);
     return null;
   };
 

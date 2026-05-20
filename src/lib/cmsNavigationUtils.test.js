@@ -19,20 +19,22 @@ const fixtures = {
     { id: 'b-1', paragraafId: 'p-1', type: 'theory', status: 'published' },
     { id: 'b-2', paragraafId: 'p-1', type: 'example', status: 'draft' },
     { id: 'b-3', paragraafId: 'p-1', type: 'question', status: 'draft' },
-    { id: 'b-4', paragraafId: 'p-1', type: 'media', isArchived: true }
+    { id: 'b-4', paragraafId: 'p-1', type: 'media', isArchived: true },
+    { id: 'b-5', paragraafId: 'p-1', type: 'game', status: 'draft' }
   ]
 };
 
 test('getContentBlockTypeCounts ignores archived blocks and counts types', () => {
   assert.deepEqual(getContentBlockTypeCounts(fixtures.contentBlocks), {
-    total: 3,
+    total: 4,
     theory: 1,
     example: 1,
     question: 1,
     media: 0,
     summary: 0,
+    game: 1,
     published: 1,
-    draft: 2
+    draft: 3
   });
 });
 
@@ -47,14 +49,15 @@ test('buildCmsNavigationTree adds useful child and block counts', () => {
   assert.equal(niveau.counts.hoofdstukken, 1);
   assert.equal(hoofdstuk.counts.paragrafen, 1);
   assert.equal(paragraaf.counts.vragen, 2);
-  assert.equal(paragraaf.counts.blocks.total, 3);
+  assert.equal(paragraaf.counts.blocks.total, 4);
+  assert.deepEqual(paragraaf.children, []);
 });
 
-test('buildCmsNavigationTree filters by search query while keeping ancestors', () => {
+test('buildCmsNavigationTree filters by question search text while keeping ancestors', () => {
   const tree = buildCmsNavigationTree(fixtures, { query: 'zijde' });
-  const vraag = tree[0].children[0].children[0].children[0].children[0].children[0];
+  const paragraaf = tree[0].children[0].children[0].children[0].children[0];
 
   assert.equal(tree.length, 1);
-  assert.equal(vraag.id, 'v-1');
-  assert.equal(vraag.label, 'Q1: Zijde berekenen');
+  assert.equal(paragraaf.id, 'p-1');
+  assert.deepEqual(paragraaf.children, []);
 });

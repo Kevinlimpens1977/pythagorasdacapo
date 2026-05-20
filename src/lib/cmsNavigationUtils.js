@@ -100,7 +100,6 @@ export const buildCmsNavigationTree = (
                     paragrafen: hoofdstukParagrafen.length
                   },
                   children: hoofdstukParagrafen.map((paragraaf) => {
-                    const paragraafVragen = vragen.filter((vraag) => vraag.paragraafId === paragraaf.id);
                     const paragraafBlocks = contentBlocks.filter((block) => block.paragraafId === paragraaf.id);
 
                     return {
@@ -108,16 +107,14 @@ export const buildCmsNavigationTree = (
                       type: 'paragraaf',
                       label: `${paragraaf.code}. ${paragraaf.title}`,
                       counts: {
-                        vragen: paragraafVragen.length,
+                        vragen: vragen.filter((vraag) => vraag.paragraafId === paragraaf.id).length,
                         blocks: getContentBlockTypeCounts(paragraafBlocks)
                       },
-                      children: paragraafVragen.map((vraag) => ({
-                        ...vraag,
-                        type: 'vraag',
-                        label: `Q${vraag.number}: ${vraag.title || 'Naamloze vraag'}`,
-                        counts: {},
-                        children: []
-                      }))
+                      searchText: vragen
+                        .filter((vraag) => vraag.paragraafId === paragraaf.id)
+                        .map((vraag) => `Q${vraag.number}: ${vraag.title || 'Naamloze vraag'}`)
+                        .join(' '),
+                      children: []
                     };
                   })
                 };

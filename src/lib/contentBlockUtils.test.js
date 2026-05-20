@@ -58,6 +58,7 @@ test('blockToSlide maps supported content block types to slide types', () => {
   assert.equal(blockToSlide({ id: 'example-1', type: 'example' }).type, 'demo_exercise');
   assert.equal(blockToSlide({ id: 'media-1', type: 'media' }).type, 'theory');
   assert.equal(blockToSlide({ id: 'summary-1', type: 'summary' }).type, 'summary');
+  assert.equal(blockToSlide({ id: 'game-1', type: 'game', content: { gameId: 'pythagoras-trainer' } }).type, 'game');
 });
 
 test('getDefaultContentForBlockType gives every studio block a stable editable shape', () => {
@@ -79,6 +80,13 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
     mediaUrl: '',
     caption: '',
     altText: '',
+    crops: []
+  });
+
+  assert.deepEqual(getDefaultContentForBlockType('game'), {
+    html: '',
+    gameId: '',
+    settings: {},
     crops: []
   });
 });

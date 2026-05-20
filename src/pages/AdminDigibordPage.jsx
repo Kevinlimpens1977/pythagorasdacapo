@@ -231,6 +231,7 @@ export default function AdminDigibordPage() {
   const selectedLeerjaar = leerjaren.find((leerjaar) => leerjaar.id === selectedLeerjaarId);
   const selectedNiveau = niveaus.find((niveau) => niveau.id === selectedNiveauId);
   const selectedHoofdstuk = hoofdstukken.find((hoofdstuk) => hoofdstuk.id === selectedHoofdstukId);
+  const selectedParagraaf = paragrafen.find((paragraaf) => paragraaf.id === selectedParagraafId);
 
   const contextTitle = getDigibordContextTitle({
     selectedVak,
@@ -307,6 +308,7 @@ export default function AdminDigibordPage() {
     return (
       <DigibordViewer
         chapterId={selectedParagraafId}
+        title={getDigibordItemLabel('paragraaf', selectedParagraaf)}
         onExit={() => setSelectedParagraafId(null)}
       />
     );

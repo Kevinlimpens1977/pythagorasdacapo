@@ -31,8 +31,8 @@ export const GAME_REGISTRY = [
     estimatedMinutes: 6,
     route: '/admin/spellen/pythagoras-trainer',
     componentKey: 'pythagorasTrainer',
-    cmsEmbeddable: false,
-    supportedModes: [GAME_MODES.STANDALONE],
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
     tokenRewardPotential: {
       min: 0,
       max: 25,

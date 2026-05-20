@@ -61,11 +61,11 @@ test('createLocalGameResult produces the required V1 result contract without Fir
   });
 });
 
-test('Pythagoras Trainer is not cms embeddable before GO 3', () => {
+test('Pythagoras Trainer can be selected as a CMS game block', () => {
   const pythagorasTrainer = getGameById('pythagoras-trainer');
 
-  assert.equal(pythagorasTrainer.cmsEmbeddable, false);
-  assert.equal(pythagorasTrainer.supportedModes.includes('cmsBlock'), false);
+  assert.equal(pythagorasTrainer.cmsEmbeddable, true);
+  assert.equal(pythagorasTrainer.supportedModes.includes('cmsBlock'), true);
 });
 
 test('GO 2B marks Pythagoras Trainer as the first playable prototype', () => {

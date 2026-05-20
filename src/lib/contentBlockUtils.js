@@ -3,7 +3,8 @@ export const CONTENT_BLOCK_TYPES = [
   'example',
   'question',
   'media',
-  'summary'
+  'summary',
+  'game'
 ];
 
 export const CONTENT_BLOCK_LABELS = {
@@ -11,7 +12,8 @@ export const CONTENT_BLOCK_LABELS = {
   example: 'Voorbeeld',
   question: 'Vraag',
   media: 'Media',
-  summary: 'Samenvatting'
+  summary: 'Samenvatting',
+  game: 'Game'
 };
 
 export const getDefaultContentForBlockType = (type) => {
@@ -25,6 +27,10 @@ export const getDefaultContentForBlockType = (type) => {
 
   if (type === 'question') {
     return { html: '', exercise: { fields: [] }, crops: [] };
+  }
+
+  if (type === 'game') {
+    return { html: '', gameId: '', settings: {}, crops: [] };
   }
 
   return { html: '', imageUrl: '', crops: [] };
@@ -127,6 +133,10 @@ export const buildContentBlockPreview = (block = {}) => {
     return block.linkedVraagTitle || (block.linkedVraagId ? `Gekoppelde vraag: ${block.linkedVraagId}` : 'Nog geen vraag gekoppeld');
   }
 
+  if (block.type === 'game') {
+    return block.content?.gameTitle || block.content?.gameId || 'Nog geen game gekozen';
+  }
+
   if (block.type === 'media') {
     return htmlToPlainText(block.content?.caption || block.content?.html || '') || (block.content?.mediaUrl ? 'Media toegevoegd' : 'Nog geen media');
   }
@@ -193,6 +203,14 @@ export const blockToSlide = (block) => {
       ...base,
       type: 'exercise',
       exercise: block.content?.exercise || { fields: [] }
+    };
+  }
+
+  if (block.type === 'game') {
+    return {
+      ...base,
+      type: 'game',
+      gameId: block.content?.gameId || null
     };
   }
 

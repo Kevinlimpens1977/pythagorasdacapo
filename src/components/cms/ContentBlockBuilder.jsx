@@ -13,6 +13,7 @@ import {
   BookOpen,
   CheckSquare,
   FileText,
+  Gamepad2,
   Image,
   Layers,
   Maximize2,
@@ -36,6 +37,7 @@ import {
   mergeCropResultsIntoBlockContent,
   normalizeContentBlocks
 } from '../../lib/contentBlockUtils';
+import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import CropEditorPanel from './CropEditorPanel';
 
 const blockIcons = {
@@ -43,7 +45,8 @@ const blockIcons = {
   example: Layers,
   question: CheckSquare,
   media: Image,
-  summary: FileText
+  summary: FileText,
+  game: Gamepad2
 };
 
 const blockDescriptions = {
@@ -51,15 +54,19 @@ const blockDescriptions = {
   example: 'Uitgewerkt voorbeeld met stappenplan en bronmateriaal.',
   question: 'Nieuwe of herbruikbare interactieve vraag met crop/OCR.',
   media: 'Afbeelding of crop met bijschrift en alt-tekst.',
-  summary: 'Kernpunten, afsluiting en korte herhaling.'
+  summary: 'Kernpunten, afsluiting en korte herhaling.',
+  game: 'Voeg een educatieve game toe aan de leerlingroute.'
 };
 
 const contentFieldLabels = {
   theory: 'Uitleg voor leerlingen',
   example: 'Intro / opgave',
   media: 'Toelichting',
-  summary: 'Kernpunten'
+  summary: 'Kernpunten',
+  game: 'Instructie bij de game'
 };
+
+const cmsEmbeddableGames = getCmsEmbeddableGames();
 
 const editorFontFamilies = [
   { label: 'Standaard', value: '' },
@@ -355,6 +362,7 @@ const LessonBlockStudio = ({
   const [error, setError] = useState(null);
 
   const selectedVraag = vragen.find((vraag) => vraag.id === linkedVraagId);
+  const selectedGame = cmsEmbeddableGames.find((game) => game.gameId === content.gameId);
   const Icon = blockIcons[block.type] || FileText;
 
   const updateContent = (updates) => {
@@ -558,6 +566,84 @@ const LessonBlockStudio = ({
     );
   }
 
+  if (block.type === 'game') {
+    return (
+      <div className="overflow-hidden rounded-lg border border-blue-200 bg-blue-50/60">
+        <div className="border-b border-blue-100 bg-white px-5 py-4">
+          <div className="grid gap-3 md:grid-cols-[1fr_12rem]">
+            <div>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Bloktitel</label>
+              <input value={title} onChange={(event) => setTitle(event.target.value)} className="input-standard w-full" />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Status</label>
+              <StatusSelect value={status} onChange={setStatus} />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4 bg-white p-5">
+          <div>
+            <label className="mb-2 block text-sm font-bold text-slate-700">Game</label>
+            <select
+              value={content.gameId || ''}
+              onChange={(event) => {
+                const nextGame = cmsEmbeddableGames.find((game) => game.gameId === event.target.value);
+                updateContent({
+                  gameId: event.target.value,
+                  gameTitle: nextGame?.title || ''
+                });
+              }}
+              className="input-standard w-full"
+            >
+              <option value="">Kies een game</option>
+              {cmsEmbeddableGames.map((game) => (
+                <option key={game.gameId} value={game.gameId}>
+                  {game.title} - {game.topic}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedGame && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-md bg-blue-100 px-2 py-1 text-xs font-black uppercase tracking-wide text-blue-700">
+                  {selectedGame.status}
+                </span>
+                <span className="rounded-md bg-white px-2 py-1 text-xs font-bold text-slate-600">
+                  {selectedGame.estimatedMinutes} min
+                </span>
+                <span className="rounded-md bg-white px-2 py-1 text-xs font-bold text-slate-600">
+                  {selectedGame.level}
+                </span>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{selectedGame.description}</p>
+            </div>
+          )}
+
+          <StudioRichEditor
+            label={contentFieldLabels.game}
+            value={content.html || ''}
+            onChange={(html) => updateContent({ html })}
+            onEditorReady={setBlockEditor}
+            placeholder="Schrijf een korte instructie of context voordat leerlingen de game starten."
+          />
+
+          <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
+            <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+              Sluit
+            </button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+              <Save size={16} />
+              {saving ? 'Opslaan...' : 'Blok opslaan'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-lg border border-blue-200 bg-blue-50/60">
       <div className="border-b border-blue-100 bg-white px-5 py-4">
@@ -727,10 +813,6 @@ export default function ContentBlockBuilder({
 
       await onRefresh();
       setEditingBlockId(blockId);
-
-      if (type === 'question' && linkedVraagId) {
-        onEditVraag(linkedVraagId);
-      }
     } catch (error) {
       console.error('Kon lesblok niet aanmaken:', error);
       setActionError('Kon lesblok niet aanmaken.');
@@ -800,7 +882,7 @@ export default function ContentBlockBuilder({
           </div>
         )}
 
-        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           {CONTENT_BLOCK_TYPES.map((type) => (
             <BlockTypeButton key={type} type={type} onClick={handleCreateBlock} disabled={creatingType !== null} />
           ))}
@@ -812,7 +894,7 @@ export default function ContentBlockBuilder({
           <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
             <p className="text-lg font-black text-slate-900">Nog geen lesroute</p>
             <p className="mt-2 text-sm text-slate-500">
-              Voeg een theorieblok, voorbeeld of vraag toe om deze paragraaf op te bouwen.
+              Voeg een theorieblok, voorbeeld, vraag, media, samenvatting of game toe om deze paragraaf op te bouwen.
             </p>
           </div>
         ) : (
