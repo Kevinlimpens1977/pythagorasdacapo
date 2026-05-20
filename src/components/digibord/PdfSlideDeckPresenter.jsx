@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ExternalLink, Loader2, X } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { buildPdfPageUrl, createPdfJsLoadOptions } from '../../lib/pdfPresenterUtils';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
@@ -11,6 +12,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
   const [loading, setLoading] = useState(true);
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState('');
+  const [useNativeViewer, setUseNativeViewer] = useState(false);
   const [renderVersion, setRenderVersion] = useState(0);
   const canvasRef = useRef(null);
   const stageRef = useRef(null);
@@ -22,6 +24,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError('');
+    setUseNativeViewer(false);
     setPageNum(1);
     setPdf(null);
 
@@ -33,8 +36,9 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
       };
     }
 
-    pdfjsLib
-      .getDocument(pdfUrl)
+    const loadingTask = pdfjsLib.getDocument(createPdfJsLoadOptions(pdfUrl));
+
+    loadingTask
       .promise.then((pdfDocument) => {
         if (cancelled) return;
         setPdf(pdfDocument);
@@ -44,12 +48,14 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
       .catch((loadError) => {
         if (cancelled) return;
         console.error('Slidedeck PDF kon niet laden:', loadError);
-        setError('Deze presentatie-PDF kon niet worden geladen.');
+        setUseNativeViewer(true);
+        setError('');
         setLoading(false);
       });
 
     return () => {
       cancelled = true;
+      loadingTask.destroy?.();
     };
   }, [pdfUrl]);
 
@@ -137,7 +143,10 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
   }, [onClose, totalPages]);
 
   const goPrev = () => setPageNum((current) => Math.max(1, current - 1));
-  const goNext = () => setPageNum((current) => Math.min(totalPages || current, current + 1));
+  const goNext = () => setPageNum((current) => {
+    if (!totalPages && useNativeViewer) return current + 1;
+    return Math.min(totalPages || current, current + 1);
+  });
 
   return (
     <div className="fixed inset-0 z-[1200] flex flex-col bg-slate-950 text-white">
@@ -196,7 +205,21 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           </div>
         )}
 
-        {!loading && !error && (
+        {!loading && !error && useNativeViewer && (
+          <div className="h-full w-full bg-slate-900 p-4 md:p-6">
+            <iframe
+              key={`${pdfUrl}-${pageNum}`}
+              src={buildPdfPageUrl(pdfUrl, pageNum)}
+              title={slide.title || 'Slidedeck PDF'}
+              className="h-full w-full rounded-xl border border-slate-700 bg-white shadow-2xl shadow-black/40"
+            />
+            <div className="absolute left-1/2 top-6 -translate-x-1/2 rounded-xl bg-amber-100 px-4 py-2 text-center text-xs font-black uppercase tracking-wide text-amber-900 shadow-lg">
+              Compatibiliteitsweergave actief
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && !useNativeViewer && (
           <div className="flex h-full w-full items-center justify-center p-6">
             <canvas ref={canvasRef} className="max-h-full max-w-full rounded-lg bg-white shadow-2xl shadow-black/40" />
             {rendering && (
@@ -222,13 +245,13 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           <div className="min-w-0 flex-1 text-center">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">PDF slide</p>
             <p className="mt-1 text-lg font-black text-slate-100">
-              {totalPages ? `${pageNum} / ${totalPages}` : '- / -'}
+              {totalPages ? `${pageNum} / ${totalPages}` : useNativeViewer ? `${pageNum}` : '- / -'}
             </p>
           </div>
 
           <button
             onClick={goNext}
-            disabled={pageNum >= totalPages || loading || Boolean(error)}
+            disabled={(!useNativeViewer && pageNum >= totalPages) || loading || Boolean(error)}
             className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-30"
           >
             Volgende
