@@ -5,6 +5,7 @@ import NameSetupModal from '../auth/NameSetupModal';
 import CmsResetButton from '../admin/CmsResetButton';
 import { BarChart3, BookOpen, Gamepad2, LogOut, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
+import helixLogo from '../../afbeeldingen/logo.png';
 
 const workspaceIcons = {
   lesstof: BookOpen,
@@ -38,18 +39,11 @@ export default function AppShell() {
         <div className="flex min-w-0 items-center gap-4 md:gap-8">
           <h1
             onClick={() => navigate('/')}
-            className="helix-brand group flex shrink-0 cursor-pointer items-center gap-3 transition-opacity hover:opacity-90"
+            className="helix-brand group flex shrink-0 cursor-pointer items-center transition-opacity hover:opacity-90"
+            aria-label="Ga naar HELIX start"
           >
-            <span className="helix-logo-mark flex h-11 w-11 items-center justify-center rounded-[1.15rem] p-1.5 text-white transition-transform group-hover:scale-105 md:h-12 md:w-12">
-              <img src="/logo.svg" alt="Helix logo" className="h-full w-full object-contain" />
-            </span>
-            <span className="hidden leading-tight sm:flex sm:flex-col">
-              <span className="font-display text-2xl font-extrabold uppercase tracking-[0.16em] text-[var(--helix-navy)] md:text-3xl">
-                HELIX
-              </span>
-              <span className="-mt-0.5 text-xs font-semibold tracking-normal text-[var(--helix-muted)]">
-                AI tutor voor slim leren
-              </span>
+            <span className="flex h-14 w-36 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm transition-transform group-hover:scale-[1.02] md:h-16 md:w-44">
+              <img src={helixLogo} alt="HELIX" className="h-20 w-20 max-w-none scale-[1.2] object-contain" />
             </span>
           </h1>
 

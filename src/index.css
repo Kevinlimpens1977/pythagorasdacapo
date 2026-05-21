@@ -90,10 +90,6 @@ textarea {
   box-shadow: var(--helix-focus);
 }
 
-.helix-brand > span:first-child {
-  display: none;
-}
-
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }

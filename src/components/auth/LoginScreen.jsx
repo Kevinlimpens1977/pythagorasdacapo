@@ -10,6 +10,7 @@ import { auth } from '../../services/firebase';
 import { useAuth } from './AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import { Code2, LogIn, UserPlus } from 'lucide-react';
+import helixLogo from '../../afbeeldingen/logo.png';
 
 export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -102,14 +103,8 @@ export default function LoginScreen() {
         <section className="relative hidden min-h-[42rem] overflow-hidden bg-[var(--helix-navy)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="helix-login-visual-bg absolute inset-0 opacity-90" />
           <div className="relative">
-            <div className="flex items-center gap-4">
-              <span className="helix-logo-mark flex h-14 w-14 items-center justify-center rounded-2xl p-2">
-                <img src="/logo.svg" alt="Helix Logo" className="h-full w-full object-contain" />
-              </span>
-              <div>
-                <p className="font-display text-3xl font-extrabold uppercase tracking-[0.18em]">HELIX</p>
-                <p className="text-sm font-semibold text-white/72">AI tutor voor slim leren</p>
-              </div>
+            <div className="inline-flex h-24 w-48 items-center justify-center overflow-hidden rounded-2xl bg-white/96 shadow-[0_18px_38px_rgba(11,19,43,0.22)]">
+              <img src={helixLogo} alt="HELIX" className="h-28 w-28 max-w-none scale-[1.5] object-contain" />
             </div>
 
             <div className="mt-16 max-w-xl">
@@ -134,11 +129,9 @@ export default function LoginScreen() {
 
         <div className="w-full p-6 sm:p-8 lg:p-10">
           <div className="mb-8 text-center lg:hidden">
-            <div className="helix-logo-mark mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl p-3">
-              <img src="/logo.svg" alt="Helix Logo" className="h-full w-full object-contain" />
+            <div className="mx-auto mb-4 inline-flex h-24 w-48 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-[var(--helix-shadow-card)]">
+              <img src={helixLogo} alt="HELIX" className="h-28 w-28 max-w-none scale-[1.5] object-contain" />
             </div>
-            <h1 className="font-display text-3xl font-extrabold uppercase tracking-[0.16em] text-[var(--helix-navy)]">HELIX</h1>
-            <p className="mt-1 text-sm font-semibold text-[var(--helix-muted)]">AI tutor voor slim leren</p>
           </div>
 
           <div className="mb-8">

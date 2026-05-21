@@ -7,6 +7,7 @@ import * as klasService from '../../services/klasService';
 import * as voortgangService from '../../services/voortgangService';
 import { calculateLessonProgress } from '../../lib/studentLessonProgress';
 import { getEffectiveContentBlocks } from '../../lib/assignmentUtils';
+import helixLogo from '../../afbeeldingen/logo.png';
 
 export default function TableOfContents() {
   const navigate = useNavigate();
@@ -246,11 +247,9 @@ function StudentShell({ children }) {
         <div className="relative overflow-hidden bg-[var(--helix-navy)] p-6 text-white sm:p-8">
           <div className="helix-login-visual-bg absolute inset-0 opacity-80" />
           <div className="relative">
-          <div className="mb-2 flex items-center gap-3">
-            <BookOpen size={30} className="text-orange-200" />
-            <h1 className="font-display text-2xl font-extrabold uppercase tracking-[0.14em] sm:text-3xl">HELIX</h1>
-          </div>
-          <p className="ml-11 text-lg text-white/74">AI tutor voor slim leren</p>
+            <div className="inline-flex h-24 w-48 items-center justify-center overflow-hidden rounded-2xl bg-white/96 shadow-[0_18px_38px_rgba(11,19,43,0.22)]">
+              <img src={helixLogo} alt="HELIX" className="h-28 w-28 max-w-none scale-[1.5] object-contain" />
+            </div>
           </div>
         </div>
         {children}
