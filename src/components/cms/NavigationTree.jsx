@@ -73,8 +73,8 @@ const TreeNode = ({
         className={[
           'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-all',
           isSelected
-            ? 'bg-slate-900 text-white shadow-sm'
-            : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
+            ? 'helix-gradient text-white shadow-sm'
+            : 'text-[var(--helix-muted)] hover:bg-white hover:text-[var(--helix-navy)]'
         ].join(' ')}
         style={{ paddingLeft: `${10 + level * 14}px` }}
         onClick={() => onSelect({ type: node.type, id: node.id })}
@@ -97,7 +97,7 @@ const TreeNode = ({
         <span
           className={[
             'flex h-7 w-7 items-center justify-center rounded-lg',
-            isSelected ? 'bg-white/15 text-white' : `bg-white ${config.accent} ring-1 ring-slate-200`
+            isSelected ? 'bg-white/15 text-white' : `bg-white ${config.accent} ring-1 ring-[var(--helix-border)]`
           ].join(' ')}
         >
           <Icon size={15} />
@@ -119,7 +119,7 @@ const TreeNode = ({
             <span
               className={[
                 'hidden rounded-md px-2 py-1 text-[11px] font-bold lg:inline-flex',
-                isSelected ? 'bg-white/10 text-slate-100' : 'bg-slate-100 text-slate-500'
+                isSelected ? 'bg-white/10 text-white' : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
               ].join(' ')}
             >
               {mutedCount}
@@ -133,7 +133,7 @@ const TreeNode = ({
               }}
               className={[
                 'flex h-7 w-7 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100',
-                isSelected ? 'bg-white/10 text-white hover:bg-white/20' : 'text-blue-600 hover:bg-blue-50'
+                isSelected ? 'bg-white/10 text-white hover:bg-white/20' : 'text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
               ].join(' ')}
               title={`Nieuw onderdeel toevoegen`}
             >
@@ -247,19 +247,19 @@ export default function NavigationTree({
   };
 
   return (
-    <aside className="flex h-full flex-col overflow-hidden border-r border-slate-200 bg-slate-50/95">
-      <div className="border-b border-slate-200 bg-white px-4 py-4">
+    <aside className="flex h-full flex-col overflow-hidden border-r border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/95">
+      <div className="border-b border-[var(--helix-border)] bg-white px-4 py-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">CMS</p>
-            <h3 className="mt-1 flex items-center gap-2 text-lg font-black text-slate-950">
+            <p className="helix-eyebrow">CMS</p>
+            <h3 className="mt-1 flex items-center gap-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
               <BookOpen size={18} />
               Inhoud
             </h3>
           </div>
           <button
             onClick={() => onCreateVak?.()}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm transition-colors hover:bg-blue-700"
+            className="helix-gradient flex h-9 w-9 items-center justify-center rounded-2xl text-white shadow-sm transition-transform hover:scale-105"
             title="Nieuw vak"
           >
             <Plus size={18} />
@@ -268,19 +268,19 @@ export default function NavigationTree({
 
         <div className="mt-4 grid grid-cols-4 gap-2">
           {Object.entries(totals).map(([label, value]) => (
-            <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center">
-              <p className="text-sm font-black text-slate-900">{value}</p>
-              <p className="truncate text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
+            <div key={label} className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-2 py-2 text-center">
+              <p className="text-sm font-black text-[var(--helix-navy)]">{value}</p>
+              <p className="truncate text-[10px] font-bold uppercase tracking-wide text-[var(--helix-muted)]">{label}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-100">
+        <div className="mt-4 flex items-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 focus-within:border-fuchsia-200">
           <Search size={16} className="text-slate-400" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--helix-navy)] outline-none placeholder:text-slate-400"
             placeholder="Zoek lesmateriaal..."
           />
           {query && (
@@ -302,18 +302,18 @@ export default function NavigationTree({
 
       <div className="custom-scrollbar flex-1 overflow-y-auto px-3 py-3">
         {tree.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-5 text-center">
-            <Sparkles className="mx-auto text-blue-500" size={24} />
-            <p className="mt-3 text-sm font-black text-slate-900">
+          <div className="rounded-3xl border border-dashed border-[var(--helix-border)] bg-white p-5 text-center">
+            <Sparkles className="mx-auto text-[var(--helix-purple)]" size={24} />
+            <p className="mt-3 text-sm font-black text-[var(--helix-navy)]">
               {query ? 'Geen resultaten' : 'Nog geen lesmateriaal'}
             </p>
-            <p className="mt-1 text-sm leading-6 text-slate-500">
+            <p className="mt-1 text-sm leading-6 text-[var(--helix-muted)]">
               {query ? 'Probeer een andere zoekterm.' : 'Start met een vak en bouw daarna je hoofdstukken op.'}
             </p>
             {!query && onCreateVak && (
               <button
                 onClick={() => onCreateVak()}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+                className="btn-primary mt-4 px-4 py-2 text-sm"
               >
                 <Plus size={16} />
                 Nieuw vak

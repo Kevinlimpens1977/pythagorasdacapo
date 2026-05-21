@@ -260,8 +260,8 @@ export default function ClassOverview() {
 
   if (loading) {
     return (
-      <div className="mx-auto flex h-64 w-full max-w-7xl flex-col items-center justify-center gap-4 px-6 text-slate-500 md:px-8">
-        <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      <div className="mx-auto flex h-64 w-full max-w-7xl flex-col items-center justify-center gap-4 px-6 text-[var(--helix-muted)] md:px-8">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-fuchsia-100 border-t-[var(--helix-purple)]"></div>
         <p className="font-medium">Leerlinggegevens laden...</p>
       </div>
     );
@@ -288,29 +288,30 @@ export default function ClassOverview() {
     const overallProgress = overallAssignmentSummary.percentage;
 
     return (
-      <div className="mx-auto w-full max-w-7xl animate-in fade-in slide-in-from-right-8 px-6 py-10 duration-500 md:px-8 md:py-12">
+      <div className="helix-container animate-in fade-in slide-in-from-right-8 duration-500">
         <button
           onClick={() => {
             setSelectedStudent(null);
             setSelectedChapter(null);
           }}
-          className="mb-8 flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold transition-colors"
+          className="mb-8 flex items-center gap-2 font-bold text-[var(--helix-muted)] transition-colors hover:text-[var(--helix-navy)]"
         >
           <Search className="rotate-180" size={20} /> Terug naar overzicht
         </button>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-8">
-          <div className="pad-content bg-slate-900 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div className="flex items-center gap-6">
+        <div className="helix-surface mb-8 overflow-hidden">
+          <div className="relative flex flex-col items-start justify-between gap-6 overflow-hidden bg-[var(--helix-navy)] pad-content text-white md:flex-row md:items-center">
+            <div className="helix-login-visual-bg absolute inset-0 opacity-70" />
+            <div className="relative flex items-center gap-6">
               <div className="w-20 h-20 rounded-2xl bg-blue-500 flex items-center justify-center text-3xl font-black">
                 {(selectedStudent.displayName || "N").charAt(0)}
               </div>
               <div>
-                <h2 className="text-4xl font-black">{selectedStudent.displayName || "Naamloos"}</h2>
+                <h2 className="font-display text-4xl font-extrabold">{selectedStudent.displayName || "Naamloos"}</h2>
                 <p className="text-slate-400 text-lg">{selectedStudent.email}</p>
               </div>
             </div>
-            <div className="flex gap-4">
+            <div className="relative flex gap-4">
               <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
                 <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Voortgang</div>
                 <div className="text-2xl font-black text-blue-400">{overallProgress}%</div>
@@ -329,7 +330,7 @@ export default function ClassOverview() {
           </div>
 
           <div className="pad-content">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+            <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
               <h3 className="heading-lg">Voortgang per Paragraaf</h3>
 
               <div className="w-full md:w-64">
@@ -509,40 +510,40 @@ export default function ClassOverview() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto w-full max-w-7xl px-6 py-10 md:px-8 md:py-12">
+    <div className="helix-page min-h-screen">
+      <div className="helix-container">
       <div className="mb-8">
         <button
           onClick={() => navigate('/admin')}
-          className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-800 font-semibold transition-colors text-sm"
+          className="mb-6 flex items-center gap-2 text-sm font-semibold text-[var(--helix-muted)] transition-colors hover:text-[var(--helix-navy)]"
         >
           ← Terug naar Admin Hub
         </button>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              <Users className="text-blue-500" /> Klas Dashboard
+              <Users className="text-[var(--helix-purple)]" /> Klas Dashboard
             </h1>
-            <p className="text-slate-500 mt-1">Real-time overzicht van je leerlingen</p>
+            <p className="mt-1 text-[var(--helix-muted)]">Real-time overzicht van je leerlingen</p>
           </div>
         </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-          <div className="text-slate-500 text-sm font-medium mb-2">Actief (laatste 15m)</div>
-          <div className="text-3xl font-bold text-slate-800">{activeCount}</div>
+        <div className="helix-card flex flex-col p-6">
+          <div className="mb-2 text-sm font-medium text-[var(--helix-muted)]">Actief (laatste 15m)</div>
+          <div className="font-display text-3xl font-extrabold text-[var(--helix-navy)]">{activeCount}</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">
-          <div className="text-slate-500 text-sm font-medium mb-2">Gemiddelde Voortgang</div>
-          <div className="text-3xl font-bold text-blue-600">{avgProgress}%</div>
+        <div className="helix-card flex flex-col p-6">
+          <div className="mb-2 text-sm font-medium text-[var(--helix-muted)]">Gemiddelde Voortgang</div>
+          <div className="font-display text-3xl font-extrabold text-[var(--helix-purple)]">{avgProgress}%</div>
         </div>
-        <div className="bg-amber-50 rounded-xl shadow-sm border border-amber-200 p-6 flex flex-col">
-          <div className="text-amber-700 text-sm font-medium mb-2 flex items-center gap-2">
+        <div className="helix-alert flex flex-col p-6">
+          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-700">
             <AlertTriangle size={16} /> Aandacht Nodig
           </div>
-          <div className="text-3xl font-bold text-amber-700">{warningCount}</div>
+          <div className="font-display text-3xl font-extrabold text-orange-700">{warningCount}</div>
         </div>
       </div>
 
@@ -619,17 +620,17 @@ export default function ClassOverview() {
       })()}
 
       {/* Students Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50 space-y-4">
+      <div className="helix-surface overflow-hidden">
+        <div className="space-y-4 border-b border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/72 p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <h2 className="font-semibold text-slate-700">Leerlingenoverzicht ({students.length})</h2>
+            <h2 className="font-display font-extrabold text-[var(--helix-navy)]">Leerlingenoverzicht ({students.length})</h2>
             <div className="relative w-full sm:w-64">
               <input
                 type="text"
                 placeholder="Zoek leerling..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 focus:border-blue-500 outline-none text-sm transition-all"
+                className="input-standard w-full py-2 pl-9 pr-4 text-sm"
               />
               <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
             </div>
@@ -637,11 +638,11 @@ export default function ClassOverview() {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Paragraaf selecteren</label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--helix-muted)]">Paragraaf selecteren</label>
               <select
                 value={selectedChapterForClass || ""}
                 onChange={(e) => setSelectedChapterForClass(e.target.value || null)}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="input-standard w-full py-2 text-sm font-medium"
               >
                 <option value="">Alle paragrafen (totaal voortgang)</option>
                 {paragraphen.map((para) => (

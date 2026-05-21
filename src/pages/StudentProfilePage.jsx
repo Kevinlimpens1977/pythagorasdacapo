@@ -7,10 +7,10 @@ import * as voortgangService from '../services/voortgangService';
 import { buildStudentProgressSummary } from '../lib/progressSummary';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
-  const barColor = tone === 'green' ? 'bg-green-500' : 'bg-blue-500';
+  const barColor = tone === 'green' ? 'bg-[var(--helix-success)]' : 'helix-progress-fill';
 
   return (
-    <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+    <div className="helix-progress-track h-2.5 w-full">
       <div
         className={`h-full rounded-full ${barColor} transition-all duration-500`}
         style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
@@ -20,10 +20,10 @@ const ProgressBar = ({ value, tone = 'blue' }) => {
 };
 
 const EmptyState = ({ icon: Icon, title, description }) => (
-  <div className="rounded-lg border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-    <Icon size={44} className="mx-auto mb-4 text-slate-300" />
-    <h2 className="text-xl font-bold text-slate-900">{title}</h2>
-    <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{description}</p>
+  <div className="helix-surface px-6 py-12 text-center">
+    <Icon size={44} className="mx-auto mb-4 text-[var(--helix-purple)]/40" />
+    <h2 className="text-xl font-bold text-[var(--helix-navy)]">{title}</h2>
+    <p className="helix-muted mx-auto mt-2 max-w-md text-sm leading-6">{description}</p>
   </div>
 );
 
@@ -127,8 +127,8 @@ export default function StudentProfilePage() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl mx-auto pad-content">
-        <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="helix-container pad-content">
+        <div className="helix-surface p-8">
           <div className="h-8 w-48 animate-pulse rounded bg-slate-200" />
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {[1, 2, 3].map((item) => (
@@ -142,7 +142,7 @@ export default function StudentProfilePage() {
 
   if (!klasData?.klasId) {
     return (
-      <div className="w-full max-w-6xl mx-auto pad-content">
+      <div className="helix-container pad-content">
         <EmptyState
           icon={GraduationCap}
           title="Kies eerst je klas"
@@ -154,49 +154,49 @@ export default function StudentProfilePage() {
 
   if (error) {
     return (
-      <div className="w-full max-w-6xl mx-auto pad-content">
+      <div className="helix-container pad-content">
         <EmptyState icon={AlertCircle} title="Profiel niet geladen" description={error} />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto pad-content">
+    <div className="helix-container pad-content">
       <div className="mb-8">
-        <p className="text-sm font-black uppercase tracking-widest text-blue-600">Mijn profiel</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+        <p className="helix-eyebrow">Mijn profiel</p>
+        <h1 className="helix-heading-xl mt-2">
           {displayName}
         </h1>
       </div>
 
       <section className="grid gap-5 lg:grid-cols-[1.1fr_1.9fr]">
-        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="helix-card p-6">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
               <UserCircle size={38} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900">{displayName}</h2>
-              <p className="text-sm font-semibold text-blue-600">Leerling</p>
+              <h2 className="text-xl font-black text-[var(--helix-navy)]">{displayName}</h2>
+              <p className="text-sm font-semibold text-[var(--helix-purple)]">Leerling</p>
             </div>
           </div>
 
           <div className="mt-6 space-y-3 text-sm">
-            <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-4 py-3">
               <Mail size={18} className="text-slate-400" />
-              <span className="font-medium text-slate-700">{email}</span>
+              <span className="font-medium text-[var(--helix-navy)]">{email}</span>
             </div>
-            <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-4 py-3">
               <GraduationCap size={18} className="text-slate-400" />
-              <span className="font-medium text-slate-700">{klasName}</span>
+              <span className="font-medium text-[var(--helix-navy)]">{klasName}</span>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-900 p-6 text-white shadow-sm">
+        <div className="rounded-[var(--helix-radius-xl)] border border-white/10 bg-[var(--helix-navy)] p-6 text-white shadow-[var(--helix-shadow-card)]">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-black uppercase tracking-widest text-blue-200">
+              <p className="text-sm font-black uppercase tracking-widest text-orange-100">
                 Mijn voortgang
               </p>
               <h2 className="mt-2 text-3xl font-black">{summary.progressPercent}% afgerond</h2>

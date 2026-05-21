@@ -161,21 +161,21 @@ export default function CmsShell() {
   ].filter(Boolean);
 
   return (
-    <div className="flex h-screen flex-col bg-slate-100">
+    <div className="flex h-screen flex-col bg-[var(--helix-bg)]">
       {/* Header */}
-      <div className="border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
+      <div className="border-b border-[var(--helix-border)] bg-white/88 px-6 py-4 shadow-sm backdrop-blur-xl">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={handleToggleSidebar}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-950"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition-colors hover:bg-[var(--helix-surface-soft)] hover:text-[var(--helix-navy)]"
               title={sidebarOpen ? 'Inhoud verbergen' : 'Inhoud tonen'}
             >
               {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
             </button>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">HELIX Contentstudio</p>
-              <h1 className="mt-1 flex items-center gap-2 text-2xl font-black tracking-tight text-slate-950">
+              <p className="helix-eyebrow">HELIX Contentstudio</p>
+              <h1 className="mt-1 flex items-center gap-2 font-display text-2xl font-extrabold tracking-tight text-[var(--helix-navy)]">
                 <BookOpen size={22} />
                 CMS Platform
               </h1>
@@ -185,7 +185,7 @@ export default function CmsShell() {
 
         {/* Breadcrumb */}
         {breadcrumbItems.length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-[var(--helix-muted)]">
             {breadcrumbItems.map((item, idx) => (
               <React.Fragment key={item.id}>
                 <span className="truncate max-w-xs">{item.label}</span>
@@ -214,7 +214,7 @@ export default function CmsShell() {
 
         {/* Left Sidebar - Navigation Tree (Collapsible) */}
         <div className={`
-          border-r border-gray-200 bg-white overflow-hidden transition-all duration-300 ease-in-out flex-shrink-0
+          overflow-hidden border-r border-[var(--helix-border)] bg-white/86 transition-all duration-300 ease-in-out flex-shrink-0 backdrop-blur-xl
           ${sidebarOpen ? 'w-[25rem] opacity-100' : 'w-0 border-r-0 opacity-0'}
         `}>
           <NavigationTree
@@ -242,15 +242,15 @@ export default function CmsShell() {
 
         {/* Right Panel - Content Editor or Detail Panel */}
         <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
-          <div className="mb-5 rounded-lg border border-slate-200 bg-white px-5 py-4 shadow-sm">
+          <div className="helix-surface mb-5 px-5 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Werkvlak</p>
-                <h2 className="mt-1 text-xl font-black text-slate-950">{currentContextLabel}</h2>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-muted)]">Werkvlak</p>
+                <h2 className="mt-1 font-display text-xl font-extrabold text-[var(--helix-navy)]">{currentContextLabel}</h2>
                 {currentContextMeta.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {currentContextMeta.map((item) => (
-                      <span key={item} className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                      <span key={item} className="helix-badge normal-case tracking-normal">
                         {item}
                       </span>
                     ))}
@@ -261,7 +261,7 @@ export default function CmsShell() {
                 <button
                   onClick={() => cms.selectedParagraafId && navigate(`/chapter/${cms.selectedParagraafId}`)}
                   disabled={!cms.selectedParagraafId}
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-3 py-2 text-sm font-bold text-[var(--helix-muted)] transition-colors hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
                   title="Preview van de huidige lesroute"
                 >
                   <Eye size={16} />
@@ -272,7 +272,7 @@ export default function CmsShell() {
                     if (cms.selectedHoofdstukId) setCreateModal({ type: 'paragraaf', parentId: cms.selectedHoofdstukId });
                     else setCreateModal({ type: 'vak', parentId: null });
                   }}
-                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-slate-800"
+                  className="btn-primary px-3 py-2 text-sm"
                 >
                   <Plus size={16} />
                   {cms.selectedHoofdstukId ? 'Nieuwe paragraaf' : 'Nieuw vak'}

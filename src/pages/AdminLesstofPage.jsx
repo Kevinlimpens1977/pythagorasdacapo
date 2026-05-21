@@ -8,7 +8,7 @@ const actions = [
     actionLabel: 'Open CMS',
     path: '/admin/cms',
     icon: BookOpen,
-    tone: 'bg-slate-900 text-white'
+    tone: 'bg-[var(--helix-navy)] text-white'
   },
   {
     title: 'Lesmateriaal klaarzetten',
@@ -16,7 +16,7 @@ const actions = [
     actionLabel: 'Open klaarzetstudio',
     path: '/admin/taken-toewijzen',
     icon: CheckSquare,
-    tone: 'bg-blue-600 text-white'
+    tone: 'helix-gradient text-white'
   },
   {
     title: 'Digibord presenteren',
@@ -24,7 +24,7 @@ const actions = [
     actionLabel: 'Open Digibord',
     path: '/admin/digibord',
     icon: Clapperboard,
-    tone: 'bg-white text-slate-900 border border-slate-200'
+    tone: 'bg-white/90 text-[var(--helix-navy)] border border-[var(--helix-border)]'
   },
   {
     title: 'Slidedecks / NotebookLM',
@@ -32,7 +32,7 @@ const actions = [
     actionLabel: 'Open Slidedeckcreator',
     path: '/admin/slidedecks',
     icon: FileStack,
-    tone: 'bg-white text-slate-900 border border-slate-200'
+    tone: 'bg-white/90 text-[var(--helix-navy)] border border-[var(--helix-border)]'
   }
 ];
 
@@ -46,12 +46,12 @@ export default function AdminLesstofPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-10 md:px-8 md:py-12">
+    <div className="helix-page min-h-screen">
+      <div className="helix-container">
         <div>
-          <p className="text-sm font-black uppercase tracking-widest text-blue-600">Werkplek</p>
-          <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Lesstof</h1>
-          <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
+          <p className="helix-eyebrow">Werkplek</p>
+          <h1 className="mt-2 helix-heading-xl">Lesstof</h1>
+          <p className="mt-3 max-w-2xl text-lg leading-8 text-[var(--helix-muted)]">
             Een centrale plek voor lesmateriaal, crops, teksten, afbeeldingen, vragen en klassikale presentaties.
           </p>
         </div>
@@ -64,15 +64,15 @@ export default function AdminLesstofPage() {
               <button
                 key={action.title}
                 onClick={() => navigate(action.path)}
-                className={`group rounded-lg p-6 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-200 ${action.tone}`}
+                className={`group rounded-3xl p-6 text-left shadow-[var(--helix-shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--helix-shadow-soft)] focus:outline-none ${action.tone}`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
                       <Icon size={24} />
                     </div>
                     <div>
-                      <h2 className="text-xl font-black">{action.title}</h2>
+                      <h2 className="font-display text-xl font-extrabold">{action.title}</h2>
                       <p className="mt-2 max-w-xl text-sm leading-6 opacity-80">{action.description}</p>
                     </div>
                   </div>
@@ -85,19 +85,19 @@ export default function AdminLesstofPage() {
         </section>
 
         <section className="mt-10">
-          <h2 className="text-xl font-black text-slate-900">Wat hoort hier?</h2>
-          <p className="mt-1 text-sm text-slate-500">Alles wat nodig is om lesmateriaal te produceren en te presenteren.</p>
+          <h2 className="font-display text-xl font-extrabold text-[var(--helix-navy)]">Wat hoort hier?</h2>
+          <p className="mt-1 text-sm text-[var(--helix-muted)]">Alles wat nodig is om lesmateriaal te produceren en te presenteren.</p>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             {capabilityCards.map((card) => {
               const Icon = card.icon;
 
               return (
-                <div key={card.title} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <div key={card.title} className="helix-card p-5">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
                     <Icon size={22} />
                   </div>
-                  <h3 className="mt-4 font-black text-slate-900">{card.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">{card.description}</p>
+                  <h3 className="mt-4 font-display font-extrabold text-[var(--helix-navy)]">{card.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[var(--helix-muted)]">{card.description}</p>
                 </div>
               );
             })}

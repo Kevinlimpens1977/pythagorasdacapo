@@ -97,20 +97,62 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-slate-100">
-        <div className="text-center mb-8">
-          <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-inner border border-slate-50 overflow-hidden p-2">
-            <img src="/logo.svg" alt="Helix Logo" className="w-full h-full object-contain" />
+    <div className="helix-page flex min-h-screen items-center justify-center p-4">
+      <div className="grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--helix-border)] bg-white/90 shadow-[var(--helix-shadow-soft)] lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="relative hidden min-h-[42rem] overflow-hidden bg-[var(--helix-navy)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="helix-login-visual-bg absolute inset-0 opacity-90" />
+          <div className="relative">
+            <div className="flex items-center gap-4">
+              <span className="helix-logo-mark flex h-14 w-14 items-center justify-center rounded-2xl p-2">
+                <img src="/logo.svg" alt="Helix Logo" className="h-full w-full object-contain" />
+              </span>
+              <div>
+                <p className="font-display text-3xl font-extrabold uppercase tracking-[0.18em]">HELIX</p>
+                <p className="text-sm font-semibold text-white/72">AI tutor voor slim leren</p>
+              </div>
+            </div>
+
+            <div className="mt-16 max-w-xl">
+              <p className="helix-ai-chip bg-white/10 text-white">Slim leren, beter begrijpen</p>
+              <h2 className="mt-6 font-display text-5xl font-extrabold leading-tight tracking-tight">
+                Rustige lessen, persoonlijke hulp en duidelijke voortgang.
+              </h2>
+              <p className="mt-5 max-w-lg text-lg leading-8 text-white/72">
+                HELIX helpt leerlingen stap voor stap vooruit en geeft docenten een professionele werkplek voor lesmateriaal.
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Helix</h1>
-          <p className="text-slate-500 mt-2">
-            {isSignUp ? 'Maak een account aan om te starten' : 'Log in om verder te gaan met je les'}
-          </p>
-        </div>
+
+          <div className="relative grid grid-cols-3 gap-3">
+            {['Persoonlijk', 'Slim', 'Betrouwbaar'].map((item) => (
+              <div key={item} className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm font-bold text-white/86">
+                {item}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="w-full p-6 sm:p-8 lg:p-10">
+          <div className="mb-8 text-center lg:hidden">
+            <div className="helix-logo-mark mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl p-3">
+              <img src="/logo.svg" alt="Helix Logo" className="h-full w-full object-contain" />
+            </div>
+            <h1 className="font-display text-3xl font-extrabold uppercase tracking-[0.16em] text-[var(--helix-navy)]">HELIX</h1>
+            <p className="mt-1 text-sm font-semibold text-[var(--helix-muted)]">AI tutor voor slim leren</p>
+          </div>
+
+          <div className="mb-8">
+            <p className="helix-eyebrow">Welkom terug</p>
+            <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-[var(--helix-navy)]">
+              {isSignUp ? 'Maak je leerlingaccount' : 'Log in bij HELIX'}
+            </h1>
+            <p className="mt-3 text-[var(--helix-muted)]">
+              {isSignUp ? 'Start met je persoonlijke leeromgeving.' : 'Ga verder met je lesmateriaal, voortgang en AI-hulp.'}
+            </p>
+          </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100 animate-shake">
+          <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700 animate-shake">
             {error}
           </div>
         )}
@@ -119,7 +161,7 @@ export default function LoginScreen() {
           {isSignUp && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Voornaam</label>
+                <label className="mb-1 block text-sm font-bold text-[var(--helix-navy)]">Voornaam</label>
                 <input
                   type="text"
                   required
@@ -130,7 +172,7 @@ export default function LoginScreen() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Achternaam</label>
+                <label className="mb-1 block text-sm font-bold text-[var(--helix-navy)]">Achternaam</label>
                 <input
                   type="text"
                   required
@@ -144,7 +186,7 @@ export default function LoginScreen() {
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">E-mailadres</label>
+            <label className="mb-1 block text-sm font-bold text-[var(--helix-navy)]">E-mailadres</label>
             <input
               type="email"
               required
@@ -156,7 +198,7 @@ export default function LoginScreen() {
           </div>
           
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Wachtwoord</label>
+            <label className="mb-1 block text-sm font-bold text-[var(--helix-navy)]">Wachtwoord</label>
             <input
               type="password"
               required
@@ -177,7 +219,7 @@ export default function LoginScreen() {
         </form>
 
         <div className="text-center mb-6">
-          <p className="text-slate-500 text-sm mb-4">
+          <p className="mb-4 text-sm text-[var(--helix-muted)]">
             {isSignUp ? 'Heb je al een account?' : 'Nieuw hier? Start als leerling'}
           </p>
           <button
@@ -188,10 +230,10 @@ export default function LoginScreen() {
           </button>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-slate-100">
+        <div className="mt-8 border-t border-[var(--helix-border)] pt-6">
           <button
             onClick={handleGoogleLogin}
-            className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-3 shadow-sm text-sm"
+            className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] py-3 text-sm font-bold text-[var(--helix-muted)] shadow-sm transition-all hover:bg-white"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -204,9 +246,9 @@ export default function LoginScreen() {
         </div>
 
         {isDevLoginEnabled && (
-          <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Lokale developer login</p>
-            <p className="mt-1 text-sm leading-5 text-amber-900">
+          <div className="mt-5 rounded-2xl border border-orange-200 bg-orange-50 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-orange-700">Lokale developer login</p>
+            <p className="mt-1 text-sm leading-5 text-orange-900">
               Omzeilt Firebase Auth alleen lokaal voor browsertests. Er wordt geen Firebase-sessie gemaakt.
             </p>
             <div className="mt-4">
@@ -214,7 +256,7 @@ export default function LoginScreen() {
                 type="button"
                 onClick={handleDeveloperLogin}
                 disabled={devLoginLoading}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--helix-navy)] px-3 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Code2 size={17} />
                 {devLoginLoading ? 'Start...' : 'Developer login'}
@@ -222,6 +264,7 @@ export default function LoginScreen() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

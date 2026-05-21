@@ -315,26 +315,26 @@ export default function AdminSlidedecksPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-blue-600" size={28} />
+      <div className="helix-page flex min-h-screen items-center justify-center">
+        <Loader2 className="animate-spin text-[var(--helix-purple)]" size={28} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-8 md:px-8">
+    <div className="helix-page min-h-screen">
+      <div className="helix-container">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-blue-600">NotebookLM workflow</p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Slidedeckcreator</h1>
-            <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
+            <p className="helix-eyebrow">NotebookLM workflow</p>
+            <h1 className="mt-2 helix-heading-xl">Slidedeckcreator</h1>
+            <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--helix-muted)]">
               Maak bron-PDF's en prompt-snapshots voor NotebookLM. Upload daarna de gegenereerde presentatie-PDF terug naar Helix.
             </p>
           </div>
           <button
             onClick={() => setIsTemplateOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-3 text-sm font-black text-blue-700 shadow-sm transition hover:bg-blue-50"
+            className="inline-flex items-center gap-2 rounded-2xl border border-fuchsia-100 bg-white px-4 py-3 text-sm font-black text-[var(--helix-purple)] shadow-sm transition hover:bg-[var(--helix-soft-lavender)]"
           >
             <Plus size={17} />
             Prompttemplate
@@ -347,15 +347,15 @@ export default function AdminSlidedecksPage() {
           </div>
         )}
 
-        <section className="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm" onPaste={handlePaste}>
-          <div className="border-b border-slate-200 px-6 py-5">
+        <section className="helix-surface mt-6 overflow-hidden" onPaste={handlePaste}>
+          <div className="border-b border-[var(--helix-border)] px-6 py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
                 <FilePlus2 size={22} />
               </div>
               <div>
-                <h2 className="text-xl font-black text-slate-900">Nieuw NotebookLM-pakket</h2>
-                <p className="text-sm text-slate-500">Vul de bronbasis in. Afbeeldingen kun je uploaden of direct plakken.</p>
+                <h2 className="font-display text-xl font-extrabold text-[var(--helix-navy)]">Nieuw NotebookLM-pakket</h2>
+                <p className="text-sm text-[var(--helix-muted)]">Vul de bronbasis in. Afbeeldingen kun je uploaden of direct plakken.</p>
               </div>
             </div>
           </div>
@@ -459,7 +459,7 @@ export default function AdminSlidedecksPage() {
               <button
                 onClick={handleGeneratePackage}
                 disabled={saving}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-4 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-60"
+                className="btn-primary flex w-full px-5 py-4 text-sm disabled:opacity-60"
               >
                 {saving ? <Loader2 className="animate-spin" size={18} /> : <FileText size={18} />}
                 {saving ? 'Bestanden maken...' : 'Maak NotebookLM-bestanden'}
@@ -468,11 +468,11 @@ export default function AdminSlidedecksPage() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+        <section className="helix-surface mt-8 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-[var(--helix-border)] px-6 py-5">
             <div>
-              <p className="text-sm font-black uppercase tracking-widest text-blue-600">Bibliotheek</p>
-              <h2 className="text-xl font-black text-slate-900">NotebookLM-pakketten</h2>
+              <p className="helix-eyebrow">Bibliotheek</p>
+              <h2 className="font-display text-xl font-extrabold text-[var(--helix-navy)]">NotebookLM-pakketten</h2>
             </div>
             <Library className="text-slate-400" size={24} />
           </div>

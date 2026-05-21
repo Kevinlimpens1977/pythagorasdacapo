@@ -19,7 +19,6 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect admin to /admin if they're viewing student home
   useEffect(() => {
     if (isAdmin && location.pathname === '/') {
       navigate('/admin', { replace: true });
@@ -32,25 +31,29 @@ export default function AppShell() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
-      {/* Name Setup Modal for users without displayName */}
+    <div className="helix-page flex min-h-screen flex-col font-sans selection:bg-fuchsia-100 selection:text-[var(--helix-navy)]">
       <NameSetupModal />
 
-      {/* Header - Premium Glassmorphism */}
-      <header className="sticky top-0 z-[100] h-20 bg-white/70 backdrop-blur-2xl border-b border-slate-200/60 px-6 md:px-12 flex items-center justify-between shadow-[0_2px_20px_-10px_rgba(0,0,0,0.05)]">
-        <div className="flex items-center gap-8">
+      <header className="sticky top-0 z-[100] flex min-h-20 items-center justify-between border-b border-[var(--helix-border)] bg-white/86 px-4 shadow-[0_14px_34px_-28px_rgba(11,19,43,0.45)] backdrop-blur-2xl md:px-10">
+        <div className="flex min-w-0 items-center gap-4 md:gap-8">
           <h1
             onClick={() => navigate('/')}
-            className="helix-brand text-2xl md:text-3xl font-black text-slate-900 flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity group"
+            className="helix-brand group flex shrink-0 cursor-pointer items-center gap-3 transition-opacity hover:opacity-90"
           >
-            <span className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform -rotate-6 group-hover:rotate-0 transition-transform">📐</span>
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl shadow-lg shadow-blue-500/25 transition-transform group-hover:scale-105 md:h-12 md:w-12">
-              <img src="/logo.svg" alt="Helix logo" className="h-full w-full" />
+            <span className="helix-logo-mark flex h-11 w-11 items-center justify-center rounded-[1.15rem] p-1.5 text-white transition-transform group-hover:scale-105 md:h-12 md:w-12">
+              <img src="/logo.svg" alt="Helix logo" className="h-full w-full object-contain" />
             </span>
-            <span className="tracking-tight hidden sm:inline">Helix</span>
+            <span className="hidden leading-tight sm:flex sm:flex-col">
+              <span className="font-display text-2xl font-extrabold uppercase tracking-[0.16em] text-[var(--helix-navy)] md:text-3xl">
+                HELIX
+              </span>
+              <span className="-mt-0.5 text-xs font-semibold tracking-normal text-[var(--helix-muted)]">
+                AI tutor voor slim leren
+              </span>
+            </span>
           </h1>
-          
-          <nav className="flex gap-2 p-1 bg-slate-100/50 rounded-2xl border border-slate-200/50">
+
+          <nav className="custom-scrollbar flex max-w-[54vw] gap-1 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:max-w-none md:gap-2">
             {isAdmin ? (
               ADMIN_WORKSPACES.map((workspace) => {
                 const Icon = workspaceIcons[workspace.id] || SettingsIcon;
@@ -60,38 +63,40 @@ export default function AppShell() {
                   <button
                     key={workspace.id}
                     onClick={() => navigate(workspace.path)}
-                    className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                    className={`flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-extrabold transition-all md:px-4 ${
                       isActive
-                        ? 'bg-blue-100 text-blue-700 shadow-sm border border-blue-200'
-                        : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                        ? 'helix-gradient text-white shadow-[0_10px_24px_rgba(255,45,141,0.20)]'
+                        : 'text-[var(--helix-muted)] hover:bg-white hover:text-[var(--helix-navy)]'
                     }`}
                   >
-                    <Icon size={18} /> <span className="hidden md:inline">{workspace.label}</span>
+                    <Icon size={18} />
+                    <span className="hidden md:inline">{workspace.label}</span>
                   </button>
                 );
               })
             ) : (
               <button
                 onClick={() => navigate('/')}
-                className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-2 ${
+                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-extrabold transition-all ${
                   location.pathname === '/' || location.pathname.includes('/chapter/')
-                  ? 'bg-white text-blue-600 shadow-sm border border-slate-200'
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                    ? 'helix-gradient text-white shadow-[0_10px_24px_rgba(255,45,141,0.20)]'
+                    : 'text-[var(--helix-muted)] hover:bg-white hover:text-[var(--helix-navy)]'
                 }`}
               >
-                <BookOpen size={18} /> <span className="hidden md:inline">Lesmateriaal</span>
+                <BookOpen size={18} />
+                <span className="hidden md:inline">Lesmateriaal</span>
               </button>
             )}
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           {isAdmin && <CmsResetButton />}
 
           {isDevBypass && (
             <button
               onClick={handleLogout}
-              className="hidden rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-black uppercase tracking-wide text-amber-700 transition-colors hover:bg-amber-100 lg:inline-flex"
+              className="hidden rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black uppercase tracking-wide text-orange-700 transition-colors hover:bg-orange-100 lg:inline-flex"
               title="Reset tijdelijke testmodus"
             >
               Reset testmodus
@@ -101,29 +106,31 @@ export default function AppShell() {
           {!isAdmin ? (
             <button
               onClick={() => navigate('/profiel')}
-              className={`flex items-center gap-3 rounded-xl border p-2.5 text-left transition-all focus:outline-none focus:ring-4 focus:ring-blue-200 lg:px-3 lg:py-2 ${
+              className={`flex items-center gap-3 rounded-2xl border p-2.5 text-left transition-all focus:outline-none lg:px-3 lg:py-2 ${
                 location.pathname === '/profiel'
-                  ? 'border-blue-200 bg-blue-50 text-blue-700'
-                  : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-white'
+                  ? 'border-fuchsia-200 bg-fuchsia-50 text-[var(--helix-purple)]'
+                  : 'border-transparent text-[var(--helix-navy)] hover:border-[var(--helix-border)] hover:bg-white'
               }`}
               title="Mijn profiel"
             >
               <User size={22} />
               <span className="hidden flex-col items-end lg:flex">
                 <span className="text-sm font-bold">{currentUser?.displayName || 'Gebruiker'}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Leerling</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--helix-purple)]">Leerling</span>
               </span>
             </button>
           ) : (
-            <div className="hidden lg:flex flex-col items-end mr-2">
-              <span className="text-sm font-bold text-slate-800">{currentUser?.displayName || 'Gebruiker'}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-2 rounded-md">Administrator</span>
+            <div className="mr-2 hidden flex-col items-end lg:flex">
+              <span className="text-sm font-bold text-[var(--helix-navy)]">{currentUser?.displayName || 'Gebruiker'}</span>
+              <span className="rounded-full bg-[var(--helix-soft-peach)] px-2 text-[10px] font-black uppercase tracking-widest text-orange-700">
+                Administrator
+              </span>
             </div>
           )}
-          
-          <button 
+
+          <button
             onClick={handleLogout}
-            className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
+            className="rounded-2xl border border-transparent p-2.5 text-[var(--helix-muted)] transition-all hover:border-red-100 hover:bg-red-50 hover:text-red-500"
             title="Uitloggen"
           >
             <LogOut size={22} />
@@ -131,8 +138,7 @@ export default function AppShell() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col relative overflow-hidden">
+      <main className="relative flex flex-1 flex-col overflow-hidden">
         <Outlet />
       </main>
     </div>

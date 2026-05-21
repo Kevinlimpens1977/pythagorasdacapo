@@ -26,17 +26,17 @@ export default function AdminSpellenPage() {
   const prototypeCount = GAME_REGISTRY.filter((game) => game.status === GAME_STATUSES.PROTOTYPE).length;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-7xl px-6 py-10 md:px-8 md:py-12">
+    <div className="helix-page">
+      <div className="helix-container py-10 md:py-12">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-blue-600">Werkplek</p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Spellen</h1>
-            <p className="mt-3 max-w-3xl text-lg leading-8 text-slate-600">
+            <p className="helix-eyebrow">Werkplek</p>
+            <h1 className="helix-heading-xl mt-2">Spellen</h1>
+            <p className="helix-muted mt-3 max-w-3xl text-lg leading-8">
               Test educatieve browsergames als zelfstandige oefenvormen. Resultaten blijven lokaal in de browser; tokens en Firebase-writes volgen pas later.
             </p>
           </div>
-          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-bold text-blue-800">
+          <div className="helix-badge bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
             GO 2B: eerste speelbare game
           </div>
         </div>
@@ -50,8 +50,8 @@ export default function AdminSpellenPage() {
         <section className="mt-8 grid gap-6 xl:grid-cols-[420px_1fr]">
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-black text-slate-900">Game registry</h2>
-              <p className="mt-1 text-sm leading-6 text-slate-500">
+              <h2 className="helix-heading-lg">Game registry</h2>
+              <p className="helix-muted mt-1 text-sm leading-6">
                 Metadata is bewust serialiseerbaar. Componenten blijven los, zodat CMS-selectie later veilig kan filteren.
               </p>
             </div>
@@ -60,18 +60,18 @@ export default function AdminSpellenPage() {
               <button
                 key={game.gameId}
                 onClick={() => setSelectedGameId(game.gameId)}
-                className={`w-full rounded-lg border p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-blue-100 ${
+                className={`w-full rounded-[var(--helix-radius-lg)] border p-5 text-left transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)] ${
                   selectedGame?.gameId === game.gameId
-                    ? 'border-blue-300 bg-blue-50'
-                    : 'border-slate-200 bg-white'
+                    ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] shadow-[var(--helix-shadow-card)]'
+                    : 'border-[var(--helix-border)] bg-white shadow-[var(--helix-shadow-soft)] hover:shadow-[var(--helix-shadow-card)]'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-black text-slate-900">{game.title}</h3>
-                    <p className="mt-1 text-sm leading-5 text-slate-500">{game.topic}</p>
+                    <h3 className="font-black text-[var(--helix-navy)]">{game.title}</h3>
+                    <p className="helix-muted mt-1 text-sm leading-5">{game.topic}</p>
                   </div>
-                  <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-slate-500">
+                  <span className="helix-badge">
                     {statusCopy[game.status] || game.status}
                   </span>
                 </div>
@@ -87,7 +87,7 @@ export default function AdminSpellenPage() {
                   {game.supportedModes.map((mode) => (
                     <span
                       key={mode}
-                      className="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-emerald-700"
+                      className="helix-badge-success"
                     >
                       {mode}
                     </span>
@@ -100,14 +100,14 @@ export default function AdminSpellenPage() {
           <div className="space-y-6">
             {selectedGame && (
               <>
-                <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <section className="helix-surface p-6">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <p className="text-sm font-black uppercase tracking-widest text-blue-600">Geselecteerde game</p>
-                      <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">{selectedGame.title}</h2>
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{selectedGame.description}</p>
+                      <p className="helix-eyebrow">Geselecteerde game</p>
+                      <h2 className="mt-2 text-2xl font-black tracking-tight text-[var(--helix-navy)]">{selectedGame.title}</h2>
+                      <p className="helix-muted mt-2 max-w-2xl text-sm leading-6">{selectedGame.description}</p>
                     </div>
-                    <span className="rounded-md bg-amber-50 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-amber-700">
+                    <span className="helix-badge-warning">
                       Tokens alleen metadata
                     </span>
                   </div>
@@ -128,7 +128,7 @@ export default function AdminSpellenPage() {
                 />
 
                 {lastResult && (
-                  <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-emerald-900">
+                  <section className="helix-alert border-[var(--helix-success)]/25 bg-green-50 p-5 text-green-900">
                     <p className="font-black">Callback ontvangen</p>
                     <p className="mt-1 text-sm leading-6">
                       Resultaat blijft lokaal in de browser. Er is geen Firebase-write en geen tokenuitgifte uitgevoerd.
@@ -145,36 +145,36 @@ export default function AdminSpellenPage() {
 }
 
 const StatCard = ({ label, value, description, icon: Icon }) => (
-  <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+  <div className="helix-card p-5">
     <div className="flex items-start justify-between gap-4">
       <div>
-        <p className="text-sm font-bold text-slate-500">{label}</p>
-        <p className="mt-2 text-3xl font-black text-slate-900">{value}</p>
+        <p className="text-sm font-bold text-[var(--helix-muted)]">{label}</p>
+        <p className="mt-2 text-3xl font-black text-[var(--helix-navy)]">{value}</p>
       </div>
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+      <div className="flex h-12 w-12 items-center justify-center rounded-[var(--helix-radius-md)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
         <Icon size={22} />
       </div>
     </div>
-    <p className="mt-4 text-sm leading-5 text-slate-500">{description}</p>
+    <p className="helix-muted mt-4 text-sm leading-5">{description}</p>
   </div>
 );
 
 const MetaPill = ({ children }) => (
-  <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-slate-500">
+  <span className="helix-badge inline-flex items-center gap-1.5">
     {children}
   </span>
 );
 
 const DetailList = ({ title, items, icon: Icon }) => (
-  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-    <div className="flex items-center gap-2 text-sm font-black text-slate-900">
-      <Icon size={17} className="text-blue-600" />
+  <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
+    <div className="flex items-center gap-2 text-sm font-black text-[var(--helix-navy)]">
+      <Icon size={17} className="text-[var(--helix-purple)]" />
       {title}
     </div>
-    <ul className="mt-3 space-y-2 text-sm leading-5 text-slate-600">
+    <ul className="helix-muted mt-3 space-y-2 text-sm leading-5">
       {items.map((item) => (
         <li key={item} className="flex gap-2">
-          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--helix-pink)]" />
           <span>{item}</span>
         </li>
       ))}

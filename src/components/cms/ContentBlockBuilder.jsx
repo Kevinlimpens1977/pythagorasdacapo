@@ -132,14 +132,14 @@ const BlockTypeButton = ({ type, onClick, disabled }) => {
     <button
       onClick={() => onClick(type)}
       disabled={disabled}
-      className="flex min-h-36 items-start gap-3 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 disabled:cursor-wait disabled:opacity-60"
+      className="flex min-h-36 items-start gap-3 rounded-3xl border border-[var(--helix-border)] bg-white/90 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-100 hover:bg-white hover:shadow-[var(--helix-shadow-card)] focus:outline-none disabled:cursor-wait disabled:opacity-60"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
         <Icon size={20} />
       </div>
       <div>
-        <p className="font-black text-slate-900">{CONTENT_BLOCK_LABELS[type]}</p>
-        <p className="mt-1 text-sm leading-5 text-slate-500">{blockDescriptions[type]}</p>
+        <p className="font-display font-extrabold text-[var(--helix-navy)]">{CONTENT_BLOCK_LABELS[type]}</p>
+        <p className="mt-1 text-sm leading-5 text-[var(--helix-muted)]">{blockDescriptions[type]}</p>
       </div>
     </button>
   );
@@ -976,20 +976,20 @@ export default function ContentBlockBuilder({
 
   return (
     <div className="max-w-7xl">
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="helix-surface p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-blue-600">Lesroute</p>
-            <h2 className="mt-2 text-2xl font-black text-slate-900">
+            <p className="helix-eyebrow">Lesroute</p>
+            <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">
               {paragraaf.code}. {paragraaf.title}
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--helix-muted)]">
               Bouw de leerlingroute in volgorde. Elk blok open je als studio met eigen tekst, media, crops en OCR.
             </p>
           </div>
-          <div className="rounded-lg bg-slate-50 px-4 py-3 text-right">
-            <p className="text-2xl font-black text-slate-900">{normalizedBlocks.length}</p>
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">lesblokken</p>
+          <div className="rounded-2xl bg-[var(--helix-surface-soft)] px-4 py-3 text-right">
+            <p className="font-display text-2xl font-extrabold text-[var(--helix-navy)]">{normalizedBlocks.length}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">lesblokken</p>
           </div>
         </div>
 
@@ -1008,9 +1008,9 @@ export default function ContentBlockBuilder({
 
       <div className="mt-6 space-y-4">
         {normalizedBlocks.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
-            <p className="text-lg font-black text-slate-900">Nog geen lesroute</p>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="rounded-3xl border border-dashed border-[var(--helix-border)] bg-white/78 p-10 text-center">
+            <p className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Nog geen lesroute</p>
+            <p className="mt-2 text-sm text-[var(--helix-muted)]">
               Voeg een theorieblok, voorbeeld, vraag, media, samenvatting, game of slidedeck toe om deze paragraaf op te bouwen.
             </p>
           </div>
@@ -1025,28 +1025,28 @@ export default function ContentBlockBuilder({
             });
 
             return (
-              <div key={block.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+              <div key={block.id} className="helix-card p-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="flex min-w-0 items-start gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
                       <Icon size={22} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-slate-600">
+                        <span className="helix-badge">
                           {CONTENT_BLOCK_LABELS[block.type]}
                         </span>
                         <span className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide ${
                           block.status === 'published'
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-amber-50 text-amber-700'
+                            ? 'helix-badge-success'
+                            : 'helix-badge-warning'
                         }`}>
                           {block.status === 'published' ? 'Gepubliceerd' : 'Concept'}
                         </span>
                       </div>
-                      <h3 className="mt-2 text-lg font-black text-slate-900">{block.title}</h3>
-                      <p className="mt-1 text-sm text-slate-500">Stap {index + 1}</p>
-                      <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-slate-600">{previewText}</p>
+                      <h3 className="mt-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">{block.title}</h3>
+                      <p className="mt-1 text-sm text-[var(--helix-muted)]">Stap {index + 1}</p>
+                      <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-[var(--helix-muted)]">{previewText}</p>
                     </div>
                   </div>
 
@@ -1054,7 +1054,7 @@ export default function ContentBlockBuilder({
                     <button
                       onClick={() => handleMoveBlock(block.id, 'up')}
                       disabled={index === 0}
-                      className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
+                      className="rounded-2xl border border-[var(--helix-border)] p-2 text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-30"
                       title="Omhoog"
                     >
                       <ArrowUp size={18} />
@@ -1062,14 +1062,14 @@ export default function ContentBlockBuilder({
                     <button
                       onClick={() => handleMoveBlock(block.id, 'down')}
                       disabled={index === normalizedBlocks.length - 1}
-                      className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
+                      className="rounded-2xl border border-[var(--helix-border)] p-2 text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-30"
                       title="Omlaag"
                     >
                       <ArrowDown size={18} />
                     </button>
                     <button
                       onClick={() => setEditingBlockId(isEditing ? null : block.id)}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                      className="rounded-2xl border border-[var(--helix-border)] bg-white px-3 py-2 text-sm font-bold text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]"
                     >
                       {isEditing ? 'Sluit studio' : 'Open studio'}
                     </button>

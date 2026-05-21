@@ -1,10 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
+  --color-primary-50: #f1e9ff;
+  --color-primary-100: #ffe6f2;
+  --color-primary-500: #ff2d8d;
+  --color-primary-600: #7a3cff;
   
   --color-success-50: #f0fdf4;
   --color-success-500: #22c55e;
@@ -14,15 +15,79 @@
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
 
-  --color-warning-50: #fffbeb;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
+  --color-warning-50: #ffe9dc;
+  --color-warning-500: #f97316;
+  --color-warning-600: #ff7a00;
 
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --helix-orange: #ff7a00;
+    --helix-pink: #ff2d8d;
+    --helix-purple: #7a3cff;
+    --helix-navy: #0b132b;
+    --helix-bg: #fafbff;
+    --helix-surface: #ffffff;
+    --helix-surface-soft: #f5f7fb;
+    --helix-border: #e7ebf2;
+    --helix-muted: #5b6478;
+    --helix-text: #0b132b;
+    --helix-soft-peach: #ffe9dc;
+    --helix-soft-lavender: #f1e9ff;
+    --helix-soft-pink: #ffe6f2;
+    --helix-success: #22c55e;
+    --helix-warning: #f97316;
+    --helix-danger: #ef4444;
+    --helix-info: #7a3cff;
+    --helix-gradient: linear-gradient(135deg, #ff7a00 0%, #ff2d8d 48%, #7a3cff 100%);
+    --helix-gradient-soft: linear-gradient(135deg, rgba(255, 122, 0, 0.14), rgba(255, 45, 141, 0.12), rgba(122, 60, 255, 0.12));
+    --helix-radius-sm: 10px;
+    --helix-radius-md: 14px;
+    --helix-radius-lg: 18px;
+    --helix-radius-xl: 24px;
+    --helix-shadow-soft: 0 14px 44px rgba(11, 19, 43, 0.08);
+    --helix-shadow-card: 0 12px 34px rgba(11, 19, 43, 0.07);
+    --helix-shadow-glow: 0 16px 34px rgba(255, 45, 141, 0.22);
+    --helix-focus: 0 0 0 4px rgba(122, 60, 255, 0.16);
+  }
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased overflow-x-hidden;
+  background:
+    radial-gradient(circle at top left, rgba(255, 233, 220, 0.72), transparent 34rem),
+    radial-gradient(circle at 82% 12%, rgba(241, 233, 255, 0.8), transparent 28rem),
+    var(--helix-bg);
+  color: var(--helix-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  @apply antialiased overflow-x-hidden;
+  text-rendering: geometricPrecision;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-display {
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: var(--helix-focus);
 }
 
 .helix-brand > span:first-child {
@@ -38,7 +103,12 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  background: rgba(91, 100, 120, 0.22);
+  @apply rounded-full transition-colors;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(91, 100, 120, 0.34);
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -63,11 +133,135 @@ input[type=number] {
   animation: shake 0.2s ease-in-out 0s 2;
 }
 
-/* PHASE 1: DESIGN SYSTEM UTILITIES */
+/* HELIX DESIGN SYSTEM UTILITIES */
+
+.helix-page {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(255, 233, 220, 0.72), transparent 34rem),
+    radial-gradient(circle at 88% 10%, rgba(241, 233, 255, 0.75), transparent 28rem),
+    var(--helix-bg);
+  color: var(--helix-text);
+}
+
+.helix-container {
+  @apply mx-auto w-full max-w-7xl px-5 py-8 sm:px-6 md:px-8 md:py-12;
+}
+
+.helix-surface {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-xl);
+  box-shadow: var(--helix-shadow-soft);
+}
+
+.helix-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-lg);
+  box-shadow: var(--helix-shadow-card);
+}
+
+.helix-card-subtle {
+  background: rgba(250, 251, 255, 0.82);
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-lg);
+}
+
+.helix-eyebrow {
+  color: var(--helix-purple);
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  @apply text-xs font-extrabold uppercase tracking-[0.18em];
+}
+
+.helix-heading-xl {
+  color: var(--helix-navy);
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  @apply text-4xl font-extrabold tracking-tight md:text-5xl;
+}
+
+.helix-heading-lg {
+  color: var(--helix-navy);
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  @apply text-2xl font-extrabold tracking-tight md:text-4xl;
+}
+
+.helix-muted {
+  color: var(--helix-muted);
+}
+
+.helix-gradient {
+  background: var(--helix-gradient);
+}
+
+.helix-gradient-text {
+  color: var(--helix-pink);
+}
+
+.helix-logo-mark {
+  background: var(--helix-gradient);
+  color: white;
+  box-shadow: var(--helix-shadow-glow);
+}
+
+.helix-login-visual-bg {
+  background:
+    radial-gradient(circle at 24% 20%, rgba(255, 122, 0, 0.32), transparent 22rem),
+    radial-gradient(circle at 78% 34%, rgba(255, 45, 141, 0.32), transparent 24rem),
+    radial-gradient(circle at 60% 90%, rgba(122, 60, 255, 0.34), transparent 26rem);
+}
+
+.helix-ai-chip {
+  background: linear-gradient(135deg, rgba(241, 233, 255, 0.94), rgba(255, 230, 242, 0.86));
+  color: var(--helix-navy);
+  border: 1px solid rgba(122, 60, 255, 0.16);
+  @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold;
+}
+
+.helix-progress-track {
+  background: #edf0f6;
+  @apply overflow-hidden rounded-full;
+}
+
+.helix-progress-fill {
+  background: var(--helix-gradient);
+  @apply h-full rounded-full transition-all duration-500;
+}
+
+.helix-badge {
+  background: var(--helix-surface-soft);
+  color: var(--helix-muted);
+  border: 1px solid var(--helix-border);
+  @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide;
+}
+
+.helix-badge-success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+}
+
+.helix-badge-warning {
+  background: rgba(249, 115, 22, 0.12);
+  color: #c2410c;
+}
+
+.helix-badge-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.helix-alert {
+  background: linear-gradient(135deg, rgba(255, 233, 220, 0.82), rgba(255, 230, 242, 0.46));
+  border: 1px solid rgba(255, 122, 0, 0.18);
+  color: var(--helix-navy);
+  border-radius: var(--helix-radius-lg);
+}
 
 /* Standard Button Styles - Consistent Across App */
 .btn-primary {
-  @apply px-8 py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 active:shadow-md hover:shadow-lg text-white font-bold rounded-lg transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-offset-2;
+  background: var(--helix-gradient);
+  box-shadow: var(--helix-shadow-glow);
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 text-white font-extrabold rounded-2xl transition-all active:scale-95 hover:-translate-y-0.5 focus:outline-none;
 }
 
 .btn-primary:disabled {
@@ -76,7 +270,9 @@ input[type=number] {
 
 /* Large Primary Button - Full Width (forms, auth screens) */
 .btn-primary-lg {
-  @apply w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl transition-all focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center gap-2 shadow-lg shadow-blue-200;
+  background: var(--helix-gradient);
+  box-shadow: var(--helix-shadow-glow);
+  @apply w-full py-3.5 text-white font-extrabold rounded-2xl transition-all focus:outline-none flex items-center justify-center gap-2 active:scale-95 hover:-translate-y-0.5;
 }
 
 .btn-primary-lg:disabled {
@@ -85,17 +281,30 @@ input[type=number] {
 
 /* Secondary Button - Outline Style */
 .btn-secondary {
-  @apply w-full py-3 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-all;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--helix-border);
+  color: var(--helix-navy);
+  @apply inline-flex w-full items-center justify-center gap-2 py-3 rounded-2xl font-extrabold transition-all hover:bg-white hover:shadow-sm;
 }
 
 /* Link Button - Inline text link with underline */
 .btn-link {
-  @apply text-blue-600 font-bold hover:underline focus:outline-none focus:ring-2 focus:ring-blue-300 rounded px-1;
+  color: var(--helix-purple);
+  @apply font-extrabold hover:underline focus:outline-none rounded px-1;
 }
 
 /* Standard Input Styles - Consistent Across App */
 .input-standard {
-  @apply px-4 py-3 bg-white border-2 border-slate-300 text-slate-900 rounded-lg transition-all focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--helix-border);
+  color: var(--helix-text);
+  border-radius: var(--helix-radius-md);
+  @apply px-4 py-3 transition-all focus:outline-none;
+}
+
+.input-standard:focus {
+  border-color: rgba(122, 60, 255, 0.42);
+  box-shadow: var(--helix-focus);
 }
 
 .input-standard:disabled {
@@ -104,7 +313,15 @@ input[type=number] {
 
 /* Auth Form Input - Rounded with subtle border */
 .input-auth {
-  @apply w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--helix-border);
+  color: var(--helix-text);
+  @apply w-full p-3.5 rounded-2xl outline-none transition-all;
+}
+
+.input-auth:focus {
+  border-color: rgba(122, 60, 255, 0.42);
+  box-shadow: var(--helix-focus);
 }
 
 .input-auth:disabled {
@@ -113,7 +330,11 @@ input[type=number] {
 
 /* Standard Card Styles - Consistent Shadows & Borders */
 .card-base {
-  @apply rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-lg);
+  box-shadow: var(--helix-shadow-card);
+  @apply transition-shadow;
 }
 
 /* Spacing Scale Utilities */
@@ -140,15 +361,21 @@ input[type=number] {
 
 /* Typography Standards */
 .heading-xl {
-  @apply text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight;
+  color: var(--helix-navy);
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight;
 }
 
 .heading-lg {
-  @apply text-3xl md:text-4xl font-black text-slate-900 tracking-tight;
+  color: var(--helix-navy);
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  @apply text-3xl md:text-4xl font-extrabold tracking-tight;
 }
 
 .heading-md {
-  @apply text-2xl md:text-3xl font-bold text-slate-900;
+  color: var(--helix-navy);
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  @apply text-2xl md:text-3xl font-bold;
 }
 
 /* Slide Heading - Proportional sizing for theory/demo slides */
@@ -162,9 +389,9 @@ input[type=number] {
 }
 
 .text-secondary {
-  @apply text-slate-600;
+  color: var(--helix-muted);
 }
 
 .text-tertiary {
-  @apply text-slate-500;
+  color: rgba(91, 100, 120, 0.82);
 }

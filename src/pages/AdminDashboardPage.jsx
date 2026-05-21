@@ -48,7 +48,7 @@ const quickActions = [
     actionLabel: 'Open Lesstof',
     icon: BookOpen,
     path: '/admin/lesstof',
-    tone: 'bg-blue-600 text-white hover:bg-blue-700'
+    tone: 'helix-gradient text-white shadow-[var(--helix-shadow-glow)]'
   },
   {
     title: 'Lesmateriaal klaarzetten',
@@ -56,7 +56,7 @@ const quickActions = [
     actionLabel: 'Open klaarzetstudio',
     icon: CheckSquare,
     path: '/admin/taken-toewijzen',
-    tone: 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-200'
+    tone: 'bg-white/90 text-[var(--helix-navy)] hover:bg-white border border-[var(--helix-border)]'
   },
   {
     title: 'Voortgang bekijken',
@@ -64,7 +64,7 @@ const quickActions = [
     actionLabel: 'Open Voortgang',
     icon: BarChart3,
     path: '/dashboard',
-    tone: 'bg-slate-900 text-white hover:bg-slate-800'
+    tone: 'bg-[var(--helix-navy)] text-white hover:opacity-95'
   },
   {
     title: 'Leerlingen beheren',
@@ -72,7 +72,7 @@ const quickActions = [
     actionLabel: 'Open Leerlingen',
     icon: Users,
     path: '/admin/leerlingen',
-    tone: 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-200'
+    tone: 'bg-white/90 text-[var(--helix-navy)] hover:bg-white border border-[var(--helix-border)]'
   }
 ];
 
@@ -171,19 +171,19 @@ const StatCard = ({ stat, value, loading }) => {
   const Icon = stat.icon;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="helix-card p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-bold text-slate-500">{stat.label}</p>
-          <div className="mt-2 text-3xl font-black text-slate-900">
+          <p className="text-sm font-bold text-[var(--helix-muted)]">{stat.label}</p>
+          <div className="mt-2 font-display text-3xl font-extrabold text-[var(--helix-navy)]">
             {loading ? <span className="block h-9 w-16 animate-pulse rounded bg-slate-200" /> : value}
           </div>
         </div>
-        <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${stat.tone}`}>
+        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${stat.tone}`}>
           <Icon size={22} />
         </div>
       </div>
-      <p className="mt-4 text-sm leading-5 text-slate-500">{stat.description}</p>
+      <p className="mt-4 text-sm leading-5 text-[var(--helix-muted)]">{stat.description}</p>
     </div>
   );
 };
@@ -194,7 +194,7 @@ const QuickAction = ({ action, onSelect }) => {
   return (
     <button
       onClick={() => onSelect(action)}
-      className={`group rounded-lg px-5 py-4 text-left shadow-sm transition-all focus:outline-none focus:ring-4 focus:ring-blue-200 ${action.tone}`}
+      className={`group rounded-3xl px-5 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 focus:outline-none ${action.tone}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
@@ -217,19 +217,19 @@ const WorkflowItem = ({ item, onSelect }) => {
   return (
     <button
       onClick={() => onSelect(item)}
-      className="group flex w-full items-start justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-blue-200"
+      className="group flex w-full items-start justify-between gap-4 rounded-2xl border border-[var(--helix-border)] bg-white/88 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-[var(--helix-shadow-card)] focus:outline-none"
     >
       <div className="flex items-start gap-3">
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.tone}`}>
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${item.tone}`}>
           <Icon size={20} />
         </div>
         <div>
-          <h3 className="font-black text-slate-900">{item.title}</h3>
-          <p className="mt-1 text-sm leading-5 text-slate-500">{item.description}</p>
-          <p className="mt-3 text-sm font-black text-blue-600">{item.actionLabel}</p>
+          <h3 className="font-display font-extrabold text-[var(--helix-navy)]">{item.title}</h3>
+          <p className="mt-1 text-sm leading-5 text-[var(--helix-muted)]">{item.description}</p>
+          <p className="mt-3 text-sm font-black text-[var(--helix-purple)]">{item.actionLabel}</p>
         </div>
       </div>
-      <ArrowRight size={18} className="mt-2 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-slate-500" />
+      <ArrowRight size={18} className="mt-2 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--helix-pink)]" />
     </button>
   );
 };
@@ -300,19 +300,19 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto w-full max-w-7xl px-6 py-10 md:px-8 md:py-12">
+    <div className="helix-page min-h-screen">
+      <div className="helix-container">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-widest text-blue-600">Werkplek</p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-slate-900">Beheer</h1>
-            <p className="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
+            <p className="helix-eyebrow">Werkplek</p>
+            <h1 className="mt-2 helix-heading-xl">Beheer</h1>
+            <p className="mt-3 max-w-2xl text-lg leading-8 text-[var(--helix-muted)]">
               Je rustige startplek voor klassen, taken, leerlingen en platformacties.
             </p>
           </div>
 
           {statsError && (
-            <div className="flex max-w-md items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="helix-alert flex max-w-md items-start gap-3 px-4 py-3 text-sm">
               <AlertCircle size={18} className="mt-0.5 shrink-0" />
               <span>{statsError}</span>
             </div>
@@ -333,8 +333,8 @@ export default function AdminDashboardPage() {
         <section className="mt-10">
           <div className="mb-4 flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black text-slate-900">Snel aan de slag</h2>
-              <p className="mt-1 text-sm text-slate-500">De acties die je op een lesdag het vaakst nodig hebt.</p>
+              <h2 className="font-display text-xl font-extrabold text-[var(--helix-navy)]">Snel aan de slag</h2>
+              <p className="mt-1 text-sm text-[var(--helix-muted)]">De acties die je op een lesdag het vaakst nodig hebt.</p>
             </div>
           </div>
 
@@ -347,16 +347,16 @@ export default function AdminDashboardPage() {
 
         <section className="mt-10">
           <div className="mb-4">
-            <h2 className="text-xl font-black text-slate-900">Beheer</h2>
-            <p className="mt-1 text-sm text-slate-500">Alle adminonderdelen gegroepeerd per werkstroom.</p>
+            <h2 className="font-display text-xl font-extrabold text-[var(--helix-navy)]">Beheer</h2>
+            <p className="mt-1 text-sm text-[var(--helix-muted)]">Alle adminonderdelen gegroepeerd per werkstroom.</p>
           </div>
 
           <div className="grid gap-5 lg:grid-cols-2">
             {workflowGroups.map((group) => (
-              <div key={group.title} className="rounded-lg border border-slate-200 bg-white/60 p-5">
+              <div key={group.title} className="helix-card p-5">
                 <div className="mb-4">
-                  <h2 className="text-lg font-black text-slate-900">{group.title}</h2>
-                  <p className="mt-1 text-sm text-slate-500">{group.description}</p>
+                  <h2 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">{group.title}</h2>
+                  <p className="mt-1 text-sm text-[var(--helix-muted)]">{group.description}</p>
                 </div>
 
                 <div className="space-y-3">

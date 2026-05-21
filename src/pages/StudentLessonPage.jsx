@@ -198,12 +198,12 @@ export default function StudentLessonPage() {
   }
 
   return (
-    <div className="min-h-full bg-slate-50">
+    <div className="helix-page min-h-full">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <header className="helix-surface p-5">
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 rounded-xl px-2 py-1 text-sm font-black text-slate-500 transition hover:text-slate-900"
+            className="inline-flex items-center gap-2 rounded-xl px-2 py-1 text-sm font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-navy)]"
           >
             <ArrowLeft size={18} />
             Overzicht
@@ -211,27 +211,27 @@ export default function StudentLessonPage() {
 
           <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-600">Leerroute</p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+              <p className="helix-eyebrow">Leerroute</p>
+              <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-[var(--helix-navy)]">
                 {paragraaf?.number || paragraaf?.code ? `${paragraaf.number || paragraaf.code}. ` : ''}
                 {paragraaf?.title || 'Les'}
               </h1>
               {hoofdstuk && (
-                <p className="mt-2 text-sm font-semibold text-slate-500">
+                <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
                   {hoofdstuk.number ? `${hoofdstuk.number}. ` : ''}{hoofdstuk.title}
                 </p>
               )}
             </div>
 
-            <div className="min-w-64 rounded-xl bg-slate-50 p-4">
-              <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-slate-500">
+            <div className="min-w-64 rounded-2xl bg-[var(--helix-surface-soft)] p-4">
+              <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-[var(--helix-muted)]">
                 <span>Voortgang</span>
                 <span>{lessonProgress.percentage}%</span>
               </div>
-              <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
-                <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${lessonProgress.percentage}%` }} />
+              <div className="helix-progress-track mt-3 h-3">
+                <div className="helix-progress-fill" style={{ width: `${lessonProgress.percentage}%` }} />
               </div>
-              <p className="mt-2 text-sm font-bold text-slate-600">
+              <p className="mt-2 text-sm font-bold text-[var(--helix-muted)]">
                 {lessonProgress.completedBlocks} van {lessonProgress.totalBlocks} blokken klaar
               </p>
             </div>
@@ -239,8 +239,8 @@ export default function StudentLessonPage() {
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-24 lg:self-start">
-            <p className="px-2 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-400">Stappen</p>
+          <aside className="helix-card p-3 lg:sticky lg:top-24 lg:self-start">
+            <p className="px-2 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-muted)]">Stappen</p>
             <div className="space-y-2">
               {blocks.map((block, index) => {
                 const Icon = blockIcons[block.type] || BookOpen;
@@ -253,18 +253,18 @@ export default function StudentLessonPage() {
                     onClick={() => setCurrentIndex(index)}
                     className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition ${
                       isActive
-                        ? 'bg-slate-950 text-white shadow-lg shadow-slate-900/10'
-                        : 'text-slate-700 hover:bg-slate-50'
+                        ? 'helix-gradient text-white shadow-lg shadow-fuchsia-500/10'
+                        : 'text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)]'
                     }`}
                   >
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? 'bg-white/10' : 'bg-blue-50 text-blue-600'}`}>
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isActive ? 'bg-white/10' : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'}`}>
                       {isDone ? <CheckCircle2 size={18} /> : <Icon size={18} />}
                     </span>
                     <span className="min-w-0">
-                      <span className={`block truncate text-sm font-black ${isActive ? 'text-white' : 'text-slate-900'}`}>
+                      <span className={`block truncate text-sm font-black ${isActive ? 'text-white' : 'text-[var(--helix-navy)]'}`}>
                         {block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'}
                       </span>
-                      <span className={`text-xs font-bold ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
+                      <span className={`text-xs font-bold ${isActive ? 'text-white/75' : 'text-[var(--helix-muted)]'}`}>
                         Stap {index + 1} · {CONTENT_BLOCK_LABELS[block.type] || block.type}
                       </span>
                     </span>
@@ -274,7 +274,7 @@ export default function StudentLessonPage() {
             </div>
           </aside>
 
-          <main className="min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <main className="helix-surface min-w-0 overflow-hidden">
             <LessonBlockContent
               block={currentBlock}
               step={currentIndex + 1}
@@ -284,23 +284,23 @@ export default function StudentLessonPage() {
               onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
             />
 
-            <footer className="flex flex-col gap-3 border-t border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <footer className="flex flex-col gap-3 border-t border-[var(--helix-border)] bg-white/72 p-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 onClick={goPrev}
                 disabled={currentIndex === 0}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-5 py-3 text-sm font-black text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ChevronLeft size={18} />
                 Vorige
               </button>
 
-              <div className="text-center text-sm font-bold text-slate-500">
+              <div className="text-center text-sm font-bold text-[var(--helix-muted)]">
                 Stap {currentIndex + 1} van {blocks.length}
               </div>
 
               <button
                 onClick={goNext}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+                className="btn-primary px-5 py-3 text-sm"
               >
                 {currentIndex === blocks.length - 1 ? 'Les afronden' : 'Klaar, volgende'}
                 <ChevronRight size={18} />
@@ -329,17 +329,17 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, onOpenSlided
 
   return (
     <article className="min-h-[32rem] p-5 sm:p-8">
-      <div className="flex flex-col gap-5 border-b border-slate-200 pb-6 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-5 border-b border-[var(--helix-border)] pb-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
             <Icon size={26} />
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-600">
+            <p className="helix-eyebrow">
               {CONTENT_BLOCK_LABELS[block.type] || block.type}
             </p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">{title}</h2>
-            <p className="mt-2 text-sm font-bold text-slate-500">
+            <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-[var(--helix-navy)]">{title}</h2>
+            <p className="mt-2 text-sm font-bold text-[var(--helix-muted)]">
               Stap {step} van {totalSteps}
               {isCompleted ? ' · afgerond' : ''}
             </p>
@@ -368,14 +368,14 @@ function DefaultLearningBlock({ block, bodyHtml, linkedVraag }) {
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div
-        className="prose prose-lg max-w-none leading-8 text-slate-700 prose-headings:text-slate-950 prose-img:rounded-xl prose-img:border prose-img:border-slate-200"
+        className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)] prose-img:rounded-2xl prose-img:border prose-img:border-[var(--helix-border)]"
         dangerouslySetInnerHTML={htmlValue(bodyHtml || '<p>Nog geen inhoud ingevuld.</p>')}
       />
 
       {imageUrl && (
-        <figure className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-3">
+        <figure className="overflow-hidden rounded-3xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
           <img src={imageUrl} alt={caption || block.title || ''} className="w-full rounded-xl object-contain" />
-          {caption && <figcaption className="mt-3 px-1 text-sm font-semibold text-slate-500">{caption}</figcaption>}
+          {caption && <figcaption className="mt-3 px-1 text-sm font-semibold text-[var(--helix-muted)]">{caption}</figcaption>}
         </figure>
       )}
     </div>
@@ -398,22 +398,22 @@ function SlidedeckBlock({ block, onOpen }) {
   };
 
   return (
-    <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6">
-      <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-700">Presentatie</p>
-      <h3 className="mt-2 text-2xl font-black text-slate-950">{presenterSlide.title}</h3>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+    <div className="rounded-3xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/70 p-6">
+      <p className="helix-eyebrow">Presentatie</p>
+      <h3 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">{presenterSlide.title}</h3>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--helix-muted)]">
         Bekijk deze presentatie als losse slides. Gebruik vorige/volgende of fullscreen voor digibordweergave.
       </p>
       {content.html && (
         <div
-          className="prose prose-sm mt-5 max-w-none text-slate-700"
+          className="prose prose-sm mt-5 max-w-none text-[var(--helix-muted)]"
           dangerouslySetInnerHTML={htmlValue(content.html)}
         />
       )}
       <button
         onClick={() => onOpen(presenterSlide)}
         disabled={!presenterSlide.imageUrl && !presenterSlide.pdfStoragePath && !presenterSlide.slidedeckPackageId}
-        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+        className="btn-primary mt-6 px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-40"
       >
         <PlayCircle size={18} />
         Presentatie openen
@@ -427,7 +427,7 @@ function GameBlock({ block, onComplete }) {
 
   if (!gameId) {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6 text-orange-950">
         <h3 className="text-xl font-black">Nog geen game gekozen</h3>
         <p className="mt-2 text-sm leading-6">Vraag je docent om een game aan dit lesblok te koppelen.</p>
       </div>
@@ -438,7 +438,7 @@ function GameBlock({ block, onComplete }) {
     <div className="space-y-5">
       {block.content?.html && (
         <div
-          className="prose prose-lg max-w-none text-slate-700"
+          className="prose prose-lg max-w-none text-[var(--helix-muted)]"
           dangerouslySetInnerHTML={htmlValue(block.content.html)}
         />
       )}
@@ -458,17 +458,17 @@ function GameBlock({ block, onComplete }) {
 
 function CenteredState({ icon: Icon, title, description, actionLabel, onAction, spinning = false }) {
   return (
-    <div className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-4">
-      <div className="max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+    <div className="helix-page flex min-h-[70vh] items-center justify-center px-4">
+      <div className="helix-surface max-w-md p-8 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
           <Icon size={28} className={spinning ? 'animate-spin' : ''} />
         </div>
-        <h1 className="mt-5 text-2xl font-black text-slate-950">{title}</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-500">{description}</p>
+        <h1 className="mt-5 font-display text-2xl font-extrabold text-[var(--helix-navy)]">{title}</h1>
+        <p className="mt-3 text-sm leading-6 text-[var(--helix-muted)]">{description}</p>
         {actionLabel && (
           <button
             onClick={onAction}
-            className="mt-6 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white transition hover:bg-slate-800"
+            className="btn-primary mt-6 px-5 py-3 text-sm"
           >
             {actionLabel}
           </button>

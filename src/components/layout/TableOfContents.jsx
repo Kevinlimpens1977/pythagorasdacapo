@@ -116,8 +116,8 @@ export default function TableOfContents() {
     return (
       <StudentShell>
         <div className="p-6 md:p-8">
-          <div className="text-center text-slate-500">
-            <p>Taken laden...</p>
+          <div className="text-center text-[var(--helix-muted)]">
+            <p className="font-bold">Taken laden...</p>
           </div>
         </div>
       </StudentShell>
@@ -129,11 +129,13 @@ export default function TableOfContents() {
       <StudentShell>
         <div className="p-6 md:p-8">
           <div className="py-12 text-center">
-            <BookOpen size={48} className="mx-auto mb-4 text-slate-300" />
-            <p className="text-lg font-medium text-slate-600">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
+              <BookOpen size={34} />
+            </div>
+            <p className="font-display text-xl font-extrabold text-[var(--helix-navy)]">
               Nog geen taken klaarstaan voor jouw klas
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-[var(--helix-muted)]">
               Je docent zet hier straks lessen voor je klaar.
             </p>
           </div>
@@ -144,7 +146,7 @@ export default function TableOfContents() {
 
   return (
     <StudentShell>
-      <div className="p-6 md:p-8">
+      <div className="p-5 md:p-8">
         <div className="space-y-8">
           {sortedHoofdstukIds.map((hoofdstukId) => {
             const hoofdstuk = hoofdstukkenMap[hoofdstukId];
@@ -152,7 +154,7 @@ export default function TableOfContents() {
 
             return (
               <section key={hoofdstukId}>
-                <h2 className="mb-4 border-b border-slate-200 pb-2 text-xl font-bold text-slate-800">
+                <h2 className="mb-4 border-b border-[var(--helix-border)] pb-3 font-display text-xl font-extrabold text-[var(--helix-navy)]">
                   {hoofdstuk?.number && `${hoofdstuk.number}. `}
                   {hoofdstuk?.title || 'Hoofdstuk'}
                 </h2>
@@ -177,24 +179,24 @@ export default function TableOfContents() {
                       <button
                         key={paragraaf.id}
                         onClick={() => navigate(`/chapter/${paragraaf.id}`)}
-                        className="group flex w-full items-center justify-between gap-4 rounded-xl border border-transparent p-4 text-left transition-all hover:border-blue-100 hover:bg-blue-50 active:scale-[0.99]"
+                        className="group flex w-full items-center justify-between gap-4 rounded-3xl border border-[var(--helix-border)] bg-white/84 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-100 hover:shadow-[var(--helix-shadow-card)] active:scale-[0.99]"
                       >
                         <div className="flex min-w-0 flex-1 items-center gap-4">
                           <div
-                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors ${
                               isCompleted
                                 ? 'bg-green-100 text-green-600'
-                                : 'bg-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'
+                                : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] group-hover:bg-[var(--helix-purple)] group-hover:text-white'
                             }`}
                           >
                             {isCompleted ? <CheckCircle2 size={20} /> : <PlayCircle size={20} />}
                           </div>
                           <div className="min-w-0">
-                            <h3 className="truncate text-lg font-semibold text-slate-800">
+                            <h3 className="truncate font-display text-lg font-bold text-[var(--helix-navy)]">
                               {paragraaf.number && `${paragraaf.number}. `}
                               {paragraaf.title}
                             </h3>
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs font-semibold text-[var(--helix-muted)]">
                               {hasLessonBlocks
                                 ? `${paragraaf.lesblokCount} lesblok${paragraaf.lesblokCount !== 1 ? 'ken' : ''}`
                                 : totalQuestions > 0
@@ -207,20 +209,18 @@ export default function TableOfContents() {
                         <div className="flex items-center gap-4">
                           {totalItems > 0 && (
                             <div className="hidden flex-col items-end sm:flex">
-                              <div className="mb-1 text-xs font-medium text-slate-500">
+                              <div className="mb-1 text-xs font-bold text-[var(--helix-muted)]">
                                 {completedItems} / {totalItems}
                               </div>
-                              <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-200">
+                              <div className="helix-progress-track h-2 w-24">
                                 <div
-                                  className={`h-full rounded-full transition-all duration-500 ${
-                                    isCompleted ? 'bg-green-500' : 'bg-blue-500'
-                                  }`}
+                                  className={isCompleted ? 'h-full rounded-full bg-green-500 transition-all duration-500' : 'helix-progress-fill'}
                                   style={{ width: `${progressPercent}%` }}
                                 />
                               </div>
                             </div>
                           )}
-                          <ArrowRight size={18} className="text-slate-300 group-hover:text-blue-600" />
+                          <ArrowRight size={18} className="text-slate-300 group-hover:text-[var(--helix-pink)]" />
                         </div>
                       </button>
                     );
@@ -231,7 +231,7 @@ export default function TableOfContents() {
           })}
         </div>
 
-        <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-sm font-semibold text-blue-900">
+        <div className="helix-alert mt-8 px-5 py-4 text-sm font-semibold">
           Tip: open een les en werk de blokken rustig stap voor stap af. Helix onthoudt waar je gebleven bent.
         </div>
       </div>
@@ -242,13 +242,16 @@ export default function TableOfContents() {
 function StudentShell({ children }) {
   return (
     <div className="mx-auto w-full max-w-6xl pad-content">
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="bg-slate-800 p-6 text-white sm:p-8">
+      <div className="helix-surface overflow-hidden">
+        <div className="relative overflow-hidden bg-[var(--helix-navy)] p-6 text-white sm:p-8">
+          <div className="helix-login-visual-bg absolute inset-0 opacity-80" />
+          <div className="relative">
           <div className="mb-2 flex items-center gap-3">
-            <BookOpen size={30} className="text-blue-200" />
-            <h1 className="text-2xl font-bold sm:text-3xl">Helix</h1>
+            <BookOpen size={30} className="text-orange-200" />
+            <h1 className="font-display text-2xl font-extrabold uppercase tracking-[0.14em] sm:text-3xl">HELIX</h1>
           </div>
-          <p className="ml-11 text-lg text-slate-300">Leeromgeving</p>
+          <p className="ml-11 text-lg text-white/74">AI tutor voor slim leren</p>
+          </div>
         </div>
         {children}
       </div>
