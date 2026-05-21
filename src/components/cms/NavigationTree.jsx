@@ -8,6 +8,7 @@ import {
   FileQuestion,
   FileText,
   Layers3,
+  PanelLeftClose,
   Plus,
   Search,
   Sparkles,
@@ -63,6 +64,8 @@ const TreeNode = ({
   const isExpanded = forceExpanded || expandedIds.includes(node.id);
   const hasChildren = node.children.length > 0;
   const isSelected = selectedIds[node.type] === node.id;
+  const isActiveParagraaf = node.type === 'paragraaf' && isSelected;
+  const isActivePath = isSelected && !isActiveParagraaf;
   const pills = blockTypePills(node);
   const mutedCount = countLabel(node);
   const canCreateChild = ['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(node.type);
@@ -71,10 +74,12 @@ const TreeNode = ({
     <div>
       <div
         className={[
-          'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-all',
-          isSelected
-            ? 'helix-gradient text-white shadow-sm'
-            : 'text-[var(--helix-muted)] hover:bg-white hover:text-[var(--helix-navy)]'
+          'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-2.5 py-2 text-sm transition-all',
+          isActiveParagraaf
+            ? 'border-fuchsia-200 bg-[var(--helix-soft-lavender)] text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100'
+            : isActivePath
+              ? 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)]'
+              : 'border-transparent text-[var(--helix-muted)] hover:border-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
         ].join(' ')}
         style={{ paddingLeft: `${10 + level * 14}px` }}
         onClick={() => onSelect({ type: node.type, id: node.id })}
@@ -86,7 +91,7 @@ const TreeNode = ({
           }}
           className={[
             'flex h-6 w-6 items-center justify-center rounded-md transition-colors',
-            hasChildren ? 'hover:bg-white/70' : 'opacity-30'
+            hasChildren ? 'hover:bg-[var(--helix-surface-soft)]' : 'opacity-30'
           ].join(' ')}
           disabled={!hasChildren}
           title={isExpanded ? 'Inklappen' : 'Uitklappen'}
@@ -97,7 +102,11 @@ const TreeNode = ({
         <span
           className={[
             'flex h-7 w-7 items-center justify-center rounded-lg',
-            isSelected ? 'bg-white/15 text-white' : `bg-white ${config.accent} ring-1 ring-[var(--helix-border)]`
+            isActiveParagraaf
+              ? 'bg-white text-[var(--helix-purple)] ring-1 ring-fuchsia-100'
+              : isActivePath
+                ? `bg-[var(--helix-surface-soft)] ${config.accent} ring-1 ring-[var(--helix-border)]`
+                : `bg-white ${config.accent} ring-1 ring-[var(--helix-border)]`
           ].join(' ')}
         >
           <Icon size={15} />
@@ -106,7 +115,7 @@ const TreeNode = ({
         <span className="min-w-0">
           <span className="block truncate font-semibold leading-5">{node.label}</span>
           {pills.length > 0 && (
-            <span className={['mt-1 flex flex-wrap gap-1 text-[10px] font-black uppercase tracking-wide', isSelected ? 'text-slate-200' : 'text-slate-400'].join(' ')}>
+            <span className={['mt-1 flex flex-wrap gap-1 text-[10px] font-black uppercase tracking-wide', isActiveParagraaf ? 'text-[var(--helix-purple)]' : 'text-slate-400'].join(' ')}>
               {pills.map((pill) => (
                 <span key={pill}>{pill}</span>
               ))}
@@ -119,7 +128,9 @@ const TreeNode = ({
             <span
               className={[
                 'hidden rounded-md px-2 py-1 text-[11px] font-bold lg:inline-flex',
-                isSelected ? 'bg-white/10 text-white' : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
+                isActiveParagraaf
+                  ? 'bg-white/80 text-[var(--helix-purple)]'
+                  : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
               ].join(' ')}
             >
               {mutedCount}
@@ -133,7 +144,7 @@ const TreeNode = ({
               }}
               className={[
                 'flex h-7 w-7 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100',
-                isSelected ? 'bg-white/10 text-white hover:bg-white/20' : 'text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
+                isActiveParagraaf ? 'bg-white/80 text-[var(--helix-purple)] hover:bg-white' : 'text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
               ].join(' ')}
               title={`Nieuw onderdeel toevoegen`}
             >
@@ -183,7 +194,9 @@ export default function NavigationTree({
   onCreateLeerjaar,
   onCreateNiveau,
   onCreateHoofdstuk,
-  onCreateParagraaf
+  onCreateParagraaf,
+  sidebarOpen = true,
+  onToggleSidebar
 }) {
   const [query, setQuery] = useState('');
   const [expandedIds, setExpandedIds] = useState(() => {
@@ -247,19 +260,25 @@ export default function NavigationTree({
   };
 
   return (
-    <aside className="flex h-full flex-col overflow-hidden border-r border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/95">
+    <aside className="flex h-full flex-col overflow-hidden border-r border-[var(--helix-border)] bg-white/92">
       <div className="border-b border-[var(--helix-border)] bg-white px-4 py-4">
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="helix-eyebrow">CMS</p>
-            <h3 className="mt-1 flex items-center gap-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              onClick={() => onToggleSidebar?.()}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] text-[var(--helix-muted)] transition-colors hover:bg-white hover:text-[var(--helix-navy)]"
+              title={sidebarOpen ? 'Inhoud verbergen' : 'Inhoud tonen'}
+            >
+              <PanelLeftClose size={18} />
+            </button>
+            <h3 className="flex min-w-0 items-center gap-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
               <BookOpen size={18} />
-              Inhoud
+              <span className="truncate">Inhoud</span>
             </h3>
           </div>
           <button
             onClick={() => onCreateVak?.()}
-            className="helix-gradient flex h-9 w-9 items-center justify-center rounded-2xl text-white shadow-sm transition-transform hover:scale-105"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] shadow-sm transition-colors hover:bg-white"
             title="Nieuw vak"
           >
             <Plus size={18} />
@@ -268,14 +287,14 @@ export default function NavigationTree({
 
         <div className="mt-4 grid grid-cols-4 gap-2">
           {Object.entries(totals).map(([label, value]) => (
-            <div key={label} className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-2 py-2 text-center">
+            <div key={label} className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-2 py-2 text-center">
               <p className="text-sm font-black text-[var(--helix-navy)]">{value}</p>
               <p className="truncate text-[10px] font-bold uppercase tracking-wide text-[var(--helix-muted)]">{label}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 focus-within:border-fuchsia-200">
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 focus-within:border-fuchsia-200">
           <Search size={16} className="text-slate-400" />
           <input
             value={query}

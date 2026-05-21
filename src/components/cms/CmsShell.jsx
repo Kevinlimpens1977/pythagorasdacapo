@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, ChevronRight, Eye, PanelLeftClose, PanelLeftOpen, Palette, Plus, Trash2 } from 'lucide-react';
+import { ChevronRight, Eye, PanelLeftOpen, Palette, Plus, Trash2 } from 'lucide-react';
 import NavigationTree from './NavigationTree';
 import DualPanelEditor from './DualPanelEditor';
 import CreateContentModal from './CreateContentModal';
@@ -142,7 +142,7 @@ export default function CmsShell() {
     cms.currentLeerjaar && { label: `Jaar ${cms.currentLeerjaar.year}`, id: cms.selectedLeerjaarId },
     cms.currentNiveau && { label: cms.currentNiveau.label, id: cms.selectedNiveauId },
     cms.currentHoofdstuk && { label: `${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`, id: cms.selectedHoofdstukId },
-    cms.currentParagraaf && { label: `${cms.currentParagraaf.code} ${cms.currentParagraaf.title}`, id: cms.selectedParagraafId },
+    cms.currentParagraaf && { label: cms.currentParagraaf.title, id: cms.selectedParagraafId },
   ].filter(Boolean);
 
   const currentContextLabel =
@@ -159,52 +159,16 @@ export default function CmsShell() {
     cms.vragen.length && `${cms.vragen.length} vragen`,
     cms.contentBlocks.length && `${cms.contentBlocks.length} lesblokken`
   ].filter(Boolean);
+  const visibleBreadcrumbItems = breadcrumbItems.length > 1 ? breadcrumbItems.slice(0, -1) : breadcrumbItems;
 
   return (
-    <div className="flex h-screen flex-col bg-[var(--helix-bg)]">
-      {/* Header */}
-      <div className="border-b border-[var(--helix-border)] bg-white/88 px-6 py-4 shadow-sm backdrop-blur-xl">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleToggleSidebar}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition-colors hover:bg-[var(--helix-surface-soft)] hover:text-[var(--helix-navy)]"
-              title={sidebarOpen ? 'Inhoud verbergen' : 'Inhoud tonen'}
-            >
-              {sidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
-            </button>
-            <div>
-              <p className="helix-eyebrow">HELIX Contentstudio</p>
-              <h1 className="mt-1 flex items-center gap-2 font-display text-2xl font-extrabold tracking-tight text-[var(--helix-navy)]">
-                <BookOpen size={22} />
-                CMS Platform
-              </h1>
-            </div>
-          </div>
-        </div>
-
-        {/* Breadcrumb */}
-        {breadcrumbItems.length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-[var(--helix-muted)]">
-            {breadcrumbItems.map((item, idx) => (
-              <React.Fragment key={item.id}>
-                <span className="truncate max-w-xs">{item.label}</span>
-                {idx < breadcrumbItems.length - 1 && (
-                  <ChevronRight size={16} className="flex-shrink-0" />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Main Content Area */}
-      <div className="relative flex flex-1 overflow-hidden">
+    <>
+      <div className="relative flex h-full min-h-0 bg-[var(--helix-bg)]">
         {/* Toggle Button - Fixed Left Edge (when sidebar closed) */}
         {!sidebarOpen && (
           <button
             onClick={handleToggleSidebar}
-            className="absolute left-0 top-6 z-40 flex items-center gap-2 rounded-r-lg border border-l-0 border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-950"
+            className="absolute left-0 top-6 z-40 flex items-center gap-2 rounded-r-2xl border border-l-0 border-[var(--helix-border)] bg-white px-3 py-2 text-sm font-bold text-[var(--helix-muted)] shadow-sm transition-all hover:bg-[var(--helix-surface-soft)] hover:text-[var(--helix-navy)]"
             title="Inhoud tonen"
           >
             <PanelLeftOpen size={18} />
@@ -237,6 +201,8 @@ export default function CmsShell() {
             onCreateNiveau={(leerjaarId) => setCreateModal({ type: 'niveau', parentId: leerjaarId })}
             onCreateHoofdstuk={(niveauId) => setCreateModal({ type: 'hoofdstuk', parentId: niveauId })}
             onCreateParagraaf={(hoofdstukId) => setCreateModal({ type: 'paragraaf', parentId: hoofdstukId })}
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={handleToggleSidebar}
           />
         </div>
 
@@ -245,7 +211,20 @@ export default function CmsShell() {
           <div className="helix-surface mb-5 px-5 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-muted)]">Werkvlak</p>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[var(--helix-muted)]">
+                  {visibleBreadcrumbItems.length > 0 ? (
+                    visibleBreadcrumbItems.map((item, idx) => (
+                      <React.Fragment key={item.id}>
+                        <span className="max-w-[16rem] truncate">{item.label}</span>
+                        {idx < visibleBreadcrumbItems.length - 1 && (
+                          <ChevronRight size={14} className="flex-shrink-0 text-slate-300" />
+                        )}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <span className="uppercase tracking-[0.18em]">Werkvlak</span>
+                  )}
+                </div>
                 <h2 className="mt-1 font-display text-xl font-extrabold text-[var(--helix-navy)]">{currentContextLabel}</h2>
                 {currentContextMeta.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -697,6 +676,6 @@ export default function CmsShell() {
         />
       )}
 
-    </div>
+    </>
   );
 }
