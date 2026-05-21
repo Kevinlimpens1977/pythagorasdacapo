@@ -11,6 +11,7 @@ import {
   ArrowDown,
   ArrowUp,
   BookOpen,
+  Check,
   CheckSquare,
   FileStack,
   FileText,
@@ -18,6 +19,7 @@ import {
   Image,
   Layers,
   Maximize2,
+  Pencil,
   Save,
   Scissors,
   Upload,
@@ -177,6 +179,96 @@ const StudioTextArea = ({ label, value, onChange, placeholder, className = '' })
     />
   </div>
 );
+
+const InlineTitleEditor = ({ label, value, onSave }) => {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(value || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const saveTitle = async () => {
+    const nextTitle = draft.trim();
+    if (!nextTitle) {
+      setError('Naam mag niet leeg zijn.');
+      return;
+    }
+    if (nextTitle === value) {
+      setOpen(false);
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+      await onSave(nextTitle);
+      setOpen(false);
+    } catch (saveError) {
+      console.error('Naam opslaan mislukt:', saveError);
+      setError('Naam opslaan is mislukt.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <span className="relative inline-flex align-middle">
+      <button
+        type="button"
+        onClick={() => {
+          setDraft(value || '');
+          setError(null);
+          setOpen((current) => !current);
+        }}
+        className="ml-2 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] shadow-sm transition hover:border-[var(--helix-purple)]/30 hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)]"
+        title={`${label} aanpassen`}
+        aria-label={`${label} aanpassen`}
+      >
+        <Pencil size={15} />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-10 z-40 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-[var(--helix-border)] bg-white p-3 text-left shadow-xl">
+          <label className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
+            {label}
+          </label>
+          <input
+            value={draft}
+            onChange={(event) => {
+              setDraft(event.target.value);
+              setError(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') saveTitle();
+              if (event.key === 'Escape') setOpen(false);
+            }}
+            className="input-standard w-full"
+            autoFocus
+          />
+          {error && <p className="mt-2 text-xs font-bold text-red-600">{error}</p>}
+          <div className="mt-3 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-bold text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)]"
+            >
+              <X size={14} />
+              Annuleer
+            </button>
+            <button
+              type="button"
+              onClick={saveTitle}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--helix-navy)] px-3 py-2 text-xs font-bold text-white hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
+            >
+              <Check size={14} />
+              {saving ? 'Opslaan...' : 'Opslaan'}
+            </button>
+          </div>
+        </div>
+      )}
+    </span>
+  );
+};
 
 const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
   if (!editor) return null;
@@ -1236,6 +1328,30 @@ export default function ContentBlockBuilder({
     }
   };
 
+  const handleRenameParagraaf = async (nextTitle) => {
+    try {
+      setActionError(null);
+      await cmsService.updateParagraaf(paragraaf.id, { title: nextTitle });
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon paragraafnaam niet opslaan:', error);
+      setActionError('Kon paragraafnaam niet opslaan.');
+      throw error;
+    }
+  };
+
+  const handleRenameBlock = async (blockId, nextTitle) => {
+    try {
+      setActionError(null);
+      await cmsService.updateContentBlock(blockId, { title: nextTitle });
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon lesbloknaam niet opslaan:', error);
+      setActionError('Kon lesbloknaam niet opslaan.');
+      throw error;
+    }
+  };
+
   const workspaceWidthClass = sidebarOpen ? 'max-w-7xl' : 'max-w-[96rem]';
 
   return (
@@ -1246,6 +1362,11 @@ export default function ContentBlockBuilder({
             <p className="helix-eyebrow">Lesroute</p>
             <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">
               {paragraaf.code}. {paragraaf.title}
+              <InlineTitleEditor
+                label="Paragraafnaam"
+                value={paragraaf.title}
+                onSave={handleRenameParagraaf}
+              />
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--helix-muted)]">
               Bouw de leerlingroute in volgorde. Elk blok open je als studio met eigen tekst, media, crops en OCR.
@@ -1319,7 +1440,14 @@ export default function ContentBlockBuilder({
                           {block.status === 'published' ? 'Gepubliceerd' : 'Concept'}
                         </span>
                       </div>
-                      <h3 className="mt-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">{block.title}</h3>
+                      <h3 className="mt-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
+                        {block.title}
+                        <InlineTitleEditor
+                          label="Lesbloknaam"
+                          value={block.title}
+                          onSave={(nextTitle) => handleRenameBlock(block.id, nextTitle)}
+                        />
+                      </h3>
                       <p className="mt-1 text-sm text-[var(--helix-muted)]">Stap {index + 1}</p>
                       <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-[var(--helix-muted)]">{previewText}</p>
                     </div>
