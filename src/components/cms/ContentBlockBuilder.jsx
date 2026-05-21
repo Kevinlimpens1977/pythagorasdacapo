@@ -63,14 +63,14 @@ const blockIcons = {
   slidedeck: FileStack
 };
 
-const blockDescriptions = {
-  theory: 'Uitleg, definities, formules en ondersteunende crops.',
-  example: 'Uitgewerkt voorbeeld met stappenplan en bronmateriaal.',
-  question: 'Nieuwe of herbruikbare interactieve vraag met crop/OCR.',
-  media: 'Afbeelding of crop met bijschrift en alt-tekst.',
-  summary: 'Kernpunten, afsluiting en korte herhaling.',
-  game: 'Voeg een educatieve game toe aan de leerlingroute.',
-  slidedeck: 'Koppel een NotebookLM presentatie-PDF als slide deck.'
+const blockSelectorDescriptions = {
+  theory: 'Uitleg en definities',
+  example: 'Stap voor stap',
+  question: 'Interactieve oefening',
+  media: 'Afbeelding, video of PDF',
+  summary: 'Kernpunten',
+  game: 'Educatieve game',
+  slidedeck: 'Presentatie-PDF'
 };
 
 const contentFieldLabels = {
@@ -143,14 +143,17 @@ const BlockTypeButton = ({ type, onClick, disabled }) => {
     <button
       onClick={() => onClick(type)}
       disabled={disabled}
-      className="flex min-h-36 items-start gap-3 rounded-3xl border border-[var(--helix-border)] bg-white/90 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-100 hover:bg-white hover:shadow-[var(--helix-shadow-card)] focus:outline-none disabled:cursor-wait disabled:opacity-60"
+      className="group flex min-h-[8.25rem] flex-col justify-between rounded-3xl border border-[var(--helix-border)] bg-white px-4 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-200 hover:bg-[var(--helix-surface-soft)] hover:shadow-[var(--helix-shadow-card)] focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 disabled:cursor-wait disabled:opacity-60"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-        <Icon size={20} />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] transition group-hover:scale-105 group-hover:bg-white">
+          <Icon size={20} />
+        </div>
+        <span className="h-2 w-2 rounded-full bg-gradient-to-br from-[var(--helix-orange)] via-[var(--helix-pink)] to-[var(--helix-purple)] opacity-0 transition group-hover:opacity-100" />
       </div>
-      <div>
-        <p className="font-display font-extrabold text-[var(--helix-navy)]">{CONTENT_BLOCK_LABELS[type]}</p>
-        <p className="mt-1 text-sm leading-5 text-[var(--helix-muted)]">{blockDescriptions[type]}</p>
+      <div className="pt-4">
+        <p className="font-display text-base font-extrabold leading-tight text-[var(--helix-navy)]">{CONTENT_BLOCK_LABELS[type]}</p>
+        <p className="mt-1 line-clamp-2 text-sm leading-5 text-[var(--helix-muted)]">{blockSelectorDescriptions[type]}</p>
       </div>
     </button>
   );
@@ -1168,10 +1171,21 @@ export default function ContentBlockBuilder({
           </div>
         )}
 
-        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-7">
-          {CONTENT_BLOCK_TYPES.map((type) => (
-            <BlockTypeButton key={type} type={type} onClick={handleCreateBlock} disabled={creatingType !== null} />
-          ))}
+        <div className="mt-6 rounded-[2rem] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3 sm:p-4">
+          <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="helix-eyebrow">Toevoegen</p>
+              <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Lesblok toevoegen</h3>
+            </div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">
+              {CONTENT_BLOCK_TYPES.length} types
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
+            {CONTENT_BLOCK_TYPES.map((type) => (
+              <BlockTypeButton key={type} type={type} onClick={handleCreateBlock} disabled={creatingType !== null} />
+            ))}
+          </div>
         </div>
       </div>
 
