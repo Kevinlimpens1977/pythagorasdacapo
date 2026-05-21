@@ -1166,7 +1166,7 @@ const FullscreenLessonBlockStudio = ({
                 {block.title || CONTENT_BLOCK_LABELS[block.type]}
               </h2>
               <p className="mt-1 text-sm text-[var(--helix-muted)]">
-                {paragraaf.code}. {paragraaf.title} - Stap {stepNumber} van {totalBlocks} - {CONTENT_BLOCK_LABELS[block.type]}
+                {paragraaf.title} - Stap {stepNumber} van {totalBlocks} - {CONTENT_BLOCK_LABELS[block.type]}
               </p>
             </div>
           </div>
@@ -1361,7 +1361,7 @@ export default function ContentBlockBuilder({
           <div>
             <p className="helix-eyebrow">Lesroute</p>
             <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">
-              {paragraaf.code}. {paragraaf.title}
+              {paragraaf.title}
               <InlineTitleEditor
                 label="Paragraafnaam"
                 value={paragraaf.title}
