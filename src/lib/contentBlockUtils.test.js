@@ -78,9 +78,15 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
 
   assert.deepEqual(getDefaultContentForBlockType('media'), {
     html: '',
+    mediaKind: 'image',
     mediaUrl: '',
+    storagePath: '',
+    fileName: '',
+    contentType: '',
+    size: 0,
     caption: '',
     altText: '',
+    thumbnailUrl: '',
     crops: []
   });
 
@@ -124,7 +130,10 @@ test('mergeCropResultsIntoBlockContent routes OCR text and images by block type'
     mergeCropResultsIntoBlockContent('media', { caption: '', mediaUrl: '' }, cropResults),
     {
       caption: 'Nieuwe uitleg uit OCR',
+      mediaKind: 'image',
       mediaUrl: 'https://example.test/crop.jpg',
+      storagePath: '',
+      contentType: 'image/jpeg',
       crops: [
         { type: 'text', text: 'Nieuwe uitleg uit OCR', label: 'A' },
         { type: 'image', downloadURL: 'https://example.test/crop.jpg', label: 'B' }
@@ -156,5 +165,13 @@ test('buildContentBlockPreview shows useful route card text', () => {
       content: { deckTitle: 'Digitale vaardigheden' }
     }),
     'Digitale vaardigheden'
+  );
+
+  assert.equal(
+    buildContentBlockPreview({
+      type: 'media',
+      content: { mediaKind: 'youtube', mediaUrl: 'https://youtu.be/demo' }
+    }),
+    'YouTube toegevoegd'
   );
 });

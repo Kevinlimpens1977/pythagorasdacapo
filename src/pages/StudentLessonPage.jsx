@@ -22,7 +22,9 @@ import { calculateLessonProgress, findResumeBlockIndex, getCompletedBlockIds } f
 import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
 import GamePlayer from '../components/games/GamePlayer';
+import MediaRenderer from '../components/media/MediaRenderer';
 import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
+import { normalizeMediaContent } from '../lib/mediaUtils';
 
 const blockIcons = {
   theory: BookOpen,
@@ -364,6 +366,23 @@ function DefaultLearningBlock({ block, bodyHtml, linkedVraag }) {
   const content = block.content || {};
   const imageUrl = content.imageUrl || content.mediaUrl || linkedVraag?.content?.images?.[0] || '';
   const caption = content.caption || content.altText || '';
+
+  if (block.type === 'media') {
+    return (
+      <div className="space-y-6">
+        {bodyHtml && (
+          <div
+            className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
+            dangerouslySetInnerHTML={htmlValue(bodyHtml)}
+          />
+        )}
+        <MediaRenderer
+          media={normalizeMediaContent(content)}
+          title={block.title || 'Media'}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">

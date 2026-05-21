@@ -1,3 +1,5 @@
+import { normalizeMediaContent } from './mediaUtils.js';
+
 export const CONTENT_BLOCK_TYPES = [
   'theory',
   'example',
@@ -24,7 +26,19 @@ export const getDefaultContentForBlockType = (type) => {
   }
 
   if (type === 'media') {
-    return { html: '', mediaUrl: '', caption: '', altText: '', crops: [] };
+    return {
+      html: '',
+      mediaKind: 'image',
+      mediaUrl: '',
+      storagePath: '',
+      fileName: '',
+      contentType: '',
+      size: 0,
+      caption: '',
+      altText: '',
+      thumbnailUrl: '',
+      crops: []
+    };
   }
 
   if (type === 'question') {
@@ -119,7 +133,10 @@ export const mergeCropResultsIntoBlockContent = (type, content = {}, cropResults
       nextContent.caption = appendText(nextContent.caption || nextContent.html || '', text);
     }
     if (firstImage?.downloadURL) {
+      nextContent.mediaKind = 'image';
       nextContent.mediaUrl = firstImage.downloadURL;
+      nextContent.storagePath = firstImage.storagePath || nextContent.storagePath || '';
+      nextContent.contentType = 'image/jpeg';
     }
     return nextContent;
   }
@@ -156,7 +173,13 @@ export const buildContentBlockPreview = (block = {}) => {
   }
 
   if (block.type === 'media') {
-    return htmlToPlainText(block.content?.caption || block.content?.html || '') || (block.content?.mediaUrl ? 'Media toegevoegd' : 'Nog geen media');
+    const kindLabel = {
+      image: 'Afbeelding',
+      youtube: 'YouTube',
+      video: 'Video',
+      pdf: 'PDF'
+    }[block.content?.mediaKind || 'image'] || 'Media';
+    return htmlToPlainText(block.content?.caption || block.content?.html || '') || (block.content?.mediaUrl ? `${kindLabel} toegevoegd` : 'Nog geen media');
   }
 
   const text = htmlToPlainText(block.content?.html || block.content?.text || '');
@@ -208,11 +231,15 @@ export const blockToSlide = (block) => {
   }
 
   if (block.type === 'media') {
+    const media = normalizeMediaContent(block.content || {});
     return {
       ...base,
       type: 'theory',
       content: htmlToPlainText(block.content?.caption || block.content?.html || ''),
-      image: block.content?.mediaUrl || block.content?.imageUrl || null
+      image: media.mediaKind === 'image' ? media.mediaUrl : null,
+      mediaKind: media.mediaKind,
+      mediaUrl: media.mediaUrl,
+      mediaStoragePath: media.storagePath
     };
   }
 

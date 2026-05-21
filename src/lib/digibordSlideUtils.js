@@ -1,4 +1,5 @@
 import { CONTENT_BLOCK_LABELS, htmlToPlainText, normalizeContentBlocks } from './contentBlockUtils.js';
+import { normalizeMediaContent } from './mediaUtils.js';
 
 const BLOCKS_WITH_PRESENTABLE_STATUS = new Set(['published', undefined, null]);
 
@@ -56,6 +57,7 @@ const createBaseSlide = (block, variant, segmentIndex, overrides = {}) => ({
   title: overrides.title || block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok',
   html: overrides.html || '',
   imageUrl: overrides.imageUrl || '',
+  media: overrides.media || null,
   pdfStoragePath: overrides.pdfStoragePath || '',
   slidedeckPackageId: overrides.slidedeckPackageId || '',
   altText: overrides.altText || '',
@@ -72,6 +74,7 @@ const slideHasContent = (slide) =>
   Boolean(
     htmlToPlainText(slide.html) ||
     slide.imageUrl ||
+    slide.media?.mediaUrl ||
     slide.question?.promptHtml ||
     slide.question?.imageUrl
   );
@@ -200,14 +203,16 @@ const buildSlidesForBlock = (block, linkedQuestions = {}) => {
 
   if (block.type === 'media') {
     const html = content.caption || content.html || content.text || '';
-    const imageUrl = content.mediaUrl || content.imageUrl || extractImageSource(html);
-    if (imageUrl && !htmlToPlainText(html)) {
-      return [createBaseSlide(block, 'image', 1, {
-        imageUrl,
-        altText: content.altText || content.caption || ''
-      })];
-    }
-    return buildTextSlidesFromHtml(block, html, imageUrl, content.altText || content.caption || '');
+    const normalizedMedia = normalizeMediaContent({
+      ...content,
+      mediaUrl: content.mediaUrl || content.imageUrl || content.videoUrl || content.pdfUrl || content.fileUrl || content.downloadURL || content.url || extractImageSource(html)
+    });
+    return [createBaseSlide(block, 'media', 1, {
+      html,
+      imageUrl: normalizedMedia.mediaKind === 'image' ? normalizedMedia.mediaUrl : '',
+      media: normalizedMedia,
+      altText: content.altText || content.caption || ''
+    })];
   }
 
   if (block.type === 'example' && Array.isArray(content.steps) && content.steps.length > 0) {

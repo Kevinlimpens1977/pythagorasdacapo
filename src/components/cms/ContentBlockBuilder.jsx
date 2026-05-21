@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -20,6 +20,7 @@ import {
   Maximize2,
   Save,
   Scissors,
+  Upload,
   Trash2,
   X
 } from 'lucide-react';
@@ -29,6 +30,14 @@ import * as cropService from '../../services/cropService';
 import * as storageService from '../../services/storageService';
 import * as firestoreService from '../../services/firestoreService';
 import { extractTextViaOCR } from '../../lib/api';
+import {
+  MEDIA_KIND_LABELS,
+  MEDIA_KINDS,
+  buildMediaFromUpload,
+  getMediaKindFromFile,
+  isSupportedMediaFile,
+  parseYouTubeUrl
+} from '../../lib/mediaUtils';
 import {
   CONTENT_BLOCK_LABELS,
   CONTENT_BLOCK_TYPES,
@@ -40,6 +49,8 @@ import {
 } from '../../lib/contentBlockUtils';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import { getDeckReadySlidedeckPackages } from '../../services/slidedeckService';
+import { uploadMediaAsset } from '../../services/mediaService';
+import MediaRenderer from '../media/MediaRenderer';
 import CropEditorPanel from './CropEditorPanel';
 
 const blockIcons = {
@@ -342,6 +353,163 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder, 
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+const mediaKindOptions = [
+  { value: MEDIA_KINDS.IMAGE, label: 'Afbeelding', accept: 'image/*' },
+  { value: MEDIA_KINDS.YOUTUBE, label: 'YouTube', accept: '' },
+  { value: MEDIA_KINDS.VIDEO, label: 'Video', accept: 'video/mp4,video/webm,video/ogg' },
+  { value: MEDIA_KINDS.PDF, label: 'PDF', accept: 'application/pdf' }
+];
+
+const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  const mediaKind = content.mediaKind || MEDIA_KINDS.IMAGE;
+  const activeOption = mediaKindOptions.find((option) => option.value === mediaKind) || mediaKindOptions[0];
+
+  const changeKind = (nextKind) => {
+    if (nextKind === mediaKind) return;
+    const shouldClear = !content.mediaUrl || window.confirm('Je wisselt van mediatype. De huidige media wordt uit dit blok gehaald. Doorgaan?');
+    if (!shouldClear) return;
+    updateContent({
+      mediaKind: nextKind,
+      mediaUrl: '',
+      storagePath: '',
+      fileName: '',
+      contentType: '',
+      size: 0,
+      thumbnailUrl: ''
+    });
+  };
+
+  const uploadFile = async (file) => {
+    if (!file) return;
+    if (!isSupportedMediaFile(file, mediaKind)) {
+      setError(`Dit bestand past niet bij ${MEDIA_KIND_LABELS[mediaKind]}. Kies een ander type of wissel eerst van mediatype.`);
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+      const userId = auth.currentUser?.uid || 'unknown-admin';
+      const upload = await uploadMediaAsset(blockId, file, userId);
+      const detectedKind = getMediaKindFromFile(file);
+      updateContent(buildMediaFromUpload(upload, file, detectedKind));
+    } catch (uploadError) {
+      console.error('Media upload mislukt:', uploadError);
+      setError(uploadError.message || 'Media uploaden is mislukt.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePaste = async (event) => {
+    if (mediaKind !== MEDIA_KINDS.IMAGE) return;
+    const imageItem = [...event.clipboardData.items].find((item) => item.type.startsWith('image/'));
+    if (!imageItem) return;
+    event.preventDefault();
+    const file = imageItem.getAsFile();
+    if (file) await uploadFile(new File([file], `geplakte-afbeelding-${Date.now()}.png`, { type: file.type }));
+  };
+
+  const handleYoutubeChange = (value) => {
+    const parsed = parseYouTubeUrl(value);
+    updateContent({
+      mediaKind: MEDIA_KINDS.YOUTUBE,
+      mediaUrl: parsed?.embedUrl || value,
+      storagePath: '',
+      fileName: '',
+      contentType: 'text/youtube-url',
+      size: 0
+    });
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex flex-wrap gap-2">
+        {mediaKindOptions.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => changeKind(option.value)}
+            className={`rounded-xl px-3 py-2 text-sm font-black transition ${
+              mediaKind === option.value
+                ? 'helix-gradient text-white shadow-lg shadow-fuchsia-500/10'
+                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-4">
+        {mediaKind === MEDIA_KINDS.YOUTUBE ? (
+          <div>
+            <label className="mb-2 block text-sm font-bold text-slate-700">YouTube-link</label>
+            <input
+              value={content.mediaUrl || ''}
+              onChange={(event) => handleYoutubeChange(event.target.value)}
+              className="input-standard w-full"
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            {content.mediaUrl && !parseYouTubeUrl(content.mediaUrl) && (
+              <p className="mt-2 text-xs font-bold text-red-600">Deze link lijkt geen geldige YouTube-link.</p>
+            )}
+          </div>
+        ) : (
+          <div
+            onPaste={handlePaste}
+            className="rounded-2xl border border-dashed border-slate-300 bg-white p-4"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-black text-slate-900">{MEDIA_KIND_LABELS[mediaKind]} toevoegen</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  {mediaKind === MEDIA_KINDS.IMAGE
+                    ? 'Upload een afbeelding of plak direct met Ctrl+V.'
+                    : `Upload een ${MEDIA_KIND_LABELS[mediaKind].toLowerCase()}bestand.`}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Upload size={16} />
+                {uploading ? 'Uploaden...' : 'Bestand kiezen'}
+              </button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={activeOption.accept}
+              className="hidden"
+              onChange={(event) => uploadFile(event.target.files?.[0])}
+            />
+          </div>
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-sm font-bold text-slate-700">Bijschrift</label>
+            <input value={content.caption || ''} onChange={(event) => updateContent({ caption: event.target.value })} className="input-standard w-full" placeholder="Korte toelichting" />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-bold text-slate-700">Alt-tekst</label>
+            <input value={content.altText || ''} onChange={(event) => updateContent({ altText: event.target.value })} className="input-standard w-full" placeholder="Beschrijf de media" />
+          </div>
+        </div>
+
+        {content.mediaUrl && (
+          <MediaRenderer media={content} title={content.fileName || content.caption || 'Media preview'} />
+        )}
+      </div>
     </div>
   );
 };
@@ -794,7 +962,9 @@ const LessonBlockStudio = ({
             onChange={(html) => updateContent({ html })}
             onEditorReady={setBlockEditor}
             placeholder="Schrijf hier de tekst voor leerlingen of voeg OCR-tekst toe via de bronzone."
-            helperText="Zet je cursor waar de crop moet komen. OCR komt als tekst, afbeelding-crops komen als afbeelding in deze editor."
+            helperText={block.type === 'media'
+              ? 'Schrijf optioneel een korte instructie bij deze media. Het media-item zelf kies je hieronder.'
+              : 'Zet je cursor waar de crop moet komen. OCR komt als tekst, afbeelding-crops komen als afbeelding in deze editor.'}
           />
 
           {block.type === 'example' && (
@@ -814,20 +984,12 @@ const LessonBlockStudio = ({
           )}
 
           {block.type === 'media' && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">Afbeelding / crop URL</label>
-                <input value={content.mediaUrl || ''} onChange={(event) => updateContent({ mediaUrl: event.target.value })} className="input-standard w-full" placeholder="https://..." />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">Alt-tekst</label>
-                <input value={content.altText || ''} onChange={(event) => updateContent({ altText: event.target.value })} className="input-standard w-full" placeholder="Beschrijf de afbeelding" />
-              </div>
-              <div className="md:col-span-2">
-                <label className="mb-2 block text-sm font-bold text-slate-700">Bijschrift</label>
-                <input value={content.caption || ''} onChange={(event) => updateContent({ caption: event.target.value })} className="input-standard w-full" placeholder="Korte toelichting" />
-              </div>
-            </div>
+            <MediaStudioFields
+              blockId={block.id}
+              content={content}
+              updateContent={updateContent}
+              setError={setError}
+            />
           )}
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">

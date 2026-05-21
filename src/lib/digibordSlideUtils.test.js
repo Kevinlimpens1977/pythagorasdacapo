@@ -54,7 +54,7 @@ test('heading structure splits a long theory block into multiple slides', () => 
   assert.match(slides[1].html, /Tweede uitleg/);
 });
 
-test('standalone images become image slides', () => {
+test('media blocks become media slides with media metadata', () => {
   const slides = contentBlocksToDigibordSlides([
     {
       id: 'media-1',
@@ -67,9 +67,34 @@ test('standalone images become image slides', () => {
   ]);
 
   assert.equal(slides.length, 1);
-  assert.equal(slides[0].variant, 'image');
+  assert.equal(slides[0].variant, 'media');
   assert.equal(slides[0].imageUrl, 'https://example.test/image.jpg');
+  assert.equal(slides[0].media.mediaKind, 'image');
+  assert.equal(slides[0].media.mediaUrl, 'https://example.test/image.jpg');
   assert.equal(slides[0].altText, 'Schema');
+});
+
+test('media blocks preserve uploaded video urls for presenter', () => {
+  const slides = contentBlocksToDigibordSlides([
+    {
+      id: 'media-2',
+      type: 'media',
+      order: 1,
+      status: 'published',
+      title: 'Video',
+      content: {
+        videoUrl: 'https://example.test/video.mp4?alt=media',
+        contentType: 'video/mp4',
+        caption: 'Bekijk de uitlegvideo'
+      }
+    }
+  ]);
+
+  assert.equal(slides.length, 1);
+  assert.equal(slides[0].variant, 'media');
+  assert.equal(slides[0].imageUrl, '');
+  assert.equal(slides[0].media.mediaKind, 'video');
+  assert.equal(slides[0].media.mediaUrl, 'https://example.test/video.mp4?alt=media');
 });
 
 test('question blocks hide answers until presenter reveals them', () => {

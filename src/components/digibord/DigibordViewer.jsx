@@ -16,6 +16,7 @@ import {
 import cmsService from '../../services/cmsService';
 import { contentBlocksToDigibordSlides } from '../../lib/digibordSlideUtils';
 import PdfSlideDeckPresenter from './PdfSlideDeckPresenter';
+import MediaRenderer from '../media/MediaRenderer';
 
 const getReadableType = (type) => {
   if (type === 'theory') return 'Theorie';
@@ -381,6 +382,26 @@ function SlideCanvas({ slide, answerVisible, onToggleAnswer, onOpenSlidedeck }) 
         </div>
         <div className="flex min-h-0 flex-1 items-center justify-center bg-slate-50 p-8">
           <img src={slide.imageUrl} alt={slide.altText || slide.title} className="max-h-full max-w-full rounded-2xl object-contain shadow-xl" />
+        </div>
+      </article>
+    );
+  }
+
+  if (slide.variant === 'media') {
+    return (
+      <article className="mx-auto grid h-full max-h-[760px] w-full max-w-6xl grid-cols-1 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="flex flex-col justify-center p-10 lg:p-14">
+          <SlideEyebrow label="Media" />
+          <h2 className="mt-3 text-4xl font-black leading-tight tracking-tight text-slate-950 lg:text-5xl">{slide.title}</h2>
+          {slide.html && (
+            <div
+              className="prose prose-lg mt-8 max-w-none text-slate-700"
+              dangerouslySetInnerHTML={{ __html: slide.html }}
+            />
+          )}
+        </div>
+        <div className="min-h-0 bg-slate-50 p-8">
+          <MediaRenderer media={slide.media || { mediaKind: 'image', mediaUrl: slide.imageUrl, altText: slide.altText }} title={slide.title} variant="presenter" />
         </div>
       </article>
     );
