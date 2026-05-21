@@ -143,7 +143,7 @@ const BlockTypeButton = ({ type, onClick, disabled }) => {
     <button
       onClick={() => onClick(type)}
       disabled={disabled}
-      className="group flex min-h-[8.25rem] flex-col justify-between rounded-3xl border border-[var(--helix-border)] bg-white px-4 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-200 hover:bg-[var(--helix-surface-soft)] hover:shadow-[var(--helix-shadow-card)] focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 disabled:cursor-wait disabled:opacity-60"
+      className="group flex min-h-[9.75rem] min-w-0 flex-col justify-between rounded-3xl border border-[var(--helix-border)] bg-white px-4 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-200 hover:bg-[var(--helix-surface-soft)] hover:shadow-[var(--helix-shadow-card)] focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 disabled:cursor-wait disabled:opacity-60"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] transition group-hover:scale-105 group-hover:bg-white">
@@ -151,9 +151,9 @@ const BlockTypeButton = ({ type, onClick, disabled }) => {
         </div>
         <span className="h-2 w-2 rounded-full bg-gradient-to-br from-[var(--helix-orange)] via-[var(--helix-pink)] to-[var(--helix-purple)] opacity-0 transition group-hover:opacity-100" />
       </div>
-      <div className="pt-4">
-        <p className="font-display text-base font-extrabold leading-tight text-[var(--helix-navy)]">{CONTENT_BLOCK_LABELS[type]}</p>
-        <p className="mt-1 line-clamp-2 text-sm leading-5 text-[var(--helix-muted)]">{blockSelectorDescriptions[type]}</p>
+      <div className="min-w-0 pt-4">
+        <p className="break-words font-display text-[0.95rem] font-extrabold leading-tight text-[var(--helix-navy)] sm:text-base">{CONTENT_BLOCK_LABELS[type]}</p>
+        <p className="mt-1 line-clamp-2 break-words text-sm leading-5 text-[var(--helix-muted)]">{blockSelectorDescriptions[type]}</p>
       </div>
     </button>
   );
@@ -1181,7 +1181,7 @@ export default function ContentBlockBuilder({
               {CONTENT_BLOCK_TYPES.length} types
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7">
+          <div className="grid grid-cols-2 auto-rows-fr gap-3 sm:grid-cols-3 xl:grid-cols-4 min-[1800px]:grid-cols-7">
             {CONTENT_BLOCK_TYPES.map((type) => (
               <BlockTypeButton key={type} type={type} onClick={handleCreateBlock} disabled={creatingType !== null} />
             ))}
