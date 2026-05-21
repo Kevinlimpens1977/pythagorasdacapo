@@ -29,6 +29,11 @@ test('getMediaKindFromFile recognizes supported media types', () => {
   assert.equal(getMediaKindFromFile({ type: 'text/plain' }), '');
 });
 
+test('getMediaKindFromFile recognizes video extensions when browser omits mime type', () => {
+  assert.equal(getMediaKindFromFile({ name: 'uitleg.mp4', type: '' }), MEDIA_KINDS.VIDEO);
+  assert.equal(getMediaKindFromFile({ name: 'uitleg.mov', type: 'application/octet-stream' }), MEDIA_KINDS.VIDEO);
+});
+
 test('normalizeMediaContent keeps legacy image media usable', () => {
   assert.deepEqual(
     normalizeMediaContent({ mediaUrl: 'https://example.test/image.jpg', caption: 'Schema' }),

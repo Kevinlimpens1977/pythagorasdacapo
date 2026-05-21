@@ -360,7 +360,7 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder, 
 const mediaKindOptions = [
   { value: MEDIA_KINDS.IMAGE, label: 'Afbeelding', accept: 'image/*' },
   { value: MEDIA_KINDS.YOUTUBE, label: 'YouTube', accept: '' },
-  { value: MEDIA_KINDS.VIDEO, label: 'Video', accept: 'video/mp4,video/webm,video/ogg' },
+  { value: MEDIA_KINDS.VIDEO, label: 'Video', accept: 'video/*,.mp4,.webm,.ogg,.ogv,.mov,.m4v' },
   { value: MEDIA_KINDS.PDF, label: 'PDF', accept: 'application/pdf' }
 ];
 

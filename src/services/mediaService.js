@@ -36,6 +36,10 @@ export const uploadMediaAsset = async (blockId, file, userId = 'unknown-admin') 
     mediaKind,
     storagePath,
     downloadURL,
+    mediaUrl: downloadURL,
+    videoUrl: mediaKind === 'video' ? downloadURL : '',
+    imageUrl: mediaKind === 'image' ? downloadURL : '',
+    pdfUrl: mediaKind === 'pdf' ? downloadURL : '',
     uploadedAt: new Date().toISOString()
   };
 };

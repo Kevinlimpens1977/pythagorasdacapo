@@ -13,7 +13,14 @@ export const MEDIA_KIND_LABELS = {
 };
 
 const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
-const videoTypes = new Set(['video/mp4', 'video/webm', 'video/ogg']);
+const videoTypes = new Set([
+  'video/mp4',
+  'video/m4v',
+  'video/webm',
+  'video/ogg',
+  'video/ogv',
+  'video/quicktime'
+]);
 
 const getExtension = (value = '') => {
   const clean = String(value || '').split('?')[0].split('#')[0].toLowerCase();
@@ -45,6 +52,12 @@ export const getMediaKindFromFile = (file = {}) => {
   if (imageTypes.has(type)) return MEDIA_KINDS.IMAGE;
   if (videoTypes.has(type)) return MEDIA_KINDS.VIDEO;
   if (type === 'application/pdf') return MEDIA_KINDS.PDF;
+
+  const extension = getExtension(file.name || '');
+  if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extension)) return MEDIA_KINDS.IMAGE;
+  if (['mp4', 'webm', 'ogg', 'ogv', 'mov', 'm4v'].includes(extension)) return MEDIA_KINDS.VIDEO;
+  if (extension === 'pdf') return MEDIA_KINDS.PDF;
+
   return '';
 };
 
@@ -118,7 +131,10 @@ export const parseYouTubeUrl = (value = '') => {
 
 export const buildMediaFromUpload = (upload, file, mediaKind) => ({
   mediaKind,
-  mediaUrl: upload.downloadURL,
+  mediaUrl: upload.mediaUrl || upload.downloadURL || '',
+  videoUrl: mediaKind === MEDIA_KINDS.VIDEO ? upload.videoUrl || upload.downloadURL || '' : '',
+  imageUrl: mediaKind === MEDIA_KINDS.IMAGE ? upload.imageUrl || upload.downloadURL || '' : '',
+  pdfUrl: mediaKind === MEDIA_KINDS.PDF ? upload.pdfUrl || upload.downloadURL || '' : '',
   storagePath: upload.storagePath,
   fileName: file.name || MEDIA_KIND_LABELS[mediaKind],
   contentType: file.type || '',
