@@ -51,6 +51,14 @@ const quickActions = [
     tone: 'bg-blue-600 text-white hover:bg-blue-700'
   },
   {
+    title: 'Lesmateriaal klaarzetten',
+    description: 'Koppel hoofdstukken, paragrafen of lesblokken aan klas of leerling.',
+    actionLabel: 'Open klaarzetstudio',
+    icon: CheckSquare,
+    path: '/admin/taken-toewijzen',
+    tone: 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-200'
+  },
+  {
     title: 'Voortgang bekijken',
     description: 'Bekijk klasresultaten, leerlingvoortgang en signalen.',
     actionLabel: 'Open Voortgang',
@@ -126,9 +134,9 @@ const workflowGroups = [
         tone: 'text-amber-600 bg-amber-50'
       },
       {
-        title: 'Taken toewijzen',
-        description: 'Wijs content toe aan klassen en leerlingen.',
-        actionLabel: 'Wijs taken toe',
+        title: 'Lesmateriaal klaarzetten',
+        description: 'Zet hoofdstukken, paragrafen of lesblokken klaar voor klassen en leerlingen.',
+        actionLabel: 'Open klaarzetstudio',
         icon: CheckSquare,
         path: '/admin/taken-toewijzen',
         tone: 'text-emerald-600 bg-emerald-50'
@@ -330,7 +338,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-4">
             {quickActions.map((action) => (
               <QuickAction key={action.title} action={action} onSelect={handleSelect} />
             ))}

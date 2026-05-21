@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, Clapperboard, Crop, FileStack, Image, Layers3 } from 'lucide-react';
+import { ArrowRight, BookOpen, CheckSquare, Clapperboard, Crop, FileStack, Image, Layers3 } from 'lucide-react';
 
 const actions = [
   {
@@ -9,6 +9,14 @@ const actions = [
     path: '/admin/cms',
     icon: BookOpen,
     tone: 'bg-slate-900 text-white'
+  },
+  {
+    title: 'Lesmateriaal klaarzetten',
+    description: 'Koppel hoofdstukken, paragrafen of specifieke lesblokken aan een klas of individuele leerling.',
+    actionLabel: 'Open klaarzetstudio',
+    path: '/admin/taken-toewijzen',
+    icon: CheckSquare,
+    tone: 'bg-blue-600 text-white'
   },
   {
     title: 'Digibord presenteren',
@@ -48,7 +56,7 @@ export default function AdminLesstofPage() {
           </p>
         </div>
 
-        <section className="mt-8 grid gap-4 lg:grid-cols-3">
+        <section className="mt-8 grid gap-4 lg:grid-cols-4">
           {actions.map((action) => {
             const Icon = action.icon;
 

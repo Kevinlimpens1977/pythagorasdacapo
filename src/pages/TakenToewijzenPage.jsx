@@ -7,6 +7,68 @@ import cmsService from '../services/cmsService';
 import { getColorStyle } from '../lib/paletColors';
 import { CONTENT_BLOCK_LABELS, buildContentBlockPreview, normalizeContentBlocks } from '../lib/contentBlockUtils';
 
+const flowSteps = [
+  {
+    number: '1',
+    title: 'Kies klas',
+    description: 'Bepaal voor welke klas je lesmateriaal klaarzet.'
+  },
+  {
+    number: '2',
+    title: 'Kies lesmateriaal',
+    description: 'Navigeer naar vak, hoofdstuk, paragraaf en lesblokken.'
+  },
+  {
+    number: '3',
+    title: 'Zet klaar',
+    description: 'Kies klasbreed of extra materiaal voor een leerling.'
+  },
+  {
+    number: '4',
+    title: 'Volg voortgang',
+    description: 'Bekijk daarna in Voortgang wat gestart en afgerond is.'
+  }
+];
+
+const FlowSteps = ({ currentStep }) => (
+  <div className="grid gap-3 md:grid-cols-4">
+    {flowSteps.map((step, index) => {
+      const stepNumber = index + 1;
+      const isActive = stepNumber === currentStep;
+      const isDone = stepNumber < currentStep;
+
+      return (
+        <div
+          key={step.number}
+          className={`rounded-lg border p-4 ${
+            isActive
+              ? 'border-blue-300 bg-blue-50'
+              : isDone
+                ? 'border-emerald-200 bg-emerald-50'
+                : 'border-slate-200 bg-white'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : isDone
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-600'
+              }`}
+            >
+              {step.number}
+            </div>
+            <h2 className="font-black text-slate-900">{step.title}</h2>
+          </div>
+          <p className="mt-2 text-sm leading-5 text-slate-500">{step.description}</p>
+        </div>
+      );
+    })}
+  </div>
+);
+
 export default function TakenToewijzenPage() {
   const navigate = useNavigate();
 
@@ -365,6 +427,12 @@ export default function TakenToewijzenPage() {
   const getAssignedBlockCount = () => Object.values(assignedContentBlocks)
     .reduce((total, ids) => total + (Array.isArray(ids) ? ids.length : 0), 0);
 
+  const currentFlowStep = selectedHoofdstukId
+    ? 3
+    : selectedKlasId
+      ? 2
+      : 1;
+
   // Check if no klas is selected
   if (!selectedKlasId) {
     return (
@@ -373,22 +441,33 @@ export default function TakenToewijzenPage() {
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-black text-slate-900">Taken Toewijzen</h1>
-              <p className="text-slate-600 mt-2">Wijs content toe aan klassen en leerlingen</p>
+              <p className="text-sm font-black uppercase tracking-widest text-blue-600">Lesstof</p>
+              <h1 className="mt-2 text-4xl font-black text-slate-900">Lesmateriaal klaarzetten</h1>
+              <p className="text-slate-600 mt-2">
+                Koppel gemaakte hoofdstukken, paragrafen of lesblokken aan een klas of individuele leerling.
+              </p>
             </div>
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/admin/lesstof')}
               className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
             >
-              ← Terug
+              Terug naar Lesstof
             </button>
+          </div>
+
+          <div className="mb-6">
+            <FlowSteps currentStep={currentFlowStep} />
           </div>
 
           {/* Klas Selector */}
           <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
-            <label className="block text-sm font-semibold text-slate-700 mb-3">
-              Selecteer een klas
-            </label>
+            <div className="mb-5">
+              <h2 className="text-xl font-black text-slate-900">Start met een klas</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Daarna kies je welk lesmateriaal je klaarzet.
+              </p>
+            </div>
+            <label className="block text-sm font-semibold text-slate-700 mb-3">Klas selecteren</label>
             <select
               value={selectedKlasId || ''}
               onChange={(e) => setSelectedKlasId(e.target.value)}
@@ -414,13 +493,13 @@ export default function TakenToewijzenPage() {
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/admin/lesstof')}
               className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
             >
               <ChevronLeft size={24} />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Taken Toewijzen</h1>
+              <h1 className="text-2xl font-bold text-slate-900">Lesmateriaal klaarzetten</h1>
               <p className="text-slate-600 text-sm">
                 {selectedKlas?.name} ({selectedKlas?.code})
               </p>
@@ -444,6 +523,29 @@ export default function TakenToewijzenPage() {
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto px-8 py-8">
+        <div className="mb-6">
+          <FlowSteps currentStep={currentFlowStep} />
+        </div>
+
+        <div className="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-blue-600">Klaarzetstudio</p>
+              <h2 className="mt-1 text-xl font-black text-slate-900">Kies links het lesmateriaal, zet rechts de bestemming klaar</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Je kunt een heel hoofdstuk klaarzetten, losse paragrafen kiezen of binnen een paragraaf specifieke lesblokken selecteren.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+            >
+              Bekijk voortgang
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-3 gap-6 h-[calc(100vh-200px)]">
           {/* Left panel: Content Browser */}
           <div className="col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col overflow-hidden">
@@ -479,13 +581,13 @@ export default function TakenToewijzenPage() {
             {selectedStudentId && (
               <div className="px-6 py-3 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
                 <span className="text-sm font-medium text-amber-800">
-                  Extra content voor: {klasStudents.find(s => s.uid === selectedStudentId)?.displayName}
+                  Extra lesmateriaal voor: {klasStudents.find(s => s.uid === selectedStudentId)?.displayName}
                 </span>
                 <button
                   onClick={() => setSelectedStudentId(null)}
                   className="text-amber-600 hover:text-amber-800 text-sm font-medium"
                 >
-                  × Terug naar klas
+                  Terug naar klas
                 </button>
               </div>
             )}
@@ -753,7 +855,7 @@ export default function TakenToewijzenPage() {
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Klas ({assignedParagrafen.length})
+                Klaargezet ({assignedParagrafen.length})
               </button>
               <button
                 onClick={() => setActiveTab('leerlingen')}
@@ -763,7 +865,7 @@ export default function TakenToewijzenPage() {
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Leerlingen ({klasStudents.length})
+                Per leerling ({klasStudents.length})
               </button>
             </div>
 
@@ -783,7 +885,7 @@ export default function TakenToewijzenPage() {
                   </div>
                   {assignedParagrafen.length === 0 ? (
                     <p className="text-slate-500 text-sm text-center py-8">
-                      Geen content toegewezen
+                      Nog geen lesmateriaal klaargezet
                     </p>
                   ) : (
                     assignedParagrafen.map(paragraafId => {
@@ -850,7 +952,7 @@ export default function TakenToewijzenPage() {
                           {isSelected && (
                             <div className="border-t border-amber-200 px-3 pb-3 pt-2 space-y-1 bg-amber-25">
                               {extras.length === 0 ? (
-                                <p className="text-xs text-slate-500 py-2">Geen extra content. Selecteer links.</p>
+                                <p className="text-xs text-slate-500 py-2">Geen extra lesmateriaal. Selecteer links een paragraaf of lesblok.</p>
                               ) : (
                                 extras.map(paraId => {
                                   const para = paragrafen.find(p => p.id === paraId);
