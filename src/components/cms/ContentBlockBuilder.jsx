@@ -387,8 +387,13 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
 
   const uploadFile = async (file) => {
     if (!file) return;
-    if (!isSupportedMediaFile(file, mediaKind)) {
-      setError(`Dit bestand past niet bij ${MEDIA_KIND_LABELS[mediaKind]}. Kies een ander type of wissel eerst van mediatype.`);
+    const detectedKind = getMediaKindFromFile(file);
+    if (!detectedKind) {
+      setError('Dit bestandstype wordt niet ondersteund. Gebruik een afbeelding, video of PDF.');
+      return;
+    }
+    if (!isSupportedMediaFile(file)) {
+      setError('Dit bestandstype wordt niet ondersteund. Gebruik een afbeelding, video of PDF.');
       return;
     }
 
@@ -397,8 +402,10 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
       setError(null);
       const userId = auth.currentUser?.uid || 'unknown-admin';
       const upload = await uploadMediaAsset(blockId, file, userId);
-      const detectedKind = getMediaKindFromFile(file);
-      updateContent(buildMediaFromUpload(upload, file, detectedKind));
+      const nextMedia = buildMediaFromUpload(upload, file, detectedKind);
+      const nextContent = { ...content, ...nextMedia };
+      updateContent(nextMedia);
+      await cmsService.updateContentBlock(blockId, { content: nextContent });
     } catch (uploadError) {
       console.error('Media upload mislukt:', uploadError);
       setError(uploadError.message || 'Media uploaden is mislukt.');

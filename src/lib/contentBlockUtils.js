@@ -173,13 +173,14 @@ export const buildContentBlockPreview = (block = {}) => {
   }
 
   if (block.type === 'media') {
+    const media = normalizeMediaContent(block.content || {});
     const kindLabel = {
       image: 'Afbeelding',
       youtube: 'YouTube',
       video: 'Video',
       pdf: 'PDF'
-    }[block.content?.mediaKind || 'image'] || 'Media';
-    return htmlToPlainText(block.content?.caption || block.content?.html || '') || (block.content?.mediaUrl ? `${kindLabel} toegevoegd` : 'Nog geen media');
+    }[media.mediaKind] || 'Media';
+    return htmlToPlainText(block.content?.caption || block.content?.html || '') || (media.mediaUrl ? `${kindLabel} toegevoegd` : 'Nog geen media');
   }
 
   const text = htmlToPlainText(block.content?.html || block.content?.text || '');

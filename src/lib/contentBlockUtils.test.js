@@ -174,4 +174,11 @@ test('buildContentBlockPreview shows useful route card text', () => {
     }),
     'YouTube toegevoegd'
   );
+  assert.equal(
+    buildContentBlockPreview({
+      type: 'media',
+      content: { videoUrl: 'https://example.test/uitleg.mp4', contentType: 'video/mp4' }
+    }),
+    'Video toegevoegd'
+  );
 });
