@@ -1,6 +1,6 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 20 mei 2026
+Laatst bijgewerkt: 21 mei 2026
 
 Dit document is bedoeld als vaste contextanker voor verdere ontwikkeling van HELIX. Als de gesprekscontext vol raakt of wordt gecomprimeerd, lees dit document opnieuw om snel weer "on rails" te komen.
 
@@ -111,7 +111,12 @@ Interactieve oefenvraag. Vraagblokken blijven gekoppeld aan centrale `vraag`-doc
 
 ### Media
 
-Losse afbeeldingen, video's, YouTube-links, externe links en algemene documenten.
+Losse media-items. In V1 is de keuze bewust:
+
+- Een mediablok bevat **een** hoofdmedia-item.
+- Meerdere media achter elkaar betekent meerdere mediablokken in de lesroute.
+- Ondersteund: afbeelding, YouTube, video-upload en media-PDF/document.
+- Media-PDF is anders dan Slidedeck-PDF. Media-PDF is een gewone documentviewer, Slidedeck is een presentatiestroom.
 
 ### Samenvatting
 
@@ -200,6 +205,14 @@ Voor slidedecks:
 - Escape of sluitknop om terug te keren.
 - Geen verwarring met gewone media.
 
+Voor mediablokken:
+
+- Afbeelding, YouTube, video en PDF moeten inline getoond worden.
+- Elk media-item moet fullscreen geopend/gesloten kunnen worden.
+- Video gebruikt een gewone videoplayer met controls.
+- YouTube gebruikt een embed-player.
+- Media-PDF gebruikt een documentviewer met grote preview/fullscreen, niet de slide-per-page presenter.
+
 ## Spellen / Game Module
 
 De Game Module is opgebouwd rond een Game Registry.
@@ -262,6 +275,7 @@ Belangrijke Storage-paden:
 - `slidedecks/{packageId}/source.pdf`
 - `slidedecks/{packageId}/generated-deck.pdf`
 - `slidedecks/{packageId}/assets/{assetId}`
+- `mediaBlocks/{blockId}/{fileName}` voor afbeeldingen, video's en media-PDF's uit mediablokken.
 
 Let op:
 
@@ -269,6 +283,7 @@ Let op:
 - Productierijpe security rules zijn nog een aparte hardeningfase.
 - Leerlingen mogen uiteindelijk alleen eigen voortgang en toegewezen/gepubliceerde lesstof zien.
 - CMS-writes moeten uiteindelijk beperkt zijn tot admin/docent.
+- Storage rules moeten voor development minimaal `mediaBlocks/{allPaths=**}` toestaan voor ingelogde admins/docenten, anders uploadt video/media niet.
 
 ## Wat Al Is Volbracht
 
@@ -283,6 +298,8 @@ Let op:
   - Beheer
 - `Lesmateriaal` is voor admins niet langer de primaire hoofdknop.
 - Active states zijn routegroep-gebaseerd.
+- HELIX design system integratie is gestart: warm gradient, Sora/Inter, light-mode onderwijsstijl, zachte surfaces, nieuwe kaart- en knopstijl.
+- Er is een nieuw logo-asset aangeleverd in `src/afbeeldingen/logo.png`; dit moet nog gecontroleerd en consequent worden gekoppeld aan alle HELIX-brandingplekken als de gebruiker dit opnieuw oppakt.
 
 ### Studentprofiel
 
@@ -301,11 +318,14 @@ Let op:
 
 - CMS-shell en navigatieboom professioneler gemaakt.
 - Sidebar kan volledig worden ingeklapt zonder lege witte balk.
+- Als de sidebar is ingeklapt gebruikt de lesroute-builder meer beschikbare breedte, maar blijft gecentreerd.
 - Zoekveld en statusinformatie toegevoegd.
 - Contentblocks voor theorie, voorbeeld, vraag, media en samenvatting toegevoegd.
 - Later uitgebreid met game en slidedeck.
 - Lesrouteblokken hebben volgorde via omhoog/omlaag-knoppen.
 - Wisactie voor lesblok is vervangen/bedoeld als kleinere bevestigings-UX in plaats van browser-alert.
+- Lesbloktype-selector is vernieuwd naar compacte responsive tegels.
+- Selector is aangepast voor zoom/smalle breedtes: tekst breekt veilig af, tegels zijn hoger en 7 kolommen verschijnen alleen bij extra brede schermen.
 
 ### Crop/OCR
 
@@ -340,6 +360,18 @@ Let op:
 - CMS-lesbloktype `slidedeck` toegevoegd.
 - Slidedeck selector toont alleen packages met geuploade presentatie-PDF.
 - Digibord kan Slidedeck-PDF fullscreen presenteren.
+- PDF-presenter heeft fallback via Storage bytes / blob URL om CORS en iframe-problemen te vermijden.
+- Slidedeck-PDF kan slide-per-page gepresenteerd worden met vorige/volgende.
+
+### Media V1
+
+- CMS-mediablok ondersteunt afbeelding, YouTube, video-upload en PDF-upload.
+- Afbeeldingen kunnen via upload, klembord en crop worden toegevoegd.
+- Video/PDF/media-upload wordt direct persistent opgeslagen in het contentblok na upload, zodat sluiten van de studio niet per ongeluk media verliest.
+- Media-normalisatie herkent meerdere veldvormen: `mediaUrl`, `imageUrl`, `videoUrl`, `pdfUrl`, `fileUrl`, `downloadURL`, `url`.
+- Videoherkenning gebruikt MIME-type en bestandsextensie, zoals `.mp4`, `.webm`, `.ogg`, `.mov`, `.m4v`.
+- Leerlingroute en digibord gebruiken gedeelde `MediaRenderer`.
+- Media-preview en fullscreen-weergave zijn aanwezig.
 
 ### Voortgang
 
@@ -352,31 +384,36 @@ Let op:
 - `19526.md` gemaakt met open verbeterpunten uit de oorspronkelijke PRD.
 - `IPLAN-GAME-MODULE.md` gemaakt/aangescherpt.
 - `IMPLEMENTATIEPLAN-SLIDEDECKCREATOR.md` gemaakt.
+- `docs/HELIX-DESIGN-AUDIT.md` gemaakt als styling/design audit.
+- Dit document, `PROJECTKOMPAS-HELIX.md`, is het vaste overdrachtsdocument voor nieuwe agents en contextcompressie.
 
 ## Belangrijkste Open Productwerk
 
 ### 1. Leerling-lesroute Afronden
 
-De leerlingervaring moet de gepubliceerde contentblocks netjes als leerroute tonen.
+De leerlingervaring toont gepubliceerde contentblocks al als leerroute, maar moet verder professioneel worden afgewerkt.
 
 Nodig:
 
-- Moderne leerlingweergave voor contentblocks.
-- Heldere voortgang door theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck.
+- Verdere polish voor theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck.
+- Meer consistente fullscreen-ervaring voor media en slidedeck.
+- Vraagblokinteractie verder professionaliseren.
 - Rustige empty states.
 - Mobiele layout.
 
 ### 2. Digibord Doorontwikkelen
 
-Digibord moet een echte professionele presentatiemodus worden.
+Digibord is nu contentblock-gebaseerd en ondersteunt slidedeck/media beter, maar moet nog verder een professionele presentatiemodus worden.
 
 Nodig:
 
 - Alle contentblocktypes mooi presenteren.
 - Betere slide/fase-opbouw.
 - Docentbediening.
-- Fullscreen-modus.
+- Fullscreen-modus verder stabiliseren.
 - PDF/slidedeck ervaring verder polijsten.
+- Media-PDF/documentviewer netjes afronden.
+- Video/YouTube fullscreen UX controleren.
 
 ### 3. CMS Lesblokstudio Verfijnen
 
@@ -384,9 +421,11 @@ Nodig:
 
 - Fullscreen editor voor tekst en afbeeldingen.
 - Afbeeldingen in editor kunnen positioneren en verwijderen.
-- Fontgrootte, fontkleur en meerdere lettertypes.
-- Geen overbodige crop-hulptekst bij bloktypes waar dat niet logisch is.
+- Fontgrootte, fontkleur en meerdere lettertypes zijn deels aanwezig, maar vragen verdere UX-polish.
+- Geen overbodige crop-hulptekst bij bloktypes waar dat niet logisch is, vooral bij slidedeck/media.
 - Vraagflow verder losmaken van oude "vraag detail"-pagina's.
+- Mediablokstudio verder vereenvoudigen: directe media-keuze, duidelijke uploadstatus, duidelijke foutmelding bij Storage rules.
+- Slidedeckblokstudio verder afstemmen op presentatieworkflow.
 
 ### 4. Voortgang En Analytics Versterken
 
@@ -413,6 +452,7 @@ Nodig:
 - Productierijpe Storage rules.
 - Geen dev-bypass in productie.
 - Leerlingrechten beperken tot eigen/toegewezen data.
+- Storage rules voor `mediaBlocks/**`, `slidedecks/**`, crop/source-paden, met later admin-only writes en leerling-read voor gepubliceerde/toegewezen content.
 
 ### 7. Multi-tenant Later
 
@@ -421,6 +461,14 @@ Nodig:
 - School/tenantmodel.
 - Rollen per tenant.
 - Migratiepad voor huidige single-school structuur.
+
+### 8. Branding Asset Afronden
+
+Nodig:
+
+- Controleer `src/afbeeldingen/logo.png`.
+- Gebruik dit logo consequent in AppShell/header, login en eventuele andere HELIX-brandingplekken.
+- Stage dit asset alleen wanneer dit logo-werk daadwerkelijk wordt uitgevoerd.
 
 ## Ontwerpprincipes Voor Verdere Bouw
 
@@ -433,6 +481,38 @@ Nodig:
 - Geen destructieve database-acties zonder expliciete bevestiging.
 - Geen client-side tokenuitgifte.
 - Firebase rules liever documenteren en handmatig laten plakken dan automatisch wijzigen.
+- Media en slidedecks zijn verschillende didactische objecten. Niet samenvoegen tot een generiek PDF-blok zonder expliciete keuze.
+- Eén mediablok = één hoofdmedia-item. Meerdere media betekent meerdere blokken.
+
+## Actuele Technische Aandachtspunten Voor Nieuwe Agent
+
+- Werk op branch `feature/cms-platform`, tenzij de gebruiker anders zegt.
+- Recente commits rond CMS/media/layout:
+  - `d6cc130 style: widen cms workspace when sidebar collapsed`
+  - `34fb5fe fix: make cms block selector responsive`
+  - `c707247 style: refine cms block type selector`
+  - `e1176c1 fix: persist media uploads immediately`
+  - `300bb58 fix: recognize uploaded media videos`
+  - `ff6bd34 feat: expand media block playback`
+  - `90008ba fix: fallback embedded slidedeck pdf presenter`
+- Er staat bewust nog untracked lokale tooling/context zoals `.superpowers/`. Niet automatisch toevoegen of verwijderen.
+- `src/afbeeldingen/` kan untracked zijn door logo/assetwerk. Controleer inhoud voordat je staged.
+- Volledige `npm run lint` faalt nog op bestaande lint-schuld in oudere/externere bestanden. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
+- Belangrijke bestanden om eerst te lezen bij CMS/lesroutewerk:
+  - `src/components/cms/CmsShell.jsx`
+  - `src/components/cms/ContentBlockBuilder.jsx`
+  - `src/lib/contentBlockUtils.js`
+  - `src/lib/digibordSlideUtils.js`
+  - `src/components/media/MediaRenderer.jsx`
+  - `src/pages/StudentLessonPage.jsx`
+  - `src/components/digibord/DigibordViewer.jsx`
+- Belangrijke services:
+  - `src/services/cmsService.js`
+  - `src/services/mediaService.js`
+  - `src/services/slidedeckService.js`
+  - `src/services/voortgangService.js`
+- Dev server wordt meestal gestart met Vite op `http://127.0.0.1:5173/`.
+- Voor lokale dev-login: `.env.local` kan `VITE_ENABLE_DEV_LOGIN=true` bevatten. Geen Firebase Anonymous Auth gebruiken voor tests.
 
 ## Verificatiegewoonte
 
@@ -462,4 +542,3 @@ Als dit document wordt gelezen na contextcompressie:
 4. Controleer `src/lib/adminWorkspaceNav.js` voor actuele adminnavigatie.
 5. Controleer recente gitstatus voordat je wijzigt.
 6. Vraag bij grote productkeuzes eerst om brainstorm/plan, tenzij de gebruiker expliciet "bouw", "proceed" of "implementeer" zegt.
-
