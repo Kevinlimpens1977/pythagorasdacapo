@@ -1048,6 +1048,64 @@ const LessonBlockStudio = ({
   );
 };
 
+const FullscreenLessonBlockStudio = ({
+  block,
+  stepNumber,
+  totalBlocks,
+  paragraaf,
+  vragen,
+  onSave,
+  onCancel,
+  onEditLinkedQuestion
+}) => {
+  const Icon = blockIcons[block.type] || FileText;
+
+  return (
+    <div className="fixed inset-0 z-[900] flex flex-col bg-[var(--helix-bg)]">
+      <header className="shrink-0 border-b border-[var(--helix-border)] bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[96rem] flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
+              <Icon size={23} />
+            </div>
+            <div className="min-w-0">
+              <p className="helix-eyebrow">Lesblok studio</p>
+              <h2 className="mt-1 truncate font-display text-2xl font-extrabold text-[var(--helix-navy)]">
+                {block.title || CONTENT_BLOCK_LABELS[block.type]}
+              </h2>
+              <p className="mt-1 text-sm text-[var(--helix-muted)]">
+                {paragraaf.code}. {paragraaf.title} - Stap {stepNumber} van {totalBlocks} - {CONTENT_BLOCK_LABELS[block.type]}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-2 text-sm font-bold text-[var(--helix-navy)] shadow-sm transition hover:bg-[var(--helix-surface-soft)]"
+          >
+            <X size={17} />
+            Terug naar lesroute
+          </button>
+        </div>
+      </header>
+
+      <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[96rem]">
+          <LessonBlockStudio
+            block={block}
+            paragraaf={paragraaf}
+            vragen={vragen}
+            onSave={onSave}
+            onCancel={onCancel}
+            onEditLinkedQuestion={onEditLinkedQuestion}
+          />
+        </div>
+      </main>
+    </div>
+  );
+};
+
 export default function ContentBlockBuilder({
   paragraaf,
   blocks,
@@ -1061,10 +1119,41 @@ export default function ContentBlockBuilder({
   const [creatingType, setCreatingType] = useState(null);
   const [confirmArchiveBlockId, setConfirmArchiveBlockId] = useState(null);
   const normalizedBlocks = useMemo(() => normalizeContentBlocks(blocks), [blocks]);
+  const activeBlock = useMemo(
+    () => normalizedBlocks.find((block) => block.id === editingBlockId) || null,
+    [editingBlockId, normalizedBlocks]
+  );
+  const activeBlockIndex = activeBlock
+    ? normalizedBlocks.findIndex((block) => block.id === activeBlock.id)
+    : -1;
 
   const vragenById = useMemo(() => {
     return new Map(vragen.map((vraag) => [vraag.id, vraag]));
   }, [vragen]);
+
+  useEffect(() => {
+    if (!editingBlockId || !activeBlock) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [activeBlock, editingBlockId]);
+
+  useEffect(() => {
+    if (!editingBlockId) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setEditingBlockId(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editingBlockId]);
 
   const handleCreateBlock = async (type) => {
     try {
@@ -1254,10 +1343,14 @@ export default function ContentBlockBuilder({
                       <ArrowDown size={18} />
                     </button>
                     <button
-                      onClick={() => setEditingBlockId(isEditing ? null : block.id)}
-                      className="rounded-2xl border border-[var(--helix-border)] bg-white px-3 py-2 text-sm font-bold text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]"
+                      onClick={() => setEditingBlockId(block.id)}
+                      className={`rounded-2xl border px-3 py-2 text-sm font-bold transition ${
+                        isEditing
+                          ? 'border-transparent bg-[var(--helix-navy)] text-white shadow-sm'
+                          : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]'
+                      }`}
                     >
-                      {isEditing ? 'Sluit studio' : 'Open studio'}
+                      {isEditing ? 'Studio open' : 'Open studio'}
                     </button>
                     <div className="relative">
                       <button
@@ -1294,23 +1387,24 @@ export default function ContentBlockBuilder({
                   </div>
                 </div>
 
-                {isEditing && (
-                  <div className="mt-5">
-                    <LessonBlockStudio
-                      block={block}
-                      paragraaf={paragraaf}
-                      vragen={vragen}
-                      onSave={handleSaveBlock}
-                      onCancel={() => setEditingBlockId(null)}
-                      onEditLinkedQuestion={onEditVraag}
-                    />
-                  </div>
-                )}
               </div>
             );
           })
         )}
       </div>
+
+      {activeBlock && (
+        <FullscreenLessonBlockStudio
+          block={activeBlock}
+          stepNumber={activeBlockIndex + 1}
+          totalBlocks={normalizedBlocks.length}
+          paragraaf={paragraaf}
+          vragen={vragen}
+          onSave={handleSaveBlock}
+          onCancel={() => setEditingBlockId(null)}
+          onEditLinkedQuestion={onEditVraag}
+        />
+      )}
     </div>
   );
 }
