@@ -510,6 +510,7 @@ export default function CmsShell() {
               paragraaf={cms.currentParagraaf}
               blocks={cms.contentBlocks}
               vragen={cms.vragen}
+              sidebarOpen={sidebarOpen}
               onRefresh={async () => {
                 await cms.loadContentBlocks(cms.selectedParagraafId);
                 await cms.loadVragen(cms.selectedParagraafId);
