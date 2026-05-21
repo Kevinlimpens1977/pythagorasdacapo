@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ExternalLink, Loader2, Maximize2, Minimize2, X } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
-import { createPdfJsDataLoadOptions, getPdfLoadErrorMessage, withTimeout } from '../../lib/pdfPresenterUtils';
+import { buildPdfPageUrl, createPdfJsDataLoadOptions, getPdfLoadErrorMessage, withTimeout } from '../../lib/pdfPresenterUtils';
 import { getSlidedeckPackage, getSlidedeckPdfBytes } from '../../services/slidedeckService';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
@@ -13,6 +13,8 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
   const [loading, setLoading] = useState(true);
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState('');
+  const [fallbackMode, setFallbackMode] = useState(false);
+  const [resolvedPdfUrl, setResolvedPdfUrl] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [renderVersion, setRenderVersion] = useState(0);
   const rootRef = useRef(null);
@@ -32,6 +34,8 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
     setPageNum(1);
     setTotalPages(0);
     setPdf(null);
+    setFallbackMode(false);
+    setResolvedPdfUrl(pdfUrl || '');
 
     if (!pdfUrl && !directStoragePath && !packageId) {
       setError('Geen PDF gekoppeld aan dit slidedeck.');
@@ -44,6 +48,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
     let loadingTask = null;
 
     const loadPdf = async () => {
+      let fallbackUrl = pdfUrl || '';
       try {
         let storagePath = directStoragePath;
         let downloadURL = pdfUrl;
@@ -53,6 +58,8 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           storagePath ||= deckPackage?.generatedDeckPdf?.storagePath || '';
           downloadURL ||= deckPackage?.generatedDeckPdf?.downloadURL || '';
         }
+        fallbackUrl = downloadURL || pdfUrl || '';
+        setResolvedPdfUrl(downloadURL || pdfUrl || '');
 
         const bytes = await withTimeout(
           getSlidedeckPdfBytes({ storagePath, downloadURL }),
@@ -75,7 +82,12 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
       } catch (loadError) {
         if (cancelled) return;
         console.error('Slidedeck PDF kon niet laden:', loadError);
-        setError(getPdfLoadErrorMessage(loadError));
+        if (fallbackUrl) {
+          setFallbackMode(true);
+          setError('');
+        } else {
+          setError(getPdfLoadErrorMessage(loadError));
+        }
         setLoading(false);
       }
     };
@@ -184,7 +196,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
   }, [onClose, totalPages]);
 
   const goPrev = () => setPageNum((current) => Math.max(1, current - 1));
-  const goNext = () => setPageNum((current) => Math.min(totalPages || current, current + 1));
+  const goNext = () => setPageNum((current) => Math.min(totalPages || current + 1, current + 1));
 
   const toggleFullscreen = async () => {
     try {
@@ -216,9 +228,9 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           <h2 className="mt-1 truncate text-xl font-black">{slide.title}</h2>
         </div>
         <div className="flex items-center gap-2">
-          {pdfUrl && (
+          {(resolvedPdfUrl || pdfUrl) && (
             <a
-              href={pdfUrl}
+              href={resolvedPdfUrl || pdfUrl}
               target="_blank"
               rel="noreferrer"
               className="hidden items-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm font-black text-slate-100 transition hover:bg-slate-900 md:inline-flex"
@@ -257,9 +269,9 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
             <div className="max-w-lg rounded-2xl border border-red-300 bg-red-50 p-8 text-center text-red-950 shadow-2xl">
               <h3 className="text-2xl font-black">PDF niet beschikbaar</h3>
               <p className="mt-3 text-sm leading-6">{error}</p>
-              {pdfUrl && (
+              {(resolvedPdfUrl || pdfUrl) && (
                 <a
-                  href={pdfUrl}
+                  href={resolvedPdfUrl || pdfUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-6 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-700"
@@ -272,7 +284,16 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           </div>
         )}
 
-        {!loading && !error && (
+        {!loading && !error && fallbackMode && (
+          <iframe
+            key={`${resolvedPdfUrl || pdfUrl}-${pageNum}`}
+            src={buildPdfPageUrl(resolvedPdfUrl || pdfUrl, pageNum)}
+            title={slide.title || 'Slidedeck PDF'}
+            className="h-full w-full border-0 bg-white"
+          />
+        )}
+
+        {!loading && !error && !fallbackMode && (
           <div className="flex h-full w-full items-center justify-center p-6">
             <canvas ref={canvasRef} className="max-h-full max-w-full rounded-lg bg-white shadow-2xl shadow-black/40" />
             {rendering && (
@@ -298,13 +319,13 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           <div className="min-w-0 flex-1 text-center">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">PDF slide</p>
             <p className="mt-1 text-lg font-black text-slate-100">
-              {totalPages ? `${pageNum} / ${totalPages}` : '- / -'}
+              {totalPages ? `${pageNum} / ${totalPages}` : fallbackMode ? `${pageNum} / ?` : '- / -'}
             </p>
           </div>
 
           <button
             onClick={goNext}
-            disabled={pageNum >= totalPages || loading || Boolean(error)}
+            disabled={(!fallbackMode && pageNum >= totalPages) || loading || Boolean(error)}
             className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-30"
           >
             Volgende
