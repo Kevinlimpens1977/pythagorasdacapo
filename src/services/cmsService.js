@@ -329,7 +329,14 @@ export const createParagraaf = async (hoofdstukId, data, userId) => {
     const hoofdstuk = await getHoofdstuk(hoofdstukId);
     if (!hoofdstuk) throw new Error('Hoofdstuk not found');
 
-    const paragraafId = `para-${data.code.replace('.', '')}-${Date.now()}`;
+    const safeTitle = String(data.title || 'paragraaf')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'paragraaf';
+    const normalizedCode = data.code || '';
+    const paragraafId = `para-${safeTitle}-${Date.now()}`;
 
     // Get next order
     const paragrafen = await getParagrafen(hoofdstukId);
@@ -340,7 +347,7 @@ export const createParagraaf = async (hoofdstukId, data, userId) => {
       leerjaarId: hoofdstuk.leerjaarId,
       niveauId: hoofdstuk.niveauId,
       hoofdstukId,
-      code: data.code,
+      code: normalizedCode,
       title: data.title,
       beschrijving: data.beschrijving || '',
       order: nextOrder,
@@ -371,7 +378,8 @@ export const createVraag = async (paragraafId, data, userId) => {
     const paragraaf = await getParagraaf(paragraafId);
     if (!paragraaf) throw new Error('Paragraaf not found');
 
-    const vraagId = `vraag-${paragraaf.code.replace('.', '')}-${data.number}-${Date.now()}`;
+    const paragraafKey = paragraaf.code?.replace('.', '') || paragraaf.id || paragraafId;
+    const vraagId = `vraag-${paragraafKey}-${data.number}-${Date.now()}`;
 
     // Get next order
     const vragen = await getVragen(paragraafId);

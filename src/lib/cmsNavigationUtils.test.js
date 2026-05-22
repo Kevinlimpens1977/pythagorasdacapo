@@ -50,6 +50,7 @@ test('buildCmsNavigationTree adds useful child and block counts', () => {
   assert.equal(vak.counts.leerjaren, 1);
   assert.equal(niveau.counts.hoofdstukken, 1);
   assert.equal(hoofdstuk.counts.paragrafen, 1);
+  assert.equal(paragraaf.label, 'Rechthoekige driehoeken');
   assert.equal(paragraaf.counts.vragen, 2);
   assert.equal(paragraaf.counts.blocks.total, 5);
   assert.deepEqual(paragraaf.children, []);

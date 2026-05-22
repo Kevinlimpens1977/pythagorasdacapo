@@ -3,7 +3,7 @@
  * Creates: Vak, Leerjaar, Niveau, Hoofdstuk, Paragraaf
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { X, Loader } from 'lucide-react';
 import * as cmsService from '../../services/cmsService';
 import { auth } from '../../services/firebase';
@@ -24,11 +24,12 @@ export default function CreateContentModal({
   const [year, setYear] = useState(1);
   const [label, setLabel] = useState('');
   const [number, setNumber] = useState('');
-  const [code, setCode] = useState('');
   const [title, setTitle] = useState('');
   const [color, setColor] = useState(null);
   const [emoji, setEmoji] = useState('');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const inputClass = 'input-standard w-full';
+  const labelClass = 'mb-2 block text-sm font-bold text-[var(--helix-navy)]';
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -78,7 +79,7 @@ export default function CreateContentModal({
         case 'paragraaf':
           newId = await cmsService.createParagraaf(
             parentId,
-            { code, title, beschrijving: description },
+            { title, beschrijving: description },
             auth.currentUser.uid
           );
           break;
@@ -109,15 +110,18 @@ export default function CreateContentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--helix-navy)]/45 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md overflow-hidden rounded-[2rem] border border-[var(--helix-border)] bg-white shadow-2xl animate-in zoom-in-95 duration-300">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold">{getTitle()}</h2>
+        <div className="helix-gradient flex items-center justify-between p-6 text-white">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-white/75">HELIX CMS</p>
+            <h2 className="mt-1 font-display text-xl font-extrabold">{getTitle()}</h2>
+          </div>
           <button
             onClick={onClose}
             disabled={loading}
-            className="p-1 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+            className="rounded-2xl p-2 transition-colors hover:bg-white/20 disabled:opacity-50"
           >
             <X size={20} />
           </button>
@@ -125,7 +129,7 @@ export default function CreateContentModal({
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border-b border-red-200 p-4 text-red-700 text-sm">
+          <div className="border-b border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
             {error}
           </div>
         )}
@@ -135,7 +139,7 @@ export default function CreateContentModal({
           {type === 'vak' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Vak naam
                 </label>
                 <input
@@ -144,11 +148,11 @@ export default function CreateContentModal({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="bijv. Wiskunde"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Beschrijving (optioneel)
                 </label>
                 <textarea
@@ -156,7 +160,7 @@ export default function CreateContentModal({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Beschrijving van het vak"
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
             </>
@@ -165,13 +169,13 @@ export default function CreateContentModal({
           {type === 'leerjaar' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Leerjaar (Klas)
                 </label>
                 <select
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 >
                   {[1, 2, 3, 4, 5, 6].map(y => (
                     <option key={y} value={y}>Jaar {y}</option>
@@ -179,7 +183,7 @@ export default function CreateContentModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Label (optioneel)
                 </label>
                 <input
@@ -187,7 +191,7 @@ export default function CreateContentModal({
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
                   placeholder="bijv. VMBO Jaar 1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
             </>
@@ -196,13 +200,13 @@ export default function CreateContentModal({
           {type === 'niveau' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Label
                 </label>
                 <select
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 >
                   <option value="">Selecteer...</option>
                   <option value="VMBO-B">VMBO-B (Basis)</option>
@@ -212,7 +216,7 @@ export default function CreateContentModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Beschrijving (optioneel)
                 </label>
                 <textarea
@@ -220,7 +224,7 @@ export default function CreateContentModal({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Beschrijving van het niveau"
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
             </>
@@ -230,7 +234,7 @@ export default function CreateContentModal({
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={labelClass}>
                     Nummer
                   </label>
                   <input
@@ -239,12 +243,12 @@ export default function CreateContentModal({
                     onChange={(e) => setNumber(e.target.value)}
                     placeholder="bijv. 7"
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className={inputClass}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Titel
                 </label>
                 <input
@@ -253,11 +257,11 @@ export default function CreateContentModal({
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="bijv. HELIX Basis"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Beschrijving (optioneel)
                 </label>
                 <textarea
@@ -265,7 +269,7 @@ export default function CreateContentModal({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Beschrijving van het hoofdstuk"
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
             </>
@@ -273,36 +277,24 @@ export default function CreateContentModal({
 
           {type === 'paragraaf' && (
             <>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Code
-                  </label>
-                  <input
-                    type="text"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="bijv. 7.1"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Titel
+                <label className={labelClass}>
+                  Paragraafnaam
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="bijv. Rechthoekige driehoeken"
+                  placeholder="bijv. 1.1. Rechthoekige driehoeken"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
+                <p className="mt-2 text-xs leading-5 text-[var(--helix-muted)]">
+                  Zet nummering zoals 1.1 of 1.2 direct in de naam als je die wilt tonen.
+                </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={labelClass}>
                   Beschrijving (optioneel)
                 </label>
                 <textarea
@@ -310,7 +302,7 @@ export default function CreateContentModal({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Beschrijving van de paragraaf"
                   rows="2"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className={inputClass}
                 />
               </div>
             </>
@@ -318,11 +310,11 @@ export default function CreateContentModal({
 
           {/* Color & Emoji Picker (for vak, leerjaar, niveau, hoofdstuk) */}
           {['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(type) && (
-            <div className="pt-4 border-t border-gray-200">
+            <div className="border-t border-[var(--helix-border)] pt-4">
               <button
                 type="button"
                 onClick={() => setShowColorPicker(!showColorPicker)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium mb-2"
+                className="mb-2 rounded-xl px-2 py-1 text-sm font-bold text-[var(--helix-purple)] transition hover:bg-[var(--helix-lavender)] hover:text-[var(--helix-pink)]"
               >
                 {showColorPicker ? '▼ Verberg kleur & emoji' : '▶ Kies kleur & emoji'}
               </button>
@@ -349,14 +341,14 @@ export default function CreateContentModal({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex-1 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 font-extrabold text-[var(--helix-navy)] transition hover:bg-[var(--helix-bg)] disabled:opacity-50"
             >
               Annuleren
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="btn-primary flex-1 justify-center px-4 py-3 disabled:opacity-50"
             >
               {loading && <Loader size={16} className="animate-spin" />}
               {loading ? 'Aanmaken...' : 'Aanmaken'}

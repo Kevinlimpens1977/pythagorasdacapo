@@ -105,7 +105,7 @@ export const buildCmsNavigationTree = (
                     return {
                       ...paragraaf,
                       type: 'paragraaf',
-                      label: `${paragraaf.code}. ${paragraaf.title}`,
+                      label: paragraaf.title || 'Paragraaf zonder naam',
                       counts: {
                         vragen: vragen.filter((vraag) => vraag.paragraafId === paragraaf.id).length,
                         blocks: getContentBlockTypeCounts(paragraafBlocks)

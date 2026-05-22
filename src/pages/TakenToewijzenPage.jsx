@@ -758,7 +758,7 @@ export default function TakenToewijzenPage() {
                               title={isDisabled ? "Al in klassestandaard" : ""}
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-slate-900">{para.code}. {para.title}</div>
+                              <div className="font-medium text-slate-900">{para.title || 'Paragraaf zonder naam'}</div>
                               {para.beschrijving && (
                                 <div className="text-xs text-slate-500 line-clamp-1">{para.beschrijving}</div>
                               )}
@@ -892,7 +892,7 @@ export default function TakenToewijzenPage() {
                       // Find paragraaf name from all loaded paragrafen
                       const foundParagraaf = paragrafen.find(p => p.id === paragraafId);
                       const displayName = foundParagraaf
-                        ? `${foundParagraaf.code}. ${foundParagraaf.title}`
+                        ? (foundParagraaf.title || 'Paragraaf zonder naam')
                         : `Para ${paragraafId}`;
 
                       return (
@@ -958,7 +958,7 @@ export default function TakenToewijzenPage() {
                                   const para = paragrafen.find(p => p.id === paraId);
                                   return (
                                     <div key={paraId} className="flex items-center justify-between text-xs bg-white border border-slate-200 rounded px-2 py-1">
-                                      <span className="font-medium text-slate-900">{para ? `${para.code}. ${para.title}` : paraId}</span>
+                                      <span className="font-medium text-slate-900">{para ? (para.title || 'Paragraaf zonder naam') : paraId}</span>
                                       <button
                                         onClick={() => toggleStudentOverride(paraId)}
                                         className="text-red-500 hover:text-red-700 font-bold ml-2"

@@ -8,7 +8,7 @@ export const getDigibordItemLabel = (type, item = {}) => {
     return item.label || item.name || 'Niveau';
   }
   if (type === 'hoofdstuk') return `${item.number ? `${item.number}. ` : ''}${item.title || item.name || 'Hoofdstuk'}`;
-  if (type === 'paragraaf') return `${item.code ? `${item.code}. ` : ''}${item.title || item.name || 'Paragraaf'}`;
+  if (type === 'paragraaf') return item.title || item.name || 'Paragraaf';
   return item.name || item.title || item.label || 'Onderdeel';
 };
 

@@ -195,7 +195,7 @@ export default function AdminSlidedecksPage() {
     setContext((current) => ({
       ...current,
       paragraafId,
-      paragraafTitle: paragraaf ? readableCodeTitle(paragraaf, '') : ''
+      paragraafTitle: paragraaf ? readableName(paragraaf, '') : ''
     }));
   };
 
@@ -382,7 +382,7 @@ export default function AdminSlidedecksPage() {
                 <SelectBox label="Leerjaar" value={context.leerjaarId} onChange={handleLeerjaarChange} items={leerjaren} getLabel={(item) => readableName(item, item.year ? `Jaar ${item.year}` : 'Naamloos leerjaar')} />
                 <SelectBox label="Niveau" value={context.niveauId} onChange={handleNiveauChange} items={niveaus} getLabel={(item) => readableName(item)} />
                 <SelectBox label="Hoofdstuk" value={context.hoofdstukId} onChange={handleHoofdstukChange} items={hoofdstukken} getLabel={(item) => readableCodeTitle(item)} />
-                <SelectBox label="Paragraaf" value={context.paragraafId} onChange={handleParagraafChange} items={paragrafen} getLabel={(item) => readableCodeTitle(item)} />
+                <SelectBox label="Paragraaf" value={context.paragraafId} onChange={handleParagraafChange} items={paragrafen} getLabel={(item) => readableName(item)} />
               </div>
               <p className="text-xs font-bold leading-5 text-slate-500">
                 Deze koppeling hoort bij de lesstofstructuur. Klassen krijgen lesstof later via taken/toewijzingen.

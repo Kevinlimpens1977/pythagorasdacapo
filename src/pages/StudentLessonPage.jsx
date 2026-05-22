@@ -215,7 +215,6 @@ export default function StudentLessonPage() {
             <div>
               <p className="helix-eyebrow">Leerroute</p>
               <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-[var(--helix-navy)]">
-                {paragraaf?.number || paragraaf?.code ? `${paragraaf.number || paragraaf.code}. ` : ''}
                 {paragraaf?.title || 'Les'}
               </h1>
               {hoofdstuk && (

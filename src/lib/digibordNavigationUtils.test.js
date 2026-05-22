@@ -11,7 +11,7 @@ test('getDigibordItemLabel uses CMS field names for each hierarchy level', () =>
   assert.equal(getDigibordItemLabel('leerjaar', { year: 1, label: 'Jaar 1' }), 'Jaar 1');
   assert.equal(getDigibordItemLabel('niveau', { label: 'VMBO-GT', name: 'VMBO-GT' }), 'VMBO-GT');
   assert.equal(getDigibordItemLabel('hoofdstuk', { number: 2, title: 'testttt' }), '2. testttt');
-  assert.equal(getDigibordItemLabel('paragraaf', { code: '1.1', title: 'Pythagoras' }), '1.1. Pythagoras');
+  assert.equal(getDigibordItemLabel('paragraaf', { code: '1.1', title: 'Pythagoras' }), 'Pythagoras');
 });
 
 test('getDigibordCardMeta returns useful counts for overview cards', () => {
