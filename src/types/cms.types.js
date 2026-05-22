@@ -163,7 +163,7 @@
  * @property {string} paragraafId - Parent paragraph ID
  * @property {string} number - Question number (e.g., "14a")
  * @property {string} title - Question title
- * @property {"open"|"meerkeuze"|"numeriek"|"tabel"} vraagtype - Question type
+ * @property {"open"|"meerkeuze"|"numeriek"|"tabel"|"koppelen"|"invullen"|"volgorde"} vraagtype - Question type
  * @property {VraagContent} content - Question content
  * @property {VraagMetadata} vraagMetadata - Question metadata
  * @property {Object} antwoord - Answer (varies by type)

@@ -150,6 +150,9 @@ export default function CreateQuestionModal({
               <option value="open">Open vraag</option>
               <option value="meerkeuze">Meerkeuze</option>
               <option value="numeriek">Numeriek</option>
+              <option value="koppelen">Koppelen</option>
+              <option value="invullen">Invullen</option>
+              <option value="volgorde">Volgorde</option>
             </select>
           </div>
 

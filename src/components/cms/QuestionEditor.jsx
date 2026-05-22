@@ -5,13 +5,18 @@
  */
 
 import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Plus, Trash2, Star } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus, Trash2, Star } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
 import Color from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
+
+const createVolgordeItem = (text = '') => ({
+  id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  text
+});
 
 const QuestionEditorInner = forwardRef(function QuestionEditor(
   {
@@ -35,6 +40,27 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   const [antwoordTolerance, setAntwoordTolerance] = useState(vraag?.antwoord?.tolerance || 0.5);
   const [antwoordUnit, setAntwoordUnit] = useState(vraag?.antwoord?.unit || '');
   const [antwoordHint, setAntwoordHint] = useState(vraag?.antwoord?.hintBijFout || '');
+  const [koppelenPairs, setKoppelenPairs] = useState(() => (
+    vraag?.antwoord?.type === 'koppelen' && Array.isArray(vraag?.antwoord?.pairs)
+      ? vraag.antwoord.pairs
+      : [{ left: '', right: '' }]
+  ));
+  const [invullenText, setInvullenText] = useState(() => (
+    vraag?.antwoord?.type === 'invullen' ? vraag.antwoord.text || '' : ''
+  ));
+  const [invullenGaps, setInvullenGaps] = useState(() => (
+    vraag?.antwoord?.type === 'invullen' && Array.isArray(vraag?.antwoord?.gaps)
+      ? vraag.antwoord.gaps
+      : []
+  ));
+  const [volgordeItems, setVolgordeItems] = useState(() => (
+    vraag?.antwoord?.type === 'volgorde' && Array.isArray(vraag?.antwoord?.items)
+      ? vraag.antwoord.items.map((item) => ({
+          id: item.id || createVolgordeItem().id,
+          text: item.text || ''
+        }))
+      : [createVolgordeItem()]
+  ));
 
   // TipTap editor
   const editor = useEditor({
@@ -57,6 +83,61 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     },
   });
 
+  const getAntwoordState = useCallback(() => {
+    if (vraagtype === 'numeriek') {
+      return {
+        type: 'numeriek',
+        expected: parseFloat(antwoordExpected) || 0,
+        tolerance: parseFloat(antwoordTolerance) || 0.5,
+        unit: antwoordUnit,
+        hintBijFout: antwoordHint
+      };
+    }
+
+    if (vraagtype === 'koppelen') {
+      return {
+        type: 'koppelen',
+        pairs: koppelenPairs.map((pair) => ({
+          left: pair.left || '',
+          right: pair.right || ''
+        }))
+      };
+    }
+
+    if (vraagtype === 'invullen') {
+      return {
+        type: 'invullen',
+        text: invullenText,
+        gaps: invullenGaps.map((gap, index) => ({
+          id: gap.id || `gap-${index + 1}`,
+          answer: gap.answer || ''
+        }))
+      };
+    }
+
+    if (vraagtype === 'volgorde') {
+      return {
+        type: 'volgorde',
+        items: volgordeItems.map((item) => ({
+          id: item.id,
+          text: item.text || ''
+        }))
+      };
+    }
+
+    return { type: vraagtype };
+  }, [
+    vraagtype,
+    antwoordExpected,
+    antwoordTolerance,
+    antwoordUnit,
+    antwoordHint,
+    koppelenPairs,
+    invullenText,
+    invullenGaps,
+    volgordeItems
+  ]);
+
   // Expose editor instance and form state to parent
   useImperativeHandle(
     ref,
@@ -69,23 +150,37 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
         difficulty,
         showCalculator,
         hints,
-        antwoord: vraagtype === 'numeriek'
-          ? {
-              type: 'numeriek',
-              expected: parseFloat(antwoordExpected) || 0,
-              tolerance: parseFloat(antwoordTolerance) || 0.5,
-              unit: antwoordUnit,
-              hintBijFout: antwoordHint
-            }
-          : { type: vraagtype }
+        antwoord: getAntwoordState()
       }),
     }),
-    [editor, title, vraagtype, status, difficulty, showCalculator, hints, antwoordExpected, antwoordTolerance, antwoordUnit, antwoordHint]
+    [editor, title, vraagtype, status, difficulty, showCalculator, hints, getAntwoordState]
   );
 
   useEffect(() => {
     if (editor) onEditorReady?.(editor);
   }, [editor, onEditorReady]);
+
+  useEffect(() => {
+    const gapCount = (invullenText.match(/\[GAP\]/g) || []).length;
+
+    setInvullenGaps((currentGaps) => {
+      const nextGaps = Array.from({ length: gapCount }, (_, index) => {
+        const existingGap = currentGaps[index];
+        return {
+          id: existingGap?.id || `gap-${index + 1}`,
+          answer: existingGap?.answer || ''
+        };
+      });
+
+      const isSame =
+        nextGaps.length === currentGaps.length &&
+        nextGaps.every((gap, index) =>
+          gap.id === currentGaps[index]?.id && gap.answer === currentGaps[index]?.answer
+        );
+
+      return isSame ? currentGaps : nextGaps;
+    });
+  }, [invullenText]);
 
   // Add hint
   const handleAddHint = useCallback(() => {
@@ -99,6 +194,51 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   const handleRemoveHint = useCallback((index) => {
     setHints(hints.filter((_, i) => i !== index));
   }, [hints]);
+
+  const handleUpdatePair = useCallback((index, field, value) => {
+    setKoppelenPairs((pairs) =>
+      pairs.map((pair, pairIndex) =>
+        pairIndex === index ? { ...pair, [field]: value } : pair
+      )
+    );
+  }, []);
+
+  const handleRemovePair = useCallback((index) => {
+    setKoppelenPairs((pairs) => pairs.filter((_, pairIndex) => pairIndex !== index));
+  }, []);
+
+  const handleUpdateGap = useCallback((index, value) => {
+    setInvullenGaps((gaps) =>
+      gaps.map((gap, gapIndex) =>
+        gapIndex === index ? { ...gap, answer: value } : gap
+      )
+    );
+  }, []);
+
+  const handleUpdateVolgordeItem = useCallback((index, value) => {
+    setVolgordeItems((items) =>
+      items.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, text: value } : item
+      )
+    );
+  }, []);
+
+  const handleMoveVolgordeItem = useCallback((index, direction) => {
+    setVolgordeItems((items) => {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= items.length) return items;
+
+      const nextItems = [...items];
+      const currentItem = nextItems[index];
+      nextItems[index] = nextItems[targetIndex];
+      nextItems[targetIndex] = currentItem;
+      return nextItems;
+    });
+  }, []);
+
+  const handleRemoveVolgordeItem = useCallback((index) => {
+    setVolgordeItems((items) => items.filter((_, itemIndex) => itemIndex !== index));
+  }, []);
 
   if (!editor) {
     return <div className="p-4 text-gray-500">Loading editor...</div>;
@@ -140,6 +280,9 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             <option value="open">Open vraag</option>
             <option value="meerkeuze">Meerkeuze</option>
             <option value="numeriek">Numeriek</option>
+            <option value="koppelen">Koppelen</option>
+            <option value="invullen">Invullen</option>
+            <option value="volgorde">Volgorde</option>
           </select>
         </div>
         <div>
@@ -429,6 +572,161 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             <p className="text-sm text-gray-600">
               🎯 <strong>Meerkeuze</strong> – Antwoord-schema wordt later uitgebouwd.
             </p>
+          </div>
+        ) : vraagtype === 'koppelen' ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
+            <p className="text-sm text-gray-600">
+              Maak koppelparen. De linker- en rechterkant vormen samen het correcte antwoord.
+            </p>
+
+            <div className="space-y-3">
+              {koppelenPairs.map((pair, index) => (
+                <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      Links
+                    </label>
+                    <input
+                      type="text"
+                      value={pair.left}
+                      onChange={(e) => handleUpdatePair(index, 'left', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Begrip"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      Rechts
+                    </label>
+                    <input
+                      type="text"
+                      value={pair.right}
+                      onChange={(e) => handleUpdatePair(index, 'right', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Omschrijving"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePair(index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Verwijder paar"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setKoppelenPairs((pairs) => [...pairs, { left: '', right: '' }])}
+              className="btn-primary px-4 py-2 text-sm"
+            >
+              <Plus size={18} />
+              Voeg paar toe
+            </button>
+          </div>
+        ) : vraagtype === 'invullen' ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-3">
+                Typ de volledige tekst en plaats <strong>[GAP]</strong> waar een invulvak moet komen.
+              </p>
+              <textarea
+                value={invullenText}
+                onChange={(e) => setInvullenText(e.target.value)}
+                rows={5}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                placeholder="Bijvoorbeeld: Fotosynthese gebeurt in de [GAP] van een plant."
+              />
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold text-gray-700">
+                  Gaps gevonden: {invullenGaps.length}
+                </p>
+                {invullenGaps.length === 0 && (
+                  <p className="text-xs text-gray-500">Voeg [GAP] toe in de tekst om antwoordvelden te maken.</p>
+                )}
+              </div>
+
+              {invullenGaps.map((gap, index) => (
+                <div key={gap.id} className="grid grid-cols-[7rem_1fr] gap-3 items-center">
+                  <label className="text-xs font-semibold text-gray-700">
+                    Gap {index + 1}
+                  </label>
+                  <input
+                    type="text"
+                    value={gap.answer}
+                    onChange={(e) => handleUpdateGap(index, e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="Correct antwoord"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : vraagtype === 'volgorde' ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
+            <p className="text-sm text-gray-600">
+              Zet de items in de correcte volgorde. Deze volgorde wordt opgeslagen als antwoordmodel.
+            </p>
+
+            <div className="space-y-3">
+              {volgordeItems.map((item, index) => (
+                <div key={item.id} className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-2 items-center">
+                  <span className="text-xs font-bold text-gray-500 w-6 text-right">
+                    {index + 1}.
+                  </span>
+                  <input
+                    type="text"
+                    value={item.text}
+                    onChange={(e) => handleUpdateVolgordeItem(index, e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                    placeholder="Item"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleMoveVolgordeItem(index, -1)}
+                    disabled={index === 0}
+                    className="p-2 text-gray-600 hover:bg-white rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Omhoog"
+                  >
+                    <ArrowUp size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMoveVolgordeItem(index, 1)}
+                    disabled={index === volgordeItems.length - 1}
+                    className="p-2 text-gray-600 hover:bg-white rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Omlaag"
+                  >
+                    <ArrowDown size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveVolgordeItem(index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Verwijder item"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setVolgordeItems((items) => [...items, createVolgordeItem()])}
+              className="btn-primary px-4 py-2 text-sm"
+            >
+              <Plus size={18} />
+              Voeg item toe
+            </button>
           </div>
         ) : null}
       </div>
