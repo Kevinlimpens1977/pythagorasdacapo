@@ -9,9 +9,11 @@ import {
   GraduationCap,
   Layers3,
   PanelLeftClose,
+  Pencil,
   Plus,
   Search,
   Sparkles,
+  Trash2,
   X
 } from 'lucide-react';
 import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils';
@@ -57,8 +59,15 @@ const TreeNode = ({
   forceExpanded,
   onToggleExpand,
   onSelect,
-  onCreateChild
+  onCreateChild,
+  onRenameNode,
+  onArchiveNode,
+  actionNodeId,
+  onOpenActions,
+  onCloseActions
 }) => {
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState(node.label || '');
   const config = typeConfig[node.type] || typeConfig.vak;
   const Icon = config.icon;
   const isExpanded = forceExpanded || expandedIds.includes(node.id);
@@ -69,6 +78,25 @@ const TreeNode = ({
   const pills = blockTypePills(node);
   const mutedCount = countLabel(node);
   const canCreateChild = ['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(node.type);
+  const actionsOpen = actionNodeId === node.id;
+  const isArchived = node.archived === true;
+
+  const startRename = () => {
+    setDraftName(node.label || '');
+    setEditingName(true);
+    onCloseActions?.();
+  };
+
+  const saveRename = async () => {
+    const nextName = draftName.trim();
+    if (!nextName || nextName === node.label) {
+      setEditingName(false);
+      return;
+    }
+
+    await onRenameNode?.(node, nextName);
+    setEditingName(false);
+  };
 
   return (
     <div>
@@ -80,6 +108,8 @@ const TreeNode = ({
             : isActivePath
               ? 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)]'
               : 'border-transparent text-[var(--helix-muted)] hover:border-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
+          ,
+          isArchived ? 'opacity-55 grayscale' : ''
         ].join(' ')}
         style={{ paddingLeft: `${10 + level * 14}px` }}
         onClick={() => onSelect({ type: node.type, id: node.id })}
@@ -101,19 +131,69 @@ const TreeNode = ({
 
         <span
           className={[
-            'flex h-7 w-7 items-center justify-center rounded-lg',
+            'relative flex h-7 w-7 items-center justify-center rounded-lg',
             isActiveParagraaf
               ? 'bg-white text-[var(--helix-purple)] ring-1 ring-fuchsia-100'
               : isActivePath
                 ? `bg-[var(--helix-surface-soft)] ${config.accent} ring-1 ring-[var(--helix-border)]`
                 : `bg-white ${config.accent} ring-1 ring-[var(--helix-border)]`
           ].join(' ')}
+          onDoubleClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onOpenActions(node.id);
+          }}
+          title="Dubbelklik voor bewerkingsopties"
         >
           <Icon size={15} />
+          {actionsOpen && (
+            <span
+              className="absolute bottom-full left-1/2 z-50 mb-2 w-40 -translate-x-1/2 rounded-2xl border border-[var(--helix-border)] bg-white p-1.5 text-left shadow-xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={startRename}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-[var(--helix-navy)] transition hover:bg-[var(--helix-surface-soft)]"
+              >
+                <Pencil size={14} />
+                Naam wijzigen
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onCloseActions?.();
+                  onArchiveNode?.(node);
+                }}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-red-600 transition hover:bg-red-50"
+              >
+                <Trash2 size={14} />
+                Verwijderen
+              </button>
+            </span>
+          )}
         </span>
 
         <span className="min-w-0">
-          <span className="block truncate font-semibold leading-5">{node.label}</span>
+          {editingName ? (
+            <input
+              value={draftName}
+              onChange={(event) => setDraftName(event.target.value)}
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') saveRename();
+                if (event.key === 'Escape') setEditingName(false);
+              }}
+              onBlur={saveRename}
+              className="block w-full rounded-lg border border-fuchsia-200 bg-white px-2 py-1 text-sm font-bold text-[var(--helix-navy)] outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/20"
+              autoFocus
+            />
+          ) : (
+            <span className="block truncate font-semibold leading-5">
+              {node.label}
+              {isArchived && <span className="ml-2 text-[10px] font-black uppercase tracking-wide text-slate-400">Archief</span>}
+            </span>
+          )}
           {pills.length > 0 && (
             <span className={['mt-1 flex flex-wrap gap-1 text-[10px] font-black uppercase tracking-wide', isActiveParagraaf ? 'text-[var(--helix-purple)]' : 'text-slate-400'].join(' ')}>
               {pills.map((pill) => (
@@ -167,6 +247,11 @@ const TreeNode = ({
               onToggleExpand={onToggleExpand}
               onSelect={onSelect}
               onCreateChild={onCreateChild}
+              onRenameNode={onRenameNode}
+              onArchiveNode={onArchiveNode}
+              actionNodeId={actionNodeId}
+              onOpenActions={onOpenActions}
+              onCloseActions={onCloseActions}
             />
           ))}
         </div>
@@ -195,10 +280,15 @@ export default function NavigationTree({
   onCreateNiveau,
   onCreateHoofdstuk,
   onCreateParagraaf,
+  onRenameNode,
+  onArchiveNode,
   sidebarOpen = true,
-  onToggleSidebar
+  onToggleSidebar,
+  showArchived = false,
+  onToggleShowArchived
 }) {
   const [query, setQuery] = useState('');
+  const [actionNodeId, setActionNodeId] = useState(null);
   const [expandedIds, setExpandedIds] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -230,9 +320,9 @@ export default function NavigationTree({
     () =>
       buildCmsNavigationTree(
         { vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks },
-        { query }
+        { query, includeArchived: showArchived }
       ),
-    [vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks, query]
+    [vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks, query, showArchived]
   );
 
   const totals = useMemo(
@@ -310,11 +400,38 @@ export default function NavigationTree({
         </div>
 
         {expandedIds.length > 0 && !query && (
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <button
+              onClick={() => setExpandedIds([])}
+              className="text-xs font-bold text-slate-500 hover:text-slate-900"
+            >
+              Alles inklappen
+            </button>
+            <button
+              onClick={() => onToggleShowArchived?.()}
+              className={[
+                'rounded-full px-2.5 py-1 text-xs font-black transition',
+                showArchived
+                  ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+                  : 'bg-[var(--helix-surface-soft)] text-slate-500 hover:text-slate-900'
+              ].join(' ')}
+            >
+              Archief tonen
+            </button>
+          </div>
+        )}
+
+        {expandedIds.length === 0 && !query && (
           <button
-            onClick={() => setExpandedIds([])}
-            className="mt-3 text-xs font-bold text-slate-500 hover:text-slate-900"
+            onClick={() => onToggleShowArchived?.()}
+            className={[
+              'mt-3 rounded-full px-2.5 py-1 text-xs font-black transition',
+              showArchived
+                ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+                : 'bg-[var(--helix-surface-soft)] text-slate-500 hover:text-slate-900'
+            ].join(' ')}
           >
-            Alles inklappen
+            Archief tonen
           </button>
         )}
       </div>
@@ -352,6 +469,11 @@ export default function NavigationTree({
                 onToggleExpand={toggleExpand}
                 onSelect={onSelect}
                 onCreateChild={handleCreateChild}
+                onRenameNode={onRenameNode}
+                onArchiveNode={onArchiveNode}
+                actionNodeId={actionNodeId}
+                onOpenActions={setActionNodeId}
+                onCloseActions={() => setActionNodeId(null)}
               />
             ))}
           </div>

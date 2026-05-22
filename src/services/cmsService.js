@@ -26,14 +26,12 @@ import { db } from './firebase';
  * Get all subjects (vakken)
  * @returns {Promise<Array>} Array of vak documents
  */
-export const getVakken = async () => {
+export const getVakken = async (includeArchived = false) => {
   try {
     console.log('🔍 [CMS] Fetching vakken from "vak" collection...');
-    const q = query(
-      collection(db, 'vak'),
-      where('isActive', '==', true),
-      orderBy('order', 'asc')
-    );
+    const constraints = [orderBy('order', 'asc')];
+    if (!includeArchived) constraints.unshift(where('isActive', '==', true));
+    const q = query(collection(db, 'vak'), ...constraints);
     const querySnapshot = await getDocs(q);
     console.log(`✅ [CMS] Fetched ${querySnapshot.docs.length} vakken`);
     return querySnapshot.docs.map(doc => ({
@@ -73,14 +71,11 @@ export const getVak = async (vakId) => {
  * @param {string} vakId
  * @returns {Promise<Array>}
  */
-export const getLeerjaren = async (vakId) => {
+export const getLeerjaren = async (vakId, includeArchived = false) => {
   try {
-    const q = query(
-      collection(db, 'leerjaar'),
-      where('vakId', '==', vakId),
-      where('isActive', '==', true),
-      orderBy('year', 'asc')
-    );
+    const constraints = [where('vakId', '==', vakId), orderBy('year', 'asc')];
+    if (!includeArchived) constraints.splice(1, 0, where('isActive', '==', true));
+    const q = query(collection(db, 'leerjaar'), ...constraints);
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -115,14 +110,11 @@ export const getLeerjaar = async (leerjaarId) => {
  * @param {string} leerjaarId
  * @returns {Promise<Array>}
  */
-export const getNiveaus = async (leerjaarId) => {
+export const getNiveaus = async (leerjaarId, includeArchived = false) => {
   try {
-    const q = query(
-      collection(db, 'niveau'),
-      where('leerjaarId', '==', leerjaarId),
-      where('isActive', '==', true),
-      orderBy('order', 'asc')
-    );
+    const constraints = [where('leerjaarId', '==', leerjaarId), orderBy('order', 'asc')];
+    if (!includeArchived) constraints.splice(1, 0, where('isActive', '==', true));
+    const q = query(collection(db, 'niveau'), ...constraints);
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -157,14 +149,11 @@ export const getNiveau = async (niveauId) => {
  * @param {string} niveauId
  * @returns {Promise<Array>}
  */
-export const getHoofdstukken = async (niveauId) => {
+export const getHoofdstukken = async (niveauId, includeArchived = false) => {
   try {
-    const q = query(
-      collection(db, 'hoofdstuk'),
-      where('niveauId', '==', niveauId),
-      where('isArchived', '==', false),
-      orderBy('order', 'asc')
-    );
+    const constraints = [where('niveauId', '==', niveauId), orderBy('order', 'asc')];
+    if (!includeArchived) constraints.splice(1, 0, where('isArchived', '==', false));
+    const q = query(collection(db, 'hoofdstuk'), ...constraints);
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -199,14 +188,11 @@ export const getHoofdstuk = async (hoofdstukId) => {
  * @param {string} hoofdstukId
  * @returns {Promise<Array>}
  */
-export const getParagrafen = async (hoofdstukId) => {
+export const getParagrafen = async (hoofdstukId, includeArchived = false) => {
   try {
-    const q = query(
-      collection(db, 'paragraaf'),
-      where('hoofdstukId', '==', hoofdstukId),
-      where('isArchived', '==', false),
-      orderBy('order', 'asc')
-    );
+    const constraints = [where('hoofdstukId', '==', hoofdstukId), orderBy('order', 'asc')];
+    if (!includeArchived) constraints.splice(1, 0, where('isArchived', '==', false));
+    const q = query(collection(db, 'paragraaf'), ...constraints);
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -241,15 +227,13 @@ export const getParagraaf = async (paragraafId) => {
  * @param {string} paragraafId
  * @returns {Promise<Array>}
  */
-export const getVragen = async (paragraafId) => {
+export const getVragen = async (paragraafId, includeArchived = false) => {
   try {
     // Simplified query - no orderBy to avoid index requirement
     // We'll sort in JavaScript instead
-    const q = query(
-      collection(db, 'vraag'),
-      where('paragraafId', '==', paragraafId),
-      where('isArchived', '==', false)
-    );
+    const constraints = [where('paragraafId', '==', paragraafId)];
+    if (!includeArchived) constraints.push(where('isArchived', '==', false));
+    const q = query(collection(db, 'vraag'), ...constraints);
     const querySnapshot = await getDocs(q);
 
     // Sort by order field in memory
@@ -291,13 +275,11 @@ export const getVraag = async (vraagId) => {
  * @param {boolean} includeDrafts
  * @returns {Promise<Array>}
  */
-export const getContentBlocks = async (paragraafId, includeDrafts = true) => {
+export const getContentBlocks = async (paragraafId, includeDrafts = true, includeArchived = false) => {
   try {
-    const q = query(
-      collection(db, 'contentBlocks'),
-      where('paragraafId', '==', paragraafId),
-      where('isArchived', '==', false)
-    );
+    const constraints = [where('paragraafId', '==', paragraafId)];
+    if (!includeArchived) constraints.push(where('isArchived', '==', false));
+    const q = query(collection(db, 'contentBlocks'), ...constraints);
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs
@@ -305,6 +287,7 @@ export const getContentBlocks = async (paragraafId, includeDrafts = true) => {
         id: doc.id,
         ...doc.data()
       }))
+      .filter(block => includeArchived || block.isArchived !== true)
       .filter(block => includeDrafts || block.status === 'published')
       .sort((a, b) => (a.order || 0) - (b.order || 0));
   } catch (error) {
@@ -581,6 +564,60 @@ export const archiveContentBlock = async (blockId) => {
   } catch (error) {
     console.error(`Error archiving content block ${blockId}:`, error);
     throw error;
+  }
+};
+
+const archiveParagraafBranch = async (paragraafId) => {
+  const [vragen, blocks] = await Promise.all([
+    getVragen(paragraafId, true),
+    getContentBlocks(paragraafId, true, true)
+  ]);
+
+  await Promise.all([
+    archiveParagraaf(paragraafId),
+    ...vragen.map((vraag) => archiveVraag(vraag.id)),
+    ...blocks.map((block) => archiveContentBlock(block.id))
+  ]);
+};
+
+const archiveHoofdstukBranch = async (hoofdstukId) => {
+  const paragrafen = await getParagrafen(hoofdstukId, true);
+  await Promise.all(paragrafen.map((paragraaf) => archiveParagraafBranch(paragraaf.id)));
+  await archiveHoofdstuk(hoofdstukId);
+};
+
+const archiveNiveauBranch = async (niveauId) => {
+  const hoofdstukken = await getHoofdstukken(niveauId, true);
+  await Promise.all(hoofdstukken.map((hoofdstuk) => archiveHoofdstukBranch(hoofdstuk.id)));
+  await archiveNiveau(niveauId);
+};
+
+const archiveLeerjaarBranch = async (leerjaarId) => {
+  const niveaus = await getNiveaus(leerjaarId, true);
+  await Promise.all(niveaus.map((niveau) => archiveNiveauBranch(niveau.id)));
+  await archiveLeerjaar(leerjaarId);
+};
+
+const archiveVakBranch = async (vakId) => {
+  const leerjaren = await getLeerjaren(vakId, true);
+  await Promise.all(leerjaren.map((leerjaar) => archiveLeerjaarBranch(leerjaar.id)));
+  await archiveVak(vakId);
+};
+
+export const archiveContentBranch = async (type, id) => {
+  switch (type) {
+    case 'vak':
+      return archiveVakBranch(id);
+    case 'leerjaar':
+      return archiveLeerjaarBranch(id);
+    case 'niveau':
+      return archiveNiveauBranch(id);
+    case 'hoofdstuk':
+      return archiveHoofdstukBranch(id);
+    case 'paragraaf':
+      return archiveParagraafBranch(id);
+    default:
+      throw new Error(`Archiveren wordt niet ondersteund voor ${type}`);
   }
 };
 
@@ -964,5 +1001,6 @@ export default {
   updateContentBlockOrder,
   archiveParagraaf,
   archiveVraag,
-  archiveContentBlock
+  archiveContentBlock,
+  archiveContentBranch
 };

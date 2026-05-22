@@ -3,12 +3,11 @@
  * Centralized state management for CMS navigation & data
  */
 
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
 import * as cmsService from '../services/cmsService';
 
-export const useCms = () => {
-  // ============ STATE ============
-
+export const useCms = (includeArchived = false) => {
   // Selections
   const [selectedVakId, setSelectedVakId] = useState(null);
   const [selectedLeerjaarId, setSelectedLeerjaarId] = useState(null);
@@ -30,20 +29,67 @@ export const useCms = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ============ LOAD VAKKEN (on mount) ============
-  useEffect(() => {
-    loadVakken();
+  const clearBelowVak = useCallback(() => {
+    setLeerjaren([]);
+    setNiveaus([]);
+    setHoofdstukken([]);
+    setParagrafen([]);
+    setVragen([]);
+    setContentBlocks([]);
+    setSelectedLeerjaarId(null);
+    setSelectedNiveauId(null);
+    setSelectedHoofdstukId(null);
+    setSelectedParagraafId(null);
+    setSelectedVraagId(null);
+  }, []);
+
+  const clearBelowLeerjaar = useCallback(() => {
+    setNiveaus([]);
+    setHoofdstukken([]);
+    setParagrafen([]);
+    setVragen([]);
+    setContentBlocks([]);
+    setSelectedNiveauId(null);
+    setSelectedHoofdstukId(null);
+    setSelectedParagraafId(null);
+    setSelectedVraagId(null);
+  }, []);
+
+  const clearBelowNiveau = useCallback(() => {
+    setHoofdstukken([]);
+    setParagrafen([]);
+    setVragen([]);
+    setContentBlocks([]);
+    setSelectedHoofdstukId(null);
+    setSelectedParagraafId(null);
+    setSelectedVraagId(null);
+  }, []);
+
+  const clearBelowHoofdstuk = useCallback(() => {
+    setParagrafen([]);
+    setVragen([]);
+    setContentBlocks([]);
+    setSelectedParagraafId(null);
+    setSelectedVraagId(null);
+  }, []);
+
+  const clearBelowParagraaf = useCallback(() => {
+    setVragen([]);
+    setContentBlocks([]);
+    setSelectedVraagId(null);
   }, []);
 
   const loadVakken = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await cmsService.getVakken();
+      const data = await cmsService.getVakken(includeArchived);
       setVakken(data);
-      // Auto-select first vak
       if (data.length > 0) {
-        setSelectedVakId(data[0].id);
+        setSelectedVakId((current) => current && data.some((item) => item.id === current) ? current : data[0].id);
+      } else {
+        setSelectedVakId(null);
+        clearBelowVak();
       }
     } catch (err) {
       setError('Failed to load vakken: ' + err.message);
@@ -51,29 +97,18 @@ export const useCms = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // ============ LOAD LEERJAREN (when vak changes) ============
-  useEffect(() => {
-    if (selectedVakId) {
-      loadLeerjaren(selectedVakId);
-    } else {
-      setLeerjaren([]);
-      setSelectedLeerjaarId(null);
-    }
-  }, [selectedVakId]);
+  }, [clearBelowVak, includeArchived]);
 
   const loadLeerjaren = useCallback(async (vakId) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await cmsService.getLeerjaren(vakId);
+      const data = await cmsService.getLeerjaren(vakId, includeArchived);
       setLeerjaren(data);
-      // Auto-select first leerjaar
       if (data.length > 0) {
-        setSelectedLeerjaarId(data[0].id);
+        setSelectedLeerjaarId((current) => current && data.some((item) => item.id === current) ? current : data[0].id);
       } else {
-        setSelectedLeerjaarId(null);
+        clearBelowLeerjaar();
       }
     } catch (err) {
       setError('Failed to load leerjaren: ' + err.message);
@@ -81,29 +116,18 @@ export const useCms = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // ============ LOAD NIVEAUS (when leerjaar changes) ============
-  useEffect(() => {
-    if (selectedLeerjaarId) {
-      loadNiveaus(selectedLeerjaarId);
-    } else {
-      setNiveaus([]);
-      setSelectedNiveauId(null);
-    }
-  }, [selectedLeerjaarId]);
+  }, [clearBelowLeerjaar, includeArchived]);
 
   const loadNiveaus = useCallback(async (leerjaarId) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await cmsService.getNiveaus(leerjaarId);
+      const data = await cmsService.getNiveaus(leerjaarId, includeArchived);
       setNiveaus(data);
-      // Auto-select first niveau
       if (data.length > 0) {
-        setSelectedNiveauId(data[0].id);
+        setSelectedNiveauId((current) => current && data.some((item) => item.id === current) ? current : data[0].id);
       } else {
-        setSelectedNiveauId(null);
+        clearBelowNiveau();
       }
     } catch (err) {
       setError('Failed to load niveaus: ' + err.message);
@@ -111,29 +135,18 @@ export const useCms = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // ============ LOAD HOOFDSTUKKEN (when niveau changes) ============
-  useEffect(() => {
-    if (selectedNiveauId) {
-      loadHoofdstukken(selectedNiveauId);
-    } else {
-      setHoofdstukken([]);
-      setSelectedHoofdstukId(null);
-    }
-  }, [selectedNiveauId]);
+  }, [clearBelowNiveau, includeArchived]);
 
   const loadHoofdstukken = useCallback(async (niveauId) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await cmsService.getHoofdstukken(niveauId);
+      const data = await cmsService.getHoofdstukken(niveauId, includeArchived);
       setHoofdstukken(data);
-      // Auto-select first hoofdstuk
       if (data.length > 0) {
-        setSelectedHoofdstukId(data[0].id);
+        setSelectedHoofdstukId((current) => current && data.some((item) => item.id === current) ? current : data[0].id);
       } else {
-        setSelectedHoofdstukId(null);
+        clearBelowHoofdstuk();
       }
     } catch (err) {
       setError('Failed to load hoofdstukken: ' + err.message);
@@ -141,29 +154,18 @@ export const useCms = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // ============ LOAD PARAGRAFEN (when hoofdstuk changes) ============
-  useEffect(() => {
-    if (selectedHoofdstukId) {
-      loadParagrafen(selectedHoofdstukId);
-    } else {
-      setParagrafen([]);
-      setSelectedParagraafId(null);
-    }
-  }, [selectedHoofdstukId]);
+  }, [clearBelowHoofdstuk, includeArchived]);
 
   const loadParagrafen = useCallback(async (hoofdstukId) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await cmsService.getParagrafen(hoofdstukId);
+      const data = await cmsService.getParagrafen(hoofdstukId, includeArchived);
       setParagrafen(data);
-      // Auto-select first paragraaf
       if (data.length > 0) {
-        setSelectedParagraafId(data[0].id);
+        setSelectedParagraafId((current) => current && data.some((item) => item.id === current) ? current : data[0].id);
       } else {
-        setSelectedParagraafId(null);
+        clearBelowParagraaf();
       }
     } catch (err) {
       setError('Failed to load paragrafen: ' + err.message);
@@ -171,49 +173,27 @@ export const useCms = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // ============ LOAD ALL VRAGEN FOR ENTIRE HOOFDSTUK (for tree rendering) ============
-  useEffect(() => {
-    if (selectedHoofdstukId && paragrafen.length > 0) {
-      loadAllVragenForHoofdstuk(paragrafen);
-    }
-  }, [selectedHoofdstukId, paragrafen]);
+  }, [clearBelowParagraaf, includeArchived]);
 
   const loadAllVragenForHoofdstuk = useCallback(async (paragraafList) => {
     try {
-      // Load vragen for all paragrafen in this hoofdstuk
       const allVragen = [];
       for (const paragraaf of paragraafList) {
-        const data = await cmsService.getVragen(paragraaf.id);
+        const data = await cmsService.getVragen(paragraaf.id, includeArchived);
         allVragen.push(...data);
       }
       setVragen(allVragen);
     } catch (err) {
       console.error('Failed to load all vragen for hoofdstuk:', err);
     }
-  }, []);
-
-  // ============ LOAD VRAGEN (when paragraaf changes) ============
-  useEffect(() => {
-    if (selectedParagraafId) {
-      loadVragen(selectedParagraafId);
-      loadContentBlocks(selectedParagraafId);
-    } else {
-      setVragen([]);
-      setContentBlocks([]);
-      setSelectedVraagId(null);
-    }
-  }, [selectedParagraafId]);
+  }, [includeArchived]);
 
   const loadVragen = useCallback(async (paragraafId) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await cmsService.getVragen(paragraafId);
+      const data = await cmsService.getVragen(paragraafId, includeArchived);
       setVragen(data);
-      // DON'T auto-select first vraag - show paragraaf overview instead
-      // User can click on a specific vraag in the tree if needed
       setSelectedVraagId(null);
     } catch (err) {
       setError('Failed to load vragen: ' + err.message);
@@ -221,13 +201,13 @@ export const useCms = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [includeArchived]);
 
   const loadContentBlocks = useCallback(async (paragraafId) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await cmsService.getContentBlocks(paragraafId);
+      const data = await cmsService.getContentBlocks(paragraafId, true, includeArchived);
       setContentBlocks(data);
     } catch (err) {
       setError('Failed to load content blocks: ' + err.message);
@@ -235,34 +215,70 @@ export const useCms = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [includeArchived]);
 
-  // ============ MANUAL SELECTORS ============
+  useEffect(() => {
+    loadVakken();
+  }, [loadVakken]);
+
+  useEffect(() => {
+    if (selectedVakId) loadLeerjaren(selectedVakId);
+  }, [loadLeerjaren, selectedVakId]);
+
+  useEffect(() => {
+    if (selectedLeerjaarId) loadNiveaus(selectedLeerjaarId);
+  }, [loadNiveaus, selectedLeerjaarId]);
+
+  useEffect(() => {
+    if (selectedNiveauId) loadHoofdstukken(selectedNiveauId);
+  }, [loadHoofdstukken, selectedNiveauId]);
+
+  useEffect(() => {
+    if (selectedHoofdstukId) loadParagrafen(selectedHoofdstukId);
+  }, [loadParagrafen, selectedHoofdstukId]);
+
+  useEffect(() => {
+    if (selectedHoofdstukId && paragrafen.length > 0) {
+      loadAllVragenForHoofdstuk(paragrafen);
+    }
+  }, [loadAllVragenForHoofdstuk, paragrafen, selectedHoofdstukId]);
+
+  useEffect(() => {
+    if (selectedParagraafId) {
+      loadVragen(selectedParagraafId);
+      loadContentBlocks(selectedParagraafId);
+    }
+  }, [loadContentBlocks, loadVragen, selectedParagraafId]);
+
   const setVak = useCallback((vakId) => {
     setSelectedVakId(vakId);
-  }, []);
+    clearBelowVak();
+  }, [clearBelowVak]);
 
   const setLeerjaar = useCallback((leerjaarId) => {
     setSelectedLeerjaarId(leerjaarId);
-  }, []);
+    clearBelowLeerjaar();
+  }, [clearBelowLeerjaar]);
 
   const setNiveau = useCallback((niveauId) => {
     setSelectedNiveauId(niveauId);
-  }, []);
+    clearBelowNiveau();
+  }, [clearBelowNiveau]);
 
   const setHoofdstuk = useCallback((hoofdstukId) => {
     setSelectedHoofdstukId(hoofdstukId);
-  }, []);
+    clearBelowHoofdstuk();
+  }, [clearBelowHoofdstuk]);
 
   const setParagraaf = useCallback((paragraafId) => {
     setSelectedParagraafId(paragraafId);
-  }, []);
+    clearBelowParagraaf();
+  }, [clearBelowParagraaf]);
 
   const setVraag = useCallback((vraagId) => {
     setSelectedVraagId(vraagId);
   }, []);
 
-  // ============ BREADCRUMB DATA ============
   const breadcrumb = {
     vak: vakken.find(v => v.id === selectedVakId),
     leerjaar: leerjaren.find(l => l.id === selectedLeerjaarId),
@@ -272,25 +288,19 @@ export const useCms = () => {
     vraag: vragen.find(v => v.id === selectedVraagId)
   };
 
-  // ============ RETURN ============
   return {
-    // Selections (IDs)
     selectedVakId,
     selectedLeerjaarId,
     selectedNiveauId,
     selectedHoofdstukId,
     selectedParagraafId,
     selectedVraagId,
-
-    // Setters
     setVak,
     setLeerjaar,
     setNiveau,
     setHoofdstuk,
     setParagraaf,
     setVraag,
-
-    // Data arrays
     vakken,
     leerjaren,
     niveaus,
@@ -298,23 +308,15 @@ export const useCms = () => {
     paragrafen,
     vragen,
     contentBlocks,
-
-    // Current selections (objects)
     currentVak: breadcrumb.vak,
     currentLeerjaar: breadcrumb.leerjaar,
     currentNiveau: breadcrumb.niveau,
     currentHoofdstuk: breadcrumb.hoofdstuk,
     currentParagraaf: breadcrumb.paragraaf,
     currentVraag: breadcrumb.vraag,
-
-    // Breadcrumb helper
     breadcrumb,
-
-    // UI state
     loading,
     error,
-
-    // Refetch
     loadVakken,
     loadLeerjaren,
     loadNiveaus,

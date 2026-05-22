@@ -2,9 +2,15 @@ import { CONTENT_BLOCK_TYPES } from './contentBlockUtils.js';
 
 const normalizeText = (value = '') => String(value).toLowerCase().trim();
 
-const visibleBlocks = (blocks = []) => blocks.filter((block) => block && block.isArchived !== true);
+export const isCmsItemArchived = (item = {}) => item.isArchived === true || item.isActive === false;
 
-export const getContentBlockTypeCounts = (blocks = []) => {
+const visibleBlocks = (blocks = [], includeArchived = false) =>
+  blocks.filter((block) => block && (includeArchived || !isCmsItemArchived(block)));
+
+const visibleItems = (items = [], includeArchived = false) =>
+  items.filter((item) => item && (includeArchived || !isCmsItemArchived(item)));
+
+export const getContentBlockTypeCounts = (blocks = [], { includeArchived = false } = {}) => {
   const counts = CONTENT_BLOCK_TYPES.reduce(
     (acc, type) => ({
       ...acc,
@@ -17,7 +23,7 @@ export const getContentBlockTypeCounts = (blocks = []) => {
     }
   );
 
-  visibleBlocks(blocks).forEach((block) => {
+  visibleBlocks(blocks, includeArchived).forEach((block) => {
     counts.total += 1;
     if (CONTENT_BLOCK_TYPES.includes(block.type)) counts[block.type] += 1;
     if (block.status === 'published') counts.published += 1;
@@ -55,62 +61,74 @@ export const buildCmsNavigationTree = (
     vragen = [],
     contentBlocks = []
   },
-  { query = '' } = {}
+  { query = '', includeArchived = false } = {}
 ) => {
   const normalizedQuery = normalizeText(query);
+  const visibleVakken = visibleItems(vakken, includeArchived);
+  const visibleLeerjaren = visibleItems(leerjaren, includeArchived);
+  const visibleNiveaus = visibleItems(niveaus, includeArchived);
+  const visibleHoofdstukken = visibleItems(hoofdstukken, includeArchived);
+  const visibleParagrafen = visibleItems(paragrafen, includeArchived);
+  const visibleVragen = visibleItems(vragen, includeArchived);
+  const visibleContentBlocks = visibleItems(contentBlocks, includeArchived);
 
-  const tree = vakken.map((vak) => {
-    const vakLeerjaren = leerjaren.filter((leerjaar) => leerjaar.vakId === vak.id);
+  const tree = visibleVakken.map((vak) => {
+    const vakLeerjaren = visibleLeerjaren.filter((leerjaar) => leerjaar.vakId === vak.id);
 
     return {
       ...vak,
       type: 'vak',
+      archived: isCmsItemArchived(vak),
       label: vak.name || 'Vak zonder naam',
       counts: {
         leerjaren: vakLeerjaren.length
       },
       children: vakLeerjaren.map((leerjaar) => {
-        const leerjaarNiveaus = niveaus.filter((niveau) => niveau.leerjaarId === leerjaar.id);
+        const leerjaarNiveaus = visibleNiveaus.filter((niveau) => niveau.leerjaarId === leerjaar.id);
 
         return {
           ...leerjaar,
           type: 'leerjaar',
+          archived: isCmsItemArchived(leerjaar),
           label: leerjaar.label || `Jaar ${leerjaar.year}`,
           counts: {
             niveaus: leerjaarNiveaus.length
           },
           children: leerjaarNiveaus.map((niveau) => {
-            const niveauHoofdstukken = hoofdstukken.filter((hoofdstuk) => hoofdstuk.niveauId === niveau.id);
+            const niveauHoofdstukken = visibleHoofdstukken.filter((hoofdstuk) => hoofdstuk.niveauId === niveau.id);
 
             return {
               ...niveau,
               type: 'niveau',
+              archived: isCmsItemArchived(niveau),
               label: `${niveau.label || niveau.name || 'Niveau'}${niveau.name && niveau.name !== niveau.label ? ` - ${niveau.name}` : ''}`,
               counts: {
                 hoofdstukken: niveauHoofdstukken.length
               },
               children: niveauHoofdstukken.map((hoofdstuk) => {
-                const hoofdstukParagrafen = paragrafen.filter((paragraaf) => paragraaf.hoofdstukId === hoofdstuk.id);
+                const hoofdstukParagrafen = visibleParagrafen.filter((paragraaf) => paragraaf.hoofdstukId === hoofdstuk.id);
 
                 return {
                   ...hoofdstuk,
                   type: 'hoofdstuk',
+                  archived: isCmsItemArchived(hoofdstuk),
                   label: hoofdstuk.title || (hoofdstuk.number ? `Hoofdstuk ${hoofdstuk.number}` : 'Hoofdstuk zonder naam'),
                   counts: {
                     paragrafen: hoofdstukParagrafen.length
                   },
                   children: hoofdstukParagrafen.map((paragraaf) => {
-                    const paragraafBlocks = contentBlocks.filter((block) => block.paragraafId === paragraaf.id);
+                    const paragraafBlocks = visibleContentBlocks.filter((block) => block.paragraafId === paragraaf.id);
 
                     return {
                       ...paragraaf,
                       type: 'paragraaf',
+                      archived: isCmsItemArchived(paragraaf),
                       label: paragraaf.title || 'Paragraaf zonder naam',
                       counts: {
-                        vragen: vragen.filter((vraag) => vraag.paragraafId === paragraaf.id).length,
-                        blocks: getContentBlockTypeCounts(paragraafBlocks)
+                        vragen: visibleVragen.filter((vraag) => vraag.paragraafId === paragraaf.id).length,
+                        blocks: getContentBlockTypeCounts(paragraafBlocks, { includeArchived })
                       },
-                      searchText: vragen
+                      searchText: visibleVragen
                         .filter((vraag) => vraag.paragraafId === paragraaf.id)
                         .map((vraag) => `Q${vraag.number}: ${vraag.title || 'Naamloze vraag'}`)
                         .join(' '),

@@ -18,7 +18,8 @@ import useCms from '../../hooks/useCms';
 import * as cmsService from '../../services/cmsService';
 
 export default function CmsShell() {
-  const cms = useCms();
+  const [showArchived, setShowArchived] = useState(false);
+  const cms = useCms(showArchived);
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [createModal, setCreateModal] = useState(null); // { type, parentId }
@@ -73,34 +74,69 @@ export default function CmsShell() {
 
   // Handle archiving
   const handleArchive = async (type, id) => {
-    if (!window.confirm(`Are you sure you want to archive this ${type}?`)) {
+    if (!window.confirm(`Weet je zeker dat je dit onderdeel wilt archiveren? Alles onder deze tak wordt ook gearchiveerd.`)) {
       return;
     }
 
     try {
       setArchiveLoading(true);
-      switch (type) {
-        case 'vak':
-          await cmsService.archiveVak(id);
-          cms.loadVakken();
-          break;
-        case 'leerjaar':
-          await cmsService.archiveLeerjaar(id);
-          cms.loadLeerjaren(cms.selectedVakId);
-          break;
-        case 'niveau':
-          await cmsService.archiveNiveau(id);
-          cms.loadNiveaus(cms.selectedLeerjaarId);
-          break;
-        case 'hoofdstuk':
-          await cmsService.archiveHoofdstuk(id);
-          cms.loadHoofdstukken(cms.selectedNiveauId);
-          break;
-        default:
-          break;
-      }
+      await cmsService.archiveContentBranch(type, id);
+      await reloadCmsContext();
     } catch (err) {
-      alert('Error archiving: ' + err.message);
+      alert('Archiveren is mislukt: ' + err.message);
+    } finally {
+      setArchiveLoading(false);
+    }
+  };
+
+  const reloadCmsContext = async () => {
+    await cms.loadVakken();
+    if (cms.selectedVakId) await cms.loadLeerjaren(cms.selectedVakId);
+    if (cms.selectedLeerjaarId) await cms.loadNiveaus(cms.selectedLeerjaarId);
+    if (cms.selectedNiveauId) await cms.loadHoofdstukken(cms.selectedNiveauId);
+    if (cms.selectedHoofdstukId) await cms.loadParagrafen(cms.selectedHoofdstukId);
+    if (cms.selectedParagraafId) {
+      await cms.loadVragen(cms.selectedParagraafId);
+      await cms.loadContentBlocks(cms.selectedParagraafId);
+    }
+  };
+
+  const handleRenameTreeNode = async (node, nextName) => {
+    switch (node.type) {
+      case 'vak':
+        await cmsService.updateVak(node.id, { name: nextName });
+        break;
+      case 'leerjaar':
+        await cmsService.updateLeerjaar(node.id, { label: nextName });
+        break;
+      case 'niveau':
+        await cmsService.updateNiveau(node.id, { label: nextName, name: nextName });
+        break;
+      case 'hoofdstuk':
+        await cmsService.updateHoofdstuk(node.id, { title: nextName, number: null });
+        break;
+      case 'paragraaf':
+        await cmsService.updateParagraaf(node.id, { title: nextName });
+        break;
+      default:
+        return;
+    }
+
+    await reloadCmsContext();
+  };
+
+  const handleArchiveTreeNode = async (node) => {
+    const confirmed = window.confirm(
+      `Weet je zeker dat je "${node.label}" wilt archiveren?\n\nAlles onder deze tak wordt ook gearchiveerd. Je kunt het terugzien via "Archief tonen".`
+    );
+    if (!confirmed) return;
+
+    try {
+      setArchiveLoading(true);
+      await cmsService.archiveContentBranch(node.type, node.id);
+      await reloadCmsContext();
+    } catch (err) {
+      alert('Archiveren is mislukt: ' + err.message);
     } finally {
       setArchiveLoading(false);
     }
@@ -201,8 +237,12 @@ export default function CmsShell() {
             onCreateNiveau={(leerjaarId) => setCreateModal({ type: 'niveau', parentId: leerjaarId })}
             onCreateHoofdstuk={(niveauId) => setCreateModal({ type: 'hoofdstuk', parentId: niveauId })}
             onCreateParagraaf={(hoofdstukId) => setCreateModal({ type: 'paragraaf', parentId: hoofdstukId })}
+            onRenameNode={handleRenameTreeNode}
+            onArchiveNode={handleArchiveTreeNode}
             sidebarOpen={sidebarOpen}
             onToggleSidebar={handleToggleSidebar}
+            showArchived={showArchived}
+            onToggleShowArchived={() => setShowArchived((current) => !current)}
           />
         </div>
 

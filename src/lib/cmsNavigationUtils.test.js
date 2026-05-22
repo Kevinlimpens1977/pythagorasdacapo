@@ -64,3 +64,22 @@ test('buildCmsNavigationTree filters by question search text while keeping ances
   assert.equal(paragraaf.id, 'p-1');
   assert.deepEqual(paragraaf.children, []);
 });
+
+test('buildCmsNavigationTree hides archived items unless archive mode is enabled', () => {
+  const archivedFixtures = {
+    ...fixtures,
+    hoofdstukken: [
+      ...fixtures.hoofdstukken,
+      { id: 'h-archived', niveauId: 'niveau-1', title: 'Gearchiveerd hoofdstuk', isArchived: true }
+    ]
+  };
+
+  const normalTree = buildCmsNavigationTree(archivedFixtures);
+  const normalHoofdstukken = normalTree[0].children[0].children[0].children;
+  assert.equal(normalHoofdstukken.some((hoofdstuk) => hoofdstuk.id === 'h-archived'), false);
+
+  const archiveTree = buildCmsNavigationTree(archivedFixtures, { includeArchived: true });
+  const archiveHoofdstukken = archiveTree[0].children[0].children[0].children;
+  const archivedHoofdstuk = archiveHoofdstukken.find((hoofdstuk) => hoofdstuk.id === 'h-archived');
+  assert.equal(archivedHoofdstuk.archived, true);
+});
