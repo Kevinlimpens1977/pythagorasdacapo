@@ -294,7 +294,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`rounded-md px-2.5 py-1 text-sm font-black ${editor.isActive('bold') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+        className={`rounded-md px-2.5 py-1 text-sm font-black ${editor.isActive('bold') ? 'helix-gradient text-white' : 'bg-white text-slate-700'}`}
         title="Vet"
       >
         B
@@ -302,7 +302,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`rounded-md px-2.5 py-1 text-sm italic ${editor.isActive('italic') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+        className={`rounded-md px-2.5 py-1 text-sm italic ${editor.isActive('italic') ? 'helix-gradient text-white' : 'bg-white text-slate-700'}`}
         title="Cursief"
       >
         I
@@ -310,7 +310,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`rounded-md px-2.5 py-1 text-sm font-bold ${editor.isActive('bulletList') ? 'bg-blue-600 text-white' : 'bg-white text-slate-700'}`}
+        className={`rounded-md px-2.5 py-1 text-sm font-bold ${editor.isActive('bulletList') ? 'helix-gradient text-white' : 'bg-white text-slate-700'}`}
         title="Lijst"
       >
         Lijst
@@ -354,7 +354,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
         <button
           type="button"
           onClick={onOpenFullscreen}
-          className="ml-auto inline-flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-black text-blue-700 transition hover:bg-blue-100"
+          className="ml-auto inline-flex items-center gap-2 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1.5 text-sm font-black text-[var(--helix-purple)] transition hover:bg-white"
           title="Editor groot openen"
         >
           <Maximize2 size={15} />
@@ -426,7 +426,7 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder, 
         <div className="fixed inset-0 z-[1000] flex flex-col bg-slate-950">
           <div className="flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-950 px-5 py-3 text-white">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">Editor groot</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-fuchsia-200">Editor groot</p>
               <h2 className="text-lg font-black">{label}</h2>
             </div>
             <button
@@ -800,7 +800,7 @@ const LessonBlockStudio = ({
 
   if (block.type === 'question') {
     return (
-      <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-5">
+      <div className="rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/60 p-5">
         <div className="grid gap-4 md:grid-cols-[1fr_12rem]">
           <div>
             <label className="mb-2 block text-sm font-bold text-slate-700">Bloktitel</label>
@@ -846,7 +846,7 @@ const LessonBlockStudio = ({
           <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
             Sluit
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+          <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
             <Save size={16} />
             {saving ? 'Opslaan...' : 'Blok opslaan'}
           </button>
@@ -857,8 +857,8 @@ const LessonBlockStudio = ({
 
   if (block.type === 'game') {
     return (
-      <div className="overflow-hidden rounded-lg border border-blue-200 bg-blue-50/60">
-        <div className="border-b border-blue-100 bg-white px-5 py-4">
+      <div className="overflow-hidden rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/60">
+        <div className="border-b border-fuchsia-100 bg-white px-5 py-4">
           <div className="grid gap-3 md:grid-cols-[1fr_12rem]">
             <div>
               <label className="mb-2 block text-sm font-bold text-slate-700">Bloktitel</label>
@@ -897,7 +897,7 @@ const LessonBlockStudio = ({
           {selectedGame && (
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-md bg-blue-100 px-2 py-1 text-xs font-black uppercase tracking-wide text-blue-700">
+                <span className="rounded-md bg-[var(--helix-soft-lavender)] px-2 py-1 text-xs font-black uppercase tracking-wide text-[var(--helix-purple)]">
                   {selectedGame.status}
                 </span>
                 <span className="rounded-md bg-white px-2 py-1 text-xs font-bold text-slate-600">
@@ -923,7 +923,7 @@ const LessonBlockStudio = ({
             <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
               Sluit
             </button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+            <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
               <Save size={16} />
               {saving ? 'Opslaan...' : 'Blok opslaan'}
             </button>
@@ -935,8 +935,8 @@ const LessonBlockStudio = ({
 
   if (block.type === 'slidedeck') {
     return (
-      <div className="overflow-hidden rounded-lg border border-blue-200 bg-blue-50/60">
-        <div className="border-b border-blue-100 bg-white px-5 py-4">
+      <div className="overflow-hidden rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/60">
+        <div className="border-b border-fuchsia-100 bg-white px-5 py-4">
           <div className="grid gap-3 md:grid-cols-[1fr_12rem]">
             <div>
               <label className="mb-2 block text-sm font-bold text-slate-700">Bloktitel</label>
@@ -996,7 +996,7 @@ const LessonBlockStudio = ({
                   href={selectedSlidedeck.generatedDeckPdf?.downloadURL}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-black text-blue-700 hover:bg-blue-100"
+                  className="rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)] hover:bg-white"
                 >
                   Bekijk PDF
                 </a>
@@ -1020,7 +1020,7 @@ const LessonBlockStudio = ({
             <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
               Sluit
             </button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+            <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
               <Save size={16} />
               {saving ? 'Opslaan...' : 'Blok opslaan'}
             </button>
@@ -1031,15 +1031,15 @@ const LessonBlockStudio = ({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-blue-200 bg-blue-50/60">
-      <div className="border-b border-blue-100 bg-white px-5 py-4">
+    <div className="overflow-hidden rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/60">
+      <div className="border-b border-fuchsia-100 bg-white px-5 py-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
               <Icon size={22} />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Lesblok studio</p>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Lesblok studio</p>
               <h4 className="text-lg font-black text-slate-950">{CONTENT_BLOCK_LABELS[block.type]}</h4>
             </div>
           </div>
@@ -1098,7 +1098,7 @@ const LessonBlockStudio = ({
             <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
               Sluit
             </button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+            <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
               <Save size={16} />
               {saving ? 'Opslaan...' : 'Opslaan'}
             </button>

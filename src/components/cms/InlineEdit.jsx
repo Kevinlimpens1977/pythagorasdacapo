@@ -3,7 +3,7 @@
  * Inline edit mode for text fields with save/cancel
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Check, X } from 'lucide-react';
 
 export default function InlineEdit({
@@ -57,7 +57,7 @@ export default function InlineEdit({
           autoFocus
           disabled={isSaving}
           className={`
-            border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500
+            rounded-2xl border border-[var(--helix-border)] px-3 py-2 text-[var(--helix-navy)] focus:outline-none focus:ring-4 focus:ring-fuchsia-100
             ${inputClassName}
             ${isSaving ? 'opacity-50' : ''}
           `}
@@ -89,7 +89,7 @@ export default function InlineEdit({
       <div className={className}>{value}</div>
       <button
         onClick={() => setIsEditing(true)}
-        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors opacity-0 group-hover:opacity-100"
+        className="rounded-xl p-2 text-[var(--helix-muted)] opacity-0 transition-colors hover:bg-[var(--helix-surface-soft)] hover:text-[var(--helix-purple)] group-hover:opacity-100"
         title="Edit"
       >
         ✏️

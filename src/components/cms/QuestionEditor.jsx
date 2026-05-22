@@ -4,7 +4,7 @@
  * Uses TipTap for rich text editing
  */
 
-import React, { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Plus, Trash2, Star } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -12,14 +12,11 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
 import Color from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
-import { auth } from '../../services/firebase';
-import * as cmsService from '../../services/cmsService';
 
 const QuestionEditorInner = forwardRef(function QuestionEditor(
   {
     vraag,
-    onEditorReady,
-    userId: providedUserId
+    onEditorReady
   },
   ref
 ) {
@@ -31,7 +28,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   const [showCalculator, setShowCalculator] = useState(vraag?.vraagMetadata?.showCalculator || false);
   const [hints, setHints] = useState(vraag?.vraagMetadata?.hints || []);
   const [newHint, setNewHint] = useState('');
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
 
   // Antwoord state (per vraagtype)
   const [antwoordExpected, setAntwoordExpected] = useState(vraag?.antwoord?.expected || '');
@@ -124,7 +121,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="input-standard w-full"
           placeholder="Vraag titel"
         />
       </div>
@@ -138,7 +135,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           <select
             value={vraagtype}
             onChange={(e) => setVraagtype(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input-standard w-full"
           >
             <option value="open">Open vraag</option>
             <option value="meerkeuze">Meerkeuze</option>
@@ -152,7 +149,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input-standard w-full"
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
@@ -174,7 +171,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
               disabled={!editor.can().chain().focus().toggleBold().run()}
               className={`px-3 py-1 rounded text-sm font-bold transition-colors ${
                 editor.isActive('bold')
-                  ? 'bg-blue-500 text-white'
+                  ? 'helix-gradient text-white'
                   : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
               title="Vet (Ctrl+B)"
@@ -186,7 +183,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
               disabled={!editor.can().chain().focus().toggleItalic().run()}
               className={`px-3 py-1 rounded text-sm italic transition-colors ${
                 editor.isActive('italic')
-                  ? 'bg-blue-500 text-white'
+                  ? 'helix-gradient text-white'
                   : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
               title="Cursief (Ctrl+I)"
@@ -198,7 +195,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
               disabled={!editor.can().chain().focus().toggleUnderline().run()}
               className={`px-3 py-1 rounded text-sm underline transition-colors ${
                 editor.isActive('underline')
-                  ? 'bg-blue-500 text-white'
+                  ? 'helix-gradient text-white'
                   : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
               title="Onderstreept (Ctrl+U)"
@@ -246,7 +243,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                 editor.isActive('bulletList')
-                  ? 'bg-blue-500 text-white'
+                  ? 'helix-gradient text-white'
                   : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
               title="Opsomming"
@@ -257,7 +254,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                 editor.isActive('orderedList')
-                  ? 'bg-blue-500 text-white'
+                  ? 'helix-gradient text-white'
                   : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
               title="Genummerde lijst"
@@ -299,7 +296,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             type="checkbox"
             checked={showCalculator}
             onChange={(e) => setShowCalculator(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100"
           />
           <span className="text-sm font-medium text-gray-700">
             Rekenmachine beschikbaar
@@ -319,7 +316,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             {hints.map((hint, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3"
+                className="flex items-center justify-between rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] p-3"
               >
                 <span className="text-sm text-gray-700">{hint}</span>
                 <button
@@ -340,12 +337,12 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             value={newHint}
             onChange={(e) => setNewHint(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddHint()}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="input-standard flex-1"
             placeholder="Voeg een hint toe..."
           />
           <button
             onClick={handleAddHint}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            className="btn-primary px-4 py-2 text-sm"
           >
             <Plus size={18} />
             Toevoegen

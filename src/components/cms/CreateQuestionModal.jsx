@@ -3,10 +3,16 @@
  * Modal for creating a new vraag (question)
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { auth } from '../../services/firebase';
 import * as cmsService from '../../services/cmsService';
+
+const getNextQuestionNumber = (vragen = []) => {
+  if (!vragen.length) return '1';
+  const maxNumber = Math.max(...vragen.map(v => v.number || 0));
+  return (maxNumber + 1).toString();
+};
 
 export default function CreateQuestionModal({
   paragraafId,
@@ -15,30 +21,11 @@ export default function CreateQuestionModal({
   onClose
 }) {
   // Form state
-  const [number, setNumber] = useState('');
+  const [number, setNumber] = useState(() => getNextQuestionNumber(existingVragen));
   const [title, setTitle] = useState('');
   const [vraagtype, setVraagtype] = useState('open');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(null);
-  const [userId, setUserId] = useState(null);
-
-  // Get userId from Firebase
-  useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      setUserId(currentUser.uid);
-    }
-  }, []);
-
-  // Auto-suggest next question number
-  useEffect(() => {
-    if (existingVragen && existingVragen.length > 0) {
-      const maxNumber = Math.max(...existingVragen.map(v => v.number || 0));
-      setNumber((maxNumber + 1).toString());
-    } else {
-      setNumber('1');
-    }
-  }, [existingVragen]);
 
   // Create question
   const handleCreate = async (e) => {
@@ -54,6 +41,7 @@ export default function CreateQuestionModal({
       return;
     }
 
+    const userId = auth.currentUser?.uid;
     if (!userId) {
       setError('User ID not found. Please refresh and try again.');
       return;
@@ -95,16 +83,16 @@ export default function CreateQuestionModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--helix-navy)]/45 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md overflow-hidden rounded-[2rem] border border-[var(--helix-border)] bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">
+        <div className="helix-gradient flex items-center justify-between p-6 text-white">
+          <h2 className="font-display text-xl font-extrabold">
             ➕ Nieuwe Vraag
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="rounded-2xl p-2 transition-colors hover:bg-white/20"
           >
             <X size={20} />
           </button>
@@ -120,14 +108,14 @@ export default function CreateQuestionModal({
 
           {/* Number */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-bold text-[var(--helix-navy)]">
               Vraag Nummer
             </label>
             <input
               type="number"
               value={number}
               onChange={(e) => setNumber(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-standard w-full"
               placeholder="1"
               min="1"
               required
@@ -136,14 +124,14 @@ export default function CreateQuestionModal({
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-bold text-[var(--helix-navy)]">
               Titel
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-standard w-full"
               placeholder="Vraag titel"
               required
             />
@@ -151,13 +139,13 @@ export default function CreateQuestionModal({
 
           {/* Vraagtype */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="mb-2 block text-sm font-bold text-[var(--helix-navy)]">
               Vraagtype
             </label>
             <select
               value={vraagtype}
               onChange={(e) => setVraagtype(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="input-standard w-full"
             >
               <option value="open">Open vraag</option>
               <option value="meerkeuze">Meerkeuze</option>
@@ -170,14 +158,14 @@ export default function CreateQuestionModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              className="rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-2 font-extrabold text-[var(--helix-navy)] transition hover:bg-[var(--helix-bg)]"
             >
               Annuleer
             </button>
             <button
               type="submit"
               disabled={isCreating}
-              className="bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+              className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
             >
               <Plus size={18} />
               {isCreating ? 'Aanmaken...' : 'Aanmaken'}

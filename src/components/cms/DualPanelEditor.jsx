@@ -304,7 +304,7 @@ export default function DualPanelEditor({
             <button
               onClick={handleProcessCrops}
               disabled={isSaving}
-              className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+              className="btn-primary px-6 py-2 disabled:opacity-50"
             >
               📐 {isSaving ? 'Verwerken...' : 'Crop Verwerken'}
             </button>
@@ -344,7 +344,7 @@ export default function DualPanelEditor({
         {/* Resizable Divider */}
         <div
           onMouseDown={handleMouseDown}
-          className="w-1 bg-gray-300 hover:bg-blue-500 cursor-col-resize transition-colors select-none"
+          className="w-1 cursor-col-resize select-none bg-[var(--helix-border)] transition-colors hover:bg-[var(--helix-purple)]"
           style={{ flex: '0 0 auto' }}
         />
 

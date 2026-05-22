@@ -261,7 +261,7 @@ export default function CmsShell() {
           </div>
           {cms.loading && (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">Loading...</p>
+              <p className="text-sm font-bold text-[var(--helix-muted)]">Lesstof laden...</p>
             </div>
           )}
 
@@ -275,7 +275,7 @@ export default function CmsShell() {
           {/* VAK Detail Panel */}
           {!cms.loading && !cms.error && cms.selectedVakId && !cms.selectedLeerjaarId && cms.currentVak && (
             <div className="max-w-2xl">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <div className="helix-surface p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="text-3xl">{cms.currentVak.emoji || '📚'}</span>
                   <h2 className="text-3xl font-bold text-gray-900">{cms.currentVak.name}</h2>
@@ -301,11 +301,11 @@ export default function CmsShell() {
                   </div>
                 )}
 
-                <p className="text-gray-600 text-sm mb-6">{cms.currentVak.description || 'No description'}</p>
+                <p className="mb-6 text-sm text-[var(--helix-muted)]">{cms.currentVak.description || 'Geen beschrijving'}</p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setCreateModal({ type: 'leerjaar', parentId: cms.selectedVakId })}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    className="btn-primary px-4 py-2 text-sm">
                     <Plus size={16} />
                     Voeg Leerjaar toe
                   </button>
@@ -324,7 +324,7 @@ export default function CmsShell() {
           {/* LEERJAAR Detail Panel */}
           {!cms.loading && !cms.error && cms.selectedLeerjaarId && !cms.selectedNiveauId && cms.currentLeerjaar && (
             <div className="max-w-2xl">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <div className="helix-surface p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="text-3xl">{cms.currentLeerjaar.emoji || '📅'}</span>
                   <h2 className="text-3xl font-bold text-gray-900">Jaar {cms.currentLeerjaar.year}</h2>
@@ -354,7 +354,7 @@ export default function CmsShell() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setCreateModal({ type: 'niveau', parentId: cms.selectedLeerjaarId })}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    className="btn-primary px-4 py-2 text-sm">
                     <Plus size={16} />
                     Voeg Niveau toe
                   </button>
@@ -373,7 +373,7 @@ export default function CmsShell() {
           {/* NIVEAU Detail Panel */}
           {!cms.loading && !cms.error && cms.selectedNiveauId && !cms.selectedHoofdstukId && cms.currentNiveau && (
             <div className="max-w-2xl">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <div className="helix-surface p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="text-3xl">{cms.currentNiveau.emoji || '📊'}</span>
                   <h2 className="text-3xl font-bold text-gray-900">{cms.currentNiveau.label}</h2>
@@ -399,11 +399,11 @@ export default function CmsShell() {
                   </div>
                 )}
 
-                <p className="text-gray-600 text-sm mb-6">{cms.currentNiveau.description || 'No description'}</p>
+                <p className="mb-6 text-sm text-[var(--helix-muted)]">{cms.currentNiveau.description || 'Geen beschrijving'}</p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setCreateModal({ type: 'hoofdstuk', parentId: cms.selectedNiveauId })}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    className="btn-primary px-4 py-2 text-sm">
                     <Plus size={16} />
                     Voeg Hoofdstuk toe
                   </button>
@@ -422,7 +422,7 @@ export default function CmsShell() {
           {/* HOOFDSTUK Detail Panel */}
           {!cms.loading && !cms.error && cms.selectedHoofdstukId && !cms.selectedParagraafId && cms.currentHoofdstuk && (
             <div className="max-w-2xl">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <div className="helix-surface p-8">
                 <div className="flex items-start gap-3 mb-6">
                   <span className="text-3xl">{cms.currentHoofdstuk.emoji || '📖'}</span>
                   <InlineEdit
@@ -460,14 +460,14 @@ export default function CmsShell() {
                     />
                   </div>
                 )}
-                <p className="text-gray-600 text-sm mb-6">{cms.currentHoofdstuk.description || 'No description'}</p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-blue-900"><strong>Paragrafen:</strong> {cms.paragrafen.length}</p>
+                <p className="mb-6 text-sm text-[var(--helix-muted)]">{cms.currentHoofdstuk.description || 'Geen beschrijving'}</p>
+                <div className="helix-alert mb-6 p-4">
+                  <p className="text-sm"><strong>Paragrafen:</strong> {cms.paragrafen.length}</p>
                 </div>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setCreateModal({ type: 'paragraaf', parentId: cms.selectedHoofdstukId })}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+                    className="btn-primary px-4 py-2 text-sm">
                     <Plus size={16} />
                     Voeg Paragraaf toe
                   </button>
@@ -504,7 +504,7 @@ export default function CmsShell() {
           {/* Legacy paragraaf question panel (replaced by lesson route builder) */}
           {showLegacyParagraafPanel && !cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
             <div className="max-w-4xl">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <div className="helix-surface p-8">
                 <InlineEdit
                   value={`${cms.currentParagraaf.code}. ${cms.currentParagraaf.title}`}
                   onSave={async (newValue) => {
@@ -560,7 +560,7 @@ export default function CmsShell() {
               ) : (
                 // Read-only mode
                 <div className="max-w-4xl">
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                  <div className="helix-surface p-8">
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h2 className="text-3xl font-bold text-gray-900 mb-1">
@@ -618,7 +618,7 @@ export default function CmsShell() {
                   <div>
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                      className="btn-primary px-6 py-2 text-sm">
                       ✏️ Edit Question
                     </button>
                   </div>
@@ -632,7 +632,7 @@ export default function CmsShell() {
           {!cms.loading && !cms.error && !cms.selectedVakId && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <p className="text-gray-500 text-lg">Select content from the tree to get started</p>
+                <p className="text-lg font-bold text-[var(--helix-muted)]">Kies links lesstof om te starten</p>
               </div>
             </div>
           )}

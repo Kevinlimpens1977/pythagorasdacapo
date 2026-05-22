@@ -20,12 +20,12 @@ import { buildCmsNavigationTree } from '../../lib/cmsNavigationUtils';
 const STORAGE_KEY = 'cms-tree-expanded-ids';
 
 const typeConfig = {
-  vak: { icon: BookOpen, accent: 'text-blue-600', childLabel: 'jaren' },
+  vak: { icon: BookOpen, accent: 'text-[var(--helix-purple)]', childLabel: 'jaren' },
   leerjaar: { icon: BarChart3, accent: 'text-slate-600', childLabel: 'niveaus' },
   niveau: { icon: Layers3, accent: 'text-violet-600', childLabel: 'hoofdstukken' },
-  hoofdstuk: { icon: FileText, accent: 'text-emerald-600', childLabel: 'paragrafen' },
-  paragraaf: { icon: Boxes, accent: 'text-amber-600', childLabel: 'lesblokken' },
-  vraag: { icon: FileQuestion, accent: 'text-rose-500', childLabel: 'vraag' }
+  hoofdstuk: { icon: FileText, accent: 'text-[var(--helix-success)]', childLabel: 'paragrafen' },
+  paragraaf: { icon: Boxes, accent: 'text-[var(--helix-orange)]', childLabel: 'lesblokken' },
+  vraag: { icon: FileQuestion, accent: 'text-[var(--helix-pink)]', childLabel: 'vraag' }
 };
 
 const countLabel = (node) => {

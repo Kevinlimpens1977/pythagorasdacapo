@@ -61,7 +61,7 @@ export default function CropEditorPanel({
           }}
           className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-2 transition-colors ${
             isActive
-              ? 'border-blue-300 bg-blue-50 shadow-sm ring-2 ring-blue-100'
+              ? 'border-fuchsia-200 bg-[var(--helix-soft-lavender)] shadow-sm ring-2 ring-fuchsia-100'
               : hoveredSelectionId === selection.id
                 ? 'border-gray-300 bg-gray-50'
                 : 'border-gray-200 bg-gray-50'
@@ -71,7 +71,7 @@ export default function CropEditorPanel({
             <span
               className={`inline-block h-4 w-4 shrink-0 rounded border-2 ${
                 selection.type === 'text'
-                  ? 'border-blue-500 bg-blue-100'
+                  ? 'border-fuchsia-300 bg-[var(--helix-soft-lavender)]'
                   : 'border-green-500 bg-green-100'
               }`}
             />
@@ -104,7 +104,7 @@ export default function CropEditorPanel({
               }}
               className={`flex items-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
                 selection.type === 'text'
-                  ? 'bg-blue-500 text-white'
+                  ? 'helix-gradient text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -166,7 +166,7 @@ export default function CropEditorPanel({
         </div>
         <button
           onClick={openFullscreen}
-          className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-100"
+          className="inline-flex items-center gap-2 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-2 text-sm font-bold text-[var(--helix-purple)] transition-colors hover:bg-white"
         >
           <Maximize2 size={16} />
           Open groot
@@ -193,14 +193,14 @@ export default function CropEditorPanel({
         <div className="fixed inset-0 z-[1000] flex flex-col bg-slate-950">
           <div className="flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-950 px-5 py-3 text-white">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">Crop/OCR studio</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-fuchsia-200">Crop/OCR studio</p>
               <h2 className="text-lg font-black">Bronmateriaal groot bewerken</h2>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={onProcessCrops}
                 disabled={processing || selections.length === 0 || !onProcessCrops}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+                className="btn-primary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Scissors size={16} />
                 {processing ? 'Verwerken...' : 'Crops verwerken'}

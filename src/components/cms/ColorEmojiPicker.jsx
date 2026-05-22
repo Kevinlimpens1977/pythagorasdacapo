@@ -3,7 +3,7 @@
  * Allows selection of pastel color + emoji for hierarchy items
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PASTEL_COLORS, EMOJI_SET, getColorStyle } from '../../lib/paletColors';
 import { X } from 'lucide-react';
 
@@ -104,7 +104,7 @@ export default function ColorEmojiPicker({ colorId, emoji, itemName, onChange, o
       <div className="flex gap-2 pt-2">
         <button
           onClick={handleSave}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-lg transition-colors text-sm"
+          className="btn-primary flex-1 justify-center px-3 py-2 text-sm"
         >
           Opslaan
         </button>
