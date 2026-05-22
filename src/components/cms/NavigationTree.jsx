@@ -30,6 +30,20 @@ const typeConfig = {
   vraag: { icon: FileQuestion, accent: 'text-[var(--helix-pink)]', childLabel: 'vraag' }
 };
 
+const ArchiveToggleButton = ({ showArchived, onToggleShowArchived }) => (
+  <button
+    onClick={() => onToggleShowArchived?.()}
+    className={[
+      'rounded-full px-2.5 py-1 text-xs font-black transition',
+      showArchived
+        ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+        : 'bg-[var(--helix-surface-soft)] text-slate-500 hover:text-slate-900'
+    ].join(' ')}
+  >
+    Archief tonen
+  </button>
+);
+
 const countLabel = (node) => {
   if (node.type === 'vak') return `${node.counts.leerjaren} ${node.counts.leerjaren === 1 ? 'jaar' : 'jaren'}`;
   if (node.type === 'leerjaar') return `${node.counts.niveaus} ${node.counts.niveaus === 1 ? 'niveau' : 'niveaus'}`;
@@ -58,6 +72,7 @@ const TreeNode = ({
   expandedIds,
   forceExpanded,
   onToggleExpand,
+  onCollapseTree,
   onSelect,
   onCreateChild,
   onRenameNode,
@@ -102,7 +117,7 @@ const TreeNode = ({
     <div>
       <div
         className={[
-          'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border px-2.5 py-2 text-sm transition-all',
+          'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_6.75rem] items-center gap-2 rounded-xl border px-2.5 py-2 text-sm transition-all',
           isActiveParagraaf
             ? 'border-fuchsia-200 bg-[var(--helix-soft-lavender)] text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100'
             : isActivePath
@@ -112,7 +127,10 @@ const TreeNode = ({
           isArchived ? 'opacity-55 grayscale' : ''
         ].join(' ')}
         style={{ paddingLeft: `${10 + level * 14}px` }}
-        onClick={() => onSelect({ type: node.type, id: node.id })}
+        onClick={() => {
+          onSelect({ type: node.type, id: node.id });
+          if (node.type === 'vak') onCollapseTree?.();
+        }}
       >
         <button
           onClick={(event) => {
@@ -203,11 +221,11 @@ const TreeNode = ({
           )}
         </span>
 
-        <span className="flex items-center gap-1.5">
+        <span className="flex min-w-0 items-center justify-end gap-1.5">
           {mutedCount && (
             <span
               className={[
-                'hidden rounded-md px-2 py-1 text-[11px] font-bold lg:inline-flex',
+                'inline-flex w-[6.1rem] shrink-0 justify-center rounded-md px-1.5 py-1 text-[11px] font-bold leading-none',
                 isActiveParagraaf
                   ? 'bg-white/80 text-[var(--helix-purple)]'
                   : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
@@ -245,6 +263,7 @@ const TreeNode = ({
               expandedIds={expandedIds}
               forceExpanded={forceExpanded}
               onToggleExpand={onToggleExpand}
+              onCollapseTree={onCollapseTree}
               onSelect={onSelect}
               onCreateChild={onCreateChild}
               onRenameNode={onRenameNode}
@@ -354,13 +373,6 @@ export default function NavigationTree({
       <div className="border-b border-[var(--helix-border)] bg-white px-4 py-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <button
-              onClick={() => onToggleSidebar?.()}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] text-[var(--helix-muted)] transition-colors hover:bg-white hover:text-[var(--helix-navy)]"
-              title={sidebarOpen ? 'Inhoud verbergen' : 'Inhoud tonen'}
-            >
-              <PanelLeftClose size={18} />
-            </button>
             <h3 className="flex min-w-0 items-center gap-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
               <BookOpen size={18} />
               <span className="truncate">Inhoud</span>
@@ -399,40 +411,17 @@ export default function NavigationTree({
           )}
         </div>
 
-        {expandedIds.length > 0 && !query && (
+        {!query && (
           <div className="mt-3 flex items-center justify-between gap-3">
             <button
-              onClick={() => setExpandedIds([])}
-              className="text-xs font-bold text-slate-500 hover:text-slate-900"
+              onClick={() => onToggleSidebar?.()}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] text-[var(--helix-muted)] transition-colors hover:bg-white hover:text-[var(--helix-navy)]"
+              title={sidebarOpen ? 'Inhoud verbergen' : 'Inhoud tonen'}
             >
-              Alles inklappen
+              <PanelLeftClose size={17} />
             </button>
-            <button
-              onClick={() => onToggleShowArchived?.()}
-              className={[
-                'rounded-full px-2.5 py-1 text-xs font-black transition',
-                showArchived
-                  ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-                  : 'bg-[var(--helix-surface-soft)] text-slate-500 hover:text-slate-900'
-              ].join(' ')}
-            >
-              Archief tonen
-            </button>
+            <ArchiveToggleButton showArchived={showArchived} onToggleShowArchived={onToggleShowArchived} />
           </div>
-        )}
-
-        {expandedIds.length === 0 && !query && (
-          <button
-            onClick={() => onToggleShowArchived?.()}
-            className={[
-              'mt-3 rounded-full px-2.5 py-1 text-xs font-black transition',
-              showArchived
-                ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-                : 'bg-[var(--helix-surface-soft)] text-slate-500 hover:text-slate-900'
-            ].join(' ')}
-          >
-            Archief tonen
-          </button>
         )}
       </div>
 
@@ -467,6 +456,7 @@ export default function NavigationTree({
                 expandedIds={expandedIds}
                 forceExpanded={Boolean(query)}
                 onToggleExpand={toggleExpand}
+                onCollapseTree={() => setExpandedIds([])}
                 onSelect={onSelect}
                 onCreateChild={handleCreateChild}
                 onRenameNode={onRenameNode}

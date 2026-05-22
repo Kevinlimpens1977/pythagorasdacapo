@@ -5,7 +5,7 @@
  * Right: Content editor or detail panel
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Eye, PanelLeftOpen, Palette, Plus, Trash2 } from 'lucide-react';
 import NavigationTree from './NavigationTree';
@@ -17,6 +17,10 @@ import ContentBlockBuilder from './ContentBlockBuilder';
 import useCms from '../../hooks/useCms';
 import * as cmsService from '../../services/cmsService';
 
+const DEFAULT_SIDEBAR_WIDTH = 400;
+const MIN_SIDEBAR_WIDTH = 300;
+const MAX_SIDEBAR_WIDTH = 560;
+
 export default function CmsShell() {
   const [showArchived, setShowArchived] = useState(false);
   const cms = useCms(showArchived);
@@ -25,6 +29,9 @@ export default function CmsShell() {
   const [createModal, setCreateModal] = useState(null); // { type, parentId }
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [editingColor, setEditingColor] = useState(null); // { type, id } when editing color/emoji
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+  const shellRef = useRef(null);
   const showLegacyParagraafPanel = false;
   const showLegacyQuestionPanel = false;
 
@@ -42,10 +49,40 @@ export default function CmsShell() {
   const handleToggleSidebar = () => {
     setSidebarOpen(prev => {
       const newState = !prev;
+      if (newState) setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
       localStorage.setItem('cms-sidebar-open', JSON.stringify(newState));
       return newState;
     });
   };
+
+  useEffect(() => {
+    if (!isResizingSidebar) return undefined;
+
+    const handleMouseMove = (event) => {
+      const shellLeft = shellRef.current?.getBoundingClientRect().left || 0;
+      const nextWidth = Math.min(
+        MAX_SIDEBAR_WIDTH,
+        Math.max(MIN_SIDEBAR_WIDTH, event.clientX - shellLeft)
+      );
+      setSidebarWidth(nextWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingSidebar(false);
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingSidebar]);
 
   // Unified selection handler for tree
   const handleSelect = (selection) => {
@@ -199,7 +236,7 @@ export default function CmsShell() {
 
   return (
     <>
-      <div className="relative flex h-full min-h-0 bg-[var(--helix-bg)]">
+      <div ref={shellRef} className="relative flex h-full min-h-0 bg-[var(--helix-bg)]">
         {/* Toggle Button - Fixed Left Edge (when sidebar closed) */}
         {!sidebarOpen && (
           <button
@@ -213,10 +250,14 @@ export default function CmsShell() {
         )}
 
         {/* Left Sidebar - Navigation Tree (Collapsible) */}
-        <div className={`
-          overflow-hidden border-r border-[var(--helix-border)] bg-white/86 transition-all duration-300 ease-in-out flex-shrink-0 backdrop-blur-xl
-          ${sidebarOpen ? 'w-[25rem] opacity-100' : 'w-0 border-r-0 opacity-0'}
-        `}>
+        <div
+          className={[
+            'relative flex-shrink-0 overflow-hidden border-r border-[var(--helix-border)] bg-white/86 backdrop-blur-xl',
+            isResizingSidebar ? '' : 'transition-[width,opacity] duration-300 ease-in-out',
+            sidebarOpen ? 'opacity-100' : 'w-0 border-r-0 opacity-0'
+          ].join(' ')}
+          style={sidebarOpen ? { width: `${sidebarWidth}px` } : undefined}
+        >
           <NavigationTree
             vakken={cms.vakken}
             leerjaren={cms.leerjaren}
@@ -244,6 +285,18 @@ export default function CmsShell() {
             showArchived={showArchived}
             onToggleShowArchived={() => setShowArchived((current) => !current)}
           />
+          {sidebarOpen && (
+            <button
+              type="button"
+              onMouseDown={(event) => {
+                event.preventDefault();
+                setIsResizingSidebar(true);
+              }}
+              className="absolute right-0 top-0 z-30 h-full w-2 cursor-col-resize border-r border-transparent bg-transparent transition-colors hover:border-[var(--helix-purple)]/50 hover:bg-[var(--helix-soft-lavender)]/70"
+              title="Zijbalk breder of smaller maken"
+              aria-label="Zijbalk breder of smaller maken"
+            />
+          )}
         </div>
 
         {/* Right Panel - Content Editor or Detail Panel */}

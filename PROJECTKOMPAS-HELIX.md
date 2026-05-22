@@ -1,6 +1,6 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 21 mei 2026
+Laatst bijgewerkt: 22 mei 2026
 
 Dit document is bedoeld als vaste contextanker voor verdere ontwikkeling van HELIX. Als de gesprekscontext vol raakt of wordt gecomprimeerd, lees dit document opnieuw om snel weer "on rails" te komen.
 
@@ -318,6 +318,10 @@ Let op:
 
 - CMS-shell en navigatieboom professioneler gemaakt.
 - Sidebar kan volledig worden ingeklapt zonder lege witte balk.
+- De CMS-navigatieboom heeft geen losse knop "Alles inklappen" meer. Klikken op het bovenste vakniveau, bijvoorbeeld "Digitale Vaardigheden", klapt de geopende tree terug dicht.
+- De functionele zijbalk-inklapknop staat onder het zoekveld, op de plek waar eerder "Alles inklappen" stond.
+- De CMS-zijbalk is sleepbaar breder/smaller te maken. Bij pagina-herlaad of opnieuw uitklappen start hij weer op de standaardbreedte.
+- Count-badges in de navigatieboom, zoals `2 jaren`, `2 niveaus`, `2 paragrafen` en `0 blokken`, staan in een vaste rechterkolom en lijnen onder elkaar uit.
 - Als de sidebar is ingeklapt gebruikt de lesroute-builder meer beschikbare breedte, maar blijft gecentreerd.
 - Zoekveld en statusinformatie toegevoegd.
 - Contentblocks voor theorie, voorbeeld, vraag, media en samenvatting toegevoegd.
@@ -424,6 +428,7 @@ Nodig:
 - Fontgrootte, fontkleur en meerdere lettertypes zijn deels aanwezig, maar vragen verdere UX-polish.
 - Geen overbodige crop-hulptekst bij bloktypes waar dat niet logisch is, vooral bij slidedeck/media.
 - Vraagflow verder losmaken van oude "vraag detail"-pagina's.
+- Vraagstudio is uitgebreid met nieuwe vraagtypes `koppelen`, `invullen` en `volgorde` naast `open`, `meerkeuze` en `numeriek`; de nieuwe types slaan hun antwoordmodel op in het bestaande `antwoord`-object.
 - Mediablokstudio verder vereenvoudigen: directe media-keuze, duidelijke uploadstatus, duidelijke foutmelding bij Storage rules.
 - Slidedeckblokstudio verder afstemmen op presentatieworkflow.
 
@@ -488,6 +493,9 @@ Nodig:
 
 - Werk op branch `feature/cms-platform`, tenzij de gebruiker anders zegt.
 - Recente commits rond CMS/media/layout:
+  - `0f78c3f feat: add cms question type editors`
+  - `a4bc3be docs: analyse vraagtypen implementatie`
+  - `bd86e93 fix: stabilize cms tree paragraph counts`
   - `d6cc130 style: widen cms workspace when sidebar collapsed`
   - `34fb5fe fix: make cms block selector responsive`
   - `c707247 style: refine cms block type selector`
