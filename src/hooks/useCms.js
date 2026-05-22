@@ -7,6 +7,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as cmsService from '../services/cmsService';
 
+const replaceItemsByParent = (currentItems, nextItems, parentKey, parentId) => [
+  ...currentItems.filter((item) => item[parentKey] !== parentId),
+  ...nextItems
+];
+
 export const useCms = (includeArchived = false) => {
   // Selections
   const [selectedVakId, setSelectedVakId] = useState(null);
@@ -143,6 +148,10 @@ export const useCms = (includeArchived = false) => {
       setError(null);
       const data = await cmsService.getHoofdstukken(niveauId, includeArchived);
       setHoofdstukken(data);
+      const paragraafLists = await Promise.all(
+        data.map((hoofdstuk) => cmsService.getParagrafen(hoofdstuk.id, includeArchived))
+      );
+      setParagrafen(paragraafLists.flat());
       if (data.length > 0) {
         setSelectedHoofdstukId((current) => current && data.some((item) => item.id === current) ? current : data[0].id);
       } else {
@@ -161,7 +170,7 @@ export const useCms = (includeArchived = false) => {
       setLoading(true);
       setError(null);
       const data = await cmsService.getParagrafen(hoofdstukId, includeArchived);
-      setParagrafen(data);
+      setParagrafen((current) => replaceItemsByParent(current, data, 'hoofdstukId', hoofdstukId));
       if (data.length > 0) {
         setSelectedParagraafId((current) => current && data.some((item) => item.id === current) ? current : data[0].id);
       } else {
@@ -267,8 +276,9 @@ export const useCms = (includeArchived = false) => {
 
   const setHoofdstuk = useCallback((hoofdstukId) => {
     setSelectedHoofdstukId(hoofdstukId);
-    clearBelowHoofdstuk();
-  }, [clearBelowHoofdstuk]);
+    setSelectedParagraafId(null);
+    clearBelowParagraaf();
+  }, [clearBelowParagraaf]);
 
   const setParagraaf = useCallback((paragraafId) => {
     setSelectedParagraafId(paragraafId);
