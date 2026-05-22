@@ -141,7 +141,7 @@ export default function CmsShell() {
     cms.currentVak && { label: cms.currentVak.name, id: cms.selectedVakId },
     cms.currentLeerjaar && { label: `Jaar ${cms.currentLeerjaar.year}`, id: cms.selectedLeerjaarId },
     cms.currentNiveau && { label: cms.currentNiveau.label, id: cms.selectedNiveauId },
-    cms.currentHoofdstuk && { label: `${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`, id: cms.selectedHoofdstukId },
+    cms.currentHoofdstuk && { label: cms.currentHoofdstuk.title, id: cms.selectedHoofdstukId },
     cms.currentParagraaf && { label: cms.currentParagraaf.title, id: cms.selectedParagraafId },
   ].filter(Boolean);
 
@@ -426,17 +426,13 @@ export default function CmsShell() {
                 <div className="flex items-start gap-3 mb-6">
                   <span className="text-3xl">{cms.currentHoofdstuk.emoji || '📖'}</span>
                   <InlineEdit
-                    value={`${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`}
+                    value={cms.currentHoofdstuk.title}
                     onSave={async (newValue) => {
-                      // Parse number and title from input (format: "7. HELIX")
-                      const parts = newValue.match(/^(\d+)\.\s*(.+)$/);
-                      if (parts) {
-                        await cmsService.updateHoofdstuk(cms.selectedHoofdstukId, {
-                          number: parseInt(parts[1]),
-                          title: parts[2]
-                        });
-                        await cms.loadHoofdstukken(cms.selectedNiveauId);
-                      }
+                      await cmsService.updateHoofdstuk(cms.selectedHoofdstukId, {
+                        title: newValue,
+                        number: null
+                      });
+                      await cms.loadHoofdstukken(cms.selectedNiveauId);
                     }}
                   />
                   <button
@@ -454,7 +450,7 @@ export default function CmsShell() {
                     <ColorEmojiPicker
                       colorId={cms.currentHoofdstuk.color}
                       emoji={cms.currentHoofdstuk.emoji}
-                      itemName={`${cms.currentHoofdstuk.number}. ${cms.currentHoofdstuk.title}`}
+                      itemName={cms.currentHoofdstuk.title}
                       onChange={(data) => handleSaveColorEmoji('hoofdstuk', cms.selectedHoofdstukId, data)}
                       onClose={() => setEditingColor(null)}
                     />

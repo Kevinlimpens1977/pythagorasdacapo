@@ -231,7 +231,7 @@ export default function StudentProfilePage() {
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                       <h2 className="text-xl font-black text-slate-900">
-                        {chapter.number && `${chapter.number}. `}{chapter.title}
+                        {chapter.title || (chapter.number ? `Hoofdstuk ${chapter.number}` : 'Hoofdstuk')}
                       </h2>
                       <p className="mt-1 text-sm text-slate-500">
                         {chapter.completedQuestions} van {chapter.totalQuestions} vragen afgerond

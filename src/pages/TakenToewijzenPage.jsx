@@ -241,7 +241,7 @@ export default function TakenToewijzenPage() {
         const p = await cmsService.getParagrafen(selectedHoofdstukId);
         setParagrafen(p);
         const hData = hoofdstukken.find(h => h.id === selectedHoofdstukId);
-        setBreadcrumbs(prev => [...prev, { label: hData ? `${hData.number}. ${hData.title}` : 'Hoofdstuk', id: selectedHoofdstukId, type: 'hoofdstuk' }]);
+        setBreadcrumbs(prev => [...prev, { label: hData?.title || (hData?.number ? `Hoofdstuk ${hData.number}` : 'Hoofdstuk'), id: selectedHoofdstukId, type: 'hoofdstuk' }]);
       } catch (error) {
         console.error('Error loading paragrafen:', error);
       }
@@ -697,7 +697,7 @@ export default function TakenToewijzenPage() {
                           style={{ backgroundColor: style.bg, borderColor: style.border, color: style.text }}
                         >
                           <span className="text-lg flex-shrink-0">{h.emoji || '📖'}</span>
-                          <span className="font-medium">{h.number}. {h.title}</span>
+                          <span className="font-medium">{h.title || (h.number ? `Hoofdstuk ${h.number}` : 'Hoofdstuk zonder naam')}</span>
                           <ChevronRight size={16} className="ml-auto flex-shrink-0" style={{ opacity: 0.6 }} />
                         </div>
                       );

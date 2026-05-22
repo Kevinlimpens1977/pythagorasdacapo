@@ -10,7 +10,7 @@ test('getDigibordItemLabel uses CMS field names for each hierarchy level', () =>
   assert.equal(getDigibordItemLabel('vak', { name: 'Wiskunde' }), 'Wiskunde');
   assert.equal(getDigibordItemLabel('leerjaar', { year: 1, label: 'Jaar 1' }), 'Jaar 1');
   assert.equal(getDigibordItemLabel('niveau', { label: 'VMBO-GT', name: 'VMBO-GT' }), 'VMBO-GT');
-  assert.equal(getDigibordItemLabel('hoofdstuk', { number: 2, title: 'testttt' }), '2. testttt');
+  assert.equal(getDigibordItemLabel('hoofdstuk', { number: 2, title: 'H2 testttt' }), 'H2 testttt');
   assert.equal(getDigibordItemLabel('paragraaf', { code: '1.1', title: 'Pythagoras' }), 'Pythagoras');
 });
 

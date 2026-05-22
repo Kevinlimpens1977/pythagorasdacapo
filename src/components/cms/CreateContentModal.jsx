@@ -23,7 +23,6 @@ export default function CreateContentModal({
   const [description, setDescription] = useState('');
   const [year, setYear] = useState(1);
   const [label, setLabel] = useState('');
-  const [number, setNumber] = useState('');
   const [title, setTitle] = useState('');
   const [color, setColor] = useState(null);
   const [emoji, setEmoji] = useState('');
@@ -71,7 +70,7 @@ export default function CreateContentModal({
         case 'hoofdstuk':
           newId = await cmsService.createHoofdstuk(
             parentId,
-            { number: parseInt(number), title, description, color, emoji },
+            { title, description, color, emoji },
             auth.currentUser.uid
           );
           break;
@@ -233,21 +232,6 @@ export default function CreateContentModal({
 
           {type === 'hoofdstuk' && (
             <>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>
-                    Nummer
-                  </label>
-                  <input
-                    type="number"
-                    value={number}
-                    onChange={(e) => setNumber(e.target.value)}
-                    placeholder="bijv. 7"
-                    required
-                    className={inputClass}
-                  />
-                </div>
-              </div>
               <div>
                 <label className={labelClass}>
                   Titel
@@ -256,7 +240,7 @@ export default function CreateContentModal({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="bijv. HELIX Basis"
+                  placeholder="bijv. H1 Introductie digitale geletterdheid"
                   required
                   className={inputClass}
                 />

@@ -219,7 +219,7 @@ export default function StudentLessonPage() {
               </h1>
               {hoofdstuk && (
                 <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
-                  {hoofdstuk.number ? `${hoofdstuk.number}. ` : ''}{hoofdstuk.title}
+                  {hoofdstuk.title || (hoofdstuk.number ? `Hoofdstuk ${hoofdstuk.number}` : 'Hoofdstuk')}
                 </p>
               )}
             </div>

@@ -798,7 +798,7 @@ export const archiveNiveau = async (niveauId) => {
 /**
  * Create a new chapter (hoofdstuk)
  * @param {string} niveauId - Parent niveau ID
- * @param {Object} data - { number, title, description }
+ * @param {Object} data - { title, description }
  * @param {string} userId - Admin user ID
  * @returns {Promise<string>} New hoofdstuk ID
  */
@@ -807,7 +807,13 @@ export const createHoofdstuk = async (niveauId, data, userId) => {
     const niveau = await getNiveau(niveauId);
     if (!niveau) throw new Error('Niveau not found');
 
-    const hoofdstukId = `hoofdstuk-${niveauId}-${data.number}-${Date.now()}`;
+    const safeTitle = String(data.title || 'hoofdstuk')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'hoofdstuk';
+    const hoofdstukId = `hoofdstuk-${niveauId}-${safeTitle}-${Date.now()}`;
 
     // Get next order
     const hoofdstukken = await getHoofdstukken(niveauId);
@@ -818,7 +824,6 @@ export const createHoofdstuk = async (niveauId, data, userId) => {
       niveauId,
       leerjaarId: niveau.leerjaarId,
       vakId: niveau.vakId,
-      number: data.number,
       title: data.title,
       description: data.description || '',
       order: data.order || nextOrder,

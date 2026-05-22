@@ -95,7 +95,7 @@ export const buildCmsNavigationTree = (
                 return {
                   ...hoofdstuk,
                   type: 'hoofdstuk',
-                  label: `${hoofdstuk.number}. ${hoofdstuk.title}`,
+                  label: hoofdstuk.title || (hoofdstuk.number ? `Hoofdstuk ${hoofdstuk.number}` : 'Hoofdstuk zonder naam'),
                   counts: {
                     paragrafen: hoofdstukParagrafen.length
                   },
