@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  BarChart3,
   BookOpen,
   Boxes,
   ChevronDown,
   ChevronRight,
   FileQuestion,
   FileText,
+  GraduationCap,
   Layers3,
   PanelLeftClose,
   Plus,
@@ -21,7 +21,7 @@ const STORAGE_KEY = 'cms-tree-expanded-ids';
 
 const typeConfig = {
   vak: { icon: BookOpen, accent: 'text-[var(--helix-purple)]', childLabel: 'jaren' },
-  leerjaar: { icon: BarChart3, accent: 'text-slate-600', childLabel: 'niveaus' },
+  leerjaar: { icon: GraduationCap, accent: 'text-[var(--helix-pink)]', childLabel: 'niveaus' },
   niveau: { icon: Layers3, accent: 'text-violet-600', childLabel: 'hoofdstukken' },
   hoofdstuk: { icon: FileText, accent: 'text-[var(--helix-success)]', childLabel: 'paragrafen' },
   paragraaf: { icon: Boxes, accent: 'text-[var(--helix-orange)]', childLabel: 'lesblokken' },

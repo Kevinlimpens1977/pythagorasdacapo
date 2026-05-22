@@ -209,6 +209,7 @@ export default function CreateContentModal({
                   className={inputClass}
                 >
                   <option value="">Selecteer...</option>
+                  <option value="VMBO">VMBO</option>
                   <option value="VMBO-B">VMBO-B (Basis)</option>
                   <option value="VMBO-K">VMBO-K (Kader)</option>
                   <option value="VMBO-GT">VMBO-GT (Gemengd)</option>
