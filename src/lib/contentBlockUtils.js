@@ -281,3 +281,6 @@ export const blocksToSlides = (blocks = []) => {
     .filter((block) => block.status === 'published' || block.status === undefined)
     .map(blockToSlide);
 };
+
+export const getToggledContentBlockStatus = (status) =>
+  status === 'published' ? 'draft' : 'published';

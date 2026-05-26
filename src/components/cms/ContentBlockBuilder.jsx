@@ -46,6 +46,7 @@ import {
   buildContentBlockPreview,
   getDefaultContentForBlockType,
   getReorderedBlocks,
+  getToggledContentBlockStatus,
   mergeCropResultsIntoBlockContent,
   normalizeContentBlocks
 } from '../../lib/contentBlockUtils';
@@ -1361,6 +1362,19 @@ export default function ContentBlockBuilder({
     }
   };
 
+  const handleToggleBlockStatus = async (block) => {
+    try {
+      setActionError(null);
+      await cmsService.updateContentBlock(block.id, {
+        status: getToggledContentBlockStatus(block.status)
+      });
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon lesblokstatus niet wisselen:', error);
+      setActionError('Kon lesblokstatus niet wisselen.');
+    }
+  };
+
   const workspaceWidthClass = sidebarOpen ? 'max-w-7xl' : 'max-w-[96rem]';
 
   return (
@@ -1441,13 +1455,16 @@ export default function ContentBlockBuilder({
                         <span className="helix-badge">
                           {CONTENT_BLOCK_LABELS[block.type]}
                         </span>
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide ${
+                        <button
+                          type="button"
+                          onClick={() => handleToggleBlockStatus(block)}
+                          className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 ${
                           block.status === 'published'
                             ? 'helix-badge-success'
                             : 'helix-badge-warning'
                         }`}>
                           {block.status === 'published' ? 'Gepubliceerd' : 'Concept'}
-                        </span>
+                        </button>
                       </div>
                       <h3 className="mt-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
                         {block.title}

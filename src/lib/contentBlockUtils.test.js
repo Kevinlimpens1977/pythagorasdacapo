@@ -5,6 +5,7 @@ import {
   buildContentBlockPreview,
   getDefaultContentForBlockType,
   getReorderedBlocks,
+  getToggledContentBlockStatus,
   mergeCropResultsIntoBlockContent,
   normalizeContentBlocks
 } from './contentBlockUtils.js';
@@ -181,4 +182,10 @@ test('buildContentBlockPreview shows useful route card text', () => {
     }),
     'Video toegevoegd'
   );
+});
+
+test('getToggledContentBlockStatus switches published and draft route statuses', () => {
+  assert.equal(getToggledContentBlockStatus('published'), 'draft');
+  assert.equal(getToggledContentBlockStatus('draft'), 'published');
+  assert.equal(getToggledContentBlockStatus(undefined), 'published');
 });
