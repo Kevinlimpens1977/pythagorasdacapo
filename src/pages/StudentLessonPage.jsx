@@ -8,6 +8,7 @@ import {
   ChevronRight,
   FileText,
   Gamepad2,
+  GripVertical,
   Image,
   Layers3,
   Loader2,
@@ -381,6 +382,28 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
     return `${baseClass} ${statusClass}`;
   };
 
+  const getInitialOrderItems = () => {
+    if (!preview.orderItems?.length) return [];
+    return preview.orderItems.length > 1 ? [...preview.orderItems].reverse() : preview.orderItems;
+  };
+
+  const currentOrderItems = previewAnswers.orderItems || getInitialOrderItems();
+  const orderWasChanged = Boolean(previewAnswers.orderTouched);
+  const isOrderCorrect = currentOrderItems.length > 0 &&
+    currentOrderItems.every((item, index) => item.id === preview.orderItems?.[index]?.id);
+
+  const moveOrderItem = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+    const nextItems = [...currentOrderItems];
+    const [movedItem] = nextItems.splice(fromIndex, 1);
+    nextItems.splice(toIndex, 0, movedItem);
+    setPreviewAnswers((current) => ({
+      ...current,
+      orderItems: nextItems,
+      orderTouched: true
+    }));
+  };
+
   if (!linkedVraag) {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
@@ -459,6 +482,43 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
               );
             })()
           ))}
+        </div>
+      ) : preview.type === 'volgorde' ? (
+        <div className="space-y-3">
+          {currentOrderItems.length > 0 ? (
+            currentOrderItems.map((item, index) => {
+              const status = orderWasChanged ? (isOrderCorrect ? 'correct' : 'incorrect') : 'empty';
+              return (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData('text/plain', String(index));
+                    event.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    moveOrderItem(Number(event.dataTransfer.getData('text/plain')), index);
+                  }}
+                  className={inputClassForStatus(
+                    status,
+                    'flex cursor-grab items-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-navy)] shadow-sm active:cursor-grabbing'
+                  )}
+                >
+                  <GripVertical size={18} className="shrink-0 text-[var(--helix-muted)]" />
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-xs font-black text-[var(--helix-purple)]">
+                    {index + 1}
+                  </span>
+                  <span className="whitespace-pre-wrap">{item.text}</span>
+                </div>
+              );
+            })
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm font-semibold text-slate-500">
+              Nog geen volgorde-items ingevuld.
+            </div>
+          )}
         </div>
       ) : preview.type === 'numeriek' ? (
         <div className="flex flex-wrap items-center gap-3">

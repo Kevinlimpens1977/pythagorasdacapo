@@ -50,6 +50,32 @@ test('buildQuestionPreviewModel falls back to prompt html for open questions', (
   );
 });
 
+test('buildQuestionPreviewModel renders order items for sequence questions', () => {
+  assert.deepEqual(
+    buildQuestionPreviewModel({
+      vraagtype: 'volgorde',
+      content: { text: '<p>Zet de stappen in volgorde.</p>' },
+      antwoord: {
+        items: [
+          { id: 'step-1', text: 'Eerst lezen' },
+          { id: 'step-2', text: 'Daarna berekenen' }
+        ]
+      }
+    }),
+    {
+      type: 'volgorde',
+      promptHtml: '<p>Zet de stappen in volgorde.</p>',
+      segments: [],
+      fields: [],
+      orderItems: [
+        { id: 'step-1', text: 'Eerst lezen' },
+        { id: 'step-2', text: 'Daarna berekenen' }
+      ],
+      empty: false
+    }
+  );
+});
+
 test('getPreviewAnswerStatus returns empty, correct, or incorrect', () => {
   assert.equal(getPreviewAnswerStatus('', 'cm2'), 'empty');
   assert.equal(getPreviewAnswerStatus('vierkantecen t i meter', 'cm2'), 'correct');

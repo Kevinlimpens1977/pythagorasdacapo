@@ -32,6 +32,24 @@ export const buildQuestionPreviewModel = (vraag = {}) => {
     };
   }
 
+  if (type === 'volgorde') {
+    const orderItems = Array.isArray(antwoord.items)
+      ? antwoord.items.map((item, index) => ({
+          id: item.id || `item-${index + 1}`,
+          text: item.text || ''
+        })).filter((item) => item.text.trim())
+      : [];
+
+    return {
+      type,
+      promptHtml,
+      segments: [],
+      fields: [],
+      orderItems,
+      empty: !promptHtml && orderItems.length === 0
+    };
+  }
+
   return {
     type,
     promptHtml,
