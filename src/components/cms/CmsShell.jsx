@@ -590,6 +590,26 @@ export default function CmsShell() {
             />
           )}
 
+          {!showLegacyQuestionPanel && isEditing && cms.selectedVraagId && cms.currentVraag && (
+            <div className="fixed inset-0 z-[950] bg-white">
+              <DualPanelEditor
+                vraag={cms.currentVraag}
+                paragraafId={cms.selectedParagraafId}
+                paragraafCode={cms.currentParagraaf?.code}
+                onSave={() => {
+                  setIsEditing(false);
+                  cms.setVraag(null);
+                  cms.loadVragen(cms.selectedParagraafId);
+                  cms.loadContentBlocks(cms.selectedParagraafId);
+                }}
+                onCancel={() => {
+                  setIsEditing(false);
+                  cms.setVraag(null);
+                }}
+              />
+            </div>
+          )}
+
           {/* Legacy paragraaf question panel (replaced by lesson route builder) */}
           {showLegacyParagraafPanel && !cms.loading && !cms.error && cms.selectedParagraafId && !cms.selectedVraagId && cms.currentParagraaf && (
             <div className="max-w-4xl">
