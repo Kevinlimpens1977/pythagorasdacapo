@@ -19,7 +19,7 @@ import * as voortgangService from '../services/voortgangService';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import { calculateLessonProgress, findResumeBlockIndex, getCompletedBlockIds } from '../lib/studentLessonProgress';
-import { buildQuestionPreviewModel } from '../lib/questionPreviewUtils';
+import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
 import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
 import GamePlayer from '../components/games/GamePlayer';
@@ -366,6 +366,29 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, onOpenSlided
 
 function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
   const preview = buildQuestionPreviewModel(linkedVraag || {});
+  const [previewAnswers, setPreviewAnswers] = useState({});
+
+  const setPreviewAnswer = (fieldId, value) => {
+    setPreviewAnswers((current) => ({ ...current, [fieldId]: value }));
+  };
+
+  const renderStatus = (status) => {
+    if (status === 'empty') return null;
+    return (
+      <span className={`ml-2 text-sm font-black ${status === 'correct' ? 'text-green-700' : 'text-red-700'}`}>
+        {status === 'correct' ? 'Goed' : 'Nog niet goed'}
+      </span>
+    );
+  };
+
+  const inputClassForStatus = (status, baseClass = '') => {
+    const statusClass = status === 'correct'
+      ? 'border-green-400 bg-green-50 text-green-900'
+      : status === 'incorrect'
+        ? 'border-red-400 bg-red-50 text-red-900'
+        : '';
+    return `${baseClass} ${statusClass}`;
+  };
 
   if (!linkedVraag) {
     return (
@@ -397,14 +420,25 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
       {preview.type === 'invullen' ? (
         <div className="rounded-3xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/55 p-5 text-lg leading-10 text-[var(--helix-navy)]">
           {preview.segments.map((segment, index) => (
-            segment.type === 'gap' ? (
-              <input
-                key={segment.id}
-                type="text"
-                className="mx-1 inline-flex min-w-32 rounded-xl border-2 border-fuchsia-200 bg-white px-3 py-2 text-base font-bold text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100"
-                placeholder={`Invulveld ${preview.fields.findIndex((field) => field.id === segment.id) + 1}`}
-              />
-            ) : (
+            segment.type === 'gap' ? (() => {
+              const field = preview.fields.find((item) => item.id === segment.id);
+              const status = getPreviewAnswerStatus(previewAnswers[segment.id], field?.answer);
+              return (
+                <span key={segment.id} className="inline-flex items-center">
+                  <input
+                    type="text"
+                    value={previewAnswers[segment.id] || ''}
+                    onChange={(event) => setPreviewAnswer(segment.id, event.target.value)}
+                    className={inputClassForStatus(
+                      status,
+                      'mx-1 inline-flex min-w-32 rounded-xl border-2 border-fuchsia-200 bg-white px-3 py-2 text-base font-bold text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100'
+                    )}
+                    placeholder={`Invulveld ${preview.fields.findIndex((item) => item.id === segment.id) + 1}`}
+                  />
+                  {renderStatus(status)}
+                </span>
+              );
+            })() : (
               <span key={`text-${index}`} className="whitespace-pre-wrap">{segment.text}</span>
             )
           ))}
@@ -412,23 +446,69 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
       ) : preview.type === 'meerkeuze' ? (
         <div className="space-y-3">
           {(linkedVraag.antwoord?.options || []).map((option, index) => (
-            <label key={option.id || index} className="flex items-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-navy)]">
-              <input type="checkbox" className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100" />
-              {option.text || `Optie ${index + 1}`}
-            </label>
+            (() => {
+              const fieldId = option.id || `option-${index + 1}`;
+              const checked = Boolean(previewAnswers[fieldId]);
+              const status = checked ? (option.correct ? 'correct' : 'incorrect') : 'empty';
+              return (
+                <label
+                  key={fieldId}
+                  className={inputClassForStatus(
+                    status,
+                    'flex items-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-navy)]'
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(event) => setPreviewAnswer(fieldId, event.target.checked)}
+                    className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100"
+                  />
+                  {option.text || `Optie ${index + 1}`}
+                  {renderStatus(status)}
+                </label>
+              );
+            })()
           ))}
         </div>
       ) : preview.type === 'numeriek' ? (
-        <input
-          type="number"
-          className="input-standard max-w-sm"
-          placeholder={linkedVraag.antwoord?.unit ? `Antwoord in ${linkedVraag.antwoord.unit}` : 'Vul je antwoord in'}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          {(() => {
+            const status = getPreviewAnswerStatus(previewAnswers.expectedValue, linkedVraag.antwoord?.expected ?? linkedVraag.antwoord?.correctValue);
+            return (
+              <>
+                <input
+                  type="number"
+                  value={previewAnswers.expectedValue || ''}
+                  onChange={(event) => setPreviewAnswer('expectedValue', event.target.value)}
+                  className={inputClassForStatus(status, 'input-standard max-w-sm')}
+                  placeholder={linkedVraag.antwoord?.unit ? `Antwoord in ${linkedVraag.antwoord.unit}` : 'Vul je antwoord in'}
+                />
+                {renderStatus(status)}
+              </>
+            );
+          })()}
+        </div>
       ) : (
-        <textarea
-          className="input-standard min-h-36 w-full resize-y leading-6"
-          placeholder="Typ je antwoord..."
-        />
+        <div>
+          {(() => {
+            const correctAnswer = linkedVraag.antwoord?.modelAnswer || linkedVraag.antwoord?.answer || '';
+            const status = correctAnswer
+              ? getPreviewAnswerStatus(previewAnswers.openAnswer, correctAnswer)
+              : 'empty';
+            return (
+              <>
+                <textarea
+                  value={previewAnswers.openAnswer || ''}
+                  onChange={(event) => setPreviewAnswer('openAnswer', event.target.value)}
+                  className={inputClassForStatus(status, 'input-standard min-h-36 w-full resize-y leading-6')}
+                  placeholder="Typ je antwoord..."
+                />
+                {correctAnswer && renderStatus(status)}
+              </>
+            );
+          })()}
+        </div>
       )}
     </div>
   );

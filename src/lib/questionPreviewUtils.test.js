@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildQuestionPreviewModel } from './questionPreviewUtils.js';
+import {
+  buildQuestionPreviewModel,
+  getPreviewAnswerStatus
+} from './questionPreviewUtils.js';
 
 test('buildQuestionPreviewModel renders fill blank segments as display parts', () => {
   assert.deepEqual(
@@ -45,4 +48,10 @@ test('buildQuestionPreviewModel falls back to prompt html for open questions', (
       empty: false
     }
   );
+});
+
+test('getPreviewAnswerStatus returns empty, correct, or incorrect', () => {
+  assert.equal(getPreviewAnswerStatus('', 'cm2'), 'empty');
+  assert.equal(getPreviewAnswerStatus('vierkantecen t i meter', 'cm2'), 'correct');
+  assert.equal(getPreviewAnswerStatus('meter', 'cm2'), 'incorrect');
 });

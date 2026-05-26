@@ -2,6 +2,7 @@ import {
   buildSegmentsFromLegacyFillBlank,
   getFillBlankGapsFromSegments
 } from './fillBlankUtils.js';
+import { isAnswerCorrect } from './answerNormalization.js';
 
 const stripEmptyHtml = (html = '') => {
   const normalized = String(html || '').trim();
@@ -38,4 +39,9 @@ export const buildQuestionPreviewModel = (vraag = {}) => {
     fields: [],
     empty: !promptHtml
   };
+};
+
+export const getPreviewAnswerStatus = (studentAnswer, correctAnswer) => {
+  if (!String(studentAnswer || '').trim()) return 'empty';
+  return isAnswerCorrect(studentAnswer, correctAnswer) ? 'correct' : 'incorrect';
 };
