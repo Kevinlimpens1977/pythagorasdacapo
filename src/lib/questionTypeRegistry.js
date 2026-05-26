@@ -75,8 +75,8 @@ export const QUESTION_TYPES = [
     id: 'invullen',
     label: 'Invullen',
     description: 'Tekst met invulvelden.',
-    template: 'Gebruik [GAP] in de tekst; per gap vul je het correcte antwoord in.',
-    defaultAnswer: () => ({ type: 'invullen', text: '', gaps: [] })
+    template: 'Plaats de cursor in de tekst en klik op Maak gat. Vul daarna in het gat het correcte antwoord in.',
+    defaultAnswer: () => ({ type: 'invullen', text: '', segments: [{ type: 'text', text: '' }], gaps: [] })
   },
   {
     id: 'volgorde',

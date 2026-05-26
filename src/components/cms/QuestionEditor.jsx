@@ -4,7 +4,7 @@
  * Uses TipTap for rich text editing
  */
 
-import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useState, useCallback, useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 import { ArrowDown, ArrowUp, Plus, Trash2, Star } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -19,6 +19,11 @@ import {
   getQuestionTypeDefinition,
   normalizeQuestionTokenConfig
 } from '../../lib/questionTypeRegistry';
+import {
+  buildFillBlankTextFromSegments,
+  buildSegmentsFromLegacyFillBlank,
+  getFillBlankGapsFromSegments
+} from '../../lib/fillBlankUtils';
 
 const createVolgordeItem = (text = '') => ({
   id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -30,6 +35,13 @@ const createChoiceOption = (text = '', correct = false) => ({
   text,
   correct,
   explanation: ''
+});
+
+const createFillBlankGap = () => ({
+  type: 'gap',
+  id: `gap-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  answer: '',
+  smartCheck: true
 });
 
 const QuestionEditorInner = forwardRef(function QuestionEditor(
@@ -48,6 +60,9 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   const [hints, setHints] = useState(vraag?.vraagMetadata?.hints || []);
   const [newHint, setNewHint] = useState('');
   const [error] = useState(null);
+  const textSegmentRefs = useRef({});
+  const gapInputRefs = useRef({});
+  const [activeTextSegmentIndex, setActiveTextSegmentIndex] = useState(0);
 
   // Antwoord state (per vraagtype)
   const [openModelAnswer, setOpenModelAnswer] = useState(vraag?.antwoord?.modelAnswer || '');
@@ -74,14 +89,13 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
         }))
       : [{ id: `pair-${Date.now()}`, left: '', right: '' }]
   ));
-  const [invullenText, setInvullenText] = useState(() => (
-    vraag?.antwoord?.type === 'invullen' ? vraag.antwoord.text || '' : ''
-  ));
-  const [invullenGaps, setInvullenGaps] = useState(() => (
-    vraag?.antwoord?.type === 'invullen' && Array.isArray(vraag?.antwoord?.gaps)
-      ? vraag.antwoord.gaps
-      : []
-  ));
+  const [invullenSegments, setInvullenSegments] = useState(() => {
+    if (vraag?.antwoord?.type !== 'invullen') return [{ type: 'text', text: '' }];
+    if (Array.isArray(vraag?.antwoord?.segments) && vraag.antwoord.segments.length > 0) {
+      return vraag.antwoord.segments;
+    }
+    return buildSegmentsFromLegacyFillBlank(vraag.antwoord.text || '', vraag.antwoord.gaps || []);
+  });
   const [volgordeItems, setVolgordeItems] = useState(() => (
     vraag?.antwoord?.type === 'volgorde' && Array.isArray(vraag?.antwoord?.items)
       ? vraag.antwoord.items.map((item) => ({
@@ -161,13 +175,12 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     }
 
     if (vraagtype === 'invullen') {
+      const gaps = getFillBlankGapsFromSegments(invullenSegments);
       return {
         type: 'invullen',
-        text: invullenText,
-        gaps: invullenGaps.map((gap, index) => ({
-          id: gap.id || `gap-${index + 1}`,
-          answer: gap.answer || ''
-        }))
+        text: buildFillBlankTextFromSegments(invullenSegments),
+        segments: invullenSegments,
+        gaps
       };
     }
 
@@ -191,8 +204,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     antwoordUnit,
     antwoordHint,
     koppelenPairs,
-    invullenText,
-    invullenGaps,
+    invullenSegments,
     volgordeItems
   ]);
 
@@ -220,28 +232,6 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   }, [editor, onEditorReady]);
 
   useEffect(() => {
-    const gapCount = (invullenText.match(/\[GAP\]/g) || []).length;
-
-    setInvullenGaps((currentGaps) => {
-      const nextGaps = Array.from({ length: gapCount }, (_, index) => {
-        const existingGap = currentGaps[index];
-        return {
-          id: existingGap?.id || `gap-${index + 1}`,
-          answer: existingGap?.answer || ''
-        };
-      });
-
-      const isSame =
-        nextGaps.length === currentGaps.length &&
-        nextGaps.every((gap, index) =>
-          gap.id === currentGaps[index]?.id && gap.answer === currentGaps[index]?.answer
-        );
-
-      return isSame ? currentGaps : nextGaps;
-    });
-  }, [invullenText]);
-
-  useEffect(() => {
     setTokenConfig((currentConfig) =>
       normalizeQuestionTokenConfig(vraagtype, getAntwoordState(), currentConfig)
     );
@@ -257,8 +247,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     setAntwoordUnit(defaultAnswer.unit || '');
     setAntwoordHint(defaultAnswer.hintBijFout || '');
     setKoppelenPairs(defaultAnswer.pairs || [{ id: `pair-${Date.now()}`, left: '', right: '' }]);
-    setInvullenText(defaultAnswer.text || '');
-    setInvullenGaps(defaultAnswer.gaps || []);
+    setInvullenSegments(defaultAnswer.segments || buildSegmentsFromLegacyFillBlank(defaultAnswer.text || '', defaultAnswer.gaps || []));
     setVolgordeItems(defaultAnswer.items || [createVolgordeItem()]);
     setTokenConfig(buildDefaultTokenConfigForQuestionType(nextType, defaultAnswer));
   }, []);
@@ -300,13 +289,48 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     setKoppelenPairs((pairs) => pairs.filter((_, pairIndex) => pairIndex !== index));
   }, []);
 
-  const handleUpdateGap = useCallback((index, value) => {
-    setInvullenGaps((gaps) =>
-      gaps.map((gap, gapIndex) =>
-        gapIndex === index ? { ...gap, answer: value } : gap
+  const handleUpdateTextSegment = useCallback((index, value) => {
+    setInvullenSegments((segments) =>
+      segments.map((segment, segmentIndex) =>
+        segmentIndex === index ? { ...segment, text: value } : segment
       )
     );
   }, []);
+
+  const handleUpdateGap = useCallback((segmentIndex, value) => {
+    setInvullenSegments((segments) =>
+      segments.map((segment, currentIndex) =>
+        currentIndex === segmentIndex ? { ...segment, answer: value } : segment
+      )
+    );
+  }, []);
+
+  const handleCreateFillBlankGap = useCallback(() => {
+    setInvullenSegments((segments) => {
+      const segmentIndex = Math.max(0, Math.min(activeTextSegmentIndex, segments.length - 1));
+      const segment = segments[segmentIndex];
+      if (!segment || segment.type !== 'text') return segments;
+
+      const textarea = textSegmentRefs.current[segmentIndex];
+      const cursorPosition = textarea?.selectionStart ?? segment.text.length;
+      const before = segment.text.slice(0, cursorPosition);
+      const after = segment.text.slice(cursorPosition);
+      const gap = createFillBlankGap();
+      const nextSegments = [
+        ...segments.slice(0, segmentIndex),
+        { type: 'text', text: before },
+        gap,
+        { type: 'text', text: after },
+        ...segments.slice(segmentIndex + 1)
+      ];
+
+      window.requestAnimationFrame(() => {
+        gapInputRefs.current[gap.id]?.focus();
+      });
+
+      return nextSegments;
+    });
+  }, [activeTextSegmentIndex]);
 
   const handleUpdateVolgordeItem = useCallback((index, value) => {
     setVolgordeItems((items) =>
@@ -837,42 +861,63 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
         ) : vraagtype === 'invullen' ? (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
             <div>
-              <p className="text-sm text-gray-600 mb-3">
-                Typ de volledige tekst en plaats <strong>[GAP]</strong> waar een invulvak moet komen.
-              </p>
-              <textarea
-                value={invullenText}
-                onChange={(e) => setInvullenText(e.target.value)}
-                rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                placeholder="Bijvoorbeeld: Fotosynthese gebeurt in de [GAP] van een plant."
-              />
+              <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-gray-600">
+                  Typ de tekst. Zet je cursor op de gewenste plek en klik op <strong>Maak gat</strong>.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleCreateFillBlankGap}
+                  className="btn-primary px-4 py-2 text-sm"
+                >
+                  <Plus size={18} />
+                  Maak gat
+                </button>
+              </div>
+
+              <div className="rounded-2xl border border-amber-200 bg-white p-3">
+                {invullenSegments.map((segment, index) => (
+                  segment.type === 'gap' ? (
+                    <input
+                      key={segment.id}
+                      ref={(element) => {
+                        gapInputRefs.current[segment.id] = element;
+                      }}
+                      type="text"
+                      value={segment.answer || ''}
+                      onChange={(e) => handleUpdateGap(index, e.target.value)}
+                      className="my-2 inline-flex min-w-36 rounded-xl border-2 border-amber-300 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 outline-none transition focus:border-[var(--helix-purple)] focus:bg-white"
+                      placeholder="Juist antwoord"
+                      aria-label={`Correct antwoord voor invulveld ${getFillBlankGapsFromSegments(invullenSegments).findIndex((gap) => gap.id === segment.id) + 1}`}
+                    />
+                  ) : (
+                    <textarea
+                      key={`text-${index}`}
+                      ref={(element) => {
+                        textSegmentRefs.current[index] = element;
+                      }}
+                      value={segment.text || ''}
+                      onFocus={() => setActiveTextSegmentIndex(index)}
+                      onClick={() => setActiveTextSegmentIndex(index)}
+                      onChange={(e) => handleUpdateTextSegment(index, e.target.value)}
+                      rows={Math.max(2, Math.ceil((segment.text || '').length / 80))}
+                      className="my-1 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-6 text-slate-800 outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100"
+                      placeholder={index === 0 ? 'Typ hier de tekst van de vraag...' : 'Tekst na het invulveld...'}
+                    />
+                  )
+                ))}
+              </div>
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold text-gray-700">
-                  Gaps gevonden: {invullenGaps.length}
+                  Invulvelden: {getFillBlankGapsFromSegments(invullenSegments).length}
                 </p>
-                {invullenGaps.length === 0 && (
-                  <p className="text-xs text-gray-500">Voeg [GAP] toe in de tekst om antwoordvelden te maken.</p>
+                {getFillBlankGapsFromSegments(invullenSegments).length === 0 && (
+                  <p className="text-xs text-gray-500">Klik op Maak gat om een antwoordveld toe te voegen.</p>
                 )}
               </div>
-
-              {invullenGaps.map((gap, index) => (
-                <div key={gap.id} className="grid grid-cols-[7rem_1fr] gap-3 items-center">
-                  <label className="text-xs font-semibold text-gray-700">
-                    Gap {index + 1}
-                  </label>
-                  <input
-                    type="text"
-                    value={gap.answer}
-                    onChange={(e) => handleUpdateGap(index, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                    placeholder="Correct antwoord"
-                  />
-                </div>
-              ))}
             </div>
           </div>
         ) : vraagtype === 'volgorde' ? (

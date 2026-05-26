@@ -1,3 +1,5 @@
+import { isSmartFillBlankAnswerCorrect } from './fillBlankUtils.js';
+
 /**
  * Normalize answer string for comparison
  * Handles separators, letter order, and case sensitivity
@@ -41,5 +43,9 @@ export const isAnswerCorrect = (studentAnswer, correctAnswers) => {
   const normalizedStudent = normalizeAnswer(studentAnswer?.toString() || '');
   const possibleAnswers = Array.isArray(correctAnswers) ? correctAnswers : [correctAnswers];
 
-  return possibleAnswers.some(ans => normalizeAnswer(ans.toString()) === normalizedStudent);
+  return possibleAnswers.some((ans) => {
+    const correctAnswer = ans.toString();
+    return normalizeAnswer(correctAnswer) === normalizedStudent ||
+      isSmartFillBlankAnswerCorrect(studentAnswer, correctAnswer);
+  });
 };
