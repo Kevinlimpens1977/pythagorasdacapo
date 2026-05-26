@@ -372,15 +372,6 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
     setPreviewAnswers((current) => ({ ...current, [fieldId]: value }));
   };
 
-  const renderStatus = (status) => {
-    if (status === 'empty') return null;
-    return (
-      <span className={`ml-2 text-sm font-black ${status === 'correct' ? 'text-green-700' : 'text-red-700'}`}>
-        {status === 'correct' ? 'Goed' : 'Nog niet goed'}
-      </span>
-    );
-  };
-
   const inputClassForStatus = (status, baseClass = '') => {
     const statusClass = status === 'correct'
       ? 'border-green-400 bg-green-50 text-green-900'
@@ -435,7 +426,6 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
                     )}
                     placeholder={`Invulveld ${preview.fields.findIndex((item) => item.id === segment.id) + 1}`}
                   />
-                  {renderStatus(status)}
                 </span>
               );
             })() : (
@@ -465,7 +455,6 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
                     className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100"
                   />
                   {option.text || `Optie ${index + 1}`}
-                  {renderStatus(status)}
                 </label>
               );
             })()
@@ -484,7 +473,6 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
                   className={inputClassForStatus(status, 'input-standard max-w-sm')}
                   placeholder={linkedVraag.antwoord?.unit ? `Antwoord in ${linkedVraag.antwoord.unit}` : 'Vul je antwoord in'}
                 />
-                {renderStatus(status)}
               </>
             );
           })()}
@@ -504,7 +492,6 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
                   className={inputClassForStatus(status, 'input-standard min-h-36 w-full resize-y leading-6')}
                   placeholder="Typ je antwoord..."
                 />
-                {correctAnswer && renderStatus(status)}
               </>
             );
           })()}
