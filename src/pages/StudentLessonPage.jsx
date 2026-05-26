@@ -19,6 +19,7 @@ import * as voortgangService from '../services/voortgangService';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import { calculateLessonProgress, findResumeBlockIndex, getCompletedBlockIds } from '../lib/studentLessonProgress';
+import { buildQuestionPreviewModel } from '../lib/questionPreviewUtils';
 import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
 import GamePlayer from '../components/games/GamePlayer';
@@ -353,11 +354,83 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, onOpenSlided
           <GameBlock block={block} onComplete={onGameComplete} />
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
+        ) : block.type === 'question' ? (
+          <QuestionLearningBlock block={block} bodyHtml={bodyHtml} linkedVraag={linkedVraag} />
         ) : (
           <DefaultLearningBlock block={block} bodyHtml={bodyHtml} linkedVraag={linkedVraag} />
         )}
       </div>
     </article>
+  );
+}
+
+function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
+  const preview = buildQuestionPreviewModel(linkedVraag || {});
+
+  if (!linkedVraag) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+        <h3 className="text-xl font-black">Vraag niet gevonden</h3>
+        <p className="mt-2 text-sm leading-6">Deze lesstap verwijst naar een vraag die niet meer beschikbaar is.</p>
+      </div>
+    );
+  }
+
+  if (preview.empty && !bodyHtml) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-600">
+        <h3 className="text-xl font-black text-[var(--helix-navy)]">Nog geen vraagtekst ingevuld</h3>
+        <p className="mt-2 text-sm leading-6">Open de vraagstudio en vul de vraag of het invultemplate in.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {preview.promptHtml && (
+        <div
+          className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
+          dangerouslySetInnerHTML={htmlValue(preview.promptHtml)}
+        />
+      )}
+
+      {preview.type === 'invullen' ? (
+        <div className="rounded-3xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/55 p-5 text-lg leading-10 text-[var(--helix-navy)]">
+          {preview.segments.map((segment, index) => (
+            segment.type === 'gap' ? (
+              <input
+                key={segment.id}
+                type="text"
+                className="mx-1 inline-flex min-w-32 rounded-xl border-2 border-fuchsia-200 bg-white px-3 py-2 text-base font-bold text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100"
+                placeholder={`Invulveld ${preview.fields.findIndex((field) => field.id === segment.id) + 1}`}
+              />
+            ) : (
+              <span key={`text-${index}`} className="whitespace-pre-wrap">{segment.text}</span>
+            )
+          ))}
+        </div>
+      ) : preview.type === 'meerkeuze' ? (
+        <div className="space-y-3">
+          {(linkedVraag.antwoord?.options || []).map((option, index) => (
+            <label key={option.id || index} className="flex items-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-navy)]">
+              <input type="checkbox" className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100" />
+              {option.text || `Optie ${index + 1}`}
+            </label>
+          ))}
+        </div>
+      ) : preview.type === 'numeriek' ? (
+        <input
+          type="number"
+          className="input-standard max-w-sm"
+          placeholder={linkedVraag.antwoord?.unit ? `Antwoord in ${linkedVraag.antwoord.unit}` : 'Vul je antwoord in'}
+        />
+      ) : (
+        <textarea
+          className="input-standard min-h-36 w-full resize-y leading-6"
+          placeholder="Typ je antwoord..."
+        />
+      )}
+    </div>
   );
 }
 
