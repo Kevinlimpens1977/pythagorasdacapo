@@ -264,6 +264,7 @@ export default function DualPanelEditor({
           hints: formState.hints || vraag.vraagMetadata?.hints || [],
           showCalculator: formState.showCalculator || vraag.vraagMetadata?.showCalculator || false,
           calculatorMode: 'standard',
+          tokenConfig: formState.tokenConfig || vraag.vraagMetadata?.tokenConfig || null,
         },
         antwoord: formState.antwoord || vraag?.antwoord || { type: formState.vraagtype || vraag.vraagtype },
       });

@@ -12,10 +12,24 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Image from '@tiptap/extension-image';
 import Color from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
+import {
+  QUESTION_TYPES,
+  buildDefaultAnswerForQuestionType,
+  buildDefaultTokenConfigForQuestionType,
+  getQuestionTypeDefinition,
+  normalizeQuestionTokenConfig
+} from '../../lib/questionTypeRegistry';
 
 const createVolgordeItem = (text = '') => ({
   id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   text
+});
+
+const createChoiceOption = (text = '', correct = false) => ({
+  id: `option-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  text,
+  correct,
+  explanation: ''
 });
 
 const QuestionEditorInner = forwardRef(function QuestionEditor(
@@ -36,14 +50,29 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   const [error] = useState(null);
 
   // Antwoord state (per vraagtype)
-  const [antwoordExpected, setAntwoordExpected] = useState(vraag?.antwoord?.expected || '');
+  const [openModelAnswer, setOpenModelAnswer] = useState(vraag?.antwoord?.modelAnswer || '');
+  const [meerkeuzeOptions, setMeerkeuzeOptions] = useState(() => (
+    vraag?.antwoord?.type === 'meerkeuze' && Array.isArray(vraag?.antwoord?.options)
+      ? vraag.antwoord.options.map((option, index) => ({
+          id: option.id || `option-${index + 1}`,
+          text: option.text || '',
+          correct: Boolean(option.correct),
+          explanation: option.explanation || ''
+        }))
+      : buildDefaultAnswerForQuestionType('meerkeuze').options
+  ));
+  const [antwoordExpected, setAntwoordExpected] = useState(vraag?.antwoord?.expected ?? vraag?.antwoord?.correctValue ?? '');
   const [antwoordTolerance, setAntwoordTolerance] = useState(vraag?.antwoord?.tolerance || 0.5);
   const [antwoordUnit, setAntwoordUnit] = useState(vraag?.antwoord?.unit || '');
   const [antwoordHint, setAntwoordHint] = useState(vraag?.antwoord?.hintBijFout || '');
   const [koppelenPairs, setKoppelenPairs] = useState(() => (
     vraag?.antwoord?.type === 'koppelen' && Array.isArray(vraag?.antwoord?.pairs)
-      ? vraag.antwoord.pairs
-      : [{ left: '', right: '' }]
+      ? vraag.antwoord.pairs.map((pair, index) => ({
+          id: pair.id || `pair-${index + 1}`,
+          left: pair.left || '',
+          right: pair.right || ''
+        }))
+      : [{ id: `pair-${Date.now()}`, left: '', right: '' }]
   ));
   const [invullenText, setInvullenText] = useState(() => (
     vraag?.antwoord?.type === 'invullen' ? vraag.antwoord.text || '' : ''
@@ -60,6 +89,13 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           text: item.text || ''
         }))
       : [createVolgordeItem()]
+  ));
+  const [tokenConfig, setTokenConfig] = useState(() => (
+    normalizeQuestionTokenConfig(
+      vraag?.vraagtype || 'open',
+      vraag?.antwoord || buildDefaultAnswerForQuestionType(vraag?.vraagtype || 'open'),
+      vraag?.vraagMetadata?.tokenConfig
+    )
   ));
 
   // TipTap editor
@@ -84,6 +120,25 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   });
 
   const getAntwoordState = useCallback(() => {
+    if (vraagtype === 'open') {
+      return {
+        type: 'open',
+        modelAnswer: openModelAnswer
+      };
+    }
+
+    if (vraagtype === 'meerkeuze') {
+      return {
+        type: 'meerkeuze',
+        options: meerkeuzeOptions.map((option, index) => ({
+          id: option.id || `option-${index + 1}`,
+          text: option.text || '',
+          correct: Boolean(option.correct),
+          explanation: option.explanation || ''
+        }))
+      };
+    }
+
     if (vraagtype === 'numeriek') {
       return {
         type: 'numeriek',
@@ -98,6 +153,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
       return {
         type: 'koppelen',
         pairs: koppelenPairs.map((pair) => ({
+          id: pair.id,
           left: pair.left || '',
           right: pair.right || ''
         }))
@@ -128,6 +184,8 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     return { type: vraagtype };
   }, [
     vraagtype,
+    openModelAnswer,
+    meerkeuzeOptions,
     antwoordExpected,
     antwoordTolerance,
     antwoordUnit,
@@ -150,10 +208,11 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
         difficulty,
         showCalculator,
         hints,
+        tokenConfig,
         antwoord: getAntwoordState()
       }),
     }),
-    [editor, title, vraagtype, status, difficulty, showCalculator, hints, getAntwoordState]
+    [editor, title, vraagtype, status, difficulty, showCalculator, hints, tokenConfig, getAntwoordState]
   );
 
   useEffect(() => {
@@ -182,6 +241,28 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     });
   }, [invullenText]);
 
+  useEffect(() => {
+    setTokenConfig((currentConfig) =>
+      normalizeQuestionTokenConfig(vraagtype, getAntwoordState(), currentConfig)
+    );
+  }, [vraagtype, getAntwoordState]);
+
+  const applyQuestionType = useCallback((nextType) => {
+    const defaultAnswer = buildDefaultAnswerForQuestionType(nextType);
+    setVraagtype(nextType);
+    setOpenModelAnswer(defaultAnswer.modelAnswer || '');
+    setMeerkeuzeOptions(defaultAnswer.options || []);
+    setAntwoordExpected(defaultAnswer.expected ?? '');
+    setAntwoordTolerance(defaultAnswer.tolerance ?? 0.5);
+    setAntwoordUnit(defaultAnswer.unit || '');
+    setAntwoordHint(defaultAnswer.hintBijFout || '');
+    setKoppelenPairs(defaultAnswer.pairs || [{ id: `pair-${Date.now()}`, left: '', right: '' }]);
+    setInvullenText(defaultAnswer.text || '');
+    setInvullenGaps(defaultAnswer.gaps || []);
+    setVolgordeItems(defaultAnswer.items || [createVolgordeItem()]);
+    setTokenConfig(buildDefaultTokenConfigForQuestionType(nextType, defaultAnswer));
+  }, []);
+
   // Add hint
   const handleAddHint = useCallback(() => {
     if (newHint.trim()) {
@@ -201,6 +282,18 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
         pairIndex === index ? { ...pair, [field]: value } : pair
       )
     );
+  }, []);
+
+  const handleUpdateOption = useCallback((index, field, value) => {
+    setMeerkeuzeOptions((options) =>
+      options.map((option, optionIndex) =>
+        optionIndex === index ? { ...option, [field]: value } : option
+      )
+    );
+  }, []);
+
+  const handleRemoveOption = useCallback((index) => {
+    setMeerkeuzeOptions((options) => options.filter((_, optionIndex) => optionIndex !== index));
   }, []);
 
   const handleRemovePair = useCallback((index) => {
@@ -240,6 +333,42 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     setVolgordeItems((items) => items.filter((_, itemIndex) => itemIndex !== index));
   }, []);
 
+  const handleUpdateToken = useCallback((partId, value) => {
+    const nextTokens = Math.max(0, Math.round(Number(value) || 0));
+    setTokenConfig((currentConfig) => {
+      const distribution = currentConfig.distribution.map((part) =>
+        part.id === partId ? { ...part, tokens: nextTokens } : part
+      );
+      return {
+        ...currentConfig,
+        totalTokens: distribution.reduce((sum, part) => sum + part.tokens, 0),
+        distribution
+      };
+    });
+  }, []);
+
+  const handleSetTotalTokens = useCallback((value) => {
+    const totalTokens = Math.max(0, Math.round(Number(value) || 0));
+    setTokenConfig((currentConfig) => {
+      const normalized = normalizeQuestionTokenConfig(
+        vraagtype,
+        getAntwoordState(),
+        { ...currentConfig, totalTokens }
+      );
+      const base = Math.floor(totalTokens / Math.max(normalized.distribution.length, 1));
+      let remainder = totalTokens - base * normalized.distribution.length;
+      return {
+        ...normalized,
+        totalTokens,
+        distribution: normalized.distribution.map((part) => {
+          const tokens = base + (remainder > 0 ? 1 : 0);
+          remainder -= 1;
+          return { ...part, tokens };
+        })
+      };
+    });
+  }, [getAntwoordState, vraagtype]);
+
   if (!editor) {
     return <div className="p-4 text-gray-500">Loading editor...</div>;
   }
@@ -274,16 +403,16 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           </label>
           <select
             value={vraagtype}
-            onChange={(e) => setVraagtype(e.target.value)}
+            onChange={(e) => applyQuestionType(e.target.value)}
             className="input-standard w-full"
           >
-            <option value="open">Open vraag</option>
-            <option value="meerkeuze">Meerkeuze</option>
-            <option value="numeriek">Numeriek</option>
-            <option value="koppelen">Koppelen</option>
-            <option value="invullen">Invullen</option>
-            <option value="volgorde">Volgorde</option>
+            {QUESTION_TYPES.map((type) => (
+              <option key={type.id} value={type.id}>{type.label}</option>
+            ))}
           </select>
+          <p className="mt-2 text-xs leading-5 text-gray-500">
+            {getQuestionTypeDefinition(vraagtype).description}
+          </p>
         </div>
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -496,8 +625,17 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
       {/* Antwoord Section (per vraagtype) */}
       <div className="mb-8">
         <label className="block text-sm font-semibold text-gray-700 mb-3">
-          ✅ Antwoord
+          Antwoordtemplate
         </label>
+
+        <div className="mb-4 rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-3">
+          <p className="text-sm font-black text-[var(--helix-navy)]">
+            {getQuestionTypeDefinition(vraagtype).label}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-[var(--helix-muted)]">
+            {getQuestionTypeDefinition(vraagtype).template}
+          </p>
+        </div>
 
         {vraagtype === 'numeriek' ? (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-4">
@@ -562,16 +700,83 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             </div>
           </div>
         ) : vraagtype === 'open' ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
             <p className="text-sm text-gray-600">
-              📝 <strong>Open vraag</strong> – Leerling typt vrij antwoord. Geen automatische controle. Docent beoordeelt.
+              Leerling typt vrij antwoord. Het modelantwoord maakt latere docentbeoordeling of AI-feedback eenvoudiger.
             </p>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
+                Modelantwoord
+              </label>
+              <textarea
+                value={openModelAnswer}
+                onChange={(e) => setOpenModelAnswer(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--helix-purple)] focus:border-transparent"
+                placeholder="Beschrijf wat een goed antwoord bevat."
+              />
+            </div>
           </div>
         ) : vraagtype === 'meerkeuze' ? (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
             <p className="text-sm text-gray-600">
-              🎯 <strong>Meerkeuze</strong> – Antwoord-schema wordt later uitgebouwd.
+              Voeg opties toe en markeer welke correct zijn. Per optie kun je alvast feedback noteren.
             </p>
+            <div className="space-y-3">
+              {meerkeuzeOptions.map((option, index) => (
+                <div key={option.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-3 items-end">
+                  <label className="flex items-center gap-2 pb-2 text-xs font-semibold text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={option.correct}
+                      onChange={(e) => handleUpdateOption(index, 'correct', e.target.checked)}
+                      className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100"
+                    />
+                    Correct
+                  </label>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      Optie {index + 1}
+                    </label>
+                    <input
+                      type="text"
+                      value={option.text}
+                      onChange={(e) => handleUpdateOption(index, 'text', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Antwoordoptie"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      Feedback
+                    </label>
+                    <input
+                      type="text"
+                      value={option.explanation}
+                      onChange={(e) => handleUpdateOption(index, 'explanation', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Waarom wel/niet?"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveOption(index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Verwijder optie"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setMeerkeuzeOptions((options) => [...options, createChoiceOption()])}
+              className="btn-primary px-4 py-2 text-sm"
+            >
+              <Plus size={18} />
+              Voeg optie toe
+            </button>
           </div>
         ) : vraagtype === 'koppelen' ? (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
@@ -581,7 +786,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
 
             <div className="space-y-3">
               {koppelenPairs.map((pair, index) => (
-                <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
+                <div key={pair.id || index} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-2">
                       Links
@@ -622,7 +827,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
 
             <button
               type="button"
-              onClick={() => setKoppelenPairs((pairs) => [...pairs, { left: '', right: '' }])}
+              onClick={() => setKoppelenPairs((pairs) => [...pairs, { id: `pair-${Date.now()}`, left: '', right: '' }])}
               className="btn-primary px-4 py-2 text-sm"
             >
               <Plus size={18} />
@@ -729,6 +934,53 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             </button>
           </div>
         ) : null}
+      </div>
+
+      <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700">
+              Tokens
+            </label>
+            <p className="mt-1 text-sm leading-6 text-gray-500">
+              Deze instellingen worden alvast opgeslagen voor het toekomstige tokensysteem.
+            </p>
+          </div>
+          <div className="w-full sm:w-36">
+            <label className="block text-xs font-semibold text-gray-700 mb-2">
+              Totaal
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={tokenConfig.totalTokens}
+              onChange={(e) => handleSetTotalTokens(e.target.value)}
+              className="input-standard w-full"
+            />
+          </div>
+        </div>
+
+        {tokenConfig.distribution.length > 0 ? (
+          <div className="mt-4 space-y-2">
+            {tokenConfig.distribution.map((part) => (
+              <div key={part.id} className="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-xl bg-slate-50 px-3 py-2">
+                <span className="text-sm font-semibold text-gray-700">{part.label}</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={part.tokens}
+                  onChange={(e) => handleUpdateToken(part.id, e.target.value)}
+                  className="input-standard w-full"
+                  aria-label={`Tokens voor ${part.label}`}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-4 rounded-xl bg-slate-50 px-3 py-2 text-sm font-medium text-gray-500">
+            Voeg eerst antwoordonderdelen toe om tokens te verdelen.
+          </p>
+        )}
       </div>
     </div>
   );

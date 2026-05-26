@@ -108,8 +108,23 @@
  * @property {string[]} hints - Array of hints
  * @property {boolean} showCalculator - Show calculator?
  * @property {string} calculatorMode - "standard" | "scientific"
+ * @property {VraagTokenConfig} tokenConfig - Future token reward configuration
  * @property {number} estimatedTime - Time in seconds
  * @property {string[]} keywords - Search keywords
+ */
+
+/**
+ * @typedef {Object} VraagTokenConfig
+ * @property {boolean} enabled - Whether this question can award tokens
+ * @property {number} totalTokens - Total tokens this question can award
+ * @property {Array<VraagTokenPart>} distribution - Tokens per answer part
+ */
+
+/**
+ * @typedef {Object} VraagTokenPart
+ * @property {string} id - Stable answer part ID
+ * @property {string} label - Human-readable part label
+ * @property {number} tokens - Tokens for this part
  */
 
 /**

@@ -389,7 +389,8 @@ export const createVraag = async (paragraafId, data, userId) => {
         difficulty: data.vraagMetadata?.difficulty || 3,
         hints: data.vraagMetadata?.hints || [],
         showCalculator: data.vraagMetadata?.showCalculator || false,
-        calculatorMode: data.vraagMetadata?.calculatorMode || 'standard'
+        calculatorMode: data.vraagMetadata?.calculatorMode || 'standard',
+        tokenConfig: data.vraagMetadata?.tokenConfig || null
       },
       antwoord: data.antwoord || {},
       isArchived: false

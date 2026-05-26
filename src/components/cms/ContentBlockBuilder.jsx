@@ -50,6 +50,10 @@ import {
   normalizeContentBlocks
 } from '../../lib/contentBlockUtils';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
+import {
+  buildDefaultAnswerForQuestionType,
+  buildDefaultTokenConfigForQuestionType
+} from '../../lib/questionTypeRegistry';
 import { getDeckReadySlidedeckPackages } from '../../services/slidedeckService';
 import { uploadMediaAsset } from '../../services/mediaService';
 import MediaRenderer from '../media/MediaRenderer';
@@ -1256,15 +1260,20 @@ export default function ContentBlockBuilder({
 
       if (type === 'question') {
         const number = getNextQuestionNumber(vragen);
+        const vraagtype = 'open';
+        const antwoord = buildDefaultAnswerForQuestionType(vraagtype);
         linkedVraagId = await cmsService.createVraag(
           paragraaf.id,
           {
             number,
             title: `Vraag ${number}`,
             status: 'draft',
-            vraagtype: 'open',
+            vraagtype,
             content: { text: '<p></p>', images: [] },
-            antwoord: { type: 'open' }
+            vraagMetadata: {
+              tokenConfig: buildDefaultTokenConfigForQuestionType(vraagtype, antwoord)
+            },
+            antwoord
           },
           userId
         );
