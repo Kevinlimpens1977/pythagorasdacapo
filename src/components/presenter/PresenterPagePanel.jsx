@@ -12,9 +12,10 @@ export default function PresenterPagePanel({
   if (!open) return null;
 
   const safePages = Array.isArray(pages) ? pages : [];
+  const activePage = safePages.find((page) => page.id === activePageId);
 
   return (
-    <aside className="absolute bottom-24 right-3 z-20 w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-lg border border-slate-300 bg-slate-50 shadow-xl sm:right-5">
+    <aside className="absolute bottom-24 left-3 z-20 w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-lg border border-slate-300 bg-slate-50 shadow-xl sm:left-5">
       <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <h2 className="text-base font-black text-slate-950">Pagina&apos;s</h2>
         <button
@@ -59,30 +60,37 @@ export default function PresenterPagePanel({
                       </span>
                     </span>
                   </button>
-
-                  <div className="mt-2 flex gap-2">
-                    <button
-                      type="button"
-                      className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md border border-slate-300 px-2 text-sm font-black text-slate-800 transition hover:bg-slate-100"
-                      onClick={() => onDuplicatePage?.(page.id)}
-                    >
-                      <Copy size={17} strokeWidth={2.4} />
-                      Dupliceer
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md border border-red-200 px-2 text-sm font-black text-red-700 transition hover:bg-red-50"
-                      onClick={() => onDeletePage?.()}
-                    >
-                      <Trash2 size={17} strokeWidth={2.4} />
-                      Verwijder
-                    </button>
-                  </div>
                 </li>
               );
             })}
           </ol>
         )}
+      </div>
+
+      <div className="border-t border-slate-200 bg-slate-100 px-4 py-3">
+        <p className="mb-2 truncate text-xs font-black uppercase tracking-wide text-slate-500">
+          Actieve pagina: {activePage?.title || 'Geen pagina'}
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md border border-slate-300 bg-slate-50 px-2 text-sm font-black text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-45"
+            onClick={() => onDuplicatePage?.()}
+            disabled={!activePage}
+          >
+            <Copy size={17} strokeWidth={2.4} />
+            Dupliceer
+          </button>
+          <button
+            type="button"
+            className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md border border-red-200 bg-slate-50 px-2 text-sm font-black text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-45"
+            onClick={() => onDeletePage?.()}
+            disabled={!activePage}
+          >
+            <Trash2 size={17} strokeWidth={2.4} />
+            Verwijder
+          </button>
+        </div>
       </div>
     </aside>
   );

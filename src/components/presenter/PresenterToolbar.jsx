@@ -46,9 +46,17 @@ export default function PresenterToolbar({
   return (
     <div
       className={`group pointer-events-none absolute inset-x-0 bottom-0 z-30 px-3 pb-3 transition-transform duration-200 ease-out sm:px-5 ${
-        pinned ? 'translate-y-0' : 'translate-y-[calc(100%-1.25rem)] hover:translate-y-0 focus-within:translate-y-0'
+        pinned ? 'translate-y-0' : 'translate-y-[calc(100%-3.75rem)] hover:translate-y-0 focus-within:translate-y-0'
       }`}
     >
+      <button
+        type="button"
+        className="pointer-events-auto mx-auto mb-2 flex min-h-11 min-w-40 items-center justify-center rounded-md border border-slate-700 bg-slate-950 px-4 text-sm font-black text-slate-50 shadow-lg transition hover:bg-slate-800"
+        onClick={onTogglePinned}
+        aria-pressed={pinned}
+      >
+        {pinned ? 'Werkbalk vast' : 'Werkbalk openen'}
+      </button>
       <div className="pointer-events-auto mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
         <div className="flex shrink-0 items-center gap-1">
           <button
@@ -75,14 +83,14 @@ export default function PresenterToolbar({
         <div className="mx-1 h-9 w-px shrink-0 bg-slate-700" />
 
         <div className="flex shrink-0 items-center gap-1">
+          <button type="button" className={iconButtonClass} onClick={onSelect} aria-label="Selecteren">
+            <MousePointer2 size={20} strokeWidth={2.4} />
+          </button>
           <button type="button" className={iconButtonClass} onClick={onUndo} aria-label="Ongedaan maken">
             <Undo2 size={20} strokeWidth={2.4} />
           </button>
           <button type="button" className={iconButtonClass} onClick={onRedo} aria-label="Opnieuw">
             <Redo2 size={20} strokeWidth={2.4} />
-          </button>
-          <button type="button" className={iconButtonClass} onClick={onSelect} aria-label="Selecteren">
-            <MousePointer2 size={20} strokeWidth={2.4} />
           </button>
         </div>
 

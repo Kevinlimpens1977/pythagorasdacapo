@@ -40,8 +40,8 @@ export default function PresenterShell() {
     setSession((currentSession) => addPresenterPage(currentSession));
   };
 
-  const duplicatePage = (pageId) => {
-    setSession((currentSession) => duplicatePresenterPage(currentSession, pageId));
+  const duplicatePage = () => {
+    setSession((currentSession) => duplicatePresenterPage(currentSession, currentSession.activePageId));
   };
 
   const deletePage = () => {
