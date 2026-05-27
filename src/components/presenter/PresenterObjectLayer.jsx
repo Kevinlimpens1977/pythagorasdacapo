@@ -1,9 +1,12 @@
+import { useId } from 'react';
+
 const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
 const DEFAULT_STROKE = '#111827';
 const DEFAULT_FILL = 'rgba(255, 255, 255, 0.72)';
 const SELECTION_COLOR = '#2563eb';
 const DELETE_COLOR = '#dc2626';
+const MIN_TOUCH_STROKE_WIDTH = 44;
 
 const isFiniteNumber = (value) => Number.isFinite(value);
 const isFinitePositiveNumber = (value) => Number.isFinite(value) && value > 0;
@@ -23,6 +26,10 @@ const getObjectStyle = (object) => ({
   stroke: object?.stroke || object?.style?.stroke || DEFAULT_STROKE,
   strokeWidth: isFinitePositiveNumber(object?.strokeWidth) ? object.strokeWidth : 5
 });
+
+const createDomIdPart = (value) => String(value || 'object').replace(/[^a-zA-Z0-9_-]/g, '-');
+
+const getHitStrokeWidth = (strokeWidth) => Math.max(MIN_TOUCH_STROKE_WIDTH, strokeWidth);
 
 const getSelectionFrame = ({ width, height }) => {
   const minX = Math.min(0, width);
@@ -72,14 +79,14 @@ const renderTable = (object, width, height, style) => {
   );
 };
 
-const renderAxes = (width, height, style) => {
+const renderAxes = (width, height, style, markerId) => {
   const xAxisY = height * 0.78;
   const yAxisX = width * 0.18;
 
   return (
     <g fill="none" stroke={style.stroke} strokeLinecap="round" strokeWidth={style.strokeWidth}>
-      <line x1={yAxisX} y1={height} x2={yAxisX} y2={0} markerEnd="url(#presenter-object-arrow)" />
-      <line x1={0} y1={xAxisY} x2={width} y2={xAxisY} markerEnd="url(#presenter-object-arrow)" />
+      <line x1={yAxisX} y1={height} x2={yAxisX} y2={0} markerEnd={`url(#${markerId})`} />
+      <line x1={0} y1={xAxisY} x2={width} y2={xAxisY} markerEnd={`url(#${markerId})`} />
       <line x1={yAxisX} y1={xAxisY} x2={yAxisX + 22} y2={xAxisY} strokeWidth={Math.max(2, style.strokeWidth * 0.7)} />
       <line x1={yAxisX} y1={xAxisY} x2={yAxisX} y2={xAxisY - 22} strokeWidth={Math.max(2, style.strokeWidth * 0.7)} />
     </g>
@@ -91,19 +98,67 @@ const renderAngle = (object, width, height, style) => {
   const radius = Math.min(Math.abs(width), Math.abs(height), 96);
   const radians = (angleDegrees * Math.PI) / 180;
   const endX = Math.cos(radians) * Math.max(radius, 1);
-  const endY = -Math.sin(radians) * Math.max(radius, 1);
+  const endY = height - Math.sin(radians) * Math.max(radius, 1);
   const largeArcFlag = angleDegrees > 180 ? 1 : 0;
 
   return (
     <g fill="none" stroke={style.stroke} strokeLinecap="round" strokeWidth={style.strokeWidth}>
-      <line x1={0} y1={0} x2={width} y2={0} />
-      <line x1={0} y1={0} x2={endX} y2={endY} />
-      <path d={`M ${radius} 0 A ${radius} ${radius} 0 ${largeArcFlag} 0 ${endX} ${endY}`} />
+      <line x1={0} y1={height} x2={width} y2={height} />
+      <line x1={0} y1={height} x2={endX} y2={endY} />
+      <path d={`M ${radius} ${height} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${endX} ${endY}`} />
     </g>
   );
 };
 
-const renderObjectShape = (object) => {
+const renderHitTarget = (object) => {
+  const { width, height } = getObjectFrame(object);
+  const style = getObjectStyle(object);
+  const hitStrokeWidth = getHitStrokeWidth(style.strokeWidth);
+  const hitProps = {
+    fill: 'none',
+    pointerEvents: 'stroke',
+    stroke: 'transparent',
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    strokeWidth: hitStrokeWidth
+  };
+
+  switch (object?.type) {
+    case 'line':
+    case 'arrow':
+      return <line {...hitProps} x1={0} y1={0} x2={width} y2={height} />;
+    case 'axes': {
+      const xAxisY = height * 0.78;
+      const yAxisX = width * 0.18;
+
+      return (
+        <g {...hitProps}>
+          <line x1={yAxisX} y1={height} x2={yAxisX} y2={0} />
+          <line x1={0} y1={xAxisY} x2={width} y2={xAxisY} />
+        </g>
+      );
+    }
+    case 'angle': {
+      const angleDegrees = Math.max(10, Math.min(170, getNumber(object?.angleDegrees, 90)));
+      const radius = Math.min(Math.abs(width), Math.abs(height), 96);
+      const radians = (angleDegrees * Math.PI) / 180;
+      const endX = Math.cos(radians) * Math.max(radius, 1);
+      const endY = height - Math.sin(radians) * Math.max(radius, 1);
+
+      return (
+        <g {...hitProps}>
+          <line x1={0} y1={height} x2={width} y2={height} />
+          <line x1={0} y1={height} x2={endX} y2={endY} />
+          <path d={`M ${radius} ${height} A ${radius} ${radius} 0 0 0 ${endX} ${endY}`} />
+        </g>
+      );
+    }
+    default:
+      return null;
+  }
+};
+
+const renderObjectShape = (object, markerId) => {
   const { width, height } = getObjectFrame(object);
   const style = getObjectStyle(object);
 
@@ -144,7 +199,7 @@ const renderObjectShape = (object) => {
           stroke={style.stroke}
           strokeLinecap="round"
           strokeWidth={style.strokeWidth}
-          markerEnd="url(#presenter-object-arrow)"
+          markerEnd={`url(#${markerId})`}
         />
       );
     case 'triangle':
@@ -168,7 +223,7 @@ const renderObjectShape = (object) => {
         />
       );
     case 'axes':
-      return renderAxes(width, height, style);
+      return renderAxes(width, height, style, markerId);
     case 'table':
       return renderTable(object, width, height, style);
     case 'angle':
@@ -221,38 +276,52 @@ export default function PresenterObjectLayer({
   page,
   selectedObjectId = null,
   interactive = false,
+  showObjects = true,
+  showSelection = true,
   onSelectObject,
   onDeleteObject
 }) {
+  const layerId = createDomIdPart(useId());
   const width = isFinitePositiveNumber(page?.width) ? page.width : DEFAULT_PAGE_WIDTH;
   const height = isFinitePositiveNumber(page?.height) ? page.height : DEFAULT_PAGE_HEIGHT;
   const objects = Array.isArray(page?.objects) ? page.objects : [];
   const viewBox = `0 0 ${width} ${height}`;
+  const renderedObjects = objects.filter((object) => object?.id);
+  const markerObjects = renderedObjects.filter((object) => object?.type === 'arrow' || object?.type === 'axes');
 
   return (
     <svg
       aria-label="Presenter objecten"
       className="absolute inset-0 h-full w-full"
       preserveAspectRatio="none"
-      style={{ pointerEvents: interactive ? 'auto' : 'none' }}
+      style={{ pointerEvents: 'none' }}
       viewBox={viewBox}
     >
       <defs>
-        <marker
-          id="presenter-object-arrow"
-          markerHeight="10"
-          markerWidth="10"
-          orient="auto"
-          refX="8"
-          refY="5"
-          viewBox="0 0 10 10"
-        >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill={DEFAULT_STROKE} />
-        </marker>
+        {markerObjects.map((object) => {
+          const style = getObjectStyle(object);
+          const markerId = `presenter-object-arrow-${layerId}-${createDomIdPart(object.id)}`;
+
+          return (
+            <marker
+              key={markerId}
+              id={markerId}
+              markerHeight="10"
+              markerWidth="10"
+              orient="auto"
+              refX="8"
+              refY="5"
+              viewBox="0 0 10 10"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill={style.stroke} />
+            </marker>
+          );
+        })}
       </defs>
-      {objects.map((object, index) => {
-        const shape = renderObjectShape(object);
-        if (!object?.id || !shape) return null;
+      {renderedObjects.map((object, index) => {
+        const markerId = `presenter-object-arrow-${layerId}-${createDomIdPart(object.id)}`;
+        const shape = renderObjectShape(object, markerId);
+        if (!shape) return null;
 
         const { x, y, width: objectWidth, height: objectHeight, rotation } = getObjectFrame(object);
         const centerX = objectWidth / 2;
@@ -274,8 +343,9 @@ export default function PresenterObjectLayer({
             style={{ pointerEvents: interactive ? 'auto' : 'none' }}
             transform={`translate(${x} ${y}) rotate(${rotation} ${centerX} ${centerY})`}
           >
-            {shape}
-            {isSelected ? renderSelection(object, onDeleteObject) : null}
+            {showObjects ? renderHitTarget(object) : null}
+            {showObjects ? shape : null}
+            {showSelection && isSelected ? renderSelection(object, onDeleteObject) : null}
           </g>
         );
       })}

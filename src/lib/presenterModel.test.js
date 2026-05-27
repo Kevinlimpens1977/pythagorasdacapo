@@ -208,6 +208,49 @@ test('deleteObjectFromPresenterPage removes selected object and clears selectedO
   assert.notEqual(next.pages[0], page);
 });
 
+test('deleteObjectFromPresenterPage ignores missing object ids without dirtying session', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    objects: [{ id: 'object-1', type: 'rectangle', x: 10, y: 20 }]
+  });
+  const session = {
+    ...createPresenterSession(),
+    activePageId: page.id,
+    pages: [page],
+    selectedObjectId: 'missing-object',
+    dirty: false
+  };
+  const next = deleteObjectFromPresenterPage(session, page.id, 'missing-object');
+
+  assert.equal(next, session);
+  assert.equal(next.dirty, false);
+  assert.equal(next.selectedObjectId, 'missing-object');
+  assert.deepEqual(next.pages[0].objects, page.objects);
+});
+
+test('deleteObjectFromPresenterPage ignores missing legacy object arrays without clearing selection', () => {
+  const page = {
+    id: 'legacy-page',
+    title: 'Legacy pagina',
+    width: 1920,
+    height: 1400,
+    background: { kind: 'white' }
+  };
+  const session = {
+    ...createPresenterSession(),
+    activePageId: page.id,
+    pages: [page],
+    selectedObjectId: 'object-1',
+    dirty: false
+  };
+  const next = deleteObjectFromPresenterPage(session, page.id, 'object-1');
+
+  assert.equal(next, session);
+  assert.equal(next.dirty, false);
+  assert.equal(next.selectedObjectId, 'object-1');
+  assert.equal(next.pages[0], page);
+});
+
 test('updatePresenterPageBackground changes only the target page background', () => {
   const session = addPresenterPage(createPresenterSession());
   const targetPageId = session.pages[0].id;

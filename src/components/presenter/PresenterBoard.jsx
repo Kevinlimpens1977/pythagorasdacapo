@@ -181,10 +181,19 @@ export default function PresenterBoard({
           page={page}
           selectedObjectId={selectedObjectId}
           interactive={tool?.id === 'select'}
+          showSelection={false}
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
         />
         <PresenterInkLayer page={inkPage} />
+        <PresenterObjectLayer
+          page={page}
+          selectedObjectId={selectedObjectId}
+          interactive={tool?.id === 'select'}
+          showObjects={false}
+          onSelectObject={onSelectObject}
+          onDeleteObject={onDeleteObject}
+        />
         <div className="pointer-events-none absolute left-4 top-4 rounded bg-slate-900/75 px-2.5 py-1 text-xs font-semibold text-slate-50">
           {page?.title || 'Pagina'}
         </div>

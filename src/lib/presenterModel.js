@@ -138,6 +138,11 @@ export const addObjectToPresenterPage = (session, pageId = session.activePageId,
 export const deleteObjectFromPresenterPage = (session, pageId = session.activePageId, objectId) => {
   if (!objectId) return session;
 
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  const page = pages.find((currentPage) => currentPage?.id === pageId);
+  const objects = Array.isArray(page?.objects) ? page.objects : [];
+  if (!objects.some((object) => object?.id === objectId)) return session;
+
   const nextSession = updatePresenterPage(session, pageId, (page) => ({
     ...page,
     objects: (Array.isArray(page?.objects) ? page.objects : []).filter((object) => object?.id !== objectId)
