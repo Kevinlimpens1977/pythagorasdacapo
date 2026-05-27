@@ -24,6 +24,12 @@ export const ADMIN_WORKSPACES = [
     routePrefixes: ['/admin/spellen']
   },
   {
+    id: 'presenter',
+    label: 'Presenter',
+    path: '/admin/presenter',
+    routePrefixes: ['/admin/presenter']
+  },
+  {
     id: 'beheer',
     label: 'Beheer',
     path: '/admin',

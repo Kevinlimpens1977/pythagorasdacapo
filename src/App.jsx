@@ -16,6 +16,7 @@ import ClassSelectionModal from './components/auth/ClassSelectionModal';
 import AdminLesstofPage from './pages/AdminLesstofPage';
 import AdminLeerlingenPage from './pages/AdminLeerlingenPage';
 import AdminSpellenPage from './pages/AdminSpellenPage';
+import AdminPresenterPage from './pages/AdminPresenterPage';
 import AdminSlidedecksPage from './pages/AdminSlidedecksPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
@@ -63,6 +64,11 @@ function AppRoutes() {
         <Route path="admin/spellen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminSpellenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/presenter" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminPresenterPage />
           </PrivateRoute>
         } />
         <Route path="admin/slidedecks" element={

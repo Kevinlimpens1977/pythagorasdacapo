@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
 import CmsResetButton from '../admin/CmsResetButton';
-import { BarChart3, BookOpen, Gamepad2, LogOut, SettingsIcon, User, Users } from 'lucide-react';
+import { BarChart3, BookOpen, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import helixLogo from '../../afbeeldingen/logo.png';
 
@@ -12,6 +12,7 @@ const workspaceIcons = {
   voortgang: BarChart3,
   leerlingen: Users,
   spellen: Gamepad2,
+  presenter: Presentation,
   beheer: SettingsIcon
 };
 
