@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   addPresenterPage,
+  addStrokeToPresenterPage,
   createPresenterSession,
   deletePresenterPage,
   duplicatePresenterPage,
@@ -24,6 +25,9 @@ export default function PresenterShell() {
     [activePage?.id, pages]
   );
   const pageLabel = pages.length > 0 ? `Pagina ${activeIndex + 1}/${pages.length}` : 'Pagina 0/0';
+  const currentTool = activeCategory === 'pen'
+    ? { id: 'pen', variant: 'pen', color: '#111827', width: 5 }
+    : { id: 'select' };
 
   const activatePageAt = (index) => {
     const page = pages[index];
@@ -73,6 +77,12 @@ export default function PresenterShell() {
     element.requestFullscreen?.();
   };
 
+  const handleStrokeComplete = (stroke) => {
+    setSession((currentSession) =>
+      addStrokeToPresenterPage(currentSession, currentSession.activePageId, stroke)
+    );
+  };
+
   return (
     <section className="relative flex min-h-[calc(100vh-5rem)] flex-col overflow-hidden bg-slate-200">
       <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 px-4 py-3 text-slate-50 shadow-sm">
@@ -85,7 +95,7 @@ export default function PresenterShell() {
         </span>
       </header>
 
-      <PresenterBoard page={activePage} />
+      <PresenterBoard page={activePage} tool={currentTool} onStrokeComplete={handleStrokeComplete} />
       <PresenterPagePanel
         pages={pages}
         activePageId={session.activePageId}

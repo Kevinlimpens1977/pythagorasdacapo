@@ -7,7 +7,9 @@ import {
   deletePresenterPage,
   setActivePresenterPage,
   getActivePresenterPage,
-  createPresenterPage
+  createPresenterPage,
+  addStrokeToPresenterPage,
+  removeStrokeFromPresenterPage
 } from './presenterModel.js';
 
 test('createPresenterSession starts with one white page', () => {
@@ -66,6 +68,45 @@ test('deletePresenterPage keeps one empty page when deleting the last page', () 
   assert.equal(next.pages[0].background.kind, 'white');
   assert.deepEqual(next.pages[0].strokes, []);
   assert.deepEqual(next.pages[0].objects, []);
+});
+
+test('addStrokeToPresenterPage appends a stroke to the target page and marks dirty', () => {
+  const session = addPresenterPage(createPresenterSession());
+  const targetPageId = session.pages[0].id;
+  const stroke = {
+    id: 'stroke-1',
+    variant: 'pen',
+    color: '#111827',
+    width: 5,
+    points: [{ x: 10, y: 20 }]
+  };
+  const next = addStrokeToPresenterPage(session, targetPageId, stroke);
+
+  assert.equal(next.dirty, true);
+  assert.deepEqual(next.pages[0].strokes, [stroke]);
+  assert.deepEqual(next.pages[1].strokes, []);
+  assert.notEqual(next.pages[0], session.pages[0]);
+  assert.equal(next.pages[1], session.pages[1]);
+});
+
+test('removeStrokeFromPresenterPage removes a stroke by id', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    strokes: [
+      { id: 'stroke-1', points: [{ x: 1, y: 2 }] },
+      { id: 'stroke-2', points: [{ x: 3, y: 4 }] }
+    ]
+  });
+  const session = {
+    ...createPresenterSession(),
+    activePageId: page.id,
+    pages: [page]
+  };
+  const next = removeStrokeFromPresenterPage(session, page.id, 'stroke-1');
+
+  assert.equal(next.dirty, true);
+  assert.deepEqual(next.pages[0].strokes, [{ id: 'stroke-2', points: [{ x: 3, y: 4 }] }]);
+  assert.notEqual(next.pages[0], page);
 });
 
 test('setActivePresenterPage switches to a valid page and clears selected object', () => {

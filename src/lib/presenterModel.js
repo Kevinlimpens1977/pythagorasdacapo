@@ -51,6 +51,21 @@ export const createPresenterSession = () => {
 export const getActivePresenterPage = (session) =>
   session.pages.find((page) => page.id === session.activePageId) || session.pages[0] || null;
 
+const updatePresenterPage = (session, pageId = session.activePageId, updater) => {
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  const pageIndex = pages.findIndex((page) => page?.id === pageId);
+  if (pageIndex === -1 || typeof updater !== 'function') return session;
+
+  const nextPage = updater(pages[pageIndex]);
+  if (!nextPage) return session;
+
+  return {
+    ...session,
+    pages: pages.map((page, index) => (index === pageIndex ? nextPage : page)),
+    dirty: true
+  };
+};
+
 export const setActivePresenterPage = (session, pageId) => {
   if (!session.pages.some((page) => page.id === pageId)) return session;
 
@@ -71,6 +86,24 @@ export const addPresenterPage = (session) => {
     selectedObjectId: null,
     dirty: true
   };
+};
+
+export const addStrokeToPresenterPage = (session, pageId = session.activePageId, stroke) => {
+  if (!stroke) return session;
+
+  return updatePresenterPage(session, pageId, (page) => ({
+    ...page,
+    strokes: [...(Array.isArray(page?.strokes) ? page.strokes : []), cloneValue(stroke)]
+  }));
+};
+
+export const removeStrokeFromPresenterPage = (session, pageId = session.activePageId, strokeId) => {
+  if (!strokeId) return session;
+
+  return updatePresenterPage(session, pageId, (page) => ({
+    ...page,
+    strokes: (Array.isArray(page?.strokes) ? page.strokes : []).filter((stroke) => stroke?.id !== strokeId)
+  }));
 };
 
 export const duplicatePresenterPage = (session, pageId = session.activePageId) => {
