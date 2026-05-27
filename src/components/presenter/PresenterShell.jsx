@@ -2,13 +2,20 @@ import { useMemo, useState } from 'react';
 import {
   addPresenterPage,
   createPresenterSession,
+  deletePresenterPage,
+  duplicatePresenterPage,
   getActivePresenterPage,
   setActivePresenterPage
 } from '../../lib/presenterModel';
 import PresenterBoard from './PresenterBoard';
+import PresenterPagePanel from './PresenterPagePanel';
+import PresenterToolbar from './PresenterToolbar';
 
 export default function PresenterShell() {
   const [session, setSession] = useState(() => createPresenterSession());
+  const [toolbarPinned, setToolbarPinned] = useState(() => Boolean(session.toolbar?.pinned));
+  const [activeCategory, setActiveCategory] = useState(() => session.toolbar?.activeCategory || 'pen');
+  const [pagePanelOpen, setPagePanelOpen] = useState(false);
 
   const activePage = getActivePresenterPage(session);
   const pages = useMemo(() => session.pages || [], [session.pages]);
@@ -25,47 +32,84 @@ export default function PresenterShell() {
     setSession((currentSession) => setActivePresenterPage(currentSession, page.id));
   };
 
+  const selectPage = (pageId) => {
+    setSession((currentSession) => setActivePresenterPage(currentSession, pageId));
+  };
+
   const addPage = () => {
     setSession((currentSession) => addPresenterPage(currentSession));
   };
 
+  const duplicatePage = (pageId) => {
+    setSession((currentSession) => duplicatePresenterPage(currentSession, pageId));
+  };
+
+  const deletePage = (pageId = session.activePageId) => {
+    const canConfirm = typeof window !== 'undefined' && typeof window.confirm === 'function';
+    if (canConfirm && !window.confirm('Deze pagina verwijderen?')) return;
+
+    setSession((currentSession) => deletePresenterPage(currentSession, pageId));
+  };
+
+  const handleCategory = (category) => {
+    setActiveCategory(category);
+    setPagePanelOpen(category === 'pages');
+  };
+
+  const handleSelectTool = () => {
+    setActiveCategory('select');
+    setPagePanelOpen(false);
+  };
+
+  const handleFullscreen = () => {
+    if (typeof document === 'undefined') return;
+
+    const element = document.documentElement;
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.();
+      return;
+    }
+
+    element.requestFullscreen?.();
+  };
+
   return (
-    <section className="flex min-h-[calc(100vh-5rem)] flex-col bg-slate-200">
+    <section className="relative flex min-h-[calc(100vh-5rem)] flex-col overflow-hidden bg-slate-200">
       <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 px-4 py-3 text-slate-50 shadow-sm">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Presenter</p>
           <h1 className="text-lg font-black leading-tight">Digibord Core</h1>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="min-h-11 rounded-md border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={activeIndex <= 0}
-            onClick={() => activatePageAt(activeIndex - 1)}
-          >
-            Vorige
-          </button>
-          <span className="min-w-24 text-center text-sm font-semibold text-slate-300">{pageLabel}</span>
-          <button
-            type="button"
-            className="min-h-11 rounded-md border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
-            disabled={activeIndex >= pages.length - 1}
-            onClick={() => activatePageAt(activeIndex + 1)}
-          >
-            Volgende
-          </button>
-          <button
-            type="button"
-            className="min-h-11 rounded-md bg-slate-50 px-4 py-2.5 text-sm font-black text-slate-950 transition hover:bg-slate-200"
-            onClick={addPage}
-          >
-            + Pagina
-          </button>
-        </div>
+        <span className="rounded-md border border-slate-700 px-3 py-2 text-sm font-black text-slate-200">
+          {pageLabel}
+        </span>
       </header>
 
       <PresenterBoard page={activePage} />
+      <PresenterPagePanel
+        pages={pages}
+        activePageId={session.activePageId}
+        open={pagePanelOpen}
+        onSelectPage={selectPage}
+        onAddPage={addPage}
+        onDuplicatePage={duplicatePage}
+        onDeletePage={deletePage}
+      />
+      <PresenterToolbar
+        pageLabel={pageLabel}
+        activeCategory={activeCategory}
+        pinned={toolbarPinned}
+        onTogglePinned={() => setToolbarPinned((current) => !current)}
+        onCategory={handleCategory}
+        onPrev={() => activatePageAt(activeIndex - 1)}
+        onNext={() => activatePageAt(activeIndex + 1)}
+        prevDisabled={activeIndex <= 0}
+        nextDisabled={activeIndex >= pages.length - 1}
+        onUndo={() => {}}
+        onRedo={() => {}}
+        onSelect={handleSelectTool}
+        onFullscreen={handleFullscreen}
+      />
     </section>
   );
 }
