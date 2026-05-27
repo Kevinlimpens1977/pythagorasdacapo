@@ -5,7 +5,7 @@ const createId = (prefix) =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 const cloneWithFreshIds = (items, prefix) =>
-  items.map((item) => ({
+  (Array.isArray(items) ? items : []).map((item) => ({
     ...structuredClone(item),
     id: createId(prefix)
   }));

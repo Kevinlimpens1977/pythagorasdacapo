@@ -50,6 +50,30 @@ test('duplicatePresenterPage copies the active page after the original', () => {
   assert.equal(next.dirty, true);
 });
 
+test('duplicatePresenterPage treats missing legacy stroke and object arrays as empty', () => {
+  const first = createPresenterSession();
+  const legacyPage = {
+    id: 'legacy-page',
+    title: 'Legacy pagina',
+    width: 1920,
+    height: 1400,
+    background: { kind: 'white' }
+  };
+  const session = {
+    ...first,
+    activePageId: legacyPage.id,
+    pages: [legacyPage]
+  };
+
+  const next = duplicatePresenterPage(session, legacyPage.id);
+
+  assert.equal(next.pages.length, 2);
+  assert.equal(next.pages[1].title, 'Legacy pagina kopie');
+  assert.deepEqual(next.pages[1].strokes, []);
+  assert.deepEqual(next.pages[1].objects, []);
+  assert.equal(next.dirty, true);
+});
+
 test('deletePresenterPage removes a page and keeps an active page', () => {
   const session = addPresenterPage(createPresenterSession());
   const deletedId = session.pages[1].id;
