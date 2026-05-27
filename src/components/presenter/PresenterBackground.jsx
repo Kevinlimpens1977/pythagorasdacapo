@@ -4,7 +4,10 @@ export default function PresenterBackground({ background, scale = 1 }) {
   if (!background) return null;
 
   if (background.kind === 'lines') {
-    const lineSize = Math.max(1, Math.round((background.gridSize || 96) * scale));
+    const { lineSize } = getGridLineStyle({
+      gridSize: background.gridSize || 96,
+      scale
+    });
 
     return (
       <div

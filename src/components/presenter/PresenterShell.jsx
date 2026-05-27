@@ -40,7 +40,7 @@ export default function PresenterShell() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="rounded-md border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
+            className="min-h-11 rounded-md border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
             disabled={activeIndex <= 0}
             onClick={() => activatePageAt(activeIndex - 1)}
           >
@@ -49,7 +49,7 @@ export default function PresenterShell() {
           <span className="min-w-24 text-center text-sm font-semibold text-slate-300">{pageLabel}</span>
           <button
             type="button"
-            className="rounded-md border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
+            className="min-h-11 rounded-md border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
             disabled={activeIndex >= pages.length - 1}
             onClick={() => activatePageAt(activeIndex + 1)}
           >
@@ -57,7 +57,7 @@ export default function PresenterShell() {
           </button>
           <button
             type="button"
-            className="rounded-md bg-slate-50 px-3 py-2 text-sm font-black text-slate-950 transition hover:bg-slate-200"
+            className="min-h-11 rounded-md bg-slate-50 px-4 py-2.5 text-sm font-black text-slate-950 transition hover:bg-slate-200"
             onClick={addPage}
           >
             + Pagina

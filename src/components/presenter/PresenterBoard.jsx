@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getBoardScale } from '../../lib/presenterGeometry';
 import PresenterBackground from './PresenterBackground';
 
@@ -7,12 +7,41 @@ const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
 
 export default function PresenterBoard({ page, viewportWidth = DEFAULT_VIEWPORT_WIDTH }) {
+  const surfaceRef = useRef(null);
   const boardRef = useRef(null);
+  const [measuredViewportWidth, setMeasuredViewportWidth] = useState(viewportWidth);
+
+  useEffect(() => {
+    const surface = surfaceRef.current;
+    if (!surface) return undefined;
+
+    const measureSurface = () => {
+      const styles = window.getComputedStyle(surface);
+      const paddingX = Number.parseFloat(styles.paddingLeft) + Number.parseFloat(styles.paddingRight);
+      const availableWidth = surface.clientWidth - paddingX;
+
+      if (Number.isFinite(availableWidth) && availableWidth > 0) {
+        setMeasuredViewportWidth(availableWidth);
+      }
+    };
+
+    measureSurface();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const resizeObserver = new ResizeObserver(measureSurface);
+      resizeObserver.observe(surface);
+
+      return () => resizeObserver.disconnect();
+    }
+
+    window.addEventListener('resize', measureSurface);
+    return () => window.removeEventListener('resize', measureSurface);
+  }, []);
 
   const board = useMemo(() => {
     const width = Number.isFinite(page?.width) && page.width > 0 ? page.width : DEFAULT_PAGE_WIDTH;
     const height = Number.isFinite(page?.height) && page.height > 0 ? page.height : DEFAULT_PAGE_HEIGHT;
-    const scale = getBoardScale({ viewportWidth, boardWidth: width });
+    const scale = getBoardScale({ viewportWidth: measuredViewportWidth, boardWidth: width });
 
     return {
       width,
@@ -21,10 +50,14 @@ export default function PresenterBoard({ page, viewportWidth = DEFAULT_VIEWPORT_
       scaledWidth: Math.round(width * scale),
       scaledHeight: Math.round(height * scale)
     };
-  }, [page?.height, page?.width, viewportWidth]);
+  }, [measuredViewportWidth, page?.height, page?.width]);
 
   return (
-    <div className="flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 px-4 py-5" style={{ touchAction: 'pan-y' }}>
+    <div
+      ref={surfaceRef}
+      className="flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 px-4 py-5"
+      style={{ touchAction: 'pan-y' }}
+    >
       <div
         ref={boardRef}
         className="relative mx-auto shrink-0 overflow-hidden bg-slate-50 shadow-sm ring-1 ring-slate-300"
