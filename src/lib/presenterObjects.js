@@ -81,16 +81,17 @@ const cloneValue = (value) => structuredClone(value);
 
 export const createPresenterObject = (type, overrides = {}) => {
   const defaults = cloneValue(SHAPE_DEFAULTS[type] ?? {});
+  const clonedOverrides = cloneValue(overrides);
 
   return {
     ...defaults,
-    ...overrides,
-    type: overrides.type ?? type,
-    x: overrides.x ?? 0,
-    y: overrides.y ?? 0,
-    width: overrides.width ?? defaults.width ?? 0,
-    height: overrides.height ?? defaults.height ?? 0,
-    rotation: overrides.rotation ?? 0
+    ...clonedOverrides,
+    type: clonedOverrides.type ?? type,
+    x: clonedOverrides.x ?? 0,
+    y: clonedOverrides.y ?? 0,
+    width: clonedOverrides.width ?? defaults.width ?? 0,
+    height: clonedOverrides.height ?? defaults.height ?? 0,
+    rotation: clonedOverrides.rotation ?? 0
   };
 };
 

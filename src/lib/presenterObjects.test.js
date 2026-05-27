@@ -127,6 +127,32 @@ test('createPresenterObject clones nested polygon defaults', () => {
   assert.deepEqual(second.points, v1aShapeDefaults.polygon.points);
 });
 
+test('createPresenterObject clones nested override values', () => {
+  const points = [
+    { x: 10, y: 20 },
+    { x: 30, y: 40 }
+  ];
+  const style = {
+    stroke: '#111827',
+    shadow: { enabled: true }
+  };
+  const object = createPresenterObject('polygon', { points, style });
+
+  points[0].x = 99;
+  points.push({ x: 50, y: 60 });
+  style.stroke = '#ffffff';
+  style.shadow.enabled = false;
+
+  assert.deepEqual(object.points, [
+    { x: 10, y: 20 },
+    { x: 30, y: 40 }
+  ]);
+  assert.deepEqual(object.style, {
+    stroke: '#111827',
+    shadow: { enabled: true }
+  });
+});
+
 test('canRotatePresenterObject returns true for V1A shapes and false for content/question objects', () => {
   for (const type of v1aShapeTypes) {
     assert.equal(canRotatePresenterObject({ type }), true, `${type} should rotate`);
