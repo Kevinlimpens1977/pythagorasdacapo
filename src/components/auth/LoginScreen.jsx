@@ -3,6 +3,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
+  getRedirectResult,
+  signInWithRedirect,
   signInWithPopup,
   GoogleAuthProvider
 } from 'firebase/auth';
@@ -11,6 +13,11 @@ import { useAuth } from './AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import { Code2, LogIn, UserPlus } from 'lucide-react';
 import helixLogo from '../../afbeeldingen/logo.png';
+import {
+  getGoogleLoginErrorMessage,
+  isAdminEmail,
+  shouldFallbackToRedirectLogin
+} from '../../lib/authLoginUtils';
 
 export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -22,6 +29,35 @@ export default function LoginScreen() {
   const [devLoginLoading, setDevLoginLoading] = useState(false);
   const { loginAsDevStudent, isAdmin, currentUser, loading, isDevLoginEnabled } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const finishRedirectLogin = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result?.user || cancelled) return;
+
+        if (!isAdminEmail(result.user.email)) {
+          await auth.signOut();
+          if (!cancelled) {
+            setError('Toegang geweigerd: Alleen de administrator kan inloggen met Google.');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) {
+          setError(getGoogleLoginErrorMessage(err));
+        }
+      }
+    };
+
+    finishRedirectLogin();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Auto-redirect when user is authenticated and ready
   useEffect(() => {
@@ -72,14 +108,20 @@ export default function LoginScreen() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
 
-      if (result.user.email !== 'kevlimpens@gmail.com') {
+      if (!isAdminEmail(result.user.email)) {
         await auth.signOut();
         setError('Toegang geweigerd: Alleen de administrator kan inloggen met Google.');
         return;
       }
       // Navigation handled automatically via useEffect when currentUser changes
-    } catch {
-      setError('Google login mislukt.');
+    } catch (err) {
+      console.error(err);
+      if (shouldFallbackToRedirectLogin(err)) {
+        const provider = new GoogleAuthProvider();
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      setError(getGoogleLoginErrorMessage(err));
     }
   };
 
