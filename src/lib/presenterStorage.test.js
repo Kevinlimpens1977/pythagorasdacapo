@@ -58,6 +58,11 @@ test('savePresenterRecoveryState no-ops without storage', () => {
   assert.doesNotThrow(() => savePresenterRecoveryState(undefined, createCleanSession({ dirty: true })));
 });
 
+test('savePresenterRecoveryState no-ops when setItem is missing', () => {
+  assert.doesNotThrow(() => savePresenterRecoveryState({ getItem: () => null }, createCleanSession({ dirty: true })));
+  assert.doesNotThrow(() => savePresenterRecoveryState({}, createCleanSession({ dirty: true })));
+});
+
 test('savePresenterRecoveryState no-ops when setItem throws', () => {
   const storage = {
     setItem: () => {
@@ -66,6 +71,13 @@ test('savePresenterRecoveryState no-ops when setItem throws', () => {
   };
 
   assert.doesNotThrow(() => savePresenterRecoveryState(storage, createCleanSession({ dirty: true })));
+});
+
+test('savePresenterRecoveryState no-ops when JSON serialization fails', () => {
+  const session = createCleanSession({ dirty: true });
+  session.self = session;
+
+  assert.doesNotThrow(() => savePresenterRecoveryState(createFakeStorage(), session));
 });
 
 test('loadPresenterRecoveryState returns saved session', () => {
@@ -86,6 +98,10 @@ test('loadPresenterRecoveryState returns null without storage', () => {
 
 test('loadPresenterRecoveryState returns null when no item exists', () => {
   assert.equal(loadPresenterRecoveryState(createFakeStorage()), null);
+});
+
+test('loadPresenterRecoveryState returns null for empty raw value', () => {
+  assert.equal(loadPresenterRecoveryState({ getItem: () => '' }), null);
 });
 
 test('loadPresenterRecoveryState returns null when getItem throws', () => {
