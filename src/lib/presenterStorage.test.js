@@ -58,6 +58,16 @@ test('savePresenterRecoveryState no-ops without storage', () => {
   assert.doesNotThrow(() => savePresenterRecoveryState(undefined, createCleanSession({ dirty: true })));
 });
 
+test('savePresenterRecoveryState no-ops when setItem throws', () => {
+  const storage = {
+    setItem: () => {
+      throw new Error('storage blocked');
+    }
+  };
+
+  assert.doesNotThrow(() => savePresenterRecoveryState(storage, createCleanSession({ dirty: true })));
+});
+
 test('loadPresenterRecoveryState returns saved session', () => {
   const storage = createFakeStorage();
   const session = createCleanSession({ dirty: true });
@@ -76,6 +86,20 @@ test('loadPresenterRecoveryState returns null without storage', () => {
 
 test('loadPresenterRecoveryState returns null when no item exists', () => {
   assert.equal(loadPresenterRecoveryState(createFakeStorage()), null);
+});
+
+test('loadPresenterRecoveryState returns null when getItem throws', () => {
+  const storage = {
+    getItem: () => {
+      throw new Error('storage blocked');
+    }
+  };
+
+  assert.equal(loadPresenterRecoveryState(storage), null);
+});
+
+test('loadPresenterRecoveryState returns null when getItem is missing', () => {
+  assert.equal(loadPresenterRecoveryState({}), null);
 });
 
 test('loadPresenterRecoveryState ignores invalid JSON', () => {
@@ -153,4 +177,18 @@ test('clearPresenterRecoveryState removes recovery data', () => {
 
 test('clearPresenterRecoveryState no-ops without storage', () => {
   assert.doesNotThrow(() => clearPresenterRecoveryState());
+});
+
+test('clearPresenterRecoveryState no-ops when removeItem throws', () => {
+  const storage = {
+    removeItem: () => {
+      throw new Error('storage blocked');
+    }
+  };
+
+  assert.doesNotThrow(() => clearPresenterRecoveryState(storage));
+});
+
+test('clearPresenterRecoveryState no-ops when removeItem is missing', () => {
+  assert.doesNotThrow(() => clearPresenterRecoveryState({}));
 });

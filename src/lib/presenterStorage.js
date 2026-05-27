@@ -16,21 +16,25 @@ export const hasRecoverablePresenterState = (session) => {
 };
 
 export const savePresenterRecoveryState = (storage, session) => {
-  if (!storage || !hasRecoverablePresenterState(session)) return;
+  if (!storage || typeof storage.setItem !== 'function' || !hasRecoverablePresenterState(session)) return;
 
-  storage.setItem(PRESENTER_STORAGE_KEY, JSON.stringify({
-    savedAt: new Date().toISOString(),
-    session
-  }));
+  try {
+    storage.setItem(PRESENTER_STORAGE_KEY, JSON.stringify({
+      savedAt: new Date().toISOString(),
+      session
+    }));
+  } catch {
+    // Browser storage can be unavailable, blocked, or quota-limited.
+  }
 };
 
 export const loadPresenterRecoveryState = (storage) => {
-  if (!storage) return null;
-
-  const saved = storage.getItem(PRESENTER_STORAGE_KEY);
-  if (!saved) return null;
+  if (!storage || typeof storage.getItem !== 'function') return null;
 
   try {
+    const saved = storage.getItem(PRESENTER_STORAGE_KEY);
+    if (!saved) return null;
+
     const parsed = JSON.parse(saved);
     return isValidRecoverySession(parsed?.session) ? parsed.session : null;
   } catch {
@@ -39,5 +43,11 @@ export const loadPresenterRecoveryState = (storage) => {
 };
 
 export const clearPresenterRecoveryState = (storage) => {
-  storage?.removeItem(PRESENTER_STORAGE_KEY);
+  if (typeof storage?.removeItem !== 'function') return;
+
+  try {
+    storage.removeItem(PRESENTER_STORAGE_KEY);
+  } catch {
+    // Clearing recovery data should never block the presenter UI.
+  }
 };
