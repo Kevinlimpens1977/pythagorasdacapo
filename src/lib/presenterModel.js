@@ -10,18 +10,20 @@ const cloneWithFreshIds = (items, prefix) =>
     id: createId(prefix)
   }));
 
+const cloneValue = (value) => structuredClone(value);
+
 export const createPresenterPage = (overrides = {}) => ({
-  id: overrides.id || createId('presenter-page'),
-  title: overrides.title || 'Pagina 1',
-  width: overrides.width || DEFAULT_BOARD_WIDTH,
-  height: overrides.height || DEFAULT_PAGE_HEIGHT,
-  background: overrides.background || {
+  id: overrides.id ?? createId('presenter-page'),
+  title: overrides.title ?? 'Pagina 1',
+  width: overrides.width ?? DEFAULT_BOARD_WIDTH,
+  height: overrides.height ?? DEFAULT_PAGE_HEIGHT,
+  background: cloneValue(overrides.background ?? {
     kind: 'white',
     gridSize: 96
-  },
-  strokes: overrides.strokes || [],
-  objects: overrides.objects || [],
-  source: overrides.source || null
+  }),
+  strokes: cloneValue(overrides.strokes ?? []),
+  objects: cloneValue(overrides.objects ?? []),
+  source: cloneValue(overrides.source ?? null)
 });
 
 export const createPresenterSession = () => {

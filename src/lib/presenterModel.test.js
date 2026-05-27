@@ -92,3 +92,24 @@ test('createPresenterPage accepts automatic imported title later without couplin
   assert.equal(page.title, 'Vraag 2');
   assert.equal(page.source, null);
 });
+
+test('createPresenterPage clones nested override values', () => {
+  const background = { kind: 'image', src: 'slide.png', meta: { page: 1 } };
+  const strokes = [{ id: 'stroke-1', points: [{ x: 1, y: 2 }] }];
+  const objects = [{ id: 'object-1', type: 'rectangle', style: { color: '#111827' } }];
+  const source = { kind: 'imported-slide', ref: { deckId: 'deck-1' } };
+  const page = createPresenterPage({ background, strokes, objects, source });
+
+  background.kind = 'white';
+  background.meta.page = 2;
+  strokes[0].points[0].x = 99;
+  strokes.push({ id: 'stroke-2' });
+  objects[0].style.color = '#ffffff';
+  objects.push({ id: 'object-2' });
+  source.ref.deckId = 'deck-2';
+
+  assert.deepEqual(page.background, { kind: 'image', src: 'slide.png', meta: { page: 1 } });
+  assert.deepEqual(page.strokes, [{ id: 'stroke-1', points: [{ x: 1, y: 2 }] }]);
+  assert.deepEqual(page.objects, [{ id: 'object-1', type: 'rectangle', style: { color: '#111827' } }]);
+  assert.deepEqual(page.source, { kind: 'imported-slide', ref: { deckId: 'deck-1' } });
+});
