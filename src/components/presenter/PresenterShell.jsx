@@ -105,8 +105,8 @@ export default function PresenterShell() {
         onNext={() => activatePageAt(activeIndex + 1)}
         prevDisabled={activeIndex <= 0}
         nextDisabled={activeIndex >= pages.length - 1}
-        onUndo={() => {}}
-        onRedo={() => {}}
+        canUndo={false}
+        canRedo={false}
         onSelect={handleSelectTool}
         onFullscreen={handleFullscreen}
       />

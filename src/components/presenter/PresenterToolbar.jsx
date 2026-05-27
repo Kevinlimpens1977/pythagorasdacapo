@@ -33,6 +33,8 @@ export default function PresenterToolbar({
   onNext,
   prevDisabled = false,
   nextDisabled = false,
+  canUndo = false,
+  canRedo = false,
   onUndo,
   onRedo,
   onSelect,
@@ -86,10 +88,22 @@ export default function PresenterToolbar({
           <button type="button" className={iconButtonClass} onClick={onSelect} aria-label="Selecteren">
             <MousePointer2 size={20} strokeWidth={2.4} />
           </button>
-          <button type="button" className={iconButtonClass} onClick={onUndo} aria-label="Ongedaan maken">
+          <button
+            type="button"
+            className={iconButtonClass}
+            onClick={canUndo ? onUndo : undefined}
+            disabled={!canUndo}
+            aria-label="Ongedaan maken"
+          >
             <Undo2 size={20} strokeWidth={2.4} />
           </button>
-          <button type="button" className={iconButtonClass} onClick={onRedo} aria-label="Opnieuw">
+          <button
+            type="button"
+            className={iconButtonClass}
+            onClick={canRedo ? onRedo : undefined}
+            disabled={!canRedo}
+            aria-label="Opnieuw"
+          >
             <Redo2 size={20} strokeWidth={2.4} />
           </button>
         </div>
