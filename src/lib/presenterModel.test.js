@@ -26,6 +26,7 @@ test('addPresenterPage appends a new page and makes it active', () => {
 
   assert.equal(session.pages.length, 2);
   assert.equal(getActivePresenterPage(session).title, 'Pagina 2');
+  assert.equal(session.dirty, true);
 });
 
 test('duplicatePresenterPage copies the active page after the original', () => {
@@ -43,6 +44,8 @@ test('duplicatePresenterPage copies the active page after the original', () => {
   assert.notEqual(next.pages[1].strokes[0].id, 'stroke-1');
   assert.notEqual(next.pages[1].objects[0].id, 'object-1');
   assert.equal(next.pages[1].title, 'Pagina 1 kopie');
+  assert.equal(next.activePageId, next.pages[1].id);
+  assert.equal(next.dirty, true);
 });
 
 test('deletePresenterPage removes a page and keeps an active page', () => {
@@ -60,6 +63,20 @@ test('deletePresenterPage keeps one empty page when deleting the last page', () 
 
   assert.equal(next.pages.length, 1);
   assert.equal(next.pages[0].title, 'Pagina 1');
+  assert.equal(next.pages[0].background.kind, 'white');
+  assert.deepEqual(next.pages[0].strokes, []);
+  assert.deepEqual(next.pages[0].objects, []);
+});
+
+test('setActivePresenterPage switches to a valid page and clears selected object', () => {
+  const session = {
+    ...addPresenterPage(createPresenterSession()),
+    selectedObjectId: 'object-1'
+  };
+  const next = setActivePresenterPage(session, session.pages[0].id);
+
+  assert.equal(next.activePageId, session.pages[0].id);
+  assert.equal(next.selectedObjectId, null);
 });
 
 test('setActivePresenterPage ignores unknown page ids', () => {
