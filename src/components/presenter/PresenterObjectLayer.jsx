@@ -1,0 +1,284 @@
+const DEFAULT_PAGE_WIDTH = 1920;
+const DEFAULT_PAGE_HEIGHT = 1400;
+const DEFAULT_STROKE = '#111827';
+const DEFAULT_FILL = 'rgba(255, 255, 255, 0.72)';
+const SELECTION_COLOR = '#2563eb';
+const DELETE_COLOR = '#dc2626';
+
+const isFiniteNumber = (value) => Number.isFinite(value);
+const isFinitePositiveNumber = (value) => Number.isFinite(value) && value > 0;
+
+const getNumber = (value, fallback = 0) => (isFiniteNumber(value) ? value : fallback);
+
+const getObjectFrame = (object) => ({
+  x: getNumber(object?.x),
+  y: getNumber(object?.y),
+  width: getNumber(object?.width, 120),
+  height: getNumber(object?.height, 80),
+  rotation: getNumber(object?.rotation)
+});
+
+const getObjectStyle = (object) => ({
+  fill: object?.fill || object?.style?.fill || DEFAULT_FILL,
+  stroke: object?.stroke || object?.style?.stroke || DEFAULT_STROKE,
+  strokeWidth: isFinitePositiveNumber(object?.strokeWidth) ? object.strokeWidth : 5
+});
+
+const getSelectionFrame = ({ width, height }) => {
+  const minX = Math.min(0, width);
+  const minY = Math.min(0, height);
+  const rawWidth = Math.abs(width);
+  const rawHeight = Math.abs(height);
+
+  return {
+    x: minX - 12,
+    y: minY - (rawHeight === 0 ? 18 : 12),
+    width: Math.max(rawWidth, 28) + 24,
+    height: Math.max(rawHeight, 28) + 24
+  };
+};
+
+const getPolygonPoints = (object, width, height) => {
+  const points = Array.isArray(object?.points) ? object.points : [];
+  const validPoints = points.filter((point) => isFiniteNumber(point?.x) && isFiniteNumber(point?.y));
+
+  if (validPoints.length > 0) {
+    return validPoints.map((point) => `${point.x},${point.y}`).join(' ');
+  }
+
+  return `0,${height} ${width * 0.5},0 ${width},${height}`;
+};
+
+const renderTable = (object, width, height, style) => {
+  const rows = Math.max(1, Math.round(getNumber(object?.rows, 4)));
+  const columns = Math.max(1, Math.round(getNumber(object?.columns, 5)));
+  const lines = [];
+
+  for (let index = 1; index < columns; index += 1) {
+    const x = (width / columns) * index;
+    lines.push(<line key={`column-${index}`} x1={x} y1={0} x2={x} y2={height} />);
+  }
+
+  for (let index = 1; index < rows; index += 1) {
+    const y = (height / rows) * index;
+    lines.push(<line key={`row-${index}`} x1={0} y1={y} x2={width} y2={y} />);
+  }
+
+  return (
+    <g fill="none" stroke={style.stroke} strokeWidth={style.strokeWidth}>
+      <rect width={width} height={height} fill={style.fill} />
+      {lines}
+    </g>
+  );
+};
+
+const renderAxes = (width, height, style) => {
+  const xAxisY = height * 0.78;
+  const yAxisX = width * 0.18;
+
+  return (
+    <g fill="none" stroke={style.stroke} strokeLinecap="round" strokeWidth={style.strokeWidth}>
+      <line x1={yAxisX} y1={height} x2={yAxisX} y2={0} markerEnd="url(#presenter-object-arrow)" />
+      <line x1={0} y1={xAxisY} x2={width} y2={xAxisY} markerEnd="url(#presenter-object-arrow)" />
+      <line x1={yAxisX} y1={xAxisY} x2={yAxisX + 22} y2={xAxisY} strokeWidth={Math.max(2, style.strokeWidth * 0.7)} />
+      <line x1={yAxisX} y1={xAxisY} x2={yAxisX} y2={xAxisY - 22} strokeWidth={Math.max(2, style.strokeWidth * 0.7)} />
+    </g>
+  );
+};
+
+const renderAngle = (object, width, height, style) => {
+  const angleDegrees = Math.max(10, Math.min(170, getNumber(object?.angleDegrees, 90)));
+  const radius = Math.min(Math.abs(width), Math.abs(height), 96);
+  const radians = (angleDegrees * Math.PI) / 180;
+  const endX = Math.cos(radians) * Math.max(radius, 1);
+  const endY = -Math.sin(radians) * Math.max(radius, 1);
+  const largeArcFlag = angleDegrees > 180 ? 1 : 0;
+
+  return (
+    <g fill="none" stroke={style.stroke} strokeLinecap="round" strokeWidth={style.strokeWidth}>
+      <line x1={0} y1={0} x2={width} y2={0} />
+      <line x1={0} y1={0} x2={endX} y2={endY} />
+      <path d={`M ${radius} 0 A ${radius} ${radius} 0 ${largeArcFlag} 0 ${endX} ${endY}`} />
+    </g>
+  );
+};
+
+const renderObjectShape = (object) => {
+  const { width, height } = getObjectFrame(object);
+  const style = getObjectStyle(object);
+
+  switch (object?.type) {
+    case 'rectangle':
+      return <rect width={width} height={height} fill={style.fill} stroke={style.stroke} strokeWidth={style.strokeWidth} />;
+    case 'ellipse':
+      return (
+        <ellipse
+          cx={width / 2}
+          cy={height / 2}
+          fill={style.fill}
+          rx={Math.abs(width) / 2}
+          ry={Math.abs(height) / 2}
+          stroke={style.stroke}
+          strokeWidth={style.strokeWidth}
+        />
+      );
+    case 'line':
+      return (
+        <line
+          x1={0}
+          y1={0}
+          x2={width}
+          y2={height}
+          stroke={style.stroke}
+          strokeLinecap="round"
+          strokeWidth={style.strokeWidth}
+        />
+      );
+    case 'arrow':
+      return (
+        <line
+          x1={0}
+          y1={0}
+          x2={width}
+          y2={height}
+          stroke={style.stroke}
+          strokeLinecap="round"
+          strokeWidth={style.strokeWidth}
+          markerEnd="url(#presenter-object-arrow)"
+        />
+      );
+    case 'triangle':
+      return (
+        <polygon
+          fill={style.fill}
+          points={`0,${height} ${width / 2},0 ${width},${height}`}
+          stroke={style.stroke}
+          strokeLinejoin="round"
+          strokeWidth={style.strokeWidth}
+        />
+      );
+    case 'polygon':
+      return (
+        <polygon
+          fill={style.fill}
+          points={getPolygonPoints(object, width, height)}
+          stroke={style.stroke}
+          strokeLinejoin="round"
+          strokeWidth={style.strokeWidth}
+        />
+      );
+    case 'axes':
+      return renderAxes(width, height, style);
+    case 'table':
+      return renderTable(object, width, height, style);
+    case 'angle':
+      return renderAngle(object, width, height, style);
+    default:
+      return null;
+  }
+};
+
+const renderSelection = (object, onDeleteObject) => {
+  const { width, height } = getObjectFrame(object);
+  const selection = getSelectionFrame({ width, height });
+  const deleteX = selection.x + selection.width;
+  const deleteY = selection.y;
+
+  const handleDeletePointerDown = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onDeleteObject?.(object.id);
+  };
+
+  return (
+    <g>
+      <rect
+        fill="none"
+        height={selection.height}
+        pointerEvents="none"
+        stroke={SELECTION_COLOR}
+        strokeDasharray="14 10"
+        strokeWidth={4}
+        width={selection.width}
+        x={selection.x}
+        y={selection.y}
+      />
+      <g
+        aria-label="Object verwijderen"
+        onPointerDown={handleDeletePointerDown}
+        role="button"
+        tabIndex={0}
+      >
+        <circle cx={deleteX} cy={deleteY} fill={DELETE_COLOR} r={17} stroke="#ffffff" strokeWidth={4} />
+        <line x1={deleteX - 7} y1={deleteY - 7} x2={deleteX + 7} y2={deleteY + 7} stroke="#ffffff" strokeLinecap="round" strokeWidth={4} />
+        <line x1={deleteX + 7} y1={deleteY - 7} x2={deleteX - 7} y2={deleteY + 7} stroke="#ffffff" strokeLinecap="round" strokeWidth={4} />
+      </g>
+    </g>
+  );
+};
+
+export default function PresenterObjectLayer({
+  page,
+  selectedObjectId = null,
+  interactive = false,
+  onSelectObject,
+  onDeleteObject
+}) {
+  const width = isFinitePositiveNumber(page?.width) ? page.width : DEFAULT_PAGE_WIDTH;
+  const height = isFinitePositiveNumber(page?.height) ? page.height : DEFAULT_PAGE_HEIGHT;
+  const objects = Array.isArray(page?.objects) ? page.objects : [];
+  const viewBox = `0 0 ${width} ${height}`;
+
+  return (
+    <svg
+      aria-label="Presenter objecten"
+      className="absolute inset-0 h-full w-full"
+      preserveAspectRatio="none"
+      style={{ pointerEvents: interactive ? 'auto' : 'none' }}
+      viewBox={viewBox}
+    >
+      <defs>
+        <marker
+          id="presenter-object-arrow"
+          markerHeight="10"
+          markerWidth="10"
+          orient="auto"
+          refX="8"
+          refY="5"
+          viewBox="0 0 10 10"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill={DEFAULT_STROKE} />
+        </marker>
+      </defs>
+      {objects.map((object, index) => {
+        const shape = renderObjectShape(object);
+        if (!object?.id || !shape) return null;
+
+        const { x, y, width: objectWidth, height: objectHeight, rotation } = getObjectFrame(object);
+        const centerX = objectWidth / 2;
+        const centerY = objectHeight / 2;
+        const isSelected = object.id === selectedObjectId;
+
+        const handlePointerDown = (event) => {
+          if (!interactive) return;
+
+          event.preventDefault();
+          event.stopPropagation();
+          onSelectObject?.(object.id);
+        };
+
+        return (
+          <g
+            key={object.id || `${object.type}-${index}`}
+            onPointerDown={handlePointerDown}
+            style={{ pointerEvents: interactive ? 'auto' : 'none' }}
+            transform={`translate(${x} ${y}) rotate(${rotation} ${centerX} ${centerY})`}
+          >
+            {shape}
+            {isSelected ? renderSelection(object, onDeleteObject) : null}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}

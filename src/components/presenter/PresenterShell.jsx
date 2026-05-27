@@ -1,17 +1,28 @@
 import { useMemo, useState } from 'react';
 import {
+  addObjectToPresenterPage,
   addPresenterPage,
   addStrokeToPresenterPage,
   createPresenterSession,
+  deleteObjectFromPresenterPage,
   deletePresenterPage,
   duplicatePresenterPage,
   getActivePresenterPage,
   setActivePresenterPage,
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
+import { createPresenterObject } from '../../lib/presenterObjects';
 import PresenterBoard from './PresenterBoard';
 import PresenterPagePanel from './PresenterPagePanel';
 import PresenterToolbar from './PresenterToolbar';
+
+const createObjectId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `object-${crypto.randomUUID()}`;
+  }
+
+  return `object-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+};
 
 export default function PresenterShell() {
   const [session, setSession] = useState(() => createPresenterSession());
@@ -90,6 +101,31 @@ export default function PresenterShell() {
     );
   };
 
+  const handleCreateObject = (type) => {
+    const object = createPresenterObject(type, {
+      id: createObjectId(),
+      x: 220,
+      y: 180
+    });
+
+    setSession((currentSession) =>
+      addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
+    );
+  };
+
+  const handleSelectObject = (objectId) => {
+    setSession((currentSession) => ({
+      ...currentSession,
+      selectedObjectId: objectId
+    }));
+  };
+
+  const handleDeleteObject = (objectId) => {
+    setSession((currentSession) =>
+      deleteObjectFromPresenterPage(currentSession, currentSession.activePageId, objectId)
+    );
+  };
+
   return (
     <section className="relative flex min-h-[calc(100vh-5rem)] flex-col overflow-hidden bg-slate-200">
       <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 px-4 py-3 text-slate-50 shadow-sm">
@@ -102,7 +138,14 @@ export default function PresenterShell() {
         </span>
       </header>
 
-      <PresenterBoard page={activePage} tool={currentTool} onStrokeComplete={handleStrokeComplete} />
+      <PresenterBoard
+        page={activePage}
+        tool={currentTool}
+        selectedObjectId={session.selectedObjectId}
+        onStrokeComplete={handleStrokeComplete}
+        onSelectObject={handleSelectObject}
+        onDeleteObject={handleDeleteObject}
+      />
       <PresenterPagePanel
         pages={pages}
         activePageId={session.activePageId}
@@ -127,6 +170,7 @@ export default function PresenterShell() {
         canUndo={false}
         canRedo={false}
         onSelect={handleSelectTool}
+        onCreateObject={handleCreateObject}
         onFullscreen={handleFullscreen}
       />
     </section>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { getBoardScale, mapClientPointToBoard, snapPointToGrid } from '../../lib/presenterGeometry';
 import PresenterBackground from './PresenterBackground';
 import PresenterInkLayer from './PresenterInkLayer';
+import PresenterObjectLayer from './PresenterObjectLayer';
 
 const DEFAULT_VIEWPORT_WIDTH = 1920;
 const DEFAULT_PAGE_WIDTH = 1920;
@@ -19,7 +20,10 @@ export default function PresenterBoard({
   page,
   viewportWidth = DEFAULT_VIEWPORT_WIDTH,
   tool = { id: 'select' },
-  onStrokeComplete
+  selectedObjectId = null,
+  onStrokeComplete,
+  onSelectObject,
+  onDeleteObject
 }) {
   const surfaceRef = useRef(null);
   const boardRef = useRef(null);
@@ -173,6 +177,13 @@ export default function PresenterBoard({
         }}
       >
         <PresenterBackground background={page?.background} scale={board.scale} />
+        <PresenterObjectLayer
+          page={page}
+          selectedObjectId={selectedObjectId}
+          interactive={tool?.id === 'select'}
+          onSelectObject={onSelectObject}
+          onDeleteObject={onDeleteObject}
+        />
         <PresenterInkLayer page={inkPage} />
         <div className="pointer-events-none absolute left-4 top-4 rounded bg-slate-900/75 px-2.5 py-1 text-xs font-semibold text-slate-50">
           {page?.title || 'Pagina'}

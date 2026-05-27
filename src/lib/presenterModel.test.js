@@ -10,6 +10,8 @@ import {
   createPresenterPage,
   addStrokeToPresenterPage,
   removeStrokeFromPresenterPage,
+  addObjectToPresenterPage,
+  deleteObjectFromPresenterPage,
   updatePresenterPageBackground
 } from './presenterModel.js';
 
@@ -160,6 +162,49 @@ test('removeStrokeFromPresenterPage removes a stroke by id', () => {
 
   assert.equal(next.dirty, true);
   assert.deepEqual(next.pages[0].strokes, [{ id: 'stroke-2', points: [{ x: 3, y: 4 }] }]);
+  assert.notEqual(next.pages[0], page);
+});
+
+test('addObjectToPresenterPage adds object and selects it', () => {
+  const session = addPresenterPage(createPresenterSession());
+  const targetPageId = session.pages[0].id;
+  const object = {
+    id: 'object-1',
+    type: 'rectangle',
+    x: 10,
+    y: 20,
+    width: 240,
+    height: 160
+  };
+  const next = addObjectToPresenterPage(session, targetPageId, object);
+
+  assert.equal(next.dirty, true);
+  assert.equal(next.selectedObjectId, object.id);
+  assert.deepEqual(next.pages[0].objects, [object]);
+  assert.deepEqual(next.pages[1].objects, []);
+  assert.notEqual(next.pages[0], session.pages[0]);
+  assert.equal(next.pages[1], session.pages[1]);
+});
+
+test('deleteObjectFromPresenterPage removes selected object and clears selectedObjectId', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    objects: [
+      { id: 'object-1', type: 'rectangle', x: 10, y: 20 },
+      { id: 'object-2', type: 'ellipse', x: 30, y: 40 }
+    ]
+  });
+  const session = {
+    ...createPresenterSession(),
+    activePageId: page.id,
+    pages: [page],
+    selectedObjectId: 'object-1'
+  };
+  const next = deleteObjectFromPresenterPage(session, page.id, 'object-1');
+
+  assert.equal(next.dirty, true);
+  assert.equal(next.selectedObjectId, null);
+  assert.deepEqual(next.pages[0].objects, [{ id: 'object-2', type: 'ellipse', x: 30, y: 40 }]);
   assert.notEqual(next.pages[0], page);
 });
 

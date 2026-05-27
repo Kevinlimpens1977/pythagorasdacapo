@@ -119,6 +119,38 @@ export const removeStrokeFromPresenterPage = (session, pageId = session.activePa
   }));
 };
 
+export const addObjectToPresenterPage = (session, pageId = session.activePageId, object) => {
+  if (!object?.id) return session;
+
+  const nextSession = updatePresenterPage(session, pageId, (page) => ({
+    ...page,
+    objects: [...(Array.isArray(page?.objects) ? page.objects : []), cloneValue(object)]
+  }));
+
+  if (nextSession === session) return session;
+
+  return {
+    ...nextSession,
+    selectedObjectId: object.id
+  };
+};
+
+export const deleteObjectFromPresenterPage = (session, pageId = session.activePageId, objectId) => {
+  if (!objectId) return session;
+
+  const nextSession = updatePresenterPage(session, pageId, (page) => ({
+    ...page,
+    objects: (Array.isArray(page?.objects) ? page.objects : []).filter((object) => object?.id !== objectId)
+  }));
+
+  if (nextSession === session) return session;
+
+  return {
+    ...nextSession,
+    selectedObjectId: session.selectedObjectId === objectId ? null : session.selectedObjectId
+  };
+};
+
 export const duplicatePresenterPage = (session, pageId = session.activePageId) => {
   const sourceIndex = session.pages.findIndex((page) => page.id === pageId);
   if (sourceIndex === -1) return session;
