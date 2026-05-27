@@ -66,6 +66,19 @@ const updatePresenterPage = (session, pageId = session.activePageId, updater) =>
   };
 };
 
+export const updatePresenterPageBackground = (
+  session,
+  pageId = session.activePageId,
+  background
+) => {
+  if (!background) return session;
+
+  return updatePresenterPage(session, pageId, (page) => ({
+    ...page,
+    background: cloneValue(background)
+  }));
+};
+
 export const setActivePresenterPage = (session, pageId) => {
   if (!session.pages.some((page) => page.id === pageId)) return session;
 

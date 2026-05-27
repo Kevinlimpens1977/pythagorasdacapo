@@ -23,12 +23,17 @@ const categories = [
 const iconButtonClass =
   'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-900 text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40';
 
+const popoverButtonClass =
+  'inline-flex min-h-12 shrink-0 items-center justify-center rounded-md border px-4 text-sm font-black transition';
+
 export default function PresenterToolbar({
   pageLabel = 'Pagina 0/0',
   activeCategory = 'pen',
   pinned = false,
+  background = { kind: 'white', gridSize: 96 },
   onTogglePinned,
   onCategory,
+  onBackground,
   onPrev,
   onNext,
   prevDisabled = false,
@@ -45,6 +50,19 @@ export default function PresenterToolbar({
     onCategory?.(category.id);
   };
 
+  const currentGridSize = background?.gridSize || 96;
+  const nextGridSize = currentGridSize === 96 ? 72 : 96;
+  const backgroundKind = background?.kind || 'white';
+
+  const handleBackground = (kind, gridSize = currentGridSize) => {
+    onBackground?.({ kind, gridSize });
+  };
+
+  const handleGridSizeToggle = () => {
+    const kind = backgroundKind === 'lines' ? 'lines' : 'grid';
+    onBackground?.({ kind, gridSize: nextGridSize });
+  };
+
   return (
     <div
       className={`group pointer-events-none absolute inset-x-0 bottom-0 z-30 px-3 pb-3 transition-transform duration-200 ease-out sm:px-5 ${
@@ -59,6 +77,53 @@ export default function PresenterToolbar({
       >
         {pinned ? 'Werkbalk vast' : 'Werkbalk openen'}
       </button>
+      {activeCategory === 'background' ? (
+        <div className="pointer-events-auto mx-auto mb-2 flex max-w-2xl flex-wrap items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${
+              backgroundKind === 'white'
+                ? 'border-slate-50 bg-slate-50 text-slate-950'
+                : 'border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800'
+            }`}
+            onClick={() => handleBackground('white')}
+            aria-pressed={backgroundKind === 'white'}
+          >
+            Wit
+          </button>
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${
+              backgroundKind === 'lines'
+                ? 'border-slate-50 bg-slate-50 text-slate-950'
+                : 'border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800'
+            }`}
+            onClick={() => handleBackground('lines')}
+            aria-pressed={backgroundKind === 'lines'}
+          >
+            Lijntjes
+          </button>
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${
+              backgroundKind === 'grid'
+                ? 'border-slate-50 bg-slate-50 text-slate-950'
+                : 'border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800'
+            }`}
+            onClick={() => handleBackground('grid')}
+            aria-pressed={backgroundKind === 'grid'}
+          >
+            Ruitjes
+          </button>
+          <button
+            type="button"
+            className={`${popoverButtonClass} border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800`}
+            onClick={handleGridSizeToggle}
+          >
+            Ruitmaat {nextGridSize}
+          </button>
+        </div>
+      ) : null}
       <div className="pointer-events-auto mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
         <div className="flex shrink-0 items-center gap-1">
           <button

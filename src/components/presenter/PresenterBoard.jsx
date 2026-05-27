@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getBoardScale, mapClientPointToBoard } from '../../lib/presenterGeometry';
+import { getBoardScale, mapClientPointToBoard, snapPointToGrid } from '../../lib/presenterGeometry';
 import PresenterBackground from './PresenterBackground';
 import PresenterInkLayer from './PresenterInkLayer';
 
@@ -81,11 +81,18 @@ export default function PresenterBoard({
     const boardElement = boardRef.current;
     if (!boardElement) return null;
 
-    return mapClientPointToBoard({
+    const point = mapClientPointToBoard({
       clientX: event.clientX,
       clientY: event.clientY,
       rect: boardElement.getBoundingClientRect(),
       scale: board.scale
+    });
+
+    if (tool?.variant !== 'geometry-pen' || page?.background?.kind !== 'grid') return point;
+
+    return snapPointToGrid(point, {
+      enabled: true,
+      gridSize: page.background.gridSize || 96
     });
   };
 

@@ -9,7 +9,8 @@ import {
   getActivePresenterPage,
   createPresenterPage,
   addStrokeToPresenterPage,
-  removeStrokeFromPresenterPage
+  removeStrokeFromPresenterPage,
+  updatePresenterPageBackground
 } from './presenterModel.js';
 
 test('createPresenterSession starts with one white page', () => {
@@ -160,6 +161,21 @@ test('removeStrokeFromPresenterPage removes a stroke by id', () => {
   assert.equal(next.dirty, true);
   assert.deepEqual(next.pages[0].strokes, [{ id: 'stroke-2', points: [{ x: 3, y: 4 }] }]);
   assert.notEqual(next.pages[0], page);
+});
+
+test('updatePresenterPageBackground changes only the target page background', () => {
+  const session = addPresenterPage(createPresenterSession());
+  const targetPageId = session.pages[0].id;
+  const untouchedPage = session.pages[1];
+  const background = { kind: 'grid', gridSize: 72 };
+
+  const next = updatePresenterPageBackground(session, targetPageId, background);
+
+  assert.equal(next.dirty, true);
+  assert.deepEqual(next.pages[0].background, background);
+  assert.deepEqual(next.pages[1].background, untouchedPage.background);
+  assert.notEqual(next.pages[0], session.pages[0]);
+  assert.equal(next.pages[1], untouchedPage);
 });
 
 test('setActivePresenterPage switches to a valid page and clears selected object', () => {

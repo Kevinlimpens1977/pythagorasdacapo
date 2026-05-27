@@ -6,7 +6,8 @@ import {
   deletePresenterPage,
   duplicatePresenterPage,
   getActivePresenterPage,
-  setActivePresenterPage
+  setActivePresenterPage,
+  updatePresenterPageBackground
 } from '../../lib/presenterModel';
 import PresenterBoard from './PresenterBoard';
 import PresenterPagePanel from './PresenterPagePanel';
@@ -83,6 +84,12 @@ export default function PresenterShell() {
     );
   };
 
+  const handleBackground = (background) => {
+    setSession((currentSession) =>
+      updatePresenterPageBackground(currentSession, currentSession.activePageId, background)
+    );
+  };
+
   return (
     <section className="relative flex min-h-[calc(100vh-5rem)] flex-col overflow-hidden bg-slate-200">
       <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 px-4 py-3 text-slate-50 shadow-sm">
@@ -109,8 +116,10 @@ export default function PresenterShell() {
         pageLabel={pageLabel}
         activeCategory={activeCategory}
         pinned={toolbarPinned}
+        background={activePage?.background}
         onTogglePinned={() => setToolbarPinned((current) => !current)}
         onCategory={handleCategory}
+        onBackground={handleBackground}
         onPrev={() => activatePageAt(activeIndex - 1)}
         onNext={() => activatePageAt(activeIndex + 1)}
         prevDisabled={activeIndex <= 0}
