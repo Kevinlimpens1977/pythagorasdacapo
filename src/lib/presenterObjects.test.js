@@ -19,6 +19,53 @@ const v1aShapeTypes = [
   'angle'
 ];
 
+const v1aShapeDefaults = {
+  rectangle: {
+    width: 240,
+    height: 160
+  },
+  ellipse: {
+    width: 220,
+    height: 160
+  },
+  line: {
+    width: 260,
+    height: 0
+  },
+  arrow: {
+    width: 260,
+    height: 0
+  },
+  triangle: {
+    width: 240,
+    height: 180
+  },
+  polygon: {
+    width: 240,
+    height: 180,
+    points: [
+      { x: 0, y: 180 },
+      { x: 120, y: 0 },
+      { x: 240, y: 180 }
+    ]
+  },
+  axes: {
+    width: 360,
+    height: 260
+  },
+  table: {
+    width: 360,
+    height: 240,
+    rows: 4,
+    columns: 5
+  },
+  angle: {
+    width: 180,
+    height: 120,
+    angleDegrees: 90
+  }
+};
+
 test('createPresenterObject creates rectangle defaults', () => {
   const object = createPresenterObject('rectangle', { x: 10, y: 20 });
 
@@ -34,6 +81,50 @@ test('createPresenterObject creates all V1A shape types', () => {
   const objects = v1aShapeTypes.map((type) => createPresenterObject(type));
 
   assert.deepEqual(objects.map((object) => object.type), v1aShapeTypes);
+});
+
+test('createPresenterObject applies exact V1A shape defaults', () => {
+  for (const type of v1aShapeTypes) {
+    const object = createPresenterObject(type);
+
+    assert.deepEqual(
+      Object.fromEntries(Object.keys(v1aShapeDefaults[type]).map((key) => [key, object[key]])),
+      v1aShapeDefaults[type],
+      `${type} defaults should match metadata`
+    );
+  }
+});
+
+test('createPresenterObject preserves nullish-safe overrides', () => {
+  const object = createPresenterObject('rectangle', {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    rotation: 0,
+    strokeWidth: 0,
+    showLabel: false
+  });
+
+  assert.equal(object.x, 0);
+  assert.equal(object.y, 0);
+  assert.equal(object.width, 0);
+  assert.equal(object.height, 0);
+  assert.equal(object.rotation, 0);
+  assert.equal(object.strokeWidth, 0);
+  assert.equal(object.showLabel, false);
+});
+
+test('createPresenterObject clones nested polygon defaults', () => {
+  const first = createPresenterObject('polygon');
+  const second = createPresenterObject('polygon');
+
+  assert.notEqual(first.points, second.points);
+  assert.notEqual(first.points[0], second.points[0]);
+
+  first.points[0].x = 99;
+
+  assert.deepEqual(second.points, v1aShapeDefaults.polygon.points);
 });
 
 test('canRotatePresenterObject returns true for V1A shapes and false for content/question objects', () => {
