@@ -74,6 +74,35 @@ test('duplicatePresenterPage treats missing legacy stroke and object arrays as e
   assert.equal(next.dirty, true);
 });
 
+test('duplicatePresenterPage treats non-array imported stroke and object values as empty', () => {
+  const first = createPresenterSession();
+  const importedPage = {
+    id: 'imported-page',
+    title: 'Imported pagina',
+    width: 1920,
+    height: 1400,
+    background: { kind: 'white' },
+    strokes: {},
+    objects: 'bad'
+  };
+  const session = {
+    ...first,
+    activePageId: importedPage.id,
+    pages: [importedPage]
+  };
+
+  let next;
+  assert.doesNotThrow(() => {
+    next = duplicatePresenterPage(session, importedPage.id);
+  });
+
+  assert.equal(next.pages.length, 2);
+  assert.equal(next.pages[1].title, 'Imported pagina kopie');
+  assert.deepEqual(next.pages[1].strokes, []);
+  assert.deepEqual(next.pages[1].objects, []);
+  assert.equal(next.dirty, true);
+});
+
 test('deletePresenterPage removes a page and keeps an active page', () => {
   const session = addPresenterPage(createPresenterSession());
   const deletedId = session.pages[1].id;
