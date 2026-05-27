@@ -22,6 +22,11 @@ test('getBoardScale falls back to 1 when dimensions are missing or zero', () => 
   assert.equal(getBoardScale({ viewportWidth: 960, boardWidth: 0 }), 1);
 });
 
+test('getBoardScale falls back to 1 when dimensions are not finite-positive values', () => {
+  assert.equal(getBoardScale({ viewportWidth: -100, boardWidth: 1920 }), 1);
+  assert.equal(getBoardScale({ viewportWidth: 960, boardWidth: Number.POSITIVE_INFINITY }), 1);
+});
+
 test('mapClientPointToBoard maps pointer coordinates into internal board coordinates', () => {
   const point = mapClientPointToBoard({
     clientX: 500,
@@ -34,9 +39,26 @@ test('mapClientPointToBoard maps pointer coordinates into internal board coordin
   assert.deepEqual(point, { x: 960, y: 840 });
 });
 
+test('mapClientPointToBoard falls back to unscaled mapping when scale is invalid', () => {
+  const point = mapClientPointToBoard({
+    clientX: 500,
+    clientY: 340,
+    rect: { left: 20, top: 40 },
+    scrollTop: 120,
+    scale: 0
+  });
+
+  assert.deepEqual(point, { x: 480, y: 420 });
+});
+
 test('snapValueToGrid rounds values to the nearest grid multiple', () => {
   assert.equal(snapValueToGrid(143, 48), 144);
   assert.equal(snapValueToGrid(119, 48), 96);
+});
+
+test('snapValueToGrid returns the original value when grid size is invalid', () => {
+  assert.equal(snapValueToGrid(143, 0), 143);
+  assert.equal(snapValueToGrid(143, Number.NaN), 143);
 });
 
 test('snapPointToGrid only snaps when grid is enabled', () => {
@@ -55,6 +77,13 @@ test('getGridLineStyle returns equal horizontal and vertical size', () => {
   assert.deepEqual(getGridLineStyle({ gridSize: 96, scale: 0.5 }), {
     backgroundSize: '48px 48px',
     lineSize: 48
+  });
+});
+
+test('getGridLineStyle falls back to safe defaults when grid size and scale are invalid', () => {
+  assert.deepEqual(getGridLineStyle({ gridSize: undefined, scale: 0 }), {
+    backgroundSize: '96px 96px',
+    lineSize: 96
   });
 });
 

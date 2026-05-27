@@ -1,18 +1,27 @@
+const isFinitePositiveNumber = (value) =>
+  Number.isFinite(value) && value > 0;
+
 export const getBoardScale = ({ viewportWidth, boardWidth }) => {
-  if (!viewportWidth || !boardWidth) return 1;
+  if (!isFinitePositiveNumber(viewportWidth) || !isFinitePositiveNumber(boardWidth)) return 1;
   return viewportWidth / boardWidth;
 };
 
-export const mapClientPointToBoard = ({ clientX, clientY, rect, scrollTop = 0, scale = 1 }) => ({
-  x: Math.round((clientX - rect.left) / scale),
-  y: Math.round((clientY - rect.top + scrollTop) / scale)
-});
+export const mapClientPointToBoard = ({ clientX, clientY, rect, scrollTop = 0, scale = 1 }) => {
+  const safeScale = isFinitePositiveNumber(scale) ? scale : 1;
+
+  return {
+    x: Math.round((clientX - rect.left) / safeScale),
+    y: Math.round((clientY - rect.top + scrollTop) / safeScale)
+  };
+};
 
 export const snapValueToGrid = (value, gridSize) =>
-  Math.round(value / gridSize) * gridSize;
+  isFinitePositiveNumber(gridSize)
+    ? Math.round(value / gridSize) * gridSize
+    : value;
 
 export const snapPointToGrid = (point, { enabled, gridSize }) => {
-  if (!enabled || !gridSize) return point;
+  if (!enabled || !isFinitePositiveNumber(gridSize)) return point;
 
   return {
     x: snapValueToGrid(point.x, gridSize),
@@ -21,7 +30,9 @@ export const snapPointToGrid = (point, { enabled, gridSize }) => {
 };
 
 export const getGridLineStyle = ({ gridSize, scale }) => {
-  const lineSize = Math.max(1, Math.round(gridSize * scale));
+  const safeGridSize = isFinitePositiveNumber(gridSize) ? gridSize : 96;
+  const safeScale = isFinitePositiveNumber(scale) ? scale : 1;
+  const lineSize = Math.max(1, Math.round(safeGridSize * safeScale));
 
   return {
     backgroundSize: `${lineSize}px ${lineSize}px`,
