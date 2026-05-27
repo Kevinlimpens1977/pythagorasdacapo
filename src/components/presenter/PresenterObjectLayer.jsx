@@ -31,6 +31,24 @@ const createDomIdPart = (value) => String(value || 'object').replace(/[^a-zA-Z0-
 
 const getHitStrokeWidth = (strokeWidth) => Math.max(MIN_TOUCH_STROKE_WIDTH, strokeWidth);
 
+const getAngleGeometry = (object, width, height) => {
+  const angleDegrees = Math.max(10, Math.min(170, getNumber(object?.angleDegrees, 90)));
+  const radius = Math.min(Math.abs(width) / 2, Math.abs(height), 96);
+  const safeRadius = Math.max(radius, 1);
+  const originX = safeRadius;
+  const originY = height;
+  const radians = (angleDegrees * Math.PI) / 180;
+
+  return {
+    angleDegrees,
+    radius: safeRadius,
+    originX,
+    originY,
+    endX: originX + Math.cos(radians) * safeRadius,
+    endY: originY - Math.sin(radians) * safeRadius
+  };
+};
+
 const getSelectionFrame = ({ width, height }) => {
   const minX = Math.min(0, width);
   const minY = Math.min(0, height);
@@ -94,18 +112,14 @@ const renderAxes = (width, height, style, markerId) => {
 };
 
 const renderAngle = (object, width, height, style) => {
-  const angleDegrees = Math.max(10, Math.min(170, getNumber(object?.angleDegrees, 90)));
-  const radius = Math.min(Math.abs(width), Math.abs(height), 96);
-  const radians = (angleDegrees * Math.PI) / 180;
-  const endX = Math.cos(radians) * Math.max(radius, 1);
-  const endY = height - Math.sin(radians) * Math.max(radius, 1);
+  const { angleDegrees, radius, originX, originY, endX, endY } = getAngleGeometry(object, width, height);
   const largeArcFlag = angleDegrees > 180 ? 1 : 0;
 
   return (
     <g fill="none" stroke={style.stroke} strokeLinecap="round" strokeWidth={style.strokeWidth}>
-      <line x1={0} y1={height} x2={width} y2={height} />
-      <line x1={0} y1={height} x2={endX} y2={endY} />
-      <path d={`M ${radius} ${height} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${endX} ${endY}`} />
+      <line x1={originX} y1={originY} x2={width} y2={originY} />
+      <line x1={originX} y1={originY} x2={endX} y2={endY} />
+      <path d={`M ${originX + radius} ${originY} A ${radius} ${radius} 0 ${largeArcFlag} 0 ${endX} ${endY}`} />
     </g>
   );
 };
@@ -139,17 +153,13 @@ const renderHitTarget = (object) => {
       );
     }
     case 'angle': {
-      const angleDegrees = Math.max(10, Math.min(170, getNumber(object?.angleDegrees, 90)));
-      const radius = Math.min(Math.abs(width), Math.abs(height), 96);
-      const radians = (angleDegrees * Math.PI) / 180;
-      const endX = Math.cos(radians) * Math.max(radius, 1);
-      const endY = height - Math.sin(radians) * Math.max(radius, 1);
+      const { radius, originX, originY, endX, endY } = getAngleGeometry(object, width, height);
 
       return (
         <g {...hitProps}>
-          <line x1={0} y1={height} x2={width} y2={height} />
-          <line x1={0} y1={height} x2={endX} y2={endY} />
-          <path d={`M ${radius} ${height} A ${radius} ${radius} 0 0 0 ${endX} ${endY}`} />
+          <line x1={originX} y1={originY} x2={width} y2={originY} />
+          <line x1={originX} y1={originY} x2={endX} y2={endY} />
+          <path d={`M ${originX + radius} ${originY} A ${radius} ${radius} 0 0 0 ${endX} ${endY}`} />
         </g>
       );
     }
@@ -245,6 +255,14 @@ const renderSelection = (object, onDeleteObject) => {
     onDeleteObject?.(object.id);
   };
 
+  const handleDeleteKeyDown = (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    onDeleteObject?.(object.id);
+  };
+
   return (
     <g>
       <rect
@@ -260,6 +278,7 @@ const renderSelection = (object, onDeleteObject) => {
       />
       <g
         aria-label="Object verwijderen"
+        onKeyDown={handleDeleteKeyDown}
         onPointerDown={handleDeletePointerDown}
         role="button"
         tabIndex={0}
