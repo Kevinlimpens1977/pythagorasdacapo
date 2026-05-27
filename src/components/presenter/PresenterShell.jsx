@@ -44,11 +44,11 @@ export default function PresenterShell() {
     setSession((currentSession) => duplicatePresenterPage(currentSession, pageId));
   };
 
-  const deletePage = (pageId = session.activePageId) => {
+  const deletePage = () => {
     const canConfirm = typeof window !== 'undefined' && typeof window.confirm === 'function';
     if (canConfirm && !window.confirm('Deze pagina verwijderen?')) return;
 
-    setSession((currentSession) => deletePresenterPage(currentSession, pageId));
+    setSession((currentSession) => deletePresenterPage(currentSession, currentSession.activePageId));
   };
 
   const handleCategory = (category) => {

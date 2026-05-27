@@ -72,7 +72,7 @@ export default function PresenterPagePanel({
                     <button
                       type="button"
                       className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-md border border-red-200 px-2 text-sm font-black text-red-700 transition hover:bg-red-50"
-                      onClick={() => onDeletePage?.(page.id)}
+                      onClick={() => onDeletePage?.()}
                     >
                       <Trash2 size={17} strokeWidth={2.4} />
                       Verwijder
