@@ -54,6 +54,10 @@ test('savePresenterRecoveryState no-ops for clean session', () => {
   assert.equal(storage.getItem(PRESENTER_STORAGE_KEY), null);
 });
 
+test('savePresenterRecoveryState no-ops without storage', () => {
+  assert.doesNotThrow(() => savePresenterRecoveryState(undefined, createCleanSession({ dirty: true })));
+});
+
 test('loadPresenterRecoveryState returns saved session', () => {
   const storage = createFakeStorage();
   const session = createCleanSession({ dirty: true });
@@ -64,6 +68,14 @@ test('loadPresenterRecoveryState returns saved session', () => {
   }));
 
   assert.deepEqual(loadPresenterRecoveryState(storage), session);
+});
+
+test('loadPresenterRecoveryState returns null without storage', () => {
+  assert.equal(loadPresenterRecoveryState(), null);
+});
+
+test('loadPresenterRecoveryState returns null when no item exists', () => {
+  assert.equal(loadPresenterRecoveryState(createFakeStorage()), null);
 });
 
 test('loadPresenterRecoveryState ignores invalid JSON', () => {
@@ -137,4 +149,8 @@ test('clearPresenterRecoveryState removes recovery data', () => {
   clearPresenterRecoveryState(storage);
 
   assert.equal(storage.getItem(PRESENTER_STORAGE_KEY), null);
+});
+
+test('clearPresenterRecoveryState no-ops without storage', () => {
+  assert.doesNotThrow(() => clearPresenterRecoveryState());
 });
