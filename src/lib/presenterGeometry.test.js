@@ -69,7 +69,7 @@ test('measureAngleDegrees returns positive degrees between two rays', () => {
 });
 
 test('measureAngleDegrees returns the smaller positive angle when rays span over 180 degrees', () => {
-  const angle = measureAngleDegrees({ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 0 });
+  const angle = measureAngleDegrees({ x: 0, y: 0 }, { x: -1, y: 0.1763 }, { x: -1, y: -0.1763 });
 
-  assert.equal(angle, 90);
+  assert.equal(angle, 20);
 });
