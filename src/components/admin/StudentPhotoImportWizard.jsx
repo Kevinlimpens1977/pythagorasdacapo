@@ -60,6 +60,7 @@ export default function StudentPhotoImportWizard({
   const [error, setError] = useState(null);
   const [importKlasId, setImportKlasId] = useState('');
   const [pdfImporting, setPdfImporting] = useState(false);
+  const [pendingPdfFile, setPendingPdfFile] = useState(null);
   const pdfInputRef = useRef(null);
   const [showNewKlasForm, setShowNewKlasForm] = useState(false);
   const [newKlasName, setNewKlasName] = useState('');
@@ -265,22 +266,32 @@ export default function StudentPhotoImportWizard({
     if (data) setActiveStep(1);
   };
 
-  const handlePdfPhotoListImport = async (file) => {
+  const handlePdfPhotoListSelected = (file) => {
     if (!file) return;
+    setPendingPdfFile(file);
+    setError(null);
+    setSaveResult(null);
+  };
+
+  const handleCreatePdfSelections = async () => {
+    if (!pendingPdfFile) {
+      setError('Kies eerst een PDF-fotolijst.');
+      return;
+    }
 
     setPdfImporting(true);
     setError(null);
     setSaveResult(null);
 
     try {
-      const result = await extractStudentPhotoSelectionsFromPdf(file);
+      const result = await extractStudentPhotoSelectionsFromPdf(pendingPdfFile);
       setImageData(result.imageData);
       setSelections(result.selections);
       setRows(createPhotoImportRows(result.selections, matchStudents));
       setThumbs({});
       setActiveSelectionId(result.selections[0]?.id || null);
       setInteractionMode('select');
-      setActiveStep(2);
+      setActiveStep(1);
     } catch (err) {
       setError(err.message || 'PDF-fotolijst kon niet worden verwerkt.');
     } finally {
@@ -562,9 +573,23 @@ export default function StudentPhotoImportWizard({
                   ref={pdfInputRef}
                   type="file"
                   accept="application/pdf"
-                  onChange={(event) => handlePdfPhotoListImport(event.target.files?.[0])}
+                  onChange={(event) => handlePdfPhotoListSelected(event.target.files?.[0])}
                   className="hidden"
                 />
+                {pendingPdfFile ? (
+                  <div className="mt-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-xs font-bold text-[var(--helix-navy)]">
+                    Gekozen PDF: {pendingPdfFile.name}
+                  </div>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={handleCreatePdfSelections}
+                  disabled={!pendingPdfFile || pdfImporting}
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-purple)] px-4 text-sm font-black text-white disabled:opacity-40"
+                >
+                  {pdfImporting ? <Loader2 size={18} className="animate-spin" /> : <Images size={18} />}
+                  {pdfImporting ? 'Uitsnedes maken...' : 'Maak uitsnedes'}
+                </button>
                 <p className="mt-3 text-xs font-bold text-[var(--helix-purple)]">
                   Werkt het best met een PDF waarin de namen als echte tekst boven of onder de pasfoto's staan.
                 </p>
