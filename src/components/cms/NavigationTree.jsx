@@ -25,8 +25,8 @@ const typeConfig = {
   vak: { icon: BookOpen, accent: 'text-[var(--helix-purple)]', childLabel: 'jaren' },
   leerjaar: { icon: GraduationCap, accent: 'text-[var(--helix-pink)]', childLabel: 'niveaus' },
   niveau: { icon: Layers3, accent: 'text-violet-600', childLabel: 'hoofdstukken' },
-  hoofdstuk: { icon: FileText, accent: 'text-[var(--helix-success)]', childLabel: 'paragrafen' },
-  paragraaf: { icon: Boxes, accent: 'text-[var(--helix-orange)]', childLabel: 'lesblokken' },
+  hoofdstuk: { icon: FileText, accent: 'text-[var(--helix-purple)]', childLabel: 'paragrafen' },
+  paragraaf: { icon: Boxes, accent: 'text-[var(--helix-purple)]', childLabel: 'lesblokken' },
   vraag: { icon: FileQuestion, accent: 'text-[var(--helix-pink)]', childLabel: 'vraag' }
 };
 
@@ -65,6 +65,18 @@ const blockTypePills = (node) => {
     .map((item) => `${CONTENT_BLOCK_LABELS[item.type][0]}${item.count}`);
 };
 
+const getNodeBadgeLabel = (node) => {
+  if (node.type !== 'paragraaf') return null;
+  return node.code || node.number || null;
+};
+
+const getNodeDisplayLabel = (node) => {
+  const label = node.label || '';
+  const badge = getNodeBadgeLabel(node);
+  if (!badge) return label;
+  return label.replace(new RegExp(`^${String(badge).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+`), '');
+};
+
 const TreeNode = ({
   node,
   level,
@@ -95,6 +107,9 @@ const TreeNode = ({
   const canCreateChild = ['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(node.type);
   const actionsOpen = actionNodeId === node.id;
   const isArchived = node.archived === true;
+  const badgeLabel = getNodeBadgeLabel(node);
+  const displayLabel = getNodeDisplayLabel(node);
+  const isChapterBand = node.type === 'hoofdstuk';
 
   const startRename = () => {
     setDraftName(node.label || '');
@@ -118,10 +133,13 @@ const TreeNode = ({
       <div
         className={[
           'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_6.75rem] items-center gap-2 rounded-xl border px-2.5 py-2 text-sm transition-all',
+          isChapterBand ? 'border-l-4 border-l-[var(--helix-purple)]' : '',
           isActiveParagraaf
-            ? 'border-fuchsia-200 bg-[var(--helix-soft-lavender)] text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100'
+            ? 'border-fuchsia-100 bg-[#f5edff] text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100'
             : isActivePath
-              ? 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)]'
+              ? isChapterBand
+                ? 'border-[var(--helix-border)] bg-[#fbf7ff] text-[var(--helix-navy)]'
+                : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)]'
               : 'border-transparent text-[var(--helix-muted)] hover:border-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
           ,
           isArchived ? 'opacity-55 grayscale' : ''
@@ -150,7 +168,7 @@ const TreeNode = ({
         <span
           className={[
             'relative flex h-7 w-7 items-center justify-center rounded-lg',
-            isActiveParagraaf
+            node.type === 'paragraaf'
               ? 'bg-white text-[var(--helix-purple)] ring-1 ring-fuchsia-100'
               : isActivePath
                 ? `bg-[var(--helix-surface-soft)] ${config.accent} ring-1 ring-[var(--helix-border)]`
@@ -163,7 +181,7 @@ const TreeNode = ({
           }}
           title="Dubbelklik voor bewerkingsopties"
         >
-          <Icon size={15} />
+          {badgeLabel ? <span className="text-[13px] font-black leading-none">{badgeLabel}</span> : <Icon size={15} />}
           {actionsOpen && (
             <span
               className="absolute bottom-full left-1/2 z-50 mb-2 w-40 -translate-x-1/2 rounded-2xl border border-[var(--helix-border)] bg-white p-1.5 text-left shadow-xl"
@@ -208,7 +226,7 @@ const TreeNode = ({
             />
           ) : (
             <span className="block truncate font-semibold leading-5">
-              {node.label}
+              {displayLabel}
               {isArchived && <span className="ml-2 text-[10px] font-black uppercase tracking-wide text-slate-400">Archief</span>}
             </span>
           )}
