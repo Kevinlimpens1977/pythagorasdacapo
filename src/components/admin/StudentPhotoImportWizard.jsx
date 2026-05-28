@@ -351,6 +351,13 @@ export default function StudentPhotoImportWizard({
             matchedDisplayName: row.matchedDisplayName || null,
             matchConfidence: row.matchConfidence || 0,
             matchMethod: row.matchMethod || 'manual',
+            detectionConfidence: row.detectionConfidence || 0,
+            detectionMethod: row.detectionMethod || 'manual',
+            rawOcrText: row.rawOcrText || '',
+            cleanedOcrName: row.cleanedOcrName || row.proposedName || '',
+            ocrConfidence: row.ocrConfidence || 0,
+            labelBox: row.labelBox || null,
+            labelMatchConfidence: row.labelMatchConfidence || 0,
             proposedName: row.proposedName || '',
             reviewNote: row.decision
           }
@@ -669,6 +676,11 @@ const MatchStep = ({ rows, students, thumbs, duplicateMatchedUserIds, onRowChang
             className="mt-1 min-h-11 w-full rounded-md border border-[var(--helix-border)] px-3 font-bold text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
             placeholder="Naam leerling"
           />
+          {row.rawOcrText || row.ocrConfidence || row.labelMatchConfidence ? (
+            <p className="mt-1 text-xs font-bold text-slate-400">
+              OCR {Math.round(row.ocrConfidence || 0)}% · labelmatch {Math.round((row.labelMatchConfidence || 0) * 100)}%
+            </p>
+          ) : null}
         </div>
         <div>
           <label className="text-xs font-black uppercase tracking-wide text-slate-400">Koppel aan leerling</label>

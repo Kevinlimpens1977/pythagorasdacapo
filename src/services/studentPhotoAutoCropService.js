@@ -1,8 +1,11 @@
 import { validateAndClipCoordinates } from './cropService';
 
-const ANALYSIS_WIDTH = 1200;
+const ANALYSIS_WIDTH = 1800;
 const MIN_COMPONENT_AREA = 420;
-const DILATE_RADIUS = 3;
+const PHOTO_DILATE_RADIUS = 3;
+const OCR_UPSCALE = 4;
+const OCR_NAME_WHITELIST =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ' .-";
 
 const loadImageElement = (src) =>
   new Promise((resolve, reject) => {
@@ -35,33 +38,53 @@ const getCanvasForImage = async (src, maxWidth = ANALYSIS_WIDTH) => {
   };
 };
 
+const isBlueTextPixel = (r, g, b) => {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  const saturation = max - min;
+
+  return (
+    b >= 115 &&
+    b - r >= 45 &&
+    b - g >= 18 &&
+    saturation >= 42 &&
+    luminance >= 55 &&
+    luminance <= 235
+  );
+};
+
 const isPhotoPixel = (r, g, b) => {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   const saturation = max - min;
-  const likelyBlueLabel = b > 130 && r < 120 && g < 160 && saturation > 35;
 
-  if (likelyBlueLabel && luminance > 80) return false;
+  if (isBlueTextPixel(r, g, b) && luminance > 80) return false;
   return luminance < 232 && saturation > 9;
 };
 
-const buildMask = (imageData, width, height) => {
-  const raw = new Uint8Array(width * height);
+const buildPixelMask = (imageData, width, height, predicate) => {
+  const mask = new Uint8Array(width * height);
   const data = imageData.data;
 
   for (let index = 0; index < width * height; index += 1) {
     const offset = index * 4;
-    raw[index] = isPhotoPixel(data[offset], data[offset + 1], data[offset + 2]) ? 1 : 0;
+    mask[index] = predicate(data[offset], data[offset + 1], data[offset + 2]) ? 1 : 0;
   }
 
-  const dilated = new Uint8Array(width * height);
+  return mask;
+};
+
+const dilateMask = (mask, width, height, radiusX, radiusY) => {
+  const dilated = new Uint8Array(mask.length);
+
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
-      const index = y * width + x;
-      if (!raw[index]) continue;
-      for (let dy = -DILATE_RADIUS; dy <= DILATE_RADIUS; dy += 1) {
-        for (let dx = -DILATE_RADIUS; dx <= DILATE_RADIUS; dx += 1) {
+      if (!mask[y * width + x]) continue;
+
+      for (let dy = -radiusY; dy <= radiusY; dy += 1) {
+        for (let dx = -radiusX; dx <= radiusX; dx += 1) {
           const nx = x + dx;
           const ny = y + dy;
           if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
@@ -150,15 +173,39 @@ const mergeBoxes = (boxes) => {
     existing.y = top;
     existing.width = right - left;
     existing.height = bottom - top;
-    existing.confidence = Math.max(existing.confidence, box.confidence);
+    existing.confidence = Math.max(existing.confidence || 0, box.confidence || 0);
   }
   return merged;
 };
 
+const toOriginalBox = (box, scale, bounds) =>
+  validateAndClipCoordinates(
+    {
+      x: Math.round(box.x / scale),
+      y: Math.round(box.y / scale),
+      width: Math.round(box.width / scale),
+      height: Math.round(box.height / scale)
+    },
+    bounds
+  );
+
+const expandBox = (box, padding, bounds) =>
+  validateAndClipCoordinates(
+    {
+      x: box.x - padding.x,
+      y: box.y - padding.y,
+      width: box.width + padding.x * 2,
+      height: box.height + padding.y * 2
+    },
+    bounds
+  );
+
 const detectPhotoBoxes = ({ context, canvas, scale, originalWidth, originalHeight }) => {
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-  const mask = buildMask(imageData, canvas.width, canvas.height);
+  const rawMask = buildPixelMask(imageData, canvas.width, canvas.height, isPhotoPixel);
+  const mask = dilateMask(rawMask, canvas.width, canvas.height, PHOTO_DILATE_RADIUS, PHOTO_DILATE_RADIUS);
   const components = findConnectedComponents(mask, canvas.width, canvas.height);
+  const bounds = { width: originalWidth, height: originalHeight };
   const candidates = components
     .filter((component) => {
       const aspect = component.width / component.height;
@@ -175,14 +222,15 @@ const detectPhotoBoxes = ({ context, canvas, scale, originalWidth, originalHeigh
     .map((component) => {
       const marginX = Math.max(4, Math.round(component.width * 0.06));
       const marginY = Math.max(4, Math.round(component.height * 0.04));
-      const coordinates = validateAndClipCoordinates(
+      const coordinates = toOriginalBox(
         {
-          x: Math.round((component.x - marginX) / scale),
-          y: Math.round((component.y - marginY) / scale),
-          width: Math.round((component.width + marginX * 2) / scale),
-          height: Math.round((component.height + marginY * 2) / scale)
+          x: component.x - marginX,
+          y: component.y - marginY,
+          width: component.width + marginX * 2,
+          height: component.height + marginY * 2
         },
-        { width: originalWidth, height: originalHeight }
+        scale,
+        bounds
       );
 
       if (!coordinates) return null;
@@ -198,63 +246,186 @@ const detectPhotoBoxes = ({ context, canvas, scale, originalWidth, originalHeigh
     .slice(0, 40);
 };
 
-const cropToDataUrl = (sourceCanvas, sourceBox) => {
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  if (!context) return '';
+const detectBlueLabelBoxes = ({ context, canvas, scale, originalWidth, originalHeight }) => {
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const blueMask = buildPixelMask(imageData, canvas.width, canvas.height, isBlueTextPixel);
+  const groupedMask = dilateMask(blueMask, canvas.width, canvas.height, 8, 2);
+  const components = findConnectedComponents(groupedMask, canvas.width, canvas.height);
+  const bounds = { width: originalWidth, height: originalHeight };
 
-  canvas.width = Math.max(1, Math.round(sourceBox.width));
-  canvas.height = Math.max(1, Math.round(sourceBox.height));
-  context.drawImage(
-    sourceCanvas,
-    sourceBox.x,
-    sourceBox.y,
-    sourceBox.width,
-    sourceBox.height,
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-  return canvas.toDataURL('image/png');
+  return components
+    .filter((component) => {
+      const aspect = component.width / Math.max(1, component.height);
+      const area = component.width * component.height;
+      return (
+        component.width >= 18 &&
+        component.height >= 5 &&
+        component.height <= Math.max(34, canvas.height * 0.035) &&
+        aspect >= 1.4 &&
+        aspect <= 24 &&
+        area >= 50
+      );
+    })
+    .map((component) => toOriginalBox(component, scale, bounds))
+    .filter(Boolean)
+    .map((box) => expandBox(box, { x: 10, y: 8 }, bounds))
+    .filter(Boolean)
+    .sort((a, b) => a.y - b.y || a.x - b.x);
+};
+
+const centerX = (box) => box.x + box.width / 2;
+
+const horizontalOverlapRatio = (a, b) => {
+  const overlap = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
+  return overlap / Math.max(1, Math.min(a.width, b.width));
+};
+
+const linkLabelsToPhotoBoxes = (photoBoxes, labelBoxes) => {
+  const usedLabels = new Set();
+  const averagePhotoHeight = photoBoxes.reduce((total, box) => total + box.height, 0) / Math.max(1, photoBoxes.length);
+  const maxVerticalGap = Math.max(80, averagePhotoHeight * 0.55);
+
+  return photoBoxes.map((photoBox) => {
+    const candidates = labelBoxes
+      .map((labelBox, labelIndex) => {
+        if (usedLabels.has(labelIndex)) return null;
+
+        const verticalGap = photoBox.y - (labelBox.y + labelBox.height);
+        if (verticalGap < -8 || verticalGap > maxVerticalGap) return null;
+
+        const centerDistance = Math.abs(centerX(photoBox) - centerX(labelBox));
+        const centerScore = Math.max(0, 1 - centerDistance / Math.max(photoBox.width, labelBox.width, 1));
+        const overlapScore = horizontalOverlapRatio(photoBox, labelBox);
+        const verticalScore = Math.max(0, 1 - verticalGap / maxVerticalGap);
+        const score = centerScore * 0.55 + overlapScore * 0.3 + verticalScore * 0.15;
+
+        return { labelBox, labelIndex, score };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score);
+
+    const best = candidates[0];
+    if (!best || best.score < 0.32) return { photoBox, labelBox: null, labelMatchConfidence: 0 };
+    usedLabels.add(best.labelIndex);
+    return {
+      photoBox,
+      labelBox: best.labelBox,
+      labelMatchConfidence: Number(best.score.toFixed(3))
+    };
+  });
 };
 
 const cleanOcrName = (value = '') =>
   String(value)
     .split('\n')
-    .map((line) => line.replace(/[^A-Za-zÀ-ž' -]/g, ' ').replace(/\s+/g, ' ').trim())
-    .filter((line) => line.length >= 3 && /[A-Za-zÀ-ž]/.test(line))
+    .map((line) => line.replace(/[^A-Za-z\u00C0-\u017F' .-]/g, ' ').replace(/\s+/g, ' ').trim())
+    .filter((line) => line.length >= 3 && /[A-Za-z\u00C0-\u017F]/.test(line))
     .sort((a, b) => b.length - a.length)[0] || '';
 
-const recognizeLabels = async ({ canvas, scale, boxes, onProgress }) => {
-  if (!boxes.length) return new Map();
+const preprocessLabelCrop = (sourceCanvas, sourceContext, labelBox, scale) => {
+  const sourceBox = {
+    x: Math.max(0, Math.round((labelBox.x - 8) * scale)),
+    y: Math.max(0, Math.round((labelBox.y - 8) * scale)),
+    width: Math.round((labelBox.width + 16) * scale),
+    height: Math.round((labelBox.height + 16) * scale)
+  };
 
-  const { createWorker } = await import('tesseract.js');
-  const worker = await createWorker('eng', 1, {
+  sourceBox.width = Math.max(1, Math.min(sourceBox.width, sourceCanvas.width - sourceBox.x));
+  sourceBox.height = Math.max(1, Math.min(sourceBox.height, sourceCanvas.height - sourceBox.y));
+
+  const targetCanvas = document.createElement('canvas');
+  const targetContext = targetCanvas.getContext('2d', { willReadFrequently: true });
+  if (!targetContext) return '';
+
+  targetCanvas.width = Math.max(1, sourceBox.width * OCR_UPSCALE);
+  targetCanvas.height = Math.max(1, sourceBox.height * OCR_UPSCALE);
+  targetContext.fillStyle = '#ffffff';
+  targetContext.fillRect(0, 0, targetCanvas.width, targetCanvas.height);
+
+  const imageData = sourceContext.getImageData(sourceBox.x, sourceBox.y, sourceBox.width, sourceBox.height);
+  const output = targetContext.createImageData(targetCanvas.width, targetCanvas.height);
+
+  for (let y = 0; y < targetCanvas.height; y += 1) {
+    for (let x = 0; x < targetCanvas.width; x += 1) {
+      const sourceX = Math.min(sourceBox.width - 1, Math.floor(x / OCR_UPSCALE));
+      const sourceY = Math.min(sourceBox.height - 1, Math.floor(y / OCR_UPSCALE));
+      const sourceOffset = (sourceY * sourceBox.width + sourceX) * 4;
+      const outputOffset = (y * targetCanvas.width + x) * 4;
+      const isText = isBlueTextPixel(
+        imageData.data[sourceOffset],
+        imageData.data[sourceOffset + 1],
+        imageData.data[sourceOffset + 2]
+      );
+      const value = isText ? 0 : 255;
+
+      output.data[outputOffset] = value;
+      output.data[outputOffset + 1] = value;
+      output.data[outputOffset + 2] = value;
+      output.data[outputOffset + 3] = 255;
+    }
+  }
+
+  targetContext.putImageData(output, 0, 0);
+  return targetCanvas.toDataURL('image/png');
+};
+
+const pickBestOcrName = (result) => {
+  const rawText = result.data?.text || '';
+  const cleanedName = cleanOcrName(rawText);
+  const confidence = Number(result.data?.confidence || 0);
+
+  return {
+    rawText,
+    cleanedName,
+    confidence: cleanedName ? confidence : 0
+  };
+};
+
+const recognizeLabels = async ({ canvas, context, scale, labelMatches, onProgress }) => {
+  if (!labelMatches.length) return new Map();
+
+  const { createWorker, PSM } = await import('tesseract.js');
+  const workerOptions = {
     logger: (message) => {
       if (message.status === 'recognizing text') {
         onProgress?.(Math.round(message.progress * 100));
       }
     }
-  });
+  };
+  let worker;
+
+  try {
+    worker = await createWorker('nld+eng', 1, workerOptions);
+  } catch (error) {
+    console.warn('Nederlandse OCR-taaldata niet beschikbaar, val terug op Engels:', error);
+    worker = await createWorker('eng', 1, workerOptions);
+  }
   const names = new Map();
 
   try {
-    for (const [index, box] of boxes.entries()) {
-      const sourceBox = {
-        x: Math.max(0, Math.round((box.x - 24) * scale)),
-        y: Math.max(0, Math.round((box.y - 52) * scale)),
-        width: Math.min(canvas.width, Math.round((box.width + 48) * scale)),
-        height: Math.min(canvas.height, Math.round(48 * scale))
-      };
-      sourceBox.width = Math.min(sourceBox.width, canvas.width - sourceBox.x);
-      sourceBox.height = Math.min(sourceBox.height, canvas.height - sourceBox.y);
-      if (sourceBox.width < 10 || sourceBox.height < 10) continue;
+    await worker.setParameters({
+      tessedit_pageseg_mode: PSM?.SINGLE_LINE || '7',
+      preserve_interword_spaces: '1',
+      tessedit_char_whitelist: OCR_NAME_WHITELIST,
+      user_defined_dpi: '300'
+    });
 
-      const dataUrl = cropToDataUrl(canvas, sourceBox);
+    for (const [index, match] of labelMatches.entries()) {
+      if (!match.labelBox) continue;
+
+      const dataUrl = preprocessLabelCrop(canvas, context, match.labelBox, scale);
+      if (!dataUrl) continue;
       const result = await worker.recognize(dataUrl);
-      const name = cleanOcrName(result.data?.text);
-      if (name) names.set(index, name);
+      const ocr = pickBestOcrName(result);
+      if (ocr.cleanedName) {
+        names.set(index, {
+          name: ocr.cleanedName,
+          rawText: ocr.rawText,
+          ocrConfidence: ocr.confidence,
+          labelBox: match.labelBox,
+          labelMatchConfidence: match.labelMatchConfidence
+        });
+      }
     }
   } finally {
     await worker.terminate();
@@ -269,6 +440,8 @@ export const detectStudentPhotoSelections = async ({ imageData, runOcr = true, o
   onProgress?.({ phase: 'detect', percent: 0 });
   const analysis = await getCanvasForImage(imageData.src);
   const boxes = detectPhotoBoxes(analysis);
+  const labelBoxes = detectBlueLabelBoxes(analysis);
+  const labelMatches = linkLabelsToPhotoBoxes(boxes, labelBoxes);
   onProgress?.({ phase: 'detect', percent: 100 });
 
   let names = new Map();
@@ -277,8 +450,9 @@ export const detectStudentPhotoSelections = async ({ imageData, runOcr = true, o
     try {
       names = await recognizeLabels({
         canvas: analysis.canvas,
+        context: analysis.context,
         scale: analysis.scale,
-        boxes,
+        labelMatches,
         onProgress: (percent) => onProgress?.({ phase: 'ocr', percent })
       });
     } catch (error) {
@@ -288,7 +462,8 @@ export const detectStudentPhotoSelections = async ({ imageData, runOcr = true, o
   }
 
   return boxes.map((box, index) => {
-    const proposedName = names.get(index) || '';
+    const labelData = names.get(index) || null;
+    const proposedName = labelData?.name || '';
     return {
       id: `auto_${Date.now()}_${index + 1}`,
       type: 'image',
@@ -305,9 +480,20 @@ export const detectStudentPhotoSelections = async ({ imageData, runOcr = true, o
         height: imageData.height
       },
       detectionConfidence: box.confidence,
-      detectionMethod: runOcr ? 'auto-vision-ocr' : 'auto-vision'
+      detectionMethod: runOcr ? 'auto-vision-blue-label-ocr' : 'auto-vision',
+      rawOcrText: labelData?.rawText || '',
+      cleanedOcrName: proposedName,
+      ocrConfidence: labelData?.ocrConfidence || 0,
+      labelBox: labelData?.labelBox || labelMatches[index]?.labelBox || null,
+      labelMatchConfidence: labelData?.labelMatchConfidence || labelMatches[index]?.labelMatchConfidence || 0
     };
   });
+};
+
+export const __studentPhotoAutoCropTest = {
+  cleanOcrName,
+  horizontalOverlapRatio,
+  linkLabelsToPhotoBoxes
 };
 
 export default {

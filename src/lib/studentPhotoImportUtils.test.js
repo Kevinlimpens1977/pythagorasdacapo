@@ -45,6 +45,33 @@ test('createPhotoImportRows auto-links only confident matches', () => {
   assert.equal(rows[0].matchedUserId, 's1');
 });
 
+test('createPhotoImportRows preserves OCR and label matching diagnostics', () => {
+  const rows = createPhotoImportRows(
+    [
+      {
+        id: 'crop-1',
+        proposedName: 'Damian Bijlsma',
+        detectionConfidence: 0.91,
+        detectionMethod: 'auto-vision-blue-label-ocr',
+        rawOcrText: 'Damian Bijlsma\n',
+        cleanedOcrName: 'Damian Bijlsma',
+        ocrConfidence: 86,
+        labelBox: { x: 12, y: 4, width: 120, height: 22 },
+        labelMatchConfidence: 0.82
+      }
+    ],
+    []
+  );
+
+  assert.equal(rows[0].detectionMethod, 'auto-vision-blue-label-ocr');
+  assert.equal(rows[0].detectionConfidence, 0.91);
+  assert.equal(rows[0].rawOcrText, 'Damian Bijlsma\n');
+  assert.equal(rows[0].cleanedOcrName, 'Damian Bijlsma');
+  assert.equal(rows[0].ocrConfidence, 86);
+  assert.deepEqual(rows[0].labelBox, { x: 12, y: 4, width: 120, height: 22 });
+  assert.equal(rows[0].labelMatchConfidence, 0.82);
+});
+
 test('getPhotoImportReadiness requires every row to have an explicit decision', () => {
   assert.deepEqual(getPhotoImportReadiness([]), { total: 0, ready: 0, isReady: false });
   assert.deepEqual(
