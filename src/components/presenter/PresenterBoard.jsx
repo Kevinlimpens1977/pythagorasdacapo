@@ -159,7 +159,7 @@ export default function PresenterBoard({
   return (
     <div
       ref={surfaceRef}
-      className="flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 px-4 py-5"
+      className="flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 px-4 pb-28 pt-5"
       style={{ touchAction }}
     >
       <div

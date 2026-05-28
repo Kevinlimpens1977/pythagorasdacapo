@@ -684,7 +684,7 @@ export default function PresenterShell() {
   }, []);
 
   return (
-    <section className="relative flex min-h-[calc(100vh-5rem)] flex-col overflow-hidden bg-slate-200">
+    <section className="relative flex h-[calc(100dvh-5rem)] min-h-0 flex-col overflow-hidden bg-slate-200">
       {fullscreenErrorVisible ? (
         <div
           className="fixed right-4 top-4 z-50 max-w-sm rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-950 shadow-lg"

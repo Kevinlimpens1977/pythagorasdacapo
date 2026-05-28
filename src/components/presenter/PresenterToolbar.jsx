@@ -87,7 +87,7 @@ export default function PresenterToolbar({
 
   return (
     <div
-      className={`group pointer-events-none absolute inset-x-0 bottom-0 z-30 px-3 pb-3 transition-transform duration-200 ease-out sm:px-5 ${
+      className={`group pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 ease-out sm:px-5 ${
         pinned ? 'translate-y-0' : 'translate-y-[calc(100%-3.75rem)] hover:translate-y-0 focus-within:translate-y-0'
       }`}
     >
