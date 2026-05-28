@@ -18,6 +18,47 @@ const isFiniteNumber = (value) => Number.isFinite(value);
 
 const getNumber = (value, fallback = 0) => (isFiniteNumber(value) ? value : fallback);
 
+const TOOL_DEFAULTS = {
+  pen: {
+    id: 'pen',
+    variant: 'pen',
+    color: '#111827',
+    width: 6
+  },
+  highlighter: {
+    id: 'highlighter',
+    variant: 'highlighter',
+    color: '#facc15',
+    width: 24
+  }
+};
+
+const getToolKey = (tool) => (tool?.id === 'highlighter' || tool?.variant === 'highlighter' ? 'highlighter' : 'pen');
+
+const normalizePresenterTool = (tool = {}) => {
+  const toolKey = getToolKey(tool);
+  const defaults = TOOL_DEFAULTS[toolKey];
+
+  return {
+    id: defaults.id,
+    variant: defaults.variant,
+    color: typeof tool.color === 'string' && tool.color ? tool.color : defaults.color,
+    width: Number.isFinite(tool.width) && tool.width > 0 ? tool.width : defaults.width
+  };
+};
+
+export const getPresenterStrokeStyle = (stroke = {}) => {
+  const tool = normalizePresenterTool(stroke);
+
+  return {
+    color: tool.color,
+    width: tool.width,
+    opacity: tool.variant === 'highlighter' ? 0.36 : 1,
+    lineCap: 'round',
+    lineJoin: 'round'
+  };
+};
+
 const normalizeIdList = (ids) =>
   [...new Set((Array.isArray(ids) ? ids : [ids]).filter((id) => typeof id === 'string' && id.length > 0))];
 
@@ -208,6 +249,10 @@ export const createPresenterSession = () => {
       width: 6,
       variant: 'pen'
     },
+    toolStyles: {
+      pen: cloneValue(TOOL_DEFAULTS.pen),
+      highlighter: cloneValue(TOOL_DEFAULTS.highlighter)
+    },
     toolbar: {
       pinned: false,
       activeCategory: 'pen'
@@ -302,21 +347,28 @@ export const addStrokeToPresenterPage = (session, pageId = session.activePageId,
 };
 
 export const updatePresenterTool = (session, updates = {}) => {
-  const currentTool = session?.tool || {};
-  const color = typeof updates.color === 'string' && updates.color ? updates.color : currentTool.color || '#111827';
-  const width = Number.isFinite(updates.width) && updates.width > 0 ? updates.width : currentTool.width || 6;
-  const nextTool = {
-    id: 'pen',
-    variant: 'pen',
-    color,
-    width
+  const requestedKey = getToolKey(updates.id || updates.variant ? updates : session?.tool);
+  const currentStyles = session?.toolStyles || {};
+  const currentTool = normalizePresenterTool(currentStyles[requestedKey] || session?.tool || TOOL_DEFAULTS[requestedKey]);
+  const nextTool = normalizePresenterTool({
+    ...currentTool,
+    ...updates,
+    id: requestedKey,
+    variant: requestedKey
+  });
+  const nextToolStyles = {
+    pen: normalizePresenterTool(currentStyles.pen || TOOL_DEFAULTS.pen),
+    highlighter: normalizePresenterTool(currentStyles.highlighter || TOOL_DEFAULTS.highlighter),
+    [requestedKey]: nextTool
   };
 
   if (
-    currentTool.id === nextTool.id &&
-    currentTool.variant === nextTool.variant &&
+    session?.tool?.id === nextTool.id &&
+    session?.tool?.variant === nextTool.variant &&
     currentTool.color === nextTool.color &&
-    currentTool.width === nextTool.width
+    currentTool.width === nextTool.width &&
+    session?.toolStyles?.[requestedKey]?.color === nextToolStyles[requestedKey].color &&
+    session?.toolStyles?.[requestedKey]?.width === nextToolStyles[requestedKey].width
   ) {
     return session;
   }
@@ -324,6 +376,7 @@ export const updatePresenterTool = (session, updates = {}) => {
   return {
     ...session,
     tool: nextTool,
+    toolStyles: nextToolStyles,
     dirty: true
   };
 };

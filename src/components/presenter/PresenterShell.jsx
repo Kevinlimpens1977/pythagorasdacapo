@@ -327,13 +327,25 @@ export default function PresenterShell() {
   const pages = useMemo(() => session.pages || [], [session.pages]);
   const activeIndex = useMemo(() => getPresenterPageIndex(session), [session]);
   const pageLabel = pages.length > 0 ? `Pagina ${activeIndex + 1}/${pages.length}` : 'Pagina 0/0';
-  const penTool = session.tool || { id: 'pen', variant: 'pen', color: '#111827', width: 6 };
-  const currentTool = activeCategory === 'pen'
+  const toolStyles = session.toolStyles || {};
+  const penTool = toolStyles.pen || { id: 'pen', variant: 'pen', color: '#111827', width: 6 };
+  const highlighterTool = toolStyles.highlighter || {
+    id: 'highlighter',
+    variant: 'highlighter',
+    color: '#facc15',
+    width: 24
+  };
+  const activeDrawingTool = activeCategory === 'highlighter' ? highlighterTool : penTool;
+  const currentTool = activeCategory === 'pen' || activeCategory === 'highlighter'
     ? {
-        id: 'pen',
-        variant: 'pen',
-        color: penTool.color || '#111827',
-        width: Number.isFinite(penTool.width) && penTool.width > 0 ? penTool.width : 6
+        id: activeCategory,
+        variant: activeCategory,
+        color: activeDrawingTool.color || (activeCategory === 'highlighter' ? '#facc15' : '#111827'),
+        width: Number.isFinite(activeDrawingTool.width) && activeDrawingTool.width > 0
+          ? activeDrawingTool.width
+          : activeCategory === 'highlighter'
+            ? 24
+            : 6
       }
     : { id: 'select' };
   const canUndo = hasAvailableUndo(history, session);
@@ -591,7 +603,7 @@ export default function PresenterShell() {
 
   const handlePenStyle = (updates) => {
     setSession((currentSession) => updatePresenterTool(currentSession, updates));
-    setActiveCategory('pen');
+    setActiveCategory(updates?.id === 'highlighter' || updates?.variant === 'highlighter' ? 'highlighter' : 'pen');
     setPagePanelOpen(false);
   };
 

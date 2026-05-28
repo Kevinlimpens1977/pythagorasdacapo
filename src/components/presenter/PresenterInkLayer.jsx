@@ -1,3 +1,5 @@
+import { getPresenterStrokeStyle } from '../../lib/presenterModel';
+
 const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
 
@@ -22,17 +24,18 @@ const getPathData = (points = []) => {
 const renderStroke = (stroke, opacity) => {
   const pathData = getPathData(Array.isArray(stroke?.points) ? stroke.points : []);
   if (!pathData) return null;
+  const style = getPresenterStrokeStyle(stroke);
 
   return (
     <path
       key={stroke.id || pathData}
       d={pathData}
       fill="none"
-      stroke={stroke.color || '#111827'}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeOpacity={opacity}
-      strokeWidth={isFinitePositiveNumber(stroke.width) ? stroke.width : 5}
+      stroke={style.color}
+      strokeLinecap={style.lineCap}
+      strokeLinejoin={style.lineJoin}
+      strokeOpacity={opacity ?? style.opacity}
+      strokeWidth={isFinitePositiveNumber(style.width) ? style.width : 5}
     />
   );
 };

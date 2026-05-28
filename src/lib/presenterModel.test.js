@@ -22,7 +22,8 @@ import {
   clearPresenterPageContent,
   setActivePresenterPageAt,
   updatePresenterPageBackground,
-  updatePresenterTool
+  updatePresenterTool,
+  getPresenterStrokeStyle
 } from './presenterModel.js';
 
 test('createPresenterSession starts with one white page', () => {
@@ -168,6 +169,43 @@ test('updatePresenterTool changes pen style without changing pages', () => {
     width: 10
   });
   assert.equal(next.pages, session.pages);
+});
+
+test('updatePresenterTool switches to a highlighter tool with its own style', () => {
+  const session = createPresenterSession();
+  const next = updatePresenterTool(session, { id: 'highlighter', variant: 'highlighter', color: '#facc15', width: 24 });
+
+  assert.equal(next.dirty, true);
+  assert.deepEqual(next.tool, {
+    id: 'highlighter',
+    variant: 'highlighter',
+    color: '#facc15',
+    width: 24
+  });
+});
+
+test('getPresenterStrokeStyle renders highlighter strokes as translucent broad strokes', () => {
+  assert.deepEqual(
+    getPresenterStrokeStyle({ variant: 'highlighter', color: '#facc15', width: 24 }),
+    {
+      color: '#facc15',
+      width: 24,
+      opacity: 0.36,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }
+  );
+
+  assert.deepEqual(
+    getPresenterStrokeStyle({ variant: 'pen', color: '#111827', width: 6 }),
+    {
+      color: '#111827',
+      width: 6,
+      opacity: 1,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }
+  );
 });
 
 test('removeStrokeFromPresenterPage removes a stroke by id', () => {
