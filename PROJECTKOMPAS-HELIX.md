@@ -308,6 +308,52 @@ Presenter V1a is gebouwd en technisch gericht geverifieerd.
 Presenter V1a is nog niet bewezen als volledig gevalideerde CTOUCH/digibord-ervaring.
 ```
 
+## Presenter V1a-plus: Tekst, Wiskundesymbolen En Gum
+
+V1a-plus is de tussenstap tussen de gebouwde Presenter Core en V1b. Deze pluslaag blijft bordgericht en haalt nog geen HELIX-lesstof binnen.
+
+Doel:
+
+- Het vrije bord completer maken voor dagelijkse wiskundeles.
+- Docenten tekst en wiskundige notatie laten toevoegen zonder meteen V1b-lesroute-import te bouwen.
+- Gumgedrag natuurlijker maken voor penstreken op een digibord.
+
+Gewenst in V1a-plus:
+
+- Teksttool in de toolbar.
+- Klik/tap op het bord om een tekstobject te plaatsen.
+- Tekstobjecten zijn selecteerbaar, verplaatsbaar en schaalbaar zoals andere objecten.
+- Tekstobjecten blijven recht en leesbaar.
+- Basale tekstinstellingen: tekstgrootte en eventueel vet/cursief als dit UX-matig rustig blijft.
+- Wiskundesymbolenpalet bij tekstinvoer.
+- Minimaal gewenste symbolen:
+  - `π`
+  - `√`
+  - `²`
+  - `³`
+  - `×`
+  - `÷`
+  - `≤`
+  - `≥`
+  - `≈`
+  - `≠`
+  - `∠`
+  - `°`
+- Gumfunctie met drie borstelgroottes:
+  - small
+  - medium
+  - large
+- De drie gumgroottes staan voor de borstel-diameter: small wist heel precies, medium is standaard, large wist breed alsof je met een grote borstel over penstreken gaat.
+- Gum wist primair pen- en markeerstiftstreken op basis van raakvlak/borsteldiameter.
+- Objecten blijven via selectie/verwijderknop verwijderd worden, niet per ongeluk met de gum.
+
+Niet in V1a-plus:
+
+- HELIX-lesstof importeren.
+- Vraagvensters op het bord.
+- Firebase-opslag van Presenter-sessies.
+- Export.
+
 ## Presenter V1b: HELIX Content Layer
 
 V1b is nog niet gebouwd en moet pas na expliciet akkoord worden opgepakt.
@@ -513,7 +559,19 @@ Nodig:
 - Meetinstrumenten beoordelen op digibordgevoel.
 - Performance bij veel penstreken/objecten testen.
 
-### 2. Presenter V1b Ontwerpen En Bouwen
+### 2. Presenter V1a-plus Bouwen
+
+Alleen bordgerichte uitbreidingen, nog zonder HELIX-contentlaag.
+
+Focus:
+
+- Teksttool toevoegen.
+- Tekstobjecten selecteerbaar, verplaatsbaar en schaalbaar maken.
+- Wiskundesymbolenpalet toevoegen met o.a. `π`, `√`, `²`, `³`, `×`, `÷`, `≤`, `≥`, `≈`, `≠`, `∠` en `°`.
+- Gum uitbreiden met borstel-diameteropties small, medium en large.
+- Gum alleen pen-/markeerstiftstreken laten wissen, zodat objecten niet per ongeluk verdwijnen.
+
+### 3. Presenter V1b Ontwerpen En Bouwen
 
 Alleen na expliciet akkoord.
 
@@ -525,7 +583,7 @@ Focus:
 - Pagina-thumbnails.
 - Eventueel opslag/export later.
 
-### 3. Leerlingroute Afronden
+### 4. Leerlingroute Afronden
 
 Nodig:
 
@@ -534,7 +592,7 @@ Nodig:
 - Mobiele layout.
 - Consistente fullscreen-ervaring.
 
-### 4. CMS Lesblokstudio Verfijnen
+### 5. CMS Lesblokstudio Verfijnen
 
 Nodig:
 
@@ -544,7 +602,7 @@ Nodig:
 - Mediablokstudio eenvoudiger maken.
 - Slidedeckblokstudio verder afstemmen op presentatieworkflow.
 
-### 5. Leerlingbeheer Uitbreiden
+### 6. Leerlingbeheer Uitbreiden
 
 Nodig:
 
@@ -553,7 +611,7 @@ Nodig:
 - Mogelijke leerlingfoto-import met reviewstap.
 - Als echte nieuwe leerlingaccounts bulk aangemaakt moeten worden: Cloud Function/Admin SDK ontwerpen.
 
-### 6. Voortgang En Analytics Versterken
+### 7. Voortgang En Analytics Versterken
 
 Nodig:
 
@@ -562,7 +620,7 @@ Nodig:
 - Leerlingdrilldown.
 - Signalen voor vastlopers en inactiviteit.
 
-### 7. Toetsmodus V1
+### 8. Toetsmodus V1
 
 Nodig:
 
@@ -570,7 +628,7 @@ Nodig:
 - Pogingen, scores en feedback.
 - Docentoverzicht.
 
-### 8. Firebase Security Hardening
+### 9. Firebase Security Hardening
 
 Nodig:
 
@@ -580,7 +638,7 @@ Nodig:
 - Leerlingrechten beperken tot eigen/toegewezen data.
 - Admin/docent writes expliciet beperken.
 
-### 9. Documentatie En Schema Opschonen
+### 10. Documentatie En Schema Opschonen
 
 Nodig:
 
@@ -588,7 +646,7 @@ Nodig:
 - `FIRESTORE_SCHEMA.md` bijwerken naar actuele services.
 - Mojibake/encodingproblemen in docs opruimen waar ze overdracht of lesmateriaal raken.
 
-### 10. Multi-tenant Later
+### 11. Multi-tenant Later
 
 Nodig:
 
@@ -611,6 +669,7 @@ Nodig:
 - Media en slidedecks zijn verschillende didactische objecten.
 - Een mediablok is een hoofdmedia-item.
 - Presenter is digibord-first: grote touchdoelen, exacte pointercoordinaten, rustige toolmodus.
+- Presenter V1a-plus mag bordgerichte basistools toevoegen, zoals tekst, wiskundesymbolen en gumgroottes.
 - Presenter V1b niet alvast meebouwen zonder nieuw akkoord.
 
 ## Actuele Technische Aandachtspunten Voor Nieuwe Agent
