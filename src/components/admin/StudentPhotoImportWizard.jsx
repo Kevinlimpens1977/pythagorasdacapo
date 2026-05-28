@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Images, Loader2, Sparkles, Trash2, Upload, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Images, Loader2, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react';
 import ImageCanvasEditor from './ImageCanvasEditor';
 import { batchCropRectangles, cropRectangleFromImage } from '../../services/cropService';
+import * as klasService from '../../services/klasService';
 import {
   approveStudentPhotoImport,
   buildPhotoImportCropPath,
@@ -44,6 +45,7 @@ export default function StudentPhotoImportWizard({
   klassen = [],
   currentUser,
   onClose,
+  onKlassenChanged,
   onCompleted
 }) {
   const [activeStep, setActiveStep] = useState(0);
@@ -59,6 +61,9 @@ export default function StudentPhotoImportWizard({
   const [importKlasId, setImportKlasId] = useState('');
   const [autoDetecting, setAutoDetecting] = useState(false);
   const [autoProgress, setAutoProgress] = useState(null);
+  const [showNewKlasForm, setShowNewKlasForm] = useState(false);
+  const [newKlasName, setNewKlasName] = useState('');
+  const [creatingKlas, setCreatingKlas] = useState(false);
 
   const defaultKlasId = useMemo(() => {
     const counts = new Map();
@@ -85,6 +90,35 @@ export default function StudentPhotoImportWizard({
     setImportKlasId(nextKlasId);
     const nextStudents = students.filter((student) => student.klasId === nextKlasId);
     setRows(createPhotoImportRows(selections, nextStudents));
+  };
+
+  const handleCreateKlas = async (event) => {
+    event.preventDefault();
+    const name = newKlasName.trim();
+    if (!name) {
+      setError('Vul eerst een klasnaam in.');
+      return;
+    }
+    if (!currentUser?.uid) {
+      setError('Log in als administrator om een klas aan te maken.');
+      return;
+    }
+
+    setCreatingKlas(true);
+    setError(null);
+
+    try {
+      const { klasId } = await klasService.createKlas(name, currentUser.uid);
+      await onKlassenChanged?.();
+      setImportKlasId(klasId);
+      setRows(createPhotoImportRows(selections, []));
+      setNewKlasName('');
+      setShowNewKlasForm(false);
+    } catch (err) {
+      setError(err.message || 'Klas kon niet worden aangemaakt.');
+    } finally {
+      setCreatingKlas(false);
+    }
   };
 
   useEffect(() => {
@@ -365,19 +399,48 @@ export default function StudentPhotoImportWizard({
           <p className="helix-muted mt-1 text-sm">
             Upload of plak een klassenfoto, maak uitsnedes en keur elke koppeling eerst goed.
           </p>
-          <label className="mt-4 block max-w-sm text-xs font-black uppercase tracking-wide text-slate-400">
-            Klas voor deze import
-            <select
-              value={selectedKlasId || ''}
-              onChange={(event) => handleKlasChange(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-black normal-case tracking-normal text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
-            >
-              <option value="">Kies een klas</option>
-              {klassen.map((klas) => (
-                <option key={klas.id} value={klas.id}>{klas.name}</option>
-              ))}
-            </select>
-          </label>
+          <div className="mt-4 max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-wide text-slate-400">Klas voor deze import</p>
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <select
+                value={selectedKlasId || ''}
+                onChange={(event) => handleKlasChange(event.target.value)}
+                className="min-h-11 min-w-0 flex-1 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-black normal-case tracking-normal text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
+              >
+                <option value="">Kies een klas</option>
+                {klassen.map((klas) => (
+                  <option key={klas.id} value={klas.id}>{klas.name}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setShowNewKlasForm((value) => !value)}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-purple)] bg-white px-4 text-sm font-black text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]"
+              >
+                <Plus size={17} />
+                Nieuwe klas
+              </button>
+            </div>
+            {showNewKlasForm ? (
+              <form onSubmit={handleCreateKlas} className="mt-3 flex flex-col gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3 sm:flex-row">
+                <input
+                  value={newKlasName}
+                  onChange={(event) => setNewKlasName(event.target.value)}
+                  className="min-h-11 min-w-0 flex-1 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-bold text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
+                  placeholder="Bijvoorbeeld: EOA 2026"
+                  disabled={creatingKlas}
+                />
+                <button
+                  type="submit"
+                  disabled={creatingKlas || !newKlasName.trim()}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-4 text-sm font-black text-white disabled:opacity-40"
+                >
+                  {creatingKlas ? <Loader2 size={17} className="animate-spin" /> : <Plus size={17} />}
+                  Klas aanmaken
+                </button>
+              </form>
+            ) : null}
+          </div>
           {selectedKlas ? (
             <p className="mt-2 text-xs font-bold text-[var(--helix-purple)]">{targetStudents.length} leerlingen beschikbaar in {selectedKlas.name}</p>
           ) : null}

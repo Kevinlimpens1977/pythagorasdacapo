@@ -116,6 +116,7 @@ export default function AdminLeerlingenPage() {
             klassen={klassen}
             currentUser={currentUser}
             onClose={() => setShowPhotoImport(false)}
+            onKlassenChanged={() => loadStudents({ silent: true })}
             onCompleted={() => loadStudents({ silent: true })}
           />
         ) : null}
