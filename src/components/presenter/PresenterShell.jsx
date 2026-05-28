@@ -414,12 +414,29 @@ export default function PresenterShell() {
     }, 4200);
   }, []);
 
+  const exitFullscreenSafely = useCallback(async () => {
+    if (typeof document === 'undefined' || !document.fullscreenElement) return false;
+
+    try {
+      if (typeof document.exitFullscreen !== 'function') {
+        showFullscreenError();
+        return false;
+      }
+
+      await document.exitFullscreen();
+      return true;
+    } catch {
+      showFullscreenError();
+      return false;
+    }
+  }, [showFullscreenError]);
+
   const handleFullscreen = useCallback(async () => {
     if (typeof document === 'undefined') return;
 
     const element = document.documentElement;
     if (document.fullscreenElement) {
-      await document.exitFullscreen?.();
+      await exitFullscreenSafely();
       return;
     }
 
@@ -433,7 +450,7 @@ export default function PresenterShell() {
     } catch {
       showFullscreenError();
     }
-  }, [showFullscreenError]);
+  }, [exitFullscreenSafely, showFullscreenError]);
 
   const handleUndo = useCallback(() => {
     setSession((currentSession) => {
@@ -634,7 +651,7 @@ export default function PresenterShell() {
       if (event.key === 'Escape') {
         event.preventDefault();
         if (document.fullscreenElement) {
-          document.exitFullscreen?.();
+          void exitFullscreenSafely();
           return;
         }
 
@@ -651,6 +668,7 @@ export default function PresenterShell() {
     activatePageAt,
     canRedo,
     canUndo,
+    exitFullscreenSafely,
     handleDeleteObject,
     handleRedo,
     handleUndo,

@@ -1,6 +1,64 @@
+import { useEffect, useRef } from 'react';
+
+const focusableSelector =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export default function PresenterRecoveryPrompt({ onRestore, onDiscard }) {
+  const overlayRef = useRef(null);
+  const restoreButtonRef = useRef(null);
+
+  useEffect(() => {
+    const previousActiveElement = document.activeElement;
+    restoreButtonRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = Array.from(
+        overlayRef.current?.querySelectorAll(focusableSelector) || []
+      ).filter((element) => element.offsetParent !== null);
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+      const focusTarget = event.shiftKey ? lastElement : firstElement;
+
+      if (!overlayRef.current?.contains(activeElement)) {
+        event.preventDefault();
+        focusTarget.focus();
+        return;
+      }
+
+      if (event.shiftKey && activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+        return;
+      }
+
+      if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (typeof previousActiveElement?.focus === 'function') {
+        previousActiveElement.focus();
+      }
+    };
+  }, []);
+
   return (
     <div
+      ref={overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 py-8"
       role="presentation"
     >
@@ -30,7 +88,7 @@ export default function PresenterRecoveryPrompt({ onRestore, onDiscard }) {
             type="button"
             className="min-h-12 rounded-md bg-slate-950 px-5 text-base font-black text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2"
             onClick={onRestore}
-            autoFocus
+            ref={restoreButtonRef}
           >
             Herstellen
           </button>
