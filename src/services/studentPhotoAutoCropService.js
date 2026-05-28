@@ -1,4 +1,9 @@
 import { validateAndClipCoordinates } from './cropService';
+import {
+  DEFAULT_STUDENT_PHOTO_OCR_METHOD_ID,
+  STUDENT_PHOTO_OCR_METHODS,
+  getStudentPhotoOcrStrategy
+} from './studentPhotoOcrStrategies';
 
 const ANALYSIS_WIDTH = 1800;
 const MIN_COMPONENT_AREA = 420;
@@ -6,6 +11,9 @@ const PHOTO_DILATE_RADIUS = 3;
 const OCR_UPSCALE = 4;
 const OCR_NAME_WHITELIST =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ' .-";
+
+export const STUDENT_PHOTO_OCR_METHOD_OPTIONS = STUDENT_PHOTO_OCR_METHODS;
+export const DEFAULT_STUDENT_PHOTO_OCR_METHOD = DEFAULT_STUDENT_PHOTO_OCR_METHOD_ID;
 
 const loadImageElement = (src) =>
   new Promise((resolve, reject) => {
@@ -189,6 +197,29 @@ const toOriginalBox = (box, scale, bounds) =>
     bounds
   );
 
+const toCanvasBox = (box, scaleOrAnalysis = 1, canvasArg = null) => {
+  const scale = typeof scaleOrAnalysis === 'number' ? scaleOrAnalysis : scaleOrAnalysis?.scale || 1;
+  const canvas = canvasArg || scaleOrAnalysis?.canvas || null;
+  const x = Math.round(box.x * scale);
+  const y = Math.round(box.y * scale);
+  const width = Math.round(box.width * scale);
+  const height = Math.round(box.height * scale);
+
+  if (!canvas) return { x, y, width, height };
+
+  const clippedX = Math.max(0, Math.min(x, canvas.width - 1));
+  const clippedY = Math.max(0, Math.min(y, canvas.height - 1));
+  const right = Math.max(clippedX + 1, Math.min(x + width, canvas.width));
+  const bottom = Math.max(clippedY + 1, Math.min(y + height, canvas.height));
+
+  return {
+    x: clippedX,
+    y: clippedY,
+    width: right - clippedX,
+    height: bottom - clippedY
+  };
+};
+
 const expandBox = (box, padding, bounds) =>
   validateAndClipCoordinates(
     {
@@ -366,7 +397,108 @@ const preprocessLabelCrop = (sourceCanvas, sourceContext, labelBox, scale) => {
   }
 
   targetContext.putImageData(output, 0, 0);
-  return targetCanvas.toDataURL('image/png');
+  return targetCanvas;
+};
+
+const cropPreparedLabel = ({ analysis, labelBox, isBlueTextPixel: isTextPixel = isBlueTextPixel } = {}) => {
+  if (!analysis?.canvas || !analysis?.context || !labelBox) return null;
+  const sourceBox = toCanvasBox(
+    {
+      x: labelBox.x - 8,
+      y: labelBox.y - 8,
+      width: labelBox.width + 16,
+      height: labelBox.height + 16
+    },
+    analysis.scale,
+    analysis.canvas
+  );
+  const targetCanvas = document.createElement('canvas');
+  const targetContext = targetCanvas.getContext('2d', { willReadFrequently: true });
+  if (!targetContext) return null;
+
+  targetCanvas.width = Math.max(1, sourceBox.width * OCR_UPSCALE);
+  targetCanvas.height = Math.max(1, sourceBox.height * OCR_UPSCALE);
+  const imageData = analysis.context.getImageData(sourceBox.x, sourceBox.y, sourceBox.width, sourceBox.height);
+  const output = targetContext.createImageData(targetCanvas.width, targetCanvas.height);
+
+  for (let y = 0; y < targetCanvas.height; y += 1) {
+    for (let x = 0; x < targetCanvas.width; x += 1) {
+      const sourceX = Math.min(sourceBox.width - 1, Math.floor(x / OCR_UPSCALE));
+      const sourceY = Math.min(sourceBox.height - 1, Math.floor(y / OCR_UPSCALE));
+      const sourceOffset = (sourceY * sourceBox.width + sourceX) * 4;
+      const outputOffset = (y * targetCanvas.width + x) * 4;
+      const value = isTextPixel(
+        imageData.data[sourceOffset],
+        imageData.data[sourceOffset + 1],
+        imageData.data[sourceOffset + 2]
+      )
+        ? 0
+        : 255;
+
+      output.data[outputOffset] = value;
+      output.data[outputOffset + 1] = value;
+      output.data[outputOffset + 2] = value;
+      output.data[outputOffset + 3] = 255;
+    }
+  }
+
+  targetContext.putImageData(output, 0, 0);
+  return targetCanvas;
+};
+
+const getLuminance = (r, g, b) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+const cropContrastLabel = ({ analysis, labelBox } = {}) => {
+  if (!analysis?.canvas || !analysis?.context || !labelBox) return null;
+  const sourceBox = toCanvasBox(
+    {
+      x: labelBox.x - 10,
+      y: labelBox.y - 10,
+      width: labelBox.width + 20,
+      height: labelBox.height + 20
+    },
+    analysis.scale,
+    analysis.canvas
+  );
+  const targetCanvas = document.createElement('canvas');
+  const targetContext = targetCanvas.getContext('2d', { willReadFrequently: true });
+  if (!targetContext) return null;
+
+  const upscale = 5;
+  targetCanvas.width = Math.max(1, sourceBox.width * upscale);
+  targetCanvas.height = Math.max(1, sourceBox.height * upscale);
+  const imageData = analysis.context.getImageData(sourceBox.x, sourceBox.y, sourceBox.width, sourceBox.height);
+  const luminances = [];
+  for (let index = 0; index < sourceBox.width * sourceBox.height; index += 1) {
+    const offset = index * 4;
+    luminances.push(getLuminance(imageData.data[offset], imageData.data[offset + 1], imageData.data[offset + 2]));
+  }
+  luminances.sort((a, b) => a - b);
+  const background = luminances[Math.floor(luminances.length * 0.86)] || 255;
+  const output = targetContext.createImageData(targetCanvas.width, targetCanvas.height);
+
+  for (let y = 0; y < targetCanvas.height; y += 1) {
+    for (let x = 0; x < targetCanvas.width; x += 1) {
+      const sourceX = Math.min(sourceBox.width - 1, Math.floor(x / upscale));
+      const sourceY = Math.min(sourceBox.height - 1, Math.floor(y / upscale));
+      const sourceOffset = (sourceY * sourceBox.width + sourceX) * 4;
+      const outputOffset = (y * targetCanvas.width + x) * 4;
+      const r = imageData.data[sourceOffset];
+      const g = imageData.data[sourceOffset + 1];
+      const b = imageData.data[sourceOffset + 2];
+      const luminance = getLuminance(r, g, b);
+      const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+      const value = luminance <= background - 38 || (saturation > 32 && luminance <= background - 16) ? 0 : 255;
+
+      output.data[outputOffset] = value;
+      output.data[outputOffset + 1] = value;
+      output.data[outputOffset + 2] = value;
+      output.data[outputOffset + 3] = 255;
+    }
+  }
+
+  targetContext.putImageData(output, 0, 0);
+  return targetCanvas;
 };
 
 const pickBestOcrName = (result) => {
@@ -381,10 +513,65 @@ const pickBestOcrName = (result) => {
   };
 };
 
-const recognizeLabels = async ({ canvas, context, scale, labelMatches, onProgress }) => {
-  if (!labelMatches.length) return new Map();
+const runSingleLineOcr = async ({ worker, preparedLabel }) => {
+  const result = await worker.recognize(
+    typeof preparedLabel?.toDataURL === 'function' ? preparedLabel.toDataURL('image/png') : preparedLabel
+  );
+  const ocr = pickBestOcrName(result);
 
+  return {
+    ...result,
+    rawText: ocr.rawText,
+    text: ocr.rawText,
+    confidence: ocr.confidence,
+    ocrConfidence: ocr.confidence
+  };
+};
+
+const runSparseOcr = async ({ analysis, box, onProgress } = {}) => {
   const { createWorker, PSM } = await import('tesseract.js');
+  const worker = await createConfiguredWorker({
+    createWorker,
+    PSM,
+    pageSegMode: PSM?.SPARSE_TEXT || '11',
+    onProgress: (percent) => onProgress?.(percent)
+  });
+
+  try {
+    const labelCanvas = cropContrastLabel({ analysis, labelBox: box });
+    if (!labelCanvas) return null;
+    return worker.recognize(labelCanvas.toDataURL('image/png'));
+  } finally {
+    await worker.terminate();
+  }
+};
+
+const scoreLabelForPhoto = (...args) => {
+  const params = args.length === 1 ? args[0] : { labelBox: args[0], photoBox: args[1] };
+  const { photoBox, labelBox } = params || {};
+  if (!photoBox || !labelBox) return 0;
+
+  const verticalGap = photoBox.y - (labelBox.y + labelBox.height);
+  if (verticalGap < -8) return 0;
+
+  const centerDistance = Math.abs(centerX(photoBox) - centerX(labelBox));
+  const centerScore = Math.max(0, 1 - centerDistance / Math.max(photoBox.width, labelBox.width, 1));
+  const overlapScore = horizontalOverlapRatio(photoBox, labelBox);
+  const verticalScore = Math.max(0, 1 - Math.max(0, verticalGap) / Math.max(80, photoBox.height * 0.55));
+
+  return Number((centerScore * 0.55 + overlapScore * 0.3 + verticalScore * 0.15).toFixed(3));
+};
+
+const scoreCandidateName = ({ name = '', rawText = '', ocrConfidence = 0 } = {}) => {
+  if (!name) return 0;
+  const confidenceScore = Math.max(0, Math.min(1, Number(ocrConfidence || 0) / 100));
+  const lengthScore = Math.max(0.15, Math.min(1, name.length / 14));
+  const letterCount = (String(rawText || name).match(/[A-Za-z\u00C0-\u017F]/g) || []).length;
+  const letterRatio = Math.max(0, Math.min(1, letterCount / Math.max(1, String(rawText || name).length)));
+  return Number((confidenceScore * 0.55 + lengthScore * 0.25 + letterRatio * 0.2).toFixed(3));
+};
+
+const createConfiguredWorker = async ({ createWorker, PSM, pageSegMode, onProgress }) => {
   const workerOptions = {
     logger: (message) => {
       if (message.status === 'recognizing text') {
@@ -400,22 +587,62 @@ const recognizeLabels = async ({ canvas, context, scale, labelMatches, onProgres
     console.warn('Nederlandse OCR-taaldata niet beschikbaar, val terug op Engels:', error);
     worker = await createWorker('eng', 1, workerOptions);
   }
+
+  await worker.setParameters({
+    tessedit_pageseg_mode: pageSegMode || PSM?.SINGLE_LINE || '7',
+    preserve_interword_spaces: '1',
+    tessedit_char_whitelist: OCR_NAME_WHITELIST,
+    user_defined_dpi: '300'
+  });
+
+  return worker;
+};
+
+const buildOcrHelpers = ({ createWorker, PSM }) => ({
+  createWorker,
+  PSM,
+  cleanOcrName,
+  isBlueTextPixel,
+  validateAndClipCoordinates,
+  toCanvasBox,
+  cropPreparedLabel,
+  cropContrastLabel,
+  detectBlueLabelBoxes,
+  scoreLabelForPhoto,
+  scoreCandidateName,
+  runSingleLineOcr,
+  runSparseOcr
+});
+
+const recognizeLabels = async ({ analysis, labelMatches, ocrMethodId, onProgress }) => {
+  if (!labelMatches.length) return new Map();
+
+  const { createWorker, PSM } = await import('tesseract.js');
+  const strategy = getStudentPhotoOcrStrategy(ocrMethodId);
+  const helpers = buildOcrHelpers({ createWorker, PSM });
+  const strategyNames = await strategy.recognizeNames({
+    analysis,
+    photoBoxes: labelMatches.map((match) => match.photoBox),
+    helpers,
+    onProgress
+  });
+
+  if (strategyNames?.size) return strategyNames;
+
+  const worker = await createConfiguredWorker({
+    createWorker,
+    PSM,
+    onProgress
+  });
   const names = new Map();
 
   try {
-    await worker.setParameters({
-      tessedit_pageseg_mode: PSM?.SINGLE_LINE || '7',
-      preserve_interword_spaces: '1',
-      tessedit_char_whitelist: OCR_NAME_WHITELIST,
-      user_defined_dpi: '300'
-    });
-
     for (const [index, match] of labelMatches.entries()) {
       if (!match.labelBox) continue;
 
-      const dataUrl = preprocessLabelCrop(canvas, context, match.labelBox, scale);
-      if (!dataUrl) continue;
-      const result = await worker.recognize(dataUrl);
+      const labelCanvas = preprocessLabelCrop(analysis.canvas, analysis.context, match.labelBox, analysis.scale);
+      if (!labelCanvas) continue;
+      const result = await worker.recognize(labelCanvas.toDataURL('image/png'));
       const ocr = pickBestOcrName(result);
       if (ocr.cleanedName) {
         names.set(index, {
@@ -423,7 +650,8 @@ const recognizeLabels = async ({ canvas, context, scale, labelMatches, onProgres
           rawText: ocr.rawText,
           ocrConfidence: ocr.confidence,
           labelBox: match.labelBox,
-          labelMatchConfidence: match.labelMatchConfidence
+          labelMatchConfidence: match.labelMatchConfidence,
+          strategyId: ocrMethodId || DEFAULT_STUDENT_PHOTO_OCR_METHOD_ID
         });
       }
     }
@@ -434,7 +662,12 @@ const recognizeLabels = async ({ canvas, context, scale, labelMatches, onProgres
   return names;
 };
 
-export const detectStudentPhotoSelections = async ({ imageData, runOcr = true, onProgress } = {}) => {
+export const detectStudentPhotoSelections = async ({
+  imageData,
+  runOcr = true,
+  ocrMethodId = DEFAULT_STUDENT_PHOTO_OCR_METHOD_ID,
+  onProgress
+} = {}) => {
   if (!imageData?.src) throw new Error('Upload eerst een bronfoto.');
 
   onProgress?.({ phase: 'detect', percent: 0 });
@@ -449,11 +682,16 @@ export const detectStudentPhotoSelections = async ({ imageData, runOcr = true, o
     onProgress?.({ phase: 'ocr', percent: 0 });
     try {
       names = await recognizeLabels({
-        canvas: analysis.canvas,
-        context: analysis.context,
-        scale: analysis.scale,
+        analysis,
         labelMatches,
-        onProgress: (percent) => onProgress?.({ phase: 'ocr', percent })
+        ocrMethodId,
+        onProgress: (progress) => {
+          if (typeof progress === 'number') {
+            onProgress?.({ phase: 'ocr', percent: progress, strategyId: ocrMethodId });
+          } else {
+            onProgress?.({ phase: 'ocr', percent: progress?.percent || 0, strategyId: progress?.strategyId || ocrMethodId });
+          }
+        }
       });
     } catch (error) {
       console.warn('OCR naamherkenning mislukt, crops blijven beschikbaar:', error);
@@ -480,12 +718,13 @@ export const detectStudentPhotoSelections = async ({ imageData, runOcr = true, o
         height: imageData.height
       },
       detectionConfidence: box.confidence,
-      detectionMethod: runOcr ? 'auto-vision-blue-label-ocr' : 'auto-vision',
+      detectionMethod: runOcr ? `auto-vision-ocr:${labelData?.strategyId || ocrMethodId}` : 'auto-vision',
       rawOcrText: labelData?.rawText || '',
       cleanedOcrName: proposedName,
       ocrConfidence: labelData?.ocrConfidence || 0,
       labelBox: labelData?.labelBox || labelMatches[index]?.labelBox || null,
-      labelMatchConfidence: labelData?.labelMatchConfidence || labelMatches[index]?.labelMatchConfidence || 0
+      labelMatchConfidence: labelData?.labelMatchConfidence || labelMatches[index]?.labelMatchConfidence || 0,
+      ocrMethodId: labelData?.strategyId || ocrMethodId
     };
   });
 };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Images, Loader2, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react';
 import ImageCanvasEditor from './ImageCanvasEditor';
 import { batchCropRectangles, cropRectangleFromImage } from '../../services/cropService';
@@ -13,7 +13,12 @@ import {
   savePhotoImportCropRecord,
   uploadPhotoImportBlob
 } from '../../services/studentPhotoImportService';
-import { detectStudentPhotoSelections } from '../../services/studentPhotoAutoCropService';
+import {
+  DEFAULT_STUDENT_PHOTO_OCR_METHOD,
+  STUDENT_PHOTO_OCR_METHOD_OPTIONS,
+  detectStudentPhotoSelections
+} from '../../services/studentPhotoAutoCropService';
+import { extractStudentPhotoSelectionsFromPdf } from '../../services/studentPhotoPdfListImportService';
 import {
   buildStudentMatchCandidates,
   createPhotoImportRows,
@@ -60,7 +65,10 @@ export default function StudentPhotoImportWizard({
   const [error, setError] = useState(null);
   const [importKlasId, setImportKlasId] = useState('');
   const [autoDetecting, setAutoDetecting] = useState(false);
+  const [activeOcrMethodId, setActiveOcrMethodId] = useState(DEFAULT_STUDENT_PHOTO_OCR_METHOD);
   const [autoProgress, setAutoProgress] = useState(null);
+  const [pdfImporting, setPdfImporting] = useState(false);
+  const pdfInputRef = useRef(null);
   const [showNewKlasForm, setShowNewKlasForm] = useState(false);
   const [newKlasName, setNewKlasName] = useState('');
   const [creatingKlas, setCreatingKlas] = useState(false);
@@ -227,7 +235,7 @@ export default function StudentPhotoImportWizard({
     if (data) setActiveStep(1);
   };
 
-  const handleAutoDetect = async () => {
+  const handleAutoDetect = async (ocrMethodId = activeOcrMethodId) => {
     if (!imageData?.src) {
       setError('Upload of plak eerst een afbeelding.');
       return;
@@ -238,6 +246,7 @@ export default function StudentPhotoImportWizard({
     }
 
     setAutoDetecting(true);
+    setActiveOcrMethodId(ocrMethodId);
     setAutoProgress({ phase: 'detect', percent: 0 });
     setError(null);
     setSaveResult(null);
@@ -246,6 +255,7 @@ export default function StudentPhotoImportWizard({
       const detectedSelections = await detectStudentPhotoSelections({
         imageData,
         runOcr: true,
+        ocrMethodId,
         onProgress: setAutoProgress
       });
 
@@ -262,6 +272,30 @@ export default function StudentPhotoImportWizard({
     } finally {
       setAutoDetecting(false);
       setAutoProgress(null);
+    }
+  };
+
+  const handlePdfPhotoListImport = async (file) => {
+    if (!file) return;
+
+    setPdfImporting(true);
+    setError(null);
+    setSaveResult(null);
+
+    try {
+      const result = await extractStudentPhotoSelectionsFromPdf(file);
+      setImageData(result.imageData);
+      setSelections(result.selections);
+      setRows(createPhotoImportRows(result.selections, targetStudents));
+      setThumbs({});
+      setActiveSelectionId(result.selections[0]?.id || null);
+      setInteractionMode('select');
+      setActiveStep(2);
+    } catch (err) {
+      setError(err.message || 'PDF-fotolijst kon niet worden verwerkt.');
+    } finally {
+      setPdfImporting(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
     }
   };
 
@@ -527,13 +561,42 @@ export default function StudentPhotoImportWizard({
                 </p>
                 <button
                   type="button"
-                  onClick={handleAutoDetect}
-                  disabled={!imageData || autoDetecting}
-                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-purple)] px-4 text-sm font-black text-white disabled:opacity-40"
+                  onClick={() => pdfInputRef.current?.click()}
+                  disabled={pdfImporting || autoDetecting}
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-4 text-sm font-black text-white disabled:opacity-40"
                 >
-                  {autoDetecting ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-                  {autoDetecting ? 'Voorstellen maken...' : 'Automatisch voorstellen maken'}
+                  {pdfImporting ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                  {pdfImporting ? 'PDF verwerken...' : 'PDF fotolijst importeren'}
                 </button>
+                <input
+                  ref={pdfInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(event) => handlePdfPhotoListImport(event.target.files?.[0])}
+                  className="hidden"
+                />
+                <div className="my-4 h-px bg-[var(--helix-border)]" />
+                <div className="mt-4 grid gap-2">
+                  {STUDENT_PHOTO_OCR_METHOD_OPTIONS.map((method) => {
+                    const isActive = activeOcrMethodId === method.id;
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => handleAutoDetect(method.id)}
+                        disabled={!imageData || autoDetecting}
+                        className={`inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] px-3 text-xs font-black disabled:opacity-40 ${
+                          isActive
+                            ? 'bg-[var(--helix-purple)] text-white'
+                            : 'border border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:bg-[var(--helix-soft-lavender)]'
+                        }`}
+                      >
+                        {autoDetecting && isActive ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                        {autoDetecting && isActive ? 'Test bezig...' : method.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 {autoProgress ? (
                   <p className="mt-3 text-xs font-bold text-[var(--helix-purple)]">
                     {autoProgress.phase === 'ocr' ? 'OCR namen lezen' : 'Foto-uitsnedes zoeken'}: {autoProgress.percent || 0}%
