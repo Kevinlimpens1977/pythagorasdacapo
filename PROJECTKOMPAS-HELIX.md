@@ -1,87 +1,109 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 27 mei 2026
+Laatst bijgewerkt: 28 mei 2026
 
-Dit document is bedoeld als vaste contextanker voor verdere ontwikkeling van HELIX. Als de gesprekscontext vol raakt of wordt gecomprimeerd, lees dit document opnieuw om snel weer "on rails" te komen.
+Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
 
 ## Productvisie
 
-HELIX wordt een professioneel, rustig en schaalbaar leerplatform voor docenten en leerlingen. Docenten bouwen leerstof als duidelijke lesroutes, leerlingen volgen die routes stap voor stap, en digibord, NotebookLM-slidedecks, spellen, crop/OCR en voortgangsinzicht komen samen in een enkele onderwijsworkflow.
+HELIX is een rustig, professioneel en schaalbaar leerplatform voor docenten en leerlingen. Docenten bouwen leerstof als lesroutes, leerlingen volgen die routes stap voor stap, en digibord, Presenter, NotebookLM-slidedecks, spellen, crop/OCR en voortgangsinzicht komen samen in een enkele onderwijsworkflow.
 
 De noordster:
 
-**Docent maakt materiaal -> organiseert het als lesroute -> publiceert of wijst toe -> leerling volgt route -> voortgang wordt zichtbaar -> docent gebruikt digibord, slidedecks en spellen voor klassikale en individuele ondersteuning.**
+```text
+Docent maakt materiaal
+-> organiseert dit als lesroute
+-> publiceert of wijst toe
+-> leerling volgt de route
+-> voortgang wordt zichtbaar
+-> docent gebruikt digibord, Presenter, slidedecks en spellen voor klassikale en individuele ondersteuning.
+```
+
+De inhoudelijke startcontext is VMBO 1-2 wiskunde rond Pythagoras, maar de architectuur is bewust breder opgezet als onderwijs-CMS.
+
+## Huidige Technische Basis
+
+- Frontend: React 19, Vite, Tailwind CSS 4, lucide-react.
+- Backend/data: Firebase Authentication, Firestore en Firebase Storage.
+- Belangrijke routes staan in `src/App.jsx`.
+- Adminnavigatie staat in `src/lib/adminWorkspaceNav.js`.
+- Lesbloktypes staan in `src/lib/contentBlockUtils.js`.
+- Vraagtypes staan in `src/lib/questionTypeRegistry.js`.
+- Presenter-code staat hoofdzakelijk in `src/components/presenter/` en `src/lib/presenter*.js`.
+- Firebase config gebruikt technisch nog project ID `pythagoras-eoa`, ook als projectnaam/appnaam in Firebase visueel naar HELIX is aangepast.
 
 ## Hoofdmodules
 
 ### Lesstof
 
-De centrale docentwerkplek voor:
+Centrale docentwerkplek voor CMS, lesroutes, contentblocks, crop/OCR, slidedecks, digibordmateriaal en vraagblokken.
 
-- CMS en lesroutes.
-- Theorie, voorbeelden, vragen, media, samenvattingen, games en slidedecks.
-- Crop/OCR om bronmateriaal snel om te zetten naar bruikbare lesblokken.
-- Slidedeckcreator voor NotebookLM-bronpakketten.
-- Digibordmateriaal en presentaties.
+Belangrijk:
+
+- `Lesstof` is de hoofdwerkplek voor materiaalproductie.
+- CMS gebruikt een navigatieboom en lesroute-builder.
+- Contentblocks zijn de centrale waarheid voor leerlingroutes en digibordpresentatie.
+- Vraag is geen losse hoofdflow, maar een lesbloktype binnen een bredere lesroute.
 
 ### Voortgang
 
-Werkplek voor:
+Werkplek voor klasdashboard, leerlingvoortgang en later didactische signalen.
 
-- Klasdashboard.
-- Leerlingvoortgang.
-- Aandachtspunten.
-- Later: didactische signalen, paragraafanalyses, vraaganalyses en export.
+Open richting:
+
+- Analyse per klas, paragraaf en vraag.
+- Signalen voor vastlopers en inactiviteit.
+- Leerlingdrilldown en exports.
 
 ### Leerlingen
 
-Werkplek voor:
+Werkplek voor leerlingaccounts, klasstatus en accountoverzicht.
 
-- Leerlingaccounts bekijken.
-- Naam, e-mail, klas en rol/accountstatus tonen.
-- Later: accountbeheer, veilige wachtwoordflows en uitgebreidere filters.
+Huidig:
+
+- Toont leerlingen uit `users` met rol `student`.
+- Toont naam, e-mail, klas en laatste activiteit/accountstatus.
+- Wachtwoordbeheer en accountflows zijn nog beperkt.
+
+Nieuw verkend op 28 mei 2026:
+
+- Een importtool voor leerlingfoto's uit een geplakte/geuploade klassenfoto is technisch haalbaar.
+- Betrouwbare V1 moet een controlelijst hebben voor foto-uitsnedes en naam-matching voordat er wordt opgeslagen.
+- Bestaande leerlingen krijgen alleen `photoURL`/`photoPath`; onbekende leerlingen moeten eerst als review/pending worden behandeld.
+- Echte nieuwe Firebase Auth accounts mogen niet client-side worden aangemaakt. Daarvoor is later een veilige Cloud Function met Firebase Admin SDK nodig.
 
 ### Spellen
 
-Werkplek voor educatieve browsergames:
+Werkplek voor educatieve browsergames.
 
-- Zelfstandig speelbare games voor docenten om te testen.
-- Game Registry als bron van waarheid.
-- Later dezelfde games als CMS-lesblok in leerlingroutes.
-- Resultaten blijven voorlopig lokaal; tokens worden later uitsluitend server-side bepaald.
+Huidig:
+
+- Game Registry bestaat.
+- `/admin/spellen` bestaat.
+- Pythagoras Trainer is het eerste prototype.
+- Resultaten blijven voorlopig lokaal.
+- Tokens worden niet client-side uitgegeven.
 
 ### Presenter
 
-Nieuwe geplande hoofdmodule voor een professioneel digibord-first werkbord.
+Presenter is de nieuwe digibord-first werkbordmodule, vergelijkbaar met Prowise Presenter of SMART board software, maar in HELIX-stijl en later gekoppeld aan lesroutes.
 
-Richting:
+Status per 28 mei 2026:
 
-- Eigen hoofdknop `Presenter` in de adminnavigatie.
-- Start als leeg bord binnen de HELIX-adminshell.
-- Core-first aanpak: eerst schrijven, ruitjes, vormen en wiskundige meetinstrumenten perfect laten voelen.
-- Daarna pas HELIX-content importeren en interactieve vraagvensters toevoegen.
-- Primair ontworpen voor groot CTOUCH/smartboard-gebruik; laptop is secundair.
+- Presenter V1a Core is gebouwd op branch `feature/cms-platform`.
+- Route bestaat op `/admin/presenter`.
+- Eigen adminnavigatieknop `Presenter` bestaat.
+- De module is technisch geimplementeerd en gericht getest, maar de echte digibordervaring moet nog browsermatig en praktisch worden gevalideerd.
+
+Belangrijk: behandel Presenter niet meer als alleen een plan. Behandel het als een gebouwde V1a met open validatie en polish.
 
 ### Beheer
 
-Werkplek voor:
-
-- Klassen.
-- Taken toewijzen.
-- Instellingen.
-- Publiceer-info.
-- Tijdelijke dev-acties zoals CMS-reset.
+Werkplek voor klassen, taken toewijzen, instellingen, publiceer-info en tijdelijke dev-acties zoals CMS-reset.
 
 ### Studentprofiel
 
-Leerling-thuisbasis met:
-
-- Naam, e-mail en rol.
-- Huidige klas.
-- Voortgang per hoofdstuk/paragraaf.
-- Algemene voortgangssamenvatting.
-
-Leerlingen wijzigen hun klas hier niet zelf. De klaskeuze-modal blijft alleen voor leerlingen zonder klas.
+Leerling-thuisbasis met naam, e-mail, rol, klas en voortgang. Leerlingen wijzigen hun klas niet zelf; klasbeheer ligt bij admin/docent.
 
 ## CMS-Structuur
 
@@ -95,11 +117,14 @@ Een paragraaf wordt gevuld met contentblocks in volgorde. De lesroute is de echt
 
 Belangrijk ontwerpprincipe:
 
-**HELIX bouwt geen losse vragenbank als hoofdervaring, maar volledige leerrouteblokken. Een vraag is een type lesblok binnen een bredere lesroute.**
+```text
+HELIX bouwt geen losse vragenbank als hoofdervaring.
+Een vraag is een type lesblok binnen een bredere lesroute.
+```
 
 ## Lesbloktypes
 
-Huidige en bedoelde contentblocktypes:
+Huidige contentblocktypes:
 
 1. Theorie
 2. Voorbeeld
@@ -121,14 +146,31 @@ Uitgewerkte voorbeelden met bronmateriaal, tekst, afbeeldingen en eventuele stap
 
 Interactieve oefenvraag. Vraagblokken blijven gekoppeld aan centrale `vraag`-documenten, zodat vragen later herbruikbaar zijn.
 
+Huidige vraagtypes:
+
+- open
+- meerkeuze
+- numeriek
+- koppelen
+- invullen
+- volgorde
+
+Vraagtypes gebruiken een uitbreidbare registry in `src/lib/questionTypeRegistry.js`.
+
+Tokenvelden bestaan alvast als metadata per vraagtype, maar het tokensysteem zelf is nog niet gebouwd. Echte tokenuitgifte moet later server-side gebeuren.
+
 ### Media
 
-Losse media-items. In V1 is de keuze bewust:
+Een mediablok bevat een hoofdmedia-item.
 
-- Een mediablok bevat **een** hoofdmedia-item.
-- Meerdere media achter elkaar betekent meerdere mediablokken in de lesroute.
-- Ondersteund: afbeelding, YouTube, video-upload en media-PDF/document.
-- Media-PDF is anders dan Slidedeck-PDF. Media-PDF is een gewone documentviewer, Slidedeck is een presentatiestroom.
+Ondersteund:
+
+- afbeelding
+- YouTube
+- video-upload
+- media-PDF/document
+
+Media-PDF is anders dan Slidedeck-PDF. Media-PDF is een documentviewer; Slidedeck is een presentatiestroom.
 
 ### Samenvatting
 
@@ -136,11 +178,27 @@ Kernpunten, afsluiting, onthoudzinnen en korte herhaling.
 
 ### Game
 
-Educatieve browsergame uit de Game Registry. De game kan zelfstandig worden gespeeld en later als lesblok binnen de leerlingroute draaien.
+Educatieve browsergame uit de Game Registry. Later kan een game ook als CMS-lesblok in leerlingroutes draaien.
 
 ### Slidedeck
 
-Een NotebookLM-presentatie-PDF als apart lesbloktype. Dit is bewust los van Media, omdat een slidedeck een presentatiestroom is voor leerlingroute en digibord.
+Een NotebookLM-presentatie-PDF als apart lesbloktype. Dit is bewust los van Media.
+
+## Vraagstudio En Preview
+
+Huidige status:
+
+- Vraagstudio opent vanuit lesblokstudio als fullscreen overlay.
+- Vraagtype wordt gekozen via registry.
+- Elk vraagtype heeft een eigen antwoordtemplate.
+- Elk vraagtype kan tokenmetadata opslaan.
+- Invulvragen gebruiken een knop `Maak gat` in plaats van handmatig `[GAP]` typen.
+- Invulvragen slaan segmenten/gaps op en bewaren legacy `[GAP]`-compatibiliteit.
+- Slimme controle accepteert kleine spelfouten en equivalente notaties, zoals `opervlakte` voor `oppervlakte` en `cm2` voor `vierkante centimeter`.
+- Lesroute-preview rendert gepubliceerde vraagblokken.
+- Preview geeft visuele goed/fout feedback via gekleurde kaders.
+- Feedbackteksten zoals `Goed` en `Nog niet goed` zijn verwijderd voor rust.
+- Volgordevragen renderen als ordenbare/tikbare testweergave.
 
 ## Crop/OCR Studio
 
@@ -152,35 +210,28 @@ Doel:
 - Crop afbeelding.
 - OCR tekst.
 - Plaats tekst of afbeelding direct in het geopende lesblok.
-- Werk ook prettig met grote scans, foto's en A4-pagina's.
+- Werk prettig met grote scans, foto's en A4-pagina's.
 
 Belangrijke UX-keuzes:
 
-- Inline bronpaneel blijft beschikbaar voor snelle acties.
-- Fullscreen cropstudio is de precieze scanwerkbank.
+- Inline bronpaneel voor snelle acties.
+- Fullscreen cropstudio als precieze scanwerkbank.
 - Hand-modus om te pannen.
 - Selectie-modus om crops te tekenen.
 - Crophistorie/selecties blijven zichtbaar.
-- Crops moeten kunnen worden gekozen, verwijderd en aangepast.
-- Overlappende crops moeten mogelijk zijn.
+- Crops kunnen gekozen, verwijderd en aangepast worden.
+- Overlappende crops zijn mogelijk.
 - OCR-crops worden tekst in de editor.
 - Afbeelding-crops worden echte afbeeldingen in de editor.
-- Afbeeldingen horen niet als aparte "gekoppelde afbeelding" onder de editor te staan wanneer ze al in de editor geplaatst zijn.
 
 ## Slidedeckcreator / NotebookLM Workflow
 
 Onder Lesstof bestaat een hybride Slidedeckcreator.
 
-Doel:
-
-- Docent maakt in HELIX een NotebookLM-pakket.
-- HELIX bewaart bron-PDF, prompt-snapshot en later de geuploade NotebookLM-presentatie-PDF.
-- Die presentatie-PDF kan daarna als Slidedeck-lesblok in de CMS-lesroute worden geplaatst.
-
 Workflow:
 
 1. Docent vult titel/onderwerp in.
-2. Docent kiest optioneel context uit CMS-structuur: vak, leerjaar, niveau, hoofdstuk, paragraaf.
+2. Docent kiest optioneel CMS-context: vak, leerjaar, niveau, hoofdstuk, paragraaf.
 3. Docent vult leerdoelen in.
 4. Docent voegt brontekst toe.
 5. Docent uploadt of plakt afbeeldingen.
@@ -190,7 +241,7 @@ Workflow:
 9. Docent uploadt de door NotebookLM gegenereerde presentatie-PDF terug naar HELIX.
 10. CMS kan het pakket als Slidedeck-lesblok selecteren zodra `generatedDeckPdf` aanwezig is.
 
-Belangrijke datakeuzes:
+Datakeuzes:
 
 - Firestore metadata in `slidedeckPackages`.
 - Prompttemplates in `promptTemplates`.
@@ -200,147 +251,93 @@ Belangrijke datakeuzes:
 
 ## Digibord
 
-Digibord is de bestaande contentblock-gebaseerde presentatielaag. De nieuwe module `Presenter` wordt de bredere digibordtool voor vrij bordwerk, wiskundige uitleg en later HELIX-content als objecten op het bord.
+Digibord is de bestaande contentblock-gebaseerde presentatielaag. Presenter is de bredere vrij-bordwerkmodule.
 
-Digibord blijft voorlopig gericht op contentblocks presenteren als klassikale lesflow.
+Huidig:
+
+- Gebruikt gepubliceerde `contentBlocks` als bron.
+- Toont theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck digibordvriendelijker.
+- Slidedeck-PDF kan fullscreen en slide-per-page worden gepresenteerd.
+- Media gebruikt gedeelde `MediaRenderer`.
+
+Open:
+
+- Verdere polish van bediening, fullscreen, media-PDF/documentviewer en klassikale flow.
+
+## Presenter V1a Core
+
+Presenter V1a is technisch gebouwd.
+
+Gebouwd:
+
+- `/admin/presenter` route en navigatie.
+- Board shell binnen HELIX-adminshell.
+- Pagina's met pagina toevoegen/verwijderen/dupliceren en navigatie.
+- Verticale scroll per pagina.
+- Interne coordinate space voor exacte pointer/touch-plaatsing.
+- Per-pagina undo/redo.
+- Lokale recovery via browser/session storage.
+- Fullscreen handling.
+- Auto-hide ondertoolbar met altijd zichtbare handle.
+- Toolbar zonder horizontale scroll.
+- Pen met kleur- en diktekeuze.
+- Markeerstift met kleur- en diktekeuze.
+- Gum voor penstreken.
+- Achtergronden: wit, lijnen en vierkante ruitjes.
+- Ruitjes blijven vierkant en kunnen als wiskundeschrift dienen.
+- Snap-to-grid voor relevante tekenacties.
+- Vormobjecten: rechthoek, cirkel/ovaal, lijn, pijl, driehoek en verwante objecten.
+- Objectlaag met selectie.
+- Selectiekader/marquee-selectie.
+- Objecten verslepen en schalen via transformaties.
+- Rood verwijderpunt/kruisje bij geselecteerde objecten.
+- Pagina helemaal leegmaken.
+- Tijdelijke meetinstrument-overlays: liniaal, geodriehoek, passer, gradenboog.
+
+Verificatiestatus:
+
+- `presenter_notule.md` meldt dat gerichte tests, gerichte ESLint en build groen waren.
+- Browsermatige UI-verificatie was eerst geblokkeerd door auth.
+- Daarna is lokale admin-auth toegevoegd voor Presenter-verificatie.
+- Controleer actuele smoke-output en voer waar nodig opnieuw een browsercheck uit voordat je Presenter als praktijkgevalideerd beschouwt.
+
+Belangrijke nuance:
+
+```text
+Presenter V1a is gebouwd en technisch gericht geverifieerd.
+Presenter V1a is nog niet bewezen als volledig gevalideerde CTOUCH/digibord-ervaring.
+```
+
+## Presenter V1b: HELIX Content Layer
+
+V1b is nog niet gebouwd en moet pas na expliciet akkoord worden opgepakt.
 
 Richting:
-
-- Gebruik gepubliceerde `contentBlocks` als bron.
-- Toon theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck op een digibordvriendelijke manier.
-- Maak bediening rustig: vorige, volgende, sluiten, fullscreen waar logisch.
-- Oude "slides niet gevonden"-logica moet verdwijnen ten gunste van contentblock-gebaseerde presentatie.
-
-Voor slidedecks:
-
-- Toon startkaart in digibord.
-- Open presentatie-PDF fullscreen.
-- Vorige/volgende slide.
-- Escape of sluitknop om terug te keren.
-- Geen verwarring met gewone media.
-
-Voor mediablokken:
-
-- Afbeelding, YouTube, video en PDF moeten inline getoond worden.
-- Elk media-item moet fullscreen geopend/gesloten kunnen worden.
-- Video gebruikt een gewone videoplayer met controls.
-- YouTube gebruikt een embed-player.
-- Media-PDF gebruikt een documentviewer met grote preview/fullscreen, niet de slide-per-page presenter.
-
-## Presenter
-
-Presenter is ontworpen als nieuwe hoofdmodule voor docenten: een fullscreen digibordtool zoals Prowise Presenter of SMART board software, maar later gekoppeld aan HELIX-lesroutes.
-
-Vastgelegde ontwerpkeuze:
-
-- Gefaseerde aanpak.
-- V1a: `Presenter Core`.
-- V1b: `HELIX Content Layer`.
-- Designspecificatie staat in `docs/superpowers/specs/2026-05-27-presenter-design.md`.
-
-### Presenter V1a: Core
-
-V1a moet eerst een betrouwbaar, precies wiskundig bord worden.
-
-In scope:
-
-- Eigen adminnavigatieknop `Presenter`.
-- Direct openen op een leeg wit bord binnen de bestaande adminshell.
-- Optionele browser-fullscreenknop.
-- Pagina's 1, 2, 3 met verticale scroll.
-- Grote touchvriendelijke scrollstrip rechts, alleen zichtbaar wanneer nodig.
-- Interne coordinate space voor exacte stylus/touch-plaatsing.
-- Auto-hide ondertoolbar met pin-optie.
-- Toolbarvolgorde:
-  - vorige pagina
-  - paginanummer
-  - volgende pagina
-  - select
-  - undo
-  - redo
-  - pen
-  - objecten
-  - lesstof
-  - achtergrond
-  - pagina's
-  - fullscreen
-  - terug
-- Pen, markeerstift en meetkundepen/rechte-lijnpen.
-- Gum wist alleen penstreken.
-- Wit, lijntjes en vierkante ruitjes als achtergrondoverlay.
-- Ruitjes voelen als wiskundeschrift 1 x 1 cm en blijven altijd vierkant.
-- Snap-to-grid alleen wanneer ruitjes aan staan.
-- Alle vormen meteen in V1a:
-  - rechthoek
-  - cirkel/ovaal
-  - lijn
-  - pijl
-  - driehoek
-  - veelhoek/vrije vorm via punten
-  - assenstelsel
-  - tabel/raster
-  - hoekmarkering
-- Meetinstrumenten meteen in V1a:
-  - liniaal
-  - geodriehoek
-  - passer
-  - gradenboog
-- Meetinstrumenten zijn tijdelijke overlays; alleen het getekende resultaat blijft staan.
-- Undo/redo per pagina.
-- Pagina toevoegen, verwijderen met bevestiging en dupliceren.
-- Simpel tekstueel pagina-overzicht links; echte thumbnails later.
-- Tijdelijk lokaal herstel via browser/session storage met vraag "Vorige Presenter-sessie herstellen?"
-
-Niet in V1a:
-
-- Teksttool.
-- Lesroute-import.
-- Vraagvensters.
-- Media-import.
-- Echte pagina-thumbnails.
-- Timer, spotlight en schermgordijn.
-- Firebase-opslag van Presenter-sessies.
-- Export.
-
-### Presenter V1b: HELIX Content Layer
-
-V1b voegt HELIX-koppeling toe bovenop het Core-bord.
-
-In scope:
 
 - Paragraafimport via fullscreen kiesvenster.
 - Structuur: hoofdstuk -> paragraaf -> import.
 - Alleen gepubliceerde blokken importeren.
 - Import voegt nieuwe pagina's achteraan toe.
 - Import is een momentopname, geen live koppeling met CMS-wijzigingen.
-- Lange blokken: docent kiest scrollbaar houden of splitsen.
-- Theorie en voorbeelden als grote bordobjecten zonder zware kaartstijl.
-- Lesblokken zijn verplaatsbaar en schaalbaar, maar blijven recht en leesbaar.
-- Vraagvensters zijn vrij plaatsbaar en schaalbaar.
-- Vraagvensters hebben geen permanente titelbalk.
-- `Controleer` verschijnt pas nadat er iets is ingevuld/geselecteerd.
-- Feedback na controle:
-  - subtiele groene/rode rand om het hele vraagvenster
-  - bij invulvragen alleen foutieve velden rood markeren
-- `Reset antwoord` beschikbaar.
-- Geen `Toon antwoord` knop.
+- Theorie en voorbeelden als grote bordobjecten.
+- Vraagvensters vrij plaatsbaar en schaalbaar.
+- Vraagvensters ondersteunen huidige vraagtypes.
+- `Controleer` verschijnt pas na input.
+- Feedback via subtiele groene/rode rand.
 - Tokens blijven onzichtbaar in Presenter.
-- Alle huidige vraagtypes ondersteunen:
-  - open
-  - meerkeuze
-  - numeriek
-  - koppelen
-  - invullen
-  - volgorde
-- Koppelvragen via lijnen trekken.
-- Volgordevragen via tikvolgorde.
-- Numerieke en invulvragen hergebruiken bestaande slimme controlelogica.
-- Media binnen geimporteerde blokken speelt af met grote digibordvriendelijke controls.
+- Media binnen geimporteerde blokken gebruikt grote digibordvriendelijke controls.
 - Echte pagina-thumbnails in linker paneel.
+
+Niet bouwen zonder nieuw akkoord:
+
+- HELIX-content import.
+- Interactieve vraagvensters.
+- Firebase-opslag van Presenter-sessies.
+- Export/cloudsessies.
 
 ## Spellen / Game Module
 
-De Game Module is opgebouwd rond een Game Registry.
+De Game Module draait rond een Game Registry.
 
 Registry bevat onder andere:
 
@@ -359,21 +356,13 @@ Registry bevat onder andere:
 - `tokenRewardPotential`
 - `status`
 
-Belangrijke veiligheidsregels:
+Veiligheidsregels:
 
 - Registry bevat alleen serialiseerbare metadata.
-- GameResult bevat `attemptId`, `startedAt`, `completedAt`, score en nauwkeurigheid.
 - Resultaten blijven voorlopig lokaal.
 - Geen tokenwrites vanuit client.
-- `tokenRewardPotential` is alleen metadata.
-- `suggestedTokenReward` is alleen indicatief.
+- `tokenRewardPotential` en `suggestedTokenReward` zijn alleen indicatief.
 - Echte tokenuitgifte gebeurt later server-side via Cloud Function/backendvalidatie.
-
-Huidige richting:
-
-- `/admin/spellen` is de zelfstandige werkplek.
-- Pythagoras Trainer is eerste prototypegame.
-- CMS-gameblok kan later registry-games selecteren die `cmsBlock` ondersteunen.
 
 ## Firebase / Data
 
@@ -392,94 +381,73 @@ Belangrijke Firestore-collecties:
 - `promptTemplates`
 - `slidedeckPackages`
 - `questionMetadata`
+- `adminCropSources`
 
 Belangrijke Storage-paden:
 
-- crop/source pages.
-- vraag- en contentcrops.
+- `pythagoras/question-crops/...`
+- `pythagoras/source-pages/...`
+- vraag- en contentcrops
 - `slidedecks/{packageId}/source.pdf`
 - `slidedecks/{packageId}/generated-deck.pdf`
 - `slidedecks/{packageId}/assets/{assetId}`
-- `mediaBlocks/{blockId}/{fileName}` voor afbeeldingen, video's en media-PDF's uit mediablokken.
+- `mediaBlocks/{blockId}/{fileName}`
+- later mogelijk `student-photos/{uid}/profile.webp`
 
 Let op:
 
-- Firebase rules zijn tijdens development soms tijdelijk permissief gemaakt.
-- Productierijpe security rules zijn nog een aparte hardeningfase.
+- `FIRESTORE_SCHEMA.md` is nuttig, maar deels ouder dan de daadwerkelijke services.
+- Firebase rules zijn tijdens development deels permissief/testgericht.
+- Productierijpe Firestore en Storage rules zijn nog een hardeningfase.
 - Leerlingen mogen uiteindelijk alleen eigen voortgang en toegewezen/gepubliceerde lesstof zien.
 - CMS-writes moeten uiteindelijk beperkt zijn tot admin/docent.
-- Storage rules moeten voor development minimaal `mediaBlocks/{allPaths=**}` toestaan voor ingelogde admins/docenten, anders uploadt video/media niet.
+- Tokens en leerlingaccount-aanmaak moeten server-side worden gevalideerd.
 
 ## Wat Al Is Volbracht
 
 ### Product en navigatie
 
-- Rebranding naar **Helix** met DNA-helix logo.
-- Adminnavigatie heringericht naar werkplekken:
+- Rebranding naar HELIX met DNA-helix logo.
+- Adminnavigatie ingericht naar werkplekken:
   - Lesstof
   - Voortgang
   - Leerlingen
   - Spellen
+  - Presenter
   - Beheer
-- `Presenter` is als nieuwe geplande hoofdmodule vastgesteld, maar nog niet gebouwd.
-- `Lesmateriaal` is voor admins niet langer de primaire hoofdknop.
 - Active states zijn routegroep-gebaseerd.
-- HELIX design system integratie is gestart: warm gradient, Sora/Inter, light-mode onderwijsstijl, zachte surfaces, nieuwe kaart- en knopstijl.
-- Er is een nieuw logo-asset aangeleverd in `src/afbeeldingen/logo.png`; dit moet nog gecontroleerd en consequent worden gekoppeld aan alle HELIX-brandingplekken als de gebruiker dit opnieuw oppakt.
-
-### Studentprofiel
-
-- Route `/profiel` toegevoegd.
-- Leerlingprofiel toont naam, e-mail, klas en voortgang.
-- Headerprofiel voor leerlingen is klikbaar.
-- Effectieve paragrafenlogica is gelijkgetrokken met toegewezen taken.
-
-### Admin Hub
-
-- Admin Hub rustiger gemaakt als werkdashboard.
-- Statusblokjes toegevoegd, zoals aantal klassen, leerlingen en actieve paragrafen.
-- Acties gegroepeerd rond werkstromen.
+- HELIX design system richting is gestart: light-mode onderwijsstijl, zachte surfaces, warme accenten, Sora/Inter-achtige typografie, kaart- en knopstijl.
 
 ### CMS
 
 - CMS-shell en navigatieboom professioneler gemaakt.
-- Sidebar kan volledig worden ingeklapt zonder lege witte balk.
-- De CMS-navigatieboom heeft geen losse knop "Alles inklappen" meer. Klikken op het bovenste vakniveau, bijvoorbeeld "Digitale Vaardigheden", klapt de geopende tree terug dicht.
-- De functionele zijbalk-inklapknop staat onder het zoekveld, op de plek waar eerder "Alles inklappen" stond.
-- De CMS-zijbalk is sleepbaar breder/smaller te maken. Bij pagina-herlaad of opnieuw uitklappen start hij weer op de standaardbreedte.
-- Count-badges in de navigatieboom, zoals `2 jaren`, `2 niveaus`, `2 paragrafen` en `0 blokken`, staan in een vaste rechterkolom en lijnen onder elkaar uit.
-- Als de sidebar is ingeklapt gebruikt de lesroute-builder meer beschikbare breedte, maar blijft gecentreerd.
-- Zoekveld en statusinformatie toegevoegd.
-- Contentblocks voor theorie, voorbeeld, vraag, media en samenvatting toegevoegd.
-- Later uitgebreid met game en slidedeck.
+- Sidebar kan volledig worden ingeklapt.
+- Sidebar is sleepbaar breder/smaller.
+- Count-badges staan in een vaste rechterkolom en blijven op een regel.
+- Tree counts zijn gestabiliseerd zodat paragraaf/blok-aantallen niet verspringen bij uitklappen.
+- Hoofdstukbanden-stijl is toegepast voor betere UX.
+- Actieve paragraaf gebruikt lichte paarse achtergrond.
+- Lesbloktype-selector is responsief en compact.
+- Contentblock-statusbadges kunnen wisselen tussen `concept` en `published`.
 - Lesrouteblokken hebben volgorde via omhoog/omlaag-knoppen.
-- Wisactie voor lesblok is vervangen/bedoeld als kleinere bevestigings-UX in plaats van browser-alert.
-- Lesbloktype-selector is vernieuwd naar compacte responsive tegels.
-- Selector is aangepast voor zoom/smalle breedtes: tekst breekt veilig af, tegels zijn hoger en 7 kolommen verschijnen alleen bij extra brede schermen.
-- Contentblock-statusbadges in gemaakte lesroutes kunnen wisselen tussen `concept` en `published`.
-- Vraagblokken gebruiken een uitbreidbare vraagtype-registry.
-- Vraagstudio ondersteunt vraagtypes:
-  - open
-  - meerkeuze
-  - numeriek
-  - koppelen
-  - invullen
-  - volgorde
-- Elk vraagtype kan eigen antwoordtemplate en tokenconfiguratie opslaan.
-- Tokensysteem is nog niet gebouwd; tokenvelden worden alvast als metadata opgeslagen.
-- Invulvragen gebruiken in de editor een knop `Maak gat` in plaats van handmatig `[GAP]` typen.
-- Invulvragen slaan segmenten/gaps op en behouden legacy `[GAP]`-tekst voor compatibiliteit.
-- Slimme invulcontrole accepteert kleine spelfouten en equivalente notaties, zoals `opervlakte` voor `oppervlakte` en `cm2` voor `vierkante centimeter`.
-- Vraagstudio opent vanuit lesblokstudio weer correct als fullscreen overlay.
+- Contentblocks voor theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck bestaan.
+
+### Tree En Style Verkenningen
+
+Lokale HTML-prototypes bestaan als besluitvormingshulpmiddel:
+
+- `exports/tree-ux-variants.html`
+- `exports/helix-style-variants.html`
+
+Deze bestanden zijn prototypes/documentatie, geen productcode. Ze zijn bedoeld om UX- en huisstijlkeuzes visueel te vergelijken.
 
 ### Crop/OCR
 
-- Universele crop/OCR richting opgezet voor meerdere bloktypes.
 - Fullscreen cropstudio toegevoegd.
 - Hand/selectie-modus toegevoegd.
 - Zoom/pan verbeterd.
-- Selecties kunnen naast elkaar en overlappend bestaan.
-- Cropselecties kunnen voor verwerking worden verwijderd.
+- Overlappende selecties mogelijk.
+- Cropselecties kunnen verwijderd worden.
 - OCR en afbeelding-crops hebben gescheiden verwerking.
 
 ### Spellen
@@ -489,130 +457,103 @@ Let op:
 - `/admin/spellen` toegevoegd.
 - GamePlayer-wrapper toegevoegd.
 - Pythagoras Trainer als eerste prototypegame toegevoegd.
-- Resultaten blijven lokaal in browser.
-- Geen Firebase/resultaat/tokenwrites.
+- Resultaten blijven lokaal.
 
 ### Slidedeckcreator
 
-- Implementatieplan gemaakt.
 - `/admin/slidedecks` toegevoegd.
 - Promptbibliotheek met templates toegevoegd.
 - NotebookLM standaardprompt toegevoegd.
 - Bron-PDF generatie in browser toegevoegd.
 - Slidedeckpackages in Firestore.
 - PDF en assets in Storage.
-- NotebookLM gegenereerde PDF upload bij bestaande package.
+- Upload van NotebookLM gegenereerde PDF bij bestaande package.
 - CMS-lesbloktype `slidedeck` toegevoegd.
 - Slidedeck selector toont alleen packages met geuploade presentatie-PDF.
 - Digibord kan Slidedeck-PDF fullscreen presenteren.
-- PDF-presenter heeft fallback via Storage bytes / blob URL om CORS en iframe-problemen te vermijden.
-- Slidedeck-PDF kan slide-per-page gepresenteerd worden met vorige/volgende.
-
-### Lesroute Preview / Vragen
-
-- Gepubliceerde vraagblokken renderen nu in preview in plaats van leeg te blijven.
-- Preview ondersteunt de belangrijkste vraagtypes, inclusief invullen, meerkeuze, numeriek, open en volgorde.
-- Preview-controle geeft visuele goed/fout feedback met gekleurde kaders.
-- Tekstlabels zoals `Goed` en `Nog niet goed` zijn uit de preview-feedback verwijderd om rustiger te ogen.
-- Volgordevragen renderen als ordenbare/tikbare testweergave in plaats van als leeg tekstvak.
 
 ### Media V1
 
 - CMS-mediablok ondersteunt afbeelding, YouTube, video-upload en PDF-upload.
 - Afbeeldingen kunnen via upload, klembord en crop worden toegevoegd.
-- Video/PDF/media-upload wordt direct persistent opgeslagen in het contentblok na upload, zodat sluiten van de studio niet per ongeluk media verliest.
-- Media-normalisatie herkent meerdere veldvormen: `mediaUrl`, `imageUrl`, `videoUrl`, `pdfUrl`, `fileUrl`, `downloadURL`, `url`.
-- Videoherkenning gebruikt MIME-type en bestandsextensie, zoals `.mp4`, `.webm`, `.ogg`, `.mov`, `.m4v`.
+- Video/PDF/media-upload wordt direct persistent opgeslagen in het contentblok.
+- Media-normalisatie herkent meerdere veldvormen.
 - Leerlingroute en digibord gebruiken gedeelde `MediaRenderer`.
 - Media-preview en fullscreen-weergave zijn aanwezig.
 
-### Voortgang
+### Leerlingroute / Preview
 
-- Voortgangspagina heeft basisdashboard.
-- Marges/layout zijn afgestemd op andere adminpagina's.
-- Overbodige croptoollink is verwijderd/bedoeld verwijderd uit voortgang.
+- Gepubliceerde vraagblokken renderen in preview.
+- Belangrijkste vraagtypes werken in preview.
+- Controle geeft visuele goed/fout feedback.
+- Volgordevragen renderen als testweergave in plaats van leeg tekstvak.
+
+### Presenter V1a
+
+- Presenter Core gebouwd.
+- Toolbar, pen, markeerstift, ruitjes, objecten, selectie, pagina's, clear page, auto-hide, recovery, fullscreen en meetinstrument-overlays aanwezig.
+- Verdere praktijkvalidatie blijft open.
 
 ### Authenticatie / Firebase
 
-- Google adminlogin gebruikt popup-login met fallback naar redirect-login wanneer de ingebouwde Codex-browser popups blokkeert.
+- Google adminlogin gebruikt popup-login met fallback naar redirect-login wanneer popups blokkeren.
+- Lokale dev/admin-login is toegevoegd voor browsermatige verificatie.
 - Firebase authorized domains voor lokaal testen horen `localhost` en eventueel `127.0.0.1` te bevatten, zonder poortnummer.
-- Firebase Project ID blijft technisch `pythagoras-eoa`, ook wanneer projectnaam/appnaam naar HELIX is hernoemd.
-
-### Documentatie
-
-- `19526.md` gemaakt met open verbeterpunten uit de oorspronkelijke PRD.
-- `IPLAN-GAME-MODULE.md` gemaakt/aangescherpt.
-- `IMPLEMENTATIEPLAN-SLIDEDECKCREATOR.md` gemaakt.
-- `docs/HELIX-DESIGN-AUDIT.md` gemaakt als styling/design audit.
-- `docs/superpowers/specs/2026-05-27-presenter-design.md` gemaakt als goedgekeurde Presenter-designspec.
-- Dit document, `PROJECTKOMPAS-HELIX.md`, is het vaste overdrachtsdocument voor nieuwe agents en contextcompressie.
 
 ## Belangrijkste Open Productwerk
 
-### 1. Leerling-lesroute Afronden
+### 1. Presenter V1a Valideren En Polijsten
 
-De leerlingervaring toont gepubliceerde contentblocks al als leerroute, maar moet verder professioneel worden afgewerkt.
+Nodig:
+
+- Echte browser smoke test vastleggen.
+- Testen op groot scherm/touchscreen/CTOUCH.
+- Toolbar-interactie verfijnen.
+- Objectmanipulatie en selectiekader verder polijsten.
+- Meetinstrumenten beoordelen op digibordgevoel.
+- Performance bij veel penstreken/objecten testen.
+
+### 2. Presenter V1b Ontwerpen En Bouwen
+
+Alleen na expliciet akkoord.
+
+Focus:
+
+- HELIX-content import.
+- Vraagvensters op het bord.
+- Media en slidedecks als bordobjecten.
+- Pagina-thumbnails.
+- Eventueel opslag/export later.
+
+### 3. Leerlingroute Afronden
 
 Nodig:
 
 - Verdere polish voor theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck.
-- Meer consistente fullscreen-ervaring voor media en slidedeck.
-- Vraagblokinteractie verder professionaliseren.
 - Rustige empty states.
 - Mobiele layout.
-
-### 2. Presenter V1a Implementeren
-
-Nieuwe prioriteit na goedkeuring door gebruiker: implementatieplan maken voor `Presenter Core`, nog niet direct bouwen zonder expliciete go.
-
-V1a-focus:
-
-- Adminnavigatie uitbreiden met `Presenter`.
-- Leeg bord binnen adminshell.
-- Pagina-state en per-pagina undo/redo.
-- Exacte pointer/touch-coordinaten.
-- Pen, markeerstift, meetkundepen en gum.
-- Vierkante ruitjes/lijntjes en snap-to-grid.
-- Vormen en wiskundige objecten.
-- Liniaal, geodriehoek, passer en gradenboog.
-- Auto-hide ondertoolbar en grote touch-popovers.
-- Scrollstrip rechts.
-- Lokale session recovery.
-
-Werkwijze:
-
-- Eerst implementatieplan schrijven.
-- Daarna wachten op expliciete go van gebruiker voor bouwen.
-- Geen V1b-contentlaag meenemen in V1a, behalve disabled/komt-later affordances.
-
-### 3. Digibord Doorontwikkelen
-
-Digibord is nu contentblock-gebaseerd en ondersteunt slidedeck/media beter, maar moet nog verder een professionele presentatiemodus worden.
-
-Nodig:
-
-- Alle contentblocktypes mooi presenteren.
-- Betere slide/fase-opbouw.
-- Docentbediening.
-- Fullscreen-modus verder stabiliseren.
-- PDF/slidedeck ervaring verder polijsten.
-- Media-PDF/documentviewer netjes afronden.
-- Video/YouTube fullscreen UX controleren.
+- Consistente fullscreen-ervaring.
 
 ### 4. CMS Lesblokstudio Verfijnen
 
 Nodig:
 
-- Fullscreen editor voor tekst en afbeeldingen.
-- Afbeeldingen in editor kunnen positioneren en verwijderen.
-- Fontgrootte, fontkleur en meerdere lettertypes zijn deels aanwezig, maar vragen verdere UX-polish.
-- Geen overbodige crop-hulptekst bij bloktypes waar dat niet logisch is, vooral bij slidedeck/media.
-- Vraagflow verder losmaken van oude "vraag detail"-pagina's.
-- Vraagstudio is uitgebreid met nieuwe vraagtypes `koppelen`, `invullen` en `volgorde` naast `open`, `meerkeuze` en `numeriek`; de nieuwe types slaan hun antwoordmodel op in het bestaande `antwoord`-object.
-- Mediablokstudio verder vereenvoudigen: directe media-keuze, duidelijke uploadstatus, duidelijke foutmelding bij Storage rules.
+- Fullscreen editor polish.
+- Afbeeldingen in editor positioneren en verwijderen.
+- Fontgrootte, fontkleur en lettertypes verder UX-polishen.
+- Mediablokstudio eenvoudiger maken.
 - Slidedeckblokstudio verder afstemmen op presentatieworkflow.
 
-### 5. Voortgang En Analytics Versterken
+### 5. Leerlingbeheer Uitbreiden
+
+Nodig:
+
+- Accountbeheer en veilige wachtwoordflows.
+- Uitgebreidere filters.
+- Mogelijke leerlingfoto-import met reviewstap.
+- Als echte nieuwe leerlingaccounts bulk aangemaakt moeten worden: Cloud Function/Admin SDK ontwerpen.
+
+### 6. Voortgang En Analytics Versterken
 
 Nodig:
 
@@ -621,7 +562,7 @@ Nodig:
 - Leerlingdrilldown.
 - Signalen voor vastlopers en inactiviteit.
 
-### 6. Toetsmodus V1
+### 7. Toetsmodus V1
 
 Nodig:
 
@@ -629,7 +570,7 @@ Nodig:
 - Pogingen, scores en feedback.
 - Docentoverzicht.
 
-### 7. Firebase Security Hardening
+### 8. Firebase Security Hardening
 
 Nodig:
 
@@ -637,23 +578,23 @@ Nodig:
 - Productierijpe Storage rules.
 - Geen dev-bypass in productie.
 - Leerlingrechten beperken tot eigen/toegewezen data.
-- Storage rules voor `mediaBlocks/**`, `slidedecks/**`, crop/source-paden, met later admin-only writes en leerling-read voor gepubliceerde/toegewezen content.
+- Admin/docent writes expliciet beperken.
 
-### 8. Multi-tenant Later
+### 9. Documentatie En Schema Opschonen
+
+Nodig:
+
+- `README.md` vervangen door echte HELIX-projectintro, setup, scripts, Firebase/env en ontwikkelworkflow.
+- `FIRESTORE_SCHEMA.md` bijwerken naar actuele services.
+- Mojibake/encodingproblemen in docs opruimen waar ze overdracht of lesmateriaal raken.
+
+### 10. Multi-tenant Later
 
 Nodig:
 
 - School/tenantmodel.
 - Rollen per tenant.
-- Migratiepad voor huidige single-school structuur.
-
-### 9. Branding Asset Afronden
-
-Nodig:
-
-- Controleer `src/afbeeldingen/logo.png`.
-- Gebruik dit logo consequent in AppShell/header, login en eventuele andere HELIX-brandingplekken.
-- Stage dit asset alleen wanneer dit logo-werk daadwerkelijk wordt uitgevoerd.
+- Migratiepad vanaf huidige single-school structuur.
 
 ## Ontwerpprincipes Voor Verdere Bouw
 
@@ -661,64 +602,94 @@ Nodig:
 - Geen drukke gamification voordat de kernflow stabiel is.
 - Docentproductie moet snel zijn: crop/OCR, hergebruik, duidelijke routebouw.
 - Leerlingervaring moet simpel en voorspelbaar zijn.
-- Eén centrale waarheid voor lesroutes: `contentBlocks`.
+- Een centrale waarheid voor lesroutes: `contentBlocks`.
 - Geen grote refactors zonder directe productwaarde.
 - Geen destructieve database-acties zonder expliciete bevestiging.
 - Geen client-side tokenuitgifte.
+- Geen client-side bulk-aanmaak van echte Firebase Auth leerlingen.
 - Firebase rules liever documenteren en handmatig laten plakken dan automatisch wijzigen.
-- Media en slidedecks zijn verschillende didactische objecten. Niet samenvoegen tot een generiek PDF-blok zonder expliciete keuze.
-- Eén mediablok = één hoofdmedia-item. Meerdere media betekent meerdere blokken.
-- Presenter moet digibord-first worden ontworpen: grote touchdoelen, exacte pointercoordinaten en een rustige toolmodus boven decoratieve styling.
-- Presenter V1a is Core-first. Bouw niet alvast V1b-import/vraagvensters mee zonder nieuw akkoord.
+- Media en slidedecks zijn verschillende didactische objecten.
+- Een mediablok is een hoofdmedia-item.
+- Presenter is digibord-first: grote touchdoelen, exacte pointercoordinaten, rustige toolmodus.
+- Presenter V1b niet alvast meebouwen zonder nieuw akkoord.
 
 ## Actuele Technische Aandachtspunten Voor Nieuwe Agent
 
 - Werk op branch `feature/cms-platform`, tenzij de gebruiker anders zegt.
-- Recente commits rond CMS/media/layout/Presenter:
-  - `0f78c3f feat: add cms question type editors`
-  - `a4bc3be docs: analyse vraagtypen implementatie`
-  - `bd86e93 fix: stabilize cms tree paragraph counts`
-  - `d6cc130 style: widen cms workspace when sidebar collapsed`
-  - `34fb5fe fix: make cms block selector responsive`
-  - `c707247 style: refine cms block type selector`
-  - `e1176c1 fix: persist media uploads immediately`
-  - `300bb58 fix: recognize uploaded media videos`
-  - `ff6bd34 feat: expand media block playback`
-  - `90008ba fix: fallback embedded slidedeck pdf presenter`
-  - `69d3cc1 feat: add question type token templates`
-  - `228fdad fix: open question studio from lesson blocks`
-  - `e58759a feat: add fill blank gap editor`
-  - `75b0244 feat: toggle lesson block status badges`
-  - `4ded4ed fix: render question types in lesson preview`
-  - `6fcb9d9 feat: show answer feedback in lesson preview`
-  - `9926adb chore: remove preview answer text labels`
-  - `b4a13d1 fix: render sequence questions in preview`
-  - `5a08002 fix: fallback admin login to redirect`
-  - `a5de703 docs: add presenter design spec`
-- Er staat bewust nog untracked lokale tooling/context zoals `.superpowers/`. Niet automatisch toevoegen of verwijderen.
-- `src/afbeeldingen/` kan untracked zijn door logo/assetwerk. Controleer inhoud voordat je staged.
-- Volledige `npm run lint` faalt nog op bestaande lint-schuld in oudere/externere bestanden. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
-- Belangrijke bestanden om eerst te lezen bij CMS/lesroutewerk:
-  - `src/components/cms/CmsShell.jsx`
-  - `src/components/cms/ContentBlockBuilder.jsx`
-  - `src/lib/contentBlockUtils.js`
-  - `src/lib/digibordSlideUtils.js`
-  - `src/components/media/MediaRenderer.jsx`
-  - `src/pages/StudentLessonPage.jsx`
-  - `src/components/digibord/DigibordViewer.jsx`
-  - `src/lib/questionTypeRegistry.js`
-  - `src/lib/questionPreviewUtils.js`
-  - `src/lib/fillBlankUtils.js`
-  - `docs/superpowers/specs/2026-05-27-presenter-design.md`
-- Belangrijke services:
-  - `src/services/cmsService.js`
-  - `src/services/mediaService.js`
-  - `src/services/slidedeckService.js`
-  - `src/services/voortgangService.js`
-- Dev server wordt meestal gestart met Vite op `http://127.0.0.1:5173/`.
-- In de meest recente lokale sessies werkt de dev server voor de gebruiker via `http://localhost:5174/`; noem liever deze URL wanneer die poort actief is.
-- Voor lokale dev-login: `.env.local` kan `VITE_ENABLE_DEV_LOGIN=true` bevatten. Geen Firebase Anonymous Auth gebruiken voor tests.
-- Voor de volgende Presenter-stap: schrijf eerst een implementatieplan voor V1a en wacht op expliciete go voordat je code bouwt.
+- Huidige gitstatus kan lokale untracked tooling bevatten, zoals `.superpowers/` en `exports/presenter-smoke/`. Niet automatisch stagen of verwijderen.
+- `README.md` is nog geen betrouwbare projectdocumentatie.
+- `FIRESTORE_SCHEMA.md` is deels ouder dan de implementatie.
+- Volledige `npm run lint` kan nog falen op bestaande lint-schuld. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
+- Dev server draait meestal op `http://localhost:5173/` of een nabije Vite-poort. De gebruiker gebruikt vaak `localhost` liever dan `127.0.0.1`.
+- Voor lokale dev-login kunnen `.env.local` flags nodig zijn:
+  - `VITE_ENABLE_DEV_LOGIN=true`
+  - `VITE_ENABLE_DEV_ADMIN_LOGIN=true`
+- Geen Firebase Anonymous Auth gebruiken voor tests.
+
+Belangrijke bestanden bij CMS/lesroutewerk:
+
+- `src/components/cms/CmsShell.jsx`
+- `src/components/cms/ContentBlockBuilder.jsx`
+- `src/lib/contentBlockUtils.js`
+- `src/lib/questionTypeRegistry.js`
+- `src/lib/questionPreviewUtils.js`
+- `src/lib/fillBlankUtils.js`
+- `src/components/media/MediaRenderer.jsx`
+- `src/pages/StudentLessonPage.jsx`
+- `src/components/digibord/DigibordViewer.jsx`
+
+Belangrijke bestanden bij Presenter:
+
+- `src/pages/AdminPresenterPage.jsx`
+- `src/components/presenter/PresenterShell.jsx`
+- `src/components/presenter/PresenterBoard.jsx`
+- `src/components/presenter/PresenterToolbar.jsx`
+- `src/components/presenter/PresenterInkLayer.jsx`
+- `src/components/presenter/PresenterObjectLayer.jsx`
+- `src/components/presenter/PresenterBackground.jsx`
+- `src/components/presenter/PresenterInstrumentOverlay.jsx`
+- `src/components/presenter/PresenterPagePanel.jsx`
+- `src/components/presenter/PresenterRecoveryPrompt.jsx`
+- `src/lib/presenterModel.js`
+- `src/lib/presenterHistory.js`
+- `src/lib/presenterGeometry.js`
+- `src/lib/presenterObjects.js`
+- `src/lib/presenterStorage.js`
+- `docs/superpowers/specs/2026-05-27-presenter-design.md`
+- `docs/superpowers/plans/2026-05-27-presenter-v1a-implementation-plan.md`
+- `presenter_notule.md`
+
+Belangrijke services:
+
+- `src/services/cmsService.js`
+- `src/services/mediaService.js`
+- `src/services/slidedeckService.js`
+- `src/services/voortgangService.js`
+- `src/services/klasService.js`
+- `src/services/storageService.js`
+
+Recente commitclusters die context geven:
+
+- Presenter V1a en polish:
+  - `ab91c3b feat: add presenter backgrounds and grid snap`
+  - `3b135f6 feat: add presenter shape objects`
+  - `4a1f1b3 feat: add presenter math instrument overlays`
+  - `892a680 feat: add presenter recovery and fullscreen`
+  - `0873be7 feat: add presenter pen style controls`
+  - `454998a feat: add presenter clear page and toolbar auto-hide`
+  - `c0212fd feat: add presenter marquee selection and object transforms`
+  - `fdd7921 feat: refine presenter toolbar and add highlighter controls`
+- Presenter verification/auth:
+  - `11401be test: add local admin auth for presenter verification`
+  - `d51c862 docs: add presenter implementation report`
+- CMS tree en design variants:
+  - `74f8edb fix: stabilize cms tree block counts and add ux variants`
+  - `8566e05 docs: make tree ux variants expandable`
+  - `3120094 docs: align tree ux variants to full hierarchy`
+  - `e21fa3b style: apply chapter band cms tree styling`
+  - `4bb0047 style: refine cms tree chapter bands`
+  - `c6cc297 fix: keep cms tree counts on one line`
+  - `4c36a8f docs: add helix visual style variants`
 
 ## Verificatiegewoonte
 
@@ -726,7 +697,7 @@ Na significante wijzigingen:
 
 1. Gerichte tests draaien.
 2. Gerichte lint draaien.
-3. `npm run build` draaien.
+3. `npm run build` draaien wanneer relevant.
 4. Browserpreview waar mogelijk.
 5. Commit en push volgens projectregel.
 
@@ -738,13 +709,21 @@ npx eslint <aangepaste bestanden>
 node --test <gerichte testbestanden>
 ```
 
+Bij Presenter-wijzigingen minimaal overwegen:
+
+```bash
+node --test src/lib/presenterModel.test.js src/lib/presenterHistory.test.js src/lib/presenterGeometry.test.js src/lib/presenterObjects.test.js src/lib/presenterStorage.test.js src/lib/adminWorkspaceNav.test.js
+```
+
 ## Context Reset Instructie Voor Codex
 
 Als dit document wordt gelezen na contextcompressie:
 
 1. Lees eerst dit hele document.
 2. Controleer daarna `src/App.jsx` voor actuele routes.
-3. Controleer `src/lib/contentBlockUtils.js` voor actuele lesbloktypes.
-4. Controleer `src/lib/adminWorkspaceNav.js` voor actuele adminnavigatie.
-5. Controleer recente gitstatus voordat je wijzigt.
-6. Vraag bij grote productkeuzes eerst om brainstorm/plan, tenzij de gebruiker expliciet "bouw", "proceed" of "implementeer" zegt.
+3. Controleer `src/lib/adminWorkspaceNav.js` voor actuele adminnavigatie.
+4. Controleer `src/lib/contentBlockUtils.js` voor actuele lesbloktypes.
+5. Controleer `src/lib/questionTypeRegistry.js` voor actuele vraagtypes.
+6. Controleer `src/components/presenter/` en `src/lib/presenter*.js` bij Presenter-werk.
+7. Controleer recente gitstatus voordat je wijzigt.
+8. Vraag bij grote productkeuzes eerst om brainstorm/plan, tenzij de gebruiker expliciet `bouw`, `proceed` of `implementeer` zegt.
