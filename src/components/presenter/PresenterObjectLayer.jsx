@@ -1,4 +1,6 @@
 import { useId } from 'react';
+import PresenterImportedObjectCard from './PresenterImportedObjectCard';
+import { isPresenterImportedObject } from './presenterContentObjectUtils.js';
 
 const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
@@ -30,6 +32,9 @@ const getObjectStyle = (object) => ({
 const createDomIdPart = (value) => String(value || 'object').replace(/[^a-zA-Z0-9_-]/g, '-');
 
 const getHitStrokeWidth = (strokeWidth) => Math.max(MIN_TOUCH_STROKE_WIDTH, strokeWidth);
+
+const isPresenterInteractiveTarget = (target) =>
+  target instanceof Element && Boolean(target.closest('[data-presenter-interactive="true"]'));
 
 const getAngleGeometry = (object, width, height) => {
   const angleDegrees = Math.max(10, Math.min(170, getNumber(object?.angleDegrees, 90)));
@@ -164,6 +169,9 @@ const renderHitTarget = (object) => {
       );
     }
     default:
+      if (isPresenterImportedObject(object)) {
+        return <rect width={width} height={height} fill="transparent" pointerEvents="all" />;
+      }
       return null;
   }
 };
@@ -239,6 +247,15 @@ const renderObjectShape = (object, markerId) => {
     case 'angle':
       return renderAngle(object, width, height, style);
     default:
+      if (isPresenterImportedObject(object)) {
+        return (
+          <foreignObject height={Math.max(1, Math.abs(height))} width={Math.max(1, Math.abs(width))} x={Math.min(0, width)} y={Math.min(0, height)}>
+            <div className="h-full w-full" xmlns="http://www.w3.org/1999/xhtml">
+              <PresenterImportedObjectCard object={object} />
+            </div>
+          </foreignObject>
+        );
+      }
       return null;
   }
 };
@@ -358,6 +375,7 @@ export default function PresenterObjectLayer({
 
         const handlePointerDown = (event) => {
           if (!interactive) return;
+          if (isPresenterInteractiveTarget(event.target)) return;
 
           event.preventDefault();
           event.stopPropagation();
