@@ -628,7 +628,11 @@ const SelectionPanel = ({ selections, activeSelectionId, thumbs, onSelect, onRem
             className={`rounded-[var(--helix-radius-md)] border p-3 ${activeSelectionId === selection.id ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)]' : 'border-[var(--helix-border)] bg-white'}`}
           >
             <button type="button" className="flex w-full items-center gap-3 text-left" onClick={() => onSelect(selection.id)}>
-              <img src={thumbs[selection.id] || ''} alt="" className="h-14 w-14 rounded-md bg-slate-100 object-cover" />
+              {thumbs[selection.id] ? (
+                <img src={thumbs[selection.id]} alt="" className="h-14 w-14 rounded-md bg-slate-100 object-cover" />
+              ) : (
+                <div className="h-14 w-14 rounded-md bg-slate-100" />
+              )}
               <div className="min-w-0 flex-1">
                 <p className="font-black text-[var(--helix-navy)]">Uitsnede {index + 1}</p>
                 <p className="helix-muted text-xs">{selection.cropCoordinates.width} x {selection.cropCoordinates.height}px</p>
@@ -667,7 +671,11 @@ const MatchStep = ({ rows, students, thumbs, duplicateMatchedUserIds, onRowChang
           duplicateMatchedUserIds?.has(row.matchedUserId) ? 'border-amber-300' : 'border-[var(--helix-border)]'
         }`}
       >
-        <img src={thumbs[row.selection.id] || ''} alt="" className="h-20 w-20 rounded-md bg-slate-100 object-cover" />
+        {thumbs[row.selection.id] ? (
+          <img src={thumbs[row.selection.id]} alt="" className="h-20 w-20 rounded-md bg-slate-100 object-cover" />
+        ) : (
+          <div className="h-20 w-20 rounded-md bg-slate-100" />
+        )}
         <div>
           <label className="text-xs font-black uppercase tracking-wide text-slate-400">Herkende/ingevoerde naam</label>
           <input
@@ -732,7 +740,11 @@ const ReviewStep = ({ rows, students, thumbs }) => (
       const student = students.find((item) => item.uid === row.matchedUserId);
       return (
         <div key={row.id} className="grid grid-cols-[5rem_1fr_1fr_8rem] gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0">
-          <img src={thumbs[row.selection.id] || ''} alt="" className="h-16 w-16 rounded-md bg-slate-100 object-cover" />
+          {thumbs[row.selection.id] ? (
+            <img src={thumbs[row.selection.id]} alt="" className="h-16 w-16 rounded-md bg-slate-100 object-cover" />
+          ) : (
+            <div className="h-16 w-16 rounded-md bg-slate-100" />
+          )}
           <div>
             <p className="font-black text-[var(--helix-navy)]">{student?.displayName || row.proposedName || 'Niet gekoppeld'}</p>
             <p className="helix-muted text-sm">{student?.email || 'Geen bestaand account'}</p>
