@@ -8,11 +8,14 @@ import {
   setActivePresenterPage,
   getActivePresenterPage,
   createPresenterPage,
+  getPresenterPageIndex,
   addStrokeToPresenterPage,
   removeStrokeFromPresenterPage,
   addObjectToPresenterPage,
   deleteObjectFromPresenterPage,
-  updatePresenterPageBackground
+  setActivePresenterPageAt,
+  updatePresenterPageBackground,
+  updatePresenterTool
 } from './presenterModel.js';
 
 test('createPresenterSession starts with one white page', () => {
@@ -145,6 +148,20 @@ test('addStrokeToPresenterPage appends a stroke to the target page and marks dir
   assert.equal(next.pages[1], session.pages[1]);
 });
 
+test('updatePresenterTool changes pen style without changing pages', () => {
+  const session = createPresenterSession();
+  const next = updatePresenterTool(session, { color: '#dc2626', width: 10 });
+
+  assert.equal(next.dirty, true);
+  assert.deepEqual(next.tool, {
+    id: 'pen',
+    variant: 'pen',
+    color: '#dc2626',
+    width: 10
+  });
+  assert.equal(next.pages, session.pages);
+});
+
 test('removeStrokeFromPresenterPage removes a stroke by id', () => {
   const page = createPresenterPage({
     id: 'page-1',
@@ -275,6 +292,33 @@ test('setActivePresenterPage switches to a valid page and clears selected object
 
   assert.equal(next.activePageId, session.pages[0].id);
   assert.equal(next.selectedObjectId, null);
+});
+
+test('getPresenterPageIndex falls back to the first page when activePageId is stale', () => {
+  const session = addPresenterPage(createPresenterSession());
+  const staleSession = { ...session, activePageId: 'missing-page' };
+
+  assert.equal(getPresenterPageIndex(staleSession), 0);
+});
+
+test('setActivePresenterPageAt navigates by index and clears selected object', () => {
+  const session = {
+    ...addPresenterPage(createPresenterSession()),
+    selectedObjectId: 'object-1'
+  };
+  const next = setActivePresenterPageAt(session, 0);
+
+  assert.equal(next.activePageId, session.pages[0].id);
+  assert.equal(next.selectedObjectId, null);
+});
+
+test('setActivePresenterPageAt ignores empty or out-of-range navigation', () => {
+  const emptySession = { ...createPresenterSession(), pages: [], activePageId: null };
+  const session = addPresenterPage(createPresenterSession());
+
+  assert.equal(setActivePresenterPageAt(emptySession, 0), emptySession);
+  assert.equal(setActivePresenterPageAt(session, -1), session);
+  assert.equal(setActivePresenterPageAt(session, session.pages.length), session);
 });
 
 test('setActivePresenterPage ignores unknown page ids', () => {

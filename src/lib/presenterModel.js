@@ -110,6 +110,33 @@ export const addStrokeToPresenterPage = (session, pageId = session.activePageId,
   }));
 };
 
+export const updatePresenterTool = (session, updates = {}) => {
+  const currentTool = session?.tool || {};
+  const color = typeof updates.color === 'string' && updates.color ? updates.color : currentTool.color || '#111827';
+  const width = Number.isFinite(updates.width) && updates.width > 0 ? updates.width : currentTool.width || 6;
+  const nextTool = {
+    id: 'pen',
+    variant: 'pen',
+    color,
+    width
+  };
+
+  if (
+    currentTool.id === nextTool.id &&
+    currentTool.variant === nextTool.variant &&
+    currentTool.color === nextTool.color &&
+    currentTool.width === nextTool.width
+  ) {
+    return session;
+  }
+
+  return {
+    ...session,
+    tool: nextTool,
+    dirty: true
+  };
+};
+
 export const removeStrokeFromPresenterPage = (session, pageId = session.activePageId, strokeId) => {
   if (!strokeId) return session;
 

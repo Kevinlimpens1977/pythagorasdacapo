@@ -15,6 +15,7 @@ import {
   duplicatePresenterPage,
   getActivePresenterPage,
   setActivePresenterPage,
+  updatePresenterTool,
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
 import { createPresenterObject } from '../../lib/presenterObjects';
@@ -322,8 +323,14 @@ export default function PresenterShell() {
     [activePage?.id, pages]
   );
   const pageLabel = pages.length > 0 ? `Pagina ${activeIndex + 1}/${pages.length}` : 'Pagina 0/0';
+  const penTool = session.tool || { id: 'pen', variant: 'pen', color: '#111827', width: 6 };
   const currentTool = activeCategory === 'pen'
-    ? { id: 'pen', variant: 'pen', color: '#111827', width: 5 }
+    ? {
+        id: 'pen',
+        variant: 'pen',
+        color: penTool.color || '#111827',
+        width: Number.isFinite(penTool.width) && penTool.width > 0 ? penTool.width : 6
+      }
     : { id: 'select' };
   const canUndo = hasAvailableUndo(history, session);
   const canRedo = hasAvailableRedo(history, session);
@@ -530,6 +537,12 @@ export default function PresenterShell() {
     );
   };
 
+  const handlePenStyle = (updates) => {
+    setSession((currentSession) => updatePresenterTool(currentSession, updates));
+    setActiveCategory('pen');
+    setPagePanelOpen(false);
+  };
+
   const handleCreateObject = (type) => {
     const object = createPresenterObject(type, {
       id: createObjectId(),
@@ -729,9 +742,11 @@ export default function PresenterShell() {
         activeCategory={activeCategory}
         pinned={toolbarPinned}
         background={activePage?.background}
+        penStyle={currentTool}
         onTogglePinned={() => setToolbarPinned((current) => !current)}
         onCategory={handleCategory}
         onBackground={handleBackground}
+        onPenStyle={handlePenStyle}
         onPrev={() => activatePageAt(activeIndex - 1)}
         onNext={() => activatePageAt(activeIndex + 1)}
         prevDisabled={activeIndex <= 0}

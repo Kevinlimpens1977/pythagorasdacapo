@@ -40,6 +40,22 @@ const categories = [
   { id: 'pages', label: "Pagina's", icon: CheckSquare }
 ];
 
+const penColors = [
+  { label: 'Zwart', value: '#111827' },
+  { label: 'Blauw', value: '#2563eb' },
+  { label: 'Rood', value: '#dc2626' },
+  { label: 'Groen', value: '#16a34a' },
+  { label: 'Oranje', value: '#ea580c' },
+  { label: 'Paars', value: '#7c3aed' }
+];
+
+const penWidths = [
+  { label: 'Dun', value: 3 },
+  { label: 'Normaal', value: 6 },
+  { label: 'Dik', value: 10 },
+  { label: 'Extra dik', value: 16 }
+];
+
 const iconButtonClass =
   'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-900 text-slate-100 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40';
 
@@ -51,9 +67,11 @@ export default function PresenterToolbar({
   activeCategory = 'pen',
   pinned = false,
   background = { kind: 'white', gridSize: 96 },
+  penStyle = { color: '#111827', width: 6 },
   onTogglePinned,
   onCategory,
   onBackground,
+  onPenStyle,
   onPrev,
   onNext,
   prevDisabled = false,
@@ -85,6 +103,9 @@ export default function PresenterToolbar({
     onBackground?.({ kind, gridSize: nextGridSize });
   };
 
+  const penColor = penStyle?.color || '#111827';
+  const penWidth = Number.isFinite(penStyle?.width) && penStyle.width > 0 ? penStyle.width : 6;
+
   return (
     <div
       className={`group pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 ease-out sm:px-5 ${
@@ -99,6 +120,68 @@ export default function PresenterToolbar({
       >
         {pinned ? 'Werkbalk vast' : 'Werkbalk openen'}
       </button>
+      {activeCategory === 'pen' ? (
+        <div className="pointer-events-auto mx-auto mb-2 flex max-w-3xl flex-wrap items-center justify-center gap-3 rounded-lg border border-slate-700 bg-slate-950/95 p-3 text-slate-50 shadow-xl">
+          <div className="flex min-h-12 flex-wrap items-center justify-center gap-2">
+            <span className="px-1 text-xs font-black uppercase tracking-[0.16em] text-slate-400">Kleur</span>
+            {penColors.map((color) => {
+              const isActive = penColor === color.value;
+
+              return (
+                <button
+                  key={color.value}
+                  type="button"
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md border transition hover:bg-slate-800 ${
+                    isActive ? 'border-slate-50 bg-slate-800' : 'border-slate-700 bg-slate-900'
+                  }`}
+                  onClick={() => onPenStyle?.({ color: color.value })}
+                  aria-label={`Penkleur ${color.label}`}
+                  aria-pressed={isActive}
+                >
+                  <span
+                    className="block h-7 w-7 rounded-full ring-2 ring-slate-950"
+                    style={{ backgroundColor: color.value }}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          <div className="min-h-12 w-px bg-slate-700 max-sm:hidden" />
+          <div className="flex min-h-12 flex-wrap items-center justify-center gap-2">
+            <span className="px-1 text-xs font-black uppercase tracking-[0.16em] text-slate-400">Dikte</span>
+            {penWidths.map((width) => {
+              const isActive = penWidth === width.value;
+
+              return (
+                <button
+                  key={width.value}
+                  type="button"
+                  className={`inline-flex min-h-12 min-w-20 shrink-0 items-center justify-center gap-2 rounded-md border px-3 text-sm font-black transition ${
+                    isActive
+                      ? 'border-slate-50 bg-slate-50 text-slate-950'
+                      : 'border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800'
+                  }`}
+                  onClick={() => onPenStyle?.({ width: width.value })}
+                  aria-label={`Pendikte ${width.label}`}
+                  aria-pressed={isActive}
+                >
+                  <span className="flex h-7 w-7 items-center justify-center">
+                    <span
+                      className="block rounded-full"
+                      style={{
+                        backgroundColor: isActive ? '#0f172a' : '#f8fafc',
+                        height: `${Math.min(width.value, 16)}px`,
+                        width: `${Math.min(width.value, 16)}px`
+                      }}
+                    />
+                  </span>
+                  <span>{width.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
       {activeCategory === 'background' ? (
         <div className="pointer-events-auto mx-auto mb-2 flex max-w-2xl flex-wrap items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
           <button
