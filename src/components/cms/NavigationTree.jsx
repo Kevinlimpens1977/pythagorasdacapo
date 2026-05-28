@@ -65,16 +65,40 @@ const blockTypePills = (node) => {
     .map((item) => `${CONTENT_BLOCK_LABELS[item.type][0]}${item.count}`);
 };
 
+const getNiveauBadgeLabel = (node) => {
+  const value = `${node.label || ''} ${node.name || ''}`.toUpperCase();
+  if (value.includes('GT')) return 'GT';
+  if (value.includes('KADER') || value.includes('VMBO-K') || /\bK\b/.test(value)) return 'K';
+  if (value.includes('BASIS') || value.includes('VMBO-B') || /\bB\b/.test(value)) return 'B';
+  return 'N';
+};
+
+const getChapterBadgeLabel = (node) => {
+  if (node.number) return `H${node.number}`;
+  const label = node.label || node.title || '';
+  const match = label.match(/\b(?:h|hoofdstuk)\s*(\d+)/i);
+  return match ? `H${match[1]}` : 'H';
+};
+
 const getNodeBadgeLabel = (node) => {
-  if (node.type !== 'paragraaf') return null;
-  return node.code || node.number || null;
+  if (node.type === 'vak') return 'B';
+  if (node.type === 'leerjaar') return 'J';
+  if (node.type === 'niveau') return getNiveauBadgeLabel(node);
+  if (node.type === 'hoofdstuk') return getChapterBadgeLabel(node);
+  if (node.type === 'paragraaf') return node.code || node.number || null;
+  return null;
 };
 
 const getNodeDisplayLabel = (node) => {
   const label = node.label || '';
   const badge = getNodeBadgeLabel(node);
-  if (!badge) return label;
+  if (node.type !== 'paragraaf' || !badge) return label;
   return label.replace(new RegExp(`^${String(badge).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+`), '');
+};
+
+const getIndent = (level) => {
+  const indents = [0, 8, 14, 18, 22];
+  return indents[Math.min(level, indents.length - 1)];
 };
 
 const TreeNode = ({
@@ -129,22 +153,25 @@ const TreeNode = ({
   };
 
   return (
-    <div>
+    <div className={isChapterBand ? 'mt-2' : undefined}>
       <div
         className={[
-          'group grid min-h-10 cursor-pointer grid-cols-[1.5rem_1.75rem_minmax(0,1fr)_6.75rem] items-center gap-2 rounded-xl border px-2.5 py-2 text-sm transition-all',
-          isChapterBand ? 'border-l-4 border-l-[var(--helix-purple)]' : '',
+          'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_2.125rem_minmax(0,1fr)_5.125rem] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
           isActiveParagraaf
-            ? 'border-fuchsia-100 bg-[#f5edff] text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100'
+            ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[#f5edff] text-[var(--helix-navy)]'
             : isActivePath
               ? isChapterBand
-                ? 'border-[var(--helix-border)] bg-[#fbf7ff] text-[var(--helix-navy)]'
-                : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)]'
-              : 'border-transparent text-[var(--helix-muted)] hover:border-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
+                ? 'border-y-[#eadcff] border-r-[#eadcff] border-l-[var(--helix-purple)] bg-[#f7f0ff] text-[var(--helix-navy)]'
+                : 'border-y-[var(--helix-border)] border-r-[var(--helix-border)] border-l-transparent bg-white text-[var(--helix-navy)]'
+              : isChapterBand
+                ? 'border-y-[#eadcff] border-r-[#eadcff] border-l-[var(--helix-purple)] bg-[#fbf7ff] text-[var(--helix-navy)] hover:bg-[#f7f0ff]'
+                : node.type === 'paragraaf'
+                  ? 'border-y-[#f1edfb] border-r-[#f1edfb] border-l-transparent bg-[#fbfaff] text-[var(--helix-muted)] hover:border-y-[#eadcff] hover:border-r-[#eadcff] hover:bg-[#f7f0ff] hover:text-[var(--helix-navy)]'
+                  : 'border-y-transparent border-r-transparent border-l-transparent text-[var(--helix-muted)] hover:border-y-[var(--helix-border)] hover:border-r-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
           ,
           isArchived ? 'opacity-55 grayscale' : ''
         ].join(' ')}
-        style={{ paddingLeft: `${10 + level * 14}px` }}
+        style={{ paddingLeft: `${8 + getIndent(level)}px` }}
         onClick={() => {
           onSelect({ type: node.type, id: node.id });
           if (node.type === 'vak') onCollapseTree?.();
@@ -167,9 +194,11 @@ const TreeNode = ({
 
         <span
           className={[
-            'relative flex h-7 w-7 items-center justify-center rounded-lg',
-            node.type === 'paragraaf'
-              ? 'bg-white text-[var(--helix-purple)] ring-1 ring-fuchsia-100'
+            'relative flex h-8 w-8 items-center justify-center rounded-lg text-[12px] font-black',
+            isChapterBand
+              ? 'bg-white text-[var(--helix-purple)] ring-1 ring-[#eadcff]'
+              : node.type === 'paragraaf'
+                ? 'bg-white text-[var(--helix-purple)] ring-1 ring-fuchsia-100'
               : isActivePath
                 ? `bg-[var(--helix-surface-soft)] ${config.accent} ring-1 ring-[var(--helix-border)]`
                 : `bg-white ${config.accent} ring-1 ring-[var(--helix-border)]`
@@ -181,7 +210,7 @@ const TreeNode = ({
           }}
           title="Dubbelklik voor bewerkingsopties"
         >
-          {badgeLabel ? <span className="text-[13px] font-black leading-none">{badgeLabel}</span> : <Icon size={15} />}
+          {badgeLabel ? <span className="leading-none">{badgeLabel}</span> : <Icon size={15} />}
           {actionsOpen && (
             <span
               className="absolute bottom-full left-1/2 z-50 mb-2 w-40 -translate-x-1/2 rounded-2xl border border-[var(--helix-border)] bg-white p-1.5 text-left shadow-xl"
@@ -239,14 +268,17 @@ const TreeNode = ({
           )}
         </span>
 
-        <span className="flex min-w-0 items-center justify-end gap-1.5">
+        <span className="relative flex min-w-0 items-center justify-end">
           {mutedCount && (
             <span
               className={[
-                'inline-flex w-[6.1rem] shrink-0 justify-center rounded-md px-1.5 py-1 text-[11px] font-bold leading-none',
+                'inline-flex w-[5.125rem] shrink-0 justify-center rounded-md px-1.5 py-1 text-[11px] font-bold leading-none transition-opacity',
                 isActiveParagraaf
-                  ? 'bg-white/80 text-[var(--helix-purple)]'
-                  : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
+                  ? 'bg-white text-[var(--helix-purple)]'
+                  : isChapterBand
+                    ? 'bg-white/85 text-[var(--helix-purple)]'
+                    : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]',
+                onCreateChild && canCreateChild ? 'group-hover:opacity-25' : ''
               ].join(' ')}
             >
               {mutedCount}
@@ -259,8 +291,8 @@ const TreeNode = ({
                 onCreateChild(node.id);
               }}
               className={[
-                'flex h-7 w-7 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100',
-                isActiveParagraaf ? 'bg-white/80 text-[var(--helix-purple)] hover:bg-white' : 'text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
+                'absolute right-0 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100',
+                isChapterBand || isActiveParagraaf ? 'bg-white text-[var(--helix-purple)] hover:bg-white' : 'bg-white text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
               ].join(' ')}
               title={`Nieuw onderdeel toevoegen`}
             >
@@ -271,7 +303,7 @@ const TreeNode = ({
       </div>
 
       {hasChildren && isExpanded && (
-        <div className="mt-1 space-y-1">
+        <div className="mt-0.5 space-y-0.5">
           {node.children.map((child) => (
             <TreeNode
               key={child.id}
