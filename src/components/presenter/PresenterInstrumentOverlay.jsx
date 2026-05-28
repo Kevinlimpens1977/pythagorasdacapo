@@ -1,3 +1,5 @@
+import { useEffect, useId, useRef } from 'react';
+
 const instruments = {
   ruler: 'Liniaal',
   triangle: 'Geodriehoek',
@@ -108,15 +110,46 @@ const instrumentVisuals = {
 export default function PresenterInstrumentOverlay({ instrument, onClose }) {
   const label = instruments[instrument];
   const Visual = instrumentVisuals[instrument];
+  const titleId = useId();
+  const closeButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (!instrument || !label || !Visual) return undefined;
+
+    const previousActiveElement = document.activeElement;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key !== 'Escape') return;
+
+      event.preventDefault();
+      onClose?.();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (typeof previousActiveElement?.focus === 'function') {
+        previousActiveElement.focus();
+      }
+    };
+  }, [instrument, label, onClose, Visual]);
 
   if (!instrument || !label || !Visual) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-4 py-8">
-      <div className="pointer-events-auto flex max-w-[min(92vw,760px)] flex-col items-center gap-4 rounded-lg border border-slate-500/70 bg-slate-100/88 p-4 shadow-2xl backdrop-blur-sm sm:p-5">
+    <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center px-4 py-8">
+      <div
+        aria-labelledby={titleId}
+        aria-modal="true"
+        className="pointer-events-auto flex max-w-[min(92vw,760px)] flex-col items-center gap-4 rounded-lg border border-slate-500/70 bg-slate-100/88 p-4 shadow-2xl backdrop-blur-sm sm:p-5"
+        role="dialog"
+      >
         <div className="flex w-full items-center justify-between gap-4">
-          <h2 className="text-base font-black text-slate-950 sm:text-lg">{label}</h2>
+          <h2 className="text-base font-black text-slate-950 sm:text-lg" id={titleId}>{label}</h2>
           <button
+            ref={closeButtonRef}
             type="button"
             className="inline-flex min-h-12 items-center justify-center rounded-md border border-slate-700 bg-slate-950 px-4 text-sm font-black text-slate-50 transition hover:bg-slate-800"
             onClick={onClose}

@@ -79,6 +79,12 @@ export default function PresenterShell() {
     setPagePanelOpen(false);
   };
 
+  const handleInstrument = (instrumentId) => {
+    setInstrument(instrumentId);
+    setActiveCategory('select');
+    setPagePanelOpen(false);
+  };
+
   const handleFullscreen = () => {
     if (typeof document === 'undefined') return;
 
@@ -174,7 +180,7 @@ export default function PresenterShell() {
         canRedo={false}
         onSelect={handleSelectTool}
         onCreateObject={handleCreateObject}
-        onInstrument={setInstrument}
+        onInstrument={handleInstrument}
         onFullscreen={handleFullscreen}
       />
     </section>
