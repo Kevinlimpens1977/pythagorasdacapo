@@ -111,6 +111,7 @@ export default function PresenterInstrumentOverlay({ instrument, onClose }) {
   const label = instruments[instrument];
   const Visual = instrumentVisuals[instrument];
   const titleId = useId();
+  const overlayRef = useRef(null);
   const closeButtonRef = useRef(null);
 
   useEffect(() => {
@@ -120,10 +121,46 @@ export default function PresenterInstrumentOverlay({ instrument, onClose }) {
     closeButtonRef.current?.focus();
 
     const handleKeyDown = (event) => {
-      if (event.key !== 'Escape') return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose?.();
+        return;
+      }
 
-      event.preventDefault();
-      onClose?.();
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = Array.from(
+        overlayRef.current?.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) || []
+      ).filter((element) => element.offsetParent !== null);
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+      const focusTarget = event.shiftKey ? lastElement : firstElement;
+
+      if (!overlayRef.current?.contains(activeElement)) {
+        event.preventDefault();
+        focusTarget.focus();
+        return;
+      }
+
+      if (event.shiftKey && activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+        return;
+      }
+
+      if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -139,11 +176,14 @@ export default function PresenterInstrumentOverlay({ instrument, onClose }) {
   if (!instrument || !label || !Visual) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center px-4 py-8">
+    <div
+      ref={overlayRef}
+      className="pointer-events-auto absolute inset-0 z-40 flex items-center justify-center bg-slate-950/15 px-4 py-8"
+    >
       <div
         aria-labelledby={titleId}
         aria-modal="true"
-        className="pointer-events-auto flex max-w-[min(92vw,760px)] flex-col items-center gap-4 rounded-lg border border-slate-500/70 bg-slate-100/88 p-4 shadow-2xl backdrop-blur-sm sm:p-5"
+        className="flex max-w-[min(92vw,760px)] flex-col items-center gap-4 rounded-lg border border-slate-500/70 bg-slate-100/88 p-4 shadow-2xl backdrop-blur-sm sm:p-5"
         role="dialog"
       >
         <div className="flex w-full items-center justify-between gap-4">
