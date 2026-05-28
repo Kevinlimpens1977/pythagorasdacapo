@@ -89,6 +89,16 @@ service cloud.firestore {
       allow read, write, delete: if isAdmin();
     }
 
+    // Leerlingfoto-import: tijdelijke importmetadata en croprecords.
+    // De definitieve koppeling naar users/{uid}.photo loopt via Cloud Functions.
+    match /photoImports/{importId} {
+      allow read, create, update, delete: if isAdmin();
+
+      match /crops/{cropId} {
+        allow read, create, update, delete: if isAdmin();
+      }
+    }
+
     // Crop metadata
     match /questionMetadata/{paragraphId}/questions/{questionId} {
       allow read, write: if request.auth != null;

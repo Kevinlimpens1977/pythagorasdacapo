@@ -1,0 +1,152 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return signedIn() && userDoc().data.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    // Gebruikers
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Antwoorden
+    match /userAnswers/{docId} {
+      allow read: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if signedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow update: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // CMS content
+    match /vakken/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /vak/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /leerjaar/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /niveau/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /hoofdstuk/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /paragraaf/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /vraag/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /contentBlocks/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Slidedeckcreator / NotebookLM
+    match /promptTemplates/{document=**} {
+      allow read: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /slidedeckPackages/{document=**} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Klassen
+    match /klassen/{klasId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Voortgang
+    match /voortgang/{docId} {
+      allow read: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if signedIn() &&
+        request.resource.data.userId == request.auth.uid;
+
+      allow update: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Leerlingfoto-import: tijdelijke importmetadata en croprecords.
+    // Definitief koppelen naar users/{uid}.photo gebeurt via Cloud Functions.
+    match /photoImports/{importId} {
+      allow read, create, update, delete: if isAdmin();
+
+      match /crops/{cropId} {
+        allow read, create, update, delete: if isAdmin();
+      }
+    }
+
+    // Nieuwe leerlingen die uit een foto-import nog handmatig verwerkt moeten worden.
+    match /pendingStudents/{document=**} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    // Crop metadata
+    match /questionMetadata/{paragraphId}/questions/{questionId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Nodig voor collectionGroup(db, 'questions') bij CMS-reset
+    match /{path=**}/questions/{questionId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

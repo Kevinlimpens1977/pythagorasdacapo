@@ -217,6 +217,43 @@ export default function StudentPhotoImportWizard({
     });
   };
 
+  const handleApproveAllRows = () => {
+    setRows((current) =>
+      current.map((row) => {
+        const best = row.matchedUserId ? null : row.candidates?.[0];
+        const bestStudent = best?.score >= 0.85 ? best.student : null;
+
+        if (row.matchedUserId || bestStudent) {
+          const matchedUserId = row.matchedUserId || bestStudent.uid || bestStudent.id || '';
+          const student = students.find((item) => item.uid === matchedUserId || item.id === matchedUserId) || bestStudent;
+          return {
+            ...row,
+            matchedUserId,
+            matchedDisplayName: student?.displayName || student?.email || row.matchedDisplayName || '',
+            matchConfidence: row.matchConfidence || best?.score || 1,
+            matchMethod: row.matchMethod || 'bulk-approve',
+            decision: 'link',
+            status: 'matched'
+          };
+        }
+
+        if (String(row.proposedName || '').trim()) {
+          return {
+            ...row,
+            decision: 'pending',
+            status: row.status === 'naam ontbreekt' ? 'controle nodig' : row.status
+          };
+        }
+
+        return {
+          ...row,
+          decision: 'skip',
+          status: 'naam ontbreekt'
+        };
+      })
+    );
+  };
+
   const handleImageLoaded = (data) => {
     setImageData(data);
     setSelections([]);
@@ -549,6 +586,7 @@ export default function StudentPhotoImportWizard({
             students={targetStudents}
             thumbs={thumbs}
             duplicateMatchedUserIds={duplicateMatchedUserIds}
+            onApproveAll={handleApproveAllRows}
             onRowChange={updateRow}
             onNameChange={handleProposedNameChange}
           />
@@ -653,8 +691,24 @@ const SelectionPanel = ({ selections, activeSelectionId, thumbs, onSelect, onRem
   </aside>
 );
 
-const MatchStep = ({ rows, students, thumbs, duplicateMatchedUserIds, onRowChange, onNameChange }) => (
+const MatchStep = ({ rows, students, thumbs, duplicateMatchedUserIds, onApproveAll, onRowChange, onNameChange }) => (
   <div className="space-y-3">
+    <div className="flex flex-col gap-3 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="font-black text-[var(--helix-navy)]">Alle herkende leerlingen controleren</p>
+        <p className="helix-muted text-sm">
+          Zekere matches worden gekoppeld; namen zonder match gaan naar later reviewen.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onApproveAll}
+        disabled={!rows.length}
+        className="inline-flex min-h-11 items-center justify-center rounded-[var(--helix-radius-md)] bg-[var(--helix-purple)] px-4 text-sm font-black text-white shadow-[var(--helix-shadow-soft)] disabled:opacity-40"
+      >
+        Keur alles goed
+      </button>
+    </div>
     {rows.map((row) => (
       <div
         key={row.id}

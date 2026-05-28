@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Bestaande crop/OCR uploads
+    match /pythagoras/question-crops/{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+
+    match /pythagoras/source-pages/{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+
+    // Slidedeckcreator: bron-PDF, assets en NotebookLM deck-PDF
+    match /slidedecks/{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+
+    // CMS mediablokken: afbeeldingen, video's en media-PDF's
+    match /mediaBlocks/{allPaths=**} {
+      allow read, write: if signedIn();
+    }
+
+    // Tijdelijke leerlingfoto-imports. Alleen admins mogen fotolijsten en crops
+    // uploaden/lezen; definitieve goedkeuring loopt via Cloud Functions.
+    match /photo-imports/{klasId}/{importId}/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Definitieve leerlingfoto's. Schrijven gebeurt alleen via Admin SDK in
+    // Cloud Functions; admins en de leerling zelf mogen de foto lezen.
+    match /student-photos/{klasId}/{userId}/{allPaths=**} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow write: if false;
+    }
+  }
+}
