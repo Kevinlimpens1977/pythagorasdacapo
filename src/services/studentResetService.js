@@ -9,6 +9,17 @@ import {
 import { db } from './firebase';
 
 const BATCH_LIMIT = 450;
+export const PRESERVED_STUDENT_RESET_EMAILS = new Set([
+  'vragen@scheikundeles.nl',
+  'kevlimpens@gmail.com'
+]);
+
+export const shouldPreserveUserDuringStudentReset = (user = {}) => {
+  const role = String(user.role || '').trim().toLowerCase();
+  const email = String(user.email || '').trim().toLowerCase();
+
+  return role === 'admin' || PRESERVED_STUDENT_RESET_EMAILS.has(email);
+};
 
 const commitInChunks = async (operations) => {
   for (let index = 0; index < operations.length; index += BATCH_LIMIT) {
@@ -63,19 +74,23 @@ const clearClassStudentOverrides = async () => {
 
 export const deleteAllStudentData = async () => {
   const studentSnapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'student')));
-  const studentIds = studentSnapshot.docs.map((documentSnapshot) => documentSnapshot.id);
+  const deletableStudentDocs = studentSnapshot.docs.filter((documentSnapshot) =>
+    !shouldPreserveUserDuringStudentReset(documentSnapshot.data())
+  );
+  const studentIds = deletableStudentDocs.map((documentSnapshot) => documentSnapshot.id);
   const pendingStudentsSnapshot = await getDocs(collection(db, 'pendingStudents'));
 
   const deletedProgress = await deleteStudentProgress(studentIds);
   const deletedPendingStudents = await deleteSnapshotDocuments(pendingStudentsSnapshot);
-  const deletedStudents = await deleteSnapshotDocuments(studentSnapshot);
+  const deletedStudents = await deleteSnapshotDocuments({ docs: deletableStudentDocs, size: deletableStudentDocs.length });
   const cleanedClasses = await clearClassStudentOverrides();
 
   return {
     deletedStudents,
     deletedProgress,
     deletedPendingStudents,
-    cleanedClasses
+    cleanedClasses,
+    preservedEmails: [...PRESERVED_STUDENT_RESET_EMAILS]
   };
 };
 

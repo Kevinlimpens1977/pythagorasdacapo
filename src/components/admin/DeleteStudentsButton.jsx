@@ -79,9 +79,10 @@ export default function DeleteStudentsButton() {
             <div className="space-y-4 p-5">
               <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-900">
                 <p className="font-black">Dit verwijdert leerlingdocumenten permanent uit Firestore.</p>
-                <p className="mt-2">
-                  Alle gebruikers met rol leerling, hun voortgang en tijdelijke pending-leerlingen worden gewist.
-                  Klassen en lesmateriaal blijven bestaan. Firebase Authentication-accounts worden niet vanuit deze browseractie verwijderd.
+                  <p className="mt-2">
+                    Alle gebruikers met rol leerling, hun voortgang en tijdelijke pending-leerlingen worden gewist.
+                    Accounts met adminrol, kevlimpens@gmail.com en vragen@scheikundeles.nl blijven bewaard.
+                    Klassen en lesmateriaal blijven bestaan. Firebase Authentication-accounts worden niet vanuit deze browseractie verwijderd.
                 </p>
               </div>
 
@@ -110,6 +111,7 @@ export default function DeleteStudentsButton() {
                   <p className="mt-1">
                     {result.deletedStudents} leerlingen, {result.deletedProgress} voortgangsdocumenten en{' '}
                     {result.deletedPendingStudents} pending-leerlingen verwijderd. {result.cleanedClasses} klassen opgeschoond.
+                    Bewaard: {result.preservedEmails?.join(', ')}.
                   </p>
                   <button
                     onClick={() => window.location.assign('/admin/leerlingen')}
