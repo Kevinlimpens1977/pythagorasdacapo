@@ -13,6 +13,7 @@ import {
 } from '../../lib/presenterModel';
 import { createPresenterObject } from '../../lib/presenterObjects';
 import PresenterBoard from './PresenterBoard';
+import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
 import PresenterPagePanel from './PresenterPagePanel';
 import PresenterToolbar from './PresenterToolbar';
 
@@ -29,6 +30,7 @@ export default function PresenterShell() {
   const [toolbarPinned, setToolbarPinned] = useState(() => Boolean(session.toolbar?.pinned));
   const [activeCategory, setActiveCategory] = useState(() => session.toolbar?.activeCategory || 'pen');
   const [pagePanelOpen, setPagePanelOpen] = useState(false);
+  const [instrument, setInstrument] = useState(null);
 
   const activePage = getActivePresenterPage(session);
   const pages = useMemo(() => session.pages || [], [session.pages]);
@@ -155,6 +157,7 @@ export default function PresenterShell() {
         onDuplicatePage={duplicatePage}
         onDeletePage={deletePage}
       />
+      <PresenterInstrumentOverlay instrument={instrument} onClose={() => setInstrument(null)} />
       <PresenterToolbar
         pageLabel={pageLabel}
         activeCategory={activeCategory}
@@ -171,6 +174,7 @@ export default function PresenterShell() {
         canRedo={false}
         onSelect={handleSelectTool}
         onCreateObject={handleCreateObject}
+        onInstrument={setInstrument}
         onFullscreen={handleFullscreen}
       />
     </section>

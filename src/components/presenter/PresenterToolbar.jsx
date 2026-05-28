@@ -25,6 +25,13 @@ const objectTypes = [
   'angle'
 ];
 
+const instrumentTypes = [
+  { id: 'ruler', label: 'Liniaal' },
+  { id: 'triangle', label: 'Geodriehoek' },
+  { id: 'compass', label: 'Passer' },
+  { id: 'protractor', label: 'Gradenboog' }
+];
+
 const categories = [
   { id: 'pen', label: 'Pen', icon: PenLine },
   { id: 'objects', label: 'Objecten', icon: Shapes },
@@ -57,6 +64,7 @@ export default function PresenterToolbar({
   onRedo,
   onSelect,
   onCreateObject,
+  onInstrument,
   onFullscreen
 }) {
   const handleCategory = (category) => {
@@ -139,17 +147,32 @@ export default function PresenterToolbar({
         </div>
       ) : null}
       {activeCategory === 'objects' ? (
-        <div className="pointer-events-auto mx-auto mb-2 flex max-w-3xl flex-wrap items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
-          {objectTypes.map((type) => (
-            <button
-              key={type}
-              type="button"
-              className={`${popoverButtonClass} border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800`}
-              onClick={() => onCreateObject?.(type)}
-            >
-              {getPresenterObjectLabel({ type })}
-            </button>
-          ))}
+        <div className="pointer-events-auto mx-auto mb-2 flex max-w-4xl flex-wrap items-stretch justify-center gap-3 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {objectTypes.map((type) => (
+              <button
+                key={type}
+                type="button"
+                className={`${popoverButtonClass} border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800`}
+                onClick={() => onCreateObject?.(type)}
+              >
+                {getPresenterObjectLabel({ type })}
+              </button>
+            ))}
+          </div>
+          <div className="min-h-12 w-px bg-slate-700 max-sm:hidden" />
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {instrumentTypes.map((instrument) => (
+              <button
+                key={instrument.id}
+                type="button"
+                className={`${popoverButtonClass} border-sky-400/70 bg-sky-950 text-sky-50 hover:bg-sky-900`}
+                onClick={() => onInstrument?.(instrument.id)}
+              >
+                {instrument.label}
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
       <div className="pointer-events-auto mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
