@@ -69,8 +69,17 @@ Nieuw verkend op 28 mei 2026:
 
 - Een importtool voor leerlingfoto's uit een geplakte/geuploade klassenfoto is technisch haalbaar.
 - Betrouwbare V1 moet een controlelijst hebben voor foto-uitsnedes en naam-matching voordat er wordt opgeslagen.
-- Bestaande leerlingen krijgen alleen `photoURL`/`photoPath`; onbekende leerlingen moeten eerst als review/pending worden behandeld.
+- Bestaande leerlingen krijgen alleen een goedgekeurd `photo`-object; onbekende leerlingen moeten eerst als review/pending worden behandeld.
 - Echte nieuwe Firebase Auth accounts mogen niet client-side worden aangemaakt. Daarvoor is later een veilige Cloud Function met Firebase Admin SDK nodig.
+
+Aanbevolen implementatie-optie:
+
+- Bouw een admin-only foto-importwizard binnen of naast `AdminLeerlingenPage`.
+- Hergebruik upload/plak/canvas/selectiepatronen uit `ImageCanvasEditor`.
+- Client mag bronfoto uploaden/plakken, cropvoorstellen maken, handmatige uitsnedes laten corrigeren en matches voorstellen.
+- Docent moet elke rij goedkeuren, overslaan of markeren voor latere review voordat data definitief wordt opgeslagen.
+- Definitief koppelen aan `users/{uid}` en definitief opslaan naar `student-photos/...` moet via Callable Cloud Function met Admin SDK.
+- De client mag geen echte Firebase Auth-leerlingaccounts bulk aanmaken.
 
 ### Spellen
 
@@ -416,6 +425,8 @@ Belangrijke Firestore-collecties:
 
 - `users`
 - `klassen`
+- `photoImports`
+- `pendingStudents`
 - `vak`
 - `leerjaar`
 - `niveau`
@@ -438,7 +449,9 @@ Belangrijke Storage-paden:
 - `slidedecks/{packageId}/generated-deck.pdf`
 - `slidedecks/{packageId}/assets/{assetId}`
 - `mediaBlocks/{blockId}/{fileName}`
-- later mogelijk `student-photos/{uid}/profile.webp`
+- `photo-imports/{klasId}/{importId}/...` voor tijdelijke leerlingfoto-imports
+- `student-photos/{klasId}/{uid}/avatar_256.webp`
+- `student-photos/{klasId}/{uid}/thumb_96.webp`
 
 Let op:
 
@@ -534,6 +547,196 @@ Deze bestanden zijn prototypes/documentatie, geen productcode. Ze zijn bedoeld o
 - Controle geeft visuele goed/fout feedback.
 - Volgordevragen renderen als testweergave in plaats van leeg tekstvak.
 
+## Leerlingfoto-Import V1: Implementatie-Optie
+
+Deze feature is nog niet gebouwd. Dit is de afgesproken veilige richting.
+
+### Doel
+
+Een administrator kan een klassenfoto/screenshot uploaden of plakken, leerlingfoto's uitsnijden, bestaande leerlingen matchen en na controle de foto als avatar aan het leerlingaccount koppelen.
+
+Belangrijk principe:
+
+```text
+Automatische detectie en naamherkenning zijn adviserend.
+De docent/admin keurt altijd expliciet goed voordat er naar leerlingdata wordt geschreven.
+```
+
+### UX-Flow
+
+Startpunt:
+
+- Voeg in `Leerlingen` een primaire actie toe: `Foto's importeren`.
+- Optioneel later: statcards `Met foto` en `Zonder foto`.
+
+Wizardstappen:
+
+1. `Bron`
+   - Upload of plak een JPG/PNG/WebP klassenfoto of screenshot.
+   - Gebruik een duidelijke drop/upload-zone.
+   - Toon foutmelding bij ongeldig bestand.
+   - Waarschuw bij groot bestand.
+
+2. `Uitsnedes`
+   - Toon de bronfoto in canvas/fullscreen-stijl.
+   - V1 mag automatische uitsnedes als voorstellen tonen.
+   - Admin kan elke uitsnede corrigeren, verwijderen of handmatig toevoegen.
+   - Statussen per uitsnede: `voorgesteld`, `aangepast`, `verwijderd`, `handmatig toegevoegd`.
+
+3. `Matchen`
+   - Toon een reviewtabel met foto-preview, herkende naam, gematchte leerling, zekerheid, klas, status en actie.
+   - Matching zoekt op `displayName`, e-mailprefix en eventueel klasfilter.
+   - Statussen: `zekere match`, `controle nodig`, `geen match`, `dubbele match`, `naam ontbreekt`.
+
+4. `Goedkeuren`
+   - Opslaan mag pas wanneer alle rijen een expliciete beslissing hebben.
+   - Mogelijke beslissingen: koppelen, overslaan, later reviewen.
+   - Toon progress voor `uitsnijden`, `uploaden`, `opslaan`.
+   - Ondersteun gedeeltelijk succes: geslaagde foto's blijven gekoppeld, mislukte rijen krijgen retry/overslaan.
+
+Na goedkeuren:
+
+- Leerlingenoverzicht ververst.
+- Avatarvak toont foto indien aanwezig, anders huidige icon/initialenfallback.
+- Bij hover/focus verschijnt een grotere tijdelijke popup met foto, naam, klas, e-mail en laatste activiteit.
+- Popup mag geen layout verschuiven.
+
+### Datamodel
+
+Voeg aan `users/{uid}` geen losse `photoURL` als enige waarheid toe, maar een gestructureerd `photo`-object:
+
+```js
+photo: {
+  storagePath: "student-photos/{klasId}/{uid}/avatar_256.webp",
+  thumbStoragePath: "student-photos/{klasId}/{uid}/thumb_96.webp",
+  status: "approved",
+  sourceImportId: "import_...",
+  cropId: "crop_...",
+  approvedBy: "adminUid",
+  approvedAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+Nieuwe importcollectie:
+
+```js
+photoImports/{importId} {
+  klasId,
+  status: "draft" | "review" | "processing" | "completed" | "cancelled",
+  sourceStoragePath,
+  originalFileName,
+  contentType,
+  fileSize,
+  createdBy,
+  createdAt,
+  updatedAt,
+  expiresAt,
+  cropCount,
+  approvedCount,
+  pendingCount
+}
+
+photoImports/{importId}/crops/{cropId} {
+  order,
+  cropStoragePath,
+  bbox: { x, y, width, height },
+  originalImageSize: { width, height },
+  status: "unmatched" | "matched" | "approved" | "rejected" | "pending_new",
+  matchedUserId,
+  matchedDisplayName,
+  matchConfidence,
+  matchMethod: "manual" | "name" | "email" | "suggested",
+  proposedName,
+  reviewNote,
+  approvedBy,
+  approvedAt,
+  createdAt
+}
+```
+
+Voor onbekende leerlingen:
+
+```js
+pendingStudents/{pendingId} {
+  klasId,
+  importId,
+  cropId,
+  displayNameProposed,
+  photoStoragePath,
+  status: "pending_account" | "needs_review" | "merged" | "discarded",
+  createdBy,
+  createdAt,
+  resolvedBy,
+  resolvedAt,
+  resolvedUserId
+}
+```
+
+### Storage
+
+Gebruik geen bestaande lesmateriaalpaden zoals `pythagoras/question-crops/...` voor leerlingfoto's.
+
+Aanbevolen paden:
+
+```text
+photo-imports/{klasId}/{importId}/source/original.jpg
+photo-imports/{klasId}/{importId}/crops/{cropId}.webp
+student-photos/{klasId}/{uid}/avatar_256.webp
+student-photos/{klasId}/{uid}/thumb_96.webp
+```
+
+Privacykeuze:
+
+- Bewaar bij voorkeur `storagePath` en `thumbStoragePath`.
+- Gebruik niet standaard permanente download-URL's als enige bron, omdat Firebase download-URL's tokenlinks zijn die buiten de app deelbaar blijven.
+- Voor striktere privacy: lees via Storage SDK met rules of later via backend met kort geldige URL.
+
+### Client-Side Mag
+
+- Afbeelding uploaden of plakken.
+- Canvas-crops maken.
+- Lokale preview/review tonen.
+- Bestaande leerlingen uit dezelfde klas tonen en handmatig matchen.
+- Tijdelijke importsource/crops uploaden, mits rules admin-only zijn.
+- `photoImports` conceptmetadata schrijven als admin, mits rules strak valideren.
+
+### Cloud Function / Admin SDK Vereist
+
+Gebruik een callable function zoals `approveStudentPhotoImportCrop` of een batchvariant.
+
+De function moet:
+
+- Controleren dat caller admin/docent is.
+- Controleren dat caller toegang heeft tot `klasId`.
+- Verifieren dat `matchedUserId` bestaat.
+- Verifieren dat `matchedUserId.role == "student"`.
+- Verifieren dat de leerling in dezelfde klas zit of bewust door admin is gekozen.
+- Afbeeldingen normaliseren naar vaste veilige formaten en afmetingen.
+- Tijdelijke crop kopieren/verplaatsen naar `student-photos/...`.
+- `users/{uid}.photo` bijwerken.
+- `pendingStudents` aanmaken of mergen voor onbekende leerlingen.
+- Oude importbestanden opruimen.
+- Eventueel oude leerlingfoto's vervangen/verwijderen.
+
+### Securityregels
+
+Voor productie-hardening:
+
+- Leerlingen mogen nooit zelf `role`, `klasId`, `photo`, importstatus of matchdata schrijven.
+- `photoImports` alleen admin/docent read/write.
+- `pendingStudents` alleen admin/docent.
+- `student-photos` write alleen via Cloud Function/Admin SDK.
+- `student-photos` read alleen admin/docent en eventueel de leerling zelf.
+- `photo-imports` read/write alleen admin/docent en tijdelijk met `expiresAt`.
+- Storage moet MIME en bestandsgrootte beperken tot veilige image-types.
+- PDF is voor V1 leerlingfoto-import niet nodig, tenzij later expliciet gekozen.
+
+Belangrijk risico:
+
+- Huidige development rules kunnen permissief zijn.
+- Omdat adminrechten uit `users/{uid}.role` komen, mogen leerlingen in productie nooit hun eigen rolveld kunnen aanpassen.
+
 ### Presenter V1a
 
 - Presenter Core gebouwd.
@@ -608,8 +811,11 @@ Nodig:
 
 - Accountbeheer en veilige wachtwoordflows.
 - Uitgebreidere filters.
-- Mogelijke leerlingfoto-import met reviewstap.
-- Als echte nieuwe leerlingaccounts bulk aangemaakt moeten worden: Cloud Function/Admin SDK ontwerpen.
+- Leerlingfoto-import volgens de V1 importbatch/reviewflow bouwen.
+- Avatarweergave in leerlingenlijst met hover/focus-popup toevoegen.
+- `photoImports`, `pendingStudents` en `users/{uid}.photo` datamodel implementeren.
+- Callable Cloud Function/Admin SDK gebruiken voor definitieve foto-goedkeuring en opslag.
+- Als echte nieuwe leerlingaccounts bulk aangemaakt moeten worden: aparte Cloud Function/Admin SDK-flow ontwerpen.
 
 ### 7. Voortgang En Analytics Versterken
 
