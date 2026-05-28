@@ -5,21 +5,28 @@ import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import {
   clearDevUser,
+  createDevAdminUserData,
   createDevStudentUserData,
+  isDevAdminLoginEnabled,
   isDevLoginEnabled,
   loadDevUser,
+  saveDevAdminUser,
   saveDevStudentUser
 } from './devAuth';
 
 const AuthContext = createContext();
 
+const createDevUserData = (user) => (
+  user?.role === 'admin' ? createDevAdminUserData(user) : createDevStudentUserData(user)
+);
+
 export function AuthProvider({ children }) {
   const [devUser, setDevUser] = useState(() => loadDevUser());
   const [currentUser, setCurrentUser] = useState(() => loadDevUser());
-  const [userRole, setUserRole] = useState(() => (loadDevUser() ? 'student' : null));
+  const [userRole, setUserRole] = useState(() => loadDevUser()?.role || null);
   const [userData, setUserData] = useState(() => {
     const initialDevUser = loadDevUser();
-    return initialDevUser ? createDevStudentUserData(initialDevUser) : null;
+    return initialDevUser ? createDevUserData(initialDevUser) : null;
   });
   const [klasId, setKlasId] = useState(null);
   const [klasData, setKlasData] = useState(null);
@@ -128,8 +135,8 @@ export function AuthProvider({ children }) {
         const storedDevUser = loadDevUser();
         setDevUser(storedDevUser);
         setCurrentUser(storedDevUser);
-        setUserData(storedDevUser ? createDevStudentUserData(storedDevUser) : null);
-        setUserRole(storedDevUser ? 'student' : null);
+        setUserData(storedDevUser ? createDevUserData(storedDevUser) : null);
+        setUserRole(storedDevUser?.role || null);
         if (!storedDevUser) {
           setKlasId(null);
           setKlasData(null);
@@ -150,6 +157,17 @@ export function AuthProvider({ children }) {
     setCurrentUser(auth.currentUser || user);
     setUserData(createDevStudentUserData(user));
     setUserRole('student');
+    setKlasId(null);
+    setKlasData(null);
+    setLoading(false);
+  };
+
+  const loginAsDevAdmin = async () => {
+    const user = saveDevAdminUser();
+    setDevUser(user);
+    setCurrentUser(auth.currentUser || user);
+    setUserData(createDevAdminUserData(user));
+    setUserRole('admin');
     setKlasId(null);
     setKlasData(null);
     setLoading(false);
@@ -180,8 +198,10 @@ export function AuthProvider({ children }) {
     isDevUser: Boolean(devUser && currentUser?.isDevUser),
     isDevBypass: Boolean(devUser && currentUser?.isDevUser),
     isDevLoginEnabled: isDevLoginEnabled(),
+    isDevAdminLoginEnabled: isDevAdminLoginEnabled(),
     loading,
     loginAsDevStudent,
+    loginAsDevAdmin,
     logout
   };
 

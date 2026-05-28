@@ -10,11 +10,12 @@ import {
 } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 import { useAuth } from './AuthProvider';
-import { useNavigate } from 'react-router-dom';
-import { Code2, LogIn, UserPlus } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Code2, ShieldCheck, LogIn, UserPlus } from 'lucide-react';
 import helixLogo from '../../afbeeldingen/logo.png';
 import {
   getGoogleLoginErrorMessage,
+  getSafePostLoginTarget,
   isAdminEmail,
   shouldFallbackToRedirectLogin
 } from '../../lib/authLoginUtils';
@@ -27,8 +28,18 @@ export default function LoginScreen() {
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [devLoginLoading, setDevLoginLoading] = useState(false);
-  const { loginAsDevStudent, isAdmin, currentUser, loading, isDevLoginEnabled } = useAuth();
+  const [devAdminLoginLoading, setDevAdminLoginLoading] = useState(false);
+  const {
+    loginAsDevAdmin,
+    loginAsDevStudent,
+    isAdmin,
+    currentUser,
+    loading,
+    isDevAdminLoginEnabled,
+    isDevLoginEnabled
+  } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     let cancelled = false;
@@ -62,14 +73,14 @@ export default function LoginScreen() {
   // Auto-redirect when user is authenticated and ready
   useEffect(() => {
     if (!loading && currentUser) {
-      // Wait for user data to be set
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      const target = getSafePostLoginTarget({
+        isAdmin,
+        fromPathname: location.state?.from?.pathname,
+        fromSearch: location.state?.from?.search
+      });
+      navigate(target, { replace: true });
     }
-  }, [loading, currentUser, isAdmin, navigate]);
+  }, [loading, currentUser, isAdmin, location.state, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,6 +147,20 @@ export default function LoginScreen() {
       setError('Developer login is alleen beschikbaar in lokale development met VITE_ENABLE_DEV_LOGIN=true.');
     } finally {
       setDevLoginLoading(false);
+    }
+  };
+
+  const handleDeveloperAdminLogin = async () => {
+    try {
+      setError('');
+      setDevAdminLoginLoading(true);
+      await loginAsDevAdmin();
+      // Navigation handled automatically via useEffect when currentUser changes
+    } catch (err) {
+      console.error(err);
+      setError('Admin developer login is alleen beschikbaar in lokale development met VITE_ENABLE_DEV_ADMIN_LOGIN=true.');
+    } finally {
+      setDevAdminLoginLoading(false);
     }
   };
 
@@ -295,6 +320,26 @@ export default function LoginScreen() {
               >
                 <Code2 size={17} />
                 {devLoginLoading ? 'Start...' : 'Developer login'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isDevAdminLoginEnabled && (
+          <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">Lokale admin testlogin</p>
+            <p className="mt-1 text-sm leading-5 text-emerald-950">
+              Maakt alleen lokaal een admin-testgebruiker voor browsermatige verificatie van adminroutes.
+            </p>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={handleDeveloperAdminLogin}
+                disabled={devAdminLoginLoading}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-800 px-3 py-2.5 text-sm font-bold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <ShieldCheck size={17} />
+                {devAdminLoginLoading ? 'Start...' : 'Admin testlogin'}
               </button>
             </div>
           </div>

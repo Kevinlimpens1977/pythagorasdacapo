@@ -13,6 +13,41 @@ export const shouldFallbackToRedirectLogin = (error) => {
   ].includes(code);
 };
 
+export const isDevAdminLoginEnabled = (env = import.meta.env) =>
+  env.DEV === true && env.VITE_ENABLE_DEV_ADMIN_LOGIN === 'true';
+
+export const getSafePostLoginTarget = ({
+  isAdmin = false,
+  fromPathname = '',
+  fromSearch = '',
+  adminFallback = '/admin',
+  studentFallback = '/'
+} = {}) => {
+  const fallback = isAdmin ? adminFallback : studentFallback;
+  const pathname = String(fromPathname || '');
+  const search = String(fromSearch || '');
+
+  if (
+    !pathname ||
+    pathname === '/login' ||
+    !pathname.startsWith('/') ||
+    pathname.startsWith('//') ||
+    pathname.includes('\\')
+  ) {
+    return fallback;
+  }
+
+  if (pathname.startsWith('/admin') && !isAdmin) {
+    return studentFallback;
+  }
+
+  if (isAdmin && !pathname.startsWith('/admin')) {
+    return adminFallback;
+  }
+
+  return `${pathname}${search.startsWith('?') ? search : ''}`;
+};
+
 export const getGoogleLoginErrorMessage = (error) => {
   if (error?.code === 'auth/popup-closed-by-user') {
     return 'Google login is gesloten voordat het inloggen klaar was.';

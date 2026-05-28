@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './components/auth/AuthProvider';
 import LoginScreen from './components/auth/LoginScreen';
 import AppShell from './components/layout/AppShell';
@@ -21,8 +21,9 @@ import AdminSlidedecksPage from './pages/AdminSlidedecksPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { user, isAdmin } = useAuth();
+  const location = useLocation();
 
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
   if (requireAdmin && !isAdmin) return <Navigate to="/" />;
 
   return children;

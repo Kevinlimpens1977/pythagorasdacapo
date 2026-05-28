@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  getSafePostLoginTarget,
   getGoogleLoginErrorMessage,
   isAdminEmail,
+  isDevAdminLoginEnabled,
   shouldFallbackToRedirectLogin
 } from './authLoginUtils.js';
 
@@ -30,4 +32,31 @@ test('getGoogleLoginErrorMessage explains known Google login failures', () => {
     'Google login mislukt: dit domein staat niet in Firebase Authorized domains.'
   );
   assert.equal(getGoogleLoginErrorMessage({ code: 'auth/unknown' }), 'Google login mislukt.');
+});
+
+test('isDevAdminLoginEnabled requires local dev mode and the explicit admin flag', () => {
+  assert.equal(isDevAdminLoginEnabled({ DEV: true, VITE_ENABLE_DEV_ADMIN_LOGIN: 'true' }), true);
+  assert.equal(isDevAdminLoginEnabled({ DEV: true, VITE_ENABLE_DEV_ADMIN_LOGIN: 'false' }), false);
+  assert.equal(isDevAdminLoginEnabled({ DEV: false, VITE_ENABLE_DEV_ADMIN_LOGIN: 'true' }), false);
+  assert.equal(isDevAdminLoginEnabled({ VITE_ENABLE_DEV_ADMIN_LOGIN: 'true' }), false);
+});
+
+test('getSafePostLoginTarget restores safe admin targets for admins', () => {
+  assert.equal(
+    getSafePostLoginTarget({
+      isAdmin: true,
+      fromPathname: '/admin/presenter',
+      fromSearch: '?deck=test'
+    }),
+    '/admin/presenter?deck=test'
+  );
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/admin' }), '/admin');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/login' }), '/admin');
+});
+
+test('getSafePostLoginTarget blocks unsafe or unauthorized restore targets', () => {
+  assert.equal(getSafePostLoginTarget({ isAdmin: false, fromPathname: '/admin/presenter' }), '/');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: 'https://evil.test/admin' }), '/admin');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '//evil.test/admin' }), '/admin');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/\\evil' }), '/admin');
 });
