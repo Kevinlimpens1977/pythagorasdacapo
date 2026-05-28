@@ -1,17 +1,23 @@
 import {
   ArrowLeft,
   ArrowRight,
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  Bold,
   CheckSquare,
   FileText,
   FilePlus2,
   Grid3X3,
   Highlighter,
+  Italic,
   Maximize2,
   MousePointer2,
   PenLine,
   Plus,
   Redo2,
   Shapes,
+  Type,
   Trash2,
   Undo2
 } from 'lucide-react';
@@ -39,6 +45,7 @@ const instrumentTypes = [
 const categories = [
   { id: 'pen', label: 'Pen', icon: PenLine },
   { id: 'highlighter', label: 'Markeerstift', icon: Highlighter },
+  { id: 'text', label: 'Tekst', icon: Type },
   { id: 'objects', label: 'Objecten', icon: Shapes },
   { id: 'lesson', label: 'Lesstof', icon: FileText },
   { id: 'background', label: 'Achtergrond', icon: Grid3X3 },
@@ -74,6 +81,35 @@ const highlighterWidths = [
   { label: 'Normaal', value: 24 },
   { label: 'Breed', value: 32 }
 ];
+
+const textColors = [
+  { label: 'Zwart', value: '#111827' },
+  { label: 'Blauw', value: '#2563eb' },
+  { label: 'Rood', value: '#dc2626' },
+  { label: 'Groen', value: '#16a34a' },
+  { label: 'Paars', value: '#7c3aed' }
+];
+
+const textSizes = [
+  { label: 'S', value: 36 },
+  { label: 'M', value: 48 },
+  { label: 'L', value: 64 },
+  { label: 'XL', value: 84 }
+];
+
+const textFonts = [
+  { label: 'HELIX', value: 'helix' },
+  { label: 'Dyslexie', value: 'dyslexia' },
+  { label: 'Handschrift', value: 'handwriting' }
+];
+
+const textAlignments = [
+  { label: 'Links', value: 'left', icon: AlignLeft },
+  { label: 'Midden', value: 'center', icon: AlignCenter },
+  { label: 'Rechts', value: 'right', icon: AlignRight }
+];
+
+const mathSymbols = ['²', '√', 'π', '÷', '×', '≤', '≥'];
 
 const shellClass = 'border-[#6f4a87] bg-[#2b1838] text-[#fbf7ff]';
 const panelClass = `rounded-lg border ${shellClass} shadow-xl`;
@@ -113,6 +149,11 @@ export default function PresenterToolbar({
   onClearPage,
   onSelect,
   onCreateObject,
+  onCreateTextObject,
+  onTextStyle,
+  onTextSymbol,
+  selectedTextStyle,
+  hasSelectedTextObject = false,
   onInstrument,
   onOpenImport,
   onFullscreen
@@ -153,6 +194,25 @@ export default function PresenterToolbar({
   const drawingWidthLabel = isHighlighter ? 'Markeerdikte' : 'Dikte';
   const drawingToolLabel = isHighlighter ? 'Markeerstift' : 'Pen';
   const previewOpacity = isHighlighter ? 0.42 : 1;
+  const textStyle = selectedTextStyle || {};
+  const activeTextStyle = {
+    bold: Boolean(textStyle.bold),
+    italic: Boolean(textStyle.italic),
+    color: textStyle.color || '#111827',
+    fontSize: Number.isFinite(textStyle.fontSize) && textStyle.fontSize > 0 ? textStyle.fontSize : 48,
+    fontFamily: textStyle.fontFamily || 'helix',
+    align: textStyle.align || 'left'
+  };
+
+  const handleTextStyle = (updates) => {
+    onTextStyle?.(updates);
+    onAction?.();
+  };
+
+  const handleTextSymbol = (symbol) => {
+    onTextSymbol?.(symbol);
+    onAction?.();
+  };
 
   return (
     <div
@@ -279,6 +339,117 @@ export default function PresenterToolbar({
           >
             Ruitmaat {nextGridSize}
           </button>
+        </div>
+      ) : null}
+      {activeCategory === 'text' ? (
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(72rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-3 p-3 ${panelClass}`} onPointerEnter={onOpen}>
+          <button
+            type="button"
+            className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
+            onClick={() => runAction(onCreateTextObject)}
+          >
+            <Type size={18} strokeWidth={2.4} />
+            Tekstvak
+          </button>
+          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              className={`inline-flex h-12 w-12 items-center justify-center rounded-md border transition ${activeTextStyle.bold ? activeButtonClass : idleButtonClass}`}
+              onClick={() => handleTextStyle({ bold: !activeTextStyle.bold })}
+              aria-label="Vet"
+              aria-pressed={activeTextStyle.bold}
+            >
+              <Bold size={20} strokeWidth={2.8} />
+            </button>
+            <button
+              type="button"
+              className={`inline-flex h-12 w-12 items-center justify-center rounded-md border transition ${activeTextStyle.italic ? activeButtonClass : idleButtonClass}`}
+              onClick={() => handleTextStyle({ italic: !activeTextStyle.italic })}
+              aria-label="Cursief"
+              aria-pressed={activeTextStyle.italic}
+            >
+              <Italic size={20} strokeWidth={2.8} />
+            </button>
+            {textAlignments.map((alignment) => {
+              const Icon = alignment.icon;
+              const isActive = activeTextStyle.align === alignment.value;
+
+              return (
+                <button
+                  key={alignment.value}
+                  type="button"
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-md border transition ${isActive ? activeButtonClass : idleButtonClass}`}
+                  onClick={() => handleTextStyle({ align: alignment.value })}
+                  aria-label={`Uitlijnen ${alignment.label}`}
+                  aria-pressed={isActive}
+                >
+                  <Icon size={20} strokeWidth={2.6} />
+                </button>
+              );
+            })}
+          </div>
+          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {textColors.map((color) => {
+              const isActive = activeTextStyle.color === color.value;
+
+              return (
+                <button
+                  key={color.value}
+                  type="button"
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md border transition ${
+                    isActive ? 'border-[#f4e8ff] bg-[#4d3161]' : idleButtonClass
+                  }`}
+                  onClick={() => handleTextStyle({ color: color.value })}
+                  aria-label={`Tekstkleur ${color.label}`}
+                  aria-pressed={isActive}
+                >
+                  <span className="block h-7 w-7 rounded-full ring-2 ring-[#2b1838]" style={{ backgroundColor: color.value }} />
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {textSizes.map((size) => (
+              <button
+                key={size.value}
+                type="button"
+                className={`${popoverButtonClass} ${activeTextStyle.fontSize === size.value ? activeButtonClass : idleButtonClass}`}
+                onClick={() => handleTextStyle({ fontSize: size.value })}
+                aria-pressed={activeTextStyle.fontSize === size.value}
+              >
+                {size.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {textFonts.map((font) => (
+              <button
+                key={font.value}
+                type="button"
+                className={`${popoverButtonClass} ${activeTextStyle.fontFamily === font.value ? activeButtonClass : idleButtonClass}`}
+                onClick={() => handleTextStyle({ fontFamily: font.value })}
+                aria-pressed={activeTextStyle.fontFamily === font.value}
+              >
+                {font.label}
+              </button>
+            ))}
+          </div>
+          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {mathSymbols.map((symbol) => (
+              <button
+                key={symbol}
+                type="button"
+                className={`${popoverButtonClass} min-w-12 ${hasSelectedTextObject ? idleButtonClass : 'border-[#f08a24] bg-[#5a341f] text-[#fff7ed] hover:bg-[#704020]'}`}
+                onClick={() => handleTextSymbol(symbol)}
+                aria-label={`Wiskundesymbool ${symbol}`}
+              >
+                {symbol}
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
       {activeCategory === 'objects' ? (

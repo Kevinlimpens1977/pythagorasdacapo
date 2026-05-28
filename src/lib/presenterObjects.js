@@ -59,6 +59,21 @@ const SHAPE_DEFAULTS = {
     width: 180,
     height: 120,
     angleDegrees: 90
+  },
+  text: {
+    width: 520,
+    height: 180,
+    content: {
+      text: 'Typ je tekst...'
+    },
+    textStyle: {
+      bold: false,
+      italic: false,
+      color: '#111827',
+      fontSize: 48,
+      fontFamily: 'helix',
+      align: 'left'
+    }
   }
 };
 

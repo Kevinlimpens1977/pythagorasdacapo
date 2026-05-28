@@ -10,6 +10,7 @@ import {
   X
 } from 'lucide-react';
 import cmsService from '../../services/cmsService';
+import { getPublishedPresenterContentBlocks } from '../../lib/presenterContentImport';
 
 const sortByOrder = (items = []) =>
   [...items].sort((a, b) => (a.order || a.year || 0) - (b.order || b.year || 0));
@@ -138,6 +139,20 @@ export default function PresenterImportDialog({
 
     try {
       const contentBlocks = await cmsService.getContentBlocks(selectedParagraph.id, false);
+      const publishedBlocks = getPublishedPresenterContentBlocks(contentBlocks);
+      if (publishedBlocks.length === 0) {
+        setError('Deze paragraaf heeft geen gepubliceerde lesblokken om te importeren.');
+        return;
+      }
+
+      const canConfirm = typeof window !== 'undefined' && typeof window.confirm === 'function';
+      if (canConfirm) {
+        const confirmed = window.confirm(
+          `Deze paragraaf maakt ${publishedBlocks.length} Presenter-pagina${publishedBlocks.length === 1 ? '' : "'s"}. Importeren?`
+        );
+        if (!confirmed) return;
+      }
+
       const questionIds = [
         ...new Set(
           contentBlocks
@@ -156,7 +171,7 @@ export default function PresenterImportDialog({
       });
 
       if (imported === false) {
-        setError('Deze paragraaf heeft geen gepubliceerde lesblokken om te importeren.');
+        setError('Importeren is niet gelukt. Probeer het opnieuw.');
         return;
       }
 

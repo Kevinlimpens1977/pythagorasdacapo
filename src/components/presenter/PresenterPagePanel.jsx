@@ -1,4 +1,5 @@
 import { Copy, Plus, Trash2 } from 'lucide-react';
+import PresenterPageThumbnail from './PresenterPageThumbnail';
 
 export default function PresenterPagePanel({
   pages,
@@ -28,7 +29,7 @@ export default function PresenterPagePanel({
         </button>
       </div>
 
-      <div className="max-h-[45vh] overflow-y-auto p-2">
+      <div className="max-h-[52vh] overflow-y-auto p-2">
         {safePages.length === 0 ? (
           <p className="px-3 py-6 text-center text-sm font-semibold text-slate-500">Geen pagina&apos;s</p>
         ) : (
@@ -45,18 +46,20 @@ export default function PresenterPagePanel({
                 >
                   <button
                     type="button"
-                    className="flex min-h-12 w-full items-center gap-3 rounded-md px-2 text-left transition hover:bg-slate-200/70"
+                    className="flex min-h-24 w-full items-center gap-3 rounded-md p-2 text-left transition hover:bg-slate-200/70"
                     onClick={() => onSelectPage?.(page.id)}
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-slate-900 text-sm font-black text-slate-50">
-                      {index + 1}
-                    </span>
-                    <span className="min-w-0">
+                    <PresenterPageThumbnail active={isActive} page={page} pageNumber={index + 1} />
+                    <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-black text-slate-950">
                         {page.title || `Pagina ${index + 1}`}
                       </span>
                       <span className="block text-xs font-semibold text-slate-500">
                         {isActive ? 'Actief' : 'Tik om te openen'}
+                      </span>
+                      <span className="mt-2 block text-xs font-semibold text-slate-400">
+                        {(Array.isArray(page.strokes) ? page.strokes.length : 0)} lijnen &middot;{' '}
+                        {(Array.isArray(page.objects) ? page.objects.length : 0)} objecten
                       </span>
                     </span>
                   </button>

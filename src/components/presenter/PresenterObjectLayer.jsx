@@ -29,6 +29,32 @@ const getObjectStyle = (object) => ({
   strokeWidth: isFinitePositiveNumber(object?.strokeWidth) ? object.strokeWidth : 5
 });
 
+const getTextContent = (object) => {
+  const value = object?.content?.text ?? object?.text ?? '';
+  return typeof value === 'string' ? value : String(value ?? '');
+};
+
+const getTextStyle = (object) => ({
+  bold: Boolean(object?.textStyle?.bold),
+  italic: Boolean(object?.textStyle?.italic),
+  color: object?.textStyle?.color || DEFAULT_STROKE,
+  fontSize: isFinitePositiveNumber(object?.textStyle?.fontSize) ? object.textStyle.fontSize : 48,
+  fontFamily: object?.textStyle?.fontFamily || 'helix',
+  align: object?.textStyle?.align || 'left'
+});
+
+const getTextFontFamily = (fontFamily) => {
+  if (fontFamily === 'dyslexia') {
+    return 'Atkinson Hyperlegible, Verdana, Arial, sans-serif';
+  }
+
+  if (fontFamily === 'handwriting') {
+    return '"Comic Sans MS", "Segoe Print", cursive';
+  }
+
+  return 'Sora, Inter, system-ui, sans-serif';
+};
+
 const createDomIdPart = (value) => String(value || 'object').replace(/[^a-zA-Z0-9_-]/g, '-');
 
 const getHitStrokeWidth = (strokeWidth) => Math.max(MIN_TOUCH_STROKE_WIDTH, strokeWidth);
@@ -246,6 +272,8 @@ const renderObjectShape = (object, markerId) => {
       return renderTable(object, width, height, style);
     case 'angle':
       return renderAngle(object, width, height, style);
+    case 'text':
+      return null;
     default:
       if (isPresenterImportedObject(object)) {
         return (
@@ -258,6 +286,60 @@ const renderObjectShape = (object, markerId) => {
       }
       return null;
   }
+};
+
+const renderTextObject = (object, { interactive, onInteract, onSelectObject, onTextChange }) => {
+  const { width, height } = getObjectFrame(object);
+  const textStyle = getTextStyle(object);
+  const text = getTextContent(object);
+
+  const handleInput = (event) => {
+    onTextChange?.(object.id, event.currentTarget.innerText);
+  };
+
+  const handleFocus = () => {
+    onInteract?.();
+    onSelectObject?.(object.id);
+  };
+
+  const handlePointerDown = (event) => {
+    if (!interactive) return;
+
+    event.stopPropagation();
+    onInteract?.();
+    onSelectObject?.(object.id);
+  };
+
+  return (
+    <foreignObject height={Math.max(1, Math.abs(height))} width={Math.max(1, Math.abs(width))} x={Math.min(0, width)} y={Math.min(0, height)}>
+      <div className="h-full w-full" xmlns="http://www.w3.org/1999/xhtml">
+        <div
+          className="h-full w-full whitespace-pre-wrap break-words rounded-md border border-transparent bg-white/10 px-4 py-3 leading-tight outline-none focus:border-blue-500 focus:bg-white/40 focus:ring-4 focus:ring-blue-500/15"
+          contentEditable={interactive}
+          data-presenter-interactive="true"
+          onFocus={handleFocus}
+          onInput={handleInput}
+          onPointerDown={handlePointerDown}
+          role="textbox"
+          suppressContentEditableWarning
+          style={{
+            color: textStyle.color,
+            cursor: interactive ? 'text' : 'default',
+            fontFamily: getTextFontFamily(textStyle.fontFamily),
+            fontSize: `${textStyle.fontSize}px`,
+            fontStyle: textStyle.italic ? 'italic' : 'normal',
+            fontWeight: textStyle.bold ? 900 : 700,
+            height: '100%',
+            overflow: 'hidden',
+            textAlign: textStyle.align,
+            width: '100%'
+          }}
+        >
+          {text}
+        </div>
+      </div>
+    </foreignObject>
+  );
 };
 
 const renderSelection = (object, onDeleteObject, onInteract) => {
@@ -320,7 +402,8 @@ export default function PresenterObjectLayer({
   onInteract,
   onSelectObject,
   onObjectPointerDown,
-  onDeleteObject
+  onDeleteObject,
+  onTextChange
 }) {
   const layerId = createDomIdPart(useId());
   const width = isFinitePositiveNumber(page?.width) ? page.width : DEFAULT_PAGE_WIDTH;
@@ -365,7 +448,9 @@ export default function PresenterObjectLayer({
       </defs>
       {renderedObjects.map((object, index) => {
         const markerId = `presenter-object-arrow-${layerId}-${createDomIdPart(object.id)}`;
-        const shape = renderObjectShape(object, markerId);
+        const shape = object.type === 'text'
+          ? renderTextObject(object, { interactive, onInteract, onSelectObject, onTextChange })
+          : renderObjectShape(object, markerId);
         if (!shape) return null;
 
         const { x, y, width: objectWidth, height: objectHeight, rotation } = getObjectFrame(object);

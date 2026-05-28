@@ -95,6 +95,23 @@ test('createPresenterObject applies exact V1A shape defaults', () => {
   }
 });
 
+test('createPresenterObject creates V1B text object defaults', () => {
+  const object = createPresenterObject('text');
+
+  assert.equal(object.type, 'text');
+  assert.equal(object.width, 520);
+  assert.equal(object.height, 180);
+  assert.equal(object.content.text, 'Typ je tekst...');
+  assert.deepEqual(object.textStyle, {
+    bold: false,
+    italic: false,
+    color: '#111827',
+    fontSize: 48,
+    fontFamily: 'helix',
+    align: 'left'
+  });
+});
+
 test('createPresenterObject preserves nullish-safe overrides', () => {
   const object = createPresenterObject('rectangle', {
     x: 0,

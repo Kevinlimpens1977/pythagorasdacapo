@@ -209,6 +209,13 @@ function QuestionCard({ model }) {
     setChecked(false);
   };
 
+  const resetAnswers = () => {
+    setAnswers({
+      orderItems: getInitialOrderItems(model.orderItems)
+    });
+    setChecked(false);
+  };
+
   return (
     <CardShell model={model} className={feedbackBorder[status]}>
       <div className="flex h-full min-h-0 flex-col gap-5">
@@ -227,17 +234,29 @@ function QuestionCard({ model }) {
           <p className={`text-[20px] font-black ${status === 'correct' ? 'text-green-700' : status === 'incorrect' ? 'text-red-700' : 'text-slate-500'}`}>
             {status === 'correct' ? 'Goed gecontroleerd.' : status === 'incorrect' ? 'Kijk nog eens goed.' : ''}
           </p>
-          {control.hasInput ? (
-            <button
-              type="button"
-              className="inline-flex min-h-14 items-center gap-3 rounded-2xl bg-slate-950 px-6 py-4 text-[18px] font-black text-slate-50"
-              onClick={() => setChecked(true)}
-              data-presenter-interactive="true"
-            >
-              <CheckCircle2 size={22} />
-              Controleer
-            </button>
-          ) : null}
+          <div className="flex items-center gap-3">
+            {checked ? (
+              <button
+                type="button"
+                className="inline-flex min-h-14 items-center rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 text-[18px] font-black text-slate-800"
+                onClick={resetAnswers}
+                data-presenter-interactive="true"
+              >
+                Reset antwoord
+              </button>
+            ) : null}
+            {control.hasInput ? (
+              <button
+                type="button"
+                className="inline-flex min-h-14 items-center gap-3 rounded-2xl bg-slate-950 px-6 py-4 text-[18px] font-black text-slate-50"
+                onClick={() => setChecked(true)}
+                data-presenter-interactive="true"
+              >
+                <CheckCircle2 size={22} />
+                Controleer
+              </button>
+            ) : null}
+          </div>
         </footer>
       </div>
     </CardShell>
@@ -307,6 +326,68 @@ function QuestionAnswerUi({ model, answers, setAnswer, moveOrderItem }) {
             </button>
           </div>
         )) : <p className="rounded-2xl bg-slate-100 p-5 text-[20px] font-bold text-slate-500">Nog geen volgorde-items ingevuld.</p>}
+      </div>
+    );
+  }
+
+  if (model.type === 'koppelen') {
+    const pairs = model.pairs || [];
+    const selectedLeftId = answers.selectedLeftId || '';
+    const rightItems = [...pairs].reverse();
+
+    const chooseLeft = (pairId) => {
+      setAnswer('selectedLeftId', selectedLeftId === pairId ? '' : pairId);
+    };
+
+    const chooseRight = (pairId) => {
+      if (!selectedLeftId) return;
+      setAnswer('pairs', {
+        ...(answers.pairs || {}),
+        [selectedLeftId]: pairId
+      });
+      setAnswer('selectedLeftId', '');
+    };
+
+    return (
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid gap-3">
+          {pairs.map((pair, index) => {
+            const selected = selectedLeftId === pair.id;
+            const matchedRight = rightItems.find((item) => item.id === answers.pairs?.[pair.id]);
+
+            return (
+              <button
+                key={pair.id}
+                type="button"
+                onClick={() => chooseLeft(pair.id)}
+                className={`min-h-16 rounded-2xl border-2 px-5 py-4 text-left text-[20px] font-black text-slate-900 ${selected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white'}`}
+                data-presenter-interactive="true"
+              >
+                <span className="mr-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-[17px] text-slate-700">
+                  {index + 1}
+                </span>
+                {pair.left}
+                {matchedRight ? (
+                  <span className="mt-2 block text-[16px] font-bold text-indigo-700">Gekoppeld aan: {matchedRight.right}</span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+        <div className="grid gap-3">
+          {rightItems.map((pair) => (
+            <button
+              key={pair.id}
+              type="button"
+              onClick={() => chooseRight(pair.id)}
+              className="min-h-16 rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-left text-[20px] font-black text-slate-900 disabled:opacity-50"
+              disabled={!selectedLeftId}
+              data-presenter-interactive="true"
+            >
+              {pair.right}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }

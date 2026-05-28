@@ -130,7 +130,7 @@ function SelectionMarquee({ rect, scale }) {
   );
 }
 
-function SelectionTransformBox({ bounds, scale, onDelete, onMovePointerDown, onResizePointerDown }) {
+function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, onDelete, onMovePointerDown, onResizePointerDown }) {
   const handleSize = 28;
   const scaledBounds = {
     x: bounds.x * scale,
@@ -148,7 +148,7 @@ function SelectionTransformBox({ bounds, scale, onDelete, onMovePointerDown, onR
   return (
     <div className="pointer-events-none absolute inset-0">
       <div
-        className="pointer-events-auto absolute border-[3px] border-blue-600 bg-blue-500/5"
+        className={`absolute border-[3px] border-blue-600 bg-blue-500/5 ${allowInteriorInteraction ? 'pointer-events-none' : 'pointer-events-auto'}`}
         onPointerDown={onMovePointerDown}
         style={{
           cursor: 'move',
@@ -159,6 +159,22 @@ function SelectionTransformBox({ bounds, scale, onDelete, onMovePointerDown, onR
           touchAction: 'none'
         }}
       />
+      {allowInteriorInteraction ? (
+        <button
+          aria-label="Selectie verplaatsen"
+          className="pointer-events-auto absolute rounded-md border-[3px] border-blue-700 bg-white px-3 py-1 text-xs font-black text-blue-800 shadow-sm"
+          onPointerDown={onMovePointerDown}
+          style={{
+            cursor: 'move',
+            left: `${scaledBounds.x}px`,
+            top: `${Math.max(0, scaledBounds.y - 36)}px`,
+            touchAction: 'none'
+          }}
+          type="button"
+        >
+          Verplaats
+        </button>
+      ) : null}
       {handles.map(([handle, x, y, cursor]) => (
         <button
           aria-label={`Selectie ${handle} schalen`}
@@ -209,7 +225,8 @@ export default function PresenterBoard({
   onMoveObjects,
   onResizeObjects,
   onDeleteObject,
-  onDeleteObjects
+  onDeleteObjects,
+  onTextChange
 }) {
   const surfaceRef = useRef(null);
   const boardRef = useRef(null);
@@ -280,6 +297,15 @@ export default function PresenterBoard({
     () => getPresenterSelectionBounds(previewPage, activeSelectedObjectIds),
     [activeSelectedObjectIds, previewPage]
   );
+
+  const selectedObjectsAreText = useMemo(() => {
+    if (activeSelectedObjectIds.length !== 1) return false;
+
+    const selectedId = activeSelectedObjectIds[0];
+    return (Array.isArray(previewPage?.objects) ? previewPage.objects : []).some(
+      (object) => object?.id === selectedId && object?.type === 'text'
+    );
+  }, [activeSelectedObjectIds, previewPage]);
 
   const getBoardPoint = (event) => {
     const boardElement = boardRef.current;
@@ -542,6 +568,7 @@ export default function PresenterBoard({
           onObjectPointerDown={handleObjectPointerDown}
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
+          onTextChange={onTextChange}
         />
         <PresenterInkLayer page={inkPage} />
         <PresenterObjectLayer
@@ -560,6 +587,7 @@ export default function PresenterBoard({
         {selectionBounds ? (
           <SelectionTransformBox
             bounds={selectionBounds}
+            allowInteriorInteraction={selectedObjectsAreText}
             scale={board.scale}
             onDelete={handleSelectionDelete}
             onMovePointerDown={handleSelectionPointerDown}

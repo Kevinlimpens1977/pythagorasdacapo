@@ -25,10 +25,19 @@ const stripEmptyHtml = (value = '') => {
 
 const firstText = (...values) => values.find((value) => typeof value === 'string' && value.trim())?.trim() || '';
 
-const getContent = (object = {}) => object.content || object.block?.content || {};
+const getObjectData = (object = {}) => object.data || {};
+
+const getContent = (object = {}) =>
+  object.content || object.block?.content || object.data || {};
 
 const getQuestionSource = (object = {}) =>
-  object.linkedVraag || object.question || object.vraag || object.block?.linkedVraag || object.block?.question || object;
+  object.linkedVraag ||
+  object.question ||
+  object.vraag ||
+  object.data?.question ||
+  object.block?.linkedVraag ||
+  object.block?.question ||
+  object;
 
 const getBlockType = (object = {}) => {
   const contentType = object.blockType || object.contentBlockType || object.block?.type;
@@ -43,48 +52,63 @@ const getBlockType = (object = {}) => {
   return object.block?.type || object.type || 'theory';
 };
 
-export const getPresenterImportedObjectKind = (object = {}) => TYPE_TO_KIND[object?.type] || '';
+export const getPresenterImportedObjectKind = (object = {}) => {
+  const dataKind = object?.data?.kind;
+  if (dataKind === 'question') return 'question';
+  if (dataKind === 'media') return 'media';
+  if (dataKind === 'slidedeck') return 'slidedeck';
+  if (dataKind === 'theory' || dataKind === 'example' || dataKind === 'summary') return 'lesson';
+
+  return TYPE_TO_KIND[object?.type] || '';
+};
 
 export const isPresenterImportedObject = (object = {}) => Boolean(getPresenterImportedObjectKind(object));
 
 const buildLessonModel = (object = {}) => {
+  const data = getObjectData(object);
   const content = getContent(object);
-  const blockType = getBlockType(object);
-  const imageUrl = firstText(content.imageUrl, content.mediaUrl, object.imageUrl, object.mediaUrl);
+  const blockType = data.kind || getBlockType(object);
+  const imageUrl = firstText(data.imageUrl, content.imageUrl, content.mediaUrl, object.imageUrl, object.mediaUrl);
 
   return {
     kind: 'lesson',
     label: CONTENT_BLOCK_LABELS[blockType] || CONTENT_BLOCK_LABELS.theory,
-    title: firstText(object.title, object.block?.title, content.title, CONTENT_BLOCK_LABELS[blockType], 'Lesblok'),
-    bodyHtml: stripEmptyHtml(firstText(content.html, content.bodyHtml, content.text, object.bodyHtml, object.text)),
+    title: firstText(data.title, object.title, object.block?.title, content.title, CONTENT_BLOCK_LABELS[blockType], 'Lesblok'),
+    bodyHtml: stripEmptyHtml(firstText(data.html, content.html, content.bodyHtml, content.text, object.bodyHtml, object.text)),
     imageUrl,
-    caption: firstText(content.caption, content.altText, object.caption)
+    caption: firstText(data.caption, content.caption, content.altText, object.caption)
   };
 };
 
 const buildMediaModel = (object = {}) => {
+  const data = getObjectData(object);
   const content = getContent(object);
+  const dataMedia = data.media || {};
   const media = normalizeMediaContent({
+    ...dataMedia,
     ...content,
-    mediaUrl: firstText(content.mediaUrl, object.mediaUrl, content.imageUrl, object.imageUrl, content.pdfUrl, object.pdfUrl, content.videoUrl, object.videoUrl),
-    mediaKind: content.mediaKind || object.mediaKind,
-    contentType: content.contentType || object.contentType,
-    caption: firstText(content.caption, object.caption),
-    altText: firstText(content.altText, object.altText, object.title)
+    mediaUrl: firstText(dataMedia.mediaUrl, content.mediaUrl, object.mediaUrl, content.imageUrl, object.imageUrl, content.pdfUrl, object.pdfUrl, content.videoUrl, object.videoUrl),
+    mediaKind: dataMedia.mediaKind || content.mediaKind || object.mediaKind,
+    contentType: dataMedia.contentType || content.contentType || object.contentType,
+    caption: firstText(dataMedia.caption, content.caption, object.caption),
+    altText: firstText(dataMedia.altText, content.altText, object.altText, object.title)
   });
 
   return {
     kind: 'media',
     label: CONTENT_BLOCK_LABELS.media,
-    title: firstText(object.title, object.block?.title, content.title, 'Media'),
-    bodyHtml: stripEmptyHtml(firstText(content.html, content.bodyHtml, content.text)),
+    title: firstText(data.title, object.title, object.block?.title, content.title, 'Media'),
+    bodyHtml: stripEmptyHtml(firstText(data.html, content.html, content.bodyHtml, content.text)),
     media
   };
 };
 
 const buildSlidedeckModel = (object = {}) => {
+  const data = getObjectData(object);
   const content = getContent(object);
+  const slidedeck = data.slidedeck || {};
   const pdfUrl = firstText(
+    slidedeck.pdfUrl,
     content.generatedDeckUrl,
     content.pdfUrl,
     content.sourcePdfUrl,
@@ -96,15 +120,16 @@ const buildSlidedeckModel = (object = {}) => {
   return {
     kind: 'slidedeck',
     label: CONTENT_BLOCK_LABELS.slidedeck,
-    title: firstText(content.deckTitle, object.title, object.block?.title, 'Slidedeck'),
-    bodyHtml: stripEmptyHtml(firstText(content.html, content.bodyHtml, content.text)),
+    title: firstText(slidedeck.deckTitle, data.title, content.deckTitle, object.title, object.block?.title, 'Slidedeck'),
+    bodyHtml: stripEmptyHtml(firstText(data.html, content.html, content.bodyHtml, content.text)),
     pdfUrl,
-    packageId: firstText(content.slidedeckPackageId, object.slidedeckPackageId),
-    storagePath: firstText(content.generatedDeckStoragePath, content.pdfStoragePath, object.pdfStoragePath)
+    packageId: firstText(slidedeck.slidedeckPackageId, content.slidedeckPackageId, object.slidedeckPackageId),
+    storagePath: firstText(slidedeck.pdfStoragePath, content.generatedDeckStoragePath, content.pdfStoragePath, object.pdfStoragePath)
   };
 };
 
 const buildQuestionModel = (object = {}) => {
+  const data = getObjectData(object);
   const question = getQuestionSource(object);
   const content = getContent(object);
   const preview = buildQuestionPreviewModel(question);
@@ -113,12 +138,19 @@ const buildQuestionModel = (object = {}) => {
   return {
     kind: 'question',
     label: CONTENT_BLOCK_LABELS.question,
-    title: firstText(object.title, object.block?.title, question?.title, 'Vraag'),
+    title: firstText(data.title, object.title, object.block?.title, question?.title, 'Vraag'),
     type: preview.type,
-    promptHtml: stripEmptyHtml(firstText(preview.promptHtml, content.html, content.text, question?.content?.text)),
+    promptHtml: stripEmptyHtml(firstText(preview.promptHtml, data.blockPromptHtml, content.html, content.text, question?.content?.text)),
     segments: preview.segments || [],
     fields: preview.fields || [],
     orderItems: preview.orderItems || [],
+    pairs: Array.isArray(answer.pairs)
+      ? answer.pairs.map((pair, index) => ({
+          id: pair.id || `pair-${index + 1}`,
+          left: pair.left || pair.prompt || `Links ${index + 1}`,
+          right: pair.right || pair.answer || `Rechts ${index + 1}`
+        }))
+      : [],
     options: Array.isArray(answer.options)
       ? answer.options.map((option, index) => ({
           id: option.id || `option-${index + 1}`,
@@ -158,6 +190,10 @@ export const getQuestionControlState = (model, answers = {}) => {
     return { hasInput: Boolean(answers.orderTouched) };
   }
 
+  if (model.type === 'koppelen') {
+    return { hasInput: Object.keys(answers.pairs || {}).length > 0 };
+  }
+
   if (model.type === 'numeriek') {
     return { hasInput: Boolean(String(answers.expectedValue || '').trim()) };
   }
@@ -181,6 +217,12 @@ export const getQuestionFeedbackStatus = (model, answers = {}, checked = false) 
   if (model.type === 'volgorde') {
     const items = Array.isArray(answers.orderItems) ? answers.orderItems : [];
     const correct = items.length === model.orderItems.length && items.every((item, index) => item.id === model.orderItems[index]?.id);
+    return correct ? 'correct' : 'incorrect';
+  }
+
+  if (model.type === 'koppelen') {
+    const submittedPairs = answers.pairs || {};
+    const correct = model.pairs.length > 0 && model.pairs.every((pair) => submittedPairs[pair.id] === pair.id);
     return correct ? 'correct' : 'incorrect';
   }
 

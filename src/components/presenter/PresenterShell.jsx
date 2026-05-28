@@ -42,6 +42,14 @@ import PresenterRecoveryPrompt from './PresenterRecoveryPrompt';
 import PresenterToolbar from './PresenterToolbar';
 
 const MAX_SESSION_HISTORY_ITEMS = 80;
+const DEFAULT_TEXT_TOOL_STYLE = {
+  bold: false,
+  italic: false,
+  color: '#111827',
+  fontSize: 48,
+  fontFamily: 'helix',
+  align: 'left'
+};
 
 const createObjectId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -326,6 +334,7 @@ export default function PresenterShell() {
   const [recoveredSession, setRecoveredSession] = useState(getInitialRecoveredSession);
   const [fullscreenErrorVisible, setFullscreenErrorVisible] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [textToolStyle, setTextToolStyle] = useState(DEFAULT_TEXT_TOOL_STYLE);
   const fullscreenErrorTimerRef = useRef(null);
   const toolbarAutoCloseTimerRef = useRef(null);
 
@@ -360,6 +369,16 @@ export default function PresenterShell() {
     (Array.isArray(activePage?.strokes) && activePage.strokes.length > 0) ||
       (Array.isArray(activePage?.objects) && activePage.objects.length > 0)
   );
+  const selectedTextObject = useMemo(() => {
+    const selectedId = Array.isArray(session.selectedObjectIds) && session.selectedObjectIds.length === 1
+      ? session.selectedObjectIds[0]
+      : session.selectedObjectId;
+
+    return (Array.isArray(activePage?.objects) ? activePage.objects : []).find(
+      (object) => object?.id === selectedId && object?.type === 'text'
+    ) || null;
+  }, [activePage, session.selectedObjectId, session.selectedObjectIds]);
+  const selectedTextStyle = selectedTextObject?.textStyle || textToolStyle;
 
   const clearToolbarAutoCloseTimer = useCallback(() => {
     if (toolbarAutoCloseTimerRef.current) {
@@ -402,6 +421,31 @@ export default function PresenterShell() {
       return nextSession;
     });
   }, []);
+
+  const updateObjectOnActivePageWithHistory = useCallback((objectId, updater) => {
+    if (!objectId || typeof updater !== 'function') return;
+
+    updateActivePageWithHistory((currentSession, page) => {
+      const objects = Array.isArray(page?.objects) ? page.objects : [];
+      let changed = false;
+      const nextObjects = objects.map((object) => {
+        if (object?.id !== objectId) return object;
+
+        const nextObject = updater(object);
+        if (!nextObject || nextObject === object) return object;
+
+        changed = true;
+        return nextObject;
+      });
+
+      if (!changed) return currentSession;
+
+      return replacePresenterPage(currentSession, page.id, {
+        ...page,
+        objects: nextObjects
+      });
+    });
+  }, [updateActivePageWithHistory]);
 
   const activatePageAt = useCallback((index) => {
     setSession((currentSession) => setActivePresenterPageAt(currentSession, index));
@@ -630,6 +674,75 @@ export default function PresenterShell() {
       addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
     );
   };
+
+  const handleCreateTextObject = (initialText = 'Typ je tekst...') => {
+    const object = createPresenterObject('text', {
+      id: createObjectId(),
+      x: 260,
+      y: 220,
+      content: { text: initialText },
+      textStyle: textToolStyle
+    });
+
+    updateActivePageWithHistory((currentSession) =>
+      addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
+    );
+    setActiveCategory('text');
+    setPagePanelOpen(false);
+  };
+
+  const handleTextStyle = (updates) => {
+    setTextToolStyle((currentStyle) => ({
+      ...currentStyle,
+      ...updates
+    }));
+
+    if (!selectedTextObject?.id) return;
+
+    updateObjectOnActivePageWithHistory(selectedTextObject.id, (object) => ({
+      ...object,
+      textStyle: {
+        ...DEFAULT_TEXT_TOOL_STYLE,
+        ...(object.textStyle || {}),
+        ...updates
+      }
+    }));
+  };
+
+  const handleTextSymbol = (symbol) => {
+    if (!selectedTextObject?.id) {
+      handleCreateTextObject(symbol);
+      return;
+    }
+
+    updateObjectOnActivePageWithHistory(selectedTextObject.id, (object) => {
+      const currentText = typeof object?.content?.text === 'string' ? object.content.text : '';
+      const separator = currentText && !currentText.endsWith(' ') ? ' ' : '';
+
+      return {
+        ...object,
+        content: {
+          ...(object.content || {}),
+          text: `${currentText}${separator}${symbol}`
+        }
+      };
+    });
+  };
+
+  const handleTextChange = useCallback((objectId, text) => {
+    updateObjectOnActivePageWithHistory(objectId, (object) => {
+      const nextText = typeof text === 'string' ? text : '';
+      if ((object?.content?.text || '') === nextText) return object;
+
+      return {
+        ...object,
+        content: {
+          ...(object.content || {}),
+          text: nextText
+        }
+      };
+    });
+  }, [updateObjectOnActivePageWithHistory]);
 
   const handleImportContent = (importOptions) => {
     if (getPublishedPresenterContentBlocks(importOptions?.contentBlocks).length === 0) return false;
@@ -865,6 +978,7 @@ export default function PresenterShell() {
         onResizeObjects={handleResizeObjects}
         onDeleteObject={handleDeleteObject}
         onDeleteObjects={handleDeleteObjects}
+        onTextChange={handleTextChange}
       />
       <PresenterPagePanel
         pages={pages}
@@ -914,6 +1028,11 @@ export default function PresenterShell() {
         onClearPage={clearPage}
         onSelect={handleSelectTool}
         onCreateObject={handleCreateObject}
+        onCreateTextObject={() => handleCreateTextObject()}
+        onTextStyle={handleTextStyle}
+        onTextSymbol={handleTextSymbol}
+        selectedTextStyle={selectedTextStyle}
+        hasSelectedTextObject={Boolean(selectedTextObject)}
         onInstrument={handleInstrument}
         onOpenImport={openImportDialog}
         onFullscreen={handleFullscreen}
