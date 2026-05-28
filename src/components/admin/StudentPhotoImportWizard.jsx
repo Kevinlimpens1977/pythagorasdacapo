@@ -15,9 +15,9 @@ import {
 } from '../../services/studentPhotoImportService';
 import { extractStudentPhotoSelectionsFromPdf } from '../../services/studentPhotoPdfListImportService';
 import {
-  buildStudentMatchCandidates,
   createPhotoImportRows,
-  getPhotoImportReadiness
+  getPhotoImportReadiness,
+  joinStudentName
 } from '../../lib/studentPhotoImportUtils';
 
 const steps = ['Bron', 'Uitsnedes', 'Matchen', 'Goedkeuren'];
@@ -204,46 +204,35 @@ export default function StudentPhotoImportWizard({
     );
   };
 
-  const handleProposedNameChange = (row, proposedName) => {
+  const handleNamePartChange = (row, patch) => {
+    const firstName = patch.firstName ?? row.firstName ?? '';
+    const lastName = patch.lastName ?? row.lastName ?? '';
+    const proposedName = joinStudentName({ firstName, lastName });
     updateSelection(row.selection.id, { proposedName, label: proposedName || String(row.order) });
-    const candidates = buildStudentMatchCandidates(matchStudents, proposedName);
-    const best = candidates[0];
     updateRow(row.id, {
       proposedName,
-      matchedUserId: best?.score >= 0.9 ? best.student.uid : '',
-      matchedDisplayName: best?.score >= 0.9 ? best.student.displayName : '',
-      matchConfidence: best?.score || 0,
-      matchMethod: best?.method || 'suggested',
-      decision: best?.score >= 0.9 ? 'link' : 'review',
-      status: best?.score >= 0.9 ? 'zekere match' : proposedName ? (best ? 'controle nodig' : 'geen match') : 'naam ontbreekt'
+      firstName,
+      lastName,
+      matchedUserId: '',
+      matchedDisplayName: '',
+      matchConfidence: 0,
+      matchMethod: 'pdf-name',
+      decision: patch.decision || (proposedName ? 'pending' : 'review'),
+      status: proposedName ? 'controle nodig' : 'naam ontbreekt'
     });
   };
 
   const handleApproveAllRows = () => {
     setRows((current) =>
       current.map((row) => {
-        const best = row.matchedUserId ? null : row.candidates?.[0];
-        const bestStudent = best?.score >= 0.85 ? best.student : null;
-
-        if (row.matchedUserId || bestStudent) {
-          const matchedUserId = row.matchedUserId || bestStudent.uid || bestStudent.id || '';
-          const student = students.find((item) => item.uid === matchedUserId || item.id === matchedUserId) || bestStudent;
+        if (String(row.firstName || row.lastName || row.proposedName || '').trim()) {
           return {
             ...row,
-            matchedUserId,
-            matchedDisplayName: student?.displayName || student?.email || row.matchedDisplayName || '',
-            matchConfidence: row.matchConfidence || best?.score || 1,
-            matchMethod: row.matchMethod || 'bulk-approve',
-            decision: 'link',
-            status: 'matched'
-          };
-        }
-
-        if (String(row.proposedName || '').trim()) {
-          return {
-            ...row,
+            proposedName: joinStudentName(row) || row.proposedName || '',
             decision: 'pending',
-            status: row.status === 'naam ontbreekt' ? 'controle nodig' : row.status
+            status: 'controle nodig',
+            matchedUserId: '',
+            matchedDisplayName: ''
           };
         }
 
@@ -394,6 +383,8 @@ export default function StudentPhotoImportWizard({
             labelBox: row.labelBox || null,
             labelMatchConfidence: row.labelMatchConfidence || 0,
             proposedName: row.proposedName || '',
+            firstName: row.firstName || '',
+            lastName: row.lastName || '',
             reviewNote: row.decision
           }
         });
@@ -405,6 +396,8 @@ export default function StudentPhotoImportWizard({
           decision: row.decision,
           matchedUserId: row.matchedUserId || null,
           proposedName: row.proposedName || '',
+          firstName: row.firstName || '',
+          lastName: row.lastName || '',
           bbox: row.selection.cropCoordinates
         });
       }
@@ -609,20 +602,17 @@ export default function StudentPhotoImportWizard({
         {activeStep === 2 ? (
           <MatchStep
             rows={rows}
-            students={matchStudents}
             thumbs={thumbs}
             selectedKlas={selectedKlas}
             targetStudentCount={targetStudents.length}
             totalStudentCount={students.length}
-            duplicateMatchedUserIds={duplicateMatchedUserIds}
             onApproveAll={handleApproveAllRows}
-            onRowChange={updateRow}
-            onNameChange={handleProposedNameChange}
+            onNameChange={handleNamePartChange}
           />
         ) : null}
 
         {activeStep === 3 ? (
-          <ReviewStep rows={rows} students={targetStudents} thumbs={thumbs} />
+          <ReviewStep rows={rows} thumbs={thumbs} />
         ) : null}
       </div>
 
@@ -722,14 +712,11 @@ const SelectionPanel = ({ selections, activeSelectionId, thumbs, onSelect, onRem
 
 const MatchStep = ({
   rows,
-  students,
   thumbs,
   selectedKlas,
   targetStudentCount,
   totalStudentCount,
-  duplicateMatchedUserIds,
   onApproveAll,
-  onRowChange,
   onNameChange
 }) => (
   <div className="space-y-3">
@@ -737,7 +724,7 @@ const MatchStep = ({
       <div>
         <p className="font-black text-[var(--helix-navy)]">Alle herkende leerlingen controleren</p>
         <p className="helix-muted text-sm">
-          Zekere matches worden gekoppeld; namen zonder match gaan naar later reviewen.
+          Controleer voornaam en achternaam. HELIX zet deze leerlinggegevens met foto klaar voor verwerking.
           {selectedKlas && targetStudentCount === 0 && totalStudentCount > 0
             ? ` In ${selectedKlas.naam || selectedKlas.name || 'deze klas'} staan nog geen leerlingen, daarom zoekt HELIX tijdelijk in alle leerlingen.`
             : ''}
@@ -755,9 +742,7 @@ const MatchStep = ({
     {rows.map((row) => (
       <div
         key={row.id}
-        className={`grid gap-4 rounded-[var(--helix-radius-lg)] border bg-white p-4 lg:grid-cols-[5rem_1fr_1fr_auto] lg:items-center ${
-          duplicateMatchedUserIds?.has(row.matchedUserId) ? 'border-amber-300' : 'border-[var(--helix-border)]'
-        }`}
+        className="grid gap-4 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-4 lg:grid-cols-[5rem_1fr_auto] lg:items-center"
       >
         {thumbs[row.selection.id] ? (
           <img src={thumbs[row.selection.id]} alt="" className="h-20 w-20 rounded-md bg-slate-100 object-cover" />
@@ -765,49 +750,38 @@ const MatchStep = ({
           <div className="h-20 w-20 rounded-md bg-slate-100" />
         )}
         <div>
-          <label className="text-xs font-black uppercase tracking-wide text-slate-400">Herkende/ingevoerde naam</label>
-          <input
-            value={row.proposedName || ''}
-            onChange={(event) => onNameChange(row, event.target.value)}
-            className="mt-1 min-h-11 w-full rounded-md border border-[var(--helix-border)] px-3 font-bold text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
-            placeholder="Naam leerling"
-          />
+          <label className="text-xs font-black uppercase tracking-wide text-slate-400">Leerlinggegevens</label>
+          <div className="mt-1 grid gap-2 sm:grid-cols-2">
+            <input
+              value={row.firstName || ''}
+              onChange={(event) => onNameChange(row, { firstName: event.target.value })}
+              className="min-h-11 w-full rounded-md border border-[var(--helix-border)] px-3 font-bold text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
+              placeholder="Voornaam"
+            />
+            <input
+              value={row.lastName || ''}
+              onChange={(event) => onNameChange(row, { lastName: event.target.value })}
+              className="min-h-11 w-full rounded-md border border-[var(--helix-border)] px-3 font-bold text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
+              placeholder="Achternaam"
+            />
+          </div>
           {row.rawOcrText || row.ocrConfidence || row.labelMatchConfidence ? (
             <p className="mt-1 text-xs font-bold text-slate-400">
               OCR {Math.round(row.ocrConfidence || 0)}% · labelmatch {Math.round((row.labelMatchConfidence || 0) * 100)}%
             </p>
           ) : null}
         </div>
-        <div>
-          <label className="text-xs font-black uppercase tracking-wide text-slate-400">Koppel aan leerling</label>
-          <select
-            value={row.matchedUserId || ''}
-            onChange={(event) => onRowChange(row.id, { matchedUserId: event.target.value })}
-            className="mt-1 min-h-11 w-full rounded-md border border-[var(--helix-border)] bg-white px-3 font-bold text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
-          >
-            <option value="">Geen koppeling</option>
-            {students.map((student) => (
-              <option key={student.uid} value={student.uid}>
-                {student.displayName || student.email || student.uid} ({student.klasName})
-              </option>
-            ))}
-          </select>
-          {duplicateMatchedUserIds?.has(row.matchedUserId) ? (
-            <p className="mt-1 text-xs font-bold text-amber-700">Deze leerling is al aan een andere uitsnede gekoppeld.</p>
-          ) : null}
-        </div>
         <div className="flex flex-col gap-2">
           <span className={`rounded-full border px-3 py-1 text-center text-xs font-black ${statusClass[row.status] || 'border-slate-200 bg-slate-50 text-slate-700'}`}>
-            {row.status}
+            {row.firstName || row.lastName ? 'klaar voor import' : 'naam ontbreekt'}
           </span>
           <select
             value={row.decision || 'review'}
-            onChange={(event) => onRowChange(row.id, { decision: event.target.value })}
+            onChange={(event) => onNameChange(row, { decision: event.target.value })}
             className="min-h-10 rounded-md border border-[var(--helix-border)] bg-white px-2 text-sm font-bold"
           >
             <option value="review">Controle nodig</option>
-            <option value="link">Koppelen</option>
-            <option value="pending">Later reviewen</option>
+            <option value="pending">Importeren</option>
             <option value="skip">Overslaan</option>
           </select>
         </div>
@@ -816,7 +790,7 @@ const MatchStep = ({
   </div>
 );
 
-const ReviewStep = ({ rows, students, thumbs }) => (
+const ReviewStep = ({ rows, thumbs }) => (
   <div className="overflow-hidden rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white">
     <div className="grid grid-cols-[5rem_1fr_1fr_8rem] gap-4 border-b border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">
       <span>Foto</span>
@@ -824,9 +798,7 @@ const ReviewStep = ({ rows, students, thumbs }) => (
       <span>Actie</span>
       <span>Status</span>
     </div>
-    {rows.map((row) => {
-      const student = students.find((item) => item.uid === row.matchedUserId);
-      return (
+    {rows.map((row) => (
         <div key={row.id} className="grid grid-cols-[5rem_1fr_1fr_8rem] gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0">
           {thumbs[row.selection.id] ? (
             <img src={thumbs[row.selection.id]} alt="" className="h-16 w-16 rounded-md bg-slate-100 object-cover" />
@@ -834,17 +806,16 @@ const ReviewStep = ({ rows, students, thumbs }) => (
             <div className="h-16 w-16 rounded-md bg-slate-100" />
           )}
           <div>
-            <p className="font-black text-[var(--helix-navy)]">{student?.displayName || row.proposedName || 'Niet gekoppeld'}</p>
-            <p className="helix-muted text-sm">{student?.email || 'Geen bestaand account'}</p>
+            <p className="font-black text-[var(--helix-navy)]">{row.proposedName || 'Naam ontbreekt'}</p>
+            <p className="helix-muted text-sm">Voornaam: {row.firstName || '-'} · Achternaam: {row.lastName || '-'}</p>
           </div>
           <p className="text-sm font-bold text-[var(--helix-navy)]">
-            {row.decision === 'link' ? (student?.photo ? 'Vervangt bestaande foto' : 'Foto toevoegen') : row.decision === 'pending' ? 'Later reviewen' : 'Overslaan'}
+            {row.decision === 'pending' ? 'Leerlinggegevens klaarzetten' : 'Overslaan'}
           </p>
-          <span className={`h-fit rounded-full border px-3 py-1 text-center text-xs font-black ${row.decision === 'link' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+          <span className={`h-fit rounded-full border px-3 py-1 text-center text-xs font-black ${row.decision === 'pending' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
             {row.decision}
           </span>
         </div>
-      );
-    })}
+    ))}
   </div>
 );

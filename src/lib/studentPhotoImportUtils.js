@@ -42,6 +42,20 @@ export const sanitizeImportFileName = (value = 'leerlingfoto') =>
     .replace(/^-|-$/g, '')
     .slice(0, 96) || 'leerlingfoto';
 
+export const splitStudentFullName = (value = '') => {
+  const parts = String(value || '').trim().replace(/\s+/g, ' ').split(' ').filter(Boolean);
+  if (!parts.length) return { firstName: '', lastName: '' };
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' };
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' ')
+  };
+};
+
+export const joinStudentName = ({ firstName = '', lastName = '' } = {}) =>
+  [firstName, lastName].map((part) => String(part || '').trim()).filter(Boolean).join(' ');
+
 const getEmailPrefix = (email = '') => String(email || '').split('@')[0] || '';
 
 const scoreCandidate = (proposedName, candidate = {}) => {
@@ -212,11 +226,12 @@ export const validatePhotoImportRow = (row = {}, { students = [], klasId = '' } 
 export const createPhotoImportRows = (crops = [], students = []) =>
   crops.map((crop, index) => {
     const proposedName = String(crop.proposedName || crop.label || crop.name || '').trim();
+    const nameParts = splitStudentFullName(proposedName);
     const candidates = buildStudentMatchCandidates(students, proposedName);
     const [bestCandidate] = candidates;
     const isConfident = bestCandidate?.score >= 0.85;
     const cropId = crop.cropId || crop.id || `crop-${index + 1}`;
-    const matchedUserId = isConfident ? bestCandidate.student.uid || bestCandidate.student.id || '' : '';
+    const matchedUserId = '';
     const status = getMatchStatus({
       proposedName,
       candidates,
@@ -229,6 +244,8 @@ export const createPhotoImportRows = (crops = [], students = []) =>
       order: index + 1,
       selection: crop,
       proposedName,
+      firstName: crop.firstName || nameParts.firstName,
+      lastName: crop.lastName || nameParts.lastName,
       bbox: crop.bbox || null,
       cropCoordinates: crop.cropCoordinates || crop.bbox || null,
       originalImageSize: crop.originalImageSize || null,
@@ -242,11 +259,11 @@ export const createPhotoImportRows = (crops = [], students = []) =>
       candidates,
       matchStatus: status,
       status,
-      matchedUserId,
-      matchedDisplayName: isConfident ? bestCandidate.student.displayName || bestCandidate.student.email || '' : '',
+      matchedUserId: '',
+      matchedDisplayName: '',
       matchConfidence: bestCandidate?.score || 0,
       matchMethod: isConfident ? 'name' : 'suggested',
-      decision: isConfident ? 'link' : 'review'
+      decision: proposedName ? 'pending' : 'review'
     };
   });
 

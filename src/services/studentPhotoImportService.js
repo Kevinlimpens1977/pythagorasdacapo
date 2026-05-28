@@ -90,6 +90,8 @@ export const approveStudentPhotoImportCrop = async ({ importId, klasId, row }) =
     cropId: row.cropId,
     matchedUserId: row.matchedUserId || null,
     displayNameProposed: row.proposedName || '',
+    firstName: row.firstName || '',
+    lastName: row.lastName || '',
     decision,
     reviewNote: row.decision === 'skip' ? 'Overgeslagen in leerlingfoto-import.' : ''
   });

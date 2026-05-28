@@ -169,6 +169,8 @@ test("approveStudentPhotoImportCrop creates a pending student for pending_new de
     "photoImports/import-1/crops/crop-2": {
       cropStoragePath: "photo-imports/klas-1/import-1/crops/crop-2.webp",
       proposedName: "Nieuwe Leerling",
+      firstName: "Nieuwe",
+      lastName: "Leerling",
       status: "unmatched",
     },
   });
@@ -185,6 +187,8 @@ test("approveStudentPhotoImportCrop creates a pending student for pending_new de
   assert.equal(result.status, "pending_new");
   assert.equal(result.pendingId, "import-1_crop-2");
   assert.equal(db.store.docs["pendingStudents/import-1_crop-2"].status, "pending_account");
+  assert.equal(db.store.docs["pendingStudents/import-1_crop-2"].firstName, "Nieuwe");
+  assert.equal(db.store.docs["pendingStudents/import-1_crop-2"].lastName, "Leerling");
   assert.equal(db.store.docs["photoImports/import-1/crops/crop-2"].status, "pending_new");
 });
 

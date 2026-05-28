@@ -6,8 +6,10 @@ import {
   createPhotoImportRows,
   getMatchStatus,
   getPhotoImportReadiness,
+  joinStudentName,
   normalizeStudentName,
-  sanitizeImportFileName
+  sanitizeImportFileName,
+  splitStudentFullName
 } from './studentPhotoImportUtils.js';
 
 test('normalizeStudentName trims, lowercases and removes accents', () => {
@@ -33,7 +35,16 @@ test('getMatchStatus distinguishes missing, none, duplicate, review and matched 
   assert.equal(getMatchStatus({ proposedName: 'Ada', candidates: [{ score: 0.8 }, { score: 0.8 }] }), 'dubbele match');
 });
 
-test('createPhotoImportRows auto-links only confident matches', () => {
+test('splitStudentFullName keeps first name and surname separate', () => {
+  assert.deepEqual(splitStudentFullName('Luna Bauer'), { firstName: 'Luna', lastName: 'Bauer' });
+  assert.deepEqual(splitStudentFullName('Mumtaz Mumtaz Mohamed Omar'), {
+    firstName: 'Mumtaz',
+    lastName: 'Mumtaz Mohamed Omar'
+  });
+  assert.equal(joinStudentName({ firstName: 'Luna', lastName: 'Bauer' }), 'Luna Bauer');
+});
+
+test('createPhotoImportRows prepares imported names without auto-linking existing accounts', () => {
   const rows = createPhotoImportRows(
     [{ id: 'crop-1', label: 'Luna Balan' }],
     [{ uid: 's1', displayName: 'Luna Balan', email: 'luna@example.com' }]
@@ -41,8 +52,10 @@ test('createPhotoImportRows auto-links only confident matches', () => {
 
   assert.equal(rows[0].id, 'crop-1');
   assert.equal(rows[0].selection.id, 'crop-1');
-  assert.equal(rows[0].decision, 'link');
-  assert.equal(rows[0].matchedUserId, 's1');
+  assert.equal(rows[0].firstName, 'Luna');
+  assert.equal(rows[0].lastName, 'Balan');
+  assert.equal(rows[0].decision, 'pending');
+  assert.equal(rows[0].matchedUserId, '');
 });
 
 test('createPhotoImportRows preserves OCR and label matching diagnostics', () => {

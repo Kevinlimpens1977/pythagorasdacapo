@@ -290,12 +290,16 @@ async function createPendingStudentFromCrop({ auth, data, db, now }) {
   const pendingId = `${importId}_${cropId}`;
   const pendingRef = db.collection("pendingStudents").doc(pendingId);
   const displayNameProposed = data.displayNameProposed || cropDoc.data.proposedName || cropDoc.data.matchedDisplayName || "";
+  const firstName = data.firstName || cropDoc.data.firstName || "";
+  const lastName = data.lastName || cropDoc.data.lastName || "";
 
   await pendingRef.set({
     klasId,
     importId,
     cropId,
     displayNameProposed,
+    firstName,
+    lastName,
     photoStoragePath: cropStoragePath,
     status: "pending_account",
     createdBy: auth.uid,
