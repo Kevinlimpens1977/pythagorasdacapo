@@ -10,6 +10,11 @@ const openrouterApiKey = defineSecret("OPENROUTER_API_KEY");
 const REGION = "europe-west1";
 
 const allowedImportRoles = new Set(["admin", "docent"]);
+const preservedStudentResetEmails = new Set([
+  "vragen@scheikundeles.nl",
+  "kevlimpens@gmail.com",
+]);
+const BATCH_LIMIT = 450;
 
 function requireString(value, fieldName) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -53,6 +58,103 @@ function assertCanManageKlas(caller, klasId) {
   if (!callerKlasIds.includes(klasId)) {
     throw new HttpsError("permission-denied", "Je hebt geen toegang tot deze klas.");
   }
+}
+
+function assertAdminRole(caller) {
+  if (caller.role !== "admin") {
+    throw new HttpsError("permission-denied", "Alleen admins mogen deze actie uitvoeren.");
+  }
+}
+
+function shouldPreserveUserDuringStudentReset(user = {}) {
+  const role = String(user.role || "").trim().toLowerCase();
+  const email = String(user.email || "").trim().toLowerCase();
+
+  return role === "admin" || preservedStudentResetEmails.has(email);
+}
+
+async function commitInChunks(db, operations) {
+  for (let index = 0; index < operations.length; index += BATCH_LIMIT) {
+    const chunk = operations.slice(index, index + BATCH_LIMIT);
+    const batch = db.batch();
+
+    chunk.forEach((operation) => {
+      if (operation.type === "delete") {
+        batch.delete(operation.ref);
+      } else if (operation.type === "update") {
+        batch.update(operation.ref, operation.data);
+      }
+    });
+
+    await batch.commit();
+  }
+}
+
+async function deleteQuerySnapshot(db, snapshot) {
+  await commitInChunks(db, snapshot.docs.map((documentSnapshot) => ({
+    type: "delete",
+    ref: documentSnapshot.ref,
+  })));
+
+  return snapshot.size;
+}
+
+async function deleteStudentProgress(db, studentIds) {
+  let deleted = 0;
+
+  for (const studentId of studentIds) {
+    const snapshot = await db.collection("voortgang").where("userId", "==", studentId).get();
+    deleted += await deleteQuerySnapshot(db, snapshot);
+  }
+
+  return deleted;
+}
+
+async function clearClassStudentOverrides(db, now) {
+  const snapshot = await db.collection("klassen").get();
+  await commitInChunks(db, snapshot.docs.map((documentSnapshot) => ({
+    type: "update",
+    ref: documentSnapshot.ref,
+    data: {
+      studentOverrides: {},
+      updatedAt: getServerTimestamp(now),
+    },
+  })));
+
+  return snapshot.size;
+}
+
+async function deleteAllStudentDataCore({ auth, db, now }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om leerlingen te verwijderen.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const studentSnapshot = await db.collection("users").where("role", "==", "student").get();
+  const deletableStudentDocs = studentSnapshot.docs.filter((documentSnapshot) =>
+    !shouldPreserveUserDuringStudentReset(documentSnapshot.data() || {})
+  );
+  const studentIds = deletableStudentDocs.map((documentSnapshot) => documentSnapshot.id);
+  const pendingStudentsSnapshot = await db.collection("pendingStudents").get();
+
+  const deletedProgress = await deleteStudentProgress(db, studentIds);
+  const deletedPendingStudents = await deleteQuerySnapshot(db, pendingStudentsSnapshot);
+  await commitInChunks(db, deletableStudentDocs.map((documentSnapshot) => ({
+    type: "delete",
+    ref: documentSnapshot.ref,
+  })));
+  const cleanedClasses = await clearClassStudentOverrides(db, now);
+
+  return {
+    success: true,
+    deletedStudents: deletableStudentDocs.length,
+    deletedProgress,
+    deletedPendingStudents,
+    cleanedClasses,
+    preservedEmails: [...preservedStudentResetEmails],
+  };
 }
 
 function normalizeDecision(rawDecision) {
@@ -279,6 +381,15 @@ exports.approveStudentPhotoImportCrop = onCall({
   });
 });
 
+exports.deleteAllStudentData = onCall({
+  region: REGION,
+}, async (request) => {
+  return deleteAllStudentDataCore({
+    auth: request.auth,
+    db: getFirestore(),
+  });
+});
+
 exports.askAiTutor = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -351,4 +462,6 @@ Spreek de leerling aan in de je-vorm.`;
 
 exports.__test = {
   approveStudentPhotoImportCropCore,
+  deleteAllStudentDataCore,
+  shouldPreserveUserDuringStudentReset,
 };

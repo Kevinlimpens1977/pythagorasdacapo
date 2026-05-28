@@ -33,11 +33,37 @@ const createDocRef = (path, store) => ({
   },
 });
 
+const createQuerySnapshot = (docs) => ({
+  size: docs.length,
+  docs,
+});
+
 const createDb = (initialDocs = {}) => {
   const store = { docs: { ...initialDocs }, writes: [] };
 
   return {
     store,
+    batch() {
+      const operations = [];
+      return {
+        delete(ref) {
+          operations.push({ type: "delete", ref });
+        },
+        update(ref, data) {
+          operations.push({ type: "update", ref, data });
+        },
+        async commit() {
+          operations.forEach((operation) => {
+            store.writes.push({ type: operation.type, path: operation.ref.path, data: operation.data });
+            if (operation.type === "delete") {
+              delete store.docs[operation.ref.path];
+            } else if (operation.type === "update") {
+              store.docs[operation.ref.path] = { ...(store.docs[operation.ref.path] || {}), ...operation.data };
+            }
+          });
+        },
+      };
+    },
     doc(path) {
       return createDocRef(path, store);
     },
@@ -45,6 +71,33 @@ const createDb = (initialDocs = {}) => {
       return {
         doc(id = "generated-pending-id") {
           return createDocRef(`${name}/${id}`, store);
+        },
+        where(field, operator, value) {
+          if (operator !== "==") throw new Error(`Unsupported fake operator ${operator}`);
+          return {
+            async get() {
+              return createQuerySnapshot(
+                Object.entries(store.docs)
+                  .filter(([path, data]) => path.startsWith(`${name}/`) && !path.slice(name.length + 1).includes("/") && data?.[field] === value)
+                  .map(([path, data]) => ({
+                    id: path.split("/").at(-1),
+                    ref: createDocRef(path, store),
+                    data: () => data,
+                  })),
+              );
+            },
+          };
+        },
+        async get() {
+          return createQuerySnapshot(
+            Object.entries(store.docs)
+              .filter(([path]) => path.startsWith(`${name}/`) && !path.slice(name.length + 1).includes("/"))
+              .map(([path, data]) => ({
+                id: path.split("/").at(-1),
+                ref: createDocRef(path, store),
+                data: () => data,
+              })),
+          );
         },
       };
     },
@@ -156,5 +209,50 @@ test("approveStudentPhotoImportCrop rejects a matched user from another class", 
       now: () => "timestamp",
     }),
     (error) => error instanceof HttpsError && error.code === "failed-precondition",
+  );
+});
+
+test("deleteAllStudentData deletes students while preserving admins and protected emails", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+    "users/student-1": { role: "student", email: "leerling@example.com" },
+    "users/student-2": { role: "student", email: "vragen@scheikundeles.nl" },
+    "users/student-3": { role: "student", email: "kevlimpens@gmail.com" },
+    "users/student-4": { role: "student", email: "ander@example.com" },
+    "voortgang/student-1_block-1": { userId: "student-1" },
+    "voortgang/student-2_block-1": { userId: "student-2" },
+    "voortgang/student-4_block-1": { userId: "student-4" },
+    "pendingStudents/pending-1": { displayNameProposed: "Nieuwe" },
+    "klassen/klas-1": { name: "EOA", studentOverrides: { "student-1": true } },
+  });
+
+  const result = await __test.deleteAllStudentDataCore({
+    auth: { uid: "admin-1" },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.deletedStudents, 2);
+  assert.equal(result.deletedProgress, 2);
+  assert.equal(result.deletedPendingStudents, 1);
+  assert.equal(db.store.docs["users/student-1"], undefined);
+  assert.equal(db.store.docs["users/student-4"], undefined);
+  assert.equal(db.store.docs["users/student-2"].email, "vragen@scheikundeles.nl");
+  assert.equal(db.store.docs["users/student-3"].email, "kevlimpens@gmail.com");
+  assert.deepEqual(db.store.docs["klassen/klas-1"].studentOverrides, {});
+});
+
+test("deleteAllStudentData rejects non-admin callers", async () => {
+  const db = createDb({
+    "users/docent-1": { role: "docent", email: "docent@example.com" },
+  });
+
+  await assert.rejects(
+    __test.deleteAllStudentDataCore({
+      auth: { uid: "docent-1" },
+      db,
+      now: () => "timestamp",
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
   );
 });
