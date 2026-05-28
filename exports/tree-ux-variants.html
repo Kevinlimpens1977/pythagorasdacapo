@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Helix CMS Tree UX Varianten</title>
+  <style>
+    :root {
+      --navy: #172033;
+      --muted: #667085;
+      --line: #e7e2f4;
+      --purple: #6d28d9;
+      --pink: #d946ef;
+      --orange: #f97316;
+      --green: #10b981;
+      --blue: #2563eb;
+      --bg: #f7f5fb;
+      --soft: #f1ecff;
+      --surface: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--navy);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+    }
+
+    header {
+      padding: 28px clamp(18px, 4vw, 48px) 18px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 860px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 14px clamp(18px, 4vw, 48px);
+      background: rgba(255, 255, 255, 0.76);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: #fff;
+      background: var(--purple);
+      border-color: var(--purple);
+      box-shadow: 0 12px 28px rgba(109, 40, 217, 0.18);
+    }
+
+    main {
+      padding: clamp(18px, 4vw, 48px);
+    }
+
+    .variant {
+      display: none;
+      grid-template-columns: minmax(320px, 440px) minmax(300px, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .variant.active { display: grid; }
+
+    .panel, .notes {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 48px rgba(23, 32, 51, 0.08);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .search {
+      margin: 14px 16px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-weight: 700;
+      background: #faf9ff;
+    }
+
+    .tree { padding: 0 12px 14px; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 24px 28px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 42px;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 3px 0;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .row strong {
+      display: block;
+      color: var(--navy);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .row small {
+      display: block;
+      margin-top: 2px;
+      color: #98a2b3;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .indent-1 { margin-left: 16px; }
+    .indent-2 { margin-left: 32px; }
+    .indent-3 { margin-left: 48px; }
+    .indent-4 { margin-left: 64px; }
+
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--soft);
+      color: var(--purple);
+      font-size: 14px;
+    }
+
+    .chev { color: #a5a1b8; text-align: center; }
+
+    .count {
+      min-width: 74px;
+      text-align: center;
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: #f3f4f6;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .active-row {
+      background: var(--soft);
+      outline: 1px solid #e9d5ff;
+    }
+
+    .active-row .count {
+      background: #fff;
+      color: var(--purple);
+    }
+
+    .notes {
+      padding: 22px;
+    }
+
+    .notes h2 {
+      margin: 0 0 10px;
+      font-size: 26px;
+      letter-spacing: 0;
+    }
+
+    .notes p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .note-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfaff;
+    }
+
+    .note-card b {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .variant-2 .panel {
+      background: #181526;
+      border-color: #322a55;
+      color: #fff;
+    }
+
+    .variant-2 .panel-head,
+    .variant-2 .row {
+      border-color: #322a55;
+    }
+
+    .variant-2 .search {
+      background: #211d35;
+      color: #c4b5fd;
+      border-color: #39305f;
+    }
+
+    .variant-2 .row strong { color: #fff; }
+    .variant-2 .row small { color: #9ca3af; }
+    .variant-2 .count { background: #211d35; color: #c4b5fd; }
+    .variant-2 .active-row { background: #2d2250; outline-color: #7c3aed; }
+
+    .variant-3 .row {
+      grid-template-columns: 28px minmax(0, 1fr) 82px;
+      border-left: 4px solid transparent;
+      background: #fbfaff;
+    }
+
+    .variant-3 .row .chev { display: none; }
+    .variant-3 .indent-1,
+    .variant-3 .indent-2,
+    .variant-3 .indent-3,
+    .variant-3 .indent-4 { margin-left: 0; }
+
+    .variant-3 .chapter-band {
+      margin: 12px 0 6px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: #eff6ff;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .variant-3 .active-row {
+      border-left-color: var(--orange);
+      background: #fff7ed;
+      outline: 0;
+    }
+
+    .variant-4 .panel {
+      background: linear-gradient(180deg, #ffffff 0%, #fff7ed 100%);
+    }
+
+    .variant-4 .row {
+      grid-template-columns: 30px minmax(0, 1fr);
+      padding: 10px 12px;
+      border: 1px solid transparent;
+    }
+
+    .variant-4 .row .chev,
+    .variant-4 .row .count { display: none; }
+
+    .variant-4 .row strong {
+      white-space: normal;
+    }
+
+    .variant-4 .bar {
+      height: 7px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .variant-4 .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--orange));
+    }
+
+    .variant-4 .active-row {
+      background: #fff;
+      border-color: #fed7aa;
+      box-shadow: 0 12px 28px rgba(249, 115, 22, 0.12);
+    }
+
+    .variant-5 .panel {
+      box-shadow: none;
+    }
+
+    .variant-5 .matrix {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .tile {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 78px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .tile.active {
+      border-color: #f0abfc;
+      background: #fdf4ff;
+    }
+
+    .tile-title {
+      font-weight: 900;
+    }
+
+    .tile-meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tile-count {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--soft);
+      color: var(--purple);
+      font-weight: 950;
+      font-size: 20px;
+    }
+
+    @media (max-width: 860px) {
+      .variant {
+        grid-template-columns: 1fr;
+      }
+
+      .note-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .indent-4 { margin-left: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1>CMS Tree UX Varianten</h1>
+      <p class="lead">Vijf lichte prototypes voor de Helix contentboom. De data is expres hetzelfde: hoofdstuk 1 met paragraaf 1.1 op 5 blokken en 1.2 op 3 blokken, zodat de tellingen makkelijk te vergelijken zijn.</p>
+    </header>
+
+    <nav class="tabs" aria-label="UX varianten">
+      <button class="tab active" data-tab="v1">1. Compacte boom</button>
+      <button class="tab" data-tab="v2">2. Focus donker</button>
+      <button class="tab" data-tab="v3">3. Hoofdstukbanden</button>
+      <button class="tab" data-tab="v4">4. Voortgangsboom</button>
+      <button class="tab" data-tab="v5">5. Paragraafmatrix</button>
+    </nav>
+
+    <main>
+      <section id="v1" class="variant active">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Inhoud</span><span class="count">8 blokken</span></div>
+          <div class="search">Zoek lesmateriaal...</div>
+          <div class="tree">
+            <div class="row"><span class="chev">v</span><span class="icon">B</span><span><strong>Wiskunde</strong><small>1 jaar</small></span><span class="count">1 jaar</span></div>
+            <div class="row indent-1"><span class="chev">v</span><span class="icon">J</span><span><strong>Jaar 1</strong><small>1 niveau</small></span><span class="count">1 niveau</span></div>
+            <div class="row indent-2"><span class="chev">v</span><span class="icon">N</span><span><strong>VMBO-GT</strong><small>1 hoofdstuk</small></span><span class="count">1 hoofdstuk</span></div>
+            <div class="row indent-3"><span class="chev">v</span><span class="icon">H</span><span><strong>Hoofdstuk 1 Pythagoras</strong><small>2 paragrafen</small></span><span class="count">2 paragrafen</span></div>
+            <div class="row indent-4 active-row"><span class="chev"></span><span class="icon">L</span><span><strong>1.1 Rechthoekige driehoeken</strong><small>T1 V1 Q2 M1</small></span><span class="count">5 blokken</span></div>
+            <div class="row indent-4"><span class="chev"></span><span class="icon">L</span><span><strong>1.2 Kwadraten</strong><small>T1 V1 Q1</small></span><span class="count">3 blokken</span></div>
+          </div>
+        </div>
+        <div class="notes">
+          <h2>Compacte boom</h2>
+          <p>Dicht bij de huidige Helix tree, maar met stabiele vaste count-kolom en rustigere type-pills.</p>
+          <div class="note-grid">
+            <div class="note-card"><b>Sterk</b>Herkenbaar, snel te bouwen, veel informatie in weinig ruimte.</div>
+            <div class="note-card"><b>Zwak</b>Diepe indentatie kan krap worden bij lange titels en smalle zijbalken.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="v2" class="variant variant-2">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Werkfocus</span><span class="count">Live counts</span></div>
+          <div class="search">Filter op paragraaf, bloktype of status</div>
+          <div class="tree">
+            <div class="row"><span class="chev">v</span><span class="icon">B</span><span><strong>Wiskunde</strong><small>Curriculum</small></span><span class="count">1 jaar</span></div>
+            <div class="row indent-1"><span class="chev">v</span><span class="icon">H</span><span><strong>Hoofdstuk 1 Pythagoras</strong><small>2 paragrafen actief</small></span><span class="count">8 blokken</span></div>
+            <div class="row indent-2 active-row"><span class="chev"></span><span class="icon">1.1</span><span><strong>Rechthoekige driehoeken</strong><small>Gepubliceerd: 2, concept: 3</small></span><span class="count">5 blokken</span></div>
+            <div class="row indent-2"><span class="chev"></span><span class="icon">1.2</span><span><strong>Kwadraten</strong><small>Gepubliceerd: 1, concept: 2</small></span><span class="count">3 blokken</span></div>
+          </div>
+        </div>
+        <div class="notes">
+          <h2>Focus donker</h2>
+          <p>Een geconcentreerde admin-modus voor lange content-sessies. De actieve paragraaf springt sterker naar voren.</p>
+          <div class="note-grid">
+            <div class="note-card"><b>Sterk</b>Goede focus en duidelijke statusregels voor redactiewerk.</div>
+            <div class="note-card"><b>Zwak</b>Minder passend als de rest van de adminomgeving licht blijft.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="v3" class="variant variant-3">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Lesstof</span><span class="count">Hoofdstukview</span></div>
+          <div class="search">Zoek binnen hoofdstuk 1</div>
+          <div class="tree">
+            <div class="chapter-band">Wiskunde / Jaar 1 / VMBO-GT</div>
+            <div class="chapter-band">Hoofdstuk 1 Pythagoras</div>
+            <div class="row active-row"><span class="icon">1.1</span><span><strong>Rechthoekige driehoeken</strong><small>Theorie, voorbeeld, vragen, media</small></span><span class="count">5 blokken</span></div>
+            <div class="row"><span class="icon">1.2</span><span><strong>Kwadraten</strong><small>Theorie, voorbeeld, vraag</small></span><span class="count">3 blokken</span></div>
+          </div>
+        </div>
+        <div class="notes">
+          <h2>Hoofdstukbanden</h2>
+          <p>Maakt de boom platter zodra een hoofdstuk gekozen is. De docent ziet vooral paragrafen en blokkwaliteit.</p>
+          <div class="note-grid">
+            <div class="note-card"><b>Sterk</b>Minder visuele ruis, prettig voor dagelijks vullen van lesroutes.</div>
+            <div class="note-card"><b>Zwak</b>Minder handig wanneer je vaak tussen vakken of leerjaren wisselt.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="v4" class="variant variant-4">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Routekwaliteit</span><span class="count">2 paragrafen</span></div>
+          <div class="search">Controleer ontbrekende blokken</div>
+          <div class="tree">
+            <div class="row active-row"><span class="icon">1.1</span><span><strong>Rechthoekige driehoeken</strong><small>5 blokken, mix compleet</small><div class="bar"><span style="width: 88%"></span></div></span></div>
+            <div class="row"><span class="icon">1.2</span><span><strong>Kwadraten</strong><small>3 blokken, vraagblok aanwezig</small><div class="bar"><span style="width: 62%"></span></div></span></div>
+          </div>
+        </div>
+        <div class="notes">
+          <h2>Voortgangsboom</h2>
+          <p>Legt nadruk op volledigheid en redactievoortgang in plaats van alleen aantallen.</p>
+          <div class="note-grid">
+            <div class="note-card"><b>Sterk</b>Goed voor kwaliteitscontrole en planning voor docenten.</div>
+            <div class="note-card"><b>Zwak</b>Heeft extra criteria nodig: wanneer is een paragraaf "compleet"?</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="v5" class="variant variant-5">
+        <div class="panel">
+          <div class="panel-head"><span class="panel-title">Paragrafen</span><span class="count">Hoofdstuk 1</span></div>
+          <div class="matrix">
+            <div class="tile active"><div><div class="tile-title">1.1 Rechthoekige driehoeken</div><div class="tile-meta">2 gepubliceerd, 3 concepten</div></div><div class="tile-count">5</div></div>
+            <div class="tile"><div><div class="tile-title">1.2 Kwadraten</div><div class="tile-meta">1 gepubliceerd, 2 concepten</div></div><div class="tile-count">3</div></div>
+            <div class="tile"><div><div class="tile-title">Nieuwe paragraaf</div><div class="tile-meta">Nog geen lesroute</div></div><div class="tile-count">+</div></div>
+          </div>
+        </div>
+        <div class="notes">
+          <h2>Paragraafmatrix</h2>
+          <p>Vervangt de diepe tree in de dagelijkse hoofdstukmodus door grote, scanbare paragraafkaarten.</p>
+          <div class="note-grid">
+            <div class="note-card"><b>Sterk</b>Zeer scanbaar en vriendelijk voor minder technische docenten.</div>
+            <div class="note-card"><b>Zwak</b>Niet genoeg als enige navigatie voor volledige curriculumstructuur.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const variants = Array.from(document.querySelectorAll('.variant'));
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tab;
+        tabs.forEach((item) => item.classList.toggle('active', item === tab));
+        variants.forEach((variant) => variant.classList.toggle('active', variant.id === id));
+      });
+    });
+  </script>
+</body>
+</html>

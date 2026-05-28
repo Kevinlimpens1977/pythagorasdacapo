@@ -265,7 +265,7 @@ export default function CmsShell() {
             hoofdstukken={cms.hoofdstukken}
             paragrafen={cms.paragrafen}
             vragen={cms.vragen}
-            contentBlocks={cms.contentBlocks}
+            contentBlocks={cms.navigationContentBlocks}
             selectedVakId={cms.selectedVakId}
             selectedLeerjaarId={cms.selectedLeerjaarId}
             selectedNiveauId={cms.selectedNiveauId}

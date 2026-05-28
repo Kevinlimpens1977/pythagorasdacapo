@@ -6,6 +6,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
 import * as cmsService from '../services/cmsService';
+import { replaceContentBlocksForParagraaf } from '../lib/cmsContentBlockIndex';
 
 const replaceItemsByParent = (currentItems, nextItems, parentKey, parentId) => [
   ...currentItems.filter((item) => item[parentKey] !== parentId),
@@ -29,6 +30,7 @@ export const useCms = (includeArchived = false) => {
   const [paragrafen, setParagrafen] = useState([]);
   const [vragen, setVragen] = useState([]);
   const [contentBlocks, setContentBlocks] = useState([]);
+  const [navigationContentBlocks, setNavigationContentBlocks] = useState([]);
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -41,6 +43,7 @@ export const useCms = (includeArchived = false) => {
     setParagrafen([]);
     setVragen([]);
     setContentBlocks([]);
+    setNavigationContentBlocks([]);
     setSelectedLeerjaarId(null);
     setSelectedNiveauId(null);
     setSelectedHoofdstukId(null);
@@ -54,6 +57,7 @@ export const useCms = (includeArchived = false) => {
     setParagrafen([]);
     setVragen([]);
     setContentBlocks([]);
+    setNavigationContentBlocks([]);
     setSelectedNiveauId(null);
     setSelectedHoofdstukId(null);
     setSelectedParagraafId(null);
@@ -65,6 +69,7 @@ export const useCms = (includeArchived = false) => {
     setParagrafen([]);
     setVragen([]);
     setContentBlocks([]);
+    setNavigationContentBlocks([]);
     setSelectedHoofdstukId(null);
     setSelectedParagraafId(null);
     setSelectedVraagId(null);
@@ -74,6 +79,7 @@ export const useCms = (includeArchived = false) => {
     setParagrafen([]);
     setVragen([]);
     setContentBlocks([]);
+    setNavigationContentBlocks([]);
     setSelectedParagraafId(null);
     setSelectedVraagId(null);
   }, []);
@@ -197,6 +203,17 @@ export const useCms = (includeArchived = false) => {
     }
   }, [includeArchived]);
 
+  const loadAllContentBlocksForHoofdstuk = useCallback(async (paragraafList) => {
+    try {
+      const blockLists = await Promise.all(
+        paragraafList.map((paragraaf) => cmsService.getContentBlocks(paragraaf.id, true, includeArchived))
+      );
+      setNavigationContentBlocks(blockLists.flat());
+    } catch (err) {
+      console.error('Failed to load all content blocks for hoofdstuk:', err);
+    }
+  }, [includeArchived]);
+
   const loadVragen = useCallback(async (paragraafId) => {
     try {
       setLoading(true);
@@ -218,6 +235,7 @@ export const useCms = (includeArchived = false) => {
       setError(null);
       const data = await cmsService.getContentBlocks(paragraafId, true, includeArchived);
       setContentBlocks(data);
+      setNavigationContentBlocks((current) => replaceContentBlocksForParagraaf(current, paragraafId, data));
     } catch (err) {
       setError('Failed to load content blocks: ' + err.message);
       console.error(err);
@@ -249,8 +267,9 @@ export const useCms = (includeArchived = false) => {
   useEffect(() => {
     if (selectedHoofdstukId && paragrafen.length > 0) {
       loadAllVragenForHoofdstuk(paragrafen);
+      loadAllContentBlocksForHoofdstuk(paragrafen);
     }
-  }, [loadAllVragenForHoofdstuk, paragrafen, selectedHoofdstukId]);
+  }, [loadAllContentBlocksForHoofdstuk, loadAllVragenForHoofdstuk, paragrafen, selectedHoofdstukId]);
 
   useEffect(() => {
     if (selectedParagraafId) {
@@ -318,6 +337,7 @@ export const useCms = (includeArchived = false) => {
     paragrafen,
     vragen,
     contentBlocks,
+    navigationContentBlocks,
     currentVak: breadcrumb.vak,
     currentLeerjaar: breadcrumb.leerjaar,
     currentNiveau: breadcrumb.niveau,

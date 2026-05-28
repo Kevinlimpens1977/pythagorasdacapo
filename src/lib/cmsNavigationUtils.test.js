@@ -56,6 +56,30 @@ test('buildCmsNavigationTree adds useful child and block counts', () => {
   assert.deepEqual(paragraaf.children, []);
 });
 
+test('buildCmsNavigationTree keeps paragraph block counts independent for sibling paragraphs', () => {
+  const tree = buildCmsNavigationTree({
+    ...fixtures,
+    paragrafen: [
+      { id: 'p-1', hoofdstukId: 'h-1', code: '1.1', title: 'Rechthoekige driehoeken' },
+      { id: 'p-2', hoofdstukId: 'h-1', code: '1.2', title: 'Kwadraten' }
+    ],
+    contentBlocks: [
+      { id: 'p1-b1', paragraafId: 'p-1', type: 'theory', status: 'published' },
+      { id: 'p1-b2', paragraafId: 'p-1', type: 'example', status: 'draft' },
+      { id: 'p1-b3', paragraafId: 'p-1', type: 'question', status: 'draft' },
+      { id: 'p1-b4', paragraafId: 'p-1', type: 'media', status: 'draft' },
+      { id: 'p1-b5', paragraafId: 'p-1', type: 'summary', status: 'published' },
+      { id: 'p2-b1', paragraafId: 'p-2', type: 'theory', status: 'published' },
+      { id: 'p2-b2', paragraafId: 'p-2', type: 'example', status: 'draft' },
+      { id: 'p2-b3', paragraafId: 'p-2', type: 'question', status: 'draft' }
+    ]
+  });
+  const paragrafen = tree[0].children[0].children[0].children[0].children;
+
+  assert.equal(paragrafen.find((paragraaf) => paragraaf.id === 'p-1').counts.blocks.total, 5);
+  assert.equal(paragrafen.find((paragraaf) => paragraaf.id === 'p-2').counts.blocks.total, 3);
+});
+
 test('buildCmsNavigationTree filters by question search text while keeping ancestors', () => {
   const tree = buildCmsNavigationTree(fixtures, { query: 'zijde' });
   const paragraaf = tree[0].children[0].children[0].children[0].children[0];
