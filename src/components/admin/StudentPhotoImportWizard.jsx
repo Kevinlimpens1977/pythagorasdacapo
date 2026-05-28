@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Images, Loader2, Trash2, Upload, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Images, Loader2, Sparkles, Trash2, Upload, X } from 'lucide-react';
 import ImageCanvasEditor from './ImageCanvasEditor';
 import { batchCropRectangles, cropRectangleFromImage } from '../../services/cropService';
 import {
@@ -12,6 +12,7 @@ import {
   savePhotoImportCropRecord,
   uploadPhotoImportBlob
 } from '../../services/studentPhotoImportService';
+import { detectStudentPhotoSelections } from '../../services/studentPhotoAutoCropService';
 import {
   buildStudentMatchCandidates,
   createPhotoImportRows,
@@ -56,6 +57,8 @@ export default function StudentPhotoImportWizard({
   const [saveResult, setSaveResult] = useState(null);
   const [error, setError] = useState(null);
   const [importKlasId, setImportKlasId] = useState('');
+  const [autoDetecting, setAutoDetecting] = useState(false);
+  const [autoProgress, setAutoProgress] = useState(null);
 
   const defaultKlasId = useMemo(() => {
     const counts = new Map();
@@ -188,6 +191,44 @@ export default function StudentPhotoImportWizard({
     setSaveResult(null);
     setError(null);
     if (data) setActiveStep(1);
+  };
+
+  const handleAutoDetect = async () => {
+    if (!imageData?.src) {
+      setError('Upload of plak eerst een afbeelding.');
+      return;
+    }
+
+    if (selections.length && !window.confirm('Automatische voorstellen vervangen de huidige uitsnedes. Wil je doorgaan?')) {
+      return;
+    }
+
+    setAutoDetecting(true);
+    setAutoProgress({ phase: 'detect', percent: 0 });
+    setError(null);
+    setSaveResult(null);
+
+    try {
+      const detectedSelections = await detectStudentPhotoSelections({
+        imageData,
+        runOcr: true,
+        onProgress: setAutoProgress
+      });
+
+      if (!detectedSelections.length) {
+        throw new Error('Er zijn geen automatische foto-uitsnedes gevonden. Teken de uitsnedes handmatig of probeer een scherpere afbeelding.');
+      }
+
+      handleSelectionsChanged(detectedSelections);
+      setActiveSelectionId(detectedSelections[0]?.id || null);
+      setInteractionMode('select');
+      setActiveStep(2);
+    } catch (err) {
+      setError(err.message || 'Automatische crop/OCR-detectie is mislukt.');
+    } finally {
+      setAutoDetecting(false);
+      setAutoProgress(null);
+    }
   };
 
   const handleSave = async () => {
@@ -408,14 +449,36 @@ export default function StudentPhotoImportWizard({
                 compact
               />
             </div>
-            <SelectionPanel
-              selections={selections}
-              activeSelectionId={activeSelectionId}
-              thumbs={thumbs}
-              onSelect={setActiveSelectionId}
-              onRemove={removeSelection}
-              onNameChange={updateSelection}
-            />
+            <div className="space-y-4">
+              <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-4">
+                <h3 className="font-black text-[var(--helix-navy)]">Automatisch voorstellen</h3>
+                <p className="helix-muted mt-1 text-sm">
+                  Laat de browser foto-uitsnedes zoeken en namen via OCR voorstellen. Controle blijft altijd handmatig.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleAutoDetect}
+                  disabled={!imageData || autoDetecting}
+                  className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-purple)] px-4 text-sm font-black text-white disabled:opacity-40"
+                >
+                  {autoDetecting ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                  {autoDetecting ? 'Voorstellen maken...' : 'Automatisch voorstellen maken'}
+                </button>
+                {autoProgress ? (
+                  <p className="mt-3 text-xs font-bold text-[var(--helix-purple)]">
+                    {autoProgress.phase === 'ocr' ? 'OCR namen lezen' : 'Foto-uitsnedes zoeken'}: {autoProgress.percent || 0}%
+                  </p>
+                ) : null}
+              </div>
+              <SelectionPanel
+                selections={selections}
+                activeSelectionId={activeSelectionId}
+                thumbs={thumbs}
+                onSelect={setActiveSelectionId}
+                onRemove={removeSelection}
+                onNameChange={updateSelection}
+              />
+            </div>
           </div>
         ) : null}
 
