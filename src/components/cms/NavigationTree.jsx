@@ -134,6 +134,7 @@ const TreeNode = ({
   const badgeLabel = getNodeBadgeLabel(node);
   const displayLabel = getNodeDisplayLabel(node);
   const isChapterBand = node.type === 'hoofdstuk';
+  const hasActiveChapterRail = isChapterBand && isSelected;
 
   const startRename = () => {
     setDraftName(node.label || '');
@@ -156,7 +157,7 @@ const TreeNode = ({
     <div className={isChapterBand ? 'mt-2' : undefined}>
       <div
         className={[
-          'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_2.125rem_minmax(0,1fr)_5.125rem] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
+          'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_2.125rem_minmax(0,1fr)_7rem] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
           isActiveParagraaf
             ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[#f5edff] text-[var(--helix-navy)]'
             : isActivePath
@@ -164,7 +165,10 @@ const TreeNode = ({
                 ? 'border-y-[#eadcff] border-r-[#eadcff] border-l-[var(--helix-purple)] bg-[#f7f0ff] text-[var(--helix-navy)]'
                 : 'border-y-[var(--helix-border)] border-r-[var(--helix-border)] border-l-transparent bg-white text-[var(--helix-navy)]'
               : isChapterBand
-                ? 'border-y-[#eadcff] border-r-[#eadcff] border-l-[var(--helix-purple)] bg-[#fbf7ff] text-[var(--helix-navy)] hover:bg-[#f7f0ff]'
+                ? [
+                    'border-y-[#eadcff] border-r-[#eadcff] bg-[#fbf7ff] text-[var(--helix-navy)] hover:bg-[#f7f0ff]',
+                    hasActiveChapterRail ? 'border-l-[var(--helix-purple)]' : 'border-l-transparent'
+                  ].join(' ')
                 : node.type === 'paragraaf'
                   ? 'border-y-[#f1edfb] border-r-[#f1edfb] border-l-transparent bg-[#fbfaff] text-[var(--helix-muted)] hover:border-y-[#eadcff] hover:border-r-[#eadcff] hover:bg-[#f7f0ff] hover:text-[var(--helix-navy)]'
                   : 'border-y-transparent border-r-transparent border-l-transparent text-[var(--helix-muted)] hover:border-y-[var(--helix-border)] hover:border-r-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
@@ -272,7 +276,7 @@ const TreeNode = ({
           {mutedCount && (
             <span
               className={[
-                'inline-flex w-[5.125rem] shrink-0 justify-center rounded-md px-1.5 py-1 text-[11px] font-bold leading-none transition-opacity',
+                'inline-flex w-[7rem] shrink-0 justify-center whitespace-nowrap rounded-lg px-2 py-1 text-[10px] font-extrabold leading-none transition-opacity',
                 isActiveParagraaf
                   ? 'bg-white text-[var(--helix-purple)]'
                   : isChapterBand
