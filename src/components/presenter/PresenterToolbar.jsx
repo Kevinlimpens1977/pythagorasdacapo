@@ -3,6 +3,7 @@ import {
   ArrowRight,
   CheckSquare,
   FileText,
+  FilePlus2,
   Grid3X3,
   Highlighter,
   Maximize2,
@@ -39,7 +40,7 @@ const categories = [
   { id: 'pen', label: 'Pen', icon: PenLine },
   { id: 'highlighter', label: 'Markeerstift', icon: Highlighter },
   { id: 'objects', label: 'Objecten', icon: Shapes },
-  { id: 'lesson', label: 'Lesstof', icon: FileText, disabled: true },
+  { id: 'lesson', label: 'Lesstof', icon: FileText },
   { id: 'background', label: 'Achtergrond', icon: Grid3X3 },
   { id: 'pages', label: "Pagina's", icon: CheckSquare }
 ];
@@ -113,6 +114,7 @@ export default function PresenterToolbar({
   onSelect,
   onCreateObject,
   onInstrument,
+  onOpenImport,
   onFullscreen
 }) {
   const runAction = (action) => {
@@ -306,6 +308,18 @@ export default function PresenterToolbar({
               </button>
             ))}
           </div>
+        </div>
+      ) : null}
+      {activeCategory === 'lesson' ? (
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(36rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+          <button
+            type="button"
+            className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
+            onClick={() => runAction(onOpenImport)}
+          >
+            <FilePlus2 size={18} strokeWidth={2.4} />
+            Importeer uit CMS
+          </button>
         </div>
       ) : null}
       <div className={`pointer-events-auto mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-2 overflow-visible p-2 ${panelClass}`} onPointerEnter={onOpen}>

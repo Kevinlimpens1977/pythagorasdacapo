@@ -30,7 +30,12 @@ import {
   loadPresenterRecoveryState,
   savePresenterRecoveryState
 } from '../../lib/presenterStorage';
+import {
+  appendHelixContentImportToPresenterSession,
+  getPublishedPresenterContentBlocks
+} from '../../lib/presenterContentImport';
 import PresenterBoard from './PresenterBoard';
+import PresenterImportDialog from './PresenterImportDialog';
 import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
 import PresenterPagePanel from './PresenterPagePanel';
 import PresenterRecoveryPrompt from './PresenterRecoveryPrompt';
@@ -320,6 +325,7 @@ export default function PresenterShell() {
   const [instrument, setInstrument] = useState(null);
   const [recoveredSession, setRecoveredSession] = useState(getInitialRecoveredSession);
   const [fullscreenErrorVisible, setFullscreenErrorVisible] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const fullscreenErrorTimerRef = useRef(null);
   const toolbarAutoCloseTimerRef = useRef(null);
 
@@ -472,6 +478,12 @@ export default function PresenterShell() {
     setPagePanelOpen(false);
   };
 
+  const openImportDialog = () => {
+    setImportDialogOpen(true);
+    setActiveCategory('lesson');
+    setPagePanelOpen(false);
+  };
+
   const showFullscreenError = useCallback(() => {
     setFullscreenErrorVisible(true);
 
@@ -617,6 +629,20 @@ export default function PresenterShell() {
     updateActivePageWithHistory((currentSession) =>
       addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
     );
+  };
+
+  const handleImportContent = (importOptions) => {
+    if (getPublishedPresenterContentBlocks(importOptions?.contentBlocks).length === 0) return false;
+
+    setSession((currentSession) => {
+      const nextSession = appendHelixContentImportToPresenterSession(currentSession, importOptions);
+      if (nextSession === currentSession) return currentSession;
+
+      setHistory((currentHistory) => recordPresenterSessionAction(currentHistory, currentSession));
+      return nextSession;
+    });
+
+    return true;
   };
 
   const handleSelectObject = (objectId) => {
@@ -850,6 +876,11 @@ export default function PresenterShell() {
         onDeletePage={deletePage}
       />
       <PresenterInstrumentOverlay instrument={instrument} onClose={() => setInstrument(null)} />
+      <PresenterImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onImport={handleImportContent}
+      />
       <PresenterToolbar
         pageLabel={pageLabel}
         activeCategory={activeCategory}
@@ -884,6 +915,7 @@ export default function PresenterShell() {
         onSelect={handleSelectTool}
         onCreateObject={handleCreateObject}
         onInstrument={handleInstrument}
+        onOpenImport={openImportDialog}
         onFullscreen={handleFullscreen}
       />
     </section>
