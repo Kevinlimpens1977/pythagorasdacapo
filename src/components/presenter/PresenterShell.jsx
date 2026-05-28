@@ -130,6 +130,32 @@ const getFallbackRedoEntry = (history, session) => {
   return pageEntry ? { kind: 'page', pageId: pageEntry[0] } : null;
 };
 
+const clearPresenterRedoBranches = (history) => {
+  const normalizedHistory = normalizeHistory(history);
+  const byPageId = Object.fromEntries(
+    Object.entries(normalizedHistory.byPageId).map(([pageId, pageHistory]) => [
+      pageId,
+      {
+        ...pageHistory,
+        redo: []
+      }
+    ])
+  );
+
+  return {
+    ...normalizedHistory,
+    byPageId,
+    session: {
+      ...normalizedHistory.session,
+      redo: []
+    },
+    order: {
+      ...normalizedHistory.order,
+      redo: []
+    }
+  };
+};
+
 const hasAvailableUndo = (history, session) => {
   const normalizedHistory = normalizeHistory(history);
 
@@ -157,9 +183,10 @@ const hasAvailableRedo = (history, session) => {
 const recordPresenterPageAction = (history, pageId, page) => {
   const normalizedHistory = normalizeHistory(history);
   const nextHistory = recordPresenterPageState(normalizedHistory, pageId, page);
+  const historyWithoutRedo = clearPresenterRedoBranches(nextHistory);
 
   return {
-    ...nextHistory,
+    ...historyWithoutRedo,
     order: {
       undo: [...normalizedHistory.order.undo, { kind: 'page', pageId }].slice(-MAX_SESSION_HISTORY_ITEMS),
       redo: []
@@ -169,11 +196,12 @@ const recordPresenterPageAction = (history, pageId, page) => {
 
 const recordPresenterSessionAction = (history, session) => {
   const normalizedHistory = normalizeHistory(history);
+  const historyWithoutRedo = clearPresenterRedoBranches(normalizedHistory);
 
   return {
-    ...normalizedHistory,
+    ...historyWithoutRedo,
     session: {
-      undo: [...normalizedHistory.session.undo, clonePresenterSession(session)].slice(-MAX_SESSION_HISTORY_ITEMS),
+      undo: [...historyWithoutRedo.session.undo, clonePresenterSession(session)].slice(-MAX_SESSION_HISTORY_ITEMS),
       redo: []
     },
     order: {
