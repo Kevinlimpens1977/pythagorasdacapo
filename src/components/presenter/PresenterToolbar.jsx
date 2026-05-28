@@ -7,6 +7,7 @@ import {
   Maximize2,
   MousePointer2,
   PenLine,
+  Plus,
   Redo2,
   Shapes,
   Undo2
@@ -72,6 +73,7 @@ export default function PresenterToolbar({
   onCategory,
   onBackground,
   onPenStyle,
+  onAddPage,
   onPrev,
   onNext,
   prevDisabled = false,
@@ -278,6 +280,14 @@ export default function PresenterToolbar({
             aria-label="Volgende pagina"
           >
             <ArrowRight size={20} strokeWidth={2.4} />
+          </button>
+          <button
+            type="button"
+            className={iconButtonClass}
+            onClick={onAddPage}
+            aria-label="Nieuwe pagina"
+          >
+            <Plus size={20} strokeWidth={2.4} />
           </button>
         </div>
 

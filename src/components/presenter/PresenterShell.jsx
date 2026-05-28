@@ -14,7 +14,8 @@ import {
   deletePresenterPage,
   duplicatePresenterPage,
   getActivePresenterPage,
-  setActivePresenterPage,
+  getPresenterPageIndex,
+  setActivePresenterPageAt,
   updatePresenterTool,
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
@@ -318,10 +319,7 @@ export default function PresenterShell() {
 
   const activePage = getActivePresenterPage(session);
   const pages = useMemo(() => session.pages || [], [session.pages]);
-  const activeIndex = useMemo(
-    () => Math.max(0, pages.findIndex((page) => page.id === activePage?.id)),
-    [activePage?.id, pages]
-  );
+  const activeIndex = useMemo(() => getPresenterPageIndex(session), [session]);
   const pageLabel = pages.length > 0 ? `Pagina ${activeIndex + 1}/${pages.length}` : 'Pagina 0/0';
   const penTool = session.tool || { id: 'pen', variant: 'pen', color: '#111827', width: 6 };
   const currentTool = activeCategory === 'pen'
@@ -349,14 +347,16 @@ export default function PresenterShell() {
   }, []);
 
   const activatePageAt = useCallback((index) => {
-    const page = pages[index];
-    if (!page) return;
-
-    setSession((currentSession) => setActivePresenterPage(currentSession, page.id));
-  }, [pages]);
+    setSession((currentSession) => setActivePresenterPageAt(currentSession, index));
+  }, []);
 
   const selectPage = (pageId) => {
-    setSession((currentSession) => setActivePresenterPage(currentSession, pageId));
+    setSession((currentSession) => {
+      const pages = Array.isArray(currentSession?.pages) ? currentSession.pages : [];
+      const pageIndex = pages.findIndex((page) => page.id === pageId);
+
+      return setActivePresenterPageAt(currentSession, pageIndex);
+    });
   };
 
   const addPage = () => {
@@ -747,6 +747,7 @@ export default function PresenterShell() {
         onCategory={handleCategory}
         onBackground={handleBackground}
         onPenStyle={handlePenStyle}
+        onAddPage={addPage}
         onPrev={() => activatePageAt(activeIndex - 1)}
         onNext={() => activatePageAt(activeIndex + 1)}
         prevDisabled={activeIndex <= 0}

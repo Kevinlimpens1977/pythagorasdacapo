@@ -49,7 +49,17 @@ export const createPresenterSession = () => {
 };
 
 export const getActivePresenterPage = (session) =>
-  session.pages.find((page) => page.id === session.activePageId) || session.pages[0] || null;
+  (Array.isArray(session?.pages) ? session.pages : []).find((page) => page.id === session?.activePageId) ||
+  (Array.isArray(session?.pages) ? session.pages[0] : null) ||
+  null;
+
+export const getPresenterPageIndex = (session, pageId = session?.activePageId) => {
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  if (pages.length === 0) return -1;
+
+  const activeIndex = pages.findIndex((page) => page?.id === pageId);
+  return activeIndex === -1 ? 0 : activeIndex;
+};
 
 const updatePresenterPage = (session, pageId = session.activePageId, updater) => {
   const pages = Array.isArray(session?.pages) ? session.pages : [];
@@ -80,7 +90,8 @@ export const updatePresenterPageBackground = (
 };
 
 export const setActivePresenterPage = (session, pageId) => {
-  if (!session.pages.some((page) => page.id === pageId)) return session;
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  if (!pages.some((page) => page.id === pageId)) return session;
 
   return {
     ...session,
@@ -89,12 +100,20 @@ export const setActivePresenterPage = (session, pageId) => {
   };
 };
 
+export const setActivePresenterPageAt = (session, index) => {
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  if (!Number.isInteger(index) || index < 0 || index >= pages.length) return session;
+
+  return setActivePresenterPage(session, pages[index].id);
+};
+
 export const addPresenterPage = (session) => {
-  const page = createPresenterPage({ title: `Pagina ${session.pages.length + 1}` });
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  const page = createPresenterPage({ title: `Pagina ${pages.length + 1}` });
 
   return {
     ...session,
-    pages: [...session.pages, page],
+    pages: [...pages, page],
     activePageId: page.id,
     selectedObjectId: null,
     dirty: true
@@ -184,10 +203,11 @@ export const deleteObjectFromPresenterPage = (session, pageId = session.activePa
 };
 
 export const duplicatePresenterPage = (session, pageId = session.activePageId) => {
-  const sourceIndex = session.pages.findIndex((page) => page.id === pageId);
+  const sessionPages = Array.isArray(session?.pages) ? session.pages : [];
+  const sourceIndex = sessionPages.findIndex((page) => page.id === pageId);
   if (sourceIndex === -1) return session;
 
-  const source = session.pages[sourceIndex];
+  const source = sessionPages[sourceIndex];
   const duplicate = createPresenterPage({
     ...structuredClone(source),
     id: createId('presenter-page'),
@@ -195,7 +215,7 @@ export const duplicatePresenterPage = (session, pageId = session.activePageId) =
     strokes: cloneWithFreshIds(source.strokes, 'stroke'),
     objects: cloneWithFreshIds(source.objects, 'object')
   });
-  const pages = [...session.pages];
+  const pages = [...sessionPages];
   pages.splice(sourceIndex + 1, 0, duplicate);
 
   return {
@@ -208,8 +228,11 @@ export const duplicatePresenterPage = (session, pageId = session.activePageId) =
 };
 
 export const deletePresenterPage = (session, pageId = session.activePageId) => {
-  const pages = session.pages.filter((page) => page.id !== pageId);
-  if (pages.length === session.pages.length) return session;
+  const sessionPages = Array.isArray(session?.pages) ? session.pages : [];
+  const deletedIndex = sessionPages.findIndex((page) => page.id === pageId);
+  if (deletedIndex === -1) return session;
+
+  const pages = sessionPages.filter((page) => page.id !== pageId);
 
   if (pages.length === 0) {
     const replacement = createPresenterPage({ title: 'Pagina 1' });
@@ -223,7 +246,9 @@ export const deletePresenterPage = (session, pageId = session.activePageId) => {
   }
 
   const activePageId =
-    session.activePageId === pageId ? pages[Math.max(0, pages.length - 1)].id : session.activePageId;
+    session.activePageId === pageId
+      ? pages[Math.min(deletedIndex, pages.length - 1)].id
+      : session.activePageId;
 
   return {
     ...session,
