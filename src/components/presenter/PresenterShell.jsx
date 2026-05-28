@@ -30,6 +30,8 @@ import PresenterPagePanel from './PresenterPagePanel';
 import PresenterRecoveryPrompt from './PresenterRecoveryPrompt';
 import PresenterToolbar from './PresenterToolbar';
 
+const MAX_SESSION_HISTORY_ITEMS = 80;
+
 const createObjectId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return `object-${crypto.randomUUID()}`;
@@ -61,6 +63,72 @@ const replacePresenterPage = (session, pageId, page) => ({
   dirty: true
 });
 
+const clonePresenterSession = (session) => structuredClone(session);
+
+const createSessionHistory = () => ({
+  undo: [],
+  redo: []
+});
+
+const normalizeHistory = (history) => ({
+  ...history,
+  session: history.session || createSessionHistory()
+});
+
+const recordPresenterSessionState = (history, session) => {
+  const normalizedHistory = normalizeHistory(history);
+
+  return {
+    ...normalizedHistory,
+    session: {
+      undo: [...normalizedHistory.session.undo, clonePresenterSession(session)].slice(-MAX_SESSION_HISTORY_ITEMS),
+      redo: []
+    }
+  };
+};
+
+const undoPresenterSession = (history, currentSession) => {
+  const normalizedHistory = normalizeHistory(history);
+  if (normalizedHistory.session.undo.length === 0) {
+    return { session: currentSession, history };
+  }
+
+  const previous = normalizedHistory.session.undo[normalizedHistory.session.undo.length - 1];
+  const undo = normalizedHistory.session.undo.slice(0, -1);
+  const redo = [...normalizedHistory.session.redo, clonePresenterSession(currentSession)].slice(
+    -MAX_SESSION_HISTORY_ITEMS
+  );
+
+  return {
+    session: previous,
+    history: {
+      ...normalizedHistory,
+      session: { undo, redo }
+    }
+  };
+};
+
+const redoPresenterSession = (history, currentSession) => {
+  const normalizedHistory = normalizeHistory(history);
+  if (normalizedHistory.session.redo.length === 0) {
+    return { session: currentSession, history };
+  }
+
+  const next = normalizedHistory.session.redo[normalizedHistory.session.redo.length - 1];
+  const redo = normalizedHistory.session.redo.slice(0, -1);
+  const undo = [...normalizedHistory.session.undo, clonePresenterSession(currentSession)].slice(
+    -MAX_SESSION_HISTORY_ITEMS
+  );
+
+  return {
+    session: next,
+    history: {
+      ...normalizedHistory,
+      session: { undo, redo }
+    }
+  };
+};
+
 const getInitialRecoveredSession = () => {
   const restored = loadPresenterRecoveryState(getBrowserSessionStorage());
   return hasRecoverablePresenterState(restored) ? restored : null;
@@ -88,8 +156,13 @@ export default function PresenterShell() {
     ? { id: 'pen', variant: 'pen', color: '#111827', width: 5 }
     : { id: 'select' };
   const activePageHistory = history.byPageId[activePage?.id] || { undo: [], redo: [] };
-  const canUndo = activePageHistory.undo.length > 0;
-  const canRedo = activePageHistory.redo.length > 0;
+  const sessionHistory = history.session || createSessionHistory();
+  const canUndoPage = activePageHistory.undo.length > 0;
+  const canRedoPage = activePageHistory.redo.length > 0;
+  const canUndoSession = sessionHistory.undo.length > 0;
+  const canRedoSession = sessionHistory.redo.length > 0;
+  const canUndo = canUndoPage || canUndoSession;
+  const canRedo = canRedoPage || canRedoSession;
 
   const updateActivePageWithHistory = useCallback((updater) => {
     setSession((currentSession) => {
@@ -116,18 +189,36 @@ export default function PresenterShell() {
   };
 
   const addPage = () => {
-    setSession((currentSession) => addPresenterPage(currentSession));
+    setSession((currentSession) => {
+      const nextSession = addPresenterPage(currentSession);
+      if (nextSession === currentSession) return currentSession;
+
+      setHistory((currentHistory) => recordPresenterSessionState(currentHistory, currentSession));
+      return nextSession;
+    });
   };
 
   const duplicatePage = () => {
-    setSession((currentSession) => duplicatePresenterPage(currentSession, currentSession.activePageId));
+    setSession((currentSession) => {
+      const nextSession = duplicatePresenterPage(currentSession, currentSession.activePageId);
+      if (nextSession === currentSession) return currentSession;
+
+      setHistory((currentHistory) => recordPresenterSessionState(currentHistory, currentSession));
+      return nextSession;
+    });
   };
 
   const deletePage = () => {
     const canConfirm = typeof window !== 'undefined' && typeof window.confirm === 'function';
     if (canConfirm && !window.confirm('Deze pagina verwijderen?')) return;
 
-    setSession((currentSession) => deletePresenterPage(currentSession, currentSession.activePageId));
+    setSession((currentSession) => {
+      const nextSession = deletePresenterPage(currentSession, currentSession.activePageId);
+      if (nextSession === currentSession) return currentSession;
+
+      setHistory((currentHistory) => recordPresenterSessionState(currentHistory, currentSession));
+      return nextSession;
+    });
   };
 
   const handleCategory = (category) => {
@@ -183,28 +274,56 @@ export default function PresenterShell() {
   const handleUndo = useCallback(() => {
     setSession((currentSession) => {
       const page = getActivePresenterPage(currentSession);
-      if (!page) return currentSession;
+      if (!page) {
+        const result = undoPresenterSession(history, currentSession);
+        if (result.session === currentSession && result.history === history) return currentSession;
 
-      const result = undoPresenterPage(history, page.id, page);
-      if (result.page === page && result.history === history) return currentSession;
+        setHistory(result.history);
+        return result.session;
+      }
+
+      if (canUndoPage) {
+        const result = undoPresenterPage(history, page.id, page);
+        if (result.page === page && result.history === history) return currentSession;
+
+        setHistory(result.history);
+        return replacePresenterPage(currentSession, page.id, result.page);
+      }
+
+      const result = undoPresenterSession(history, currentSession);
+      if (result.session === currentSession && result.history === history) return currentSession;
 
       setHistory(result.history);
-      return replacePresenterPage(currentSession, page.id, result.page);
+      return result.session;
     });
-  }, [history]);
+  }, [canUndoPage, history]);
 
   const handleRedo = useCallback(() => {
     setSession((currentSession) => {
       const page = getActivePresenterPage(currentSession);
-      if (!page) return currentSession;
+      if (!page) {
+        const result = redoPresenterSession(history, currentSession);
+        if (result.session === currentSession && result.history === history) return currentSession;
 
-      const result = redoPresenterPage(history, page.id, page);
-      if (result.page === page && result.history === history) return currentSession;
+        setHistory(result.history);
+        return result.session;
+      }
+
+      if (canRedoPage) {
+        const result = redoPresenterPage(history, page.id, page);
+        if (result.page === page && result.history === history) return currentSession;
+
+        setHistory(result.history);
+        return replacePresenterPage(currentSession, page.id, result.page);
+      }
+
+      const result = redoPresenterSession(history, currentSession);
+      if (result.session === currentSession && result.history === history) return currentSession;
 
       setHistory(result.history);
-      return replacePresenterPage(currentSession, page.id, result.page);
+      return result.session;
     });
-  }, [history]);
+  }, [canRedoPage, history]);
 
   const handleStrokeComplete = (stroke) => {
     updateActivePageWithHistory((currentSession) =>
