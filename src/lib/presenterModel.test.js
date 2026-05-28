@@ -13,6 +13,12 @@ import {
   removeStrokeFromPresenterPage,
   addObjectToPresenterPage,
   deleteObjectFromPresenterPage,
+  deleteObjectsFromPresenterPage,
+  getPresenterObjectBounds,
+  getPresenterObjectIdsInRect,
+  getPresenterSelectionBounds,
+  movePresenterObjectsOnPage,
+  resizePresenterObjectsOnPage,
   clearPresenterPageContent,
   setActivePresenterPageAt,
   updatePresenterPageBackground,
@@ -28,6 +34,7 @@ test('createPresenterSession starts with one white page', () => {
   assert.equal(session.pages[0].background.kind, 'white');
   assert.deepEqual(session.pages[0].strokes, []);
   assert.deepEqual(session.pages[0].objects, []);
+  assert.deepEqual(session.selectedObjectIds, []);
 });
 
 test('addPresenterPage appends a new page and makes it active', () => {
@@ -198,6 +205,7 @@ test('addObjectToPresenterPage adds object and selects it', () => {
 
   assert.equal(next.dirty, true);
   assert.equal(next.selectedObjectId, object.id);
+  assert.deepEqual(next.selectedObjectIds, [object.id]);
   assert.deepEqual(next.pages[0].objects, [object]);
   assert.deepEqual(next.pages[1].objects, []);
   assert.notEqual(next.pages[0], session.pages[0]);
@@ -216,12 +224,14 @@ test('deleteObjectFromPresenterPage removes selected object and clears selectedO
     ...createPresenterSession(),
     activePageId: page.id,
     pages: [page],
-    selectedObjectId: 'object-1'
+    selectedObjectId: 'object-1',
+    selectedObjectIds: ['object-1']
   };
   const next = deleteObjectFromPresenterPage(session, page.id, 'object-1');
 
   assert.equal(next.dirty, true);
   assert.equal(next.selectedObjectId, null);
+  assert.deepEqual(next.selectedObjectIds, []);
   assert.deepEqual(next.pages[0].objects, [{ id: 'object-2', type: 'ellipse', x: 30, y: 40 }]);
   assert.notEqual(next.pages[0], page);
 });
@@ -267,6 +277,125 @@ test('deleteObjectFromPresenterPage ignores missing legacy object arrays without
   assert.equal(next.dirty, false);
   assert.equal(next.selectedObjectId, 'object-1');
   assert.equal(next.pages[0], page);
+});
+
+test('getPresenterObjectBounds normalizes negative object dimensions', () => {
+  assert.deepEqual(
+    getPresenterObjectBounds({ id: 'object-1', type: 'line', x: 100, y: 80, width: -40, height: -20 }),
+    { x: 60, y: 60, width: 40, height: 20, right: 100, bottom: 80 }
+  );
+});
+
+test('getPresenterObjectIdsInRect returns objects intersecting the marquee rectangle', () => {
+  const page = createPresenterPage({
+    objects: [
+      { id: 'object-1', type: 'rectangle', x: 10, y: 10, width: 100, height: 80 },
+      { id: 'object-2', type: 'ellipse', x: 150, y: 30, width: 90, height: 90 },
+      { id: 'object-3', type: 'triangle', x: 420, y: 30, width: 100, height: 80 }
+    ]
+  });
+
+  assert.deepEqual(getPresenterObjectIdsInRect(page, { x: 0, y: 0, width: 180, height: 140 }), [
+    'object-1',
+    'object-2'
+  ]);
+  assert.deepEqual(getPresenterObjectIdsInRect(page, { x: 0, y: 0, width: 180, height: 140 }, { mode: 'contain' }), [
+    'object-1'
+  ]);
+});
+
+test('getPresenterSelectionBounds combines selected object bounds', () => {
+  const page = createPresenterPage({
+    objects: [
+      { id: 'object-1', type: 'rectangle', x: 10, y: 20, width: 100, height: 80 },
+      { id: 'object-2', type: 'ellipse', x: 180, y: 40, width: 90, height: 70 },
+      { id: 'object-3', type: 'triangle', x: 500, y: 40, width: 90, height: 70 }
+    ]
+  });
+
+  assert.deepEqual(getPresenterSelectionBounds(page, ['object-1', 'object-2']), {
+    x: 10,
+    y: 20,
+    width: 260,
+    height: 90,
+    right: 270,
+    bottom: 110
+  });
+});
+
+test('movePresenterObjectsOnPage moves selected objects as a group', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    objects: [
+      { id: 'object-1', type: 'rectangle', x: 10, y: 20, width: 100, height: 80 },
+      { id: 'object-2', type: 'ellipse', x: 180, y: 40, width: 90, height: 70 },
+      { id: 'object-3', type: 'triangle', x: 500, y: 40, width: 90, height: 70 }
+    ]
+  });
+  const session = { ...createPresenterSession(), activePageId: page.id, pages: [page] };
+
+  const next = movePresenterObjectsOnPage(session, page.id, ['object-1', 'object-2'], { dx: 15, dy: -5 });
+
+  assert.equal(next.dirty, true);
+  assert.equal(next.pages[0].objects[0].x, 25);
+  assert.equal(next.pages[0].objects[0].y, 15);
+  assert.equal(next.pages[0].objects[1].x, 195);
+  assert.equal(next.pages[0].objects[1].y, 35);
+  assert.equal(next.pages[0].objects[2], page.objects[2]);
+});
+
+test('resizePresenterObjectsOnPage scales selected objects from group bounds', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    objects: [
+      { id: 'object-1', type: 'rectangle', x: 10, y: 20, width: 100, height: 80 },
+      { id: 'object-2', type: 'ellipse', x: 160, y: 60, width: 50, height: 40 }
+    ]
+  });
+  const session = { ...createPresenterSession(), activePageId: page.id, pages: [page] };
+  const fromBounds = getPresenterSelectionBounds(page, ['object-1', 'object-2']);
+
+  const next = resizePresenterObjectsOnPage(session, page.id, ['object-1', 'object-2'], fromBounds, {
+    x: 10,
+    y: 20,
+    width: 400,
+    height: 160
+  });
+
+  assert.equal(next.dirty, true);
+  assert.equal(next.pages[0].objects[0].x, 10);
+  assert.equal(next.pages[0].objects[0].y, 20);
+  assert.equal(next.pages[0].objects[0].width, 200);
+  assert.equal(next.pages[0].objects[0].height, 160);
+  assert.equal(next.pages[0].objects[1].x, 310);
+  assert.equal(next.pages[0].objects[1].y, 100);
+  assert.equal(next.pages[0].objects[1].width, 100);
+  assert.equal(next.pages[0].objects[1].height, 80);
+});
+
+test('deleteObjectsFromPresenterPage removes a selected group and keeps remaining selection', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    objects: [
+      { id: 'object-1', type: 'rectangle', x: 10, y: 20 },
+      { id: 'object-2', type: 'ellipse', x: 30, y: 40 },
+      { id: 'object-3', type: 'triangle', x: 50, y: 60 }
+    ]
+  });
+  const session = {
+    ...createPresenterSession(),
+    activePageId: page.id,
+    pages: [page],
+    selectedObjectId: 'object-1',
+    selectedObjectIds: ['object-1', 'object-2', 'object-3']
+  };
+
+  const next = deleteObjectsFromPresenterPage(session, page.id, ['object-1', 'object-2']);
+
+  assert.equal(next.dirty, true);
+  assert.equal(next.selectedObjectId, 'object-3');
+  assert.deepEqual(next.selectedObjectIds, ['object-3']);
+  assert.deepEqual(next.pages[0].objects, [{ id: 'object-3', type: 'triangle', x: 50, y: 60 }]);
 });
 
 test('clearPresenterPageContent clears only the target page content and selected object', () => {

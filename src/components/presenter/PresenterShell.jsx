@@ -11,11 +11,14 @@ import {
   addStrokeToPresenterPage,
   clearPresenterPageContent,
   createPresenterSession,
+  deleteObjectsFromPresenterPage,
   deleteObjectFromPresenterPage,
   deletePresenterPage,
   duplicatePresenterPage,
   getActivePresenterPage,
   getPresenterPageIndex,
+  movePresenterObjectsOnPage,
+  resizePresenterObjectsOnPage,
   setActivePresenterPageAt,
   updatePresenterTool,
   updatePresenterPageBackground
@@ -607,13 +610,42 @@ export default function PresenterShell() {
   const handleSelectObject = (objectId) => {
     setSession((currentSession) => ({
       ...currentSession,
-      selectedObjectId: objectId
+      selectedObjectId: objectId,
+      selectedObjectIds: objectId ? [objectId] : []
     }));
   };
+
+  const handleSelectObjects = (objectIds = []) => {
+    const selectedObjectIds = [...new Set((Array.isArray(objectIds) ? objectIds : [objectIds]).filter(Boolean))];
+
+    setSession((currentSession) => ({
+      ...currentSession,
+      selectedObjectId: selectedObjectIds[0] || null,
+      selectedObjectIds
+    }));
+  };
+
+  const handleMoveObjects = useCallback((objectIds, delta) => {
+    updateActivePageWithHistory((currentSession) =>
+      movePresenterObjectsOnPage(currentSession, currentSession.activePageId, objectIds, delta)
+    );
+  }, [updateActivePageWithHistory]);
+
+  const handleResizeObjects = useCallback((objectIds, fromBounds, toBounds) => {
+    updateActivePageWithHistory((currentSession) =>
+      resizePresenterObjectsOnPage(currentSession, currentSession.activePageId, objectIds, fromBounds, toBounds)
+    );
+  }, [updateActivePageWithHistory]);
 
   const handleDeleteObject = useCallback((objectId) => {
     updateActivePageWithHistory((currentSession) =>
       deleteObjectFromPresenterPage(currentSession, currentSession.activePageId, objectId)
+    );
+  }, [updateActivePageWithHistory]);
+
+  const handleDeleteObjects = useCallback((objectIds) => {
+    updateActivePageWithHistory((currentSession) =>
+      deleteObjectsFromPresenterPage(currentSession, currentSession.activePageId, objectIds)
     );
   }, [updateActivePageWithHistory]);
 
@@ -688,9 +720,16 @@ export default function PresenterShell() {
       }
 
       if (event.key === 'Delete' || event.key === 'Backspace') {
-        if (session.selectedObjectId) {
+        const selectedObjectIds =
+          Array.isArray(session.selectedObjectIds) && session.selectedObjectIds.length > 0
+            ? session.selectedObjectIds
+            : session.selectedObjectId
+              ? [session.selectedObjectId]
+              : [];
+
+        if (selectedObjectIds.length > 0) {
           event.preventDefault();
-          handleDeleteObject(session.selectedObjectId);
+          handleDeleteObjects(selectedObjectIds);
         }
         return;
       }
@@ -733,11 +772,13 @@ export default function PresenterShell() {
     canUndo,
     exitFullscreenSafely,
     handleDeleteObject,
+    handleDeleteObjects,
     handleRedo,
     handleUndo,
     pages.length,
     recoveredSession,
-    session.selectedObjectId
+    session.selectedObjectId,
+    session.selectedObjectIds
   ]);
 
   useEffect(() => () => {
@@ -777,10 +818,15 @@ export default function PresenterShell() {
         page={activePage}
         tool={currentTool}
         selectedObjectId={session.selectedObjectId}
+        selectedObjectIds={session.selectedObjectIds}
         onInteract={closeToolbar}
         onStrokeComplete={handleStrokeComplete}
         onSelectObject={handleSelectObject}
+        onSelectObjects={handleSelectObjects}
+        onMoveObjects={handleMoveObjects}
+        onResizeObjects={handleResizeObjects}
         onDeleteObject={handleDeleteObject}
+        onDeleteObjects={handleDeleteObjects}
       />
       <PresenterPagePanel
         pages={pages}

@@ -12,6 +12,175 @@ const cloneWithFreshIds = (items, prefix) =>
 
 const cloneValue = (value) => structuredClone(value);
 
+const MIN_TRANSFORM_SIZE = 24;
+
+const isFiniteNumber = (value) => Number.isFinite(value);
+
+const getNumber = (value, fallback = 0) => (isFiniteNumber(value) ? value : fallback);
+
+const normalizeIdList = (ids) =>
+  [...new Set((Array.isArray(ids) ? ids : [ids]).filter((id) => typeof id === 'string' && id.length > 0))];
+
+const normalizeRect = (rect) => {
+  if (!rect) return null;
+
+  const x1 = getNumber(rect.x);
+  const y1 = getNumber(rect.y);
+  const x2 = isFiniteNumber(rect.right) ? rect.right : x1 + getNumber(rect.width);
+  const y2 = isFiniteNumber(rect.bottom) ? rect.bottom : y1 + getNumber(rect.height);
+
+  return {
+    x: Math.min(x1, x2),
+    y: Math.min(y1, y2),
+    width: Math.abs(x2 - x1),
+    height: Math.abs(y2 - y1),
+    right: Math.max(x1, x2),
+    bottom: Math.max(y1, y2)
+  };
+};
+
+const rectsIntersect = (a, b) =>
+  a.x <= b.right && a.right >= b.x && a.y <= b.bottom && a.bottom >= b.y;
+
+const rectContainsRect = (outer, inner) =>
+  inner.x >= outer.x && inner.right <= outer.right && inner.y >= outer.y && inner.bottom <= outer.bottom;
+
+export const getPresenterObjectBounds = (object) => {
+  if (!object?.id) return null;
+
+  const x = getNumber(object.x);
+  const y = getNumber(object.y);
+  const width = getNumber(object.width, 120);
+  const height = getNumber(object.height, 80);
+  const left = Math.min(x, x + width);
+  const top = Math.min(y, y + height);
+  const right = Math.max(x, x + width);
+  const bottom = Math.max(y, y + height);
+
+  return {
+    x: left,
+    y: top,
+    width: Math.max(0, right - left),
+    height: Math.max(0, bottom - top),
+    right,
+    bottom
+  };
+};
+
+export const getPresenterSelectionBounds = (page, objectIds) => {
+  const selectedIds = new Set(normalizeIdList(objectIds));
+  if (selectedIds.size === 0) return null;
+
+  const bounds = (Array.isArray(page?.objects) ? page.objects : [])
+    .filter((object) => selectedIds.has(object?.id))
+    .map(getPresenterObjectBounds)
+    .filter(Boolean);
+
+  if (bounds.length === 0) return null;
+
+  const left = Math.min(...bounds.map((bound) => bound.x));
+  const top = Math.min(...bounds.map((bound) => bound.y));
+  const right = Math.max(...bounds.map((bound) => bound.right));
+  const bottom = Math.max(...bounds.map((bound) => bound.bottom));
+
+  return {
+    x: left,
+    y: top,
+    width: Math.max(0, right - left),
+    height: Math.max(0, bottom - top),
+    right,
+    bottom
+  };
+};
+
+export const getPresenterObjectIdsInRect = (page, rect, { mode = 'intersect' } = {}) => {
+  const selectionRect = normalizeRect(rect);
+  if (!selectionRect || selectionRect.width === 0 || selectionRect.height === 0) return [];
+
+  return (Array.isArray(page?.objects) ? page.objects : [])
+    .filter((object) => {
+      const objectBounds = getPresenterObjectBounds(object);
+      if (!objectBounds) return false;
+
+      return mode === 'contain'
+        ? rectContainsRect(selectionRect, objectBounds)
+        : rectsIntersect(selectionRect, objectBounds);
+    })
+    .map((object) => object.id);
+};
+
+export const movePresenterObjectsOnPage = (session, pageId = session.activePageId, objectIds, delta = {}) => {
+  const selectedIds = new Set(normalizeIdList(objectIds));
+  const dx = getNumber(delta.dx);
+  const dy = getNumber(delta.dy);
+  if (selectedIds.size === 0 || (dx === 0 && dy === 0)) return session;
+
+  return updatePresenterPage(session, pageId, (page) => {
+    const objects = Array.isArray(page?.objects) ? page.objects : [];
+    if (!objects.some((object) => selectedIds.has(object?.id))) return page;
+
+    return {
+      ...page,
+      objects: objects.map((object) =>
+        selectedIds.has(object?.id)
+          ? {
+              ...object,
+              x: getNumber(object.x) + dx,
+              y: getNumber(object.y) + dy
+            }
+          : object
+      )
+    };
+  });
+};
+
+export const resizePresenterObjectsOnPage = (
+  session,
+  pageId = session.activePageId,
+  objectIds,
+  fromBounds,
+  toBounds,
+  { minSize = MIN_TRANSFORM_SIZE } = {}
+) => {
+  const selectedIds = new Set(normalizeIdList(objectIds));
+  const sourceBounds = normalizeRect(fromBounds);
+  const targetBounds = normalizeRect(toBounds);
+  if (!sourceBounds || !targetBounds || selectedIds.size === 0) return session;
+  if (sourceBounds.width <= 0 || sourceBounds.height <= 0) return session;
+
+  const safeMinSize = isFiniteNumber(minSize) && minSize > 0 ? minSize : MIN_TRANSFORM_SIZE;
+  const nextBounds = {
+    ...targetBounds,
+    width: Math.max(safeMinSize, targetBounds.width),
+    height: Math.max(safeMinSize, targetBounds.height)
+  };
+  nextBounds.right = nextBounds.x + nextBounds.width;
+  nextBounds.bottom = nextBounds.y + nextBounds.height;
+
+  const scaleX = nextBounds.width / sourceBounds.width;
+  const scaleY = nextBounds.height / sourceBounds.height;
+
+  return updatePresenterPage(session, pageId, (page) => {
+    const objects = Array.isArray(page?.objects) ? page.objects : [];
+    if (!objects.some((object) => selectedIds.has(object?.id))) return page;
+
+    return {
+      ...page,
+      objects: objects.map((object) => {
+        if (!selectedIds.has(object?.id)) return object;
+
+        return {
+          ...object,
+          x: nextBounds.x + (getNumber(object.x) - sourceBounds.x) * scaleX,
+          y: nextBounds.y + (getNumber(object.y) - sourceBounds.y) * scaleY,
+          width: getNumber(object.width, 120) * scaleX,
+          height: getNumber(object.height, 80) * scaleY
+        };
+      })
+    };
+  });
+};
+
 export const createPresenterPage = (overrides = {}) => ({
   id: overrides.id ?? createId('presenter-page'),
   title: overrides.title ?? 'Pagina 1',
@@ -44,6 +213,7 @@ export const createPresenterSession = () => {
       activeCategory: 'pen'
     },
     selectedObjectId: null,
+    selectedObjectIds: [],
     dirty: false
   };
 };
@@ -96,7 +266,8 @@ export const setActivePresenterPage = (session, pageId) => {
   return {
     ...session,
     activePageId: pageId,
-    selectedObjectId: null
+    selectedObjectId: null,
+    selectedObjectIds: []
   };
 };
 
@@ -116,6 +287,7 @@ export const addPresenterPage = (session) => {
     pages: [...pages, page],
     activePageId: page.id,
     selectedObjectId: null,
+    selectedObjectIds: [],
     dirty: true
   };
 };
@@ -177,7 +349,8 @@ export const addObjectToPresenterPage = (session, pageId = session.activePageId,
 
   return {
     ...nextSession,
-    selectedObjectId: object.id
+    selectedObjectId: object.id,
+    selectedObjectIds: [object.id]
   };
 };
 
@@ -198,7 +371,33 @@ export const deleteObjectFromPresenterPage = (session, pageId = session.activePa
 
   return {
     ...nextSession,
-    selectedObjectId: session.selectedObjectId === objectId ? null : session.selectedObjectId
+    selectedObjectId: session.selectedObjectId === objectId ? null : session.selectedObjectId,
+    selectedObjectIds: normalizeIdList(session.selectedObjectIds).filter((selectedId) => selectedId !== objectId)
+  };
+};
+
+export const deleteObjectsFromPresenterPage = (session, pageId = session.activePageId, objectIds) => {
+  const deletedIds = new Set(normalizeIdList(objectIds));
+  if (deletedIds.size === 0) return session;
+
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  const page = pages.find((currentPage) => currentPage?.id === pageId);
+  const objects = Array.isArray(page?.objects) ? page.objects : [];
+  if (!objects.some((object) => deletedIds.has(object?.id))) return session;
+
+  const nextSession = updatePresenterPage(session, pageId, (page) => ({
+    ...page,
+    objects: (Array.isArray(page?.objects) ? page.objects : []).filter((object) => !deletedIds.has(object?.id))
+  }));
+
+  if (nextSession === session) return session;
+
+  const selectedObjectIds = normalizeIdList(session.selectedObjectIds).filter((selectedId) => !deletedIds.has(selectedId));
+
+  return {
+    ...nextSession,
+    selectedObjectId: deletedIds.has(session.selectedObjectId) ? selectedObjectIds[0] || null : session.selectedObjectId,
+    selectedObjectIds
   };
 };
 
@@ -251,6 +450,7 @@ export const duplicatePresenterPage = (session, pageId = session.activePageId) =
     pages,
     activePageId: duplicate.id,
     selectedObjectId: null,
+    selectedObjectIds: [],
     dirty: true
   };
 };
@@ -269,6 +469,7 @@ export const deletePresenterPage = (session, pageId = session.activePageId) => {
       pages: [replacement],
       activePageId: replacement.id,
       selectedObjectId: null,
+      selectedObjectIds: [],
       dirty: true
     };
   }
@@ -283,6 +484,7 @@ export const deletePresenterPage = (session, pageId = session.activePageId) => {
     pages,
     activePageId,
     selectedObjectId: null,
+    selectedObjectIds: [],
     dirty: true
   };
 };
