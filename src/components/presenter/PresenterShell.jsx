@@ -1,4 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createPresenterHistory,
+  recordPresenterPageState,
+  redoPresenterPage,
+  undoPresenterPage
+} from '../../lib/presenterHistory';
 import {
   addObjectToPresenterPage,
   addPresenterPage,
@@ -12,9 +18,16 @@ import {
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
 import { createPresenterObject } from '../../lib/presenterObjects';
+import {
+  clearPresenterRecoveryState,
+  hasRecoverablePresenterState,
+  loadPresenterRecoveryState,
+  savePresenterRecoveryState
+} from '../../lib/presenterStorage';
 import PresenterBoard from './PresenterBoard';
 import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
 import PresenterPagePanel from './PresenterPagePanel';
+import PresenterRecoveryPrompt from './PresenterRecoveryPrompt';
 import PresenterToolbar from './PresenterToolbar';
 
 const createObjectId = () => {
@@ -25,12 +38,44 @@ const createObjectId = () => {
   return `object-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 };
 
+const getBrowserSessionStorage = () => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+};
+
+const isEditableShortcutTarget = (target) => {
+  if (!(target instanceof HTMLElement)) return false;
+
+  const tagName = target.tagName.toLowerCase();
+  return tagName === 'input' || tagName === 'textarea' || target.isContentEditable;
+};
+
+const replacePresenterPage = (session, pageId, page) => ({
+  ...session,
+  pages: session.pages.map((currentPage) => (currentPage.id === pageId ? page : currentPage)),
+  dirty: true
+});
+
+const getInitialRecoveredSession = () => {
+  const restored = loadPresenterRecoveryState(getBrowserSessionStorage());
+  return hasRecoverablePresenterState(restored) ? restored : null;
+};
+
 export default function PresenterShell() {
   const [session, setSession] = useState(() => createPresenterSession());
+  const [history, setHistory] = useState(() => createPresenterHistory());
   const [toolbarPinned, setToolbarPinned] = useState(() => Boolean(session.toolbar?.pinned));
   const [activeCategory, setActiveCategory] = useState(() => session.toolbar?.activeCategory || 'pen');
   const [pagePanelOpen, setPagePanelOpen] = useState(false);
   const [instrument, setInstrument] = useState(null);
+  const [recoveredSession, setRecoveredSession] = useState(getInitialRecoveredSession);
+  const [fullscreenErrorVisible, setFullscreenErrorVisible] = useState(false);
+  const fullscreenErrorTimerRef = useRef(null);
 
   const activePage = getActivePresenterPage(session);
   const pages = useMemo(() => session.pages || [], [session.pages]);
@@ -42,13 +87,29 @@ export default function PresenterShell() {
   const currentTool = activeCategory === 'pen'
     ? { id: 'pen', variant: 'pen', color: '#111827', width: 5 }
     : { id: 'select' };
+  const activePageHistory = history.byPageId[activePage?.id] || { undo: [], redo: [] };
+  const canUndo = activePageHistory.undo.length > 0;
+  const canRedo = activePageHistory.redo.length > 0;
 
-  const activatePageAt = (index) => {
+  const updateActivePageWithHistory = useCallback((updater) => {
+    setSession((currentSession) => {
+      const page = getActivePresenterPage(currentSession);
+      if (!page) return currentSession;
+
+      const nextSession = updater(currentSession, page);
+      if (nextSession === currentSession) return currentSession;
+
+      setHistory((currentHistory) => recordPresenterPageState(currentHistory, page.id, page));
+      return nextSession;
+    });
+  }, []);
+
+  const activatePageAt = useCallback((index) => {
     const page = pages[index];
     if (!page) return;
 
     setSession((currentSession) => setActivePresenterPage(currentSession, page.id));
-  };
+  }, [pages]);
 
   const selectPage = (pageId) => {
     setSession((currentSession) => setActivePresenterPage(currentSession, pageId));
@@ -85,26 +146,74 @@ export default function PresenterShell() {
     setPagePanelOpen(false);
   };
 
-  const handleFullscreen = () => {
+  const showFullscreenError = useCallback(() => {
+    setFullscreenErrorVisible(true);
+
+    if (fullscreenErrorTimerRef.current) {
+      window.clearTimeout(fullscreenErrorTimerRef.current);
+    }
+
+    fullscreenErrorTimerRef.current = window.setTimeout(() => {
+      setFullscreenErrorVisible(false);
+      fullscreenErrorTimerRef.current = null;
+    }, 4200);
+  }, []);
+
+  const handleFullscreen = useCallback(async () => {
     if (typeof document === 'undefined') return;
 
     const element = document.documentElement;
     if (document.fullscreenElement) {
-      document.exitFullscreen?.();
+      await document.exitFullscreen?.();
       return;
     }
 
-    element.requestFullscreen?.();
-  };
+    try {
+      if (typeof element.requestFullscreen !== 'function') {
+        showFullscreenError();
+        return;
+      }
+
+      await element.requestFullscreen?.();
+    } catch {
+      showFullscreenError();
+    }
+  }, [showFullscreenError]);
+
+  const handleUndo = useCallback(() => {
+    setSession((currentSession) => {
+      const page = getActivePresenterPage(currentSession);
+      if (!page) return currentSession;
+
+      const result = undoPresenterPage(history, page.id, page);
+      if (result.page === page && result.history === history) return currentSession;
+
+      setHistory(result.history);
+      return replacePresenterPage(currentSession, page.id, result.page);
+    });
+  }, [history]);
+
+  const handleRedo = useCallback(() => {
+    setSession((currentSession) => {
+      const page = getActivePresenterPage(currentSession);
+      if (!page) return currentSession;
+
+      const result = redoPresenterPage(history, page.id, page);
+      if (result.page === page && result.history === history) return currentSession;
+
+      setHistory(result.history);
+      return replacePresenterPage(currentSession, page.id, result.page);
+    });
+  }, [history]);
 
   const handleStrokeComplete = (stroke) => {
-    setSession((currentSession) =>
+    updateActivePageWithHistory((currentSession) =>
       addStrokeToPresenterPage(currentSession, currentSession.activePageId, stroke)
     );
   };
 
   const handleBackground = (background) => {
-    setSession((currentSession) =>
+    updateActivePageWithHistory((currentSession) =>
       updatePresenterPageBackground(currentSession, currentSession.activePageId, background)
     );
   };
@@ -116,7 +225,7 @@ export default function PresenterShell() {
       y: 180
     });
 
-    setSession((currentSession) =>
+    updateActivePageWithHistory((currentSession) =>
       addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
     );
   };
@@ -128,14 +237,152 @@ export default function PresenterShell() {
     }));
   };
 
-  const handleDeleteObject = (objectId) => {
-    setSession((currentSession) =>
+  const handleDeleteObject = useCallback((objectId) => {
+    updateActivePageWithHistory((currentSession) =>
       deleteObjectFromPresenterPage(currentSession, currentSession.activePageId, objectId)
     );
+  }, [updateActivePageWithHistory]);
+
+  const handleDiscardRecovery = () => {
+    clearPresenterRecoveryState(getBrowserSessionStorage());
+    setRecoveredSession(null);
+    setSession(createPresenterSession());
+    setHistory(createPresenterHistory());
+    setActiveCategory('pen');
+    setPagePanelOpen(false);
+    setInstrument(null);
   };
+
+  const handleRestoreRecovery = () => {
+    if (!recoveredSession) return;
+
+    setSession(recoveredSession);
+    setHistory(createPresenterHistory());
+    setToolbarPinned(Boolean(recoveredSession.toolbar?.pinned));
+    setActiveCategory(recoveredSession.toolbar?.activeCategory || 'pen');
+    setPagePanelOpen(false);
+    setInstrument(null);
+    setRecoveredSession(null);
+  };
+
+  useEffect(() => {
+    if (recoveredSession) return;
+
+    savePresenterRecoveryState(getBrowserSessionStorage(), session);
+  }, [recoveredSession, session]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleBeforeUnload = (event) => {
+      if (!hasRecoverablePresenterState(session)) return;
+
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [session]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleKeyDown = (event) => {
+      if (recoveredSession || isEditableShortcutTarget(event.target)) return;
+
+      const isUndo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey;
+      const isRedo =
+        (event.ctrlKey || event.metaKey) &&
+        (event.key.toLowerCase() === 'y' || (event.shiftKey && event.key.toLowerCase() === 'z'));
+
+      if (isUndo) {
+        if (canUndo) {
+          event.preventDefault();
+          handleUndo();
+        }
+        return;
+      }
+
+      if (isRedo) {
+        if (canRedo) {
+          event.preventDefault();
+          handleRedo();
+        }
+        return;
+      }
+
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        if (session.selectedObjectId) {
+          event.preventDefault();
+          handleDeleteObject(session.selectedObjectId);
+        }
+        return;
+      }
+
+      if (event.key === 'ArrowLeft') {
+        if (activeIndex > 0) {
+          event.preventDefault();
+          activatePageAt(activeIndex - 1);
+        }
+        return;
+      }
+
+      if (event.key === 'ArrowRight') {
+        if (activeIndex < pages.length - 1) {
+          event.preventDefault();
+          activatePageAt(activeIndex + 1);
+        }
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.();
+          return;
+        }
+
+        setActiveCategory('select');
+        setPagePanelOpen(false);
+        setInstrument(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    activeIndex,
+    activatePageAt,
+    canRedo,
+    canUndo,
+    handleDeleteObject,
+    handleRedo,
+    handleUndo,
+    pages.length,
+    recoveredSession,
+    session.selectedObjectId
+  ]);
+
+  useEffect(() => () => {
+    if (fullscreenErrorTimerRef.current) {
+      window.clearTimeout(fullscreenErrorTimerRef.current);
+    }
+  }, []);
 
   return (
     <section className="relative flex min-h-[calc(100vh-5rem)] flex-col overflow-hidden bg-slate-200">
+      {fullscreenErrorVisible ? (
+        <div
+          className="fixed right-4 top-4 z-50 max-w-sm rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-950 shadow-lg"
+          role="status"
+        >
+          Fullscreen kon niet worden gestart. Presenter blijft gewoon bruikbaar.
+        </div>
+      ) : null}
+      {recoveredSession ? (
+        <PresenterRecoveryPrompt onRestore={handleRestoreRecovery} onDiscard={handleDiscardRecovery} />
+      ) : null}
       <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 px-4 py-3 text-slate-50 shadow-sm">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Presenter</p>
@@ -176,8 +423,10 @@ export default function PresenterShell() {
         onNext={() => activatePageAt(activeIndex + 1)}
         prevDisabled={activeIndex <= 0}
         nextDisabled={activeIndex >= pages.length - 1}
-        canUndo={false}
-        canRedo={false}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
         onSelect={handleSelectTool}
         onCreateObject={handleCreateObject}
         onInstrument={handleInstrument}
