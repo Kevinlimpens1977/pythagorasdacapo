@@ -80,16 +80,17 @@ export default function StudentPhotoImportWizard({
     () => students.filter((student) => !selectedKlasId || student.klasId === selectedKlasId),
     [selectedKlasId, students]
   );
+  const matchStudents = targetStudents.length > 0 ? targetStudents : students;
 
   const handleSelectionsChanged = (nextSelections) => {
     setSelections(nextSelections);
-    setRows(createPhotoImportRows(nextSelections, targetStudents));
+    setRows(createPhotoImportRows(nextSelections, matchStudents));
   };
 
   const handleKlasChange = (nextKlasId) => {
     setImportKlasId(nextKlasId);
     const nextStudents = students.filter((student) => student.klasId === nextKlasId);
-    setRows(createPhotoImportRows(selections, nextStudents));
+    setRows(createPhotoImportRows(selections, nextStudents.length > 0 ? nextStudents : students));
   };
 
   const handleCreateKlas = async (event) => {
@@ -204,7 +205,7 @@ export default function StudentPhotoImportWizard({
 
   const handleProposedNameChange = (row, proposedName) => {
     updateSelection(row.selection.id, { proposedName, label: proposedName || String(row.order) });
-    const candidates = buildStudentMatchCandidates(targetStudents, proposedName);
+    const candidates = buildStudentMatchCandidates(matchStudents, proposedName);
     const best = candidates[0];
     updateRow(row.id, {
       proposedName,
@@ -275,7 +276,7 @@ export default function StudentPhotoImportWizard({
       const result = await extractStudentPhotoSelectionsFromPdf(file);
       setImageData(result.imageData);
       setSelections(result.selections);
-      setRows(createPhotoImportRows(result.selections, targetStudents));
+      setRows(createPhotoImportRows(result.selections, matchStudents));
       setThumbs({});
       setActiveSelectionId(result.selections[0]?.id || null);
       setInteractionMode('select');
@@ -583,8 +584,11 @@ export default function StudentPhotoImportWizard({
         {activeStep === 2 ? (
           <MatchStep
             rows={rows}
-            students={targetStudents}
+            students={matchStudents}
             thumbs={thumbs}
+            selectedKlas={selectedKlas}
+            targetStudentCount={targetStudents.length}
+            totalStudentCount={students.length}
             duplicateMatchedUserIds={duplicateMatchedUserIds}
             onApproveAll={handleApproveAllRows}
             onRowChange={updateRow}
@@ -691,13 +695,27 @@ const SelectionPanel = ({ selections, activeSelectionId, thumbs, onSelect, onRem
   </aside>
 );
 
-const MatchStep = ({ rows, students, thumbs, duplicateMatchedUserIds, onApproveAll, onRowChange, onNameChange }) => (
+const MatchStep = ({
+  rows,
+  students,
+  thumbs,
+  selectedKlas,
+  targetStudentCount,
+  totalStudentCount,
+  duplicateMatchedUserIds,
+  onApproveAll,
+  onRowChange,
+  onNameChange
+}) => (
   <div className="space-y-3">
     <div className="flex flex-col gap-3 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="font-black text-[var(--helix-navy)]">Alle herkende leerlingen controleren</p>
         <p className="helix-muted text-sm">
           Zekere matches worden gekoppeld; namen zonder match gaan naar later reviewen.
+          {selectedKlas && targetStudentCount === 0 && totalStudentCount > 0
+            ? ` In ${selectedKlas.naam || selectedKlas.name || 'deze klas'} staan nog geen leerlingen, daarom zoekt HELIX tijdelijk in alle leerlingen.`
+            : ''}
         </p>
       </div>
       <button

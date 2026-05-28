@@ -30,10 +30,10 @@ service firebase.storage {
       allow read, write: if signedIn();
     }
 
-    // Tijdelijke leerlingfoto-imports. Alleen admins mogen fotolijsten en crops
-    // uploaden/lezen; definitieve goedkeuring loopt via Cloud Functions.
+    // Tijdelijke leerlingfoto-imports. Elke ingelogde gebruiker kan tijdelijk
+    // uploaden; definitieve goedkeuring blijft streng bewaakt via Cloud Functions.
     match /photo-imports/{klasId}/{importId}/{allPaths=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if signedIn();
     }
 
     // Definitieve leerlingfoto's. Schrijven gebeurt alleen via Admin SDK in
