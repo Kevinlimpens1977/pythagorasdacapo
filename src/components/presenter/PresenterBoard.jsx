@@ -21,6 +21,7 @@ export default function PresenterBoard({
   viewportWidth = DEFAULT_VIEWPORT_WIDTH,
   tool = { id: 'select' },
   selectedObjectId = null,
+  onInteract,
   onStrokeComplete,
   onSelectObject,
   onDeleteObject
@@ -110,6 +111,8 @@ export default function PresenterBoard({
   };
 
   const handlePointerDown = (event) => {
+    onInteract?.();
+
     if (!onStrokeComplete || tool?.id === 'select' || event.button !== 0) return;
 
     const point = getBoardPoint(event);
@@ -182,6 +185,7 @@ export default function PresenterBoard({
           selectedObjectId={selectedObjectId}
           interactive={tool?.id === 'select'}
           showSelection={false}
+          onInteract={onInteract}
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
         />
@@ -191,6 +195,7 @@ export default function PresenterBoard({
           selectedObjectId={selectedObjectId}
           interactive={tool?.id === 'select'}
           showObjects={false}
+          onInteract={onInteract}
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
         />

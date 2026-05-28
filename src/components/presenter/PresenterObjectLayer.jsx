@@ -243,7 +243,7 @@ const renderObjectShape = (object, markerId) => {
   }
 };
 
-const renderSelection = (object, onDeleteObject) => {
+const renderSelection = (object, onDeleteObject, onInteract) => {
   const { width, height } = getObjectFrame(object);
   const selection = getSelectionFrame({ width, height });
   const deleteX = selection.x + selection.width;
@@ -252,6 +252,7 @@ const renderSelection = (object, onDeleteObject) => {
   const handleDeletePointerDown = (event) => {
     event.preventDefault();
     event.stopPropagation();
+    onInteract?.();
     onDeleteObject?.(object.id);
   };
 
@@ -260,6 +261,7 @@ const renderSelection = (object, onDeleteObject) => {
 
     event.preventDefault();
     event.stopPropagation();
+    onInteract?.();
     onDeleteObject?.(object.id);
   };
 
@@ -294,10 +296,13 @@ const renderSelection = (object, onDeleteObject) => {
 export default function PresenterObjectLayer({
   page,
   selectedObjectId = null,
+  selectedObjectIds = [],
   interactive = false,
   showObjects = true,
   showSelection = true,
+  onInteract,
   onSelectObject,
+  onObjectPointerDown,
   onDeleteObject
 }) {
   const layerId = createDomIdPart(useId());
@@ -307,6 +312,10 @@ export default function PresenterObjectLayer({
   const viewBox = `0 0 ${width} ${height}`;
   const renderedObjects = objects.filter((object) => object?.id);
   const markerObjects = renderedObjects.filter((object) => object?.type === 'arrow' || object?.type === 'axes');
+  const selectedIds = new Set(
+    (Array.isArray(selectedObjectIds) && selectedObjectIds.length > 0 ? selectedObjectIds : [selectedObjectId])
+      .filter(Boolean)
+  );
 
   return (
     <svg
@@ -345,14 +354,18 @@ export default function PresenterObjectLayer({
         const { x, y, width: objectWidth, height: objectHeight, rotation } = getObjectFrame(object);
         const centerX = objectWidth / 2;
         const centerY = objectHeight / 2;
-        const isSelected = object.id === selectedObjectId;
+        const isSelected = selectedIds.has(object.id);
 
         const handlePointerDown = (event) => {
           if (!interactive) return;
 
           event.preventDefault();
           event.stopPropagation();
-          onSelectObject?.(object.id);
+          onInteract?.();
+          onObjectPointerDown?.(event, object.id);
+          if (!onObjectPointerDown) {
+            onSelectObject?.(object.id);
+          }
         };
 
         return (
@@ -364,7 +377,7 @@ export default function PresenterObjectLayer({
           >
             {showObjects ? renderHitTarget(object) : null}
             {showObjects ? shape : null}
-            {showSelection && isSelected ? renderSelection(object, onDeleteObject) : null}
+            {showSelection && isSelected ? renderSelection(object, onDeleteObject, onInteract) : null}
           </g>
         );
       })}

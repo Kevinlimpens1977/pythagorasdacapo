@@ -13,6 +13,7 @@ import {
   removeStrokeFromPresenterPage,
   addObjectToPresenterPage,
   deleteObjectFromPresenterPage,
+  clearPresenterPageContent,
   setActivePresenterPageAt,
   updatePresenterPageBackground,
   updatePresenterTool
@@ -266,6 +267,44 @@ test('deleteObjectFromPresenterPage ignores missing legacy object arrays without
   assert.equal(next.dirty, false);
   assert.equal(next.selectedObjectId, 'object-1');
   assert.equal(next.pages[0], page);
+});
+
+test('clearPresenterPageContent clears only the target page content and selected object', () => {
+  const session = addPresenterPage(createPresenterSession());
+  const firstPageId = session.pages[0].id;
+  const secondPageId = session.pages[1].id;
+  const pageOneStroke = { id: 'stroke-1', points: [{ x: 1, y: 2 }] };
+  const pageTwoStroke = { id: 'stroke-2', points: [{ x: 3, y: 4 }] };
+  const pageOneObject = { id: 'object-1', type: 'rectangle', x: 10, y: 20 };
+  const pageTwoObject = { id: 'object-2', type: 'ellipse', x: 30, y: 40 };
+  const populatedSession = {
+    ...session,
+    activePageId: firstPageId,
+    selectedObjectId: pageOneObject.id,
+    pages: [
+      {
+        ...session.pages[0],
+        strokes: [pageOneStroke],
+        objects: [pageOneObject]
+      },
+      {
+        ...session.pages[1],
+        strokes: [pageTwoStroke],
+        objects: [pageTwoObject]
+      }
+    ],
+    dirty: false
+  };
+
+  const next = clearPresenterPageContent(populatedSession, firstPageId);
+
+  assert.equal(next.dirty, true);
+  assert.equal(next.selectedObjectId, null);
+  assert.deepEqual(next.pages[0].strokes, []);
+  assert.deepEqual(next.pages[0].objects, []);
+  assert.deepEqual(next.pages[1].strokes, [pageTwoStroke]);
+  assert.deepEqual(next.pages[1].objects, [pageTwoObject]);
+  assert.equal(next.pages[1].id, secondPageId);
 });
 
 test('updatePresenterPageBackground changes only the target page background', () => {

@@ -10,6 +10,7 @@ import {
   Plus,
   Redo2,
   Shapes,
+  Trash2,
   Undo2
 } from 'lucide-react';
 import { getPresenterObjectLabel } from '../../lib/presenterObjects';
@@ -66,10 +67,13 @@ const popoverButtonClass =
 export default function PresenterToolbar({
   pageLabel = 'Pagina 0/0',
   activeCategory = 'pen',
+  open = false,
   pinned = false,
   background = { kind: 'white', gridSize: 96 },
   penStyle = { color: '#111827', width: 6 },
   onTogglePinned,
+  onOpen,
+  onAction,
   onCategory,
   onBackground,
   onPenStyle,
@@ -80,16 +84,24 @@ export default function PresenterToolbar({
   nextDisabled = false,
   canUndo = false,
   canRedo = false,
+  canClearPage = false,
   onUndo,
   onRedo,
+  onClearPage,
   onSelect,
   onCreateObject,
   onInstrument,
   onFullscreen
 }) {
+  const runAction = (action) => {
+    action?.();
+    onAction?.();
+  };
+
   const handleCategory = (category) => {
     if (category.disabled) return;
     onCategory?.(category.id);
+    onAction?.();
   };
 
   const currentGridSize = background?.gridSize || 96;
@@ -98,11 +110,13 @@ export default function PresenterToolbar({
 
   const handleBackground = (kind, gridSize = currentGridSize) => {
     onBackground?.({ kind, gridSize });
+    onAction?.();
   };
 
   const handleGridSizeToggle = () => {
     const kind = backgroundKind === 'lines' ? 'lines' : 'grid';
     onBackground?.({ kind, gridSize: nextGridSize });
+    onAction?.();
   };
 
   const penColor = penStyle?.color || '#111827';
@@ -111,19 +125,22 @@ export default function PresenterToolbar({
   return (
     <div
       className={`group pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 ease-out sm:px-5 ${
-        pinned ? 'translate-y-0' : 'translate-y-[calc(100%-3.75rem)] hover:translate-y-0 focus-within:translate-y-0'
+        pinned || open ? 'translate-y-0' : 'translate-y-[calc(100%-3.75rem)] focus-within:translate-y-0'
       }`}
+      onPointerEnter={onOpen}
     >
       <button
         type="button"
         className="pointer-events-auto mx-auto mb-2 flex min-h-11 min-w-40 items-center justify-center rounded-md border border-slate-700 bg-slate-950 px-4 text-sm font-black text-slate-50 shadow-lg transition hover:bg-slate-800"
         onClick={onTogglePinned}
+        onPointerEnter={onOpen}
+        onPointerDown={onOpen}
         aria-pressed={pinned}
       >
         {pinned ? 'Werkbalk vast' : 'Werkbalk openen'}
       </button>
       {activeCategory === 'pen' ? (
-        <div className="pointer-events-auto mx-auto mb-2 flex max-w-3xl flex-wrap items-center justify-center gap-3 rounded-lg border border-slate-700 bg-slate-950/95 p-3 text-slate-50 shadow-xl">
+        <div className="pointer-events-auto mx-auto mb-2 flex max-w-3xl flex-wrap items-center justify-center gap-3 rounded-lg border border-slate-700 bg-slate-950/95 p-3 text-slate-50 shadow-xl" onPointerEnter={onOpen}>
           <div className="flex min-h-12 flex-wrap items-center justify-center gap-2">
             <span className="px-1 text-xs font-black uppercase tracking-[0.16em] text-slate-400">Kleur</span>
             {penColors.map((color) => {
@@ -136,7 +153,7 @@ export default function PresenterToolbar({
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md border transition hover:bg-slate-800 ${
                     isActive ? 'border-slate-50 bg-slate-800' : 'border-slate-700 bg-slate-900'
                   }`}
-                  onClick={() => onPenStyle?.({ color: color.value })}
+                  onClick={() => runAction(() => onPenStyle?.({ color: color.value }))}
                   aria-label={`Penkleur ${color.label}`}
                   aria-pressed={isActive}
                 >
@@ -163,7 +180,7 @@ export default function PresenterToolbar({
                       ? 'border-slate-50 bg-slate-50 text-slate-950'
                       : 'border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800'
                   }`}
-                  onClick={() => onPenStyle?.({ width: width.value })}
+                  onClick={() => runAction(() => onPenStyle?.({ width: width.value }))}
                   aria-label={`Pendikte ${width.label}`}
                   aria-pressed={isActive}
                 >
@@ -185,7 +202,7 @@ export default function PresenterToolbar({
         </div>
       ) : null}
       {activeCategory === 'background' ? (
-        <div className="pointer-events-auto mx-auto mb-2 flex max-w-2xl flex-wrap items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
+        <div className="pointer-events-auto mx-auto mb-2 flex max-w-2xl flex-wrap items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl" onPointerEnter={onOpen}>
           <button
             type="button"
             className={`${popoverButtonClass} ${
@@ -232,14 +249,14 @@ export default function PresenterToolbar({
         </div>
       ) : null}
       {activeCategory === 'objects' ? (
-        <div className="pointer-events-auto mx-auto mb-2 flex max-w-4xl flex-wrap items-stretch justify-center gap-3 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
+        <div className="pointer-events-auto mx-auto mb-2 flex max-w-4xl flex-wrap items-stretch justify-center gap-3 rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl" onPointerEnter={onOpen}>
           <div className="flex flex-wrap items-center justify-center gap-2">
             {objectTypes.map((type) => (
               <button
                 key={type}
                 type="button"
                 className={`${popoverButtonClass} border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800`}
-                onClick={() => onCreateObject?.(type)}
+                onClick={() => runAction(() => onCreateObject?.(type))}
               >
                 {getPresenterObjectLabel({ type })}
               </button>
@@ -252,7 +269,7 @@ export default function PresenterToolbar({
                 key={instrument.id}
                 type="button"
                 className={`${popoverButtonClass} border-sky-400/70 bg-sky-950 text-sky-50 hover:bg-sky-900`}
-                onClick={() => onInstrument?.(instrument.id)}
+                onClick={() => runAction(() => onInstrument?.(instrument.id))}
               >
                 {instrument.label}
               </button>
@@ -260,12 +277,12 @@ export default function PresenterToolbar({
           </div>
         </div>
       ) : null}
-      <div className="pointer-events-auto mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl">
+      <div className="pointer-events-auto mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto rounded-lg border border-slate-700 bg-slate-950/95 p-2 text-slate-50 shadow-xl" onPointerEnter={onOpen}>
         <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             className={iconButtonClass}
-            onClick={onPrev}
+            onClick={() => runAction(onPrev)}
             disabled={prevDisabled}
             aria-label="Vorige pagina"
           >
@@ -275,7 +292,7 @@ export default function PresenterToolbar({
           <button
             type="button"
             className={iconButtonClass}
-            onClick={onNext}
+            onClick={() => runAction(onNext)}
             disabled={nextDisabled}
             aria-label="Volgende pagina"
           >
@@ -284,7 +301,7 @@ export default function PresenterToolbar({
           <button
             type="button"
             className={iconButtonClass}
-            onClick={onAddPage}
+            onClick={() => runAction(onAddPage)}
             aria-label="Nieuwe pagina"
           >
             <Plus size={20} strokeWidth={2.4} />
@@ -294,13 +311,13 @@ export default function PresenterToolbar({
         <div className="mx-1 h-9 w-px shrink-0 bg-slate-700" />
 
         <div className="flex shrink-0 items-center gap-1">
-          <button type="button" className={iconButtonClass} onClick={onSelect} aria-label="Selecteren">
+          <button type="button" className={iconButtonClass} onClick={() => runAction(onSelect)} aria-label="Selecteren">
             <MousePointer2 size={20} strokeWidth={2.4} />
           </button>
           <button
             type="button"
             className={iconButtonClass}
-            onClick={canUndo ? onUndo : undefined}
+            onClick={canUndo ? () => runAction(onUndo) : undefined}
             disabled={!canUndo}
             aria-label="Ongedaan maken"
           >
@@ -309,11 +326,21 @@ export default function PresenterToolbar({
           <button
             type="button"
             className={iconButtonClass}
-            onClick={canRedo ? onRedo : undefined}
+            onClick={canRedo ? () => runAction(onRedo) : undefined}
             disabled={!canRedo}
             aria-label="Opnieuw"
           >
             <Redo2 size={20} strokeWidth={2.4} />
+          </button>
+          <button
+            type="button"
+            className={iconButtonClass}
+            onClick={canClearPage ? () => runAction(onClearPage) : undefined}
+            disabled={!canClearPage}
+            aria-label="Huidige pagina leegmaken"
+            title="Huidige pagina leegmaken"
+          >
+            <Trash2 size={20} strokeWidth={2.4} />
           </button>
         </div>
 

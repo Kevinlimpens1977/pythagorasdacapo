@@ -202,6 +202,34 @@ export const deleteObjectFromPresenterPage = (session, pageId = session.activePa
   };
 };
 
+export const clearPresenterPageContent = (session, pageId = session.activePageId) => {
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  const page = pages.find((currentPage) => currentPage?.id === pageId);
+  if (!page) return session;
+
+  const strokes = Array.isArray(page?.strokes) ? page.strokes : [];
+  const objects = Array.isArray(page?.objects) ? page.objects : [];
+  if (strokes.length === 0 && objects.length === 0) return session;
+
+  const nextSession = updatePresenterPage(session, pageId, (currentPage) => ({
+    ...currentPage,
+    strokes: [],
+    objects: []
+  }));
+
+  if (nextSession === session) return session;
+
+  const clearedObjectIds = new Set(objects.map((object) => object?.id).filter(Boolean));
+
+  return {
+    ...nextSession,
+    selectedObjectId: clearedObjectIds.has(session.selectedObjectId) ? null : session.selectedObjectId,
+    selectedObjectIds: (Array.isArray(session.selectedObjectIds) ? session.selectedObjectIds : []).filter(
+      (selectedId) => !clearedObjectIds.has(selectedId)
+    )
+  };
+};
+
 export const duplicatePresenterPage = (session, pageId = session.activePageId) => {
   const sessionPages = Array.isArray(session?.pages) ? session.pages : [];
   const sourceIndex = sessionPages.findIndex((page) => page.id === pageId);

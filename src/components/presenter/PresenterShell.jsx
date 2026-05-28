@@ -9,6 +9,7 @@ import {
   addObjectToPresenterPage,
   addPresenterPage,
   addStrokeToPresenterPage,
+  clearPresenterPageContent,
   createPresenterSession,
   deleteObjectFromPresenterPage,
   deletePresenterPage,
@@ -310,12 +311,14 @@ export default function PresenterShell() {
   const [session, setSession] = useState(() => createPresenterSession());
   const [history, setHistory] = useState(() => createPresenterHistory());
   const [toolbarPinned, setToolbarPinned] = useState(() => Boolean(session.toolbar?.pinned));
+  const [toolbarOpen, setToolbarOpen] = useState(() => Boolean(session.toolbar?.pinned));
   const [activeCategory, setActiveCategory] = useState(() => session.toolbar?.activeCategory || 'pen');
   const [pagePanelOpen, setPagePanelOpen] = useState(false);
   const [instrument, setInstrument] = useState(null);
   const [recoveredSession, setRecoveredSession] = useState(getInitialRecoveredSession);
   const [fullscreenErrorVisible, setFullscreenErrorVisible] = useState(false);
   const fullscreenErrorTimerRef = useRef(null);
+  const toolbarAutoCloseTimerRef = useRef(null);
 
   const activePage = getActivePresenterPage(session);
   const pages = useMemo(() => session.pages || [], [session.pages]);
@@ -332,6 +335,39 @@ export default function PresenterShell() {
     : { id: 'select' };
   const canUndo = hasAvailableUndo(history, session);
   const canRedo = hasAvailableRedo(history, session);
+  const canClearPage = Boolean(
+    (Array.isArray(activePage?.strokes) && activePage.strokes.length > 0) ||
+      (Array.isArray(activePage?.objects) && activePage.objects.length > 0)
+  );
+
+  const clearToolbarAutoCloseTimer = useCallback(() => {
+    if (toolbarAutoCloseTimerRef.current) {
+      window.clearTimeout(toolbarAutoCloseTimerRef.current);
+      toolbarAutoCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const openToolbar = useCallback(() => {
+    clearToolbarAutoCloseTimer();
+    setToolbarOpen(true);
+  }, [clearToolbarAutoCloseTimer]);
+
+  const closeToolbar = useCallback(() => {
+    if (toolbarPinned) return;
+
+    clearToolbarAutoCloseTimer();
+    setToolbarOpen(false);
+  }, [clearToolbarAutoCloseTimer, toolbarPinned]);
+
+  const scheduleToolbarAutoClose = useCallback(() => {
+    if (toolbarPinned || typeof window === 'undefined') return;
+
+    clearToolbarAutoCloseTimer();
+    toolbarAutoCloseTimerRef.current = window.setTimeout(() => {
+      setToolbarOpen(false);
+      toolbarAutoCloseTimerRef.current = null;
+    }, 3000);
+  }, [clearToolbarAutoCloseTimer, toolbarPinned]);
 
   const updateActivePageWithHistory = useCallback((updater) => {
     setSession((currentSession) => {
@@ -390,6 +426,19 @@ export default function PresenterShell() {
       setHistory((currentHistory) => recordPresenterSessionAction(currentHistory, currentSession));
       return nextSession;
     });
+  };
+
+  const clearPage = () => {
+    if (!canClearPage) return;
+
+    const canConfirm = typeof window !== 'undefined' && typeof window.confirm === 'function';
+    if (canConfirm && !window.confirm('Huidige pagina leegmaken? Dit verwijdert alleen de inhoud van deze pagina en kan met undo worden teruggezet.')) {
+      return;
+    }
+
+    updateActivePageWithHistory((currentSession) =>
+      clearPresenterPageContent(currentSession, currentSession.activePageId)
+    );
   };
 
   const handleCategory = (category) => {
@@ -584,6 +633,7 @@ export default function PresenterShell() {
     setSession(recoveredSession);
     setHistory(createPresenterHistory());
     setToolbarPinned(Boolean(recoveredSession.toolbar?.pinned));
+    setToolbarOpen(Boolean(recoveredSession.toolbar?.pinned));
     setActiveCategory(recoveredSession.toolbar?.activeCategory || 'pen');
     setPagePanelOpen(false);
     setInstrument(null);
@@ -694,6 +744,10 @@ export default function PresenterShell() {
     if (fullscreenErrorTimerRef.current) {
       window.clearTimeout(fullscreenErrorTimerRef.current);
     }
+
+    if (toolbarAutoCloseTimerRef.current) {
+      window.clearTimeout(toolbarAutoCloseTimerRef.current);
+    }
   }, []);
 
   return (
@@ -723,6 +777,7 @@ export default function PresenterShell() {
         page={activePage}
         tool={currentTool}
         selectedObjectId={session.selectedObjectId}
+        onInteract={closeToolbar}
         onStrokeComplete={handleStrokeComplete}
         onSelectObject={handleSelectObject}
         onDeleteObject={handleDeleteObject}
@@ -740,10 +795,20 @@ export default function PresenterShell() {
       <PresenterToolbar
         pageLabel={pageLabel}
         activeCategory={activeCategory}
+        open={toolbarOpen}
         pinned={toolbarPinned}
         background={activePage?.background}
         penStyle={currentTool}
-        onTogglePinned={() => setToolbarPinned((current) => !current)}
+        onTogglePinned={() => {
+          clearToolbarAutoCloseTimer();
+          setToolbarPinned((current) => {
+            const nextPinned = !current;
+            setToolbarOpen(nextPinned);
+            return nextPinned;
+          });
+        }}
+        onOpen={openToolbar}
+        onAction={scheduleToolbarAutoClose}
         onCategory={handleCategory}
         onBackground={handleBackground}
         onPenStyle={handlePenStyle}
@@ -754,8 +819,10 @@ export default function PresenterShell() {
         nextDisabled={activeIndex >= pages.length - 1}
         canUndo={canUndo}
         canRedo={canRedo}
+        canClearPage={canClearPage}
         onUndo={handleUndo}
         onRedo={handleRedo}
+        onClearPage={clearPage}
         onSelect={handleSelectTool}
         onCreateObject={handleCreateObject}
         onInstrument={handleInstrument}
