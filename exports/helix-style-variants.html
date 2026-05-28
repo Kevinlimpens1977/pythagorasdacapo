@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HELIX huisstijl verkenner</title>
+  <style>
+    :root {
+      --bg: #f7f8fc;
+      --panel: #ffffff;
+      --panel-2: #f3f5fb;
+      --ink: #10182f;
+      --muted: #65708a;
+      --line: #dfe4ef;
+      --accent: #7c3aed;
+      --accent-2: #ff4f68;
+      --accent-3: #22c55e;
+      --warn: #f97316;
+      --shadow: 0 22px 60px rgba(31, 41, 55, 0.10);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --nav-bg: #ffffff;
+      --chip-bg: #f0edff;
+      --card-border: 1px solid var(--line);
+      --active-text: #ffffff;
+      --layout-gap: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+    }
+
+    body[data-theme="2"] {
+      --bg: #fbf9ff;
+      --panel: #ffffff;
+      --panel-2: #f5f0ff;
+      --ink: #24123a;
+      --muted: #71627f;
+      --line: #eadff8;
+      --accent: #8b5cf6;
+      --accent-2: #ec4899;
+      --accent-3: #06b6d4;
+      --shadow: 0 18px 50px rgba(139, 92, 246, 0.15);
+      --radius: 10px;
+      --radius-sm: 8px;
+      --nav-bg: #f8f3ff;
+      --chip-bg: #efe7ff;
+    }
+
+    body[data-theme="3"] {
+      --bg: #15131d;
+      --panel: #211d2c;
+      --panel-2: #2b2538;
+      --ink: #fbf8ff;
+      --muted: #b7adc8;
+      --line: #3a314b;
+      --accent: #c084fc;
+      --accent-2: #fb7185;
+      --accent-3: #34d399;
+      --warn: #fbbf24;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+      --radius-sm: 14px;
+      --nav-bg: #1c1826;
+      --chip-bg: #33284a;
+      --active-text: #1c132b;
+    }
+
+    body[data-theme="4"] {
+      --bg: #f2fbf7;
+      --panel: #ffffff;
+      --panel-2: #eaf8f2;
+      --ink: #10231f;
+      --muted: #526b63;
+      --line: #d4ebe2;
+      --accent: #059669;
+      --accent-2: #0ea5e9;
+      --accent-3: #84cc16;
+      --warn: #f59e0b;
+      --shadow: 0 20px 52px rgba(5, 150, 105, 0.14);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --nav-bg: #ffffff;
+      --chip-bg: #dcfce7;
+    }
+
+    body[data-theme="5"] {
+      --bg: #fff7ed;
+      --panel: #fffdf8;
+      --panel-2: #fff1df;
+      --ink: #2a1608;
+      --muted: #795c47;
+      --line: #f1d4b8;
+      --accent: #ea580c;
+      --accent-2: #9333ea;
+      --accent-3: #16a34a;
+      --warn: #dc2626;
+      --shadow: 0 18px 48px rgba(154, 79, 12, 0.14);
+      --radius: 8px;
+      --radius-sm: 6px;
+      --nav-bg: #fffaf2;
+      --chip-bg: #ffedd5;
+    }
+
+    body[data-theme="6"] {
+      --bg: #f5f8ff;
+      --panel: #ffffff;
+      --panel-2: #eef4ff;
+      --ink: #0d1b3d;
+      --muted: #5a6685;
+      --line: #d9e2f7;
+      --accent: #2563eb;
+      --accent-2: #7c3aed;
+      --accent-3: #06b6d4;
+      --warn: #f97316;
+      --shadow: 0 22px 58px rgba(37, 99, 235, 0.14);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --nav-bg: #ffffff;
+      --chip-bg: #dbeafe;
+    }
+
+    body[data-theme="7"] {
+      --bg: #f9fafb;
+      --panel: #ffffff;
+      --panel-2: #f3f4f6;
+      --ink: #111827;
+      --muted: #667085;
+      --line: #d1d5db;
+      --accent: #4f46e5;
+      --accent-2: #db2777;
+      --accent-3: #059669;
+      --shadow: none;
+      --radius: 6px;
+      --radius-sm: 4px;
+      --nav-bg: #ffffff;
+      --chip-bg: #eef2ff;
+      --card-border: 1px solid #cbd5e1;
+    }
+
+    body[data-theme="8"] {
+      --bg: #faf7f0;
+      --panel: #fffdf8;
+      --panel-2: #f4efe5;
+      --ink: #201b16;
+      --muted: #746a60;
+      --line: #e7ded0;
+      --accent: #6d5dfc;
+      --accent-2: #d9467a;
+      --accent-3: #15803d;
+      --warn: #b45309;
+      --shadow: 0 18px 44px rgba(72, 57, 38, 0.12);
+      --radius: 20px;
+      --radius-sm: 14px;
+      --nav-bg: #fffaf0;
+      --chip-bg: #ede9fe;
+      --font: "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    body[data-theme="9"] {
+      --bg: #ecfeff;
+      --panel: #f8ffff;
+      --panel-2: #dff7fb;
+      --ink: #083344;
+      --muted: #4b7180;
+      --line: #b9e7ef;
+      --accent: #0891b2;
+      --accent-2: #e11d48;
+      --accent-3: #65a30d;
+      --warn: #f59e0b;
+      --shadow: 0 24px 60px rgba(8, 145, 178, 0.14);
+      --radius: 26px;
+      --radius-sm: 18px;
+      --nav-bg: #ffffff;
+      --chip-bg: #cffafe;
+    }
+
+    body[data-theme="10"] {
+      --bg: #f6f5f2;
+      --panel: #fbfaf7;
+      --panel-2: #ebe7df;
+      --ink: #181713;
+      --muted: #68645c;
+      --line: #d8d2c7;
+      --accent: #27231f;
+      --accent-2: #8b5cf6;
+      --accent-3: #047857;
+      --warn: #c2410c;
+      --shadow: 0 16px 36px rgba(24, 23, 19, 0.10);
+      --radius: 2px;
+      --radius-sm: 2px;
+      --nav-bg: #fbfaf7;
+      --chip-bg: #ebe7df;
+    }
+
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--nav-bg) 94%, transparent);
+      backdrop-filter: blur(12px);
+    }
+
+    .top-inner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 12px 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 138px;
+      border: var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--panel);
+      padding: 8px 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--chip-bg);
+      color: var(--accent);
+      font-weight: 950;
+    }
+
+    .brand b {
+      letter-spacing: .18em;
+      font-size: 12px;
+    }
+
+    .theme-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px;
+    }
+
+    .theme-tab {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      cursor: pointer;
+      flex: 0 0 auto;
+      font-weight: 850;
+      padding: 9px 12px;
+      transition: transform .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .theme-tab:hover { transform: translateY(-1px); }
+
+    .theme-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--active-text);
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--chip-bg);
+      display: grid;
+      place-items: center;
+      color: var(--accent);
+      font-weight: 950;
+    }
+
+    .hero {
+      padding: 26px clamp(18px, 4vw, 54px) 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .screens {
+      display: grid;
+      grid-template-columns: minmax(360px, 1.05fr) minmax(420px, 1.3fr);
+      gap: var(--layout-gap);
+      padding: 0 clamp(18px, 4vw, 54px) 48px;
+    }
+
+    .screen {
+      border: var(--card-border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .screen.wide { grid-column: span 2; }
+
+    .screen-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--nav-bg);
+    }
+
+    .screen-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h2, h3, p { margin-top: 0; }
+
+    h2 {
+      margin-bottom: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nav span,
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-2);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 850;
+      padding: 7px 10px;
+      white-space: nowrap;
+    }
+
+    .nav span.active,
+    .pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--active-text);
+    }
+
+    .screen-body {
+      padding: 18px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric,
+    .card,
+    .row,
+    .lesson-block,
+    .login-card,
+    .student-row,
+    .game-item {
+      border: var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--panel);
+    }
+
+    .metric {
+      padding: 14px;
+      min-height: 94px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1;
+      margin-top: 8px;
+    }
+
+    .metric span,
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      padding: 16px;
+      min-height: 132px;
+    }
+
+    .card.primary {
+      background: var(--accent);
+      color: var(--active-text);
+      border-color: var(--accent);
+    }
+
+    .card.primary .muted { color: color-mix(in srgb, var(--active-text) 75%, transparent); }
+
+    .split {
+      display: grid;
+      grid-template-columns: 250px 1fr 250px;
+      min-height: 420px;
+    }
+
+    .rail {
+      border-right: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 16px;
+    }
+
+    .tree-row {
+      display: grid;
+      grid-template-columns: 24px 30px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      padding: 9px 8px;
+    }
+
+    .tree-row.active {
+      background: var(--chip-bg);
+      color: var(--ink);
+    }
+
+    .tree-row .badge {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--accent);
+      border: 1px solid var(--line);
+    }
+
+    .editor {
+      padding: 18px;
+      background: var(--panel);
+    }
+
+    .block-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .lesson-block {
+      padding: 16px;
+      min-height: 130px;
+    }
+
+    .settings {
+      border-left: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 16px;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 14px;
+    }
+
+    .game-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .game-item {
+      padding: 14px;
+    }
+
+    .game-item.active {
+      background: var(--chip-bg);
+      border-color: var(--accent);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .student-table {
+      display: grid;
+      gap: 0;
+      overflow: hidden;
+      border: var(--card-border);
+      border-radius: var(--radius-sm);
+    }
+
+    .student-row {
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      display: grid;
+      grid-template-columns: 1.4fr .8fr .8fr auto;
+      gap: 12px;
+      padding: 12px 14px;
+      align-items: center;
+    }
+
+    .bar {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: var(--w, 70%);
+      background: var(--accent-3);
+    }
+
+    .login-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 430px;
+    }
+
+    .login-visual {
+      padding: 34px;
+      background: var(--panel-2);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .login-visual h2 { font-size: 38px; line-height: 1.05; }
+
+    .login-card {
+      border: 0;
+      padding: 34px;
+      display: grid;
+      gap: 14px;
+      align-content: center;
+      background: var(--panel);
+    }
+
+    .input {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--panel-2);
+      color: var(--muted);
+      padding: 14px;
+      font-weight: 800;
+    }
+
+    .button {
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: var(--active-text);
+      font-weight: 950;
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    body[data-theme="3"] .button,
+    body[data-theme="3"] .theme-tab.active,
+    body[data-theme="3"] .nav span.active,
+    body[data-theme="3"] .pill.active,
+    body[data-theme="3"] .card.primary { color: #1c132b; }
+
+    body[data-theme="7"] .screen,
+    body[data-theme="7"] .card,
+    body[data-theme="7"] .metric,
+    body[data-theme="7"] .lesson-block,
+    body[data-theme="7"] .game-item,
+    body[data-theme="7"] .student-table,
+    body[data-theme="7"] .brand { box-shadow: none; }
+
+    body[data-theme="10"] .theme-tab,
+    body[data-theme="10"] .nav span,
+    body[data-theme="10"] .pill,
+    body[data-theme="10"] .button { border-radius: 2px; text-transform: uppercase; letter-spacing: .05em; }
+
+    @media (max-width: 1100px) {
+      .screens,
+      .game-layout,
+      .split,
+      .login-wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .screen.wide { grid-column: span 1; }
+      .quick-grid, .metric-grid, .block-grid, .detail-grid { grid-template-columns: 1fr; }
+      .settings, .rail { border-left: 0; border-right: 0; border-top: 1px solid var(--line); }
+      .top-inner { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-theme="1">
+  <div class="top">
+    <div class="top-inner">
+      <div class="brand"><div class="mark">∞</div><b>HELIX</b></div>
+      <div class="theme-tabs" aria-label="Stijlvarianten">
+        <button class="theme-tab active" data-theme="1">1. Helix clean</button>
+        <button class="theme-tab" data-theme="2">2. Lavender CMS</button>
+        <button class="theme-tab" data-theme="3">3. Deep studio</button>
+        <button class="theme-tab" data-theme="4">4. Fresh progress</button>
+        <button class="theme-tab" data-theme="5">5. Warm workshop</button>
+        <button class="theme-tab" data-theme="6">6. Blue trust</button>
+        <button class="theme-tab" data-theme="7">7. Grid system</button>
+        <button class="theme-tab" data-theme="8">8. Calm paper</button>
+        <button class="theme-tab" data-theme="9">9. Bright class</button>
+        <button class="theme-tab" data-theme="10">10. Minimal pro</button>
+      </div>
+      <div class="user-pill"><span>Kevin Limpens</span><span class="avatar">K</span></div>
+    </div>
+  </div>
+
+  <section class="hero">
+    <span class="eyebrow">Huisstijl verkenner</span>
+    <h1>Een visuele keuzehulp voor HELIX</h1>
+    <p>Elke tab gebruikt exact dezelfde content: beheer, lesstof/CMS, spellen, leerlingen en login. Alleen kleur, ritme, radius, navstijl, panelen en visuele nadruk wisselen.</p>
+  </section>
+
+  <main class="screens">
+    <section class="screen wide">
+      <div class="screen-head">
+        <div class="screen-title"><span class="eyebrow">Werkplek</span><h2>Beheer</h2></div>
+        <div class="nav"><span>Lesstof</span><span>Voortgang</span><span>Leerlingen</span><span>Spellen</span><span>Presenter</span><span class="active">Beheer</span></div>
+      </div>
+      <div class="screen-body">
+        <div class="metric-grid">
+          <div class="metric"><span>Klassen</span><strong>2</strong><span>Aangemaakt in het platform</span></div>
+          <div class="metric"><span>Leerlingen</span><strong>20</strong><span>Gekoppeld aan klassen</span></div>
+          <div class="metric"><span>Actieve paragrafen</span><strong>2</strong><span>Toegewezen aan minstens één klas</span></div>
+        </div>
+        <h3>Snel aan de slag</h3>
+        <div class="quick-grid">
+          <div class="card primary"><h3>Lesstof bouwen</h3><p class="muted">Open de plek voor CMS, crops, teksten en Digibord.</p><b>Open Lesstof</b></div>
+          <div class="card"><h3>Lesmateriaal klaarzetten</h3><p class="muted">Koppel hoofdstukken, paragrafen of lesblokken.</p><b>Open klaarzetstudio</b></div>
+          <div class="card"><h3>Voortgang bekijken</h3><p class="muted">Bekijk klasresultaten en leerlingvoortgang.</p><b>Open Voortgang</b></div>
+          <div class="card"><h3>Leerlingen beheren</h3><p class="muted">Bekijk accounts, klaskoppeling en accountstatus.</p><b>Open Leerlingen</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen wide">
+      <div class="screen-head">
+        <div class="screen-title"><span class="eyebrow">Lesstof</span><h2>1.1 Wat zijn digitale vaardigheden</h2></div>
+        <div class="nav"><span>1 vakken</span><span>3 paragrafen</span><span>5 vragen</span><span>8 blokken</span></div>
+      </div>
+      <div class="split">
+        <aside class="rail">
+          <div class="tree-row active"><span>⌄</span><span class="badge">B</span><b>Digitale Vaardigheden</b><span class="pill">2 jaren</span></div>
+          <div class="tree-row"><span>⌄</span><span class="badge">J</span><b>Leerjaar 1</b><span class="pill">2 niveaus</span></div>
+          <div class="tree-row"><span>⌄</span><span class="badge">GT</span><b>VMBO-GT</b><span class="pill">2 hoofdstukken</span></div>
+          <div class="tree-row active"><span>⌄</span><span class="badge">H1</span><b>H1 Inleiding</b><span class="pill">2 paragrafen</span></div>
+          <div class="tree-row active"><span></span><span class="badge">1.1</span><b>Wat zijn digitale vaardigheden</b><span class="pill">5 blokken</span></div>
+          <div class="tree-row"><span></span><span class="badge">1.2</span><b>Zoekwedstrijd</b><span class="pill">3 blokken</span></div>
+        </aside>
+        <div class="editor">
+          <span class="eyebrow">Lesroute</span>
+          <h2>1.1 Wat zijn digitale vaardigheden</h2>
+          <p class="muted">Bouw de leerlingroute in volgorde. Elk blok open je als studio met eigen tekst, media, crops en OCR.</p>
+          <div class="block-grid">
+            <div class="lesson-block"><span class="pill active">01</span><h3>Theorie</h3><p class="muted">Uitleg en definities</p><b>Bekijken</b></div>
+            <div class="lesson-block"><span class="pill">02</span><h3>Voorbeeld</h3><p class="muted">Stap voor stap</p><b>Bekijken</b></div>
+            <div class="lesson-block"><span class="pill">03</span><h3>Vraag</h3><p class="muted">Interactieve oefening</p><b>In progress</b></div>
+            <div class="lesson-block"><span class="pill">04</span><h3>Media</h3><p class="muted">Video en PDF</p><b>Bekijken</b></div>
+            <div class="lesson-block"><span class="pill">05</span><h3>Samenvatting</h3><p class="muted">Kernpunten</p><b>Bekijken</b></div>
+            <div class="lesson-block"><span class="pill">+</span><h3>Nieuw blok</h3><p class="muted">Kies een bloktype</p></div>
+          </div>
+        </div>
+        <aside class="settings">
+          <span class="eyebrow">Instellingen</span>
+          <h3>Voorbeeld</h3>
+          <div class="input">Titel: Voorbeeld</div>
+          <div class="input">Type: Voorbeeld</div>
+          <div class="input">Status: Gepubliceerd</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-head"><div class="screen-title"><span class="eyebrow">Werkplek</span><h2>Spellen</h2></div><span class="pill">Go 2B: eerste speelbare game</span></div>
+      <div class="screen-body game-layout">
+        <div class="game-list">
+          <div class="game-item active"><h3>Pythagoras Trainer</h3><p class="muted">Stelling van Pythagoras</p><span class="pill">prototype</span></div>
+          <div class="game-item"><h3>Breuken Sprint</h3><p class="muted">Breuken</p><span class="pill">gepland</span></div>
+          <div class="game-item"><h3>Begrippen Match</h3><p class="muted">Begrippen oefenen</p><span class="pill">gepland</span></div>
+        </div>
+        <div class="card">
+          <span class="eyebrow">Geselecteerde game</span>
+          <h2>Pythagoras Trainer</h2>
+          <p class="muted">Speelbare trainer rond rechthoekige driehoeken, score en nauwkeurigheid.</p>
+          <div class="detail-grid">
+            <div class="card"><h3>Leerdoelen</h3><p class="muted">Herkennen, berekenen, controleren</p></div>
+            <div class="card"><h3>Vaardigheden</h3><p class="muted">Rekenen, ruimtelijk inzicht, formule toepassen</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen">
+      <div class="screen-head"><div class="screen-title"><span class="eyebrow">Werkplek</span><h2>Leerlingen</h2></div><span class="pill">20 zichtbaar</span></div>
+      <div class="screen-body">
+        <div class="metric-grid">
+          <div class="metric"><span>Leerlingen</span><strong>20</strong></div>
+          <div class="metric"><span>Zonder klas</span><strong>18</strong></div>
+          <div class="metric"><span>Gefilterd</span><strong>20</strong></div>
+        </div>
+        <div class="student-table">
+          <div class="student-row"><b>Luna Balan</b><span>Geen klas</span><span>Vandaag</span><span class="pill">Leerling</span></div>
+          <div class="student-row"><b>Merah Alshukair</b><span>Geen klas</span><span>07 mei</span><span class="pill">Leerling</span></div>
+          <div class="student-row"><b>Aysha zein</b><span>Geen klas</span><span>07 mei</span><span class="pill">Leerling</span></div>
+          <div class="student-row"><b>Kevin Limpens</b><span>EOA</span><span>13 mei</span><span class="pill">Leerling</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen wide">
+      <div class="login-wrap">
+        <div class="login-visual">
+          <div class="brand"><div class="mark">∞</div><b>HELIX</b></div>
+          <div>
+            <span class="pill active">Slim leren, beter begrijpen</span>
+            <h2>Rustige lessen, persoonlijke hulp en duidelijke voortgang.</h2>
+            <p class="muted">HELIX helpt leerlingen stap voor stap vooruit en geeft docenten een professionele werkplek voor lesmateriaal.</p>
+          </div>
+          <div class="nav"><span>Persoonlijk</span><span>Slim</span><span>Betrouwbaar</span></div>
+        </div>
+        <div class="login-card">
+          <span class="eyebrow">Welkom terug</span>
+          <h2>Log in bij HELIX</h2>
+          <div class="input">naam@school.nl</div>
+          <div class="input">••••••••</div>
+          <div class="button">Inloggen</div>
+          <div class="card"><span class="eyebrow">Lokale admin testlogin</span><p class="muted">Maakt alleen lokaal een admin-testgebruiker voor browsermatige verificatie.</p><div class="button">Admin testlogin</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll('.theme-tab'));
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.body.dataset.theme = tab.dataset.theme;
+        tabs.forEach((item) => item.classList.toggle('active', item === tab));
+      });
+    });
+  </script>
+</body>
+</html>
