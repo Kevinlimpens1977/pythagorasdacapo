@@ -1,13 +1,286 @@
-const { onCall } = require("firebase-functions/v2/https");
+const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { initializeApp } = require("firebase-admin/app");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getStorage } = require("firebase-admin/storage");
 
 initializeApp();
 
 const openrouterApiKey = defineSecret("OPENROUTER_API_KEY");
+const REGION = "europe-west1";
+
+const allowedImportRoles = new Set(["admin", "docent"]);
+
+function requireString(value, fieldName) {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new HttpsError("invalid-argument", `${fieldName} is verplicht.`);
+  }
+
+  return value.trim();
+}
+
+async function getRequiredDoc(ref, label) {
+  const snapshot = await ref.get();
+
+  if (!snapshot.exists) {
+    throw new HttpsError("not-found", `${label} bestaat niet.`);
+  }
+
+  return {
+    id: snapshot.id,
+    ref,
+    data: snapshot.data() || {},
+  };
+}
+
+function getServerTimestamp(now) {
+  return typeof now === "function" ? now() : FieldValue.serverTimestamp();
+}
+
+function assertCanManageKlas(caller, klasId) {
+  if (!allowedImportRoles.has(caller.role)) {
+    throw new HttpsError("permission-denied", "Alleen admins en docenten mogen leerlingfoto-imports goedkeuren.");
+  }
+
+  if (caller.role === "admin") {
+    return;
+  }
+
+  const callerKlasIds = Array.isArray(caller.klasIds)
+    ? caller.klasIds
+    : [caller.klasId].filter(Boolean);
+
+  if (!callerKlasIds.includes(klasId)) {
+    throw new HttpsError("permission-denied", "Je hebt geen toegang tot deze klas.");
+  }
+}
+
+function normalizeDecision(rawDecision) {
+  const decision = rawDecision || "approve";
+  const allowed = new Set(["approve", "pending_new", "reject"]);
+
+  if (!allowed.has(decision)) {
+    throw new HttpsError("invalid-argument", "decision moet approve, pending_new of reject zijn.");
+  }
+
+  return decision;
+}
+
+function assertImportCropPath(cropStoragePath, klasId, importId) {
+  const expectedPrefix = `photo-imports/${klasId}/${importId}/crops/`;
+
+  if (typeof cropStoragePath !== "string" || !cropStoragePath.startsWith(expectedPrefix)) {
+    throw new HttpsError("failed-precondition", "Crop staat niet in het verwachte tijdelijke importpad.");
+  }
+}
+
+async function copyCropToStudentPhoto({ bucket, cropStoragePath, klasId, uid }) {
+  const sourceFile = bucket.file(cropStoragePath);
+  const [sourceExists] = await sourceFile.exists();
+
+  if (!sourceExists) {
+    throw new HttpsError("not-found", "Tijdelijke crop is niet gevonden in Storage.");
+  }
+
+  const avatarPath = `student-photos/${klasId}/${uid}/avatar_256.webp`;
+  const thumbPath = `student-photos/${klasId}/${uid}/thumb_96.webp`;
+
+  // Beperking V1: de client maakt al een veilige WebP-crop. Zonder Sharp/Jimp
+  // kunnen Functions nu niet betrouwbaar resizen; daarom kopieren we dezelfde
+  // crop naar avatar en thumb totdat resize bewust als dependency wordt toegevoegd.
+  await sourceFile.copy(bucket.file(avatarPath));
+  await sourceFile.copy(bucket.file(thumbPath));
+
+  return { avatarPath, thumbPath };
+}
+
+async function approveMatchedCrop({ auth, data, db, bucket, now }) {
+  const importId = requireString(data.importId, "importId");
+  const cropId = requireString(data.cropId, "cropId");
+  const klasId = requireString(data.klasId, "klasId");
+  const importRef = db.doc(`photoImports/${importId}`);
+  const cropRef = importRef.collection("crops").doc(cropId);
+  const timestamp = getServerTimestamp(now);
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+
+  assertCanManageKlas(caller.data, klasId);
+
+  const importDoc = await getRequiredDoc(importRef, "Import");
+  if (importDoc.data.klasId !== klasId) {
+    throw new HttpsError("failed-precondition", "Import hoort niet bij deze klas.");
+  }
+
+  const cropDoc = await getRequiredDoc(cropRef, "Crop");
+  const matchedUserId = requireString(data.matchedUserId || cropDoc.data.matchedUserId, "matchedUserId");
+  const studentDoc = await getRequiredDoc(db.doc(`users/${matchedUserId}`), "Gematchte leerling");
+
+  if (studentDoc.data.role !== "student") {
+    throw new HttpsError("failed-precondition", "Gematchte gebruiker is geen leerling.");
+  }
+
+  const allowKlasOverride = data.allowKlasOverride === true && caller.data.role === "admin";
+  if (studentDoc.data.klasId !== klasId && !allowKlasOverride) {
+    throw new HttpsError("failed-precondition", "Gematchte leerling zit niet in dezelfde klas.");
+  }
+
+  const cropStoragePath = requireString(cropDoc.data.cropStoragePath, "cropStoragePath");
+  assertImportCropPath(cropStoragePath, klasId, importId);
+
+  const { avatarPath, thumbPath } = await copyCropToStudentPhoto({
+    bucket,
+    cropStoragePath,
+    klasId,
+    uid: matchedUserId,
+  });
+
+  const photo = {
+    storagePath: avatarPath,
+    thumbStoragePath: thumbPath,
+    status: "approved",
+    sourceImportId: importId,
+    cropId,
+    approvedBy: auth.uid,
+    approvedAt: timestamp,
+    updatedAt: timestamp,
+  };
+
+  await studentDoc.ref.update({ photo });
+  await cropRef.update({
+    status: "approved",
+    matchedUserId,
+    approvedBy: auth.uid,
+    approvedAt: timestamp,
+    updatedAt: timestamp,
+  });
+  await importRef.update({
+    approvedCount: FieldValue.increment(1),
+    updatedAt: timestamp,
+  });
+
+  return {
+    success: true,
+    status: "approved",
+    matchedUserId,
+    photo,
+  };
+}
+
+async function createPendingStudentFromCrop({ auth, data, db, now }) {
+  const importId = requireString(data.importId, "importId");
+  const cropId = requireString(data.cropId, "cropId");
+  const klasId = requireString(data.klasId, "klasId");
+  const importRef = db.doc(`photoImports/${importId}`);
+  const cropRef = importRef.collection("crops").doc(cropId);
+  const timestamp = getServerTimestamp(now);
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+
+  assertCanManageKlas(caller.data, klasId);
+
+  const importDoc = await getRequiredDoc(importRef, "Import");
+  if (importDoc.data.klasId !== klasId) {
+    throw new HttpsError("failed-precondition", "Import hoort niet bij deze klas.");
+  }
+
+  const cropDoc = await getRequiredDoc(cropRef, "Crop");
+  const cropStoragePath = requireString(cropDoc.data.cropStoragePath, "cropStoragePath");
+  assertImportCropPath(cropStoragePath, klasId, importId);
+
+  const pendingId = `${importId}_${cropId}`;
+  const pendingRef = db.collection("pendingStudents").doc(pendingId);
+  const displayNameProposed = data.displayNameProposed || cropDoc.data.proposedName || cropDoc.data.matchedDisplayName || "";
+
+  await pendingRef.set({
+    klasId,
+    importId,
+    cropId,
+    displayNameProposed,
+    photoStoragePath: cropStoragePath,
+    status: "pending_account",
+    createdBy: auth.uid,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }, { merge: true });
+  await cropRef.update({
+    status: "pending_new",
+    approvedBy: auth.uid,
+    approvedAt: timestamp,
+    updatedAt: timestamp,
+  });
+  await importRef.update({
+    pendingCount: FieldValue.increment(1),
+    updatedAt: timestamp,
+  });
+
+  return {
+    success: true,
+    status: "pending_new",
+    pendingId,
+  };
+}
+
+async function rejectImportCrop({ auth, data, db, now }) {
+  const importId = requireString(data.importId, "importId");
+  const cropId = requireString(data.cropId, "cropId");
+  const klasId = requireString(data.klasId, "klasId");
+  const importRef = db.doc(`photoImports/${importId}`);
+  const cropRef = importRef.collection("crops").doc(cropId);
+  const timestamp = getServerTimestamp(now);
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+
+  assertCanManageKlas(caller.data, klasId);
+
+  const importDoc = await getRequiredDoc(importRef, "Import");
+  if (importDoc.data.klasId !== klasId) {
+    throw new HttpsError("failed-precondition", "Import hoort niet bij deze klas.");
+  }
+
+  await getRequiredDoc(cropRef, "Crop");
+  await cropRef.update({
+    status: "rejected",
+    reviewNote: data.reviewNote || null,
+    approvedBy: auth.uid,
+    approvedAt: timestamp,
+    updatedAt: timestamp,
+  });
+  await importRef.update({ updatedAt: timestamp });
+
+  return {
+    success: true,
+    status: "rejected",
+  };
+}
+
+async function approveStudentPhotoImportCropCore({ auth, data, db, bucket, now }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om leerlingfoto-imports goed te keuren.");
+  }
+
+  const decision = normalizeDecision(data?.decision);
+
+  if (decision === "pending_new") {
+    return createPendingStudentFromCrop({ auth, data, db, now });
+  }
+
+  if (decision === "reject") {
+    return rejectImportCrop({ auth, data, db, now });
+  }
+
+  return approveMatchedCrop({ auth, data, db, bucket, now });
+}
+
+exports.approveStudentPhotoImportCrop = onCall({
+  region: REGION,
+}, async (request) => {
+  return approveStudentPhotoImportCropCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    bucket: getStorage().bucket(),
+  });
+});
 
 exports.askAiTutor = onCall({
-  region: "europe-west1",
+  region: REGION,
   secrets: [openrouterApiKey],
 }, async (request) => {
   try {
@@ -75,3 +348,7 @@ Spreek de leerling aan in de je-vorm.`;
     };
   }
 });
+
+exports.__test = {
+  approveStudentPhotoImportCropCore,
+};

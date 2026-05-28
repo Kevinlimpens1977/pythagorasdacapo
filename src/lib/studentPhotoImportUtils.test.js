@@ -6,7 +6,8 @@ import {
   createPhotoImportRows,
   getMatchStatus,
   getPhotoImportReadiness,
-  normalizeStudentName
+  normalizeStudentName,
+  sanitizeImportFileName
 } from './studentPhotoImportUtils.js';
 
 test('normalizeStudentName trims, lowercases and removes accents', () => {
@@ -38,6 +39,8 @@ test('createPhotoImportRows auto-links only confident matches', () => {
     [{ uid: 's1', displayName: 'Luna Balan', email: 'luna@example.com' }]
   );
 
+  assert.equal(rows[0].id, 'crop-1');
+  assert.equal(rows[0].selection.id, 'crop-1');
   assert.equal(rows[0].decision, 'link');
   assert.equal(rows[0].matchedUserId, 's1');
 });
@@ -48,9 +51,17 @@ test('getPhotoImportReadiness requires every row to have an explicit decision', 
     getPhotoImportReadiness([
       { decision: 'link', matchedUserId: 's1' },
       { decision: 'skip' },
+      { decision: 'pending', proposedName: 'Nieuwe leerling' }
+    ]),
+    { total: 3, ready: 3, isReady: true }
+  );
+  assert.deepEqual(
+    getPhotoImportReadiness([
+      { decision: 'link' },
+      { decision: 'pending' },
       { decision: 'review' }
     ]),
-    { total: 3, ready: 2, isReady: false }
+    { total: 3, ready: 0, isReady: false }
   );
 });
 
@@ -65,3 +76,6 @@ test('countStudentPhotos supports structured and legacy photo fields', () => {
   );
 });
 
+test('sanitizeImportFileName strips unsafe filename characters', () => {
+  assert.equal(sanitizeImportFileName('  klas foto 1/2.png  '), 'klas-foto-1-2.png');
+});

@@ -34,6 +34,14 @@ export const normalizeStudentName = (value = '') =>
     .replace(/\s+/g, ' ')
     .toLowerCase();
 
+export const sanitizeImportFileName = (value = 'leerlingfoto') =>
+  String(value || 'leerlingfoto')
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 96) || 'leerlingfoto';
+
 const getEmailPrefix = (email = '') => String(email || '').split('@')[0] || '';
 
 const scoreCandidate = (proposedName, candidate = {}) => {
@@ -207,26 +215,44 @@ export const createPhotoImportRows = (crops = [], students = []) =>
     const candidates = buildStudentMatchCandidates(students, proposedName);
     const [bestCandidate] = candidates;
     const isConfident = bestCandidate?.score >= 0.85;
+    const cropId = crop.cropId || crop.id || `crop-${index + 1}`;
+    const matchedUserId = isConfident ? bestCandidate.student.uid || bestCandidate.student.id || '' : '';
+    const status = getMatchStatus({
+      proposedName,
+      candidates,
+      matchedUserId
+    });
 
     return {
-      cropId: crop.cropId || crop.id || `crop-${index + 1}`,
+      id: cropId,
+      cropId,
+      order: index + 1,
+      selection: crop,
       proposedName,
       bbox: crop.bbox || null,
+      cropCoordinates: crop.cropCoordinates || crop.bbox || null,
       originalImageSize: crop.originalImageSize || null,
       candidates,
-      matchStatus: getMatchStatus({
-        proposedName,
-        candidates,
-        matchedUserId: isConfident ? bestCandidate.student.uid || bestCandidate.student.id : ''
-      }),
-      matchedUserId: isConfident ? bestCandidate.student.uid || bestCandidate.student.id || '' : '',
-      decision: isConfident ? 'link' : ''
+      matchStatus: status,
+      status,
+      matchedUserId,
+      matchedDisplayName: isConfident ? bestCandidate.student.displayName || bestCandidate.student.email || '' : '',
+      matchConfidence: bestCandidate?.score || 0,
+      matchMethod: isConfident ? 'name' : 'suggested',
+      decision: isConfident ? 'link' : 'review'
     };
   });
 
 export const getPhotoImportReadiness = (rows = []) => {
-  const readyDecisions = new Set(['link', 'skip']);
-  const ready = rows.filter((row) => readyDecisions.has(row.decision)).length;
+  const ready = rows.filter((row) => {
+    if (row.decision === 'link' || row.decision === PHOTO_IMPORT_DECISIONS.APPROVE) {
+      return Boolean(row.matchedUserId);
+    }
+    if (row.decision === 'pending' || row.decision === PHOTO_IMPORT_DECISIONS.PENDING_NEW) {
+      return Boolean(String(row.proposedName || '').trim());
+    }
+    return row.decision === 'skip' || row.decision === PHOTO_IMPORT_DECISIONS.REJECT;
+  }).length;
 
   return {
     total: rows.length,
