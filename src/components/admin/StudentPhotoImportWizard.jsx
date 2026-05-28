@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Images, Loader2, Plus, Sparkles, Trash2, Upload, X } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Images, Loader2, Plus, Trash2, Upload, X } from 'lucide-react';
 import ImageCanvasEditor from './ImageCanvasEditor';
 import { batchCropRectangles, cropRectangleFromImage } from '../../services/cropService';
 import * as klasService from '../../services/klasService';
@@ -13,11 +13,6 @@ import {
   savePhotoImportCropRecord,
   uploadPhotoImportBlob
 } from '../../services/studentPhotoImportService';
-import {
-  DEFAULT_STUDENT_PHOTO_OCR_METHOD,
-  STUDENT_PHOTO_OCR_METHOD_OPTIONS,
-  detectStudentPhotoSelections
-} from '../../services/studentPhotoAutoCropService';
 import { extractStudentPhotoSelectionsFromPdf } from '../../services/studentPhotoPdfListImportService';
 import {
   buildStudentMatchCandidates,
@@ -64,9 +59,6 @@ export default function StudentPhotoImportWizard({
   const [saveResult, setSaveResult] = useState(null);
   const [error, setError] = useState(null);
   const [importKlasId, setImportKlasId] = useState('');
-  const [autoDetecting, setAutoDetecting] = useState(false);
-  const [activeOcrMethodId, setActiveOcrMethodId] = useState(DEFAULT_STUDENT_PHOTO_OCR_METHOD);
-  const [autoProgress, setAutoProgress] = useState(null);
   const [pdfImporting, setPdfImporting] = useState(false);
   const pdfInputRef = useRef(null);
   const [showNewKlasForm, setShowNewKlasForm] = useState(false);
@@ -233,46 +225,6 @@ export default function StudentPhotoImportWizard({
     setSaveResult(null);
     setError(null);
     if (data) setActiveStep(1);
-  };
-
-  const handleAutoDetect = async (ocrMethodId = activeOcrMethodId) => {
-    if (!imageData?.src) {
-      setError('Upload of plak eerst een afbeelding.');
-      return;
-    }
-
-    if (selections.length && !window.confirm('Automatische voorstellen vervangen de huidige uitsnedes. Wil je doorgaan?')) {
-      return;
-    }
-
-    setAutoDetecting(true);
-    setActiveOcrMethodId(ocrMethodId);
-    setAutoProgress({ phase: 'detect', percent: 0 });
-    setError(null);
-    setSaveResult(null);
-
-    try {
-      const detectedSelections = await detectStudentPhotoSelections({
-        imageData,
-        runOcr: true,
-        ocrMethodId,
-        onProgress: setAutoProgress
-      });
-
-      if (!detectedSelections.length) {
-        throw new Error('Er zijn geen automatische foto-uitsnedes gevonden. Teken de uitsnedes handmatig of probeer een scherpere afbeelding.');
-      }
-
-      handleSelectionsChanged(detectedSelections);
-      setActiveSelectionId(detectedSelections[0]?.id || null);
-      setInteractionMode('select');
-      setActiveStep(2);
-    } catch (err) {
-      setError(err.message || 'Automatische crop/OCR-detectie is mislukt.');
-    } finally {
-      setAutoDetecting(false);
-      setAutoProgress(null);
-    }
   };
 
   const handlePdfPhotoListImport = async (file) => {
@@ -555,14 +507,14 @@ export default function StudentPhotoImportWizard({
             </div>
             <div className="space-y-4">
               <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-4">
-                <h3 className="font-black text-[var(--helix-navy)]">Automatisch voorstellen</h3>
+                <h3 className="font-black text-[var(--helix-navy)]">PDF fotolijst importeren</h3>
                 <p className="helix-muted mt-1 text-sm">
-                  Laat de browser foto-uitsnedes zoeken en namen via OCR voorstellen. Controle blijft altijd handmatig.
+                  Upload een PDF-fotolijst. De app leest de namen uit de PDF-tekstlaag, maakt foto-uitsnedes en zet alles klaar voor controle.
                 </p>
                 <button
                   type="button"
                   onClick={() => pdfInputRef.current?.click()}
-                  disabled={pdfImporting || autoDetecting}
+                  disabled={pdfImporting}
                   className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-4 text-sm font-black text-white disabled:opacity-40"
                 >
                   {pdfImporting ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
@@ -575,33 +527,9 @@ export default function StudentPhotoImportWizard({
                   onChange={(event) => handlePdfPhotoListImport(event.target.files?.[0])}
                   className="hidden"
                 />
-                <div className="my-4 h-px bg-[var(--helix-border)]" />
-                <div className="mt-4 grid gap-2">
-                  {STUDENT_PHOTO_OCR_METHOD_OPTIONS.map((method) => {
-                    const isActive = activeOcrMethodId === method.id;
-                    return (
-                      <button
-                        key={method.id}
-                        type="button"
-                        onClick={() => handleAutoDetect(method.id)}
-                        disabled={!imageData || autoDetecting}
-                        className={`inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] px-3 text-xs font-black disabled:opacity-40 ${
-                          isActive
-                            ? 'bg-[var(--helix-purple)] text-white'
-                            : 'border border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:bg-[var(--helix-soft-lavender)]'
-                        }`}
-                      >
-                        {autoDetecting && isActive ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                        {autoDetecting && isActive ? 'Test bezig...' : method.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                {autoProgress ? (
-                  <p className="mt-3 text-xs font-bold text-[var(--helix-purple)]">
-                    {autoProgress.phase === 'ocr' ? 'OCR namen lezen' : 'Foto-uitsnedes zoeken'}: {autoProgress.percent || 0}%
-                  </p>
-                ) : null}
+                <p className="mt-3 text-xs font-bold text-[var(--helix-purple)]">
+                  Werkt het best met een PDF waarin de namen als echte tekst boven of onder de pasfoto's staan.
+                </p>
               </div>
               <SelectionPanel
                 selections={selections}
