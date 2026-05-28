@@ -70,12 +70,104 @@ const createSessionHistory = () => ({
   redo: []
 });
 
-const normalizeHistory = (history) => ({
-  ...history,
-  session: history.session || createSessionHistory()
+const createHistoryOrder = () => ({
+  undo: [],
+  redo: []
 });
 
-const recordPresenterSessionState = (history, session) => {
+const normalizeHistory = (history) => ({
+  ...history,
+  session: history.session || createSessionHistory(),
+  order: history.order || createHistoryOrder()
+});
+
+const findSessionPage = (session, pageId) =>
+  session.pages.find((page) => page.id === pageId) || null;
+
+const canUndoEntry = (history, session, entry) => {
+  if (!entry) return false;
+  if (entry.kind === 'session') return normalizeHistory(history).session.undo.length > 0;
+  if (entry.kind !== 'page') return false;
+
+  const pageHistory = history.byPageId[entry.pageId];
+  return Boolean(pageHistory?.undo.length > 0 && findSessionPage(session, entry.pageId));
+};
+
+const canRedoEntry = (history, session, entry) => {
+  if (!entry) return false;
+  if (entry.kind === 'session') return normalizeHistory(history).session.redo.length > 0;
+  if (entry.kind !== 'page') return false;
+
+  const pageHistory = history.byPageId[entry.pageId];
+  return Boolean(pageHistory?.redo.length > 0 && findSessionPage(session, entry.pageId));
+};
+
+const getFallbackUndoEntry = (history, session) => {
+  const normalizedHistory = normalizeHistory(history);
+  const orderedEntry = normalizedHistory.order.undo[normalizedHistory.order.undo.length - 1];
+  if (orderedEntry) return orderedEntry;
+
+  if (normalizedHistory.session.undo.length > 0) return { kind: 'session' };
+
+  const pageEntry = Object.entries(normalizedHistory.byPageId).find(([pageId, pageHistory]) =>
+    pageHistory.undo.length > 0 && findSessionPage(session, pageId)
+  );
+
+  return pageEntry ? { kind: 'page', pageId: pageEntry[0] } : null;
+};
+
+const getFallbackRedoEntry = (history, session) => {
+  const normalizedHistory = normalizeHistory(history);
+  const orderedEntry = normalizedHistory.order.redo[normalizedHistory.order.redo.length - 1];
+  if (orderedEntry) return orderedEntry;
+
+  if (normalizedHistory.session.redo.length > 0) return { kind: 'session' };
+
+  const pageEntry = Object.entries(normalizedHistory.byPageId).find(([pageId, pageHistory]) =>
+    pageHistory.redo.length > 0 && findSessionPage(session, pageId)
+  );
+
+  return pageEntry ? { kind: 'page', pageId: pageEntry[0] } : null;
+};
+
+const hasAvailableUndo = (history, session) => {
+  const normalizedHistory = normalizeHistory(history);
+
+  return Boolean(
+    [...normalizedHistory.order.undo].reverse().some((entry) => canUndoEntry(normalizedHistory, session, entry)) ||
+      normalizedHistory.session.undo.length > 0 ||
+      Object.entries(normalizedHistory.byPageId).some(([pageId, pageHistory]) =>
+        pageHistory.undo.length > 0 && findSessionPage(session, pageId)
+      )
+  );
+};
+
+const hasAvailableRedo = (history, session) => {
+  const normalizedHistory = normalizeHistory(history);
+
+  return Boolean(
+    [...normalizedHistory.order.redo].reverse().some((entry) => canRedoEntry(normalizedHistory, session, entry)) ||
+      normalizedHistory.session.redo.length > 0 ||
+      Object.entries(normalizedHistory.byPageId).some(([pageId, pageHistory]) =>
+        pageHistory.redo.length > 0 && findSessionPage(session, pageId)
+      )
+  );
+};
+
+const recordPresenterPageAction = (history, pageId, page) => {
+  const normalizedHistory = normalizeHistory(history);
+  const nextHistory = recordPresenterPageState(normalizedHistory, pageId, page);
+
+  return {
+    ...nextHistory,
+    order: {
+      undo: [...normalizedHistory.order.undo, { kind: 'page', pageId }].slice(-MAX_SESSION_HISTORY_ITEMS),
+      redo: []
+    }
+  };
+};
+
+const recordPresenterSessionAction = (history, session) => {
   const normalizedHistory = normalizeHistory(history);
 
   return {
@@ -83,6 +175,56 @@ const recordPresenterSessionState = (history, session) => {
     session: {
       undo: [...normalizedHistory.session.undo, clonePresenterSession(session)].slice(-MAX_SESSION_HISTORY_ITEMS),
       redo: []
+    },
+    order: {
+      undo: [...normalizedHistory.order.undo, { kind: 'session' }].slice(-MAX_SESSION_HISTORY_ITEMS),
+      redo: []
+    }
+  };
+};
+
+const applyUndoOrder = (history, entry) => {
+  const normalizedHistory = normalizeHistory(history);
+  const undo = normalizedHistory.order.undo.slice(0, -1);
+  const redo = [...normalizedHistory.order.redo, entry].slice(-MAX_SESSION_HISTORY_ITEMS);
+
+  return {
+    ...normalizedHistory,
+    order: { undo, redo }
+  };
+};
+
+const applyRedoOrder = (history, entry) => {
+  const normalizedHistory = normalizeHistory(history);
+  const redo = normalizedHistory.order.redo.slice(0, -1);
+  const undo = [...normalizedHistory.order.undo, entry].slice(-MAX_SESSION_HISTORY_ITEMS);
+
+  return {
+    ...normalizedHistory,
+    order: { undo, redo }
+  };
+};
+
+const trimStaleUndoOrderEntry = (history) => {
+  const normalizedHistory = normalizeHistory(history);
+
+  return {
+    ...normalizedHistory,
+    order: {
+      ...normalizedHistory.order,
+      undo: normalizedHistory.order.undo.slice(0, -1)
+    }
+  };
+};
+
+const trimStaleRedoOrderEntry = (history) => {
+  const normalizedHistory = normalizeHistory(history);
+
+  return {
+    ...normalizedHistory,
+    order: {
+      ...normalizedHistory.order,
+      redo: normalizedHistory.order.redo.slice(0, -1)
     }
   };
 };
@@ -155,14 +297,8 @@ export default function PresenterShell() {
   const currentTool = activeCategory === 'pen'
     ? { id: 'pen', variant: 'pen', color: '#111827', width: 5 }
     : { id: 'select' };
-  const activePageHistory = history.byPageId[activePage?.id] || { undo: [], redo: [] };
-  const sessionHistory = history.session || createSessionHistory();
-  const canUndoPage = activePageHistory.undo.length > 0;
-  const canRedoPage = activePageHistory.redo.length > 0;
-  const canUndoSession = sessionHistory.undo.length > 0;
-  const canRedoSession = sessionHistory.redo.length > 0;
-  const canUndo = canUndoPage || canUndoSession;
-  const canRedo = canRedoPage || canRedoSession;
+  const canUndo = hasAvailableUndo(history, session);
+  const canRedo = hasAvailableRedo(history, session);
 
   const updateActivePageWithHistory = useCallback((updater) => {
     setSession((currentSession) => {
@@ -172,7 +308,7 @@ export default function PresenterShell() {
       const nextSession = updater(currentSession, page);
       if (nextSession === currentSession) return currentSession;
 
-      setHistory((currentHistory) => recordPresenterPageState(currentHistory, page.id, page));
+      setHistory((currentHistory) => recordPresenterPageAction(currentHistory, page.id, page));
       return nextSession;
     });
   }, []);
@@ -193,7 +329,7 @@ export default function PresenterShell() {
       const nextSession = addPresenterPage(currentSession);
       if (nextSession === currentSession) return currentSession;
 
-      setHistory((currentHistory) => recordPresenterSessionState(currentHistory, currentSession));
+      setHistory((currentHistory) => recordPresenterSessionAction(currentHistory, currentSession));
       return nextSession;
     });
   };
@@ -203,7 +339,7 @@ export default function PresenterShell() {
       const nextSession = duplicatePresenterPage(currentSession, currentSession.activePageId);
       if (nextSession === currentSession) return currentSession;
 
-      setHistory((currentHistory) => recordPresenterSessionState(currentHistory, currentSession));
+      setHistory((currentHistory) => recordPresenterSessionAction(currentHistory, currentSession));
       return nextSession;
     });
   };
@@ -216,7 +352,7 @@ export default function PresenterShell() {
       const nextSession = deletePresenterPage(currentSession, currentSession.activePageId);
       if (nextSession === currentSession) return currentSession;
 
-      setHistory((currentHistory) => recordPresenterSessionState(currentHistory, currentSession));
+      setHistory((currentHistory) => recordPresenterSessionAction(currentHistory, currentSession));
       return nextSession;
     });
   };
@@ -273,57 +409,69 @@ export default function PresenterShell() {
 
   const handleUndo = useCallback(() => {
     setSession((currentSession) => {
-      const page = getActivePresenterPage(currentSession);
-      if (!page) {
-        const result = undoPresenterSession(history, currentSession);
-        if (result.session === currentSession && result.history === history) return currentSession;
+      const entry = getFallbackUndoEntry(history, currentSession);
+      if (!entry) return currentSession;
 
-        setHistory(result.history);
+      if (entry.kind === 'session') {
+        const result = undoPresenterSession(history, currentSession);
+        if (result.session === currentSession && result.history === history) {
+          setHistory((currentHistory) => trimStaleUndoOrderEntry(currentHistory));
+          return currentSession;
+        }
+
+        setHistory(applyUndoOrder(result.history, entry));
         return result.session;
       }
 
-      if (canUndoPage) {
-        const result = undoPresenterPage(history, page.id, page);
-        if (result.page === page && result.history === history) return currentSession;
-
-        setHistory(result.history);
-        return replacePresenterPage(currentSession, page.id, result.page);
+      const page = findSessionPage(currentSession, entry.pageId);
+      if (!page) {
+        setHistory((currentHistory) => trimStaleUndoOrderEntry(currentHistory));
+        return currentSession;
       }
 
-      const result = undoPresenterSession(history, currentSession);
-      if (result.session === currentSession && result.history === history) return currentSession;
+      const result = undoPresenterPage(history, entry.pageId, page);
+      if (result.page === page && result.history === history) {
+        setHistory((currentHistory) => trimStaleUndoOrderEntry(currentHistory));
+        return currentSession;
+      }
 
-      setHistory(result.history);
-      return result.session;
+      setHistory(applyUndoOrder(result.history, entry));
+      return replacePresenterPage(currentSession, entry.pageId, result.page);
     });
-  }, [canUndoPage, history]);
+  }, [history]);
 
   const handleRedo = useCallback(() => {
     setSession((currentSession) => {
-      const page = getActivePresenterPage(currentSession);
-      if (!page) {
-        const result = redoPresenterSession(history, currentSession);
-        if (result.session === currentSession && result.history === history) return currentSession;
+      const entry = getFallbackRedoEntry(history, currentSession);
+      if (!entry) return currentSession;
 
-        setHistory(result.history);
+      if (entry.kind === 'session') {
+        const result = redoPresenterSession(history, currentSession);
+        if (result.session === currentSession && result.history === history) {
+          setHistory((currentHistory) => trimStaleRedoOrderEntry(currentHistory));
+          return currentSession;
+        }
+
+        setHistory(applyRedoOrder(result.history, entry));
         return result.session;
       }
 
-      if (canRedoPage) {
-        const result = redoPresenterPage(history, page.id, page);
-        if (result.page === page && result.history === history) return currentSession;
-
-        setHistory(result.history);
-        return replacePresenterPage(currentSession, page.id, result.page);
+      const page = findSessionPage(currentSession, entry.pageId);
+      if (!page) {
+        setHistory((currentHistory) => trimStaleRedoOrderEntry(currentHistory));
+        return currentSession;
       }
 
-      const result = redoPresenterSession(history, currentSession);
-      if (result.session === currentSession && result.history === history) return currentSession;
+      const result = redoPresenterPage(history, entry.pageId, page);
+      if (result.page === page && result.history === history) {
+        setHistory((currentHistory) => trimStaleRedoOrderEntry(currentHistory));
+        return currentSession;
+      }
 
-      setHistory(result.history);
-      return result.session;
+      setHistory(applyRedoOrder(result.history, entry));
+      return replacePresenterPage(currentSession, entry.pageId, result.page);
     });
-  }, [canRedoPage, history]);
+  }, [history]);
 
   const handleStrokeComplete = (stroke) => {
     updateActivePageWithHistory((currentSession) =>
