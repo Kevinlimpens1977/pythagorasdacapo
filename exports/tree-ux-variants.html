@@ -129,6 +129,23 @@
 
     .tree { padding: 0 12px 14px; }
 
+    .tree-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 8px;
+    }
+
+    .tree-action {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--purple);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 8px 10px;
+    }
+
     .row {
       display: grid;
       grid-template-columns: 24px 28px minmax(0, 1fr) auto;
@@ -141,6 +158,10 @@
       color: var(--muted);
       font-size: 14px;
       font-weight: 700;
+    }
+
+    .row[data-has-children="true"] {
+      cursor: pointer;
     }
 
     .row strong {
@@ -175,7 +196,25 @@
       font-size: 14px;
     }
 
-    .chev { color: #a5a1b8; text-align: center; }
+    .chev {
+      border: 0;
+      background: transparent;
+      color: #a5a1b8;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 950;
+      min-width: 24px;
+      padding: 0;
+      text-align: center;
+    }
+
+    .row[data-expanded="false"] .chev {
+      transform: rotate(-90deg);
+    }
+
+    .tree-row-hidden {
+      display: none !important;
+    }
 
     .count {
       min-width: 74px;
@@ -388,7 +427,7 @@
   <div class="shell">
     <header>
       <h1>CMS Tree UX Varianten</h1>
-      <p class="lead">Vijf lichte prototypes voor de Helix contentboom. De data is expres hetzelfde: hoofdstuk 1 met paragraaf 1.1 op 5 blokken en 1.2 op 3 blokken, zodat de tellingen makkelijk te vergelijken zijn.</p>
+      <p class="lead">Vijf lichte prototypes voor de Helix contentboom. Klik op rijen met een pijltje om meerdere lagen open en dicht te vouwen. De data is expres hetzelfde: hoofdstuk 1 met paragraaf 1.1 op 5 blokken en 1.2 op 3 blokken, zodat de tellingen makkelijk te vergelijken zijn.</p>
     </header>
 
     <nav class="tabs" aria-label="UX varianten">
@@ -404,13 +443,20 @@
         <div class="panel">
           <div class="panel-head"><span class="panel-title">Inhoud</span><span class="count">8 blokken</span></div>
           <div class="search">Zoek lesmateriaal...</div>
+          <div class="tree-actions"><button class="tree-action" data-tree-action="expand">Alles open</button><button class="tree-action" data-tree-action="collapse">Alles dicht</button></div>
           <div class="tree">
-            <div class="row"><span class="chev">v</span><span class="icon">B</span><span><strong>Wiskunde</strong><small>1 jaar</small></span><span class="count">1 jaar</span></div>
-            <div class="row indent-1"><span class="chev">v</span><span class="icon">J</span><span><strong>Jaar 1</strong><small>1 niveau</small></span><span class="count">1 niveau</span></div>
-            <div class="row indent-2"><span class="chev">v</span><span class="icon">N</span><span><strong>VMBO-GT</strong><small>1 hoofdstuk</small></span><span class="count">1 hoofdstuk</span></div>
-            <div class="row indent-3"><span class="chev">v</span><span class="icon">H</span><span><strong>Hoofdstuk 1 Pythagoras</strong><small>2 paragrafen</small></span><span class="count">2 paragrafen</span></div>
-            <div class="row indent-4 active-row"><span class="chev"></span><span class="icon">L</span><span><strong>1.1 Rechthoekige driehoeken</strong><small>T1 V1 Q2 M1</small></span><span class="count">5 blokken</span></div>
-            <div class="row indent-4"><span class="chev"></span><span class="icon">L</span><span><strong>1.2 Kwadraten</strong><small>T1 V1 Q1</small></span><span class="count">3 blokken</span></div>
+            <div class="row" data-level="0" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">B</span><span><strong>Digitale Vaardigheden</strong><small>2 jaren</small></span><span class="count">2 jaren</span></div>
+            <div class="row indent-1" data-level="1" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">J</span><span><strong>Leerjaar 1</strong><small>2 niveaus</small></span><span class="count">2 niveaus</span></div>
+            <div class="row indent-2" data-level="2" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">N</span><span><strong>VMBO-GT</strong><small>2 hoofdstukken</small></span><span class="count">2 hoofdstukken</span></div>
+            <div class="row indent-3" data-level="3" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">H</span><span><strong>H1 Inleiding</strong><small>2 paragrafen</small></span><span class="count">2 paragrafen</span></div>
+            <div class="row indent-4 active-row" data-level="4"><span class="chev"></span><span class="icon">1.1</span><span><strong>1.1 Wat zijn digitale vaardigheden</strong><small>T1 V3 S1</small></span><span class="count">5 blokken</span></div>
+            <div class="row indent-4" data-level="4"><span class="chev"></span><span class="icon">1.2</span><span><strong>1.2 Zoekwedstrijd</strong><small>T1 V1 S1</small></span><span class="count">3 blokken</span></div>
+            <div class="row indent-3" data-level="3" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">H</span><span><strong>H2 Hoofdstuk 2</strong><small>1 paragraaf</small></span><span class="count">1 paragraaf</span></div>
+            <div class="row indent-4" data-level="4"><span class="chev"></span><span class="icon">2.1</span><span><strong>2.1 Online samenwerken</strong><small>T1 V1</small></span><span class="count">2 blokken</span></div>
+            <div class="row indent-2" data-level="2" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">N</span><span><strong>VMBO</strong><small>1 hoofdstuk</small></span><span class="count">1 hoofdstuk</span></div>
+            <div class="row indent-3" data-level="3" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">H</span><span><strong>H1 Basisvaardigheden</strong><small>1 paragraaf</small></span><span class="count">1 paragraaf</span></div>
+            <div class="row indent-4" data-level="4"><span class="chev"></span><span class="icon">1.1</span><span><strong>1.1 Starten met leren</strong><small>T1 V1</small></span><span class="count">2 blokken</span></div>
+            <div class="row indent-1" data-level="1" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">J</span><span><strong>Leerjaar 2</strong><small>0 niveaus</small></span><span class="count">0 niveaus</span></div>
           </div>
         </div>
         <div class="notes">
@@ -427,11 +473,18 @@
         <div class="panel">
           <div class="panel-head"><span class="panel-title">Werkfocus</span><span class="count">Live counts</span></div>
           <div class="search">Filter op paragraaf, bloktype of status</div>
+          <div class="tree-actions"><button class="tree-action" data-tree-action="expand">Alles open</button><button class="tree-action" data-tree-action="collapse">Alles dicht</button></div>
           <div class="tree">
-            <div class="row"><span class="chev">v</span><span class="icon">B</span><span><strong>Wiskunde</strong><small>Curriculum</small></span><span class="count">1 jaar</span></div>
-            <div class="row indent-1"><span class="chev">v</span><span class="icon">H</span><span><strong>Hoofdstuk 1 Pythagoras</strong><small>2 paragrafen actief</small></span><span class="count">8 blokken</span></div>
-            <div class="row indent-2 active-row"><span class="chev"></span><span class="icon">1.1</span><span><strong>Rechthoekige driehoeken</strong><small>Gepubliceerd: 2, concept: 3</small></span><span class="count">5 blokken</span></div>
-            <div class="row indent-2"><span class="chev"></span><span class="icon">1.2</span><span><strong>Kwadraten</strong><small>Gepubliceerd: 1, concept: 2</small></span><span class="count">3 blokken</span></div>
+            <div class="row" data-level="0" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">B</span><span><strong>Digitale Vaardigheden</strong><small>Curriculum</small></span><span class="count">2 jaren</span></div>
+            <div class="row indent-1" data-level="1" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">J</span><span><strong>Leerjaar 1</strong><small>2 niveaus actief</small></span><span class="count">2 niveaus</span></div>
+            <div class="row indent-2" data-level="2" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">GT</span><span><strong>VMBO-GT</strong><small>8 blokken in H1</small></span><span class="count">2 hoofdstukken</span></div>
+            <div class="row indent-3" data-level="3" data-has-children="true" data-expanded="true"><span class="chev">v</span><span class="icon">H1</span><span><strong>H1 Inleiding</strong><small>2 paragrafen actief</small></span><span class="count">8 blokken</span></div>
+            <div class="row indent-4 active-row" data-level="4"><span class="chev"></span><span class="icon">1.1</span><span><strong>Wat zijn digitale vaardigheden</strong><small>Gepubliceerd: 2, concept: 3</small></span><span class="count">5 blokken</span></div>
+            <div class="row indent-4" data-level="4"><span class="chev"></span><span class="icon">1.2</span><span><strong>Zoekwedstrijd</strong><small>Gepubliceerd: 1, concept: 2</small></span><span class="count">3 blokken</span></div>
+            <div class="row indent-3" data-level="3" data-has-children="true" data-expanded="false"><span class="chev">v</span><span class="icon">H2</span><span><strong>H2 Hoofdstuk 2</strong><small>Ingeklapt voorbeeld</small></span><span class="count">2 blokken</span></div>
+            <div class="row indent-4" data-level="4"><span class="chev"></span><span class="icon">2.1</span><span><strong>Online samenwerken</strong><small>Gepubliceerd: 1, concept: 1</small></span><span class="count">2 blokken</span></div>
+            <div class="row indent-2" data-level="2" data-has-children="true" data-expanded="false"><span class="chev">v</span><span class="icon">BB</span><span><strong>VMBO</strong><small>Basisroute</small></span><span class="count">1 hoofdstuk</span></div>
+            <div class="row indent-3" data-level="3"><span class="chev"></span><span class="icon">H1</span><span><strong>Basisvaardigheden</strong><small>Nog invullen</small></span><span class="count">2 blokken</span></div>
           </div>
         </div>
         <div class="notes">
@@ -508,6 +561,55 @@
   <script>
     const tabs = Array.from(document.querySelectorAll('.tab'));
     const variants = Array.from(document.querySelectorAll('.variant'));
+    const getRowLevel = (row) => Number(row.dataset.level ?? 0);
+
+    const getDescendants = (row) => {
+      const descendants = [];
+      const level = getRowLevel(row);
+      let next = row.nextElementSibling;
+
+      while (next && next.classList.contains('row') && getRowLevel(next) > level) {
+        descendants.push(next);
+        next = next.nextElementSibling;
+      }
+
+      return descendants;
+    };
+
+    const isHiddenByClosedAncestor = (row) => {
+      const level = getRowLevel(row);
+      let previous = row.previousElementSibling;
+
+      while (previous && previous.classList.contains('row')) {
+        const previousLevel = getRowLevel(previous);
+        if (previousLevel < level && previous.dataset.expanded === 'false') return true;
+        previous = previous.previousElementSibling;
+      }
+
+      return false;
+    };
+
+    const refreshTreeVisibility = (tree) => {
+      const rows = Array.from(tree.querySelectorAll('.row[data-level]'));
+
+      rows.forEach((row) => {
+        row.classList.toggle('tree-row-hidden', isHiddenByClosedAncestor(row));
+      });
+    };
+
+    const setTreeExpanded = (tree, expanded) => {
+      tree.querySelectorAll('.row[data-has-children="true"]').forEach((row) => {
+        row.dataset.expanded = expanded ? 'true' : 'false';
+      });
+      refreshTreeVisibility(tree);
+    };
+
+    const toggleTreeRow = (row) => {
+      if (row.dataset.hasChildren !== 'true') return;
+      row.dataset.expanded = row.dataset.expanded === 'false' ? 'true' : 'false';
+      const tree = row.closest('.tree');
+      if (tree) refreshTreeVisibility(tree);
+    };
 
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -516,6 +618,25 @@
         variants.forEach((variant) => variant.classList.toggle('active', variant.id === id));
       });
     });
+
+    document.querySelectorAll('.tree .row[data-has-children="true"]').forEach((row) => {
+      row.addEventListener('click', () => toggleTreeRow(row));
+      row.querySelector('.chev')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleTreeRow(row);
+      });
+    });
+
+    document.querySelectorAll('.tree-action').forEach((button) => {
+      button.addEventListener('click', () => {
+        const panel = button.closest('.panel');
+        const tree = panel?.querySelector('.tree');
+        if (!tree) return;
+        setTreeExpanded(tree, button.dataset.treeAction === 'expand');
+      });
+    });
+
+    document.querySelectorAll('.tree').forEach(refreshTreeVisibility);
   </script>
 </body>
 </html>
