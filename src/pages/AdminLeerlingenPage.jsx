@@ -131,8 +131,8 @@ export default function AdminLeerlingenPage() {
             students={students}
             klassen={klassen}
             currentUser={currentUser}
-            defaultKlasId={students.find((student) => student.klasId)?.klasId || klassen[0]?.id || ''}
             onClose={() => setShowNumberImport(false)}
+            onKlassenChanged={() => loadStudents({ silent: true })}
             onCompleted={() => loadStudents({ silent: true })}
           />
         ) : null}

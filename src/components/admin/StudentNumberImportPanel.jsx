@@ -8,6 +8,7 @@ import {
   splitNameForManualStudent
 } from '../../lib/studentNumberImportUtils.js';
 import { importStudentNumbers } from '../../services/studentNumberImportService';
+import * as klasService from '../../services/klasService';
 
 const decisionLabels = {
   update: 'Bestaande leerling bijwerken',
@@ -21,10 +22,14 @@ export default function StudentNumberImportPanel({
   currentUser,
   defaultKlasId = '',
   onClose,
+  onKlassenChanged,
   onCompleted
 }) {
   const [rows, setRows] = useState([]);
-  const [selectedKlasId, setSelectedKlasId] = useState(defaultKlasId || klassen[0]?.id || '');
+  const [selectedKlasId, setSelectedKlasId] = useState(defaultKlasId || '');
+  const [showNewKlasForm, setShowNewKlasForm] = useState(false);
+  const [newKlasName, setNewKlasName] = useState('');
+  const [creatingKlas, setCreatingKlas] = useState(false);
   const [fileName, setFileName] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -38,6 +43,7 @@ export default function StudentNumberImportPanel({
     create: rows.filter((row) => row.decision === 'create').length,
     skip: rows.filter((row) => row.decision === 'skip').length
   }), [rows]);
+  const activeRowsNeedClass = rows.some((row) => row.decision !== 'skip');
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -111,9 +117,38 @@ export default function StudentNumberImportPanel({
     ]);
   };
 
+  const handleCreateKlas = async (event) => {
+    event.preventDefault();
+    const name = newKlasName.trim();
+    if (!name) {
+      setError('Vul eerst een klasnaam in.');
+      return;
+    }
+    if (!currentUser?.uid) {
+      setError('Log in als administrator om een klas aan te maken.');
+      return;
+    }
+
+    setCreatingKlas(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const { klasId } = await klasService.createKlas(name, currentUser.uid);
+      await onKlassenChanged?.();
+      setSelectedKlasId(klasId);
+      setNewKlasName('');
+      setShowNewKlasForm(false);
+    } catch (err) {
+      setError(err.message || 'Klas kon niet worden aangemaakt.');
+    } finally {
+      setCreatingKlas(false);
+    }
+  };
+
   const handleSave = async () => {
-    if (!selectedKlasId) {
-      setError('Kies eerst een klas voor nieuwe leerlingen.');
+    if (activeRowsNeedClass && !selectedKlasId) {
+      setError('Kies eerst een klas of maak een nieuwe klas aan voordat je deze CSV importeert.');
       return;
     }
     if (!rows.length) {
@@ -149,20 +184,54 @@ export default function StudentNumberImportPanel({
           <p className="helix-muted mt-1 max-w-3xl text-sm">
             Upload een CSV met roepnaam, achternaam en leerlingnummer. HELIX vult automatisch het leerling-e-mailadres.
           </p>
-          <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-end">
-            <label className="block min-w-72">
-              <span className="text-xs font-black uppercase tracking-wide text-slate-400">Klas voor nieuwe leerlingen</span>
-              <select
-                value={selectedKlasId}
-                onChange={(event) => setSelectedKlasId(event.target.value)}
-                className="mt-1 min-h-11 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-black text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
+          <div className={`mt-4 rounded-[var(--helix-radius-lg)] border p-4 ${activeRowsNeedClass && !selectedKlasId ? 'border-amber-300 bg-amber-50' : 'border-[var(--helix-border)] bg-[var(--helix-surface-soft)]'}`}>
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+              <label className="block min-w-72">
+                <span className="text-xs font-black uppercase tracking-wide text-slate-500">Klas voor deze CSV-import</span>
+                <select
+                  value={selectedKlasId}
+                  onChange={(event) => setSelectedKlasId(event.target.value)}
+                  className="mt-1 min-h-11 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-black text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
+                >
+                  <option value="">Kies een klas</option>
+                  {klassen.map((klas) => (
+                    <option key={klas.id} value={klas.id}>{klas.name}</option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowNewKlasForm((value) => !value)}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-purple)] bg-white px-4 text-sm font-black text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]"
               >
-                <option value="">Kies een klas</option>
-                {klassen.map((klas) => (
-                  <option key={klas.id} value={klas.id}>{klas.name}</option>
-                ))}
-              </select>
-            </label>
+                <Plus size={17} />
+                Nieuwe klas
+              </button>
+            </div>
+            <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
+              Deze CSV bevat geen klas-kolom. Kies daarom bewust aan welke klas de geïmporteerde leerlingen gekoppeld worden.
+            </p>
+            {showNewKlasForm ? (
+              <form onSubmit={handleCreateKlas} className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={newKlasName}
+                  onChange={(event) => setNewKlasName(event.target.value)}
+                  className="min-h-11 min-w-0 flex-1 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-bold text-[var(--helix-navy)] outline-none focus:border-[var(--helix-purple)]"
+                  placeholder="Bijvoorbeeld: H1bk1"
+                  disabled={creatingKlas}
+                />
+                <button
+                  type="submit"
+                  disabled={creatingKlas || !newKlasName.trim()}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-4 text-sm font-black text-white disabled:opacity-40"
+                >
+                  {creatingKlas ? <Loader2 size={17} className="animate-spin" /> : <Plus size={17} />}
+                  Klas aanmaken
+                </button>
+              </form>
+            ) : null}
+          </div>
+          <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-end">
             <input
               ref={inputRef}
               type="file"
@@ -189,7 +258,7 @@ export default function StudentNumberImportPanel({
           </div>
           <p className="helix-muted mt-2 text-xs">
             {fileName ? `Geladen bestand: ${fileName}` : 'CSV verwacht kolommen: Roepnaam; Achternaam; Leerlingnummer.'}
-            {selectedKlas ? ` Nieuwe leerlingen komen in ${selectedKlas.name}.` : ''}
+            {selectedKlas ? ` Leerlingen worden gekoppeld aan ${selectedKlas.name}.` : ' Kies een klas voordat je opslaat.'}
           </p>
         </div>
         <button
@@ -253,7 +322,7 @@ export default function StudentNumberImportPanel({
         </p>
         <button
           type="button"
-          disabled={saving || !rows.length}
+          disabled={saving || !rows.length || (activeRowsNeedClass && !selectedKlasId)}
           onClick={handleSave}
           className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-5 text-sm font-black text-white shadow-[var(--helix-shadow-card)] disabled:cursor-not-allowed disabled:opacity-40"
         >
