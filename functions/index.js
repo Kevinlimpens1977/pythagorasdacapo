@@ -73,6 +73,13 @@ function shouldPreserveUserDuringStudentReset(user = {}) {
   return role === "admin" || preservedStudentResetEmails.has(email);
 }
 
+function buildImportedStudentId(importId, cropId) {
+  return `photo_import_${importId}_${cropId}`
+    .replace(/[^a-zA-Z0-9_-]+/g, "_")
+    .replace(/_+/g, "_")
+    .slice(0, 140);
+}
+
 async function commitInChunks(db, operations) {
   for (let index = 0; index < operations.length; index += BATCH_LIMIT) {
     const chunk = operations.slice(index, index + BATCH_LIMIT);
@@ -267,7 +274,7 @@ async function approveMatchedCrop({ auth, data, db, bucket, now }) {
   };
 }
 
-async function createPendingStudentFromCrop({ auth, data, db, now }) {
+async function createStudentFromImportCrop({ auth, data, db, bucket, now }) {
   const importId = requireString(data.importId, "importId");
   const cropId = requireString(data.cropId, "cropId");
   const klasId = requireString(data.klasId, "klasId");
@@ -287,40 +294,72 @@ async function createPendingStudentFromCrop({ auth, data, db, now }) {
   const cropStoragePath = requireString(cropDoc.data.cropStoragePath, "cropStoragePath");
   assertImportCropPath(cropStoragePath, klasId, importId);
 
-  const pendingId = `${importId}_${cropId}`;
-  const pendingRef = db.collection("pendingStudents").doc(pendingId);
   const displayNameProposed = data.displayNameProposed || cropDoc.data.proposedName || cropDoc.data.matchedDisplayName || "";
   const firstName = data.firstName || cropDoc.data.firstName || "";
   const lastName = data.lastName || cropDoc.data.lastName || "";
+  const displayName = [firstName, lastName].map((part) => String(part || "").trim()).filter(Boolean).join(" ") ||
+    String(displayNameProposed || "").trim();
+  const studentId = buildImportedStudentId(importId, cropId);
+  const studentRef = db.collection("users").doc(studentId);
 
-  await pendingRef.set({
+  if (!displayName) {
+    throw new HttpsError("invalid-argument", "Voornaam of achternaam is verplicht om een leerling aan te maken.");
+  }
+
+  const { avatarPath, thumbPath } = await copyCropToStudentPhoto({
+    bucket,
+    cropStoragePath,
+    klasId,
+    uid: studentId,
+  });
+
+  const photo = {
+    storagePath: avatarPath,
+    thumbStoragePath: thumbPath,
+    status: "approved",
+    sourceImportId: importId,
+    cropId,
+    approvedBy: auth.uid,
+    approvedAt: timestamp,
+    updatedAt: timestamp,
+  };
+
+  await studentRef.set({
+    uid: studentId,
+    email: "",
+    displayName,
+    firstName,
+    lastName,
+    role: "student",
     klasId,
     importId,
     cropId,
-    displayNameProposed,
-    firstName,
-    lastName,
-    photoStoragePath: cropStoragePath,
-    status: "pending_account",
+    photo,
+    needsNameSetup: false,
+    isImportedStudent: true,
     createdBy: auth.uid,
     createdAt: timestamp,
     updatedAt: timestamp,
   }, { merge: true });
   await cropRef.update({
-    status: "pending_new",
+    status: "approved",
+    matchedUserId: studentId,
+    matchedDisplayName: displayName,
     approvedBy: auth.uid,
     approvedAt: timestamp,
     updatedAt: timestamp,
   });
   await importRef.update({
-    pendingCount: FieldValue.increment(1),
+    approvedCount: FieldValue.increment(1),
     updatedAt: timestamp,
   });
 
   return {
     success: true,
-    status: "pending_new",
-    pendingId,
+    status: "approved",
+    createdUserId: studentId,
+    matchedUserId: studentId,
+    photo,
   };
 }
 
@@ -364,7 +403,7 @@ async function approveStudentPhotoImportCropCore({ auth, data, db, bucket, now }
   const decision = normalizeDecision(data?.decision);
 
   if (decision === "pending_new") {
-    return createPendingStudentFromCrop({ auth, data, db, now });
+    return createStudentFromImportCrop({ auth, data, db, bucket, now });
   }
 
   if (decision === "reject") {

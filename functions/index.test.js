@@ -162,7 +162,7 @@ test("approveStudentPhotoImportCrop copies a matched crop and updates the studen
   assert.equal(db.store.docs["photoImports/import-1/crops/crop-1"].status, "approved");
 });
 
-test("approveStudentPhotoImportCrop creates a pending student for pending_new decisions", async () => {
+test("approveStudentPhotoImportCrop creates a student with photo for pending_new decisions", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin" },
     "photoImports/import-1": { klasId: "klas-1" },
@@ -184,12 +184,19 @@ test("approveStudentPhotoImportCrop creates a pending student for pending_new de
     now: () => "timestamp",
   });
 
-  assert.equal(result.status, "pending_new");
-  assert.equal(result.pendingId, "import-1_crop-2");
-  assert.equal(db.store.docs["pendingStudents/import-1_crop-2"].status, "pending_account");
-  assert.equal(db.store.docs["pendingStudents/import-1_crop-2"].firstName, "Nieuwe");
-  assert.equal(db.store.docs["pendingStudents/import-1_crop-2"].lastName, "Leerling");
-  assert.equal(db.store.docs["photoImports/import-1/crops/crop-2"].status, "pending_new");
+  assert.equal(result.status, "approved");
+  assert.equal(result.createdUserId, "photo_import_import-1_crop-2");
+  assert.equal(db.store.docs["pendingStudents/import-1_crop-2"], undefined);
+  assert.equal(db.store.docs["users/photo_import_import-1_crop-2"].role, "student");
+  assert.equal(db.store.docs["users/photo_import_import-1_crop-2"].klasId, "klas-1");
+  assert.equal(db.store.docs["users/photo_import_import-1_crop-2"].firstName, "Nieuwe");
+  assert.equal(db.store.docs["users/photo_import_import-1_crop-2"].lastName, "Leerling");
+  assert.equal(db.store.docs["users/photo_import_import-1_crop-2"].displayName, "Nieuwe Leerling");
+  assert.equal(
+    db.store.docs["users/photo_import_import-1_crop-2"].photo.storagePath,
+    "student-photos/klas-1/photo_import_import-1_crop-2/avatar_256.webp",
+  );
+  assert.equal(db.store.docs["photoImports/import-1/crops/crop-2"].status, "approved");
 });
 
 test("approveStudentPhotoImportCrop rejects a matched user from another class", async () => {
