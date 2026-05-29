@@ -411,6 +411,36 @@ test('resizePresenterObjectsOnPage scales selected objects from group bounds', (
   assert.equal(next.pages[0].objects[1].height, 80);
 });
 
+test('resizePresenterObjectsOnPage scales text font size with the object frame', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    objects: [
+      {
+        id: 'text-1',
+        type: 'text',
+        x: 20,
+        y: 30,
+        width: 200,
+        height: 100,
+        textStyle: { fontSize: 48, color: '#111827' }
+      }
+    ]
+  });
+  const session = { ...createPresenterSession(), activePageId: page.id, pages: [page] };
+  const fromBounds = getPresenterSelectionBounds(page, ['text-1']);
+
+  const next = resizePresenterObjectsOnPage(session, page.id, ['text-1'], fromBounds, {
+    x: 20,
+    y: 30,
+    width: 400,
+    height: 200
+  });
+
+  assert.equal(next.pages[0].objects[0].width, 400);
+  assert.equal(next.pages[0].objects[0].height, 200);
+  assert.equal(next.pages[0].objects[0].textStyle.fontSize, 96);
+});
+
 test('deleteObjectsFromPresenterPage removes a selected group and keeps remaining selection', () => {
   const page = createPresenterPage({
     id: 'page-1',

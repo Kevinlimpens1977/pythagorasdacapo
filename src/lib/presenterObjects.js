@@ -64,7 +64,7 @@ const SHAPE_DEFAULTS = {
     width: 520,
     height: 180,
     content: {
-      text: 'Typ je tekst...'
+      text: ''
     },
     textStyle: {
       bold: false,

@@ -209,13 +209,21 @@ export const resizePresenterObjectsOnPage = (
       ...page,
       objects: objects.map((object) => {
         if (!selectedIds.has(object?.id)) return object;
+        const objectScale = Math.max(0.1, Math.min(Math.abs(scaleX), Math.abs(scaleY)));
+        const nextTextStyle = object.type === 'text' && object.textStyle
+          ? {
+              ...object.textStyle,
+              fontSize: Math.max(8, getNumber(object.textStyle.fontSize, 48) * objectScale)
+            }
+          : object.textStyle;
 
         return {
           ...object,
           x: nextBounds.x + (getNumber(object.x) - sourceBounds.x) * scaleX,
           y: nextBounds.y + (getNumber(object.y) - sourceBounds.y) * scaleY,
           width: getNumber(object.width, 120) * scaleX,
-          height: getNumber(object.height, 80) * scaleY
+          height: getNumber(object.height, 80) * scaleY,
+          ...(nextTextStyle ? { textStyle: nextTextStyle } : {})
         };
       })
     };

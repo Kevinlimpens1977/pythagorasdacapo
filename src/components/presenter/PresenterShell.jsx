@@ -675,7 +675,7 @@ export default function PresenterShell() {
     );
   };
 
-  const handleCreateTextObject = (initialText = 'Typ je tekst...') => {
+  const handleCreateTextObject = (initialText = '') => {
     const object = createPresenterObject('text', {
       id: createObjectId(),
       x: 260,
@@ -995,6 +995,29 @@ export default function PresenterShell() {
         onClose={() => setImportDialogOpen(false)}
         onImport={handleImportContent}
       />
+      {pages.length > 1 ? (
+        <div className="pointer-events-auto absolute bottom-28 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-[#6f4a87] bg-[#2b1838] px-2 py-2 text-[#fbf7ff] shadow-xl">
+          <button
+            type="button"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[#6f4a87] bg-[#3a224b] px-3 text-lg font-black transition hover:bg-[#472b5b] disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() => activatePageAt(activeIndex - 1)}
+            disabled={activeIndex <= 0}
+            aria-label="Vorige Presenter-pagina"
+          >
+            ←
+          </button>
+          <span className="min-w-28 px-2 text-center text-sm font-black">{pageLabel}</span>
+          <button
+            type="button"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[#6f4a87] bg-[#3a224b] px-3 text-lg font-black transition hover:bg-[#472b5b] disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() => activatePageAt(activeIndex + 1)}
+            disabled={activeIndex >= pages.length - 1}
+            aria-label="Volgende Presenter-pagina"
+          >
+            →
+          </button>
+        </div>
+      ) : null}
       <PresenterToolbar
         pageLabel={pageLabel}
         activeCategory={activeCategory}

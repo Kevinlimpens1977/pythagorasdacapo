@@ -29,6 +29,8 @@ const getObjectStyle = (object) => ({
   strokeWidth: isFinitePositiveNumber(object?.strokeWidth) ? object.strokeWidth : 5
 });
 
+export const PRESENTER_TEXT_PLACEHOLDER = 'Typ je tekst...';
+
 const getTextContent = (object) => {
   const value = object?.content?.text ?? object?.text ?? '';
   return typeof value === 'string' ? value : String(value ?? '');
@@ -288,7 +290,7 @@ const renderObjectShape = (object, markerId) => {
   }
 };
 
-const renderTextObject = (object, { interactive, onInteract, onSelectObject, onTextChange }) => {
+const renderTextObject = (object, { interactive, selected = false, onInteract, onSelectObject, onTextChange }) => {
   const { width, height } = getObjectFrame(object);
   const textStyle = getTextStyle(object);
   const text = getTextContent(object);
@@ -314,9 +316,11 @@ const renderTextObject = (object, { interactive, onInteract, onSelectObject, onT
     <foreignObject height={Math.max(1, Math.abs(height))} width={Math.max(1, Math.abs(width))} x={Math.min(0, width)} y={Math.min(0, height)}>
       <div className="h-full w-full" xmlns="http://www.w3.org/1999/xhtml">
         <div
-          className="h-full w-full whitespace-pre-wrap break-words rounded-md border border-transparent bg-white/10 px-4 py-3 leading-tight outline-none focus:border-blue-500 focus:bg-white/40 focus:ring-4 focus:ring-blue-500/15"
+          className="h-full w-full whitespace-pre-wrap break-words rounded-md border border-transparent px-4 py-3 leading-tight outline-none empty:before:text-slate-400 empty:before:content-[attr(data-placeholder)] focus:border-blue-500 focus:bg-white/40 focus:ring-4 focus:ring-blue-500/15"
           contentEditable={interactive}
+          data-placeholder={PRESENTER_TEXT_PLACEHOLDER}
           data-presenter-interactive="true"
+          dir="ltr"
           onFocus={handleFocus}
           onInput={handleInput}
           onPointerDown={handlePointerDown}
@@ -325,13 +329,16 @@ const renderTextObject = (object, { interactive, onInteract, onSelectObject, onT
           style={{
             color: textStyle.color,
             cursor: interactive ? 'text' : 'default',
+            direction: 'ltr',
             fontFamily: getTextFontFamily(textStyle.fontFamily),
             fontSize: `${textStyle.fontSize}px`,
             fontStyle: textStyle.italic ? 'italic' : 'normal',
             fontWeight: textStyle.bold ? 900 : 700,
             height: '100%',
             overflow: 'hidden',
+            backgroundColor: selected ? 'rgba(255,255,255,0.12)' : 'transparent',
             textAlign: textStyle.align,
+            unicodeBidi: 'plaintext',
             width: '100%'
           }}
         >
@@ -448,15 +455,15 @@ export default function PresenterObjectLayer({
       </defs>
       {renderedObjects.map((object, index) => {
         const markerId = `presenter-object-arrow-${layerId}-${createDomIdPart(object.id)}`;
+        const isSelected = selectedIds.has(object.id);
         const shape = object.type === 'text'
-          ? renderTextObject(object, { interactive, onInteract, onSelectObject, onTextChange })
+          ? renderTextObject(object, { interactive, selected: isSelected, onInteract, onSelectObject, onTextChange })
           : renderObjectShape(object, markerId);
         if (!shape) return null;
 
         const { x, y, width: objectWidth, height: objectHeight, rotation } = getObjectFrame(object);
         const centerX = objectWidth / 2;
         const centerY = objectHeight / 2;
-        const isSelected = selectedIds.has(object.id);
 
         const handlePointerDown = (event) => {
           if (!interactive) return;

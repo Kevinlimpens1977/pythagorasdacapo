@@ -97,12 +97,21 @@ const transformObjectsForPreview = (page, interaction) => {
         };
       }
 
+      const objectScale = Math.max(0.1, Math.min(Math.abs(scaleX), Math.abs(scaleY)));
+      const nextTextStyle = object.type === 'text' && object.textStyle
+        ? {
+            ...object.textStyle,
+            fontSize: Math.max(8, getNumber(object.textStyle.fontSize, 48) * objectScale)
+          }
+        : object.textStyle;
+
       return {
         ...object,
         x: resizeBounds.x + (getNumber(object.x) - interaction.bounds.x) * scaleX,
         y: resizeBounds.y + (getNumber(object.y) - interaction.bounds.y) * scaleY,
         width: getNumber(object.width, 120) * scaleX,
-        height: getNumber(object.height, 80) * scaleY
+        height: getNumber(object.height, 80) * scaleY,
+        ...(nextTextStyle ? { textStyle: nextTextStyle } : {})
       };
     })
   };

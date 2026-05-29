@@ -101,7 +101,7 @@ test('createPresenterObject creates V1B text object defaults', () => {
   assert.equal(object.type, 'text');
   assert.equal(object.width, 520);
   assert.equal(object.height, 180);
-  assert.equal(object.content.text, 'Typ je tekst...');
+  assert.equal(object.content.text, '');
   assert.deepEqual(object.textStyle, {
     bold: false,
     italic: false,
