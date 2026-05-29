@@ -19,6 +19,8 @@ export const filterStudentAccounts = (students = [], query = '') => {
       student.displayName,
       student.email,
       student.klasName,
+      student.studentNumber,
+      student.leerlingnummer,
       student.uid
     ]
       .filter(Boolean)

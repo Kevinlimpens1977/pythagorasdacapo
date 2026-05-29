@@ -241,7 +241,10 @@ export const createPhotoImportRows = (crops = [], students = []) =>
     const [bestCandidate] = candidates;
     const isConfident = bestCandidate?.score >= 0.85;
     const cropId = crop.cropId || crop.id || `crop-${index + 1}`;
-    const matchedUserId = '';
+    const matchedUserId = isConfident ? (bestCandidate.student.uid || bestCandidate.student.id || '') : '';
+    const matchedDisplayName = isConfident
+      ? (bestCandidate.student.displayName || bestCandidate.student.name || bestCandidate.student.email || '')
+      : '';
     const status = getMatchStatus({
       proposedName,
       candidates,
@@ -269,11 +272,15 @@ export const createPhotoImportRows = (crops = [], students = []) =>
       candidates,
       matchStatus: status,
       status,
-      matchedUserId: '',
-      matchedDisplayName: '',
+      matchedUserId,
+      matchedDisplayName,
       matchConfidence: bestCandidate?.score || 0,
       matchMethod: isConfident ? 'name' : 'suggested',
-      decision: proposedName ? PHOTO_IMPORT_DECISIONS.PENDING_NEW : 'review'
+      decision: matchedUserId
+        ? PHOTO_IMPORT_DECISIONS.APPROVE
+        : proposedName
+          ? PHOTO_IMPORT_DECISIONS.PENDING_NEW
+          : 'review'
     };
   });
 

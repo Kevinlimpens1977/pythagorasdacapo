@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Camera, Search, UserRound, Users } from 'lucide-react';
+import { AlertCircle, Camera, FileSpreadsheet, Search, UserRound, Users } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import * as klasService from '../services/klasService';
@@ -11,6 +11,7 @@ import { countStudentPhotos } from '../lib/studentPhotoImportUtils';
 import { getStudentPhotoUrl } from '../services/studentPhotoImportService';
 import { useAuth } from '../components/auth/AuthProvider';
 import StudentPhotoImportWizard from '../components/admin/StudentPhotoImportWizard';
+import StudentNumberImportPanel from '../components/admin/StudentNumberImportPanel';
 
 const formatLastActive = (value) => {
   if (!value) return 'Onbekend';
@@ -32,6 +33,7 @@ export default function AdminLeerlingenPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPhotoImport, setShowPhotoImport] = useState(false);
+  const [showNumberImport, setShowNumberImport] = useState(false);
 
   const loadStudents = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -93,7 +95,21 @@ export default function AdminLeerlingenPage() {
             )}
             <button
               type="button"
-              onClick={() => setShowPhotoImport((value) => !value)}
+              onClick={() => {
+                setShowNumberImport((value) => !value);
+                setShowPhotoImport(false);
+              }}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-5 text-sm font-black text-white shadow-[var(--helix-shadow-card)] transition hover:translate-y-[-1px]"
+            >
+              <FileSpreadsheet size={18} />
+              Leerlingnummers koppelen
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowPhotoImport((value) => !value);
+                setShowNumberImport(false);
+              }}
               className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-5 text-sm font-black text-white shadow-[var(--helix-shadow-card)] transition hover:translate-y-[-1px]"
             >
               <Camera size={18} />
@@ -109,6 +125,17 @@ export default function AdminLeerlingenPage() {
           <StatCard label="Met foto" value={photoCounts.withPhoto} description="Avatar gekoppeld" />
           <StatCard label="Zonder foto" value={photoCounts.withoutPhoto} description="Nog importeren" />
         </section>
+
+        {showNumberImport ? (
+          <StudentNumberImportPanel
+            students={students}
+            klassen={klassen}
+            currentUser={currentUser}
+            defaultKlasId={students.find((student) => student.klasId)?.klasId || klassen[0]?.id || ''}
+            onClose={() => setShowNumberImport(false)}
+            onCompleted={() => loadStudents({ silent: true })}
+          />
+        ) : null}
 
         {showPhotoImport ? (
           <StudentPhotoImportWizard
@@ -151,6 +178,11 @@ export default function AdminLeerlingenPage() {
                     <div>
                       <p className="font-black text-[var(--helix-navy)]">{student.displayName || 'Naam ontbreekt'}</p>
                       <p className="helix-muted text-sm">{student.email || 'Geen e-mail'}</p>
+                      <p className="helix-muted text-xs">
+                        {student.studentNumber || student.leerlingnummer
+                          ? `Leerlingnummer: ${student.studentNumber || student.leerlingnummer}`
+                          : 'Leerlingnummer ontbreekt'}
+                      </p>
                     </div>
                   </div>
                   <div>

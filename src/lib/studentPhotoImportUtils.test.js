@@ -45,7 +45,7 @@ test('splitStudentFullName keeps first name and surname separate', () => {
   assert.equal(joinStudentName({ firstName: 'Luna', lastName: 'Bauer' }), 'Luna Bauer');
 });
 
-test('createPhotoImportRows prepares imported names without auto-linking existing accounts', () => {
+test('createPhotoImportRows auto-links confident existing accounts', () => {
   const rows = createPhotoImportRows(
     [{ id: 'crop-1', label: 'Luna Balan' }],
     [{ uid: 's1', displayName: 'Luna Balan', email: 'luna@example.com' }]
@@ -55,8 +55,9 @@ test('createPhotoImportRows prepares imported names without auto-linking existin
   assert.equal(rows[0].selection.id, 'crop-1');
   assert.equal(rows[0].firstName, 'Luna');
   assert.equal(rows[0].lastName, 'Balan');
-  assert.equal(rows[0].decision, 'pending_new');
-  assert.equal(rows[0].matchedUserId, '');
+  assert.equal(rows[0].decision, 'approve');
+  assert.equal(rows[0].matchedUserId, 's1');
+  assert.equal(rows[0].matchedDisplayName, 'Luna Balan');
 });
 
 test('normalizePhotoImportDecision supports legacy wizard decisions', () => {
