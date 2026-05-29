@@ -6,11 +6,6 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      return signedIn() &&
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
     // Bestaande crop/OCR uploads
     match /pythagoras/question-crops/{allPaths=**} {
       allow read, write: if signedIn();
@@ -37,9 +32,10 @@ service firebase.storage {
     }
 
     // Definitieve leerlingfoto's. Schrijven gebeurt alleen via Admin SDK in
-    // Cloud Functions; admins en de leerling zelf mogen de foto lezen.
+    // Cloud Functions. Iedere ingelogde gebruiker mag avatars lezen, zodat
+    // beheerlijsten, klasoverzichten en leerlingroutes geen Storage-403 geven.
     match /student-photos/{klasId}/{userId}/{allPaths=**} {
-      allow read: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow read: if signedIn();
       allow write: if false;
     }
   }
