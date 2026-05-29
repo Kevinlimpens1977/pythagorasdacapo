@@ -145,14 +145,6 @@ export default function PresenterImportDialog({
         return;
       }
 
-      const canConfirm = typeof window !== 'undefined' && typeof window.confirm === 'function';
-      if (canConfirm) {
-        const confirmed = window.confirm(
-          `Deze paragraaf maakt ${publishedBlocks.length} Presenter-pagina${publishedBlocks.length === 1 ? '' : "'s"}. Importeren?`
-        );
-        if (!confirmed) return;
-      }
-
       const questionIds = [
         ...new Set(
           contentBlocks

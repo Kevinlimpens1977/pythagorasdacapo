@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, FilePlus2 } from 'lucide-react';
 import {
   createPresenterHistory,
   recordPresenterPageState,
@@ -960,9 +961,37 @@ export default function PresenterShell() {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Presenter</p>
           <h1 className="text-lg font-black leading-tight">Digibord Core</h1>
         </div>
-        <span className="rounded-md border border-slate-700 px-3 py-2 text-sm font-black text-slate-200">
-          {pageLabel}
-        </span>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-slate-700 bg-slate-900 px-3 text-sm font-black text-slate-50 transition hover:border-violet-300 hover:bg-slate-800"
+            onClick={openImportDialog}
+          >
+            <FilePlus2 size={18} strokeWidth={2.4} />
+            Importeer CMS
+          </button>
+          <div className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-900 p-1">
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-slate-100 transition hover:border-slate-600 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => activatePageAt(activeIndex - 1)}
+              disabled={activeIndex <= 0}
+              aria-label="Vorige pagina"
+            >
+              <ArrowLeft size={18} strokeWidth={2.4} />
+            </button>
+            <span className="min-w-24 px-2 text-center text-sm font-black text-slate-200">{pageLabel}</span>
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-slate-100 transition hover:border-slate-600 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => activatePageAt(activeIndex + 1)}
+              disabled={activeIndex >= pages.length - 1}
+              aria-label="Volgende pagina"
+            >
+              <ArrowRight size={18} strokeWidth={2.4} />
+            </button>
+          </div>
+        </div>
       </header>
 
       <PresenterBoard
