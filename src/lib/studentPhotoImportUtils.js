@@ -14,6 +14,13 @@ export const PHOTO_IMPORT_DECISIONS = {
 
 const VALID_DECISIONS = new Set(Object.values(PHOTO_IMPORT_DECISIONS));
 
+export const normalizePhotoImportDecision = (decision = '') => {
+  if (decision === 'link') return PHOTO_IMPORT_DECISIONS.APPROVE;
+  if (decision === 'pending') return PHOTO_IMPORT_DECISIONS.PENDING_NEW;
+  if (decision === 'skip') return PHOTO_IMPORT_DECISIONS.REJECT;
+  return decision || '';
+};
+
 const repairCommonMojibake = (value) => {
   const raw = String(value || '');
   if (!/[ÃÂ]/.test(raw)) return raw;
@@ -182,9 +189,10 @@ const findStudentById = (students = [], uid = '') =>
   students.find((student) => student.uid === uid || student.id === uid) || null;
 
 export const getPhotoImportRowReviewState = (row = {}) => {
-  if (row.decision === PHOTO_IMPORT_DECISIONS.REJECT) return 'rejected';
-  if (row.decision === PHOTO_IMPORT_DECISIONS.PENDING_NEW && String(row.proposedName || '').trim()) return 'pending';
-  if (row.decision === PHOTO_IMPORT_DECISIONS.APPROVE && row.matchedUserId) return 'approved';
+  const decision = normalizePhotoImportDecision(row.decision);
+  if (decision === PHOTO_IMPORT_DECISIONS.REJECT) return 'rejected';
+  if (decision === PHOTO_IMPORT_DECISIONS.PENDING_NEW && String(row.proposedName || '').trim()) return 'pending';
+  if (decision === PHOTO_IMPORT_DECISIONS.APPROVE && row.matchedUserId) return 'approved';
   return 'unresolved';
 };
 
@@ -197,15 +205,16 @@ export const validatePhotoImportRow = (row = {}, { students = [], klasId = '' } 
   if (!String(row.cropId || '').trim()) errors.push('missing_crop_id');
   if (!proposedName) errors.push('missing_proposed_name');
   if (!bbox) errors.push('invalid_bbox');
-  if (row.decision && !VALID_DECISIONS.has(row.decision)) errors.push('invalid_decision');
-  if (row.decision === PHOTO_IMPORT_DECISIONS.APPROVE && !row.matchedUserId) {
+  const decision = normalizePhotoImportDecision(row.decision);
+  if (decision && !VALID_DECISIONS.has(decision)) errors.push('invalid_decision');
+  if (decision === PHOTO_IMPORT_DECISIONS.APPROVE && !row.matchedUserId) {
     errors.push('missing_matched_student');
   }
   if (row.matchedUserId && !matchedStudent) errors.push('matched_student_not_found');
   if (matchedStudent && klasId && matchedStudent.klasId && matchedStudent.klasId !== klasId) {
     errors.push('matched_student_wrong_class');
   }
-  if (row.decision === PHOTO_IMPORT_DECISIONS.PENDING_NEW && !proposedName) {
+  if (decision === PHOTO_IMPORT_DECISIONS.PENDING_NEW && !proposedName) {
     errors.push('pending_student_missing_name');
   }
 
@@ -213,7 +222,8 @@ export const validatePhotoImportRow = (row = {}, { students = [], klasId = '' } 
     ...row,
     proposedName,
     bbox,
-    reviewState: getPhotoImportRowReviewState({ ...row, proposedName })
+    decision,
+    reviewState: getPhotoImportRowReviewState({ ...row, proposedName, decision })
   };
 
   return {
@@ -263,19 +273,20 @@ export const createPhotoImportRows = (crops = [], students = []) =>
       matchedDisplayName: '',
       matchConfidence: bestCandidate?.score || 0,
       matchMethod: isConfident ? 'name' : 'suggested',
-      decision: proposedName ? 'pending' : 'review'
+      decision: proposedName ? PHOTO_IMPORT_DECISIONS.PENDING_NEW : 'review'
     };
   });
 
 export const getPhotoImportReadiness = (rows = []) => {
   const ready = rows.filter((row) => {
-    if (row.decision === 'link' || row.decision === PHOTO_IMPORT_DECISIONS.APPROVE) {
+    const decision = normalizePhotoImportDecision(row.decision);
+    if (decision === PHOTO_IMPORT_DECISIONS.APPROVE) {
       return Boolean(row.matchedUserId);
     }
-    if (row.decision === 'pending' || row.decision === PHOTO_IMPORT_DECISIONS.PENDING_NEW) {
+    if (decision === PHOTO_IMPORT_DECISIONS.PENDING_NEW) {
       return Boolean(String(row.proposedName || '').trim());
     }
-    return row.decision === 'skip' || row.decision === PHOTO_IMPORT_DECISIONS.REJECT;
+    return decision === PHOTO_IMPORT_DECISIONS.REJECT;
   }).length;
 
   return {

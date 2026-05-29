@@ -7,6 +7,7 @@ import {
   getMatchStatus,
   getPhotoImportReadiness,
   joinStudentName,
+  normalizePhotoImportDecision,
   normalizeStudentName,
   sanitizeImportFileName,
   splitStudentFullName
@@ -54,8 +55,15 @@ test('createPhotoImportRows prepares imported names without auto-linking existin
   assert.equal(rows[0].selection.id, 'crop-1');
   assert.equal(rows[0].firstName, 'Luna');
   assert.equal(rows[0].lastName, 'Balan');
-  assert.equal(rows[0].decision, 'pending');
+  assert.equal(rows[0].decision, 'pending_new');
   assert.equal(rows[0].matchedUserId, '');
+});
+
+test('normalizePhotoImportDecision supports legacy wizard decisions', () => {
+  assert.equal(normalizePhotoImportDecision('link'), 'approve');
+  assert.equal(normalizePhotoImportDecision('pending'), 'pending_new');
+  assert.equal(normalizePhotoImportDecision('skip'), 'reject');
+  assert.equal(normalizePhotoImportDecision('pending_new'), 'pending_new');
 });
 
 test('createPhotoImportRows preserves OCR and label matching diagnostics', () => {
@@ -91,7 +99,7 @@ test('getPhotoImportReadiness requires every row to have an explicit decision', 
     getPhotoImportReadiness([
       { decision: 'link', matchedUserId: 's1' },
       { decision: 'skip' },
-      { decision: 'pending', proposedName: 'Nieuwe leerling' }
+      { decision: 'pending_new', proposedName: 'Nieuwe leerling' }
     ]),
     { total: 3, ready: 3, isReady: true }
   );

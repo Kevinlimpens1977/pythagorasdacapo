@@ -15,9 +15,11 @@ import {
 } from '../../services/studentPhotoImportService';
 import { extractStudentPhotoSelectionsFromPdf } from '../../services/studentPhotoPdfListImportService';
 import {
+  PHOTO_IMPORT_DECISIONS,
   createPhotoImportRows,
   getPhotoImportReadiness,
-  joinStudentName
+  joinStudentName,
+  normalizePhotoImportDecision
 } from '../../lib/studentPhotoImportUtils';
 
 const steps = ['Bron', 'Uitsnedes', 'Matchen', 'Goedkeuren'];
@@ -34,6 +36,7 @@ const blobToDataUrl = (blob) =>
 const statusClass = {
   matched: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   'zekere match': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'klaar voor import': 'bg-emerald-50 text-emerald-700 border-emerald-200',
   'controle nodig': 'bg-amber-50 text-amber-800 border-amber-200',
   'dubbele match': 'bg-orange-50 text-orange-800 border-orange-200',
   'geen match': 'bg-slate-50 text-slate-700 border-slate-200',
@@ -217,7 +220,7 @@ export default function StudentPhotoImportWizard({
       matchedDisplayName: '',
       matchConfidence: 0,
       matchMethod: 'pdf-name',
-      decision: patch.decision || (proposedName ? 'pending' : 'review'),
+      decision: patch.decision || (proposedName ? PHOTO_IMPORT_DECISIONS.PENDING_NEW : 'review'),
       status: proposedName ? 'controle nodig' : 'naam ontbreekt'
     });
   };
@@ -229,8 +232,8 @@ export default function StudentPhotoImportWizard({
           return {
             ...row,
             proposedName: joinStudentName(row) || row.proposedName || '',
-            decision: 'pending',
-            status: 'controle nodig',
+            decision: PHOTO_IMPORT_DECISIONS.PENDING_NEW,
+            status: 'klaar voor import',
             matchedUserId: '',
             matchedDisplayName: ''
           };
@@ -238,11 +241,12 @@ export default function StudentPhotoImportWizard({
 
         return {
           ...row,
-          decision: 'skip',
+          decision: PHOTO_IMPORT_DECISIONS.REJECT,
           status: 'naam ontbreekt'
         };
       })
     );
+    setActiveStep(3);
   };
 
   const handleImageLoaded = (data) => {
@@ -370,7 +374,11 @@ export default function StudentPhotoImportWizard({
             cropStoragePath,
             bbox: row.selection.cropCoordinates,
             originalImageSize: row.selection.originalImageSize || { width: imageData.width, height: imageData.height },
-            status: row.decision === 'pending' ? 'pending_new' : row.decision === 'skip' ? 'rejected' : 'approved',
+            status: normalizePhotoImportDecision(row.decision) === PHOTO_IMPORT_DECISIONS.PENDING_NEW
+              ? 'pending_new'
+              : normalizePhotoImportDecision(row.decision) === PHOTO_IMPORT_DECISIONS.REJECT
+                ? 'rejected'
+                : 'approved',
             matchedUserId: row.matchedUserId || null,
             matchedDisplayName: row.matchedDisplayName || null,
             matchConfidence: row.matchConfidence || 0,
@@ -385,7 +393,7 @@ export default function StudentPhotoImportWizard({
             proposedName: row.proposedName || '',
             firstName: row.firstName || '',
             lastName: row.lastName || '',
-            reviewNote: row.decision
+            reviewNote: normalizePhotoImportDecision(row.decision)
           }
         });
 
@@ -393,7 +401,7 @@ export default function StudentPhotoImportWizard({
           rowId: row.id,
           cropId: row.id,
           cropStoragePath,
-          decision: row.decision,
+          decision: normalizePhotoImportDecision(row.decision),
           matchedUserId: row.matchedUserId || null,
           proposedName: row.proposedName || '',
           firstName: row.firstName || '',
@@ -776,13 +784,13 @@ const MatchStep = ({
             {row.firstName || row.lastName ? 'klaar voor import' : 'naam ontbreekt'}
           </span>
           <select
-            value={row.decision || 'review'}
+            value={normalizePhotoImportDecision(row.decision) || 'review'}
             onChange={(event) => onNameChange(row, { decision: event.target.value })}
             className="min-h-10 rounded-md border border-[var(--helix-border)] bg-white px-2 text-sm font-bold"
           >
             <option value="review">Controle nodig</option>
-            <option value="pending">Importeren</option>
-            <option value="skip">Overslaan</option>
+            <option value={PHOTO_IMPORT_DECISIONS.PENDING_NEW}>Importeren</option>
+            <option value={PHOTO_IMPORT_DECISIONS.REJECT}>Overslaan</option>
           </select>
         </div>
       </div>
@@ -810,10 +818,10 @@ const ReviewStep = ({ rows, thumbs }) => (
             <p className="helix-muted text-sm">Voornaam: {row.firstName || '-'} · Achternaam: {row.lastName || '-'}</p>
           </div>
           <p className="text-sm font-bold text-[var(--helix-navy)]">
-            {row.decision === 'pending' ? 'Leerlinggegevens klaarzetten' : 'Overslaan'}
+            {normalizePhotoImportDecision(row.decision) === PHOTO_IMPORT_DECISIONS.PENDING_NEW ? 'Leerlinggegevens klaarzetten' : 'Overslaan'}
           </p>
-          <span className={`h-fit rounded-full border px-3 py-1 text-center text-xs font-black ${row.decision === 'pending' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
-            {row.decision}
+          <span className={`h-fit rounded-full border px-3 py-1 text-center text-xs font-black ${normalizePhotoImportDecision(row.decision) === PHOTO_IMPORT_DECISIONS.PENDING_NEW ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
+            {normalizePhotoImportDecision(row.decision)}
           </span>
         </div>
     ))}

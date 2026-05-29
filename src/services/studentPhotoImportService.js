@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import app, { db, storage } from './firebase';
-import { sanitizeImportFileName } from '../lib/studentPhotoImportUtils';
+import { PHOTO_IMPORT_DECISIONS, normalizePhotoImportDecision, sanitizeImportFileName } from '../lib/studentPhotoImportUtils';
 
 const functions = getFunctions(app, 'europe-west1');
 
@@ -83,7 +83,8 @@ export const savePhotoImportCropRecord = async ({ importId, cropId, data }) => {
 
 export const approveStudentPhotoImportCrop = async ({ importId, klasId, row }) => {
   const approve = httpsCallable(functions, 'approveStudentPhotoImportCrop');
-  const decision = row.decision === 'pending' ? 'pending_new' : row.decision === 'skip' ? 'reject' : 'approve';
+  const normalizedDecision = normalizePhotoImportDecision(row.decision);
+  const decision = normalizedDecision === PHOTO_IMPORT_DECISIONS.REJECT ? 'reject' : normalizedDecision || PHOTO_IMPORT_DECISIONS.APPROVE;
   const result = await approve({
     importId,
     klasId,
