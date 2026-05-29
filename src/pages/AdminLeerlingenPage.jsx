@@ -12,7 +12,7 @@ import { getStudentPhotoUrl } from '../services/studentPhotoImportService';
 import { useAuth } from '../components/auth/AuthProvider';
 import StudentPhotoImportWizard from '../components/admin/StudentPhotoImportWizard';
 import StudentNumberImportPanel from '../components/admin/StudentNumberImportPanel';
-import { DEFAULT_STUDENT_PASSWORD, resetStudentPassword } from '../services/studentPasswordService';
+import { DEFAULT_STUDENT_PASSWORD, resetStudentPassword, syncAllStudentAuthAccounts } from '../services/studentPasswordService';
 
 const formatLastActive = (value) => {
   if (!value) return 'Onbekend';
@@ -37,6 +37,7 @@ export default function AdminLeerlingenPage() {
   const [showNumberImport, setShowNumberImport] = useState(false);
   const [passwordStudent, setPasswordStudent] = useState(null);
   const [passwordMessage, setPasswordMessage] = useState('');
+  const [syncingAuthAccounts, setSyncingAuthAccounts] = useState(false);
 
   const loadStudents = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -77,6 +78,30 @@ export default function AdminLeerlingenPage() {
   const withoutClassCount = students.filter((student) => !student.klasId).length;
   const photoCounts = countStudentPhotos(students);
 
+  const handleSyncAuthAccounts = async () => {
+    const confirmed = window.confirm(
+      `Zet alle leerlingaccounts met e-mailadres in Firebase Auth met tijdelijk wachtwoord ${DEFAULT_STUDENT_PASSWORD}? Leerlingen moeten daarna bij login hun wachtwoord wijzigen.`
+    );
+    if (!confirmed) return;
+
+    setSyncingAuthAccounts(true);
+    setError(null);
+    setPasswordMessage('');
+
+    try {
+      const result = await syncAllStudentAuthAccounts();
+      setPasswordMessage(
+        `Firebase Auth bijgewerkt: ${result?.syncedCount || 0} leerlingaccounts gesynchroniseerd, ${result?.skippedCount || 0} zonder e-mail overgeslagen.`
+      );
+      await loadStudents({ silent: true });
+    } catch (err) {
+      console.error('Firebase Auth synchroniseren mislukt:', err);
+      setError('Leerlingaccounts konden niet naar Firebase Auth worden doorgezet.');
+    } finally {
+      setSyncingAuthAccounts(false);
+    }
+  };
+
   return (
     <div className="helix-page">
       <div className="helix-container py-10 md:py-12">
@@ -96,6 +121,15 @@ export default function AdminLeerlingenPage() {
                 <span>{error}</span>
               </div>
             )}
+            <button
+              type="button"
+              onClick={handleSyncAuthAccounts}
+              disabled={syncingAuthAccounts}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-purple)] bg-white px-5 text-sm font-black text-[var(--helix-purple)] shadow-[var(--helix-shadow-card)] transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {syncingAuthAccounts ? <Loader2 size={18} className="animate-spin" /> : <KeyRound size={18} />}
+              Auth synchroniseren
+            </button>
             <button
               type="button"
               onClick={() => {

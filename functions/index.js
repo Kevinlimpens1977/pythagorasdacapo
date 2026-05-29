@@ -305,6 +305,57 @@ async function resetStudentPasswordCore({ auth, data, db, authAdmin, now }) {
   };
 }
 
+async function syncAllStudentAuthAccountsCore({ auth, data, db, authAdmin, now }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om leerlingaccounts naar Auth te synchroniseren.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const password = requirePassword(data?.password || DEFAULT_STUDENT_PASSWORD);
+  const timestamp = getServerTimestamp(now);
+  const studentSnapshot = await db.collection("users").where("role", "==", "student").get();
+  let syncedCount = 0;
+  let skippedCount = 0;
+
+  for (const documentSnapshot of studentSnapshot.docs) {
+    const student = documentSnapshot.data() || {};
+    const email = String(student.email || "").trim().toLowerCase();
+
+    if (!email) {
+      skippedCount += 1;
+      continue;
+    }
+
+    const displayName = student.displayName || [student.firstName, student.lastName].filter(Boolean).join(" ");
+    await upsertAuthUser(authAdmin, {
+      uid: documentSnapshot.id,
+      email,
+      password,
+      displayName,
+    });
+
+    await documentSnapshot.ref.update({
+      uid: documentSnapshot.id,
+      email,
+      mustChangePassword: true,
+      passwordStatus: "default",
+      defaultPasswordSetAt: timestamp,
+      lastPasswordResetBy: auth.uid,
+      updatedAt: timestamp,
+    });
+    syncedCount += 1;
+  }
+
+  return {
+    success: true,
+    syncedCount,
+    skippedCount,
+    total: studentSnapshot.size,
+  };
+}
+
 async function commitInChunks(db, operations) {
   for (let index = 0; index < operations.length; index += BATCH_LIMIT) {
     const chunk = operations.slice(index, index + BATCH_LIMIT);
@@ -680,6 +731,17 @@ exports.resetStudentPassword = onCall({
   });
 });
 
+exports.syncAllStudentAuthAccounts = onCall({
+  region: REGION,
+}, async (request) => {
+  return syncAllStudentAuthAccountsCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    authAdmin: getAuth(),
+  });
+});
+
 exports.askAiTutor = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -755,5 +817,6 @@ exports.__test = {
   deleteAllStudentDataCore,
   importStudentNumberAccountsCore,
   resetStudentPasswordCore,
+  syncAllStudentAuthAccountsCore,
   shouldPreserveUserDuringStudentReset,
 };

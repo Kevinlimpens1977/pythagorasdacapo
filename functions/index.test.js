@@ -370,3 +370,42 @@ test("resetStudentPassword updates auth password and marks the learner for first
   assert.equal(db.store.docs["users/student_50121049"].passwordStatus, "reset");
   assert.equal(db.store.docs["users/student_50121049"].lastPasswordResetBy, "admin-1");
 });
+
+test("syncAllStudentAuthAccounts creates auth accounts for every learner with e-mail", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+    "users/student_50121049": {
+      role: "student",
+      email: "50121049@leerling.dacapo-college.nl",
+      displayName: "Damian Bijlsma",
+      firstName: "Damian",
+      lastName: "Bijlsma",
+    },
+    "users/student_no_email": {
+      role: "student",
+      displayName: "Geen Email",
+    },
+    "users/admin-2": {
+      role: "admin",
+      email: "kevlimpens@gmail.com",
+    },
+  });
+  const authAdmin = createAuthAdmin();
+
+  const result = await __test.syncAllStudentAuthAccountsCore({
+    auth: { uid: "admin-1" },
+    data: {},
+    db,
+    authAdmin,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.syncedCount, 1);
+  assert.equal(result.skippedCount, 1);
+  assert.equal(authAdmin.users.student_50121049.password, "Test123");
+  assert.equal(authAdmin.users.student_50121049.email, "50121049@leerling.dacapo-college.nl");
+  assert.equal(db.store.docs["users/student_50121049"].mustChangePassword, true);
+  assert.equal(db.store.docs["users/student_50121049"].passwordStatus, "default");
+  assert.equal(db.store.docs["users/student_no_email"].mustChangePassword, undefined);
+  assert.equal(authAdmin.users["admin-2"], undefined);
+});

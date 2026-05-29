@@ -13,6 +13,12 @@ export const resetStudentPassword = async ({ studentUid, password = DEFAULT_STUD
   return result.data;
 };
 
+export const syncAllStudentAuthAccounts = async ({ password = DEFAULT_STUDENT_PASSWORD } = {}) => {
+  const syncAccounts = httpsCallable(functions, 'syncAllStudentAuthAccounts');
+  const result = await syncAccounts({ password });
+  return result.data;
+};
+
 export const changeCurrentUserPassword = async ({ user, currentPassword, newPassword } = {}) => {
   if (!user?.email) {
     throw new Error('Geen ingelogde gebruiker gevonden.');
@@ -31,5 +37,6 @@ export const changeCurrentUserPassword = async ({ user, currentPassword, newPass
 
 export default {
   changeCurrentUserPassword,
-  resetStudentPassword
+  resetStudentPassword,
+  syncAllStudentAuthAccounts
 };
