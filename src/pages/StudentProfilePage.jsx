@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, BarChart3, BookOpen, CheckCircle2, GraduationCap, Mail, UserCircle } from 'lucide-react';
+import { AlertCircle, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { buildStudentProgressSummary } from '../lib/progressSummary';
+import { changeCurrentUserPassword } from '../services/studentPasswordService';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
   const barColor = tone === 'green' ? 'bg-[var(--helix-success)]' : 'helix-progress-fill';
@@ -191,6 +192,8 @@ export default function StudentProfilePage() {
               <span className="font-medium text-[var(--helix-navy)]">{klasName}</span>
             </div>
           </div>
+
+          <StudentPasswordForm currentUser={currentUser} />
         </div>
 
         <div className="rounded-[var(--helix-radius-xl)] border border-white/10 bg-[var(--helix-navy)] p-6 text-white shadow-[var(--helix-shadow-card)]">
@@ -288,3 +291,93 @@ export default function StudentProfilePage() {
     </div>
   );
 }
+
+const StudentPasswordForm = ({ currentUser }) => {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setMessage('');
+    setError('');
+
+    if (newPassword.length < 6) {
+      setError('Kies een wachtwoord van minimaal 6 tekens.');
+      return;
+    }
+    if (newPassword !== repeatPassword) {
+      setError('De nieuwe wachtwoorden zijn niet gelijk.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await changeCurrentUserPassword({
+        user: currentUser,
+        currentPassword,
+        newPassword
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setRepeatPassword('');
+      setMessage('Je wachtwoord is aangepast.');
+    } catch (err) {
+      console.error('Leerlingwachtwoord aanpassen mislukt:', err);
+      setError('Wachtwoord aanpassen lukt niet. Controleer je huidige wachtwoord.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-6 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
+      <div className="flex items-center gap-2">
+        <KeyRound size={18} className="text-[var(--helix-purple)]" />
+        <h3 className="font-black text-[var(--helix-navy)]">Wachtwoord wijzigen</h3>
+      </div>
+      <div className="mt-4 space-y-3">
+        <input
+          type="password"
+          value={currentPassword}
+          onChange={(event) => setCurrentPassword(event.target.value)}
+          className="input-auth min-h-11 text-sm"
+          placeholder="Huidig wachtwoord"
+          autoComplete="current-password"
+          required
+        />
+        <input
+          type="password"
+          value={newPassword}
+          onChange={(event) => setNewPassword(event.target.value)}
+          className="input-auth min-h-11 text-sm"
+          placeholder="Nieuw wachtwoord"
+          autoComplete="new-password"
+          required
+        />
+        <input
+          type="password"
+          value={repeatPassword}
+          onChange={(event) => setRepeatPassword(event.target.value)}
+          className="input-auth min-h-11 text-sm"
+          placeholder="Herhaal nieuw wachtwoord"
+          autoComplete="new-password"
+          required
+        />
+      </div>
+      {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}
+      {message ? <p className="mt-3 text-sm font-bold text-emerald-700">{message}</p> : null}
+      <button
+        type="submit"
+        disabled={saving}
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-4 text-sm font-black text-white disabled:opacity-50"
+      >
+        {saving ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />}
+        Nieuw wachtwoord opslaan
+      </button>
+    </form>
+  );
+};

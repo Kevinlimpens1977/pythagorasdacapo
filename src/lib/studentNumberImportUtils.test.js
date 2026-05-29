@@ -107,7 +107,9 @@ test('buildStudentNumberAccountPatch creates deterministic student documents', (
       klasId: 'klas-1',
       needsNameSetup: false,
       isImportedStudent: true,
-      importedBy: 'admin-1'
+      importedBy: 'admin-1',
+      mustChangePassword: true,
+      passwordStatus: 'default'
     }
   );
 });

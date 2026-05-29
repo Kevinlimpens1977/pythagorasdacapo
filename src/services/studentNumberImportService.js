@@ -1,32 +1,18 @@
-import { doc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { db } from './firebase';
-import {
-  buildStudentNumberAccountPatch,
-  validateStudentNumberImportRow
-} from '../lib/studentNumberImportUtils.js';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import app from './firebase';
+import { validateStudentNumberImportRow } from '../lib/studentNumberImportUtils.js';
 
-const BATCH_LIMIT = 450;
+const functions = getFunctions(app, 'europe-west1');
 
-const commitOperations = async (operations = []) => {
-  for (let index = 0; index < operations.length; index += BATCH_LIMIT) {
-    const batch = writeBatch(db);
-    operations.slice(index, index + BATCH_LIMIT).forEach((operation) => {
-      batch.set(operation.ref, operation.data, { merge: true });
-    });
-    await batch.commit();
-  }
-};
-
-export const importStudentNumbers = async ({ rows = [], klasId = '', adminUid = '' } = {}) => {
-  const operations = [];
+export const importStudentNumbers = async ({ rows = [], klasId = '' } = {}) => {
   const skippedRows = [];
   const invalidRows = [];
-  let updatedCount = 0;
-  let createdCount = 0;
+  const importRows = [];
 
   rows.forEach((row) => {
     if (row.decision === 'skip') {
       skippedRows.push(row);
+      importRows.push({ ...row, decision: 'skip' });
       return;
     }
 
@@ -36,20 +22,7 @@ export const importStudentNumbers = async ({ rows = [], klasId = '', adminUid = 
       return;
     }
 
-    const patch = buildStudentNumberAccountPatch(validation.row, { klasId, adminUid });
-    const uid = validation.row.decision === 'update' ? validation.row.matchedUserId : patch.uid;
-    operations.push({
-      ref: doc(db, 'users', uid),
-      data: {
-        ...patch,
-        uid,
-        updatedAt: serverTimestamp(),
-        ...(validation.row.decision === 'create' ? { createdAt: serverTimestamp() } : {})
-      }
-    });
-
-    if (validation.row.decision === 'update') updatedCount += 1;
-    if (validation.row.decision === 'create') createdCount += 1;
+    importRows.push(validation.row);
   });
 
   if (invalidRows.length) {
@@ -57,14 +30,19 @@ export const importStudentNumbers = async ({ rows = [], klasId = '', adminUid = 
     throw new Error(`CSV bevat ${invalidRows.length} onvolledige rij(en). Controleer rij ${first.row.sourceRow || first.row.id}.`);
   }
 
-  await commitOperations(operations);
+  const importAccounts = httpsCallable(functions, 'importStudentNumberAccounts');
+  const result = await importAccounts({
+    rows: importRows,
+    klasId,
+    defaultPassword: 'Test123'
+  });
 
   return {
     success: true,
-    updatedCount,
-    createdCount,
-    skippedCount: skippedRows.length,
-    total: rows.length
+    updatedCount: result.data?.updatedCount || 0,
+    createdCount: result.data?.createdCount || 0,
+    skippedCount: result.data?.skippedCount ?? skippedRows.length,
+    total: result.data?.total ?? rows.length
   };
 };
 

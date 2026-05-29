@@ -193,6 +193,8 @@ export const buildStudentNumberAccountPatch = (row = {}, { klasId = '', adminUid
     klasId: row.klasId || klasId || null,
     needsNameSetup: false,
     isImportedStudent: true,
-    importedBy: adminUid || null
+    importedBy: adminUid || null,
+    mustChangePassword: true,
+    passwordStatus: 'default'
   };
 };

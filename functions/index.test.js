@@ -123,6 +123,40 @@ const createBucket = () => {
   };
 };
 
+const createAuthAdmin = (initialUsers = {}) => {
+  const users = { ...initialUsers };
+  const calls = [];
+
+  return {
+    users,
+    calls,
+    async getUser(uid) {
+      calls.push({ type: "getUser", uid });
+      if (!users[uid]) {
+        const error = new Error("User not found");
+        error.code = "auth/user-not-found";
+        throw error;
+      }
+      return users[uid];
+    },
+    async createUser(data) {
+      calls.push({ type: "createUser", data });
+      users[data.uid] = { ...data };
+      return users[data.uid];
+    },
+    async updateUser(uid, data) {
+      calls.push({ type: "updateUser", uid, data });
+      if (!users[uid]) {
+        const error = new Error("User not found");
+        error.code = "auth/user-not-found";
+        throw error;
+      }
+      users[uid] = { ...users[uid], ...data, uid };
+      return users[uid];
+    },
+  };
+};
+
 test("approveStudentPhotoImportCrop copies a matched crop and updates the student photo", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin" },
@@ -266,4 +300,73 @@ test("deleteAllStudentData rejects non-admin callers", async () => {
     }),
     (error) => error instanceof HttpsError && error.code === "permission-denied",
   );
+});
+
+test("importStudentNumberAccounts creates auth users with default password and forces password change", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+  });
+  const authAdmin = createAuthAdmin();
+
+  const result = await __test.importStudentNumberAccountsCore({
+    auth: { uid: "admin-1" },
+    data: {
+      klasId: "klas-1",
+      rows: [
+        {
+          firstName: "Damian",
+          lastName: "Bijlsma",
+          studentNumber: "50121049",
+          email: "50121049@leerling.dacapo-college.nl",
+          decision: "create",
+        },
+      ],
+    },
+    db,
+    authAdmin,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.createdCount, 1);
+  assert.equal(result.updatedCount, 0);
+  assert.equal(authAdmin.users.student_50121049.email, "50121049@leerling.dacapo-college.nl");
+  assert.equal(authAdmin.users.student_50121049.password, "Test123");
+  assert.equal(authAdmin.users.student_50121049.displayName, "Damian Bijlsma");
+  assert.equal(db.store.docs["users/student_50121049"].mustChangePassword, true);
+  assert.equal(db.store.docs["users/student_50121049"].passwordStatus, "default");
+  assert.equal(db.store.docs["users/student_50121049"].klasId, "klas-1");
+});
+
+test("resetStudentPassword updates auth password and marks the learner for first-login change", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+    "users/student_50121049": {
+      role: "student",
+      email: "50121049@leerling.dacapo-college.nl",
+      displayName: "Damian Bijlsma",
+    },
+  });
+  const authAdmin = createAuthAdmin({
+    student_50121049: {
+      uid: "student_50121049",
+      email: "50121049@leerling.dacapo-college.nl",
+    },
+  });
+
+  const result = await __test.resetStudentPasswordCore({
+    auth: { uid: "admin-1" },
+    data: {
+      studentUid: "student_50121049",
+      password: "Nieuw123",
+    },
+    db,
+    authAdmin,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(authAdmin.users.student_50121049.password, "Nieuw123");
+  assert.equal(db.store.docs["users/student_50121049"].mustChangePassword, true);
+  assert.equal(db.store.docs["users/student_50121049"].passwordStatus, "reset");
+  assert.equal(db.store.docs["users/student_50121049"].lastPasswordResetBy, "admin-1");
 });

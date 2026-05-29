@@ -1,6 +1,7 @@
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { initializeApp } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 
@@ -15,6 +16,8 @@ const preservedStudentResetEmails = new Set([
   "kevlimpens@gmail.com",
 ]);
 const BATCH_LIMIT = 450;
+const DEFAULT_STUDENT_PASSWORD = "Test123";
+const STUDENT_EMAIL_DOMAIN = "leerling.dacapo-college.nl";
 
 function requireString(value, fieldName) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -78,6 +81,228 @@ function buildImportedStudentId(importId, cropId) {
     .replace(/[^a-zA-Z0-9_-]+/g, "_")
     .replace(/_+/g, "_")
     .slice(0, 140);
+}
+
+function normalizeStudentNumber(value = "") {
+  return String(value || "").replace(/\D+/g, "").trim();
+}
+
+function buildStudentEmail(studentNumber = "") {
+  const normalized = normalizeStudentNumber(studentNumber);
+  return normalized ? `${normalized}@${STUDENT_EMAIL_DOMAIN}` : "";
+}
+
+function buildStudentIdFromNumber(studentNumber = "") {
+  const normalized = normalizeStudentNumber(studentNumber);
+  return normalized ? `student_${normalized}` : "";
+}
+
+function normalizeDutchLastName(value = "") {
+  const raw = String(value || "").trim().replace(/\s+/g, " ");
+  const commaParts = raw.split(",").map((part) => part.trim()).filter(Boolean);
+  if (commaParts.length < 2) return raw;
+
+  return `${commaParts.slice(1).join(" ")} ${commaParts[0]}`.trim().replace(/\s+/g, " ");
+}
+
+function normalizeImportStudentRow(row = {}) {
+  const firstName = String(row.firstName || "").trim();
+  const lastName = normalizeDutchLastName(row.lastName || "");
+  const studentNumber = normalizeStudentNumber(row.studentNumber);
+  const email = String(row.email || buildStudentEmail(studentNumber)).trim().toLowerCase();
+  const displayName = [firstName, lastName].filter(Boolean).join(" ");
+  const decision = row.decision || "create";
+  const matchedUserId = String(row.matchedUserId || "").trim();
+
+  const errors = [];
+  if (!firstName) errors.push("missing_first_name");
+  if (!lastName) errors.push("missing_last_name");
+  if (!studentNumber) errors.push("missing_student_number");
+  if (!email) errors.push("missing_email");
+  if (!["create", "update", "skip"].includes(decision)) errors.push("invalid_decision");
+  if (decision === "update" && !matchedUserId) errors.push("missing_matched_student");
+
+  return {
+    row: {
+      ...row,
+      firstName,
+      lastName,
+      studentNumber,
+      email,
+      displayName,
+      decision,
+      matchedUserId,
+    },
+    errors,
+  };
+}
+
+function getStudentImportUid(row = {}) {
+  if (row.decision === "update") return row.matchedUserId;
+  return row.uid || buildStudentIdFromNumber(row.studentNumber);
+}
+
+function requirePassword(value = DEFAULT_STUDENT_PASSWORD) {
+  const password = String(value || "").trim() || DEFAULT_STUDENT_PASSWORD;
+  if (password.length < 6) {
+    throw new HttpsError("invalid-argument", "Wachtwoord moet minimaal 6 tekens bevatten.");
+  }
+  return password;
+}
+
+async function upsertAuthUser(authAdmin, { uid, email, password, displayName }) {
+  try {
+    await authAdmin.getUser(uid);
+    return authAdmin.updateUser(uid, {
+      email,
+      password,
+      displayName,
+      disabled: false,
+      emailVerified: false,
+    });
+  } catch (error) {
+    if (error?.code !== "auth/user-not-found") {
+      throw error;
+    }
+
+    return authAdmin.createUser({
+      uid,
+      email,
+      password,
+      displayName,
+      disabled: false,
+      emailVerified: false,
+    });
+  }
+}
+
+async function importStudentNumberAccountsCore({ auth, data, db, authAdmin, now }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om leerlingnummers te importeren.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const klasId = requireString(data?.klasId, "klasId");
+  const rows = Array.isArray(data?.rows) ? data.rows : [];
+  const timestamp = getServerTimestamp(now);
+  const invalidRows = [];
+  let updatedCount = 0;
+  let createdCount = 0;
+  let skippedCount = 0;
+
+  for (const sourceRow of rows) {
+    if (sourceRow?.decision === "skip") {
+      skippedCount += 1;
+      continue;
+    }
+
+    const validation = normalizeImportStudentRow(sourceRow);
+    if (validation.errors.length) {
+      invalidRows.push({ row: sourceRow, errors: validation.errors });
+      continue;
+    }
+
+    const row = validation.row;
+    const uid = getStudentImportUid(row);
+    if (!uid) {
+      invalidRows.push({ row: sourceRow, errors: ["missing_uid"] });
+      continue;
+    }
+
+    const password = requirePassword(data?.defaultPassword || DEFAULT_STUDENT_PASSWORD);
+    await upsertAuthUser(authAdmin, {
+      uid,
+      email: row.email,
+      password,
+      displayName: row.displayName,
+    });
+
+    const studentRef = db.doc(`users/${uid}`);
+    const existingDoc = await studentRef.get();
+    const isCreate = !existingDoc.exists || row.decision === "create";
+
+    await studentRef.set({
+      uid,
+      email: row.email,
+      displayName: row.displayName,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      studentNumber: row.studentNumber,
+      leerlingnummer: row.studentNumber,
+      role: "student",
+      klasId,
+      needsNameSetup: false,
+      isImportedStudent: true,
+      importedBy: auth.uid,
+      mustChangePassword: true,
+      passwordStatus: "default",
+      defaultPasswordSetAt: timestamp,
+      lastPasswordResetBy: auth.uid,
+      updatedAt: timestamp,
+      ...(isCreate ? { createdAt: timestamp } : {}),
+    }, { merge: true });
+
+    if (row.decision === "update") updatedCount += 1;
+    if (row.decision === "create") createdCount += 1;
+  }
+
+  if (invalidRows.length) {
+    const first = invalidRows[0];
+    throw new HttpsError(
+      "invalid-argument",
+      `CSV bevat ${invalidRows.length} onvolledige rij(en). Controleer rij ${first.row?.sourceRow || first.row?.id || "onbekend"}.`,
+    );
+  }
+
+  return {
+    success: true,
+    updatedCount,
+    createdCount,
+    skippedCount,
+    total: rows.length,
+  };
+}
+
+async function resetStudentPasswordCore({ auth, data, db, authAdmin, now }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om een leerlingwachtwoord te resetten.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const studentUid = requireString(data?.studentUid, "studentUid");
+  const password = requirePassword(data?.password || DEFAULT_STUDENT_PASSWORD);
+  const timestamp = getServerTimestamp(now);
+  const studentDoc = await getRequiredDoc(db.doc(`users/${studentUid}`), "Leerling");
+
+  if (studentDoc.data.role !== "student") {
+    throw new HttpsError("failed-precondition", "Deze gebruiker is geen leerling.");
+  }
+
+  const email = requireString(studentDoc.data.email, "email");
+  const displayName = studentDoc.data.displayName || [studentDoc.data.firstName, studentDoc.data.lastName].filter(Boolean).join(" ");
+  await upsertAuthUser(authAdmin, {
+    uid: studentUid,
+    email,
+    password,
+    displayName,
+  });
+
+  await studentDoc.ref.update({
+    mustChangePassword: true,
+    passwordStatus: "reset",
+    passwordResetAt: timestamp,
+    lastPasswordResetBy: auth.uid,
+    updatedAt: timestamp,
+  });
+
+  return {
+    success: true,
+    studentUid,
+  };
 }
 
 async function commitInChunks(db, operations) {
@@ -433,6 +658,28 @@ exports.deleteAllStudentData = onCall({
   });
 });
 
+exports.importStudentNumberAccounts = onCall({
+  region: REGION,
+}, async (request) => {
+  return importStudentNumberAccountsCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    authAdmin: getAuth(),
+  });
+});
+
+exports.resetStudentPassword = onCall({
+  region: REGION,
+}, async (request) => {
+  return resetStudentPasswordCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    authAdmin: getAuth(),
+  });
+});
+
 exports.askAiTutor = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -506,5 +753,7 @@ Spreek de leerling aan in de je-vorm.`;
 exports.__test = {
   approveStudentPhotoImportCropCore,
   deleteAllStudentDataCore,
+  importStudentNumberAccountsCore,
+  resetStudentPasswordCore,
   shouldPreserveUserDuringStudentReset,
 };

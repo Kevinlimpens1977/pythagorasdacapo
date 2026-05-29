@@ -13,6 +13,7 @@ import {
   saveDevAdminUser,
   saveDevStudentUser
 } from './devAuth';
+import RequiredPasswordChange from './RequiredPasswordChange';
 
 const AuthContext = createContext();
 
@@ -207,7 +208,14 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {!loading && userRole === 'student' && !value.isDevUser && userData?.mustChangePassword ? (
+        <RequiredPasswordChange
+          currentUser={currentUser}
+          displayName={userData?.displayName || currentUser?.displayName || 'Leerling'}
+        />
+      ) : (
+        !loading && children
+      )}
     </AuthContext.Provider>
   );
 }
