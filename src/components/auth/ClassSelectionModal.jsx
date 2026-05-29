@@ -5,14 +5,14 @@ import * as klasService from '../../services/klasService';
 export default function ClassSelectionModal() {
   const { currentUser, userData, isStudent, isDevUser } = useAuth();
   const [klassen, setKlassen] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [selectedKlasId, setSelectedKlasId] = useState(null);
   const [error, setError] = useState(null);
   const [joining, setJoining] = useState(false);
 
   // Load available classes
   useEffect(() => {
-    if (isDevUser) {
+    if (!currentUser || !isStudent || userData?.klasId || isDevUser) {
       return;
     }
 
@@ -30,7 +30,7 @@ export default function ClassSelectionModal() {
     };
 
     loadKlassen();
-  }, [isDevUser]);
+  }, [currentUser, isStudent, isDevUser, userData?.klasId]);
 
   // Only show if student and no klasId
   if (!currentUser || !isStudent || userData?.klasId || isDevUser) {
