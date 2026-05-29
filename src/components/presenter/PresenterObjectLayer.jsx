@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import PresenterImportedObjectCard from './PresenterImportedObjectCard';
 import { isPresenterImportedObject } from './presenterContentObjectUtils.js';
 
@@ -55,6 +55,19 @@ const getTextFontFamily = (fontFamily) => {
   }
 
   return 'Sora, Inter, system-ui, sans-serif';
+};
+
+const moveCaretToEnd = (element) => {
+  if (!element || typeof window === 'undefined') return;
+
+  const selection = window.getSelection?.();
+  if (!selection) return;
+
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
 };
 
 const createDomIdPart = (value) => String(value || 'object').replace(/[^a-zA-Z0-9_-]/g, '-');
@@ -290,10 +303,20 @@ const renderObjectShape = (object, markerId) => {
   }
 };
 
-const renderTextObject = (object, { interactive, selected = false, onInteract, onSelectObject, onTextChange }) => {
+function PresenterTextObject({ object, interactive, selected = false, onInteract, onSelectObject, onTextChange }) {
+  const editorRef = useRef(null);
+  const focusAtEndRef = useRef(false);
   const { width, height } = getObjectFrame(object);
   const textStyle = getTextStyle(object);
   const text = getTextContent(object);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || document.activeElement === editor) return;
+    if (editor.innerText !== text) {
+      editor.innerText = text;
+    }
+  }, [text]);
 
   const handleInput = (event) => {
     onTextChange?.(object.id, event.currentTarget.innerText);
@@ -302,11 +325,16 @@ const renderTextObject = (object, { interactive, selected = false, onInteract, o
   const handleFocus = () => {
     onInteract?.();
     onSelectObject?.(object.id);
+    if (focusAtEndRef.current) {
+      focusAtEndRef.current = false;
+      requestAnimationFrame(() => moveCaretToEnd(editorRef.current));
+    }
   };
 
   const handlePointerDown = (event) => {
     if (!interactive) return;
 
+    focusAtEndRef.current = document.activeElement !== event.currentTarget;
     event.stopPropagation();
     onInteract?.();
     onSelectObject?.(object.id);
@@ -324,6 +352,7 @@ const renderTextObject = (object, { interactive, selected = false, onInteract, o
           onFocus={handleFocus}
           onInput={handleInput}
           onPointerDown={handlePointerDown}
+          ref={editorRef}
           role="textbox"
           suppressContentEditableWarning
           style={{
@@ -341,13 +370,11 @@ const renderTextObject = (object, { interactive, selected = false, onInteract, o
             unicodeBidi: 'plaintext',
             width: '100%'
           }}
-        >
-          {text}
-        </div>
+        />
       </div>
     </foreignObject>
   );
-};
+}
 
 const renderSelection = (object, onDeleteObject, onInteract) => {
   const { width, height } = getObjectFrame(object);
@@ -457,7 +484,16 @@ export default function PresenterObjectLayer({
         const markerId = `presenter-object-arrow-${layerId}-${createDomIdPart(object.id)}`;
         const isSelected = selectedIds.has(object.id);
         const shape = object.type === 'text'
-          ? renderTextObject(object, { interactive, selected: isSelected, onInteract, onSelectObject, onTextChange })
+          ? (
+              <PresenterTextObject
+                object={object}
+                interactive={interactive}
+                selected={isSelected}
+                onInteract={onInteract}
+                onSelectObject={onSelectObject}
+                onTextChange={onTextChange}
+              />
+            )
           : renderObjectShape(object, markerId);
         if (!shape) return null;
 

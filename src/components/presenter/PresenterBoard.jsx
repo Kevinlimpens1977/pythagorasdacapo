@@ -586,6 +586,7 @@ export default function PresenterBoard({
           selectedObjectIds={activeSelectedObjectIds}
           interactive={tool?.id === 'select'}
           showObjects={false}
+          showSelection={false}
           onInteract={onInteract}
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
