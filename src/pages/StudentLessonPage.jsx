@@ -12,6 +12,7 @@ import {
   Image,
   Layers3,
   Loader2,
+  MessageCircle,
   PlayCircle
 } from 'lucide-react';
 import * as cmsService from '../services/cmsService';
@@ -25,8 +26,10 @@ import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
 import GamePlayer from '../components/games/GamePlayer';
 import MediaRenderer from '../components/media/MediaRenderer';
+import AITutorChat from '../components/slides/AITutorChat';
 import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
+import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
 
 const blockIcons = {
   theory: BookOpen,
@@ -150,9 +153,19 @@ export default function StudentLessonPage() {
     setProgressRecords(refreshed);
   };
 
+  const getBlockProgressRecord = (blockId) =>
+    progressRecords.find((record) => (record.blockId || record.vraagId) === blockId) || null;
+
   const goNext = async () => {
-    if (currentBlock) {
+    const isCurrentQuestion = currentBlock?.type === 'question';
+    const currentCompleted = completedIds.has(currentBlock?.id);
+
+    if (currentBlock && !isCurrentQuestion) {
       await saveBlockProgress(currentBlock, true);
+    }
+
+    if (isCurrentQuestion && !currentCompleted) {
+      return;
     }
 
     if (currentIndex < blocks.length - 1) {
@@ -283,7 +296,10 @@ export default function StudentLessonPage() {
               step={currentIndex + 1}
               totalSteps={blocks.length}
               isCompleted={completedIds.has(currentBlock?.id)}
+              progressRecord={getBlockProgressRecord(currentBlock?.id)}
+              studentName={(currentUser?.displayName || currentUser?.email || 'leerling').split(' ')[0]}
               onOpenSlidedeck={setActiveSlidedeck}
+              onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
               onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
             />
 
@@ -303,7 +319,8 @@ export default function StudentLessonPage() {
 
               <button
                 onClick={goNext}
-                className="btn-primary px-5 py-3 text-sm"
+                disabled={currentBlock?.type === 'question' && !completedIds.has(currentBlock?.id)}
+                className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {currentIndex === blocks.length - 1 ? 'Les afronden' : 'Klaar, volgende'}
                 <ChevronRight size={18} />
@@ -320,7 +337,7 @@ export default function StudentLessonPage() {
   );
 }
 
-function LessonBlockContent({ block, step, totalSteps, isCompleted, onOpenSlidedeck, onGameComplete }) {
+function LessonBlockContent({ block, step, totalSteps, isCompleted, progressRecord, studentName, onOpenSlidedeck, onSaveProgress, onGameComplete }) {
   const Icon = blockIcons[block?.type] || BookOpen;
   const content = block?.content || {};
   const linkedVraag = block?.linkedVraag || null;
@@ -356,7 +373,15 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, onOpenSlided
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
         ) : block.type === 'question' ? (
-          <QuestionLearningBlock block={block} bodyHtml={bodyHtml} linkedVraag={linkedVraag} />
+          <QuestionLearningBlock
+            key={block.id}
+            block={block}
+            bodyHtml={bodyHtml}
+            linkedVraag={linkedVraag}
+            progressRecord={progressRecord}
+            studentName={studentName}
+            onSaveProgress={onSaveProgress}
+          />
         ) : (
           <DefaultLearningBlock block={block} bodyHtml={bodyHtml} linkedVraag={linkedVraag} />
         )}
@@ -365,9 +390,18 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, onOpenSlided
   );
 }
 
-function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
+function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, studentName = 'leerling', onSaveProgress }) {
   const preview = buildQuestionPreviewModel(linkedVraag || {});
-  const [previewAnswers, setPreviewAnswers] = useState({});
+  const [previewAnswers, setPreviewAnswers] = useState(progressRecord?.lastAnswer || {});
+  const [attempts, setAttempts] = useState(progressRecord?.attempts || 0);
+  const [submitted, setSubmitted] = useState(Boolean(progressRecord?.completed));
+  const [saving, setSaving] = useState(false);
+  const [showAiTutor, setShowAiTutor] = useState(false);
+  const [aiHelpCount, setAiHelpCount] = useState(progressRecord?.aiHelpCount || 0);
+  const resultTone = getLearningResultTone({
+    isCorrect: submitted,
+    aiHelpCount
+  });
 
   const setPreviewAnswer = (fieldId, value) => {
     setPreviewAnswers((current) => ({ ...current, [fieldId]: value }));
@@ -381,6 +415,83 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
         : '';
     return `${baseClass} ${statusClass}`;
   };
+
+  const getQuestionCorrectStatus = () => {
+    if (preview.type === 'invullen') {
+      return preview.fields.length > 0 && preview.fields.every((field) =>
+        getPreviewAnswerStatus(previewAnswers[field.id], field.answer) === 'correct'
+      );
+    }
+
+    if (preview.type === 'meerkeuze') {
+      const options = linkedVraag?.antwoord?.options || [];
+      return options.length > 0 && options.every((option, index) => {
+        const fieldId = option.id || `option-${index + 1}`;
+        return Boolean(previewAnswers[fieldId]) === Boolean(option.correct);
+      });
+    }
+
+    if (preview.type === 'volgorde') {
+      return currentOrderItems.length > 0 &&
+        currentOrderItems.every((item, index) => item.id === preview.orderItems?.[index]?.id);
+    }
+
+    if (preview.type === 'numeriek') {
+      return getPreviewAnswerStatus(
+        previewAnswers.expectedValue,
+        linkedVraag.antwoord?.expected ?? linkedVraag.antwoord?.correctValue
+      ) === 'correct';
+    }
+
+    const correctAnswer = linkedVraag.antwoord?.modelAnswer || linkedVraag.antwoord?.answer || '';
+    if (!correctAnswer) return false;
+    return getPreviewAnswerStatus(previewAnswers.openAnswer, correctAnswer) === 'correct';
+  };
+
+  const handleCheckAnswer = async () => {
+    const isCorrect = getQuestionCorrectStatus();
+    const nextAttempts = attempts + 1;
+    const metadata = buildLearningResultMetadata({ isCorrect, aiHelpCount });
+
+    setAttempts(nextAttempts);
+    setSubmitted(isCorrect);
+    setSaving(true);
+
+    try {
+      await onSaveProgress?.(isCorrect, {
+        completed: isCorrect,
+        isCorrect,
+        attempts: nextAttempts,
+        lastAnswer: previewAnswers,
+        ...metadata
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAiQuestionSent = async () => {
+    const nextAiHelpCount = aiHelpCount + 1;
+    setAiHelpCount(nextAiHelpCount);
+    const metadata = buildLearningResultMetadata({ isCorrect: submitted, aiHelpCount: nextAiHelpCount });
+    await onSaveProgress?.(submitted, {
+      completed: submitted,
+      isCorrect: submitted,
+      attempts,
+      lastAnswer: previewAnswers,
+      aiHelpCount: nextAiHelpCount,
+      ...metadata
+    });
+  };
+
+  const hasAnyAnswer = Object.values(previewAnswers).some((value) => {
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
+    return String(value || '').trim().length > 0;
+  });
+  const aiInitialMessage = hasAnyAnswer
+    ? `Ik ben P-AI-co. Ik help je met denkvragen bij "${linkedVraag?.title || 'deze vraag'}", maar ik geef het antwoord niet letterlijk. Wat heb je al geprobeerd?`
+    : `Hoi ${studentName}, probeer eerst zelf een antwoord in te vullen. Daarna help ik je met denkvragen, zonder het antwoord voor te zeggen.`;
 
   const getInitialOrderItems = () => {
     if (!preview.orderItems?.length) return [];
@@ -424,6 +535,12 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
 
   return (
     <div className="space-y-6">
+      {submitted && (
+        <div className={`rounded-2xl border-2 ${resultTone.borderClass} ${resultTone.fillClass} px-4 py-3 text-sm font-black text-[var(--helix-navy)]`}>
+          {resultTone.label}
+        </div>
+      )}
+
       {preview.promptHtml && (
         <div
           className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
@@ -557,6 +674,47 @@ function QuestionLearningBlock({ bodyHtml, linkedVraag }) {
           })()}
         </div>
       )}
+
+      {block?.settings?.allowAiHelp && (
+        <div className="rounded-2xl border border-fuchsia-100 bg-white p-4">
+          <button
+            type="button"
+            onClick={() => setShowAiTutor((current) => !current)}
+            className="inline-flex items-center gap-2 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)]"
+          >
+            <MessageCircle size={16} />
+            {showAiTutor ? 'Sluit P-AI-co' : 'Vraag P-AI-co om hulp'}
+          </button>
+          <p className="mt-2 text-xs font-semibold text-[var(--helix-muted)]">
+            P-AI-co gaat je met vragen helpen, zonder het antwoord voor te zeggen.
+          </p>
+          {showAiTutor && (
+            <div className="mt-4">
+              <AITutorChat
+                contextHeading={linkedVraag?.title || block?.title || 'Vraag'}
+                hints={linkedVraag?.antwoord?.hints || []}
+                initialMessage={aiInitialMessage}
+                onUserMessageSent={handleAiQuestionSent}
+                onClose={() => setShowAiTutor(false)}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--helix-border)] pt-4">
+        <p className="text-sm font-bold text-[var(--helix-muted)]">
+          {attempts > 0 ? `${attempts} poging${attempts === 1 ? '' : 'en'} opgeslagen` : 'Nog geen poging opgeslagen'}
+        </p>
+        <button
+          type="button"
+          onClick={handleCheckAnswer}
+          disabled={saving || submitted}
+          className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {saving ? 'Opslaan...' : submitted ? 'Vraag afgerond' : 'Controleer antwoord'}
+        </button>
+      </div>
     </div>
   );
 }

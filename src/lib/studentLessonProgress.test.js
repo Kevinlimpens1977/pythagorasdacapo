@@ -5,6 +5,7 @@ import {
   findResumeBlockIndex,
   getCompletedBlockIds
 } from './studentLessonProgress.js';
+import { normalizeContentBlockSettings, normalizeContentBlocks } from './contentBlockUtils.js';
 
 const blocks = [
   { id: 'block-1' },
@@ -50,4 +51,16 @@ test('findResumeBlockIndex returns last block when lesson is completed', () => {
     { blockId: 'block-2', completed: true },
     { blockId: 'block-3', completed: true }
   ]), 2);
+});
+
+test('normalizes lesson block settings without overwriting explicit false values', () => {
+  assert.deepEqual(normalizeContentBlockSettings({ allowCalculator: true, allowAiHelp: false }), {
+    allowCalculator: true,
+    allowAiHelp: false
+  });
+
+  assert.deepEqual(normalizeContentBlocks([{ id: 'block-1', order: 1 }])[0].settings, {
+    allowCalculator: false,
+    allowAiHelp: false
+  });
 });

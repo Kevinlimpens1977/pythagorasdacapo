@@ -20,6 +20,16 @@ export const CONTENT_BLOCK_LABELS = {
   slidedeck: 'Slidedeck'
 };
 
+export const DEFAULT_CONTENT_BLOCK_SETTINGS = {
+  allowCalculator: false,
+  allowAiHelp: false
+};
+
+export const normalizeContentBlockSettings = (settings = {}) => ({
+  allowCalculator: settings.allowCalculator ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowCalculator,
+  allowAiHelp: settings.allowAiHelp ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp
+});
+
 export const getDefaultContentForBlockType = (type) => {
   if (type === 'example') {
     return { html: '', steps: [], imageUrl: '', crops: [] };
@@ -70,7 +80,8 @@ export const normalizeContentBlocks = (blocks = []) => {
     .sort((a, b) => (a.order || 0) - (b.order || 0))
     .map((block, index) => ({
       ...block,
-      order: index + 1
+      order: index + 1,
+      settings: normalizeContentBlockSettings(block.settings)
     }));
 };
 

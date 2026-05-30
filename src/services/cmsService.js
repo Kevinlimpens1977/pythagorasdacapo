@@ -17,6 +17,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { normalizeContentBlockSettings } from '../lib/contentBlockUtils';
 
 /**
  * ==================== READ OPERATIONS ====================
@@ -431,6 +432,7 @@ export const createContentBlock = async (paragraafId, data, userId) => {
       title: data.title || 'Nieuw lesblok',
       status: data.status || 'draft',
       content: data.content || { html: '' },
+      settings: normalizeContentBlockSettings(data.settings),
       linkedVraagId: data.linkedVraagId || null,
       createdBy: userId,
       createdAt: serverTimestamp(),

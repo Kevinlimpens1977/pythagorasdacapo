@@ -48,6 +48,7 @@ import {
   getReorderedBlocks,
   getToggledContentBlockStatus,
   mergeCropResultsIntoBlockContent,
+  normalizeContentBlockSettings,
   normalizeContentBlocks
 } from '../../lib/contentBlockUtils';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
@@ -172,6 +173,48 @@ const StatusSelect = ({ value, onChange }) => (
     <option value="published">Gepubliceerd</option>
   </select>
 );
+
+const BlockSettingsPanel = ({ settings, onChange }) => {
+  const toggleSetting = (field) => {
+    onChange({
+      ...settings,
+      [field]: !settings[field]
+    });
+  };
+
+  return (
+    <div className="rounded-2xl border border-fuchsia-100 bg-white p-4">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Leerlingtools</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
+          <input
+            type="checkbox"
+            checked={settings.allowCalculator}
+            onChange={() => toggleSetting('allowCalculator')}
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
+          />
+          <span>
+            <span className="block text-sm font-black text-[var(--helix-navy)]">Rekenmachine toestaan</span>
+            <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Leerling mag bij dit lesblok een rekenmachine gebruiken.</span>
+          </span>
+        </label>
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
+          <input
+            type="checkbox"
+            checked={settings.allowAiHelp}
+            onChange={() => toggleSetting('allowAiHelp')}
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
+          />
+          <span>
+            <span className="block text-sm font-black text-[var(--helix-navy)]">P-AI-co hulp toestaan</span>
+            <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">AI-hulp telt mee in de resultaatkleur.</span>
+          </span>
+        </label>
+      </div>
+    </div>
+  );
+};
 
 const StudioTextArea = ({ label, value, onChange, placeholder, className = '' }) => (
   <div>
@@ -635,6 +678,7 @@ const LessonBlockStudio = ({
     ...getDefaultContentForBlockType(block.type),
     ...(block.content || {})
   });
+  const [settings, setSettings] = useState(normalizeContentBlockSettings(block.settings));
   const [linkedVraagId, setLinkedVraagId] = useState(block.linkedVraagId || '');
   const [imageData, setImageData] = useState(null);
   const [selections, setSelections] = useState([]);
@@ -796,6 +840,7 @@ const LessonBlockStudio = ({
         title,
         status,
         content,
+        settings: normalizeContentBlockSettings(settings),
         linkedVraagId: block.type === 'question' ? linkedVraagId || null : null
       });
     } finally {
@@ -845,6 +890,10 @@ const LessonBlockStudio = ({
               Open vraagstudio
             </button>
           </div>
+        </div>
+
+        <div className="mt-4">
+          <BlockSettingsPanel settings={settings} onChange={setSettings} />
         </div>
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">
@@ -923,6 +972,8 @@ const LessonBlockStudio = ({
             onEditorReady={setBlockEditor}
             placeholder="Schrijf een korte instructie of context voordat leerlingen de game starten."
           />
+
+          <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
             <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
@@ -1021,6 +1072,8 @@ const LessonBlockStudio = ({
             placeholder="Schrijf optioneel een korte introductie voordat leerlingen de presentatie openen."
           />
 
+          <BlockSettingsPanel settings={settings} onChange={setSettings} />
+
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
             <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
               Sluit
@@ -1098,6 +1151,8 @@ const LessonBlockStudio = ({
               setError={setError}
             />
           )}
+
+          <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
             <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">

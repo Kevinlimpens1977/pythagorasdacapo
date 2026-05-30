@@ -15,6 +15,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { buildLearningResultMetadata } from '../lib/learningResultUtils';
 
 /**
  * Save progress for a single question (upsert)
@@ -59,6 +60,11 @@ export const saveVoortgang = async (
       // Doc doesn't exist yet, that's ok
     }
 
+    const resultMetadata = buildLearningResultMetadata({
+      isCorrect: data.isCorrect || false,
+      aiHelpCount: data.aiHelpCount || existingData.aiHelpCount || 0
+    });
+
     const updates = {
       userId,
       vraagId,
@@ -69,6 +75,7 @@ export const saveVoortgang = async (
       isCorrect: data.isCorrect || false,
       attempts: data.attempts || 1,
       lastAnswer: data.lastAnswer || null,
+      ...resultMetadata,
       updatedAt: serverTimestamp(),
 
       // Only set on first attempt
@@ -151,6 +158,11 @@ export const saveContentBlockVoortgang = async (
       // Missing progress doc is fine for first visit.
     }
 
+    const resultMetadata = buildLearningResultMetadata({
+      isCorrect: data.isCorrect || false,
+      aiHelpCount: data.aiHelpCount ?? existingData.aiHelpCount ?? 0
+    });
+
     const updates = {
       userId,
       blockId,
@@ -162,6 +174,7 @@ export const saveContentBlockVoortgang = async (
       isCorrect: data.isCorrect || false,
       attempts: data.attempts || existingData.attempts || 1,
       lastAnswer: data.lastAnswer || existingData.lastAnswer || null,
+      ...resultMetadata,
       updatedAt: serverTimestamp(),
       firstAttemptAt: existingData.firstAttemptAt || serverTimestamp()
     };
