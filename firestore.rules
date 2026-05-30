@@ -93,6 +93,11 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Server-only provider secrets/config. Gebruik Cloud Functions; nooit direct vanuit de client.
+    match /privateConfig/{document=**} {
+      allow read, write: if false;
+    }
+
     match /slidedeckPackages/{document=**} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();

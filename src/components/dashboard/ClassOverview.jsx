@@ -13,6 +13,7 @@ import {
   getEffectiveContentBlocks,
   getStudentEffectiveParagrafen
 } from '../../lib/assignmentUtils';
+import { getLearningResultTone } from '../../lib/learningResultUtils';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -35,6 +36,36 @@ function getProgressColor(percentage) {
   if (percentage < 40) return 'bg-emerald-200';
   if (percentage < 75) return 'bg-emerald-500';
   return 'bg-emerald-700';
+}
+
+function SupportMiniBar({ records = [], paragraafId = null }) {
+  const completedRecords = records.filter((record) =>
+    record.completed === true &&
+    (!paragraafId || record.paragraafId === paragraafId)
+  );
+
+  if (!completedRecords.length) return null;
+
+  return (
+    <div className="mt-2 flex max-w-[160px] flex-wrap gap-1" aria-label="Resultaatkwaliteit">
+      {completedRecords.slice(0, 12).map((record) => {
+        const tone = getLearningResultTone({
+          isCorrect: record.isCorrect,
+          aiHelpCount: record.aiHelpCount || 0
+        });
+        return (
+          <span
+            key={record.id || record.blockId || record.vraagId}
+            className={`h-3 w-5 rounded-full border ${tone.borderClass} ${tone.fillClass}`}
+            title={tone.label}
+          />
+        );
+      })}
+      {completedRecords.length > 12 && (
+        <span className="text-[10px] font-black text-slate-400">+{completedRecords.length - 12}</span>
+      )}
+    </div>
+  );
 }
 
 // Helper functie om te checken of presentatie bekeken is
@@ -369,6 +400,7 @@ export default function ClassOverview() {
                       {paragrafen.map(paragraaf => {
                         const paraSummary = getStudentAssignmentSummary(selectedStudent, paragraaf.id);
                         const progressPercent = paraSummary.percentage;
+                        const records = studentVoortgang[selectedStudent.id] || [];
 
                         return (
                           <div key={paragraaf.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex items-center justify-between">
@@ -379,6 +411,7 @@ export default function ClassOverview() {
                               <p className="text-sm text-slate-500 mt-1">
                                 {paraSummary.completedItems} / {paraSummary.assignedItems} onderdelen afgerond
                               </p>
+                              <SupportMiniBar records={records} paragraafId={paragraaf.id} />
                             </div>
 
                             <div className="flex items-center gap-6 ml-4">
@@ -767,6 +800,7 @@ export default function ClassOverview() {
                           </div>
                           <span className="text-sm font-semibold text-slate-600">{totalProgress}%</span>
                         </div>
+                        <SupportMiniBar records={studentVoortgang[student.id] || []} />
                       </td>
                       {selectedChapterForClass && (
                         <>
@@ -780,6 +814,7 @@ export default function ClassOverview() {
                               </div>
                               <span className="text-sm font-semibold text-slate-600">{paraProgress}%</span>
                             </div>
+                            <SupportMiniBar records={studentVoortgang[student.id] || []} paragraafId={selectedChapterForClass} />
                           </td>
                           <td className="py-4 px-6 text-sm">
                             {hasPresentationViewed(student, selectedChapterForClass) ? (

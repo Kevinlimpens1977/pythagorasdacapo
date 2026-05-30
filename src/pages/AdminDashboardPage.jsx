@@ -4,6 +4,7 @@ import {
   AlertCircle,
   ArrowRight,
   BarChart3,
+  Bot,
   BookOpen,
   CheckSquare,
   GraduationCap,
@@ -140,6 +141,14 @@ const workflowGroups = [
         icon: CheckSquare,
         path: '/admin/taken-toewijzen',
         tone: 'text-emerald-600 bg-emerald-50'
+      },
+      {
+        title: 'P-AI-co instellingen',
+        description: 'Beheer OpenRouter-key, model en globale AI-hulp.',
+        actionLabel: 'Open AI-beheer',
+        icon: Bot,
+        path: '/admin/ai-instellingen',
+        tone: 'text-violet-600 bg-violet-50'
       }
     ]
   },

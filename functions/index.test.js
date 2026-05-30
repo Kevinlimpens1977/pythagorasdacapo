@@ -409,3 +409,135 @@ test("syncAllStudentAuthAccounts creates auth accounts for every learner with e-
   assert.equal(db.store.docs["users/student_no_email"].mustChangePassword, undefined);
   assert.equal(authAdmin.users["admin-2"], undefined);
 });
+
+test("updateOpenRouterConfig stores the key server-side and returns a masked status", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+  });
+
+  const result = await __test.updateOpenRouterConfigCore({
+    auth: { uid: "admin-1" },
+    data: {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.configured, true);
+  assert.equal(result.enabled, true);
+  assert.equal(result.apiKeyMasked, "sk-or-v1...wxyz");
+  assert.equal(db.store.docs["privateConfig/openrouter"].apiKey, "sk-or-v1-abcdefghijklmnopqrstuvwxyz");
+  assert.equal(db.store.docs["privateConfig/openrouter"].updatedBy, "admin-1");
+});
+
+test("getOpenRouterConfigStatus never exposes the full key", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "openai/gpt-4.1-mini",
+      updatedAt: "timestamp",
+      updatedBy: "admin-1",
+    },
+  });
+
+  const result = await __test.getOpenRouterConfigStatusCore({
+    auth: { uid: "admin-1" },
+    db,
+  });
+
+  assert.deepEqual(result, {
+    configured: true,
+    enabled: true,
+    model: "openai/gpt-4.1-mini",
+    apiKeyMasked: "sk-or-v1...wxyz",
+    updatedAt: "timestamp",
+    updatedBy: "admin-1",
+  });
+});
+
+test("askAiTutor rejects students when class AI help is disabled", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: false } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "openai/gpt-4.1-mini",
+    },
+  });
+
+  await assert.rejects(
+    __test.askAiTutorCore({
+      auth: { uid: "student-1" },
+      data: { message: "Help", contextHeading: "Vraag 1", previousMessages: [] },
+      db,
+      openrouterApiKeyProvider: () => "fallback-key",
+      fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: "x" } }] }) }),
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+});
+
+test("askAiTutor rejects students when the lesson block disallows AI help", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: false } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "openai/gpt-4.1-mini",
+    },
+  });
+
+  await assert.rejects(
+    __test.askAiTutorCore({
+      auth: { uid: "student-1" },
+      data: { message: "Help", contextHeading: "Vraag 1", blockId: "block-1", previousMessages: [] },
+      db,
+      openrouterApiKeyProvider: () => "",
+      fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: "x" } }] }) }),
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+});
+
+test("askAiTutor uses configured OpenRouter model and includes the student's first name", async () => {
+  const calls = [];
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "openai/gpt-4.1-mini",
+    },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: { message: "Ik weet het niet", contextHeading: "Breuken", blockId: "block-1", previousMessages: [] },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return {
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: "Welke stap kun je eerst proberen?" } }] }),
+      };
+    },
+  });
+
+  const body = JSON.parse(calls[0].options.body);
+  assert.equal(result.success, true);
+  assert.equal(body.model, "openai/gpt-4.1-mini");
+  assert.match(body.messages[0].content, /Luna/);
+  assert.match(body.messages[0].content, /geef nooit letterlijk/iu);
+  assert.equal(calls[0].options.headers.Authorization, "Bearer sk-or-v1-abcdefghijklmnopqrstuvwxyz");
+});

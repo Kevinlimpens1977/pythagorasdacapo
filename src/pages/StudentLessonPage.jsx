@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   BookOpen,
+  Calculator,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -146,7 +147,11 @@ export default function StudentLessonPage() {
       block.paragraafId || paragraafId,
       block.hoofdstukId || paragraaf?.hoofdstukId || '',
       klasData.klasId,
-      { completed, ...extra }
+      {
+        completed,
+        isCorrect: extra.isCorrect ?? completed,
+        ...extra
+      }
     );
 
     const refreshed = await voortgangService.getVoortgangForParagraaf(currentUser.uid, paragraafId);
@@ -155,6 +160,13 @@ export default function StudentLessonPage() {
 
   const getBlockProgressRecord = (blockId) =>
     progressRecords.find((record) => (record.blockId || record.vraagId) === blockId) || null;
+
+  const getBlockResultClasses = (block) => {
+    const record = getBlockProgressRecord(block?.id);
+    if (!record?.completed) return 'border-slate-300 bg-slate-100';
+    const tone = getLearningResultTone({ isCorrect: record.isCorrect, aiHelpCount: record.aiHelpCount || 0 });
+    return `${tone.borderClass} ${tone.fillClass}`;
+  };
 
   const goNext = async () => {
     const isCurrentQuestion = currentBlock?.type === 'question';
@@ -250,6 +262,22 @@ export default function StudentLessonPage() {
               <p className="mt-2 text-sm font-bold text-[var(--helix-muted)]">
                 {lessonProgress.completedBlocks} van {lessonProgress.totalBlocks} blokken klaar
               </p>
+              <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Voortgang per lesblok">
+                {blocks.map((block, index) => {
+                  const record = getBlockProgressRecord(block.id);
+                  const tone = getLearningResultTone({
+                    isCorrect: Boolean(record?.isCorrect),
+                    aiHelpCount: record?.aiHelpCount || 0
+                  });
+                  return (
+                    <span
+                      key={block.id}
+                      className={`h-4 w-8 rounded-full border-2 ${getBlockResultClasses(block)}`}
+                      title={record?.completed ? `${index + 1}. ${tone.label}` : `${index + 1}. Nog niet afgerond`}
+                    />
+                  );
+                })}
+              </div>
             </div>
           </div>
         </header>
@@ -342,6 +370,7 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, progressReco
   const content = block?.content || {};
   const linkedVraag = block?.linkedVraag || null;
   const title = block?.title || CONTENT_BLOCK_LABELS[block?.type] || 'Lesblok';
+  const [showCalculator, setShowCalculator] = useState(false);
   const bodyHtml =
     block?.type === 'question'
       ? linkedVraag?.content?.text || content.html || '<p>Nog geen vraagtekst ingevuld.</p>'
@@ -368,6 +397,20 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, progressReco
       </div>
 
       <div className="mt-8">
+        {block.settings?.allowCalculator && (
+          <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+            <button
+              type="button"
+              onClick={() => setShowCalculator((current) => !current)}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-emerald-800 shadow-sm"
+            >
+              <Calculator size={17} />
+              {showCalculator ? 'Rekenmachine sluiten' : 'Rekenmachine openen'}
+            </button>
+            {showCalculator && <SimpleCalculator />}
+          </div>
+        )}
+
         {block.type === 'game' ? (
           <GameBlock block={block} onComplete={onGameComplete} />
         ) : block.type === 'slidedeck' ? (
@@ -387,6 +430,45 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, progressReco
         )}
       </div>
     </article>
+  );
+}
+
+function SimpleCalculator() {
+  const [expression, setExpression] = useState('');
+  const [result, setResult] = useState('');
+
+  const calculate = () => {
+    if (!/^[\d+\-*/().,\s]+$/.test(expression)) {
+      setResult('Controleer je invoer');
+      return;
+    }
+
+    try {
+      const normalized = expression.replace(/,/g, '.');
+      // Calculator is alleen beschikbaar wanneer de docent dit lesblok toestaat.
+      const value = Function(`"use strict"; return (${normalized})`)();
+      setResult(Number.isFinite(value) ? String(Math.round(value * 1000000) / 1000000) : 'Geen geldig resultaat');
+    } catch {
+      setResult('Geen geldig resultaat');
+    }
+  };
+
+  return (
+    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+      <input
+        value={expression}
+        onChange={(event) => setExpression(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') calculate();
+        }}
+        className="input-standard flex-1"
+        placeholder="Bijv. 42/70*100"
+      />
+      <button type="button" onClick={calculate} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white">
+        Bereken
+      </button>
+      {result && <span className="rounded-xl bg-white px-4 py-3 text-sm font-black text-emerald-900">{result}</span>}
+    </div>
   );
 }
 
@@ -492,6 +574,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   const aiInitialMessage = hasAnyAnswer
     ? `Ik ben P-AI-co. Ik help je met denkvragen bij "${linkedVraag?.title || 'deze vraag'}", maar ik geef het antwoord niet letterlijk. Wat heb je al geprobeerd?`
     : `Hoi ${studentName}, probeer eerst zelf een antwoord in te vullen. Daarna help ik je met denkvragen, zonder het antwoord voor te zeggen.`;
+  const studentAnswerSummary = JSON.stringify(previewAnswers);
 
   const getInitialOrderItems = () => {
     if (!preview.orderItems?.length) return [];
@@ -694,6 +777,8 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
                 contextHeading={linkedVraag?.title || block?.title || 'Vraag'}
                 hints={linkedVraag?.antwoord?.hints || []}
                 initialMessage={aiInitialMessage}
+                studentAnswer={studentAnswerSummary}
+                blockId={block.id}
                 onUserMessageSent={handleAiQuestionSent}
                 onClose={() => setShowAiTutor(false)}
               />

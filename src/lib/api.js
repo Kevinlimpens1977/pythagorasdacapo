@@ -10,15 +10,32 @@ if (window.location.hostname === 'localhost') {
   // connectFunctionsEmulator(functions, 'localhost', 5001);
 }
 
-export const askAiTutorCall = async (message, contextHeading, previousMessages, hints = []) => {
+export const askAiTutorCall = async (message, contextHeading, previousMessages, hints = [], studentAnswer = '', blockId = '') => {
   try {
     const askTutor = httpsCallable(functions, 'askAiTutor');
-    const result = await askTutor({ message, contextHeading, previousMessages, hints });
+    const result = await askTutor({ message, contextHeading, previousMessages, hints, studentAnswer, blockId });
     return result.data;
   } catch (error) {
     console.error("AI Tutor API Error:", error);
     return { success: false, error: "Er is een fout opgetreden bij het verbinden met de tutor." };
   }
+};
+
+export const getOpenRouterConfigStatusCall = async () => {
+  try {
+    const getStatus = httpsCallable(functions, 'getOpenRouterConfigStatus');
+    const result = await getStatus({});
+    return result.data;
+  } catch (error) {
+    console.error('OpenRouter config status error:', error);
+    return { configured: false, enabled: false, error: 'AI-instellingen konden niet worden geladen.' };
+  }
+};
+
+export const updateOpenRouterConfigCall = async ({ enabled, apiKey, model }) => {
+  const updateConfig = httpsCallable(functions, 'updateOpenRouterConfig');
+  const result = await updateConfig({ enabled, apiKey, model });
+  return result.data;
 };
 
 /**

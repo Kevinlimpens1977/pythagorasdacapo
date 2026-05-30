@@ -18,6 +18,7 @@ const preservedStudentResetEmails = new Set([
 const BATCH_LIMIT = 450;
 const DEFAULT_STUDENT_PASSWORD = "Test123";
 const STUDENT_EMAIL_DOMAIN = "leerling.dacapo-college.nl";
+const DEFAULT_OPENROUTER_MODEL = "google/gemini-2.0-flash-001";
 
 function requireString(value, fieldName) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -67,6 +68,216 @@ function assertAdminRole(caller) {
   if (caller.role !== "admin") {
     throw new HttpsError("permission-denied", "Alleen admins mogen deze actie uitvoeren.");
   }
+}
+
+function maskSecret(value = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (raw.length <= 12) return `${raw.slice(0, 3)}...${raw.slice(-2)}`;
+  return `${raw.slice(0, 8)}...${raw.slice(-4)}`;
+}
+
+function normalizeOpenRouterConfig(data = {}, existing = {}) {
+  const apiKey = String(data.apiKey || existing.apiKey || "").trim();
+  const model = String(data.model || existing.model || DEFAULT_OPENROUTER_MODEL).trim();
+  const enabled = data.enabled ?? existing.enabled ?? true;
+
+  if (!apiKey) {
+    throw new HttpsError("invalid-argument", "OpenRouter API-key is verplicht.");
+  }
+
+  if (!apiKey.startsWith("sk-or-")) {
+    throw new HttpsError("invalid-argument", "OpenRouter API-key moet beginnen met sk-or-.");
+  }
+
+  if (!model) {
+    throw new HttpsError("invalid-argument", "Model is verplicht.");
+  }
+
+  return { apiKey, model, enabled: Boolean(enabled) };
+}
+
+function buildOpenRouterConfigStatus(config = {}) {
+  const apiKey = String(config.apiKey || "").trim();
+  return {
+    configured: Boolean(apiKey),
+    enabled: config.enabled !== false,
+    model: config.model || DEFAULT_OPENROUTER_MODEL,
+    apiKeyMasked: maskSecret(apiKey),
+    updatedAt: config.updatedAt || null,
+    updatedBy: config.updatedBy || null,
+  };
+}
+
+async function getOpenRouterConfigStatusCore({ auth, db }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om AI-instellingen te bekijken.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const snapshot = await db.doc("privateConfig/openrouter").get();
+  return buildOpenRouterConfigStatus(snapshot.exists ? snapshot.data() || {} : {});
+}
+
+async function updateOpenRouterConfigCore({ auth, data, db, now }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om AI-instellingen op te slaan.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const configRef = db.doc("privateConfig/openrouter");
+  const existingSnapshot = await configRef.get();
+  const existing = existingSnapshot.exists ? existingSnapshot.data() || {} : {};
+  const normalized = normalizeOpenRouterConfig(data || {}, existing);
+  const timestamp = getServerTimestamp(now);
+  const config = {
+    ...normalized,
+    updatedAt: timestamp,
+    updatedBy: auth.uid,
+  };
+
+  await configRef.set(config, { merge: true });
+  return buildOpenRouterConfigStatus(config);
+}
+
+async function getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider) {
+  const snapshot = await db.doc("privateConfig/openrouter").get();
+  const stored = snapshot.exists ? snapshot.data() || {} : {};
+  const fallbackKey = typeof openrouterApiKeyProvider === "function" ? openrouterApiKeyProvider() : "";
+  const apiKey = String(stored.apiKey || fallbackKey || "").trim();
+  const model = String(stored.model || DEFAULT_OPENROUTER_MODEL).trim();
+  const enabled = stored.enabled !== false;
+
+  if (!enabled) {
+    throw new HttpsError("failed-precondition", "P-AI-co staat uit in beheer.");
+  }
+
+  if (!apiKey) {
+    throw new HttpsError("failed-precondition", "OpenRouter API-key ontbreekt.");
+  }
+
+  return { apiKey, model };
+}
+
+function getFirstName(user = {}) {
+  const fromFirstName = String(user.firstName || "").trim();
+  if (fromFirstName) return fromFirstName.split(/\s+/)[0];
+  const fromDisplayName = String(user.displayName || "").trim();
+  if (fromDisplayName) return fromDisplayName.split(/\s+/)[0];
+  const fromEmail = String(user.email || "").split("@")[0].trim();
+  return fromEmail || "leerling";
+}
+
+async function assertAiTutorAllowed({ auth, db }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om P-AI-co te gebruiken.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Gebruiker");
+  const callerData = caller.data || {};
+  const role = String(callerData.role || "").toLowerCase();
+
+  if (role === "admin") {
+    return { user: callerData, firstName: getFirstName(callerData) };
+  }
+
+  const klasId = callerData.klasId;
+  if (!klasId) {
+    throw new HttpsError("failed-precondition", "Je bent nog niet aan een klas gekoppeld.");
+  }
+
+  const klas = await getRequiredDoc(db.doc(`klassen/${klasId}`), "Klas");
+  if (klas.data?.settings?.aiEnabled === false) {
+    throw new HttpsError("permission-denied", "P-AI-co staat uit voor jouw klas.");
+  }
+
+  return { user: callerData, firstName: getFirstName(callerData), klas: klas.data };
+}
+
+async function assertAiTutorBlockAllowed({ db, blockId }) {
+  const cleanBlockId = String(blockId || "").trim();
+  if (!cleanBlockId) return;
+
+  const block = await getRequiredDoc(db.doc(`contentBlocks/${cleanBlockId}`), "Lesblok");
+  if (block.data?.settings?.allowAiHelp !== true) {
+    throw new HttpsError("permission-denied", "P-AI-co staat uit voor dit lesblok.");
+  }
+}
+
+function buildAiTutorSystemPrompt({ contextHeading = "deze vraag", firstName = "leerling", studentAnswer = "" } = {}) {
+  const answerText = String(studentAnswer || "").trim();
+  return `Je bent P-AI-co, een geduldige Nederlandstalige AI-tutor voor HELIX.
+Je helpt ${firstName} met het vakgebied van de opdracht: "${contextHeading}".
+Geef nooit letterlijk het goede antwoord en geef nooit een volledige uitwerking die direct over te nemen is.
+Werk socratisch: stel korte denkvragen, geef kleine hints en laat de leerling zelf de volgende stap zetten.
+Als de leerling nog geen antwoord of beginpoging heeft gegeven, zeg dan tegen ${firstName} dat die eerst zelf moet nadenken en een eerste antwoord of aanpak moet invullen.
+Als er wel een poging is, analyseer dan die poging kort en stel precies een volgende helpende vraag.
+Houd je antwoord kort: maximaal 2 tot 3 zinnen.
+Huidige leerlingpoging: ${answerText || "[nog geen poging]"}`;
+}
+
+async function askAiTutorCore({
+  auth,
+  data,
+  db,
+  openrouterApiKeyProvider,
+  fetchImpl = fetch,
+}) {
+  const message = String(data?.message || "").trim();
+  if (!message) {
+    throw new HttpsError("invalid-argument", "Bericht is verplicht.");
+  }
+
+  const { firstName } = await assertAiTutorAllowed({ auth, db });
+  await assertAiTutorBlockAllowed({ db, blockId: data?.blockId });
+  const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
+  const contextHeading = String(data?.contextHeading || "deze vraag").trim();
+  const previousMessages = Array.isArray(data?.previousMessages) ? data.previousMessages : [];
+  const hints = Array.isArray(data?.hints) ? data.hints : [];
+  const studentAnswer = data?.studentAnswer || "";
+  const systemPrompt = buildAiTutorSystemPrompt({ contextHeading, firstName, studentAnswer });
+
+  const messages = [
+    { role: "system", content: systemPrompt },
+    ...previousMessages.map((item) => ({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: String(item.content || "").slice(0, 2000),
+    })),
+    ...(hints.length ? [{ role: "system", content: `Beschikbare docent-hints: ${hints.join(" | ")}` }] : []),
+    { role: "user", content: message },
+  ];
+
+  const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${runtimeConfig.apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://stellingvanpythagoras.nl",
+      "X-Title": "HELIX App",
+    },
+    body: JSON.stringify({
+      model: runtimeConfig.model,
+      messages,
+      max_tokens: 450,
+      temperature: 0.35,
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("OpenRouter API Error:", response.status, errText);
+    throw new HttpsError("internal", "P-AI-co kon OpenRouter niet bereiken.");
+  }
+
+  const responseData = await response.json();
+  return {
+    success: true,
+    content: responseData.choices?.[0]?.message?.content || "Ik kan nu geen goede hint maken. Probeer je eerste stap hardop te formuleren.",
+  };
 }
 
 function shouldPreserveUserDuringStudentReset(user = {}) {
@@ -742,67 +953,36 @@ exports.syncAllStudentAuthAccounts = onCall({
   });
 });
 
+exports.getOpenRouterConfigStatus = onCall({
+  region: REGION,
+}, async (request) => {
+  return getOpenRouterConfigStatusCore({
+    auth: request.auth,
+    db: getFirestore(),
+  });
+});
+
+exports.updateOpenRouterConfig = onCall({
+  region: REGION,
+}, async (request) => {
+  return updateOpenRouterConfigCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
 exports.askAiTutor = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
 }, async (request) => {
   try {
-    const { message, contextHeading, previousMessages } = request.data;
-
-    if (!message) {
-      throw new Error("Message is required");
-    }
-
-    const apiKey = openrouterApiKey.value();
-    if (!apiKey) {
-      console.error("OPENROUTER_API_KEY is not set");
-      throw new Error("Tutor API key is missing");
-    }
-
-    const systemPrompt = `Je bent een geduldige en motiverende wiskunde docent (AI Tutor) voor middelbare scholieren.
-De leerling is momenteel bezig met een oefening uit het onderdeel: "${contextHeading}".
-Geef NOOIT direct het antwoord of de volledige berekening.
-In plaats daarvan:
-- Moedig de leerling aan.
-- Stel een gerichte, open wedervraag.
-- Geef eventueel een kleine hint over de eerste of volgende stap.
-Houd je antwoorden altijd heel kort en bondig (maximaal 2-3 zinnen).
-Spreek de leerling aan in de je-vorm.`;
-
-    const messages = [
-      { role: "system", content: systemPrompt },
-      ...(previousMessages || []),
-      { role: "user", content: message }
-    ];
-
-    console.log(`Calling OpenRouter for context: ${contextHeading}`);
-    
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://stellingvanpythagoras.nl", 
-        "X-Title": "HELIX App"
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.0-flash-001",
-        messages: messages
-      })
+    return await askAiTutorCore({
+      auth: request.auth,
+      data: request.data || {},
+      db: getFirestore(),
+      openrouterApiKeyProvider: () => openrouterApiKey.value(),
     });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("OpenRouter API Error:", response.status, errText);
-      throw new Error("Failed to fetch from OpenRouter");
-    }
-
-    const data = await response.json();
-    return {
-      success: true,
-      content: data.choices[0].message.content
-    };
-
   } catch (error) {
     console.error("Error in askAiTutor:", error);
     return {
@@ -814,9 +994,12 @@ Spreek de leerling aan in de je-vorm.`;
 
 exports.__test = {
   approveStudentPhotoImportCropCore,
+  askAiTutorCore,
   deleteAllStudentDataCore,
   importStudentNumberAccountsCore,
+  getOpenRouterConfigStatusCore,
   resetStudentPasswordCore,
   syncAllStudentAuthAccountsCore,
+  updateOpenRouterConfigCore,
   shouldPreserveUserDuringStudentReset,
 };

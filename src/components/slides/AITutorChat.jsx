@@ -7,6 +7,8 @@ export default function AITutorChat({
   contextHeading,
   hints = [],
   initialMessage = '',
+  studentAnswer = '',
+  blockId = '',
   onUserMessageSent
 }) {
   const [messages, setMessages] = useState([
@@ -39,7 +41,7 @@ export default function AITutorChat({
       const previousMessages = currentMessages
         .slice(0, -1)
         .map((message) => ({ role: message.role, content: message.content }));
-      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints);
+      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints, studentAnswer, blockId);
 
       if (response?.success) {
         setMessages((current) => [...current, { role: 'assistant', content: response.content }]);

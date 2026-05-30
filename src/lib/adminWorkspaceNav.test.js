@@ -20,6 +20,7 @@ test('getAdminWorkspaceForPath maps dashboard and student routes to the right wo
   assert.equal(getAdminWorkspaceForPath('/admin'), 'beheer');
   assert.equal(getAdminWorkspaceForPath('/admin/klassen'), 'beheer');
   assert.equal(getAdminWorkspaceForPath('/admin/taken-toewijzen'), 'beheer');
+  assert.equal(getAdminWorkspaceForPath('/admin/ai-instellingen'), 'beheer');
 });
 
 test('getAdminWorkspaceForPath groups presenter under its own workspace', () => {

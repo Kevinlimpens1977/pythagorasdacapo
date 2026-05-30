@@ -33,7 +33,7 @@ export const ADMIN_WORKSPACES = [
     id: 'beheer',
     label: 'Beheer',
     path: '/admin',
-    routePrefixes: ['/admin', '/admin/klassen', '/admin/taken-toewijzen']
+    routePrefixes: ['/admin', '/admin/klassen', '/admin/taken-toewijzen', '/admin/ai-instellingen']
   }
 ];
 
