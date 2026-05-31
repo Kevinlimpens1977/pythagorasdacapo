@@ -541,3 +541,84 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
   assert.match(body.messages[0].content, /geef nooit letterlijk/iu);
   assert.equal(calls[0].options.headers.Authorization, "Bearer sk-or-v1-abcdefghijklmnopqrstuvwxyz");
 });
+
+test("assessOpenAnswer returns a passing AI assessment as structured data", async () => {
+  const calls = [];
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "openai/gpt-4.1-mini",
+    },
+  });
+
+  const result = await __test.assessOpenAnswerCore({
+    auth: { uid: "student-1" },
+    data: {
+      blockId: "block-1",
+      questionTitle: "Waarom werkt Pythagoras?",
+      questionPrompt: "<p>Leg uit waarom a2 + b2 = c2.</p>",
+      modelAnswer: "De oppervlaktes van de twee kleine vierkanten samen zijn gelijk aan het grote vierkant.",
+      studentAnswer: "De twee kleine vierkanten hebben samen dezelfde oppervlakte als het vierkant op de schuine zijde.",
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return {
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: '{"isCorrect":true,"feedback":"Mooi, dit is voldoende.","missing":[]}' } }] }),
+      };
+    },
+  });
+
+  const body = JSON.parse(calls[0].options.body);
+  assert.equal(result.success, true);
+  assert.equal(result.isCorrect, true);
+  assert.equal(result.feedback, "Mooi, dit is voldoende.");
+  assert.equal(body.response_format.type, "json_object");
+  assert.match(body.messages[1].content, /oppervlaktes van de twee kleine vierkanten/i);
+});
+
+test("assessOpenAnswer returns socratic feedback when an answer is incomplete", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "openai/gpt-4.1-mini",
+    },
+  });
+
+  const result = await __test.assessOpenAnswerCore({
+    auth: { uid: "student-1" },
+    data: {
+      blockId: "block-1",
+      questionTitle: "Waarom werkt Pythagoras?",
+      modelAnswer: "Noem beide rechthoekszijden en de schuine zijde.",
+      studentAnswer: "Omdat je plus doet.",
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: "```json\n{\"isCorrect\":false,\"feedback\":\"Welke zijden horen bij a, b en c?\",\"missing\":[\"schuine zijde\",\"rechthoekszijden\"]}\n```",
+          },
+        }],
+      }),
+    }),
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.isCorrect, false);
+  assert.equal(result.feedback, "Welke zijden horen bij a, b en c?");
+  assert.deepEqual(result.missing, ["schuine zijde", "rechthoekszijden"]);
+});

@@ -68,6 +68,61 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
   );
 }
 
+function formatProgressAnswer(answer) {
+  if (!answer) return 'Geen antwoord opgeslagen';
+  if (typeof answer === 'string' || typeof answer === 'number' || typeof answer === 'boolean') {
+    return String(answer);
+  }
+
+  try {
+    return JSON.stringify(answer);
+  } catch {
+    return 'Antwoord opgeslagen';
+  }
+}
+
+function StudentProgressRecordList({ records = [], paragraafId }) {
+  const paragraphRecords = records
+    .filter((record) => record.paragraafId === paragraafId)
+    .sort((a, b) => String(a.blockId || a.vraagId || '').localeCompare(String(b.blockId || b.vraagId || '')));
+
+  if (!paragraphRecords.length) return null;
+
+  return (
+    <div className="mt-3 space-y-2">
+      {paragraphRecords.map((record, index) => {
+        const tone = getLearningResultTone({
+          isCorrect: record.isCorrect,
+          aiHelpCount: record.aiHelpCount || 0
+        });
+        return (
+          <div
+            key={record.id || record.blockId || record.vraagId || index}
+            className={`rounded-xl border ${tone.borderClass} ${tone.fillClass} px-3 py-2 text-xs`}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-black text-slate-800">
+                {record.blockTitle || record.vraagTitle || `Onderdeel ${index + 1}`}
+              </span>
+              <span className="font-black text-slate-700">
+                {record.completed ? tone.label : 'Nog bezig'}
+              </span>
+            </div>
+            <div className="mt-1 flex flex-wrap gap-3 font-semibold text-slate-600">
+              <span>Pogingen: {record.attempts || 0}</span>
+              <span>AI-vragen: {record.aiHelpCount || 0}</span>
+              <span>Scorefactor: {record.scoreWeight ?? 0}</span>
+            </div>
+            <p className="mt-1 line-clamp-2 break-all font-medium text-slate-500">
+              Antwoord: {formatProgressAnswer(record.lastAnswer)}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // Helper functie om te checken of presentatie bekeken is
 function hasPresentationViewed(student, chapterId) {
   return student.presentationViewed?.[chapterId]?.hasViewed || false;
@@ -403,32 +458,35 @@ export default function ClassOverview() {
                         const records = studentVoortgang[selectedStudent.id] || [];
 
                         return (
-                          <div key={paragraaf.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex items-center justify-between">
-                            <div className="flex-1">
-                              <h5 className="font-bold text-slate-800">
-                                {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
-                              </h5>
-                              <p className="text-sm text-slate-500 mt-1">
-                                {paraSummary.completedItems} / {paraSummary.assignedItems} onderdelen afgerond
-                              </p>
-                              <SupportMiniBar records={records} paragraafId={paragraaf.id} />
-                            </div>
+                          <div key={paragraaf.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <h5 className="font-bold text-slate-800">
+                                  {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                                </h5>
+                                <p className="text-sm text-slate-500 mt-1">
+                                  {paraSummary.completedItems} / {paraSummary.assignedItems} onderdelen afgerond
+                                </p>
+                                <SupportMiniBar records={records} paragraafId={paragraaf.id} />
+                              </div>
 
-                            <div className="flex items-center gap-6 ml-4">
-                              <div className="w-32">
-                                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                  <div
-                                    className={`h-full rounded-full transition-all ${
-                                      progressPercent === 100 ? 'bg-green-500' : 'bg-blue-500'
-                                    }`}
-                                    style={{ width: `${progressPercent}%` }}
-                                  ></div>
+                              <div className="flex items-center gap-6 ml-4">
+                                <div className="w-32">
+                                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full transition-all ${
+                                        progressPercent === 100 ? 'bg-green-500' : 'bg-blue-500'
+                                      }`}
+                                      style={{ width: `${progressPercent}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                                <div className="text-right min-w-[60px]">
+                                  <div className="font-bold text-slate-800">{progressPercent}%</div>
                                 </div>
                               </div>
-                              <div className="text-right min-w-[60px]">
-                                <div className="font-bold text-slate-800">{progressPercent}%</div>
-                              </div>
                             </div>
+                            <StudentProgressRecordList records={records} paragraafId={paragraaf.id} />
                           </div>
                         );
                       })}

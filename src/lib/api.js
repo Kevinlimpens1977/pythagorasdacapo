@@ -21,6 +21,29 @@ export const askAiTutorCall = async (message, contextHeading, previousMessages, 
   }
 };
 
+export const assessOpenAnswerCall = async ({
+  blockId = '',
+  questionTitle = '',
+  questionPrompt = '',
+  modelAnswer = '',
+  studentAnswer = ''
+} = {}) => {
+  try {
+    const assessOpenAnswer = httpsCallable(functions, 'assessOpenAnswer');
+    const result = await assessOpenAnswer({
+      blockId,
+      questionTitle,
+      questionPrompt,
+      modelAnswer,
+      studentAnswer
+    });
+    return result.data;
+  } catch (error) {
+    console.error('Open answer assessment error:', error);
+    return { success: false, error: 'P-AI-co kon je antwoord niet beoordelen.' };
+  }
+};
+
 export const getOpenRouterConfigStatusCall = async () => {
   try {
     const getStatus = httpsCallable(functions, 'getOpenRouterConfigStatus');

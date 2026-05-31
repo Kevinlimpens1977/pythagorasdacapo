@@ -220,6 +220,132 @@ Houd je antwoord kort: maximaal 2 tot 3 zinnen.
 Huidige leerlingpoging: ${answerText || "[nog geen poging]"}`;
 }
 
+function stripHtml(value = "") {
+  return String(value || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractJsonObject(text = "") {
+  const raw = String(text || "").trim();
+  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const source = fenced ? fenced[1].trim() : raw;
+  const start = source.indexOf("{");
+  const end = source.lastIndexOf("}");
+
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error("No JSON object found");
+  }
+
+  return JSON.parse(source.slice(start, end + 1));
+}
+
+function normalizeOpenAnswerAssessment(rawAssessment = {}) {
+  const feedback = String(rawAssessment.feedback || rawAssessment.message || "").trim();
+  return {
+    isCorrect: rawAssessment.isCorrect === true,
+    feedback: feedback || (rawAssessment.isCorrect === true
+      ? "Mooi, je antwoord is voldoende. Je kunt verder."
+      : "Je bent er nog niet helemaal. Vul je antwoord aan en probeer opnieuw."),
+    missing: Array.isArray(rawAssessment.missing)
+      ? rawAssessment.missing.map((item) => String(item || "").trim()).filter(Boolean).slice(0, 5)
+      : [],
+  };
+}
+
+function buildOpenAnswerAssessmentMessages({
+  questionTitle = "Open vraag",
+  questionPrompt = "",
+  modelAnswer = "",
+  studentAnswer = "",
+  firstName = "leerling",
+} = {}) {
+  const promptText = stripHtml(questionPrompt);
+  const modelText = stripHtml(modelAnswer);
+
+  return [
+    {
+      role: "system",
+      content: `Je beoordeelt open antwoorden voor HELIX, een Nederlands leerplatform.
+Geef alleen geldig JSON terug, zonder markdown.
+Schema: {"isCorrect": boolean, "feedback": "korte socratische feedback", "missing": ["maximaal 3 korte punten"]}.
+Beoordeel ruim maar inhoudelijk: kleine taalfouten zijn geen probleem.
+Als het antwoord onvoldoende is, geef geen volledig modelantwoord en verklap geen eindantwoord. Stel een korte denkvragen-hint aan ${firstName}.
+Als het antwoord voldoende is, zet isCorrect op true en geef een korte bevestiging.`,
+    },
+    {
+      role: "user",
+      content: [
+        `Vraag: ${questionTitle}`,
+        promptText ? `Vraagtekst: ${promptText}` : "",
+        modelText ? `Modelantwoord of beoordelingsrichting: ${modelText}` : "Er is geen modelantwoord ingevuld; beoordeel of het antwoord de vraag logisch en volledig beantwoordt.",
+        `Leerlingantwoord: ${studentAnswer}`,
+      ].filter(Boolean).join("\n"),
+    },
+  ];
+}
+
+async function assessOpenAnswerCore({
+  auth,
+  data,
+  db,
+  openrouterApiKeyProvider,
+  fetchImpl = fetch,
+}) {
+  const studentAnswer = String(data?.studentAnswer || "").trim();
+  if (!studentAnswer) {
+    throw new HttpsError("invalid-argument", "Vul eerst een antwoord in.");
+  }
+
+  const { firstName } = await assertAiTutorAllowed({ auth, db });
+  await assertAiTutorBlockAllowed({ db, blockId: data?.blockId });
+  const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
+  const messages = buildOpenAnswerAssessmentMessages({
+    questionTitle: data?.questionTitle,
+    questionPrompt: data?.questionPrompt,
+    modelAnswer: data?.modelAnswer,
+    studentAnswer,
+    firstName,
+  });
+
+  const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${runtimeConfig.apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://stellingvanpythagoras.nl",
+      "X-Title": "HELIX App",
+    },
+    body: JSON.stringify({
+      model: runtimeConfig.model,
+      messages,
+      max_tokens: 350,
+      temperature: 0.2,
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("OpenRouter assessment API Error:", response.status, errText);
+    throw new HttpsError("internal", "P-AI-co kon je antwoord niet beoordelen.");
+  }
+
+  const responseData = await response.json();
+  const content = responseData.choices?.[0]?.message?.content || "";
+  return {
+    success: true,
+    ...normalizeOpenAnswerAssessment(extractJsonObject(content)),
+  };
+}
+
 async function askAiTutorCore({
   auth,
   data,
@@ -972,6 +1098,26 @@ exports.updateOpenRouterConfig = onCall({
   });
 });
 
+exports.assessOpenAnswer = onCall({
+  region: REGION,
+  secrets: [openrouterApiKey],
+}, async (request) => {
+  try {
+    return await assessOpenAnswerCore({
+      auth: request.auth,
+      data: request.data || {},
+      db: getFirestore(),
+      openrouterApiKeyProvider: () => openrouterApiKey.value(),
+    });
+  } catch (error) {
+    console.error("Error in assessOpenAnswer:", error);
+    return {
+      success: false,
+      error: error.message || "P-AI-co kon je antwoord niet beoordelen."
+    };
+  }
+});
+
 exports.askAiTutor = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -994,6 +1140,7 @@ exports.askAiTutor = onCall({
 
 exports.__test = {
   approveStudentPhotoImportCropCore,
+  assessOpenAnswerCore,
   askAiTutorCore,
   deleteAllStudentDataCore,
   importStudentNumberAccountsCore,

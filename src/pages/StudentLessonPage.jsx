@@ -28,6 +28,7 @@ import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter'
 import GamePlayer from '../components/games/GamePlayer';
 import MediaRenderer from '../components/media/MediaRenderer';
 import AITutorChat from '../components/slides/AITutorChat';
+import { assessOpenAnswerCall } from '../lib/api';
 import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
@@ -47,7 +48,7 @@ const htmlValue = (value = '') => ({ __html: value || '' });
 export default function StudentLessonPage() {
   const { chapterId: paragraafId } = useParams();
   const navigate = useNavigate();
-  const { currentUser, isAdmin, klasData } = useAuth();
+  const { currentUser, userData, isAdmin, klasData } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paragraaf, setParagraaf] = useState(null);
@@ -137,6 +138,10 @@ export default function StudentLessonPage() {
   const completedIds = useMemo(() => getCompletedBlockIds(progressRecords), [progressRecords]);
   const lessonProgress = useMemo(() => calculateLessonProgress(blocks, progressRecords), [blocks, progressRecords]);
   const currentBlock = blocks[currentIndex] || null;
+  const studentFirstName = useMemo(() => {
+    const rawName = userData?.firstName || userData?.displayName || currentUser?.displayName || currentUser?.email || 'leerling';
+    return String(rawName).split(/[ @.]/).find(Boolean) || 'leerling';
+  }, [currentUser?.displayName, currentUser?.email, userData?.displayName, userData?.firstName]);
 
   const saveBlockProgress = async (block, completed = true, extra = {}) => {
     if (!block || !currentUser || isAdmin || !klasData?.klasId) return;
@@ -150,6 +155,10 @@ export default function StudentLessonPage() {
       {
         completed,
         isCorrect: extra.isCorrect ?? completed,
+        blockTitle: block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok',
+        blockType: block.type || '',
+        vraagTitle: block.linkedVraag?.title || '',
+        vraagType: block.linkedVraag?.type || block.linkedVraag?.questionType || '',
         ...extra
       }
     );
@@ -325,7 +334,7 @@ export default function StudentLessonPage() {
               totalSteps={blocks.length}
               isCompleted={completedIds.has(currentBlock?.id)}
               progressRecord={getBlockProgressRecord(currentBlock?.id)}
-              studentName={(currentUser?.displayName || currentUser?.email || 'leerling').split(' ')[0]}
+              studentName={studentFirstName}
               onOpenSlidedeck={setActiveSlidedeck}
               onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
               onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
@@ -480,12 +489,15 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   const [saving, setSaving] = useState(false);
   const [showAiTutor, setShowAiTutor] = useState(false);
   const [aiHelpCount, setAiHelpCount] = useState(progressRecord?.aiHelpCount || 0);
+  const [assessmentFeedback, setAssessmentFeedback] = useState(progressRecord?.openAnswerAssessment?.feedback || '');
+  const [assessmentMissing, setAssessmentMissing] = useState(progressRecord?.openAnswerAssessment?.missing || []);
   const resultTone = getLearningResultTone({
     isCorrect: submitted,
     aiHelpCount
   });
 
   const setPreviewAnswer = (fieldId, value) => {
+    if (submitted) return;
     setPreviewAnswers((current) => ({ ...current, [fieldId]: value }));
   };
 
@@ -525,26 +537,61 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
       ) === 'correct';
     }
 
+    if (preview.type === 'open') {
+      return false;
+    }
+
     const correctAnswer = linkedVraag.antwoord?.modelAnswer || linkedVraag.antwoord?.answer || '';
     if (!correctAnswer) return false;
     return getPreviewAnswerStatus(previewAnswers.openAnswer, correctAnswer) === 'correct';
   };
 
   const handleCheckAnswer = async () => {
-    const isCorrect = getQuestionCorrectStatus();
+    setAssessmentFeedback('');
+    setAssessmentMissing([]);
+    const isOpenQuestion = preview.type === 'open';
     const nextAttempts = attempts + 1;
-    const metadata = buildLearningResultMetadata({ isCorrect, aiHelpCount });
-
     setAttempts(nextAttempts);
-    setSubmitted(isCorrect);
     setSaving(true);
 
     try {
+      const assessment = isOpenQuestion
+        ? await assessOpenAnswerCall({
+            blockId: block.id,
+            questionTitle: linkedVraag?.title || block.title || 'Open vraag',
+            questionPrompt: linkedVraag?.content?.text || bodyHtml || '',
+            modelAnswer: linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
+            studentAnswer: previewAnswers.openAnswer || ''
+          })
+        : null;
+      const isCorrect = isOpenQuestion
+        ? Boolean(assessment?.success && assessment.isCorrect)
+        : getQuestionCorrectStatus();
+      const openAnswerAssessment = isOpenQuestion
+        ? {
+            isCorrect,
+            feedback: assessment?.feedback || assessment?.error || 'P-AI-co kon je antwoord niet beoordelen. Probeer het nog eens.',
+            missing: Array.isArray(assessment?.missing) ? assessment.missing : []
+          }
+        : null;
+      const metadata = buildLearningResultMetadata({ isCorrect, aiHelpCount });
+
+      if (isOpenQuestion && openAnswerAssessment.feedback) {
+        setAssessmentFeedback(openAnswerAssessment.feedback);
+        setAssessmentMissing(openAnswerAssessment.missing);
+      }
+      setSubmitted(isCorrect);
+
       await onSaveProgress?.(isCorrect, {
         completed: isCorrect,
         isCorrect,
         attempts: nextAttempts,
         lastAnswer: previewAnswers,
+        blockTitle: block.title || linkedVraag?.title || 'Vraag',
+        blockType: block.type || 'question',
+        vraagTitle: linkedVraag?.title || '',
+        vraagType: preview.type || linkedVraag?.type || '',
+        ...(openAnswerAssessment ? { openAnswerAssessment } : {}),
         ...metadata
       });
     } finally {
@@ -553,6 +600,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   };
 
   const handleAiQuestionSent = async () => {
+    if (submitted) return;
     const nextAiHelpCount = aiHelpCount + 1;
     setAiHelpCount(nextAiHelpCount);
     const metadata = buildLearningResultMetadata({ isCorrect: submitted, aiHelpCount: nextAiHelpCount });
@@ -561,6 +609,10 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
       isCorrect: submitted,
       attempts,
       lastAnswer: previewAnswers,
+      blockTitle: block.title || linkedVraag?.title || 'Vraag',
+      blockType: block.type || 'question',
+      vraagTitle: linkedVraag?.title || '',
+      vraagType: preview.type || linkedVraag?.type || '',
       aiHelpCount: nextAiHelpCount,
       ...metadata
     });
@@ -587,6 +639,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
     currentOrderItems.every((item, index) => item.id === preview.orderItems?.[index]?.id);
 
   const moveOrderItem = (fromIndex, toIndex) => {
+    if (submitted) return;
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
     const nextItems = [...currentOrderItems];
     const [movedItem] = nextItems.splice(fromIndex, 1);
@@ -624,6 +677,23 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
         </div>
       )}
 
+      {assessmentFeedback && (
+        <div className={`rounded-2xl border-2 px-4 py-3 text-sm font-bold ${
+          submitted
+            ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+            : 'border-amber-200 bg-amber-50 text-amber-950'
+        }`}>
+          <p>{assessmentFeedback}</p>
+          {assessmentMissing.length > 0 && (
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              {assessmentMissing.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {preview.promptHtml && (
         <div
           className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
@@ -643,9 +713,10 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
                     type="text"
                     value={previewAnswers[segment.id] || ''}
                     onChange={(event) => setPreviewAnswer(segment.id, event.target.value)}
+                    disabled={submitted}
                     className={inputClassForStatus(
                       status,
-                      'mx-1 inline-flex min-w-32 rounded-xl border-2 border-fuchsia-200 bg-white px-3 py-2 text-base font-bold text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100'
+                      'mx-1 inline-flex min-w-32 rounded-xl border-2 border-fuchsia-200 bg-white px-3 py-2 text-base font-bold text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-80'
                     )}
                     placeholder={`Invulveld ${preview.fields.findIndex((item) => item.id === segment.id) + 1}`}
                   />
@@ -675,7 +746,8 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
                     type="checkbox"
                     checked={checked}
                     onChange={(event) => setPreviewAnswer(fieldId, event.target.checked)}
-                    className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100"
+                    disabled={submitted}
+                    className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100 disabled:cursor-not-allowed"
                   />
                   {option.text || `Optie ${index + 1}`}
                 </label>
@@ -691,19 +763,23 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
               return (
                 <div
                   key={item.id}
-                  draggable
+                  draggable={!submitted}
                   onDragStart={(event) => {
+                    if (submitted) return;
                     event.dataTransfer.setData('text/plain', String(index));
                     event.dataTransfer.effectAllowed = 'move';
                   }}
-                  onDragOver={(event) => event.preventDefault()}
+                  onDragOver={(event) => {
+                    if (!submitted) event.preventDefault();
+                  }}
                   onDrop={(event) => {
+                    if (submitted) return;
                     event.preventDefault();
                     moveOrderItem(Number(event.dataTransfer.getData('text/plain')), index);
                   }}
                   className={inputClassForStatus(
                     status,
-                    'flex cursor-grab items-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-navy)] shadow-sm active:cursor-grabbing'
+                    `flex items-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-navy)] shadow-sm ${submitted ? 'cursor-default opacity-80' : 'cursor-grab active:cursor-grabbing'}`
                   )}
                 >
                   <GripVertical size={18} className="shrink-0 text-[var(--helix-muted)]" />
@@ -730,6 +806,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
                   type="number"
                   value={previewAnswers.expectedValue || ''}
                   onChange={(event) => setPreviewAnswer('expectedValue', event.target.value)}
+                  disabled={submitted}
                   className={inputClassForStatus(status, 'input-standard max-w-sm')}
                   placeholder={linkedVraag.antwoord?.unit ? `Antwoord in ${linkedVraag.antwoord.unit}` : 'Vul je antwoord in'}
                 />
@@ -749,6 +826,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
                 <textarea
                   value={previewAnswers.openAnswer || ''}
                   onChange={(event) => setPreviewAnswer('openAnswer', event.target.value)}
+                  disabled={submitted}
                   className={inputClassForStatus(status, 'input-standard min-h-36 w-full resize-y leading-6')}
                   placeholder="Typ je antwoord..."
                 />
@@ -758,7 +836,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
         </div>
       )}
 
-      {block?.settings?.allowAiHelp && (
+      {block?.settings?.allowAiHelp && !submitted && (
         <div className="rounded-2xl border border-fuchsia-100 bg-white p-4">
           <button
             type="button"
@@ -794,10 +872,10 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
         <button
           type="button"
           onClick={handleCheckAnswer}
-          disabled={saving || submitted}
+          disabled={saving || submitted || (preview.type === 'open' && !String(previewAnswers.openAnswer || '').trim())}
           className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? 'Opslaan...' : submitted ? 'Vraag afgerond' : 'Controleer antwoord'}
+          {saving ? (preview.type === 'open' ? 'P-AI-co beoordeelt...' : 'Opslaan...') : submitted ? 'Vraag afgerond' : 'Controleer antwoord'}
         </button>
       </div>
     </div>
