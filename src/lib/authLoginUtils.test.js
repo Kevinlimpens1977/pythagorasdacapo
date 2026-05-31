@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  getEffectiveUserRole,
   getSafePostLoginTarget,
   getGoogleLoginErrorMessage,
   isAdminEmail,
@@ -12,6 +13,13 @@ test('isAdminEmail matches the configured admin case-insensitively', () => {
   assert.equal(isAdminEmail('kevlimpens@gmail.com'), true);
   assert.equal(isAdminEmail(' KevLimpens@gmail.com '), true);
   assert.equal(isAdminEmail('iemand@school.nl'), false);
+});
+
+test('getEffectiveUserRole always promotes the configured admin e-mail', () => {
+  assert.equal(getEffectiveUserRole({ email: 'kevlimpens@gmail.com', storedRole: 'student' }), 'admin');
+  assert.equal(getEffectiveUserRole({ email: 'KevLimpens@gmail.com', storedRole: 'student' }), 'admin');
+  assert.equal(getEffectiveUserRole({ email: 'leerling@example.com', storedRole: 'docent' }), 'docent');
+  assert.equal(getEffectiveUserRole({ email: 'leerling@example.com' }), 'student');
 });
 
 test('shouldFallbackToRedirectLogin only accepts popup environment failures', () => {

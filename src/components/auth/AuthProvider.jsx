@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
+import { getEffectiveUserRole } from '../../lib/authLoginUtils';
 import {
   clearDevUser,
   createDevAdminUserData,
@@ -72,8 +73,17 @@ export function AuthProvider({ children }) {
           unsubscribeSnapshot = onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
               const data = docSnap.data();
-              setUserData(data);
-              setUserRole(data.role || 'student');
+              const effectiveRole = getEffectiveUserRole({
+                email: user.email,
+                storedRole: data.role
+              });
+              setUserData({ ...data, role: effectiveRole });
+              setUserRole(effectiveRole);
+
+              if (data.role !== effectiveRole) {
+                setDoc(userRef, { role: effectiveRole }, { merge: true })
+                  .catch(err => console.error('Error syncing user role:', err));
+              }
 
               // Sync displayName from Auth to Firestore if out of sync
               if (user.displayName && user.displayName.trim() && (!data.displayName || data.displayName.trim() === '')) {
@@ -88,15 +98,22 @@ export function AuthProvider({ children }) {
 
           // Initial check/creation
           const userDoc = await getDoc(userRef);
-          let role = 'student';
-          if (user.email === 'kevlimpens@gmail.com') {
-            role = 'admin';
-          }
+          const role = getEffectiveUserRole({ email: user.email });
+
+          setUserRole(role);
 
           if (userDoc.exists()) {
             const data = userDoc.data();
-            if (data.role !== role) {
-              await setDoc(userRef, { role }, { merge: true });
+            const effectiveRole = getEffectiveUserRole({
+              email: user.email,
+              storedRole: data.role
+            });
+
+            setUserData({ ...data, role: effectiveRole });
+            setUserRole(effectiveRole);
+
+            if (data.role !== effectiveRole) {
+              await setDoc(userRef, { role: effectiveRole }, { merge: true });
             }
 
             const updates = { lastActive: new Date() };
@@ -114,7 +131,7 @@ export function AuthProvider({ children }) {
             const initialData = {
               email: user.email,
               displayName: user.displayName || '',
-              role: role,
+              role,
               createdAt: new Date(),
               lastActive: new Date(),
               completedChapters: [],
@@ -127,7 +144,7 @@ export function AuthProvider({ children }) {
           }
         } catch (error) {
           console.error("Error fetching/creating user doc:", error);
-          setUserRole(user.email === 'kevlimpens@gmail.com' ? 'admin' : 'student');
+          setUserRole(getEffectiveUserRole({ email: user.email }));
         }
         setDevUser(null);
         setCurrentUser(user);

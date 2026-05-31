@@ -3,6 +3,11 @@ export const ADMIN_EMAIL = 'kevlimpens@gmail.com';
 export const isAdminEmail = (email) =>
   String(email || '').trim().toLowerCase() === ADMIN_EMAIL;
 
+export const getEffectiveUserRole = ({ email = '', storedRole = '' } = {}) => {
+  if (isAdminEmail(email)) return 'admin';
+  return storedRole || 'student';
+};
+
 export const shouldFallbackToRedirectLogin = (error) => {
   const code = error?.code || '';
 
