@@ -14,7 +14,12 @@ import {
   Layers3,
   Loader2,
   MessageCircle,
-  PlayCircle
+  PlayCircle,
+  Plus,
+  RotateCcw,
+  Table2,
+  Trash2,
+  Triangle
 } from 'lucide-react';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
@@ -35,6 +40,18 @@ import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
 import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
+import {
+  addRatioColumn,
+  createMathToolWork,
+  getMathToolSummary,
+  hasFilledMathToolWork,
+  MATH_TOOL_TYPES,
+  normalizeMathTool,
+  normalizeMathToolWork,
+  removeRatioColumn,
+  resetMathTool,
+  updateMathToolValue
+} from '../lib/mathToolboxUtils';
 
 const blockIcons = {
   theory: BookOpen,
@@ -477,6 +494,227 @@ function SimpleCalculator() {
   );
 }
 
+function MathToolboxPanel({ tools = [], disabled = false, onInsertTool }) {
+  return (
+    <div className="rounded-t-3xl border border-b-0 border-fuchsia-100 bg-[var(--helix-soft-lavender)]/70 px-4 py-3">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Wiskunde toolbox</p>
+          <p className="mt-1 text-sm font-semibold text-[var(--helix-muted)]">
+            Voeg een uitwerkschema toe aan je antwoord. Alles blijft handmatig, HELIX rekent niets uit.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onInsertTool?.(MATH_TOOL_TYPES.ratioTable)}
+            disabled={disabled}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-black text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Table2 size={16} />
+            Verhoudingstabel
+          </button>
+          <button
+            type="button"
+            onClick={() => onInsertTool?.(MATH_TOOL_TYPES.pythagoras)}
+            disabled={disabled}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-black text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Triangle size={16} />
+            Pythagoras schema
+          </button>
+        </div>
+      </div>
+      {tools.length > 0 && (
+        <p className="mt-3 text-xs font-black text-[var(--helix-purple)]">
+          {tools.length} uitwerkschema{tools.length === 1 ? '' : "'s"} in je antwoord
+        </p>
+      )}
+    </div>
+  );
+}
+
+function MathWorksheetList({ tools = [], disabled = false, onChangeTool, onRemoveTool, onResetTool }) {
+  if (!tools.length) return null;
+
+  return (
+    <div className="space-y-4 rounded-b-3xl border border-t-0 border-fuchsia-100 bg-white p-4">
+      {tools.map((tool) => (
+        <MathWorksheet
+          key={tool.id}
+          tool={tool}
+          disabled={disabled}
+          onChange={(nextTool) => onChangeTool?.(tool.id, nextTool)}
+          onRemove={() => onRemoveTool?.(tool.id)}
+          onReset={() => onResetTool?.(tool.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MathWorksheet({ tool, disabled, onChange, onRemove, onReset }) {
+  const normalized = normalizeMathTool(tool);
+  if (!normalized) return null;
+
+  return (
+    <section className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h4 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">{normalized.title}</h4>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onReset}
+            disabled={disabled}
+            className="inline-flex items-center gap-1 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RotateCcw size={14} />
+            Leegmaken
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            disabled={disabled}
+            className="inline-flex items-center gap-1 rounded-xl border border-red-100 bg-white px-3 py-2 text-xs font-black text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Trash2 size={14} />
+            Verwijder
+          </button>
+        </div>
+      </div>
+
+      {normalized.type === MATH_TOOL_TYPES.ratioTable ? (
+        <RatioTableWorksheet tool={normalized} disabled={disabled} onChange={onChange} />
+      ) : (
+        <PythagorasWorksheet tool={normalized} disabled={disabled} onChange={onChange} />
+      )}
+    </section>
+  );
+}
+
+function ToolboxInput({ value, onChange, disabled, placeholder = '' }) {
+  return (
+    <input
+      type="text"
+      value={value || ''}
+      onChange={(event) => onChange?.(event.target.value)}
+      disabled={disabled}
+      className="h-11 min-w-24 rounded-xl border border-[var(--helix-border)] bg-white px-3 text-center text-sm font-black text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+      placeholder={placeholder}
+    />
+  );
+}
+
+function RatioTableWorksheet({ tool, disabled, onChange }) {
+  const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
+  const addColumn = () => onChange?.(addRatioColumn(tool));
+  const removeColumn = (index) => onChange?.(removeRatioColumn(tool, index));
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="min-w-max">
+        <div
+          className="grid items-center gap-2"
+          style={{ gridTemplateColumns: `9rem repeat(${tool.topValues.length}, minmax(7rem, 1fr))` }}
+        >
+          <span />
+          {tool.operations.map((operation, index) => (
+            <div key={`operation-${index}`} className="col-span-1 flex items-center justify-center gap-2">
+              <ToolboxInput value={operation} disabled={disabled} onChange={(value) => change(['operations', index], value)} placeholder="bewerking" />
+              <span className="text-lg font-black text-[var(--helix-purple)]">→</span>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="mt-2 grid gap-2"
+          style={{ gridTemplateColumns: `9rem repeat(${tool.topValues.length}, minmax(7rem, 1fr))` }}
+        >
+          <ToolboxInput value={tool.topLabel} disabled={disabled} onChange={(value) => change(['topLabel'], value)} placeholder="rijnaam" />
+          {tool.topValues.map((value, index) => (
+            <ToolboxInput key={`top-${index}`} value={value} disabled={disabled} onChange={(nextValue) => change(['topValues', index], nextValue)} />
+          ))}
+          <ToolboxInput value={tool.bottomLabel} disabled={disabled} onChange={(value) => change(['bottomLabel'], value)} placeholder="rijnaam" />
+          {tool.bottomValues.map((value, index) => (
+            <ToolboxInput key={`bottom-${index}`} value={value} disabled={disabled} onChange={(nextValue) => change(['bottomValues', index], nextValue)} />
+          ))}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={addColumn} disabled={disabled} className="inline-flex items-center gap-2 rounded-xl bg-[var(--helix-purple)] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-60">
+            <Plus size={14} />
+            Kolom toevoegen
+          </button>
+          {tool.topValues.length > 2 && (
+            <button type="button" onClick={() => removeColumn(tool.topValues.length - 1)} disabled={disabled} className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60">
+              Laatste kolom verwijderen
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PythagorasWorksheet({ tool, disabled, onChange }) {
+  const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[34rem] border-separate border-spacing-0 overflow-hidden rounded-2xl border border-[var(--helix-border)] bg-white text-sm">
+          <thead>
+            <tr className="bg-[var(--helix-soft-lavender)] text-left text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-purple)]">
+              <th className="px-3 py-3">Zijde</th>
+              <th className="px-3 py-3">Lengte</th>
+              <th className="px-3 py-3">Kwadraat</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tool.rows.map((row, index) => (
+              <tr key={row.id} className="border-t border-[var(--helix-border)]">
+                <td className="px-3 py-2"><ToolboxInput value={row.side} disabled={disabled} onChange={(value) => change(['rows', index, 'side'], value)} placeholder={index < 2 ? 'RZ ...' : 'LZ ...'} /></td>
+                <td className="px-3 py-2"><ToolboxInput value={row.length} disabled={disabled} onChange={(value) => change(['rows', index, 'length'], value)} /></td>
+                <td className="px-3 py-2"><ToolboxInput value={row.square} disabled={disabled} onChange={(value) => change(['rows', index, 'square'], value)} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
+        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">Kwadraat optellen</p>
+          <div className="space-y-2">
+            <ToolboxInput value={tool.squareAddition.top} disabled={disabled} onChange={(value) => change(['squareAddition', 'top'], value)} placeholder="36" />
+            <div className="flex items-center gap-2">
+              <span className="font-black text-[var(--helix-purple)]">+</span>
+              <ToolboxInput value={tool.squareAddition.bottom} disabled={disabled} onChange={(value) => change(['squareAddition', 'bottom'], value)} placeholder="64" />
+            </div>
+            <div className="h-0.5 rounded-full bg-[var(--helix-navy)]" />
+            <ToolboxInput value={tool.squareAddition.sum} disabled={disabled} onChange={(value) => change(['squareAddition', 'sum'], value)} placeholder="100" />
+          </div>
+        </div>
+
+        <div className="grid gap-3 rounded-2xl border border-[var(--helix-border)] bg-white p-4 sm:grid-cols-3">
+          <label className="text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">
+            LZ² =
+            <ToolboxInput value={tool.conclusion.lzSquared} disabled={disabled} onChange={(value) => change(['conclusion', 'lzSquared'], value)} />
+          </label>
+          <label className="text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">
+            LZ = √
+            <ToolboxInput value={tool.conclusion.root} disabled={disabled} onChange={(value) => change(['conclusion', 'root'], value)} />
+          </label>
+          <label className="text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">
+            LZ =
+            <ToolboxInput value={tool.conclusion.length} disabled={disabled} onChange={(value) => change(['conclusion', 'length'], value)} />
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, studentName = 'leerling', onSaveProgress }) {
   const preview = buildQuestionPreviewModel(linkedVraag || {});
   const [previewAnswers, setPreviewAnswers] = useState(progressRecord?.lastAnswer || {});
@@ -496,6 +734,15 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
     if (submitted) return;
     setPreviewAnswers((current) => ({ ...current, [fieldId]: value }));
   };
+  const mathTools = normalizeMathToolWork(previewAnswers.mathTools);
+  const hasMathToolInput = hasFilledMathToolWork(mathTools);
+  const allowMathToolbox = Boolean(block?.settings?.allowMathToolbox);
+  const allowAiHelp = Boolean(block?.settings?.allowAiHelp);
+  const setMathTools = (nextTools) => setPreviewAnswer('mathTools', normalizeMathToolWork(nextTools));
+  const insertMathTool = (type) => setMathTools([...mathTools, createMathToolWork(type)]);
+  const updateMathTool = (toolId, nextTool) => setMathTools(mathTools.map((tool) => (tool.id === toolId ? nextTool : tool)));
+  const removeMathTool = (toolId) => setMathTools(mathTools.filter((tool) => tool.id !== toolId));
+  const resetMathToolById = (toolId) => setMathTools(mathTools.map((tool) => (tool.id === toolId ? resetMathTool(tool) : tool)));
 
   const inputClassForStatus = (status, baseClass = '') => {
     const statusClass = status === 'correct'
@@ -549,6 +796,10 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
     const nextAttempts = attempts + 1;
     setAttempts(nextAttempts);
     setSaving(true);
+    const openStudentAnswer = [
+      String(previewAnswers.openAnswer || '').trim(),
+      hasFilledMathToolWork(previewAnswers.mathTools) ? getMathToolSummary(previewAnswers.mathTools) : ''
+    ].filter(Boolean).join('\n\n');
 
     try {
       const assessment = isOpenQuestion
@@ -557,7 +808,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
             questionTitle: linkedVraag?.title || block.title || 'Open vraag',
             questionPrompt: linkedVraag?.content?.text || bodyHtml || '',
             modelAnswer: linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
-            studentAnswer: previewAnswers.openAnswer || ''
+            studentAnswer: openStudentAnswer
           })
         : null;
       const isCorrect = isOpenQuestion
@@ -671,38 +922,39 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   }
 
   return (
-    <div className="space-y-6">
-      {submitted && (
-        <div className={`rounded-2xl border-2 ${resultTone.borderClass} ${resultTone.fillClass} px-4 py-3 text-sm font-black text-[var(--helix-navy)]`}>
-          {resultTone.label}
-        </div>
-      )}
+    <div className={allowAiHelp && !submitted ? 'grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]' : 'space-y-6'}>
+      <div className="space-y-6">
+        {submitted && (
+          <div className={`rounded-2xl border-2 ${resultTone.borderClass} ${resultTone.fillClass} px-4 py-3 text-sm font-black text-[var(--helix-navy)]`}>
+            {resultTone.label}
+          </div>
+        )}
 
-      {assessmentFeedback && (
-        <div className={`rounded-2xl border-2 px-4 py-3 text-sm font-bold ${
-          submitted
-            ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-            : 'border-amber-200 bg-amber-50 text-amber-950'
-        }`}>
-          <p>{assessmentFeedback}</p>
-          {assessmentMissing.length > 0 && (
-            <ul className="mt-2 list-disc space-y-1 pl-5">
-              {assessmentMissing.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+        {assessmentFeedback && (
+          <div className={`rounded-2xl border-2 px-4 py-3 text-sm font-bold ${
+            submitted
+              ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+              : 'border-amber-200 bg-amber-50 text-amber-950'
+          }`}>
+            <p>{assessmentFeedback}</p>
+            {assessmentMissing.length > 0 && (
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                {assessmentMissing.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
-      {preview.promptHtml && (
-        <div
-          className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
-          dangerouslySetInnerHTML={htmlValue(preview.promptHtml)}
-        />
-      )}
+        {preview.promptHtml && (
+          <div
+            className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
+            dangerouslySetInnerHTML={htmlValue(preview.promptHtml)}
+          />
+        )}
 
-      {preview.type === 'invullen' ? (
+        {preview.type === 'invullen' ? (
         <div className="rounded-3xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/55 p-5 text-lg leading-10 text-[var(--helix-navy)]">
           {preview.segments.map((segment, index) => (
             segment.type === 'gap' ? (() => {
@@ -824,34 +1076,90 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
               : 'empty';
             return (
               <>
+                {allowMathToolbox && (
+                  <MathToolboxPanel
+                    tools={mathTools}
+                    disabled={submitted}
+                    onInsertTool={insertMathTool}
+                  />
+                )}
                 <textarea
                   value={previewAnswers.openAnswer || ''}
                   onChange={(event) => setPreviewAnswer('openAnswer', event.target.value)}
                   disabled={submitted}
-                  className={inputClassForStatus(status, 'input-standard min-h-36 w-full resize-y leading-6')}
+                  className={inputClassForStatus(status, `input-standard min-h-36 w-full resize-y leading-6 ${allowMathToolbox ? 'rounded-t-none' : ''}`)}
                   placeholder="Typ je antwoord..."
                 />
+                {allowMathToolbox && (
+                  <MathWorksheetList
+                    tools={mathTools}
+                    disabled={submitted}
+                    onChangeTool={updateMathTool}
+                    onRemoveTool={removeMathTool}
+                    onResetTool={resetMathToolById}
+                  />
+                )}
               </>
             );
           })()}
         </div>
       )}
 
-      {block?.settings?.allowAiHelp && !submitted && (
-        <div className="rounded-2xl border border-fuchsia-100 bg-white p-4">
+        {allowMathToolbox && preview.type !== 'open' && (
+          <div>
+            <MathToolboxPanel
+              tools={mathTools}
+              disabled={submitted}
+              onInsertTool={insertMathTool}
+            />
+            <MathWorksheetList
+              tools={mathTools}
+              disabled={submitted}
+              onChangeTool={updateMathTool}
+              onRemoveTool={removeMathTool}
+              onResetTool={resetMathToolById}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--helix-border)] pt-4">
+          <p className="text-sm font-bold text-[var(--helix-muted)]">
+            {attempts > 0 ? `${attempts} poging${attempts === 1 ? '' : 'en'} opgeslagen` : 'Nog geen poging opgeslagen'}
+          </p>
+          <button
+            type="button"
+            onClick={handleCheckAnswer}
+            disabled={saving || submitted || (preview.type === 'open' && !String(previewAnswers.openAnswer || '').trim() && !hasMathToolInput)}
+            className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? (preview.type === 'open' ? 'P-AI-co beoordeelt...' : 'Opslaan...') : submitted ? 'Vraag afgerond' : 'Controleer antwoord'}
+          </button>
+        </div>
+      </div>
+
+      {allowAiHelp && !submitted && (
+        <aside className="rounded-3xl border border-fuchsia-100 bg-white p-4 shadow-sm xl:sticky xl:top-24 xl:self-start">
+          <div className="mb-3 flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
+              <MessageCircle size={19} />
+            </div>
+            <div>
+              <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">P-AI-co hulp</h3>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--helix-muted)]">
+                Rechts naast de vraag. P-AI-co stelt denkvragen en geeft het antwoord niet letterlijk.
+              </p>
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => setShowAiTutor((current) => !current)}
-            className="inline-flex items-center gap-2 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)]"
+            className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)]"
           >
             <MessageCircle size={16} />
             {showAiTutor ? 'Sluit P-AI-co' : 'Vraag P-AI-co om hulp'}
           </button>
-          <p className="mt-2 text-xs font-semibold text-[var(--helix-muted)]">
-            P-AI-co gaat je met vragen helpen, zonder het antwoord voor te zeggen.
-          </p>
           {showAiTutor && (
-            <div className="mt-4">
+            <div>
               <AITutorChat
                 contextHeading={linkedVraag?.title || block?.title || 'Vraag'}
                 hints={linkedVraag?.antwoord?.hints || []}
@@ -863,22 +1171,8 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
               />
             </div>
           )}
-        </div>
+        </aside>
       )}
-
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--helix-border)] pt-4">
-        <p className="text-sm font-bold text-[var(--helix-muted)]">
-          {attempts > 0 ? `${attempts} poging${attempts === 1 ? '' : 'en'} opgeslagen` : 'Nog geen poging opgeslagen'}
-        </p>
-        <button
-          type="button"
-          onClick={handleCheckAnswer}
-          disabled={saving || submitted || (preview.type === 'open' && !String(previewAnswers.openAnswer || '').trim())}
-          className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {saving ? (preview.type === 'open' ? 'P-AI-co beoordeelt...' : 'Opslaan...') : submitted ? 'Vraag afgerond' : 'Controleer antwoord'}
-        </button>
-      </div>
     </div>
   );
 }

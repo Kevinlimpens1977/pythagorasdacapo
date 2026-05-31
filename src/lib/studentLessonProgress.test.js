@@ -54,13 +54,15 @@ test('findResumeBlockIndex returns last block when lesson is completed', () => {
 });
 
 test('normalizes lesson block settings without overwriting explicit false values', () => {
-  assert.deepEqual(normalizeContentBlockSettings({ allowCalculator: true, allowAiHelp: false }), {
+  assert.deepEqual(normalizeContentBlockSettings({ allowCalculator: true, allowAiHelp: false, allowMathToolbox: true }), {
     allowCalculator: true,
-    allowAiHelp: false
+    allowAiHelp: false,
+    allowMathToolbox: true
   });
 
   assert.deepEqual(normalizeContentBlocks([{ id: 'block-1', order: 1 }])[0].settings, {
     allowCalculator: false,
-    allowAiHelp: false
+    allowAiHelp: false,
+    allowMathToolbox: false
   });
 });

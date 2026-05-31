@@ -27,3 +27,26 @@ test('buildAiTutorStudentAnswerSummary marks a selected wrong multiple-choice op
   assert.match(summary, /verklap het juiste antwoord niet/i);
   assert.doesNotMatch(summary, /goed/);
 });
+
+test('buildAiTutorStudentAnswerSummary includes manually filled math toolbox work', () => {
+  const summary = buildAiTutorStudentAnswerSummary({
+    vraag: { title: 'Hoeveel procent is 42 van 70?', vraagtype: 'open' },
+    preview: { type: 'open' },
+    previewAnswers: {
+      openAnswer: 'Ik gebruik een tabel.',
+      mathTools: [
+        {
+          id: 'ratio',
+          type: 'ratioTable',
+          topValues: ['70', '42'],
+          bottomValues: ['100%', ''],
+          operations: ['']
+        }
+      ]
+    }
+  });
+
+  assert.match(summary, /Leerlingpoging/);
+  assert.match(summary, /Verhoudingstabel/);
+  assert.match(summary, /2 kolommen/);
+});

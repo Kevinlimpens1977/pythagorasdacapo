@@ -1,3 +1,5 @@
+import { getMathToolSummary } from './mathToolboxUtils.js';
+
 const stripHtml = (value = '') =>
   String(value || '')
     .replace(/<br\s*\/?>/gi, '\n')
@@ -71,6 +73,7 @@ export const buildAiTutorStudentAnswerSummary = ({
   return [
     `Vraagtype: ${type}`,
     prompt ? `Vraag: ${prompt}` : '',
-    `Leerlingpoging: ${JSON.stringify(previewAnswers)}`
+    `Leerlingpoging: ${JSON.stringify(previewAnswers)}`,
+    getMathToolSummary(previewAnswers.mathTools)
   ].filter(Boolean).join('\n');
 };

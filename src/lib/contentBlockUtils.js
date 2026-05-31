@@ -22,12 +22,14 @@ export const CONTENT_BLOCK_LABELS = {
 
 export const DEFAULT_CONTENT_BLOCK_SETTINGS = {
   allowCalculator: false,
-  allowAiHelp: false
+  allowAiHelp: false,
+  allowMathToolbox: false
 };
 
 export const normalizeContentBlockSettings = (settings = {}) => ({
   allowCalculator: settings.allowCalculator ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowCalculator,
-  allowAiHelp: settings.allowAiHelp ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp
+  allowAiHelp: settings.allowAiHelp ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp,
+  allowMathToolbox: settings.allowMathToolbox ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowMathToolbox
 });
 
 export const getDefaultContentForBlockType = (type) => {
