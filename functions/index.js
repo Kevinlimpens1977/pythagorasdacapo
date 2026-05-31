@@ -198,6 +198,16 @@ async function assertAiTutorAllowed({ auth, db }) {
   return { user: callerData, firstName: getFirstName(callerData), klas: klas.data };
 }
 
+async function assertSignedInUserProfile({ auth, db }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om je antwoord te laten beoordelen.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Gebruiker");
+  const callerData = caller.data || {};
+  return { user: callerData, firstName: getFirstName(callerData) };
+}
+
 async function assertAiTutorBlockAllowed({ db, blockId }) {
   const cleanBlockId = String(blockId || "").trim();
   if (!cleanBlockId) return;
@@ -304,8 +314,7 @@ async function assessOpenAnswerCore({
     throw new HttpsError("invalid-argument", "Vul eerst een antwoord in.");
   }
 
-  const { firstName } = await assertAiTutorAllowed({ auth, db });
-  await assertAiTutorBlockAllowed({ db, blockId: data?.blockId });
+  const { firstName } = await assertSignedInUserProfile({ auth, db });
   const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
   const messages = buildOpenAnswerAssessmentMessages({
     questionTitle: data?.questionTitle,
