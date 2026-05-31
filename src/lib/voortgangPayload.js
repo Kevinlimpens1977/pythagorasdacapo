@@ -28,9 +28,10 @@ export const buildContentBlockVoortgangUpdate = ({
     vraagType: data.vraagType || existingData.vraagType || '',
     completed: data.completed || false,
     isCorrect: data.isCorrect || false,
-    attempts: data.attempts || existingData.attempts || 1,
+    attempts: data.attempts ?? existingData.attempts ?? 0,
     lastAnswer: data.lastAnswer || existingData.lastAnswer || null,
     openAnswerAssessment: data.openAnswerAssessment || existingData.openAnswerAssessment || null,
+    draftSaved: data.draftSaved ?? existingData.draftSaved ?? false,
     ...resultMetadata,
     updatedAt: timestamp,
     firstAttemptAt: existingData.firstAttemptAt || timestamp

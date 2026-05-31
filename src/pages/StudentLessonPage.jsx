@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -45,6 +45,7 @@ import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
 import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
+import { buildQuestionDraftProgressPayload, hasQuestionDraftAnswer } from '../lib/questionDraftProgress';
 import {
   addRatioColumn,
   createMathToolWork,
@@ -740,6 +741,13 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   const [aiHelpCount, setAiHelpCount] = useState(progressRecord?.aiHelpCount || 0);
   const [assessmentFeedback, setAssessmentFeedback] = useState(progressRecord?.openAnswerAssessment?.feedback || '');
   const [assessmentMissing, setAssessmentMissing] = useState(progressRecord?.openAnswerAssessment?.missing || []);
+  const onSaveProgressRef = useRef(onSaveProgress);
+  const initialDraftSignature = JSON.stringify({
+    previewAnswers: progressRecord?.lastAnswer || {},
+    aiHelpCount: progressRecord?.aiHelpCount || 0,
+    attempts: progressRecord?.attempts || 0
+  });
+  const lastDraftSignatureRef = useRef(initialDraftSignature);
   const resultTone = getLearningResultTone({
     isCorrect: submitted,
     aiHelpCount
@@ -758,6 +766,31 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   const updateMathTool = (toolId, nextTool) => setMathTools(mathTools.map((tool) => (tool.id === toolId ? nextTool : tool)));
   const removeMathTool = (toolId) => setMathTools(mathTools.filter((tool) => tool.id !== toolId));
   const resetMathToolById = (toolId) => setMathTools(mathTools.map((tool) => (tool.id === toolId ? resetMathTool(tool) : tool)));
+  const draftSignature = JSON.stringify({ previewAnswers, aiHelpCount, attempts });
+
+  useEffect(() => {
+    onSaveProgressRef.current = onSaveProgress;
+  }, [onSaveProgress]);
+
+  useEffect(() => {
+    if (submitted || saving) return undefined;
+    if (!hasQuestionDraftAnswer(previewAnswers)) return undefined;
+    if (draftSignature === lastDraftSignatureRef.current) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      lastDraftSignatureRef.current = draftSignature;
+      onSaveProgressRef.current?.(false, buildQuestionDraftProgressPayload({
+        block,
+        linkedVraag,
+        preview,
+        previewAnswers,
+        attempts,
+        aiHelpCount
+      }));
+    }, 900);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [aiHelpCount, attempts, block, draftSignature, linkedVraag, preview, previewAnswers, saving, submitted]);
 
   const inputClassForStatus = (status, baseClass = '') => {
     const statusClass = status === 'correct'
@@ -880,11 +913,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
     });
   };
 
-  const hasAnyAnswer = Object.values(previewAnswers).some((value) => {
-    if (Array.isArray(value)) return value.length > 0;
-    if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
-    return String(value || '').trim().length > 0;
-  });
+  const hasAnyAnswer = hasQuestionDraftAnswer(previewAnswers);
   const aiInitialMessage = hasAnyAnswer
     ? `Ik ben P-AI-co. Ik help je met denkvragen bij "${linkedVraag?.title || 'deze vraag'}", maar ik geef het antwoord niet letterlijk. Wat heb je al geprobeerd?`
     : `Hoi ${studentName}, probeer eerst zelf een antwoord in te vullen. Daarna help ik je met denkvragen, zonder het antwoord voor te zeggen.`;

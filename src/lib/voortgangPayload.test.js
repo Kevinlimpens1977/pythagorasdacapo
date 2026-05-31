@@ -59,6 +59,25 @@ test('buildContentBlockVoortgangUpdate stores completed independent work with fu
   assert.equal(update.completedAt, 'now');
 });
 
+test('buildContentBlockVoortgangUpdate stores draft answers without counting an attempt', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    data: {
+      completed: false,
+      isCorrect: false,
+      attempts: 0,
+      lastAnswer: { openAnswer: 'conceptantwoord' },
+      draftSaved: true
+    }
+  });
+
+  assert.equal(update.completed, false);
+  assert.equal(update.isCorrect, false);
+  assert.equal(update.attempts, 0);
+  assert.equal(update.draftSaved, true);
+  assert.deepEqual(update.lastAnswer, { openAnswer: 'conceptantwoord' });
+});
+
 test('buildContentBlockVoortgangUpdate preserves first attempt and existing completed timestamp', () => {
   const update = buildContentBlockVoortgangUpdate({
     ...base,
