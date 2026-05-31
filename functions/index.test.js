@@ -616,6 +616,38 @@ test("assessOpenAnswer returns a passing AI assessment as structured data", asyn
   assert.match(body.messages[1].content, /oppervlaktes van de twee kleine vierkanten/i);
 });
 
+test("assessOpenAnswer does not require lesson block AI chat permission", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: false } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: false } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+  });
+
+  const result = await __test.assessOpenAnswerCore({
+    auth: { uid: "student-1" },
+    data: {
+      blockId: "block-1",
+      questionTitle: "Leg uit",
+      modelAnswer: "Noem de kern.",
+      studentAnswer: "Ik noem de kern.",
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: '{"isCorrect":true,"feedback":"Voldoende.","missing":[]}' } }] }),
+    }),
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.isCorrect, true);
+});
+
 test("assessOpenAnswer returns socratic feedback when an answer is incomplete", async () => {
   const db = createDb({
     "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
