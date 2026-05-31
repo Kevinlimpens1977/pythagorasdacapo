@@ -17,6 +17,7 @@ import {
 import { db } from './firebase';
 import { buildLearningResultMetadata } from '../lib/learningResultUtils';
 import { buildContentBlockVoortgangUpdate } from '../lib/voortgangPayload';
+import { shouldFallbackToUserProgressQuery } from '../lib/voortgangQueryUtils';
 
 /**
  * Save progress for a single question (upsert)
@@ -264,19 +265,40 @@ export const getKlasVoortgangForParagraaf = async (klasId, paragraafId) => {
  * @returns {Promise<Array>} Array of all progress records for student
  */
 export const getStudentVoortgang = async (userId, klasId) => {
-  if (!userId || !klasId) {
+  if (!userId) {
     return [];
   }
 
   try {
-    const q = query(
+    const userOnlyQuery = query(
+      collection(db, 'voortgang'),
+      where('userId', '==', userId)
+    );
+
+    if (!klasId) {
+      const snapshot = await getDocs(userOnlyQuery);
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    }
+
+    const classScopedQuery = query(
       collection(db, 'voortgang'),
       where('userId', '==', userId),
       where('klasId', '==', klasId)
     );
 
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    const classScopedSnapshot = await getDocs(classScopedQuery);
+    if (!shouldFallbackToUserProgressQuery({ klasId, classScopedCount: classScopedSnapshot.size })) {
+      return classScopedSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    }
+
+    const userOnlySnapshot = await getDocs(userOnlyQuery);
+    return userOnlySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));

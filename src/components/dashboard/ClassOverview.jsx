@@ -14,6 +14,7 @@ import {
   getStudentEffectiveParagrafen
 } from '../../lib/assignmentUtils';
 import { getLearningResultTone } from '../../lib/learningResultUtils';
+import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -66,19 +67,6 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
       )}
     </div>
   );
-}
-
-function formatProgressAnswer(answer) {
-  if (!answer) return 'Geen antwoord opgeslagen';
-  if (typeof answer === 'string' || typeof answer === 'number' || typeof answer === 'boolean') {
-    return String(answer);
-  }
-
-  try {
-    return JSON.stringify(answer);
-  } catch {
-    return 'Antwoord opgeslagen';
-  }
 }
 
 function StudentProgressRecordList({ records = [], paragraafId }) {
