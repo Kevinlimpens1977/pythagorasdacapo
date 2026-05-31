@@ -61,6 +61,18 @@ export const updateOpenRouterConfigCall = async ({ enabled, apiKey, model }) => 
   return result.data;
 };
 
+export const getAiTutorRulesCall = async () => {
+  const getRules = httpsCallable(functions, 'getAiTutorRules');
+  const result = await getRules({});
+  return result.data;
+};
+
+export const updateAiTutorRulesCall = async ({ masterRules, vmboRules, adminRules }) => {
+  const updateRules = httpsCallable(functions, 'updateAiTutorRules');
+  const result = await updateRules({ masterRules, vmboRules, adminRules });
+  return result.data;
+};
+
 /**
  * Extract text from image via OpenRouter Vision API
  * Used for OCR in CMS crop editor

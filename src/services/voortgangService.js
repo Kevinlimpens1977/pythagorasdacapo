@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { buildLearningResultMetadata } from '../lib/learningResultUtils';
+import { buildContentBlockVoortgangUpdate } from '../lib/voortgangPayload';
 
 /**
  * Save progress for a single question (upsert)
@@ -158,35 +159,16 @@ export const saveContentBlockVoortgang = async (
       // Missing progress doc is fine for first visit.
     }
 
-    const resultMetadata = buildLearningResultMetadata({
-      isCorrect: data.isCorrect || false,
-      aiHelpCount: data.aiHelpCount ?? existingData.aiHelpCount ?? 0
-    });
-
-    const updates = {
+    const updates = buildContentBlockVoortgangUpdate({
       userId,
       blockId,
       paragraafId,
       hoofdstukId,
       klasId,
-      progressType: 'contentBlock',
-      blockTitle: data.blockTitle || existingData.blockTitle || '',
-      blockType: data.blockType || existingData.blockType || '',
-      vraagTitle: data.vraagTitle || existingData.vraagTitle || '',
-      vraagType: data.vraagType || existingData.vraagType || '',
-      completed: data.completed || false,
-      isCorrect: data.isCorrect || false,
-      attempts: data.attempts || existingData.attempts || 1,
-      lastAnswer: data.lastAnswer || existingData.lastAnswer || null,
-      openAnswerAssessment: data.openAnswerAssessment || existingData.openAnswerAssessment || null,
-      ...resultMetadata,
-      updatedAt: serverTimestamp(),
-      firstAttemptAt: existingData.firstAttemptAt || serverTimestamp()
-    };
-
-    if (data.completed && !existingData.completedAt) {
-      updates.completedAt = serverTimestamp();
-    }
+      data,
+      existingData,
+      timestamp: serverTimestamp()
+    });
 
     await setDoc(docRef, updates, { merge: true });
   } catch (error) {

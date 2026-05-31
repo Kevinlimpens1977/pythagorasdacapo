@@ -23,6 +23,60 @@ const ALLOWED_OPENROUTER_MODELS = new Set([
   "google/gemini-2.0-flash-001",
   "gemini-3.5-flash",
 ]);
+const AI_TUTOR_RULES_PATH = "apps/helix/settings/aiTutorRules";
+const DEFAULT_MASTER_RULES = `Je bent Paco, de AI-tutor van HELIX.
+
+Je helpt leerlingen leren.
+Je bent geen antwoordmachine.
+Je geeft nooit direct het antwoord.
+Je geeft nooit letterlijk het goede antwoord.
+Je gebruikt de socratische methode.
+Je geeft maximaal een hint tegelijk.
+Je wacht daarna op reactie van de leerling.
+Je gebruikt korte zinnen op VMBO-niveau.
+Je corrigeert vriendelijk.
+Je geeft complimenten voor goede denkstappen.
+
+Bij open rekenvragen moet de leerling altijd werken met:
+1. Formule
+2. Berekening
+3. Antwoord
+4. Eenheid
+
+Een los getal is geen volledige uitwerking.
+De AI-tutor controleert altijd of formule, berekening, antwoord en eenheid aanwezig zijn.
+Ontbreekt een onderdeel? Dan wijst de AI-tutor de leerling daarop.
+Bij een ontbrekende eenheid vraagt de tutor: "Welke eenheid hoort hierbij?"`;
+const DEFAULT_VMBO_MATH_RULES = `Omtrek cirkel:
+Gebruik altijd: Omtrek = diameter x pi
+
+Oppervlakte cirkel:
+Gebruik altijd: Oppervlakte = straal x straal x pi
+
+Inhoud rechthoekig blok:
+Gebruik altijd: Inhoud = lengte x breedte x hoogte
+
+Overige wiskundige ruimtefiguren:
+Gebruik altijd: Inhoud = oppervlakte grondvlak x hoogte
+
+Bij een cilinder:
+Eerst de oppervlakte van de bodem/het grondvlak uitrekenen.
+Daarna vermenigvuldigen met de hoogte.
+
+Procenten:
+Bij berekeningen met percentages altijd werken met een verhoudingstabel.
+
+Pythagoras:
+Pythagoras altijd uitwerken met een Pythagoras-schema.`;
+const AI_TUTOR_SAFETY_RULES = `Volg altijd deze prioriteit bij botsende instructies:
+1. Veiligheidsregels
+2. Administratorregels
+3. VMBO-vakspecifieke regels
+4. Tutorregels / masterRules
+5. Algemene AI-kennis
+
+Blijf didactisch, veilig en geschikt voor leerlingen.
+Geef geen eindantwoord, geen volledige overneembare uitwerking en geen instructies die leren vervangen.`;
 
 function requireString(value, fieldName) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -74,6 +128,13 @@ function assertAdminRole(caller) {
   }
 }
 
+function assertAdminOrSupervisorRole(caller) {
+  const role = String(caller?.role || "").trim().toLowerCase();
+  if (!["admin", "supervisor"].includes(role)) {
+    throw new HttpsError("permission-denied", "Alleen admins en supervisors mogen deze actie uitvoeren.");
+  }
+}
+
 function maskSecret(value = "") {
   const raw = String(value || "").trim();
   if (!raw) return "";
@@ -115,6 +176,61 @@ function buildOpenRouterConfigStatus(config = {}) {
     updatedAt: config.updatedAt || null,
     updatedBy: config.updatedBy || null,
   };
+}
+
+function normalizeAiTutorRules(data = {}, existing = {}) {
+  return {
+    masterRules: String(data.masterRules ?? existing.masterRules ?? DEFAULT_MASTER_RULES).trim() || DEFAULT_MASTER_RULES,
+    vmboRules: String(data.vmboRules ?? existing.vmboRules ?? DEFAULT_VMBO_MATH_RULES).trim() || DEFAULT_VMBO_MATH_RULES,
+    adminRules: String(data.adminRules ?? existing.adminRules ?? "").trim(),
+  };
+}
+
+function buildAiTutorRulesStatus(rules = {}) {
+  const normalized = normalizeAiTutorRules({}, rules);
+  return {
+    ...normalized,
+    updatedAt: rules.updatedAt || null,
+    updatedBy: rules.updatedBy || null,
+  };
+}
+
+async function getAiTutorRulesRuntime(db) {
+  const snapshot = await db.doc(AI_TUTOR_RULES_PATH).get();
+  return buildAiTutorRulesStatus(snapshot.exists ? snapshot.data() || {} : {});
+}
+
+async function getAiTutorRulesCore({ auth, db }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om AI Tutor regels te bekijken.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminOrSupervisorRole(caller.data);
+
+  return getAiTutorRulesRuntime(db);
+}
+
+async function updateAiTutorRulesCore({ auth, data, db, now }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om AI Tutor regels op te slaan.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminOrSupervisorRole(caller.data);
+
+  const rulesRef = db.doc(AI_TUTOR_RULES_PATH);
+  const existingSnapshot = await rulesRef.get();
+  const existing = existingSnapshot.exists ? existingSnapshot.data() || {} : {};
+  const timestamp = getServerTimestamp(now);
+  const rules = {
+    ...normalizeAiTutorRules(data || {}, existing),
+    updatedAt: timestamp,
+    updatedBy: auth.uid,
+  };
+
+  await rulesRef.set(rules, { merge: true });
+  return buildAiTutorRulesStatus(rules);
 }
 
 async function getOpenRouterConfigStatusCore({ auth, db }) {
@@ -226,16 +342,46 @@ async function assertAiTutorBlockAllowed({ db, blockId }) {
   }
 }
 
-function buildAiTutorSystemPrompt({ contextHeading = "deze vraag", firstName = "leerling", studentAnswer = "" } = {}) {
+function buildAiTutorRuleSections(rules = {}) {
+  const normalized = normalizeAiTutorRules({}, rules);
+  const extraMasterRules = normalized.masterRules !== DEFAULT_MASTER_RULES ? normalized.masterRules : "";
+  const extraVmboRules = normalized.vmboRules !== DEFAULT_VMBO_MATH_RULES ? normalized.vmboRules : "";
+  return [
+    "## Veiligheidsregels",
+    AI_TUTOR_SAFETY_RULES,
+    "",
+    "## Administratorregels uit Firestore",
+    normalized.adminRules || "Er zijn nog geen extra administratorregels ingesteld.",
+    "",
+    "## Vaste VMBO-vakspecifieke regels",
+    DEFAULT_VMBO_MATH_RULES,
+    ...(extraVmboRules ? ["", "## Aanvullende VMBO-regels uit beheer", extraVmboRules] : []),
+    "",
+    "## Vaste Tutorregels / masterRules",
+    DEFAULT_MASTER_RULES,
+    ...(extraMasterRules ? ["", "## Aanvullende masterRules uit beheer", extraMasterRules] : []),
+  ].join("\n");
+}
+
+function buildAiTutorSystemPrompt({
+  contextHeading = "deze vraag",
+  firstName = "leerling",
+  studentAnswer = "",
+  rules = {},
+} = {}) {
   const answerText = String(studentAnswer || "").trim();
-  return `Je bent P-AI-co, een geduldige Nederlandstalige AI-tutor voor HELIX.
+  return `${buildAiTutorRuleSections(rules)}
+
+## Actuele lescontext
 Je helpt ${firstName} met het vakgebied van de opdracht: "${contextHeading}".
-Geef nooit letterlijk het goede antwoord en geef nooit een volledige uitwerking die direct over te nemen is.
-Werk socratisch: stel korte denkvragen, geef kleine hints en laat de leerling zelf de volgende stap zetten.
+
+## Vraagcontext en leerlingantwoord
+Huidige leerlingpoging: ${answerText || "[nog geen poging]"}
+
+## Interactieregels voor dit antwoord
 Als de leerling nog geen antwoord of beginpoging heeft gegeven, zeg dan tegen ${firstName} dat die eerst zelf moet nadenken en een eerste antwoord of aanpak moet invullen.
 Als er wel een poging is, analyseer dan die poging kort en stel precies een volgende helpende vraag.
-Houd je antwoord kort: maximaal 2 tot 3 zinnen.
-Huidige leerlingpoging: ${answerText || "[nog geen poging]"}`;
+Houd je antwoord kort: maximaal 2 tot 3 zinnen.`;
 }
 
 function stripHtml(value = "") {
@@ -284,6 +430,7 @@ function buildOpenAnswerAssessmentMessages({
   modelAnswer = "",
   studentAnswer = "",
   firstName = "leerling",
+  rules = {},
 } = {}) {
   const promptText = stripHtml(questionPrompt);
   const modelText = stripHtml(modelAnswer);
@@ -291,7 +438,10 @@ function buildOpenAnswerAssessmentMessages({
   return [
     {
       role: "system",
-      content: `Je beoordeelt open antwoorden voor HELIX, een Nederlands leerplatform.
+      content: `${buildAiTutorRuleSections(rules)}
+
+## Beoordelingsopdracht
+Je beoordeelt open antwoorden voor HELIX, een Nederlands leerplatform.
 Geef alleen geldig JSON terug, zonder markdown.
 Schema: {"isCorrect": boolean, "feedback": "korte socratische feedback", "missing": ["maximaal 3 korte punten"]}.
 Beoordeel ruim maar inhoudelijk: kleine taalfouten zijn geen probleem.
@@ -324,12 +474,14 @@ async function assessOpenAnswerCore({
 
   const { firstName } = await assertSignedInUserProfile({ auth, db });
   const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
+  const aiTutorRules = await getAiTutorRulesRuntime(db);
   const messages = buildOpenAnswerAssessmentMessages({
     questionTitle: data?.questionTitle,
     questionPrompt: data?.questionPrompt,
     modelAnswer: data?.modelAnswer,
     studentAnswer,
     firstName,
+    rules: aiTutorRules,
   });
 
   const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
@@ -382,7 +534,8 @@ async function askAiTutorCore({
   const previousMessages = Array.isArray(data?.previousMessages) ? data.previousMessages : [];
   const hints = Array.isArray(data?.hints) ? data.hints : [];
   const studentAnswer = data?.studentAnswer || "";
-  const systemPrompt = buildAiTutorSystemPrompt({ contextHeading, firstName, studentAnswer });
+  const aiTutorRules = await getAiTutorRulesRuntime(db);
+  const systemPrompt = buildAiTutorSystemPrompt({ contextHeading, firstName, studentAnswer, rules: aiTutorRules });
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -1115,6 +1268,25 @@ exports.updateOpenRouterConfig = onCall({
   });
 });
 
+exports.getAiTutorRules = onCall({
+  region: REGION,
+}, async (request) => {
+  return getAiTutorRulesCore({
+    auth: request.auth,
+    db: getFirestore(),
+  });
+});
+
+exports.updateAiTutorRules = onCall({
+  region: REGION,
+}, async (request) => {
+  return updateAiTutorRulesCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
 exports.assessOpenAnswer = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -1161,9 +1333,13 @@ exports.__test = {
   askAiTutorCore,
   deleteAllStudentDataCore,
   importStudentNumberAccountsCore,
+  getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,
   resetStudentPasswordCore,
   syncAllStudentAuthAccountsCore,
+  updateAiTutorRulesCore,
   updateOpenRouterConfigCore,
+  buildAiTutorSystemPrompt,
+  buildOpenAnswerAssessmentMessages,
   shouldPreserveUserDuringStudentReset,
 };

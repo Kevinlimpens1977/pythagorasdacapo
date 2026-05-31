@@ -15,6 +15,14 @@ service cloud.firestore {
       return signedIn() && userDoc().data.role == 'admin';
     }
 
+    function isSupervisor() {
+      return signedIn() && userDoc().data.role == 'supervisor';
+    }
+
+    function isAdminOrSupervisor() {
+      return isAdmin() || isSupervisor();
+    }
+
     function isOwner(userId) {
       return signedIn() && request.auth.uid == userId;
     }
@@ -96,6 +104,12 @@ service cloud.firestore {
     // Server-only provider secrets/config. Gebruik Cloud Functions; nooit direct vanuit de client.
     match /privateConfig/{document=**} {
       allow read, write: if false;
+    }
+
+    // Beheerbare P-AI-co tutorregels. Leerlingen mogen deze regels niet zien of aanpassen.
+    match /apps/helix/settings/aiTutorRules {
+      allow read, create, update: if isAdminOrSupervisor();
+      allow delete: if isAdmin();
     }
 
     match /slidedeckPackages/{document=**} {

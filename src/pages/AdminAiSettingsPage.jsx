@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Bot, CheckCircle2, KeyRound, Loader2, Save } from 'lucide-react';
-import { getOpenRouterConfigStatusCall, updateOpenRouterConfigCall } from '../lib/api';
+import { Bot, CheckCircle2, FileText, KeyRound, Loader2, Save } from 'lucide-react';
+import {
+  getAiTutorRulesCall,
+  getOpenRouterConfigStatusCall,
+  updateAiTutorRulesCall,
+  updateOpenRouterConfigCall
+} from '../lib/api';
 
 const DEFAULT_MODEL = 'google/gemini-2.0-flash-001';
 const AI_MODEL_OPTIONS = [
@@ -20,23 +25,33 @@ const isAllowedModel = (value) => AI_MODEL_OPTIONS.some((option) => option.id ==
 
 export default function AdminAiSettingsPage() {
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [savingRules, setSavingRules] = useState(false);
   const [status, setStatus] = useState(null);
   const [enabled, setEnabled] = useState(true);
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState(DEFAULT_MODEL);
+  const [masterRules, setMasterRules] = useState('');
+  const [vmboRules, setVmboRules] = useState('');
+  const [adminRules, setAdminRules] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
 
-    getOpenRouterConfigStatusCall()
-      .then((configStatus) => {
+    Promise.all([
+      getOpenRouterConfigStatusCall(),
+      getAiTutorRulesCall()
+    ])
+      .then(([configStatus, rules]) => {
         if (cancelled) return;
         setStatus(configStatus);
         setEnabled(configStatus.enabled !== false);
         setModel(isAllowedModel(configStatus.model) ? configStatus.model : DEFAULT_MODEL);
+        setMasterRules(rules.masterRules || '');
+        setVmboRules(rules.vmboRules || '');
+        setAdminRules(rules.adminRules || '');
       })
       .catch(() => {
         if (!cancelled) setError('AI-instellingen konden niet worden geladen.');
@@ -50,9 +65,9 @@ export default function AdminAiSettingsPage() {
     };
   }, []);
 
-  const handleSave = async (event) => {
-    event.preventDefault();
-    setSaving(true);
+  const handleSaveConfig = async (event) => {
+    event?.preventDefault?.();
+    setSavingConfig(true);
     setError('');
     setMessage('');
 
@@ -69,7 +84,30 @@ export default function AdminAiSettingsPage() {
       console.error('AI-instellingen opslaan mislukt:', saveError);
       setError(saveError.message || 'AI-instellingen opslaan is mislukt.');
     } finally {
-      setSaving(false);
+      setSavingConfig(false);
+    }
+  };
+
+  const handleSaveRules = async () => {
+    setSavingRules(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const nextRules = await updateAiTutorRulesCall({
+        masterRules,
+        vmboRules,
+        adminRules
+      });
+      setMasterRules(nextRules.masterRules || '');
+      setVmboRules(nextRules.vmboRules || '');
+      setAdminRules(nextRules.adminRules || '');
+      setMessage('AI Tutor regels opgeslagen. Deze regels worden bij iedere P-AI-co interactie meegestuurd.');
+    } catch (saveError) {
+      console.error('AI Tutor regels opslaan mislukt:', saveError);
+      setError(saveError.message || 'AI Tutor regels opslaan is mislukt.');
+    } finally {
+      setSavingRules(false);
     }
   };
 
@@ -96,7 +134,7 @@ export default function AdminAiSettingsPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-          <form onSubmit={handleSave} className="helix-surface space-y-5 p-6">
+          <form onSubmit={handleSaveConfig} className="helix-surface space-y-5 p-6">
             {error && (
               <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
                 {error}
@@ -169,8 +207,8 @@ export default function AdminAiSettingsPage() {
               </div>
             </div>
 
-            <button type="submit" disabled={saving} className="btn-primary px-5 py-3 text-sm disabled:cursor-wait disabled:opacity-60">
-              {saving ? <Loader2 size={17} className="animate-spin" /> : <Save size={17} />}
+            <button type="submit" disabled={savingConfig} className="btn-primary px-5 py-3 text-sm disabled:cursor-wait disabled:opacity-60">
+              {savingConfig ? <Loader2 size={17} className="animate-spin" /> : <Save size={17} />}
               AI-instellingen opslaan
             </button>
           </form>
@@ -199,9 +237,65 @@ export default function AdminAiSettingsPage() {
                 <span className="block font-bold text-[var(--helix-muted)]">Model</span>
                 <span className="mt-1 block break-words font-black text-[var(--helix-navy)]">{status?.model || model}</span>
               </div>
+              <div className="rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2">
+                <span className="block font-bold text-[var(--helix-muted)]">Tutorregels</span>
+                <span className="mt-1 inline-flex items-center gap-1 font-black text-[var(--helix-navy)]">
+                  <FileText size={15} />
+                  Actief
+                </span>
+              </div>
             </div>
           </aside>
         </div>
+
+        <section className="helix-surface mt-6 p-6">
+          <div className="mb-5">
+            <p className="helix-eyebrow">AI Tutor Beheer</p>
+            <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">AI Tutor regels</h2>
+            <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
+              Deze regels worden altijd meegegeven aan de AI-tutor voordat hij leerlingen helpt.
+            </p>
+          </div>
+
+          <div className="grid gap-5">
+            <label>
+              <span className="mb-2 block text-sm font-black text-[var(--helix-navy)]">Administratorregels</span>
+              <textarea
+                value={adminRules}
+                onChange={(event) => setAdminRules(event.target.value)}
+                className="input-standard min-h-44 w-full resize-y leading-6"
+                placeholder="Voeg hier schoolspecifieke of docentafspraken toe die P-AI-co altijd moet volgen."
+              />
+            </label>
+
+            <details className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
+              <summary className="cursor-pointer font-black text-[var(--helix-navy)]">Masterregels en VMBO-regels bekijken of aanpassen</summary>
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <label>
+                  <span className="mb-2 block text-sm font-black text-[var(--helix-navy)]">Masterregels</span>
+                  <textarea
+                    value={masterRules}
+                    onChange={(event) => setMasterRules(event.target.value)}
+                    className="input-standard min-h-72 w-full resize-y leading-6"
+                  />
+                </label>
+                <label>
+                  <span className="mb-2 block text-sm font-black text-[var(--helix-navy)]">VMBO wiskunde regels</span>
+                  <textarea
+                    value={vmboRules}
+                    onChange={(event) => setVmboRules(event.target.value)}
+                    className="input-standard min-h-72 w-full resize-y leading-6"
+                  />
+                </label>
+              </div>
+            </details>
+
+            <button type="button" onClick={handleSaveRules} disabled={savingRules} className="btn-primary w-fit px-5 py-3 text-sm disabled:cursor-wait disabled:opacity-60">
+              {savingRules ? <Loader2 size={17} className="animate-spin" /> : <Save size={17} />}
+              AI Tutor regels opslaan
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   );

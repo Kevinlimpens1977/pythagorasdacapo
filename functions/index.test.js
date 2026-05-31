@@ -493,6 +493,51 @@ test("getOpenRouterConfigStatus never exposes the full key", async () => {
   });
 });
 
+test("updateAiTutorRules stores administrator tutor rules for future prompts", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+  });
+
+  const result = await __test.updateAiTutorRulesCore({
+    auth: { uid: "admin-1" },
+    data: {
+      adminRules: "Gebruik altijd de verhoudingstabel bij procenten.",
+      masterRules: "Je bent Paco en geeft nooit direct antwoord.",
+      vmboRules: "Pythagoras altijd met schema.",
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.adminRules, "Gebruik altijd de verhoudingstabel bij procenten.");
+  assert.equal(result.updatedBy, "admin-1");
+  assert.equal(db.store.docs["apps/helix/settings/aiTutorRules"].adminRules, "Gebruik altijd de verhoudingstabel bij procenten.");
+  assert.equal(db.store.docs["apps/helix/settings/aiTutorRules"].updatedAt, "timestamp");
+});
+
+test("getAiTutorRules rejects students and returns defaults for supervisors", async () => {
+  const db = createDb({
+    "users/supervisor-1": { role: "supervisor", email: "supervisor@example.com" },
+    "users/student-1": { role: "student", email: "student@example.com" },
+  });
+
+  const result = await __test.getAiTutorRulesCore({
+    auth: { uid: "supervisor-1" },
+    db,
+  });
+
+  assert.match(result.masterRules, /Je bent Paco/);
+  assert.match(result.vmboRules, /Pythagoras/);
+
+  await assert.rejects(
+    __test.getAiTutorRulesCore({
+      auth: { uid: "student-1" },
+      db,
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+});
+
 test("askAiTutor rejects students when class AI help is disabled", async () => {
   const db = createDb({
     "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
@@ -501,6 +546,11 @@ test("askAiTutor rejects students when class AI help is disabled", async () => {
       enabled: true,
       apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
       model: "openai/gpt-4.1-mini",
+    },
+    "apps/helix/settings/aiTutorRules": {
+      adminRules: "Gebruik nooit het woord eindantwoord.",
+      masterRules: "Je bent Paco en stelt korte vragen.",
+      vmboRules: "Procenten altijd met verhoudingstabel.",
     },
   });
 
@@ -525,6 +575,11 @@ test("askAiTutor rejects students when the lesson block disallows AI help", asyn
       enabled: true,
       apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
       model: "openai/gpt-4.1-mini",
+    },
+    "apps/helix/settings/aiTutorRules": {
+      adminRules: "Gebruik nooit het woord eindantwoord.",
+      masterRules: "Je bent Paco en stelt korte vragen.",
+      vmboRules: "Procenten altijd met verhoudingstabel.",
     },
   });
 
@@ -551,6 +606,11 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
       apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
       model: "openai/gpt-4.1-mini",
     },
+    "apps/helix/settings/aiTutorRules": {
+      adminRules: "Gebruik nooit het woord eindantwoord.",
+      masterRules: "Je bent Paco en stelt korte vragen.",
+      vmboRules: "Procenten altijd met verhoudingstabel.",
+    },
   });
 
   const result = await __test.askAiTutorCore({
@@ -571,7 +631,9 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
   assert.equal(result.success, true);
   assert.equal(body.model, "openai/gpt-4.1-mini");
   assert.match(body.messages[0].content, /Luna/);
-  assert.match(body.messages[0].content, /geef nooit letterlijk/iu);
+  assert.match(body.messages[0].content, /geeft nooit letterlijk/iu);
+  assert.match(body.messages[0].content, /Gebruik nooit het woord eindantwoord/i);
+  assert.match(body.messages[0].content, /Procenten altijd met verhoudingstabel/i);
   assert.equal(calls[0].options.headers.Authorization, "Bearer sk-or-v1-abcdefghijklmnopqrstuvwxyz");
 });
 
@@ -585,6 +647,10 @@ test("assessOpenAnswer returns a passing AI assessment as structured data", asyn
       enabled: true,
       apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
       model: "openai/gpt-4.1-mini",
+    },
+    "apps/helix/settings/aiTutorRules": {
+      adminRules: "Controleer formule, berekening, antwoord en eenheid.",
+      vmboRules: "Pythagoras altijd met Pythagoras-schema.",
     },
   });
 
@@ -613,6 +679,8 @@ test("assessOpenAnswer returns a passing AI assessment as structured data", asyn
   assert.equal(result.isCorrect, true);
   assert.equal(result.feedback, "Mooi, dit is voldoende.");
   assert.equal(body.response_format.type, "json_object");
+  assert.match(body.messages[0].content, /Controleer formule, berekening, antwoord en eenheid/i);
+  assert.match(body.messages[0].content, /Pythagoras-schema/i);
   assert.match(body.messages[1].content, /oppervlaktes van de twee kleine vierkanten/i);
 });
 
