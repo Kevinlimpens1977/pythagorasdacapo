@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {
   calculateLessonProgress,
   findResumeBlockIndex,
-  getCompletedBlockIds
+  getCompletedBlockIds,
+  shouldSaveBlockProgressBeforeNavigation
 } from './studentLessonProgress.js';
 import { normalizeContentBlockSettings, normalizeContentBlocks } from './contentBlockUtils.js';
 
@@ -51,6 +52,27 @@ test('findResumeBlockIndex returns last block when lesson is completed', () => {
     { blockId: 'block-2', completed: true },
     { blockId: 'block-3', completed: true }
   ]), 2);
+});
+
+test('shouldSaveBlockProgressBeforeNavigation saves non-question blocks that are not completed yet', () => {
+  const completedIds = new Set(['theory-done']);
+
+  assert.equal(
+    shouldSaveBlockProgressBeforeNavigation({ block: { id: 'theory-open', type: 'theory' }, completedIds }),
+    true
+  );
+  assert.equal(
+    shouldSaveBlockProgressBeforeNavigation({ block: { id: 'theory-done', type: 'theory' }, completedIds }),
+    false
+  );
+  assert.equal(
+    shouldSaveBlockProgressBeforeNavigation({ block: { id: 'question-open', type: 'question' }, completedIds }),
+    false
+  );
+});
+
+test('shouldSaveBlockProgressBeforeNavigation ignores missing blocks', () => {
+  assert.equal(shouldSaveBlockProgressBeforeNavigation({ block: null, completedIds: new Set() }), false);
 });
 
 test('normalizes lesson block settings without overwriting explicit false values', () => {

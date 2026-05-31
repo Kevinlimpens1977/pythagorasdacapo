@@ -27,3 +27,9 @@ export const findResumeBlockIndex = (blocks = [], progressRecords = []) => {
 
   return firstIncompleteIndex === -1 ? blocks.length - 1 : firstIncompleteIndex;
 };
+
+export const shouldSaveBlockProgressBeforeNavigation = ({ block = null, completedIds = new Set() } = {}) => {
+  if (!block?.id) return false;
+  if (block.type === 'question') return false;
+  return !completedIds.has(block.id);
+};

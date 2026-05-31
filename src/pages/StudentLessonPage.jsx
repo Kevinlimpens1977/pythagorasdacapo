@@ -26,7 +26,12 @@ import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
-import { calculateLessonProgress, findResumeBlockIndex, getCompletedBlockIds } from '../lib/studentLessonProgress';
+import {
+  calculateLessonProgress,
+  findResumeBlockIndex,
+  getCompletedBlockIds,
+  shouldSaveBlockProgressBeforeNavigation
+} from '../lib/studentLessonProgress';
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
 import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -198,13 +203,17 @@ export default function StudentLessonPage() {
     return `${tone.borderClass} ${tone.fillClass}`;
   };
 
+  const saveCurrentBlockBeforeNavigation = async () => {
+    if (shouldSaveBlockProgressBeforeNavigation({ block: currentBlock, completedIds })) {
+      await saveBlockProgress(currentBlock, true);
+    }
+  };
+
   const goNext = async () => {
     const isCurrentQuestion = currentBlock?.type === 'question';
     const currentCompleted = completedIds.has(currentBlock?.id);
 
-    if (currentBlock && !isCurrentQuestion) {
-      await saveBlockProgress(currentBlock, true);
-    }
+    await saveCurrentBlockBeforeNavigation();
 
     if (isCurrentQuestion && !currentCompleted) {
       return;
@@ -219,6 +228,12 @@ export default function StudentLessonPage() {
 
   const goPrev = () => {
     setCurrentIndex((index) => Math.max(0, index - 1));
+  };
+
+  const goToStep = async (nextIndex) => {
+    if (nextIndex === currentIndex) return;
+    await saveCurrentBlockBeforeNavigation();
+    setCurrentIndex(nextIndex);
   };
 
   if (loading) {
@@ -324,7 +339,7 @@ export default function StudentLessonPage() {
                 return (
                   <button
                     key={block.id}
-                    onClick={() => setCurrentIndex(index)}
+                    onClick={() => goToStep(index)}
                     className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition ${
                       isActive
                         ? 'helix-gradient text-white shadow-lg shadow-fuchsia-500/10'
