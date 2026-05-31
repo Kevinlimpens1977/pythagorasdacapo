@@ -32,6 +32,7 @@ import { assessOpenAnswerCall } from '../lib/api';
 import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
+import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
 
 const blockIcons = {
   theory: BookOpen,
@@ -447,18 +448,10 @@ function SimpleCalculator() {
   const [result, setResult] = useState('');
 
   const calculate = () => {
-    if (!/^[\d+\-*/().,\s]+$/.test(expression)) {
-      setResult('Controleer je invoer');
-      return;
-    }
-
     try {
-      const normalized = expression.replace(/,/g, '.');
-      // Calculator is alleen beschikbaar wanneer de docent dit lesblok toestaat.
-      const value = Function(`"use strict"; return (${normalized})`)();
-      setResult(Number.isFinite(value) ? String(Math.round(value * 1000000) / 1000000) : 'Geen geldig resultaat');
-    } catch {
-      setResult('Geen geldig resultaat');
+      setResult(String(evaluateCalculatorExpression(expression)));
+    } catch (error) {
+      setResult(error.message || 'Ongeldige berekening');
     }
   };
 
@@ -471,7 +464,7 @@ function SimpleCalculator() {
           if (event.key === 'Enter') calculate();
         }}
         className="input-standard flex-1"
-        placeholder="Bijv. 42/70*100"
+        placeholder="Bijv. 42:70x100, sqrt(49) of 6^2"
       />
       <button type="button" onClick={calculate} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white">
         Bereken
