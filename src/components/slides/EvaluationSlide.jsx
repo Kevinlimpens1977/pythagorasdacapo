@@ -7,9 +7,10 @@ import { db } from '../../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
 import * as voortgangService from '../../services/voortgangService';
+import { getEffectiveKlasId } from '../../lib/classIdUtils';
 
 export default function EvaluationSlide({ slide, chapterId, onVerified, isCompleted }) {
-  const { currentUser, isAdmin, klasData } = useAuth();
+  const { currentUser, isAdmin, klasData, userData, klasId: authKlasId } = useAuth();
   const fields = slide.exercise?.fields || [];
 
   // Initialize answers with correct answers if already completed
@@ -68,13 +69,14 @@ export default function EvaluationSlide({ slide, chapterId, onVerified, isComple
     if (onVerified) onVerified(true);
 
     // Save progress to voortgang collection (new system)
-    if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && klasData?.klasId) {
+    const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+    if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && effectiveKlasId) {
       voortgangService.saveVoortgang(
         currentUser.uid,
         slide.id,
         slide.paragraafId,
         slide.hoofdstukId,
-        klasData.klasId,
+        effectiveKlasId,
         {
           completed: true,
           isCorrect: allCorrect,

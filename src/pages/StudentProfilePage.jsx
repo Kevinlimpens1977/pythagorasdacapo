@@ -6,6 +6,7 @@ import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { buildStudentProgressSummary } from '../lib/progressSummary';
 import { changeCurrentUserPassword } from '../services/studentPasswordService';
+import { getEffectiveKlasId } from '../lib/classIdUtils';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
   const barColor = tone === 'green' ? 'bg-[var(--helix-success)]' : 'helix-progress-fill';
@@ -29,7 +30,7 @@ const EmptyState = ({ icon: Icon, title, description }) => (
 );
 
 export default function StudentProfilePage() {
-  const { currentUser, userData, klasData } = useAuth();
+  const { currentUser, userData, klasData, klasId: authKlasId } = useAuth();
   const [paragrafen, setParagrafen] = useState([]);
   const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
   const [voortgangMap, setVoortgangMap] = useState({});
@@ -47,7 +48,8 @@ export default function StudentProfilePage() {
         return;
       }
 
-      if (!klasData?.klasId) {
+      const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+      if (!effectiveKlasId) {
         setParagrafen([]);
         setHoofdstukkenMap({});
         setVoortgangMap({});
@@ -119,7 +121,7 @@ export default function StudentProfilePage() {
     };
 
     loadProfileData();
-  }, [currentUser?.uid, klasData]);
+  }, [authKlasId, currentUser?.uid, klasData, userData]);
 
   const summary = useMemo(
     () => buildStudentProgressSummary(paragrafen, hoofdstukkenMap, voortgangMap),
@@ -141,7 +143,9 @@ export default function StudentProfilePage() {
     );
   }
 
-  if (!klasData?.klasId) {
+  const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+
+  if (!effectiveKlasId) {
     return (
       <div className="helix-container pad-content">
         <EmptyState

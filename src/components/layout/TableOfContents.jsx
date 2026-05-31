@@ -7,11 +7,12 @@ import * as klasService from '../../services/klasService';
 import * as voortgangService from '../../services/voortgangService';
 import { calculateLessonProgress } from '../../lib/studentLessonProgress';
 import { getEffectiveContentBlocks } from '../../lib/assignmentUtils';
+import { getEffectiveKlasId } from '../../lib/classIdUtils';
 import helixLogo from '../../afbeeldingen/logo.png';
 
 export default function TableOfContents() {
   const navigate = useNavigate();
-  const { klasData, currentUser } = useAuth();
+  const { klasData, currentUser, userData, klasId: authKlasId } = useAuth();
   const [paragrafen, setParagrafen] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
@@ -60,7 +61,8 @@ export default function TableOfContents() {
         );
 
         const progressMap = {};
-        if (currentUser && klasData?.klasId) {
+        const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+        if (currentUser && effectiveKlasId) {
           for (const paragraaf of paragraafWithContent) {
             try {
               progressMap[paragraaf.id] = await voortgangService.getVoortgangForParagraaf(
@@ -96,7 +98,7 @@ export default function TableOfContents() {
     };
 
     loadParagrafen();
-  }, [klasData, currentUser]);
+  }, [authKlasId, klasData, currentUser, userData]);
 
   const paragraafsByHoofdstuk = {};
   paragrafen.forEach((paragraaf) => {

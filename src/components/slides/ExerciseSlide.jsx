@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, X, HelpCircle, Bot } from 'lucide-react';
 import AITutorChat from './AITutorChat';
 import FormattedText from '../common/FormattedText';
@@ -8,9 +8,10 @@ import { db } from '../../services/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
 import * as voortgangService from '../../services/voortgangService';
+import { getEffectiveKlasId } from '../../lib/classIdUtils';
 
 export default function ExerciseSlide({ slide, chapterId, onVerified, isCompleted }) {
-  const { currentUser, isAdmin, klasData } = useAuth();
+  const { currentUser, isAdmin, klasData, userData, klasId: authKlasId } = useAuth();
   const fields = slide.exercise?.fields || [];
   const [crops, setCrops] = useState([]);
 
@@ -69,8 +70,8 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
   const [attempts, setAttempts] = useState(0);
   const [showHints, setShowHints] = useState(false);
   const [showAITutor, setShowAITutor] = useState(false);
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [isRevealed] = useState(false);
+  const [toast] = useState(null);
 
   const handleChange = (id, val) => {
     setAnswers(prev => ({ ...prev, [id]: val }));
@@ -116,13 +117,14 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
       if (onVerified) onVerified(true);
 
       // Save progress to voortgang collection (new system)
-      if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && klasData?.klasId) {
+      const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+      if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && effectiveKlasId) {
         voortgangService.saveVoortgang(
           currentUser.uid,
           slide.id,
           slide.paragraafId,
           slide.hoofdstukId,
-          klasData.klasId,
+          effectiveKlasId,
           {
             completed: true,
             isCorrect: true,
@@ -153,13 +155,14 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
       setShowAITutor(true);
 
       // Save progress to voortgang collection (new system)
-      if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && klasData?.klasId) {
+      const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+      if (currentUser && !isAdmin && slide.paragraafId && slide.hoofdstukId && effectiveKlasId) {
         voortgangService.saveVoortgang(
           currentUser.uid,
           slide.id,
           slide.paragraafId,
           slide.hoofdstukId,
-          klasData.klasId,
+          effectiveKlasId,
           {
             completed: false,
             isCorrect: false,

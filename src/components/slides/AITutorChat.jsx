@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bot, Loader2, Send, User, X } from 'lucide-react';
 import { askAiTutorCall } from '../../lib/api';
+import { buildAiTutorPreviousMessages } from '../../lib/aiTutorConversation';
 
 export default function AITutorChat({
   onClose,
@@ -38,9 +39,7 @@ export default function AITutorChat({
     onUserMessageSent?.(userMsg.content);
 
     try {
-      const previousMessages = currentMessages
-        .slice(0, -1)
-        .map((message) => ({ role: message.role, content: message.content }));
+      const previousMessages = buildAiTutorPreviousMessages(currentMessages);
       const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints, studentAnswer, blockId);
 
       if (response?.success) {

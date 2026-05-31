@@ -381,7 +381,35 @@ Huidige leerlingpoging: ${answerText || "[nog geen poging]"}
 ## Interactieregels voor dit antwoord
 Als de leerling nog geen antwoord of beginpoging heeft gegeven, zeg dan tegen ${firstName} dat die eerst zelf moet nadenken en een eerste antwoord of aanpak moet invullen.
 Als er wel een poging is, analyseer dan die poging kort en stel precies een volgende helpende vraag.
-Houd je antwoord kort: maximaal 2 tot 3 zinnen.`;
+Als de pogingcontext aangeeft dat het gekozen antwoord onjuist is, benoem vriendelijk dat de keuze nog niet klopt en stel een denkstapvraag.
+Verklap daarbij nooit de juiste optie, het juiste antwoord of de tekst van de correcte keuze.
+Houd je antwoord kort: maximaal 2 tot 3 volledige zinnen.
+Eindig altijd met een volledige zin en een eindteken.`;
+}
+
+function isCompleteAiTutorSentence(content = "") {
+  const text = String(content || "").trim();
+  if (!text) return false;
+  if (!/[.!?]$/u.test(text)) return false;
+  return !/(?:,\s*|\b(?:en|of|om|als|want|maar|dat|die|kun je|kun jij|met))$/iu.test(text);
+}
+
+function buildAiTutorFallbackHint({ firstName = "leerling", studentAnswer = "" } = {}) {
+  const answerText = String(studentAnswer || "").toLowerCase();
+  if (answerText.includes("onjuist") || answerText.includes("incorrect")) {
+    return `${firstName}, je gekozen antwoord lijkt nog niet te kloppen. Kijk nog eens naar de vraag en bedenk welke stap of berekening je keuze kan controleren.`;
+  }
+
+  return `${firstName}, ik kan nu geen goede hint maken. Kijk nog eens naar je eigen antwoord en vertel welke stap je hebt gebruikt.`;
+}
+
+function normalizeAiTutorContent(content, options = {}) {
+  const text = String(content || "").trim();
+  if (isCompleteAiTutorSentence(text)) {
+    return text;
+  }
+
+  return buildAiTutorFallbackHint(options);
 }
 
 function stripHtml(value = "") {
@@ -572,7 +600,7 @@ async function askAiTutorCore({
   const responseData = await response.json();
   return {
     success: true,
-    content: responseData.choices?.[0]?.message?.content || "Ik kan nu geen goede hint maken. Probeer je eerste stap hardop te formuleren.",
+    content: normalizeAiTutorContent(responseData.choices?.[0]?.message?.content, { firstName, studentAnswer }),
   };
 }
 
@@ -1340,6 +1368,7 @@ exports.__test = {
   updateAiTutorRulesCore,
   updateOpenRouterConfigCore,
   buildAiTutorSystemPrompt,
+  normalizeAiTutorContent,
   buildOpenAnswerAssessmentMessages,
   shouldPreserveUserDuringStudentReset,
 };

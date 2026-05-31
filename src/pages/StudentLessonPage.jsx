@@ -23,6 +23,7 @@ import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBloc
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import { calculateLessonProgress, findResumeBlockIndex, getCompletedBlockIds } from '../lib/studentLessonProgress';
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
+import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
 import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
 import GamePlayer from '../components/games/GamePlayer';
@@ -33,6 +34,7 @@ import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
 import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
+import { getEffectiveKlasId } from '../lib/classIdUtils';
 
 const blockIcons = {
   theory: BookOpen,
@@ -49,7 +51,7 @@ const htmlValue = (value = '') => ({ __html: value || '' });
 export default function StudentLessonPage() {
   const { chapterId: paragraafId } = useParams();
   const navigate = useNavigate();
-  const { currentUser, userData, isAdmin, klasData } = useAuth();
+  const { currentUser, userData, isAdmin, klasData, klasId: authKlasId } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paragraaf, setParagraaf] = useState(null);
@@ -145,14 +147,15 @@ export default function StudentLessonPage() {
   }, [currentUser?.displayName, currentUser?.email, userData?.displayName, userData?.firstName]);
 
   const saveBlockProgress = async (block, completed = true, extra = {}) => {
-    if (!block || !currentUser || isAdmin || !klasData?.klasId) return;
+    const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+    if (!block || !currentUser || isAdmin || !effectiveKlasId) return;
 
     await voortgangService.saveContentBlockVoortgang(
       currentUser.uid,
       block.id,
       block.paragraafId || paragraafId,
       block.hoofdstukId || paragraaf?.hoofdstukId || '',
-      klasData.klasId,
+      effectiveKlasId,
       {
         completed,
         isCorrect: extra.isCorrect ?? completed,
@@ -619,7 +622,12 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   const aiInitialMessage = hasAnyAnswer
     ? `Ik ben P-AI-co. Ik help je met denkvragen bij "${linkedVraag?.title || 'deze vraag'}", maar ik geef het antwoord niet letterlijk. Wat heb je al geprobeerd?`
     : `Hoi ${studentName}, probeer eerst zelf een antwoord in te vullen. Daarna help ik je met denkvragen, zonder het antwoord voor te zeggen.`;
-  const studentAnswerSummary = JSON.stringify(previewAnswers);
+  const studentAnswerSummary = buildAiTutorStudentAnswerSummary({
+    vraag: linkedVraag || {},
+    preview,
+    previewAnswers,
+    bodyHtml
+  });
 
   const getInitialOrderItems = () => {
     if (!preview.orderItems?.length) return [];

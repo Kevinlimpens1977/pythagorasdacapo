@@ -49,7 +49,8 @@ export function AuthProvider({ children }) {
     const klasRef = doc(db, 'klassen', userData.klasId);
     const unsubscribeKlas = onSnapshot(klasRef, (docSnap) => {
       if (docSnap.exists()) {
-        setKlasData({ ...docSnap.data(), id: docSnap.id });
+        const data = docSnap.data();
+        setKlasData({ ...data, id: docSnap.id, klasId: data.klasId || docSnap.id });
       } else {
         setKlasData(null);
       }

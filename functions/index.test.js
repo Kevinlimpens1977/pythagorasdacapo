@@ -637,6 +637,58 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
   assert.equal(calls[0].options.headers.Authorization, "Bearer sk-or-v1-abcdefghijklmnopqrstuvwxyz");
 });
 
+test("askAiTutor replaces incomplete model output with a complete fallback hint", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Kevin", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+    "apps/helix/settings/aiTutorRules": {
+      masterRules: "Je bent Paco en stelt korte vragen.",
+    },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: {
+      message: "Maar klopt mijn antwoord?",
+      contextHeading: "2+2=",
+      blockId: "block-1",
+      previousMessages: [],
+      studentAnswer: "Vraagtype: meerkeuze\nGekozen optie: d (onjuist)",
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: "Hoi Kevin! Om te controleren of je antwoord klopt," } }] }),
+    }),
+  });
+
+  assert.equal(result.success, true);
+  assert.match(result.content, /Kevin/);
+  assert.match(result.content, /kijk nog eens/i);
+  assert.match(result.content, /[.!?]$/);
+  assert.doesNotMatch(result.content, /,$/);
+});
+
+test("buildAiTutorSystemPrompt tells P-AI-co how to handle an incorrect multiple-choice attempt", () => {
+  const prompt = __test.buildAiTutorSystemPrompt({
+    contextHeading: "2+2=",
+    firstName: "Kevin",
+    studentAnswer: "Vraagtype: meerkeuze\nGekozen optie: d (onjuist)\nAntwoordstatus: gekozen antwoord is onjuist.",
+    rules: { masterRules: "Je bent Paco." },
+  });
+
+  assert.match(prompt, /gekozen antwoord onjuist/i);
+  assert.match(prompt, /verklap.*juiste antwoord/i);
+  assert.match(prompt, /volledige zinnen/i);
+});
+
 test("assessOpenAnswer returns a passing AI assessment as structured data", async () => {
   const calls = [];
   const db = createDb({
