@@ -433,6 +433,39 @@ test("updateOpenRouterConfig stores the key server-side and returns a masked sta
   assert.equal(db.store.docs["privateConfig/openrouter"].updatedBy, "admin-1");
 });
 
+test("updateOpenRouterConfig accepts only supported P-AI-co models", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+  });
+
+  const result = await __test.updateOpenRouterConfigCore({
+    auth: { uid: "admin-1" },
+    data: {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "gemini-3.5-flash",
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.model, "gemini-3.5-flash");
+
+  await assert.rejects(
+    __test.updateOpenRouterConfigCore({
+      auth: { uid: "admin-1" },
+      data: {
+        enabled: true,
+        apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+        model: "openai/gpt-4.1-mini",
+      },
+      db,
+      now: () => "timestamp",
+    }),
+    (error) => error instanceof HttpsError && error.code === "invalid-argument",
+  );
+});
+
 test("getOpenRouterConfigStatus never exposes the full key", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin", email: "admin@example.com" },

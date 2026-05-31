@@ -19,6 +19,10 @@ const BATCH_LIMIT = 450;
 const DEFAULT_STUDENT_PASSWORD = "Test123";
 const STUDENT_EMAIL_DOMAIN = "leerling.dacapo-college.nl";
 const DEFAULT_OPENROUTER_MODEL = "google/gemini-2.0-flash-001";
+const ALLOWED_OPENROUTER_MODELS = new Set([
+  "google/gemini-2.0-flash-001",
+  "gemini-3.5-flash",
+]);
 
 function requireString(value, fieldName) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -92,6 +96,10 @@ function normalizeOpenRouterConfig(data = {}, existing = {}) {
 
   if (!model) {
     throw new HttpsError("invalid-argument", "Model is verplicht.");
+  }
+
+  if (!ALLOWED_OPENROUTER_MODELS.has(model)) {
+    throw new HttpsError("invalid-argument", "Kies een ondersteund P-AI-co model.");
   }
 
   return { apiKey, model, enabled: Boolean(enabled) };

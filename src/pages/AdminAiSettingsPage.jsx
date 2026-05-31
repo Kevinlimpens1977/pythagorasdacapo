@@ -3,6 +3,20 @@ import { Bot, CheckCircle2, KeyRound, Loader2, Save } from 'lucide-react';
 import { getOpenRouterConfigStatusCall, updateOpenRouterConfigCall } from '../lib/api';
 
 const DEFAULT_MODEL = 'google/gemini-2.0-flash-001';
+const AI_MODEL_OPTIONS = [
+  {
+    id: 'google/gemini-2.0-flash-001',
+    label: 'Gemini 2.0 Flash',
+    description: 'Stabiel en snel voor P-AI-co hulp en open-vraagbeoordeling.'
+  },
+  {
+    id: 'gemini-3.5-flash',
+    label: 'Gemini 3.5 Flash',
+    description: 'Nieuwere Flash-optie om te testen met dezelfde veilige server-side key.'
+  }
+];
+
+const isAllowedModel = (value) => AI_MODEL_OPTIONS.some((option) => option.id === value);
 
 export default function AdminAiSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -22,7 +36,7 @@ export default function AdminAiSettingsPage() {
         if (cancelled) return;
         setStatus(configStatus);
         setEnabled(configStatus.enabled !== false);
-        setModel(configStatus.model || DEFAULT_MODEL);
+        setModel(isAllowedModel(configStatus.model) ? configStatus.model : DEFAULT_MODEL);
       })
       .catch(() => {
         if (!cancelled) setError('AI-instellingen konden niet worden geladen.');
@@ -126,12 +140,33 @@ export default function AdminAiSettingsPage() {
 
             <div>
               <label className="mb-2 block text-sm font-black text-[var(--helix-navy)]">Model</label>
-              <input
-                value={model}
-                onChange={(event) => setModel(event.target.value)}
-                className="input-standard w-full"
-                placeholder={DEFAULT_MODEL}
-              />
+              <div className="grid gap-3 md:grid-cols-2">
+                {AI_MODEL_OPTIONS.map((option) => {
+                  const selected = model === option.id;
+                  return (
+                    <label
+                      key={option.id}
+                      className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${
+                        selected
+                          ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-navy)]'
+                          : 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-fuchsia-200'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => setModel(option.id)}
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)]"
+                      />
+                      <span>
+                        <span className="block font-black">{option.label}</span>
+                        <span className="mt-1 block break-words text-xs font-bold">{option.id}</span>
+                        <span className="mt-2 block text-sm">{option.description}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
             <button type="submit" disabled={saving} className="btn-primary px-5 py-3 text-sm disabled:cursor-wait disabled:opacity-60">
