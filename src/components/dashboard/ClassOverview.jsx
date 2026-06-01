@@ -7,7 +7,6 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { isAnswerCorrect } from '../../lib/answerNormalization';
 import * as cmsService from '../../services/cmsService';
 import * as klasService from '../../services/klasService';
-import * as voortgangService from '../../services/voortgangService';
 import {
   calculateAssignedProgress,
   getEffectiveContentBlocks,
@@ -15,6 +14,7 @@ import {
 } from '../../lib/assignmentUtils';
 import { getLearningResultTone } from '../../lib/learningResultUtils';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
+import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -207,21 +207,24 @@ export default function ClassOverview() {
     loadKlassen();
   }, []);
 
-  // Load voortgang data for all students
-  const loadVoortgangForStudents = useCallback(async (studentList) => {
-    try {
-      const voortgangMap = {};
-      for (const student of studentList) {
-        if (paragraphen.length > 0) {
-          const voortgang = await voortgangService.getStudentVoortgang(student.id, student.klasId);
-          voortgangMap[student.id] = voortgang;
-        }
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, 'voortgang'),
+      (snapshot) => {
+        const records = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setStudentVoortgang(groupProgressRecordsByStudent(records));
+      },
+      (error) => {
+        console.error('Error listening to voortgang:', error);
+        setStudentVoortgang({});
       }
-      setStudentVoortgang(voortgangMap);
-    } catch (error) {
-      console.error('Error loading voortgang:', error);
-    }
-  }, [paragraphen]);
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     // Query only students (no orderBy to avoid composite index requirement)
@@ -245,7 +248,6 @@ export default function ClassOverview() {
 
       setStudents(studentData);
       setLoading(false);
-      loadVoortgangForStudents(studentData);
       setSelectedStudent((current) => {
         if (!current) return current;
         return studentData.find(s => s.id === current.id) || current;
@@ -256,7 +258,7 @@ export default function ClassOverview() {
     });
 
     return () => unsubscribe();
-  }, [loadVoortgangForStudents]);
+  }, []);
 
   const getStudentAssignmentSummary = useCallback((student, paragraafFilterId = null) => {
     const klasData = klassenMap[student.klasId];
