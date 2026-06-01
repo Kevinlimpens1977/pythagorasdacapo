@@ -20,6 +20,8 @@ test('creates empty manual worksheets without calculated values', () => {
   assert.deepEqual(ratio.topValues, ['', '']);
   assert.deepEqual(ratio.bottomValues, ['', '']);
   assert.deepEqual(ratio.operations, ['']);
+  assert.deepEqual(ratio.topOperations, ['']);
+  assert.deepEqual(ratio.bottomOperations, ['']);
 
   assert.equal(pythagoras.type, 'pythagoras');
   assert.deepEqual(pythagoras.rows.map((row) => row.side), ['', '', '']);
@@ -30,15 +32,22 @@ test('creates empty manual worksheets without calculated values', () => {
 test('adds and removes ratio columns while keeping arrow operation slots aligned', () => {
   const ratio = createMathToolWork('ratioTable', 'tool-1');
   const withColumn = addRatioColumn(ratio);
-  const edited = updateMathToolValue(withColumn, ['operations', 1], 'x 4');
+  const edited = updateMathToolValue(
+    updateMathToolValue(withColumn, ['topOperations', 1], 'x 4'),
+    ['bottomOperations', 1],
+    'x 4'
+  );
   const reduced = removeRatioColumn(edited, 1);
 
   assert.equal(withColumn.topValues.length, 3);
   assert.equal(withColumn.bottomValues.length, 3);
   assert.equal(withColumn.operations.length, 2);
+  assert.equal(withColumn.topOperations.length, 2);
+  assert.equal(withColumn.bottomOperations.length, 2);
   assert.equal(reduced.topValues.length, 2);
   assert.equal(reduced.operations.length, 1);
-  assert.equal(reduced.operations[0], 'x 4');
+  assert.equal(reduced.topOperations[0], 'x 4');
+  assert.equal(reduced.bottomOperations[0], 'x 4');
 });
 
 test('normalizes and resets worksheets safely', () => {
@@ -62,6 +71,8 @@ test('normalizes and resets worksheets safely', () => {
   assert.equal(normalized.length, 2);
   assert.deepEqual(normalized[0].bottomValues, ['3', '', '']);
   assert.deepEqual(normalized[0].operations, ['x 2', '']);
+  assert.deepEqual(normalized[0].topOperations, ['x 2', '']);
+  assert.deepEqual(normalized[0].bottomOperations, ['x 2', '']);
   assert.equal(normalized[1].rows.length, 3);
 
   const reset = resetMathTool(normalized[1]);
@@ -79,7 +90,7 @@ test('summarizes filled worksheets for tutor and teacher context', () => {
 
 test('detects whether a worksheet contains student input', () => {
   const empty = createMathToolWork('ratioTable', 'ratio');
-  const filled = updateMathToolValue(empty, ['bottomValues', 1], '60%');
+  const filled = updateMathToolValue(empty, ['bottomOperations', 0], 'x 20');
 
   assert.equal(hasFilledMathToolWork([empty]), false);
   assert.equal(hasFilledMathToolWork([filled]), true);

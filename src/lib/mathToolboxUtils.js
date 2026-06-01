@@ -25,6 +25,16 @@ const normalizeRatioTable = (tool = {}) => {
     Array.isArray(tool.bottomValues) ? tool.bottomValues.length : 0
   );
 
+  const legacyOperations = Array.isArray(tool.operations) ? tool.operations : [];
+  const topOperations = normalizeArrayLength(
+    Array.isArray(tool.topOperations) ? tool.topOperations : legacyOperations,
+    columnCount - 1
+  );
+  const bottomOperations = normalizeArrayLength(
+    Array.isArray(tool.bottomOperations) ? tool.bottomOperations : legacyOperations,
+    columnCount - 1
+  );
+
   return {
     id: tool.id || createId('ratio'),
     type: MATH_TOOL_TYPES.ratioTable,
@@ -33,7 +43,9 @@ const normalizeRatioTable = (tool = {}) => {
     bottomLabel: asText(tool.bottomLabel),
     topValues: normalizeArrayLength(tool.topValues, columnCount),
     bottomValues: normalizeArrayLength(tool.bottomValues, columnCount),
-    operations: normalizeArrayLength(tool.operations, columnCount - 1)
+    topOperations,
+    bottomOperations,
+    operations: topOperations
   };
 };
 
@@ -96,7 +108,9 @@ export const addRatioColumn = (tool = {}) => {
     ...ratio,
     topValues: [...ratio.topValues, ''],
     bottomValues: [...ratio.bottomValues, ''],
-    operations: [...ratio.operations, '']
+    topOperations: [...ratio.topOperations, ''],
+    bottomOperations: [...ratio.bottomOperations, ''],
+    operations: [...ratio.topOperations, '']
   };
 };
 
@@ -110,7 +124,9 @@ export const removeRatioColumn = (tool = {}, columnIndex) => {
     ...ratio,
     topValues: ratio.topValues.filter((_, index) => index !== safeIndex),
     bottomValues: ratio.bottomValues.filter((_, index) => index !== safeIndex),
-    operations: ratio.operations.filter((_, index) => index !== operationIndex)
+    topOperations: ratio.topOperations.filter((_, index) => index !== operationIndex),
+    bottomOperations: ratio.bottomOperations.filter((_, index) => index !== operationIndex),
+    operations: ratio.topOperations.filter((_, index) => index !== operationIndex)
   });
 };
 
@@ -135,7 +151,14 @@ export const resetMathTool = (tool = {}) => {
 };
 
 const summarizeRatio = (tool) => {
-  const filledCells = [...tool.topValues, ...tool.bottomValues, tool.topLabel, tool.bottomLabel, ...tool.operations]
+  const filledCells = [
+    ...tool.topValues,
+    ...tool.bottomValues,
+    tool.topLabel,
+    tool.bottomLabel,
+    ...tool.topOperations,
+    ...tool.bottomOperations
+  ]
     .filter((value) => String(value).trim()).length;
   return `${MATH_TOOL_LABELS.ratioTable}: ${tool.topValues.length} kolommen, ${filledCells} ingevulde velden`;
 };
@@ -171,7 +194,8 @@ export const hasFilledMathToolWork = (tools = []) =>
         tool.bottomLabel,
         ...tool.topValues,
         ...tool.bottomValues,
-        ...tool.operations
+        ...tool.topOperations,
+        ...tool.bottomOperations
       ].some((value) => String(value).trim());
     }
 

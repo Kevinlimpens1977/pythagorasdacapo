@@ -627,26 +627,33 @@ function RatioTableWorksheet({ tool, disabled, onChange }) {
   const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
   const addColumn = () => onChange?.(addRatioColumn(tool));
   const removeColumn = (index) => onChange?.(removeRatioColumn(tool, index));
+  const columnWidth = '7rem';
+  const labelWidth = '9rem';
 
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="min-w-max">
+      <div className="min-w-max space-y-2">
         <div
           className="grid items-center gap-2"
-          style={{ gridTemplateColumns: `9rem repeat(${tool.topValues.length}, minmax(7rem, 1fr))` }}
+          style={{ gridTemplateColumns: `${labelWidth} repeat(${tool.topValues.length}, ${columnWidth})` }}
         >
           <span />
-          {tool.operations.map((operation, index) => (
-            <div key={`operation-${index}`} className="col-span-1 flex items-center justify-center gap-2">
-              <ToolboxInput value={operation} disabled={disabled} onChange={(value) => change(['operations', index], value)} placeholder="bewerking" />
-              <span className="text-lg font-black text-[var(--helix-purple)]">→</span>
+          {tool.topOperations.map((operation, index) => (
+            <div key={`operation-${index}`} className="col-span-1 flex items-center justify-center" style={{ transform: `translateX(calc(${columnWidth} / 2))` }}>
+              <RatioOperationInput
+                value={operation}
+                disabled={disabled}
+                placement="top"
+                markerId={`${tool.id}-top-${index}`}
+                onChange={(value) => change(['topOperations', index], value)}
+              />
             </div>
           ))}
         </div>
 
         <div
-          className="mt-2 grid gap-2"
-          style={{ gridTemplateColumns: `9rem repeat(${tool.topValues.length}, minmax(7rem, 1fr))` }}
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `${labelWidth} repeat(${tool.topValues.length}, ${columnWidth})` }}
         >
           <ToolboxInput value={tool.topLabel} disabled={disabled} onChange={(value) => change(['topLabel'], value)} placeholder="rijnaam" />
           {tool.topValues.map((value, index) => (
@@ -655,6 +662,24 @@ function RatioTableWorksheet({ tool, disabled, onChange }) {
           <ToolboxInput value={tool.bottomLabel} disabled={disabled} onChange={(value) => change(['bottomLabel'], value)} placeholder="rijnaam" />
           {tool.bottomValues.map((value, index) => (
             <ToolboxInput key={`bottom-${index}`} value={value} disabled={disabled} onChange={(nextValue) => change(['bottomValues', index], nextValue)} />
+          ))}
+        </div>
+
+        <div
+          className="grid items-center gap-2"
+          style={{ gridTemplateColumns: `${labelWidth} repeat(${tool.bottomValues.length}, ${columnWidth})` }}
+        >
+          <span />
+          {tool.bottomOperations.map((operation, index) => (
+            <div key={`bottom-operation-${index}`} className="col-span-1 flex items-center justify-center" style={{ transform: `translateX(calc(${columnWidth} / 2))` }}>
+              <RatioOperationInput
+                value={operation}
+                disabled={disabled}
+                placement="bottom"
+                markerId={`${tool.id}-bottom-${index}`}
+                onChange={(value) => change(['bottomOperations', index], value)}
+              />
+            </div>
           ))}
         </div>
 
@@ -670,6 +695,64 @@ function RatioTableWorksheet({ tool, disabled, onChange }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function RatioOperationInput({ value, onChange, disabled, placement = 'top', markerId }) {
+  const isTop = placement === 'top';
+
+  return (
+    <div className="flex w-full flex-col items-center">
+      {isTop && (
+        <input
+          type="text"
+          value={value || ''}
+          onChange={(event) => onChange?.(event.target.value)}
+          disabled={disabled}
+          className="h-8 w-24 rounded-xl border border-fuchsia-100 bg-white px-2 text-center text-xs font-black text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+          placeholder="bewerking"
+          aria-label="Bewerking boven de verhoudingstabel"
+        />
+      )}
+      <svg
+        viewBox="0 0 96 42"
+        className="h-10 w-full overflow-visible text-[var(--helix-purple)]"
+        aria-hidden="true"
+      >
+        <defs>
+          <marker
+            id={markerId}
+            markerWidth="8"
+            markerHeight="8"
+            refX="7"
+            refY="4"
+            orient="auto"
+            markerUnits="strokeWidth"
+          >
+            <path d="M 0 0 L 8 4 L 0 8 z" fill="currentColor" />
+          </marker>
+        </defs>
+        <path
+          d={isTop ? 'M 8 32 C 24 8 68 8 88 28' : 'M 8 10 C 24 34 68 34 88 14'}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="4"
+          strokeLinecap="round"
+          markerEnd={`url(#${markerId})`}
+        />
+      </svg>
+      {!isTop && (
+        <input
+          type="text"
+          value={value || ''}
+          onChange={(event) => onChange?.(event.target.value)}
+          disabled={disabled}
+          className="h-8 w-24 rounded-xl border border-fuchsia-100 bg-white px-2 text-center text-xs font-black text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+          placeholder="bewerking"
+          aria-label="Bewerking onder de verhoudingstabel"
+        />
+      )}
     </div>
   );
 }
