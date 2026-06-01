@@ -714,6 +714,7 @@ async function askAiTutorCore({
     return {
       success: true,
       content: buildAiTutorTryFirstHint({ firstName }),
+      helpCounted: false,
     };
   }
 
@@ -755,6 +756,7 @@ async function askAiTutorCore({
   return {
     success: true,
     content: normalizeAiTutorContent(responseData.choices?.[0]?.message?.content, { firstName, studentAnswer }),
+    helpCounted: true,
   };
 }
 

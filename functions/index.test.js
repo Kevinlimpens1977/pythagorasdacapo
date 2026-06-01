@@ -678,6 +678,7 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
 
   const body = JSON.parse(calls[0].options.body);
   assert.equal(result.success, true);
+  assert.equal(result.helpCounted, true);
   assert.equal(body.model, "openai/gpt-4.1-mini");
   assert.match(body.messages[0].content, /Luna/);
   assert.match(body.messages[0].content, /geeft nooit letterlijk/iu);
@@ -723,6 +724,7 @@ test("askAiTutor tells the student to try first without calling OpenRouter when 
 
   assert.equal(fetchCalled, false);
   assert.equal(result.success, true);
+  assert.equal(result.helpCounted, false);
   assert.match(result.content, /Luna/);
   assert.match(result.content, /probeer eerst zelf/i);
   assert.doesNotMatch(result.content, /60%/);
@@ -764,6 +766,7 @@ test("askAiTutor treats empty math worksheets as no answer attempt", async () =>
 
   assert.equal(fetchCalled, false);
   assert.equal(result.success, true);
+  assert.equal(result.helpCounted, false);
   assert.match(result.content, /probeer eerst zelf/i);
   assert.doesNotMatch(result.content, /36 en 64/);
 });
@@ -801,6 +804,7 @@ test("askAiTutor replaces incomplete model output with a complete fallback hint"
   });
 
   assert.equal(result.success, true);
+  assert.equal(result.helpCounted, true);
   assert.match(result.content, /Kevin/);
   assert.match(result.content, /kijk nog eens/i);
   assert.match(result.content, /[.!?]$/);

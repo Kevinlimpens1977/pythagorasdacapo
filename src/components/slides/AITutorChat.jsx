@@ -20,7 +20,6 @@ export default function AITutorChat({
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showHints, setShowHints] = useState(hints.length > 0);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -36,7 +35,6 @@ export default function AITutorChat({
     setMessages(currentMessages);
     setInput('');
     setIsLoading(true);
-    onUserMessageSent?.(userMsg.content);
 
     try {
       const previousMessages = buildAiTutorPreviousMessages(currentMessages);
@@ -44,6 +42,9 @@ export default function AITutorChat({
 
       if (response?.success) {
         setMessages((current) => [...current, { role: 'assistant', content: response.content }]);
+        if (response.helpCounted !== false) {
+          onUserMessageSent?.(userMsg.content, response);
+        }
       } else {
         throw new Error(response?.error || 'Geen geldig antwoord');
       }
@@ -75,26 +76,6 @@ export default function AITutorChat({
           <X size={20} />
         </button>
       </div>
-
-      {hints.length > 0 && (
-        <div className="border-b border-fuchsia-100 bg-[var(--helix-soft-lavender)] p-4">
-          <button
-            onClick={() => setShowHints(!showHints)}
-            className="w-full text-left text-sm font-semibold text-[var(--helix-purple)] transition-colors hover:text-[var(--helix-navy)]"
-          >
-            {showHints ? 'v' : '>'} Beschikbare hints ({hints.length})
-          </button>
-          {showHints && (
-            <div className="mt-3 space-y-2">
-              {hints.map((hint, index) => (
-                <div key={index} className="rounded-lg border border-fuchsia-100 bg-white p-2 text-sm text-slate-700">
-                  <span className="font-semibold text-[var(--helix-purple)]">Hint {index + 1}:</span> {hint}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
         {messages.map((message, index) => (
