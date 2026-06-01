@@ -894,6 +894,17 @@ test("askAiTutor returns readable math text instead of LaTeX syntax", async () =
   assert.doesNotMatch(result.content, /\\times/);
 });
 
+test("normalizeReadableMathText cleans spaced LaTeX commands from tutor text", () => {
+  const normalized = __test.normalizeReadableMathText(
+    "Je maakt nu een keersom: $3 \\ times 3 = 9$. Kijk naar $3 + 3$ en \\ sqrt{16}."
+  );
+
+  assert.equal(normalized, "Je maakt nu een keersom: 3 keer 3 = 9. Kijk naar 3 + 3 en wortel van 16.");
+  assert.doesNotMatch(normalized, /\$/);
+  assert.doesNotMatch(normalized, /\\/);
+  assert.doesNotMatch(normalized, /times/);
+});
+
 test("buildAiTutorSystemPrompt tells P-AI-co how to handle an incorrect multiple-choice attempt", () => {
   const prompt = __test.buildAiTutorSystemPrompt({
     contextHeading: "2+2=",
