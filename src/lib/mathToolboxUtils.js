@@ -12,6 +12,8 @@ const createId = (prefix = 'tool') => `${prefix}-${Date.now()}-${Math.random().t
 
 const asText = (value) => String(value ?? '');
 
+const hasText = (value) => asText(value).trim().length > 0;
+
 const normalizeArrayLength = (values = [], length = 2) => {
   const nextValues = Array.isArray(values) ? values.map(asText) : [];
   while (nextValues.length < length) nextValues.push('');
@@ -114,9 +116,26 @@ export const addRatioColumn = (tool = {}) => {
   };
 };
 
+export const canRemoveRatioColumn = (tool = {}, columnIndex) => {
+  const ratio = normalizeRatioTable(tool);
+  if (ratio.topValues.length <= 2) return false;
+
+  const safeIndex = Math.min(Math.max(Number(columnIndex) || 0, 0), ratio.topValues.length - 1);
+  const operationIndex = Math.min(Math.max(safeIndex - 1, 0), ratio.topOperations.length - 1);
+
+  return ![
+    ratio.topValues[safeIndex],
+    ratio.bottomValues[safeIndex],
+    ratio.topOperations[operationIndex],
+    ratio.bottomOperations[operationIndex]
+  ].some(hasText);
+};
+
 export const removeRatioColumn = (tool = {}, columnIndex) => {
   const ratio = normalizeRatioTable(tool);
   if (ratio.topValues.length <= 2) return ratio;
+  if (!canRemoveRatioColumn(ratio, columnIndex)) return ratio;
+
   const safeIndex = Math.min(Math.max(Number(columnIndex) || 0, 0), ratio.topValues.length - 1);
   const operationIndex = Math.min(Math.max(safeIndex - 1, 0), ratio.operations.length - 1);
 

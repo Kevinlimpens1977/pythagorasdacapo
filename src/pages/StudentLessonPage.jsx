@@ -49,6 +49,7 @@ import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { buildQuestionDraftProgressPayload, hasQuestionDraftAnswer } from '../lib/questionDraftProgress';
 import {
   addRatioColumn,
+  canRemoveRatioColumn,
   createMathToolWork,
   getMathToolSummary,
   hasFilledMathToolWork,
@@ -627,6 +628,8 @@ function RatioTableWorksheet({ tool, disabled, onChange }) {
   const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
   const addColumn = () => onChange?.(addRatioColumn(tool));
   const removeColumn = (index) => onChange?.(removeRatioColumn(tool, index));
+  const lastColumnIndex = tool.topValues.length - 1;
+  const canRemoveLastColumn = canRemoveRatioColumn(tool, lastColumnIndex);
   const columnWidth = '7rem';
   const labelWidth = '9rem';
 
@@ -689,7 +692,13 @@ function RatioTableWorksheet({ tool, disabled, onChange }) {
             Kolom toevoegen
           </button>
           {tool.topValues.length > 2 && (
-            <button type="button" onClick={() => removeColumn(tool.topValues.length - 1)} disabled={disabled} className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60">
+            <button
+              type="button"
+              onClick={() => removeColumn(lastColumnIndex)}
+              disabled={disabled || !canRemoveLastColumn}
+              title={canRemoveLastColumn ? 'Laatste lege kolom verwijderen' : 'Maak eerst de laatste kolom en de laatste bewerkingen leeg.'}
+              className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
               Laatste kolom verwijderen
             </button>
           )}

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   addRatioColumn,
+  canRemoveRatioColumn,
   createMathToolWork,
   getMathToolSummary,
   hasFilledMathToolWork,
@@ -33,11 +34,11 @@ test('adds and removes ratio columns while keeping arrow operation slots aligned
   const ratio = createMathToolWork('ratioTable', 'tool-1');
   const withColumn = addRatioColumn(ratio);
   const edited = updateMathToolValue(
-    updateMathToolValue(withColumn, ['topOperations', 1], 'x 4'),
-    ['bottomOperations', 1],
+    updateMathToolValue(withColumn, ['topOperations', 0], 'x 4'),
+    ['bottomOperations', 0],
     'x 4'
   );
-  const reduced = removeRatioColumn(edited, 1);
+  const reduced = removeRatioColumn(edited, 2);
 
   assert.equal(withColumn.topValues.length, 3);
   assert.equal(withColumn.bottomValues.length, 3);
@@ -48,6 +49,30 @@ test('adds and removes ratio columns while keeping arrow operation slots aligned
   assert.equal(reduced.operations.length, 1);
   assert.equal(reduced.topOperations[0], 'x 4');
   assert.equal(reduced.bottomOperations[0], 'x 4');
+});
+
+test('only removes the last ratio column when that column and its operation fields are empty', () => {
+  const ratio = addRatioColumn(createMathToolWork('ratioTable', 'tool-1'));
+  const lastColumnIndex = ratio.topValues.length - 1;
+
+  assert.equal(canRemoveRatioColumn(ratio, lastColumnIndex), true);
+  assert.equal(removeRatioColumn(ratio, lastColumnIndex).topValues.length, 2);
+
+  const withLastTopValue = updateMathToolValue(ratio, ['topValues', lastColumnIndex], '20');
+  assert.equal(canRemoveRatioColumn(withLastTopValue, lastColumnIndex), false);
+  assert.equal(removeRatioColumn(withLastTopValue, lastColumnIndex).topValues.length, 3);
+
+  const withLastBottomValue = updateMathToolValue(ratio, ['bottomValues', lastColumnIndex], '8');
+  assert.equal(canRemoveRatioColumn(withLastBottomValue, lastColumnIndex), false);
+  assert.equal(removeRatioColumn(withLastBottomValue, lastColumnIndex).bottomValues.length, 3);
+
+  const withLastTopOperation = updateMathToolValue(ratio, ['topOperations', lastColumnIndex - 1], 'x2');
+  assert.equal(canRemoveRatioColumn(withLastTopOperation, lastColumnIndex), false);
+  assert.equal(removeRatioColumn(withLastTopOperation, lastColumnIndex).topValues.length, 3);
+
+  const withLastBottomOperation = updateMathToolValue(ratio, ['bottomOperations', lastColumnIndex - 1], ':100');
+  assert.equal(canRemoveRatioColumn(withLastBottomOperation, lastColumnIndex), false);
+  assert.equal(removeRatioColumn(withLastBottomOperation, lastColumnIndex).topValues.length, 3);
 });
 
 test('normalizes and resets worksheets safely', () => {
