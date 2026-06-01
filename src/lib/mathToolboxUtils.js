@@ -14,6 +14,16 @@ const asText = (value) => String(value ?? '');
 
 const hasText = (value) => asText(value).trim().length > 0;
 
+export const normalizePythagorasSide = (value = '') => {
+  const letters = asText(value)
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '');
+  if ((letters.startsWith('RZ') || letters.startsWith('LZ')) && letters.length >= 4) {
+    return letters.slice(2, 4);
+  }
+  return letters.slice(0, 2);
+};
+
 const normalizeArrayLength = (values = [], length = 2) => {
   const nextValues = Array.isArray(values) ? values.map(asText) : [];
   while (nextValues.length < length) nextValues.push('');
@@ -57,7 +67,7 @@ const normalizePythagoras = (tool = {}) => {
     const row = rows[index] || {};
     return {
       id: row.id || `pythagoras-row-${index + 1}`,
-      side: asText(row.side),
+      side: normalizePythagorasSide(row.side),
       length: asText(row.length),
       square: asText(row.square)
     };
@@ -77,7 +87,8 @@ const normalizePythagoras = (tool = {}) => {
       lzSquared: asText(tool.conclusion?.lzSquared),
       root: asText(tool.conclusion?.root),
       length: asText(tool.conclusion?.length)
-    }
+    },
+    workingText: asText(tool.workingText)
   };
 };
 
@@ -190,7 +201,8 @@ const summarizePythagoras = (tool) => {
     tool.squareAddition.sum,
     tool.conclusion.lzSquared,
     tool.conclusion.root,
-    tool.conclusion.length
+    tool.conclusion.length,
+    tool.workingText
   ].filter((value) => String(value).trim()).length;
   return `${MATH_TOOL_LABELS.pythagoras}: ${filledCells} ingevulde velden`;
 };
@@ -226,7 +238,8 @@ export const hasFilledMathToolWork = (tools = []) =>
         tool.squareAddition.sum,
         tool.conclusion.lzSquared,
         tool.conclusion.root,
-        tool.conclusion.length
+        tool.conclusion.length,
+        tool.workingText
       ].some((value) => String(value).trim());
     }
 

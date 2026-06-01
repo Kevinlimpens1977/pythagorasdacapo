@@ -7,6 +7,7 @@ import {
   createMathToolWork,
   getMathToolSummary,
   hasFilledMathToolWork,
+  normalizePythagorasSide,
   normalizeMathToolWork,
   removeRatioColumn,
   resetMathTool,
@@ -28,6 +29,7 @@ test('creates empty manual worksheets without calculated values', () => {
   assert.deepEqual(pythagoras.rows.map((row) => row.side), ['', '', '']);
   assert.deepEqual(pythagoras.squareAddition, { top: '', bottom: '', sum: '' });
   assert.deepEqual(pythagoras.conclusion, { lzSquared: '', root: '', length: '' });
+  assert.equal(pythagoras.workingText, '');
 });
 
 test('adds and removes ratio columns while keeping arrow operation slots aligned', () => {
@@ -98,10 +100,19 @@ test('normalizes and resets worksheets safely', () => {
   assert.deepEqual(normalized[0].operations, ['x 2', '']);
   assert.deepEqual(normalized[0].topOperations, ['x 2', '']);
   assert.deepEqual(normalized[0].bottomOperations, ['x 2', '']);
+  assert.equal(normalized[1].rows[0].side, 'AB');
   assert.equal(normalized[1].rows.length, 3);
+  assert.equal(normalized[1].workingText, '');
 
   const reset = resetMathTool(normalized[1]);
   assert.deepEqual(reset.rows.map((row) => row.length), ['', '', '']);
+});
+
+test('normalizes pythagoras side labels to two uppercase letters', () => {
+  assert.equal(normalizePythagorasSide('ab'), 'AB');
+  assert.equal(normalizePythagorasSide('p-q'), 'PQ');
+  assert.equal(normalizePythagorasSide('abc12'), 'AB');
+  assert.equal(normalizePythagorasSide('RZ AB'), 'AB');
 });
 
 test('summarizes filled worksheets for tutor and teacher context', () => {
@@ -116,7 +127,9 @@ test('summarizes filled worksheets for tutor and teacher context', () => {
 test('detects whether a worksheet contains student input', () => {
   const empty = createMathToolWork('ratioTable', 'ratio');
   const filled = updateMathToolValue(empty, ['bottomOperations', 0], 'x 20');
+  const pythagorasWithWorking = updateMathToolValue(createMathToolWork('pythagoras', 'py'), ['workingText'], 'BC = wortel 100');
 
   assert.equal(hasFilledMathToolWork([empty]), false);
   assert.equal(hasFilledMathToolWork([filled]), true);
+  assert.equal(hasFilledMathToolWork([pythagorasWithWorking]), true);
 });

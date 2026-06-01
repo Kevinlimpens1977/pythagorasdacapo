@@ -854,6 +854,46 @@ test("askAiTutor turns wrong arithmetic operations into a concrete Socratic hint
   assert.doesNotMatch(result.content, /\b2\b/);
 });
 
+test("askAiTutor returns readable math text instead of LaTeX syntax", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Destiny", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: {
+      message: "Wat deed ik fout?",
+      contextHeading: "Plus sommen",
+      blockId: "block-1",
+      previousMessages: [],
+      studentAnswer: [
+        "Vraagtype: invullen",
+        "Vraag: hoeveel is 3 + 3 =",
+        "Leerlingpoging: {\"gap_1\":\"9\"}",
+      ].join("\n"),
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: "Je maakt nu een keersom: $3 \\\\times 3 = 9$. Maar in de som staat $3 + 3$." } }] }),
+    }),
+  });
+
+  assert.equal(result.success, true);
+  assert.match(result.content, /3 keer 3 = 9/);
+  assert.match(result.content, /3 \+ 3/);
+  assert.doesNotMatch(result.content, /\$/);
+  assert.doesNotMatch(result.content, /\\times/);
+});
+
 test("buildAiTutorSystemPrompt tells P-AI-co how to handle an incorrect multiple-choice attempt", () => {
   const prompt = __test.buildAiTutorSystemPrompt({
     contextHeading: "2+2=",
@@ -865,6 +905,7 @@ test("buildAiTutorSystemPrompt tells P-AI-co how to handle an incorrect multiple
   assert.match(prompt, /gekozen antwoord onjuist/i);
   assert.match(prompt, /verklap.*juiste antwoord/i);
   assert.match(prompt, /volledige zinnen/i);
+  assert.match(prompt, /zonder LaTeX/i);
 });
 
 test("buildAiTutorMistakeDiagnosis detects multiplication used for an addition question", () => {

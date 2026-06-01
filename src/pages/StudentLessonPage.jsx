@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -56,6 +56,7 @@ import {
   MATH_TOOL_TYPES,
   normalizeMathTool,
   normalizeMathToolWork,
+  normalizePythagorasSide,
   removeRatioColumn,
   resetMathTool,
   updateMathToolValue
@@ -768,60 +769,199 @@ function RatioOperationInput({ value, onChange, disabled, placement = 'top', mar
 
 function PythagorasWorksheet({ tool, disabled, onChange }) {
   const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
+  const workingTextRef = useRef(null);
+
+  const insertWorkingSymbol = (symbol) => {
+    const textarea = workingTextRef.current;
+    const currentValue = tool.workingText || '';
+    const start = textarea?.selectionStart ?? currentValue.length;
+    const end = textarea?.selectionEnd ?? currentValue.length;
+    const nextValue = `${currentValue.slice(0, start)}${symbol}${currentValue.slice(end)}`;
+    change(['workingText'], nextValue);
+
+    window.requestAnimationFrame(() => {
+      textarea?.focus();
+      const cursor = start + symbol.length;
+      textarea?.setSelectionRange(cursor, cursor);
+    });
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[34rem] border-separate border-spacing-0 overflow-hidden rounded-2xl border border-[var(--helix-border)] bg-white text-sm">
-          <thead>
-            <tr className="bg-[var(--helix-soft-lavender)] text-left text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-purple)]">
-              <th className="px-3 py-3">Zijde</th>
-              <th className="px-3 py-3">Lengte</th>
-              <th className="px-3 py-3">Kwadraat</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tool.rows.map((row, index) => (
-              <tr key={row.id} className="border-t border-[var(--helix-border)]">
-                <td className="px-3 py-2"><ToolboxInput value={row.side} disabled={disabled} onChange={(value) => change(['rows', index, 'side'], value)} placeholder={index < 2 ? 'RZ ...' : 'LZ ...'} /></td>
-                <td className="px-3 py-2"><ToolboxInput value={row.length} disabled={disabled} onChange={(value) => change(['rows', index, 'length'], value)} /></td>
-                <td className="px-3 py-2"><ToolboxInput value={row.square} disabled={disabled} onChange={(value) => change(['rows', index, 'square'], value)} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="grid w-full gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
+      <div className="space-y-4">
+        <div className="overflow-hidden rounded-2xl border border-[var(--helix-border)] bg-white">
+          <div className="grid grid-cols-[minmax(3.75rem,0.45fr)_minmax(7rem,1.1fr)_minmax(7rem,1.1fr)] bg-[var(--helix-soft-lavender)] text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-purple)]">
+            <div className="px-3 py-3">Zijde</div>
+            <div className="px-3 py-3">Lengte</div>
+            <div className="px-3 py-3">Kwadraat</div>
+          </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)]">
-        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
-          <p className="mb-2 text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">Kwadraat optellen</p>
-          <div className="space-y-2">
-            <ToolboxInput value={tool.squareAddition.top} disabled={disabled} onChange={(value) => change(['squareAddition', 'top'], value)} placeholder="36" />
-            <div className="flex items-center gap-2">
-              <span className="font-black text-[var(--helix-purple)]">+</span>
-              <ToolboxInput value={tool.squareAddition.bottom} disabled={disabled} onChange={(value) => change(['squareAddition', 'bottom'], value)} placeholder="64" />
-            </div>
-            <div className="h-0.5 rounded-full bg-[var(--helix-navy)]" />
-            <ToolboxInput value={tool.squareAddition.sum} disabled={disabled} onChange={(value) => change(['squareAddition', 'sum'], value)} placeholder="100" />
+          <div className="grid grid-cols-[minmax(3.75rem,0.45fr)_minmax(7rem,1.1fr)_minmax(7rem,1.1fr)] gap-x-2 gap-y-2 p-3">
+            {tool.rows.map((row, index) => (
+              <Fragment key={row.id}>
+                <PythagorasSideInput row={row} rowIndex={index} disabled={disabled} onChange={change} />
+                <ToolboxInput value={row?.length} disabled={disabled} onChange={(value) => change(['rows', index, 'length'], value)} />
+                <div className="space-y-1">
+                  <ToolboxInput value={row?.square} disabled={disabled} onChange={(value) => change(['rows', index, 'square'], value)} />
+                  {index === 1 && (
+                    <div className="flex items-center gap-2 px-1" aria-hidden="true">
+                      <div className="h-0.5 flex-1 rounded-full bg-[var(--helix-navy)]" />
+                      <span className="text-xl font-black leading-none text-[var(--helix-navy)]">+</span>
+                    </div>
+                  )}
+                </div>
+              </Fragment>
+            ))}
           </div>
         </div>
 
-        <div className="grid gap-3 rounded-2xl border border-[var(--helix-border)] bg-white p-4 sm:grid-cols-3">
-          <label className="text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">
-            LZ² =
-            <ToolboxInput value={tool.conclusion.lzSquared} disabled={disabled} onChange={(value) => change(['conclusion', 'lzSquared'], value)} />
-          </label>
-          <label className="text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">
-            LZ = √
-            <ToolboxInput value={tool.conclusion.root} disabled={disabled} onChange={(value) => change(['conclusion', 'root'], value)} />
-          </label>
-          <label className="text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-muted)]">
-            LZ =
-            <ToolboxInput value={tool.conclusion.length} disabled={disabled} onChange={(value) => change(['conclusion', 'length'], value)} />
-          </label>
+        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor={`${tool.id}-working`} className="text-xs font-black uppercase tracking-[0.14em] text-[var(--helix-muted)]">
+              Berekening en uitwerking
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => insertWorkingSymbol('²')}
+                disabled={disabled}
+                className="rounded-lg border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1 text-sm font-black text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Kwadraat invoegen"
+              >
+                x²
+              </button>
+              <button
+                type="button"
+                onClick={() => insertWorkingSymbol('√')}
+                disabled={disabled}
+                className="rounded-lg border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1 text-sm font-black text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Wortelteken invoegen"
+              >
+                √
+              </button>
+            </div>
+          </div>
+          <textarea
+            id={`${tool.id}-working`}
+            ref={workingTextRef}
+            value={tool.workingText || ''}
+            onChange={(event) => change(['workingText'], event.target.value)}
+            disabled={disabled}
+            className="min-h-32 w-full resize-y rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-semibold leading-7 text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+            placeholder="Schrijf hier je berekening en uitwerking..."
+          />
         </div>
       </div>
+
+      <PythagorasCalculator disabled={disabled} />
     </div>
+  );
+}
+
+function PythagorasSideInput({ row, rowIndex, disabled, onChange }) {
+  return (
+    <input
+      type="text"
+      value={row?.side || ''}
+      onChange={(event) => onChange(['rows', rowIndex, 'side'], normalizePythagorasSide(event.target.value))}
+      disabled={disabled}
+      className="h-11 w-full min-w-0 rounded-xl border border-[var(--helix-border)] bg-white px-2 text-center text-sm font-black uppercase tracking-[0.12em] text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+      maxLength={2}
+      aria-label={`Zijde rij ${rowIndex + 1}`}
+    />
+  );
+}
+
+function PythagorasCalculator({ disabled = false }) {
+  const [expression, setExpression] = useState('');
+  const [display, setDisplay] = useState('0');
+
+  const appendValue = (value) => {
+    if (disabled) return;
+    setExpression((current) => `${current}${value}`);
+    setDisplay((current) => (current === '0' || current === 'Ongeldig' ? value : `${current}${value}`));
+  };
+
+  const reset = () => {
+    setExpression('');
+    setDisplay('0');
+  };
+
+  const calculate = () => {
+    if (disabled) return;
+    try {
+      const result = String(evaluateCalculatorExpression(expression));
+      setExpression(result);
+      setDisplay(result);
+    } catch {
+      setDisplay('Ongeldig');
+    }
+  };
+
+  const buttons = [
+    { label: '7', value: '7' },
+    { label: '8', value: '8' },
+    { label: '9', value: '9' },
+    { label: ':', value: ':' },
+    { label: '4', value: '4' },
+    { label: '5', value: '5' },
+    { label: '6', value: '6' },
+    { label: 'x', value: 'x' },
+    { label: '1', value: '1' },
+    { label: '2', value: '2' },
+    { label: '3', value: '3' },
+    { label: '-', value: '-' },
+    { label: '0', value: '0' },
+    { label: ',', value: ',' },
+    { label: '√', value: '√' },
+    { label: 'x²', value: '^2' },
+    { label: '+', value: '+' },
+    { label: '=', action: calculate, wide: true, tone: 'success' }
+  ];
+
+  return (
+    <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Rekenmachine</p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={reset}
+            disabled={disabled}
+            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[0.65rem] font-black text-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Reset
+          </button>
+          <Calculator size={18} className="text-[var(--helix-purple)] opacity-70" />
+        </div>
+      </div>
+      <div className="mb-3 min-h-12 rounded-xl border border-slate-200 bg-white px-3 py-2 text-right font-mono text-2xl font-black text-slate-700 shadow-inner">
+        {display}
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {buttons.map((button, index) => (
+          <button
+            key={`${button.label}-${index}`}
+            type="button"
+            onClick={button.action || (() => appendValue(button.value))}
+            disabled={disabled}
+            className={[
+              'h-11 rounded-xl border text-sm font-black shadow-sm transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-60',
+              button.wide ? 'col-span-3' : '',
+              button.tone === 'danger'
+                ? 'border-slate-200 bg-white text-slate-500'
+                : button.tone === 'success'
+                  ? 'border-violet-100 bg-violet-50 text-[var(--helix-purple)]'
+                  : ['+', '-', 'x', ':', '√', 'x²'].includes(button.label)
+                    ? 'border-slate-200 bg-white text-[var(--helix-purple)]'
+                    : 'border-slate-200 bg-white text-slate-700'
+            ].filter(Boolean).join(' ')}
+          >
+            {button.label}
+          </button>
+        ))}
+      </div>
+    </aside>
   );
 }
 

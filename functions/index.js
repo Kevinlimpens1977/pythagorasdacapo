@@ -421,6 +421,7 @@ Als de pogingcontext aangeeft dat het gekozen antwoord onjuist is, benoem vriend
 Als er een automatische foutdiagnose staat, gebruik die richting expliciet: benoem de vermoedelijke denkfout, verwijs naar het teken of de bewerking in de vraag, en stel een korte controlevraag.
 Verklap daarbij nooit de juiste optie, het juiste antwoord of de tekst van de correcte keuze.
 Houd je antwoord kort: maximaal 2 tot 3 volledige zinnen.
+Schrijf wiskunde altijd als gewone leesbare tekst, zonder LaTeX, markdown of dollartekens. Gebruik bijvoorbeeld "3 keer 3", "3 + 3" en "wortel van 9".
 Eindig altijd met een volledige zin en een eindteken.`;
 }
 
@@ -488,8 +489,28 @@ function buildAiTutorTryFirstHint({ firstName = "leerling" } = {}) {
   return `${firstName}, probeer eerst zelf een antwoord of aanpak in te vullen. Daarna help ik je met een denkstap, zonder het antwoord voor te zeggen.`;
 }
 
+function normalizeReadableMathText(content = "") {
+  return String(content || "")
+    .replace(/\\\(([\s\S]*?)\\\)/g, "$1")
+    .replace(/\\\[([\s\S]*?)\\\]/g, "$1")
+    .replace(/\$+\s*([\s\S]*?)\s*\$+/g, "$1")
+    .replace(/\\times\b/g, " keer ")
+    .replace(/\\cdot\b/g, " keer ")
+    .replace(/\\div\b/g, " gedeeld door ")
+    .replace(/\\\s+(keer|gedeeld door|wortel)/giu, "$1")
+    .replace(/\\sqrt\s*\{([^{}]+)\}/g, "wortel van $1")
+    .replace(/\\sqrt\b/g, "wortel")
+    .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, "$1 gedeeld door $2")
+    .replace(/\^\s*\{?2\}?/g, " kwadraat")
+    .replace(/\\(?:left|right)\b/g, "")
+    .replace(/[{}]/g, "")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function normalizeAiTutorContent(content, options = {}) {
-  const text = String(content || "").trim();
+  const text = normalizeReadableMathText(content);
   if (/\b(?:geen goede hint|kan nu geen hint|kan geen goede hint|geen hint maken)\b/iu.test(text)) {
     return buildAiTutorFallbackHint(options);
   }
@@ -1676,6 +1697,7 @@ exports.__test = {
   updateOpenRouterConfigCore,
   buildAiTutorSystemPrompt,
   buildAiTutorMistakeDiagnosis,
+  normalizeReadableMathText,
   normalizeAiTutorContent,
   buildOpenAnswerAssessmentMessages,
   shouldPreserveUserDuringStudentReset,
