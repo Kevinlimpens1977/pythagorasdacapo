@@ -8,6 +8,9 @@ import {
   shouldSaveBlockProgressBeforeNavigation
 } from './studentLessonProgress.js';
 import { normalizeContentBlockSettings, normalizeContentBlocks } from './contentBlockUtils.js';
+import { buildQuestionDraftProgressPayload } from './questionDraftProgress.js';
+import { buildContentBlockVoortgangUpdate } from './voortgangPayload.js';
+import { groupProgressRecordsByStudent } from './progressRecordUtils.js';
 
 const blocks = [
   { id: 'block-1' },
@@ -92,5 +95,89 @@ test('normalizes lesson block settings without overwriting explicit false values
     allowCalculator: false,
     allowAiHelp: false,
     allowMathToolbox: false
+  });
+});
+
+test('student progress lifecycle supports draft save, resume, completion and admin visibility', () => {
+  const questionBlock = {
+    id: 'question-1',
+    type: 'question',
+    title: 'Vraag 1',
+    paragraafId: 'par-1',
+    hoofdstukId: 'h-1'
+  };
+  const lessonBlocks = [
+    { id: 'theory-1', type: 'theory' },
+    questionBlock,
+    { id: 'summary-1', type: 'summary' }
+  ];
+  const linkedVraag = {
+    title: 'Open vraag',
+    vraagtype: 'open'
+  };
+  const preview = { type: 'open' };
+
+  const draftPayload = buildQuestionDraftProgressPayload({
+    block: questionBlock,
+    linkedVraag,
+    preview,
+    previewAnswers: { openAnswer: 'ik denk eerst zelf' },
+    attempts: 0,
+    aiHelpCount: 0
+  });
+  const draftRecord = buildContentBlockVoortgangUpdate({
+    userId: 'student-1',
+    blockId: questionBlock.id,
+    paragraafId: questionBlock.paragraafId,
+    hoofdstukId: questionBlock.hoofdstukId,
+    klasId: 'klas-1',
+    data: draftPayload,
+    timestamp: 'draft-time'
+  });
+
+  assert.equal(draftRecord.completed, false);
+  assert.equal(draftRecord.draftSaved, true);
+  assert.equal(draftRecord.attempts, 0);
+  assert.equal(findResumeBlockIndex(lessonBlocks, [
+    { blockId: 'theory-1', completed: true },
+    draftRecord
+  ]), 1);
+
+  const completedRecord = buildContentBlockVoortgangUpdate({
+    userId: 'student-1',
+    blockId: questionBlock.id,
+    paragraafId: questionBlock.paragraafId,
+    hoofdstukId: questionBlock.hoofdstukId,
+    klasId: 'klas-1',
+    existingData: draftRecord,
+    data: {
+      completed: true,
+      isCorrect: true,
+      attempts: 1,
+      aiHelpCount: 1,
+      lastAnswer: { openAnswer: 'definitief antwoord' },
+      blockTitle: questionBlock.title,
+      vraagTitle: linkedVraag.title,
+      vraagType: preview.type
+    },
+    timestamp: 'done-time'
+  });
+
+  assert.equal(completedRecord.completed, true);
+  assert.equal(completedRecord.draftSaved, false);
+  assert.equal(completedRecord.helpTier, 'ai_minimal');
+  assert.equal(completedRecord.scoreWeight, 0.75);
+  assert.equal(completedRecord.completedAt, 'done-time');
+  assert.deepEqual(groupProgressRecordsByStudent([completedRecord]), {
+    'student-1': [completedRecord]
+  });
+  assert.deepEqual(calculateLessonProgress(lessonBlocks, [
+    { blockId: 'theory-1', completed: true },
+    completedRecord
+  ]), {
+    totalBlocks: 3,
+    completedBlocks: 2,
+    percentage: 67,
+    isCompleted: false
   });
 });
