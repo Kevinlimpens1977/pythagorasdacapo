@@ -9,6 +9,8 @@ import * as cmsService from '../../services/cmsService';
 import { auth } from '../../services/firebase';
 import ColorEmojiPicker from './ColorEmojiPicker';
 
+const showColorEmojiPicker = false;
+
 export default function CreateContentModal({
   type, // 'vak' | 'leerjaar' | 'niveau' | 'hoofdstuk' | 'paragraaf'
   parentId, // parent ID for leerjaar, niveau, etc.
@@ -46,7 +48,7 @@ export default function CreateContentModal({
       switch (type) {
         case 'vak':
           newId = await cmsService.createVak(
-            { name, description, color, emoji },
+            { name, description },
             auth.currentUser.uid
           );
           break;
@@ -54,7 +56,7 @@ export default function CreateContentModal({
         case 'leerjaar':
           newId = await cmsService.createLeerjaar(
             parentId,
-            { year: parseInt(year), label: label || `Jaar ${year}`, color, emoji },
+            { year: parseInt(year), label: label || `Jaar ${year}` },
             auth.currentUser.uid
           );
           break;
@@ -62,7 +64,7 @@ export default function CreateContentModal({
         case 'niveau':
           newId = await cmsService.createNiveau(
             parentId,
-            { label, name: label, description, color, emoji },
+            { label, name: label, description },
             auth.currentUser.uid
           );
           break;
@@ -70,7 +72,7 @@ export default function CreateContentModal({
         case 'hoofdstuk':
           newId = await cmsService.createHoofdstuk(
             parentId,
-            { title, description, color, emoji },
+            { title, description },
             auth.currentUser.uid
           );
           break;
@@ -294,7 +296,7 @@ export default function CreateContentModal({
           )}
 
           {/* Color & Emoji Picker (for vak, leerjaar, niveau, hoofdstuk) */}
-          {['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(type) && (
+          {showColorEmojiPicker && ['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(type) && (
             <div className="border-t border-[var(--helix-border)] pt-4">
               <button
                 type="button"

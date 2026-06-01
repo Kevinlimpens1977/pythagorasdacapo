@@ -10,6 +10,18 @@ const visibleBlocks = (blocks = [], includeArchived = false) =>
 const visibleItems = (items = [], includeArchived = false) =>
   items.filter((item) => item && (includeArchived || !isCmsItemArchived(item)));
 
+export const getCmsItemLabel = (type, item = {}) => {
+  if (type === 'vak') return item.name || item.naam || 'Vak zonder naam';
+  if (type === 'leerjaar') return item.label || item.name || (item.year ? `Jaar ${item.year}` : 'Leerjaar');
+  if (type === 'niveau') {
+    if (item.label && item.name && item.label !== item.name) return `${item.label} - ${item.name}`;
+    return item.label || item.name || 'Niveau';
+  }
+  if (type === 'hoofdstuk') return item.title || item.name || (item.number ? `Hoofdstuk ${item.number}` : 'Hoofdstuk zonder naam');
+  if (type === 'paragraaf') return item.title || item.name || 'Paragraaf zonder naam';
+  return item.name || item.naam || item.title || item.label || 'Onderdeel';
+};
+
 export const getContentBlockTypeCounts = (blocks = [], { includeArchived = false } = {}) => {
   const counts = CONTENT_BLOCK_TYPES.reduce(
     (acc, type) => ({
@@ -79,7 +91,7 @@ export const buildCmsNavigationTree = (
       ...vak,
       type: 'vak',
       archived: isCmsItemArchived(vak),
-      label: vak.name || 'Vak zonder naam',
+      label: getCmsItemLabel('vak', vak),
       counts: {
         leerjaren: vakLeerjaren.length
       },
@@ -90,7 +102,7 @@ export const buildCmsNavigationTree = (
           ...leerjaar,
           type: 'leerjaar',
           archived: isCmsItemArchived(leerjaar),
-          label: leerjaar.label || `Jaar ${leerjaar.year}`,
+          label: getCmsItemLabel('leerjaar', leerjaar),
           counts: {
             niveaus: leerjaarNiveaus.length
           },
@@ -101,7 +113,7 @@ export const buildCmsNavigationTree = (
               ...niveau,
               type: 'niveau',
               archived: isCmsItemArchived(niveau),
-              label: `${niveau.label || niveau.name || 'Niveau'}${niveau.name && niveau.name !== niveau.label ? ` - ${niveau.name}` : ''}`,
+              label: getCmsItemLabel('niveau', niveau),
               counts: {
                 hoofdstukken: niveauHoofdstukken.length
               },
@@ -112,7 +124,7 @@ export const buildCmsNavigationTree = (
                   ...hoofdstuk,
                   type: 'hoofdstuk',
                   archived: isCmsItemArchived(hoofdstuk),
-                  label: hoofdstuk.title || (hoofdstuk.number ? `Hoofdstuk ${hoofdstuk.number}` : 'Hoofdstuk zonder naam'),
+                  label: getCmsItemLabel('hoofdstuk', hoofdstuk),
                   counts: {
                     paragrafen: hoofdstukParagrafen.length
                   },
@@ -123,7 +135,7 @@ export const buildCmsNavigationTree = (
                       ...paragraaf,
                       type: 'paragraaf',
                       archived: isCmsItemArchived(paragraaf),
-                      label: paragraaf.title || 'Paragraaf zonder naam',
+                      label: getCmsItemLabel('paragraaf', paragraaf),
                       counts: {
                         vragen: visibleVragen.filter((vraag) => vraag.paragraafId === paragraaf.id).length,
                         blocks: getContentBlockTypeCounts(paragraafBlocks, { includeArchived })

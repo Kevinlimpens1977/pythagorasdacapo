@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildCmsNavigationTree,
+  getCmsItemLabel,
   getContentBlockTypeCounts
 } from './cmsNavigationUtils.js';
 
@@ -38,6 +39,23 @@ test('getContentBlockTypeCounts ignores archived blocks and counts types', () =>
     published: 2,
     draft: 3
   });
+});
+
+test('getCmsItemLabel uses text fields and readable fallbacks for the content hierarchy', () => {
+  assert.equal(getCmsItemLabel('vak', { name: 'Digitale Vaardigheden' }), 'Digitale Vaardigheden');
+  assert.equal(getCmsItemLabel('vak', { naam: 'Wiskunde legacy' }), 'Wiskunde legacy');
+  assert.equal(getCmsItemLabel('vak', {}), 'Vak zonder naam');
+  assert.equal(getCmsItemLabel('leerjaar', { year: 1, label: 'leerjaar 1' }), 'leerjaar 1');
+  assert.equal(getCmsItemLabel('leerjaar', { year: 2 }), 'Jaar 2');
+  assert.equal(getCmsItemLabel('leerjaar', {}), 'Leerjaar');
+  assert.equal(getCmsItemLabel('niveau', { label: 'VMBO-GT', name: 'VMBO-GT' }), 'VMBO-GT');
+  assert.equal(getCmsItemLabel('niveau', { label: 'VMBO-GT', name: 'Gemengd theoretisch' }), 'VMBO-GT - Gemengd theoretisch');
+  assert.equal(getCmsItemLabel('niveau', {}), 'Niveau');
+  assert.equal(getCmsItemLabel('hoofdstuk', { title: 'H1 Inleiding' }), 'H1 Inleiding');
+  assert.equal(getCmsItemLabel('hoofdstuk', { number: 2 }), 'Hoofdstuk 2');
+  assert.equal(getCmsItemLabel('hoofdstuk', {}), 'Hoofdstuk zonder naam');
+  assert.equal(getCmsItemLabel('paragraaf', { title: '1.1 Rechthoekige driehoeken' }), '1.1 Rechthoekige driehoeken');
+  assert.equal(getCmsItemLabel('paragraaf', {}), 'Paragraaf zonder naam');
 });
 
 test('buildCmsNavigationTree adds useful child and block counts', () => {

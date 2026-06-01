@@ -1,13 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   BookOpen,
-  Boxes,
   ChevronDown,
   ChevronRight,
-  FileQuestion,
-  FileText,
-  GraduationCap,
-  Layers3,
   PanelLeftClose,
   Pencil,
   Plus,
@@ -20,15 +15,6 @@ import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils';
 import { buildCmsNavigationTree } from '../../lib/cmsNavigationUtils';
 
 const STORAGE_KEY = 'cms-tree-expanded-ids';
-
-const typeConfig = {
-  vak: { icon: BookOpen, accent: 'text-[var(--helix-purple)]', childLabel: 'jaren' },
-  leerjaar: { icon: GraduationCap, accent: 'text-[var(--helix-pink)]', childLabel: 'niveaus' },
-  niveau: { icon: Layers3, accent: 'text-violet-600', childLabel: 'hoofdstukken' },
-  hoofdstuk: { icon: FileText, accent: 'text-[var(--helix-purple)]', childLabel: 'paragrafen' },
-  paragraaf: { icon: Boxes, accent: 'text-[var(--helix-purple)]', childLabel: 'lesblokken' },
-  vraag: { icon: FileQuestion, accent: 'text-[var(--helix-pink)]', childLabel: 'vraag' }
-};
 
 const ArchiveToggleButton = ({ showArchived, onToggleShowArchived }) => (
   <button
@@ -65,35 +51,8 @@ const blockTypePills = (node) => {
     .map((item) => `${CONTENT_BLOCK_LABELS[item.type][0]}${item.count}`);
 };
 
-const getNiveauBadgeLabel = (node) => {
-  const value = `${node.label || ''} ${node.name || ''}`.toUpperCase();
-  if (value.includes('GT')) return 'GT';
-  if (value.includes('KADER') || value.includes('VMBO-K') || /\bK\b/.test(value)) return 'K';
-  if (value.includes('BASIS') || value.includes('VMBO-B') || /\bB\b/.test(value)) return 'B';
-  return 'N';
-};
-
-const getChapterBadgeLabel = (node) => {
-  if (node.number) return `H${node.number}`;
-  const label = node.label || node.title || '';
-  const match = label.match(/\b(?:h|hoofdstuk)\s*(\d+)/i);
-  return match ? `H${match[1]}` : 'H';
-};
-
-const getNodeBadgeLabel = (node) => {
-  if (node.type === 'vak') return 'B';
-  if (node.type === 'leerjaar') return 'J';
-  if (node.type === 'niveau') return getNiveauBadgeLabel(node);
-  if (node.type === 'hoofdstuk') return getChapterBadgeLabel(node);
-  if (node.type === 'paragraaf') return node.code || node.number || null;
-  return null;
-};
-
 const getNodeDisplayLabel = (node) => {
-  const label = node.label || '';
-  const badge = getNodeBadgeLabel(node);
-  if (node.type !== 'paragraaf' || !badge) return label;
-  return label.replace(new RegExp(`^${String(badge).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+`), '');
+  return node.label || '';
 };
 
 const getIndent = (level) => {
@@ -119,8 +78,6 @@ const TreeNode = ({
 }) => {
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(node.label || '');
-  const config = typeConfig[node.type] || typeConfig.vak;
-  const Icon = config.icon;
   const isExpanded = forceExpanded || expandedIds.includes(node.id);
   const hasChildren = node.children.length > 0;
   const isSelected = selectedIds[node.type] === node.id;
@@ -131,7 +88,6 @@ const TreeNode = ({
   const canCreateChild = ['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(node.type);
   const actionsOpen = actionNodeId === node.id;
   const isArchived = node.archived === true;
-  const badgeLabel = getNodeBadgeLabel(node);
   const displayLabel = getNodeDisplayLabel(node);
   const isChapterBand = node.type === 'hoofdstuk';
   const hasActiveChapterRail = isChapterBand && isSelected;
@@ -157,7 +113,7 @@ const TreeNode = ({
     <div className={isChapterBand ? 'mt-2' : undefined}>
       <div
         className={[
-          'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_2.125rem_minmax(0,1fr)_7rem] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
+          'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_minmax(0,1fr)_7rem] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
           isActiveParagraaf
             ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[#f5edff] text-[var(--helix-navy)]'
             : isActivePath
@@ -197,16 +153,7 @@ const TreeNode = ({
         </button>
 
         <span
-          className={[
-            'relative flex h-8 w-8 items-center justify-center rounded-lg text-[12px] font-black',
-            isChapterBand
-              ? 'bg-white text-[var(--helix-purple)] ring-1 ring-[#eadcff]'
-              : node.type === 'paragraaf'
-                ? 'bg-white text-[var(--helix-purple)] ring-1 ring-fuchsia-100'
-              : isActivePath
-                ? `bg-[var(--helix-surface-soft)] ${config.accent} ring-1 ring-[var(--helix-border)]`
-                : `bg-white ${config.accent} ring-1 ring-[var(--helix-border)]`
-          ].join(' ')}
+          className="relative min-w-0"
           onDoubleClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -214,36 +161,6 @@ const TreeNode = ({
           }}
           title="Dubbelklik voor bewerkingsopties"
         >
-          {badgeLabel ? <span className="leading-none">{badgeLabel}</span> : <Icon size={15} />}
-          {actionsOpen && (
-            <span
-              className="absolute bottom-full left-1/2 z-50 mb-2 w-40 -translate-x-1/2 rounded-2xl border border-[var(--helix-border)] bg-white p-1.5 text-left shadow-xl"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={startRename}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-[var(--helix-navy)] transition hover:bg-[var(--helix-surface-soft)]"
-              >
-                <Pencil size={14} />
-                Naam wijzigen
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onCloseActions?.();
-                  onArchiveNode?.(node);
-                }}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-red-600 transition hover:bg-red-50"
-              >
-                <Trash2 size={14} />
-                Verwijderen
-              </button>
-            </span>
-          )}
-        </span>
-
-        <span className="min-w-0">
           {editingName ? (
             <input
               value={draftName}
@@ -268,6 +185,32 @@ const TreeNode = ({
               {pills.map((pill) => (
                 <span key={pill}>{pill}</span>
               ))}
+            </span>
+          )}
+          {actionsOpen && (
+            <span
+              className="absolute left-0 top-full z-50 mt-2 w-40 rounded-2xl border border-[var(--helix-border)] bg-white p-1.5 text-left shadow-xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={startRename}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-[var(--helix-navy)] transition hover:bg-[var(--helix-surface-soft)]"
+              >
+                <Pencil size={14} />
+                Naam wijzigen
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onCloseActions?.();
+                  onArchiveNode?.(node);
+                }}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-red-600 transition hover:bg-red-50"
+              >
+                <Trash2 size={14} />
+                Verwijderen
+              </button>
             </span>
           )}
         </span>

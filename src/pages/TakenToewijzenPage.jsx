@@ -1,11 +1,14 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, CheckSquare, AlertCircle } from 'lucide-react';
 import klasService from '../services/klasService';
 import cmsService from '../services/cmsService';
 import { getColorStyle } from '../lib/paletColors';
 import { CONTENT_BLOCK_LABELS, buildContentBlockPreview, normalizeContentBlocks } from '../lib/contentBlockUtils';
+import { buildCmsNavigationTree, getCmsItemLabel } from '../lib/cmsNavigationUtils';
+
+const showLegacyCardBrowser = false;
 
 const flowSteps = [
   {
@@ -69,6 +72,233 @@ const FlowSteps = ({ currentStep }) => (
   </div>
 );
 
+const AssignmentTreeNode = ({
+  node,
+  level = 0,
+  expandedIds,
+  selectedIds,
+  assignedParagrafen,
+  assignedContentBlocks,
+  studentOverrides,
+  studentContentBlockOverrides,
+  selectedStudentId,
+  contentBlocksByParagraaf,
+  allParagrafen,
+  saving,
+  onToggleExpand,
+  onSelectNode,
+  onToggleParagraaf,
+  onToggleStudentParagraaf,
+  onToggleHoofdstuk,
+  onToggleContentBlock,
+  onClearContentBlocks
+}) => {
+  const hasChildren = node.children?.length > 0;
+  const isExpanded = expandedIds.includes(node.id);
+  const isSelected = selectedIds[node.type] === node.id;
+  const isParagraaf = node.type === 'paragraaf';
+  const blocks = isParagraaf ? (contentBlocksByParagraaf[node.id] || []) : [];
+  const isInClassDefault = isParagraaf && assignedParagrafen.includes(node.id);
+  const studentExtras = studentOverrides[selectedStudentId] || [];
+  const isInStudentOverride = isParagraaf && studentExtras.includes(node.id);
+  const isChecked = isParagraaf && (selectedStudentId ? (isInClassDefault || isInStudentOverride) : isInClassDefault);
+  const isDisabled = isParagraaf && selectedStudentId && isInClassDefault;
+  const chapterParagrafen = node.type === 'hoofdstuk'
+    ? allParagrafen.filter((paragraaf) => paragraaf.hoofdstukId === node.id)
+    : [];
+  const rowLabel = getCmsItemLabel(node.type, node);
+
+  const handleRowClick = () => {
+    onSelectNode(node);
+    if (hasChildren && !isExpanded) onToggleExpand(node.id);
+  };
+
+  return (
+    <div>
+      <div
+        className={[
+          'group grid min-h-[44px] grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border px-3 py-2 text-sm transition',
+          isSelected
+            ? 'border-blue-200 bg-blue-50 text-slate-950'
+            : isParagraaf
+              ? 'border-slate-200 bg-white text-slate-700 hover:border-blue-100 hover:bg-slate-50'
+              : 'border-transparent bg-white text-slate-800 hover:border-slate-200 hover:bg-slate-50'
+        ].join(' ')}
+        style={{ paddingLeft: `${12 + level * 18}px` }}
+        onClick={handleRowClick}
+      >
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            if (hasChildren) onToggleExpand(node.id);
+          }}
+          disabled={!hasChildren}
+          className={[
+            'flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100',
+            hasChildren ? '' : 'opacity-25'
+          ].join(' ')}
+          title={isExpanded ? 'Inklappen' : 'Uitklappen'}
+        >
+          {hasChildren && (
+            <ChevronRight
+              size={16}
+              className={isExpanded ? 'rotate-90 transition-transform' : 'transition-transform'}
+            />
+          )}
+        </button>
+
+        <div className="min-w-0">
+          <div className={['truncate', isParagraaf ? 'font-medium' : 'font-bold'].join(' ')}>
+            {rowLabel}
+          </div>
+          {isParagraaf && (
+            <div className="text-xs text-slate-500">
+              {blocks.length} lesblokken
+              {Array.isArray(assignedContentBlocks[node.id]) && (
+                <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700">
+                  {assignedContentBlocks[node.id].length} geselecteerd
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {isParagraaf ? (
+          <div className="flex items-center gap-2">
+            {isChecked && <CheckSquare size={17} className="text-green-600" />}
+            <input
+              type="checkbox"
+              checked={isChecked}
+              disabled={saving || isDisabled}
+              onClick={(event) => event.stopPropagation()}
+              onChange={() => selectedStudentId ? onToggleStudentParagraaf(node.id) : onToggleParagraaf(node.id)}
+              className="h-5 w-5 cursor-pointer rounded text-blue-600"
+              title={isDisabled ? 'Al in klassestandaard' : ''}
+            />
+          </div>
+        ) : (
+          <span className="text-xs font-semibold text-slate-400">
+            {node.type === 'hoofdstuk' ? `${chapterParagrafen.length} paragrafen` : ''}
+          </span>
+        )}
+      </div>
+
+      {node.type === 'hoofdstuk' && isSelected && (
+        <div
+          className="my-2 rounded-xl border border-blue-100 bg-blue-50 p-4"
+          style={{ marginLeft: `${level * 18 + 34}px` }}
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-sm font-black text-slate-900">Hoofdstuk klaarzetten</h3>
+              <p className="text-xs text-slate-600">
+                Zet alle paragrafen uit dit hoofdstuk in een keer klaar.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onToggleHoofdstuk(node.id)}
+              disabled={saving || selectedStudentId || chapterParagrafen.length === 0}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title={selectedStudentId ? 'Bulkactie is alleen voor de klas. Kies losse extra paragrafen voor een leerling.' : ''}
+            >
+              Hoofdstuk aan/uit
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isParagraaf && isChecked && blocks.length > 0 && (
+        <div className="mb-2 mt-1 space-y-2 border-l border-slate-100 pl-4" style={{ marginLeft: `${level * 18 + 34}px` }}>
+          <div className="flex items-center justify-between gap-3 pt-2">
+            <span className="text-xs font-black uppercase tracking-wide text-slate-500">
+              Onderdelen van deze paragraaf
+            </span>
+            {!selectedStudentId && Array.isArray(assignedContentBlocks[node.id]) && (
+              <button
+                type="button"
+                onClick={() => onClearContentBlocks(node.id)}
+                className="text-xs font-bold text-blue-600 hover:text-blue-800"
+              >
+                Alle blokken tonen
+              </button>
+            )}
+          </div>
+          {blocks.map((block) => {
+            const classSelection = assignedContentBlocks[node.id];
+            const classHasExplicitSelection = Array.isArray(classSelection);
+            const isClassBlockSelected = classHasExplicitSelection
+              ? classSelection.includes(block.id)
+              : true;
+            const studentBlockExtras = studentContentBlockOverrides[selectedStudentId]?.[node.id] || [];
+            const isStudentBlockSelected = studentBlockExtras.includes(block.id);
+            const blockChecked = selectedStudentId ? isStudentBlockSelected : isClassBlockSelected;
+            const blockDisabled = selectedStudentId && isClassBlockSelected;
+
+            return (
+              <label
+                key={block.id}
+                className={[
+                  'flex items-start gap-3 rounded-lg border px-3 py-2 text-sm',
+                  blockDisabled
+                    ? 'border-slate-100 bg-slate-50 opacity-60'
+                    : 'border-slate-200 bg-white hover:border-blue-200'
+                ].join(' ')}
+              >
+                <input
+                  type="checkbox"
+                  checked={blockChecked}
+                  disabled={saving || blockDisabled}
+                  onChange={() => onToggleContentBlock(node.id, block.id)}
+                  className="mt-1 h-4 w-4 cursor-pointer rounded text-blue-600"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-bold text-slate-900">
+                    Stap {block.order || '-'} - {CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'} - {block.title || 'Naamloos'}
+                  </span>
+                  <span className="line-clamp-1 text-xs text-slate-500">
+                    {buildContentBlockPreview(block)}
+                  </span>
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      {hasChildren && isExpanded && (
+        <div className="mt-1 space-y-1">
+          {node.children.map((child) => (
+            <AssignmentTreeNode
+              key={child.id}
+              node={child}
+              level={level + 1}
+              expandedIds={expandedIds}
+              selectedIds={selectedIds}
+              assignedParagrafen={assignedParagrafen}
+              assignedContentBlocks={assignedContentBlocks}
+              studentOverrides={studentOverrides}
+              studentContentBlockOverrides={studentContentBlockOverrides}
+              selectedStudentId={selectedStudentId}
+              contentBlocksByParagraaf={contentBlocksByParagraaf}
+              allParagrafen={allParagrafen}
+              saving={saving}
+              onToggleExpand={onToggleExpand}
+              onSelectNode={onSelectNode}
+              onToggleParagraaf={onToggleParagraaf}
+              onToggleStudentParagraaf={onToggleStudentParagraaf}
+              onToggleHoofdstuk={onToggleHoofdstuk}
+              onToggleContentBlock={onToggleContentBlock}
+              onClearContentBlocks={onClearContentBlocks}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function TakenToewijzenPage() {
   const navigate = useNavigate();
 
@@ -84,6 +314,10 @@ export default function TakenToewijzenPage() {
   const [niveaus, setNiveaus] = useState([]);
   const [hoofdstukken, setHoofdstukken] = useState([]);
   const [paragrafen, setParagrafen] = useState([]);
+  const [contentLeerjaren, setContentLeerjaren] = useState([]);
+  const [contentNiveaus, setContentNiveaus] = useState([]);
+  const [contentHoofdstukken, setContentHoofdstukken] = useState([]);
+  const [contentParagrafen, setContentParagrafen] = useState([]);
 
   // Navigation state
   const [selectedVakId, setSelectedVakId] = useState(null);
@@ -99,6 +333,8 @@ export default function TakenToewijzenPage() {
   const [studentOverrides, setStudentOverrides] = useState({});
   const [studentContentBlockOverrides, setStudentContentBlockOverrides] = useState({});
   const [contentBlocksByParagraaf, setContentBlocksByParagraaf] = useState({});
+  const [contentTreeLoading, setContentTreeLoading] = useState(false);
+  const [expandedTreeIds, setExpandedTreeIds] = useState([]);
   const [activeTab, setActiveTab] = useState('klas'); // 'klas' or 'leerlingen'
   const [, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -115,6 +351,57 @@ export default function TakenToewijzenPage() {
     };
     loadVakken();
   }, []);
+
+  useEffect(() => {
+    if (!selectedKlasId || vakken.length === 0) return;
+
+    let cancelled = false;
+
+    const loadContentTree = async () => {
+      try {
+        setContentTreeLoading(true);
+        const leerjaarLists = await Promise.all(vakken.map((vak) => cmsService.getLeerjaren(vak.id)));
+        const allLeerjaren = leerjaarLists.flat();
+        const niveauLists = await Promise.all(allLeerjaren.map((leerjaar) => cmsService.getNiveaus(leerjaar.id)));
+        const allNiveaus = niveauLists.flat();
+        const hoofdstukLists = await Promise.all(allNiveaus.map((niveau) => cmsService.getHoofdstukken(niveau.id)));
+        const allHoofdstukken = hoofdstukLists.flat();
+        const paragraafLists = await Promise.all(allHoofdstukken.map((hoofdstuk) => cmsService.getParagrafen(hoofdstuk.id)));
+        const allParagrafen = paragraafLists.flat();
+        const blockEntries = await Promise.all(
+          allParagrafen.map(async (paragraaf) => {
+            const blocks = await cmsService.getContentBlocks(paragraaf.id, false).catch(() => []);
+            return [paragraaf.id, normalizeContentBlocks(blocks)];
+          })
+        );
+
+        if (cancelled) return;
+        setContentLeerjaren(allLeerjaren);
+        setContentNiveaus(allNiveaus);
+        setContentHoofdstukken(allHoofdstukken);
+        setContentParagrafen(allParagrafen);
+        setContentBlocksByParagraaf(Object.fromEntries(blockEntries));
+        setExpandedTreeIds((current) => current.length > 0 ? current : vakken.map((vak) => vak.id));
+      } catch (error) {
+        console.error('Error loading assignment content tree:', error);
+        if (!cancelled) {
+          setContentLeerjaren([]);
+          setContentNiveaus([]);
+          setContentHoofdstukken([]);
+          setContentParagrafen([]);
+          setContentBlocksByParagraaf({});
+        }
+      } finally {
+        if (!cancelled) setContentTreeLoading(false);
+      }
+    };
+
+    loadContentTree();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedKlasId, vakken]);
 
   // Load all klassen on mount
   useEffect(() => {
@@ -176,7 +463,8 @@ export default function TakenToewijzenPage() {
       try {
         const lj = await cmsService.getLeerjaren(selectedVakId);
         setLeerjaren(lj);
-        setBreadcrumbs([{ label: vakken.find(v => v.id === selectedVakId)?.naam || 'Vak', id: selectedVakId, type: 'vak' }]);
+        const vakData = vakken.find(v => v.id === selectedVakId);
+        setBreadcrumbs([{ label: getCmsItemLabel('vak', vakData), id: selectedVakId, type: 'vak' }]);
       } catch (error) {
         console.error('Error loading leerjaren:', error);
       }
@@ -198,7 +486,7 @@ export default function TakenToewijzenPage() {
         const n = await cmsService.getNiveaus(selectedLeerjaarId);
         setNiveaus(n);
         const ljData = leerjaren.find(l => l.id === selectedLeerjaarId);
-        setBreadcrumbs(prev => [...prev, { label: ljData?.name || 'Leerjaar', id: selectedLeerjaarId, type: 'leerjaar' }]);
+        setBreadcrumbs(prev => [...prev, { label: getCmsItemLabel('leerjaar', ljData), id: selectedLeerjaarId, type: 'leerjaar' }]);
       } catch (error) {
         console.error('Error loading niveaus:', error);
       }
@@ -220,7 +508,7 @@ export default function TakenToewijzenPage() {
         const h = await cmsService.getHoofdstukken(selectedNiveauId);
         setHoofdstukken(h);
         const nData = niveaus.find(n => n.id === selectedNiveauId);
-        setBreadcrumbs(prev => [...prev, { label: nData ? `${nData.label} - ${nData.name}` : 'Niveau', id: selectedNiveauId, type: 'niveau' }]);
+        setBreadcrumbs(prev => [...prev, { label: getCmsItemLabel('niveau', nData), id: selectedNiveauId, type: 'niveau' }]);
       } catch (error) {
         console.error('Error loading hoofdstukken:', error);
       }
@@ -241,7 +529,7 @@ export default function TakenToewijzenPage() {
         const p = await cmsService.getParagrafen(selectedHoofdstukId);
         setParagrafen(p);
         const hData = hoofdstukken.find(h => h.id === selectedHoofdstukId);
-        setBreadcrumbs(prev => [...prev, { label: hData?.title || (hData?.number ? `Hoofdstuk ${hData.number}` : 'Hoofdstuk'), id: selectedHoofdstukId, type: 'hoofdstuk' }]);
+        setBreadcrumbs(prev => [...prev, { label: getCmsItemLabel('hoofdstuk', hData), id: selectedHoofdstukId, type: 'hoofdstuk' }]);
       } catch (error) {
         console.error('Error loading paragrafen:', error);
       }
@@ -255,7 +543,6 @@ export default function TakenToewijzenPage() {
 
     const loadContentBlocks = async () => {
       if (paragrafen.length === 0) {
-        if (!cancelled) setContentBlocksByParagraaf({});
         return;
       }
 
@@ -266,10 +553,14 @@ export default function TakenToewijzenPage() {
             return [paragraaf.id, normalizeContentBlocks(blocks)];
           })
         );
-        if (!cancelled) setContentBlocksByParagraaf(Object.fromEntries(entries));
+        if (!cancelled) {
+          setContentBlocksByParagraaf((current) => ({
+            ...current,
+            ...Object.fromEntries(entries)
+          }));
+        }
       } catch (error) {
         console.error('Error loading content blocks:', error);
-        if (!cancelled) setContentBlocksByParagraaf({});
       }
     };
 
@@ -279,6 +570,103 @@ export default function TakenToewijzenPage() {
       cancelled = true;
     };
   }, [paragrafen]);
+
+  const assignmentTree = useMemo(
+    () =>
+      buildCmsNavigationTree({
+        vakken,
+        leerjaren: contentLeerjaren,
+        niveaus: contentNiveaus,
+        hoofdstukken: contentHoofdstukken,
+        paragrafen: contentParagrafen,
+        contentBlocks: Object.values(contentBlocksByParagraaf).flat()
+      }),
+    [vakken, contentLeerjaren, contentNiveaus, contentHoofdstukken, contentParagrafen, contentBlocksByParagraaf]
+  );
+
+  const selectedIds = {
+    vak: selectedVakId,
+    leerjaar: selectedLeerjaarId,
+    niveau: selectedNiveauId,
+    hoofdstuk: selectedHoofdstukId
+  };
+
+  const toggleTreeExpand = (id) => {
+    setExpandedTreeIds((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
+    );
+  };
+
+  const expandAncestors = (...ids) => {
+    setExpandedTreeIds((current) => [...new Set([...current, ...ids.filter(Boolean)])]);
+  };
+
+  const handleTreeNodeSelect = (node) => {
+    if (node.type === 'vak') {
+      setSelectedVakId(node.id);
+      setSelectedLeerjaarId(null);
+      setSelectedNiveauId(null);
+      setSelectedHoofdstukId(null);
+      setBreadcrumbs([{ label: getCmsItemLabel('vak', node), id: node.id, type: 'vak' }]);
+      expandAncestors(node.id);
+      return;
+    }
+
+    if (node.type === 'leerjaar') {
+      const vak = vakken.find((item) => item.id === node.vakId);
+      setSelectedVakId(node.vakId);
+      setSelectedLeerjaarId(node.id);
+      setSelectedNiveauId(null);
+      setSelectedHoofdstukId(null);
+      setBreadcrumbs([
+        { label: getCmsItemLabel('vak', vak), id: node.vakId, type: 'vak' },
+        { label: getCmsItemLabel('leerjaar', node), id: node.id, type: 'leerjaar' }
+      ]);
+      expandAncestors(node.vakId, node.id);
+      return;
+    }
+
+    if (node.type === 'niveau') {
+      const leerjaar = contentLeerjaren.find((item) => item.id === node.leerjaarId);
+      const vakId = node.vakId || leerjaar?.vakId;
+      const vak = vakken.find((item) => item.id === vakId);
+      setSelectedVakId(vakId);
+      setSelectedLeerjaarId(node.leerjaarId);
+      setSelectedNiveauId(node.id);
+      setSelectedHoofdstukId(null);
+      setBreadcrumbs([
+        { label: getCmsItemLabel('vak', vak), id: vakId, type: 'vak' },
+        { label: getCmsItemLabel('leerjaar', leerjaar), id: node.leerjaarId, type: 'leerjaar' },
+        { label: getCmsItemLabel('niveau', node), id: node.id, type: 'niveau' }
+      ]);
+      expandAncestors(vakId, node.leerjaarId, node.id);
+      return;
+    }
+
+    if (node.type === 'hoofdstuk') {
+      const niveau = contentNiveaus.find((item) => item.id === node.niveauId);
+      const leerjaar = contentLeerjaren.find((item) => item.id === niveau?.leerjaarId);
+      const vakId = node.vakId || niveau?.vakId || leerjaar?.vakId;
+      const vak = vakken.find((item) => item.id === vakId);
+      setSelectedVakId(vakId);
+      setSelectedLeerjaarId(niveau?.leerjaarId || null);
+      setSelectedNiveauId(node.niveauId);
+      setSelectedHoofdstukId(node.id);
+      setBreadcrumbs([
+        { label: getCmsItemLabel('vak', vak), id: vakId, type: 'vak' },
+        { label: getCmsItemLabel('leerjaar', leerjaar), id: niveau?.leerjaarId, type: 'leerjaar' },
+        { label: getCmsItemLabel('niveau', niveau), id: node.niveauId, type: 'niveau' },
+        { label: getCmsItemLabel('hoofdstuk', node), id: node.id, type: 'hoofdstuk' }
+      ]);
+      expandAncestors(vakId, niveau?.leerjaarId, node.niveauId, node.id);
+      return;
+    }
+
+    if (node.type === 'paragraaf') {
+      const hoofdstuk = contentHoofdstukken.find((item) => item.id === node.hoofdstukId);
+      if (hoofdstuk) handleTreeNodeSelect(hoofdstuk);
+    }
+  };
 
   const handleBreadcrumbClick = (index) => {
     if (index === 0) {
@@ -317,12 +705,14 @@ export default function TakenToewijzenPage() {
     }
   };
 
-  const toggleHoofdstukAssignment = async () => {
-    if (!selectedKlasId || paragrafen.length === 0) return;
+  const toggleHoofdstukAssignment = async (hoofdstukId = selectedHoofdstukId) => {
+    const chapterParagrafen = contentParagrafen.filter((p) => p.hoofdstukId === hoofdstukId);
+    const targetParagrafen = chapterParagrafen.length > 0 ? chapterParagrafen : paragrafen;
+    if (!selectedKlasId || targetParagrafen.length === 0) return;
 
     try {
       setSaving(true);
-      const chapterParagraafIds = paragrafen.map((p) => p.id);
+      const chapterParagraafIds = targetParagrafen.map((p) => p.id);
       const allAssigned = chapterParagraafIds.every((id) => assignedParagrafen.includes(id));
       const newAssignments = allAssigned
         ? assignedParagrafen.filter((id) => !chapterParagraafIds.includes(id))
@@ -594,8 +984,45 @@ export default function TakenToewijzenPage() {
 
             {/* Content area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
+              {contentTreeLoading ? (
+                <div className="text-center text-slate-500 py-12">
+                  <p>Lesmateriaal laden...</p>
+                </div>
+              ) : assignmentTree.length === 0 ? (
+                <div className="text-center text-slate-500 py-12">
+                  <AlertCircle size={48} className="mx-auto mb-3 opacity-50" />
+                  <p>Geen lesmateriaal beschikbaar</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {assignmentTree.map((node) => (
+                    <AssignmentTreeNode
+                      key={node.id}
+                      node={node}
+                      expandedIds={expandedTreeIds}
+                      selectedIds={selectedIds}
+                      assignedParagrafen={assignedParagrafen}
+                      assignedContentBlocks={assignedContentBlocks}
+                      studentOverrides={studentOverrides}
+                      studentContentBlockOverrides={studentContentBlockOverrides}
+                      selectedStudentId={selectedStudentId}
+                      contentBlocksByParagraaf={contentBlocksByParagraaf}
+                      allParagrafen={contentParagrafen}
+                      saving={saving}
+                      onToggleExpand={toggleTreeExpand}
+                      onSelectNode={handleTreeNodeSelect}
+                      onToggleParagraaf={toggleParagraafAssignment}
+                      onToggleStudentParagraaf={toggleStudentOverride}
+                      onToggleHoofdstuk={toggleHoofdstukAssignment}
+                      onToggleContentBlock={toggleContentBlockAssignment}
+                      onClearContentBlocks={clearContentBlockSelection}
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* Vakken */}
-              {!selectedVakId && (
+              {showLegacyCardBrowser && !selectedVakId && (
                 <>
                   {vakken.length === 0 ? (
                     <div className="text-center text-slate-500 py-12">
@@ -623,7 +1050,7 @@ export default function TakenToewijzenPage() {
               )}
 
               {/* Leerjaren */}
-              {selectedVakId && !selectedLeerjaarId && (
+              {showLegacyCardBrowser && selectedVakId && !selectedLeerjaarId && (
                 <>
                   {leerjaren.length === 0 ? (
                     <div className="text-center text-slate-500 py-12">
@@ -650,7 +1077,7 @@ export default function TakenToewijzenPage() {
               )}
 
               {/* Niveaus */}
-              {selectedLeerjaarId && !selectedNiveauId && (
+              {showLegacyCardBrowser && selectedLeerjaarId && !selectedNiveauId && (
                 <>
                   {niveaus.length === 0 ? (
                     <div className="text-center text-slate-500 py-12">
@@ -680,7 +1107,7 @@ export default function TakenToewijzenPage() {
               )}
 
               {/* Hoofdstukken */}
-              {selectedNiveauId && !selectedHoofdstukId && (
+              {showLegacyCardBrowser && selectedNiveauId && !selectedHoofdstukId && (
                 <>
                   {hoofdstukken.length === 0 ? (
                     <div className="text-center text-slate-500 py-12">
@@ -707,7 +1134,7 @@ export default function TakenToewijzenPage() {
               )}
 
               {/* Paragrafen */}
-              {selectedHoofdstukId && (
+              {showLegacyCardBrowser && selectedHoofdstukId && (
                 <>
                   <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -889,10 +1316,9 @@ export default function TakenToewijzenPage() {
                     </p>
                   ) : (
                     assignedParagrafen.map(paragraafId => {
-                      // Find paragraaf name from all loaded paragrafen
-                      const foundParagraaf = paragrafen.find(p => p.id === paragraafId);
+                      const foundParagraaf = contentParagrafen.find(p => p.id === paragraafId) || paragrafen.find(p => p.id === paragraafId);
                       const displayName = foundParagraaf
-                        ? (foundParagraaf.title || 'Paragraaf zonder naam')
+                        ? getCmsItemLabel('paragraaf', foundParagraaf)
                         : `Para ${paragraafId}`;
 
                       return (
@@ -955,10 +1381,10 @@ export default function TakenToewijzenPage() {
                                 <p className="text-xs text-slate-500 py-2">Geen extra lesmateriaal. Selecteer links een paragraaf of lesblok.</p>
                               ) : (
                                 extras.map(paraId => {
-                                  const para = paragrafen.find(p => p.id === paraId);
+                                  const para = contentParagrafen.find(p => p.id === paraId) || paragrafen.find(p => p.id === paraId);
                                   return (
                                     <div key={paraId} className="flex items-center justify-between text-xs bg-white border border-slate-200 rounded px-2 py-1">
-                                      <span className="font-medium text-slate-900">{para ? (para.title || 'Paragraaf zonder naam') : paraId}</span>
+                                      <span className="font-medium text-slate-900">{para ? getCmsItemLabel('paragraaf', para) : paraId}</span>
                                       <button
                                         onClick={() => toggleStudentOverride(paraId)}
                                         className="text-red-500 hover:text-red-700 font-bold ml-2"
