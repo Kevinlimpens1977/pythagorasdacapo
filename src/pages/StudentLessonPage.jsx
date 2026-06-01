@@ -420,7 +420,6 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, progressReco
   const content = block?.content || {};
   const linkedVraag = block?.linkedVraag || null;
   const title = block?.title || CONTENT_BLOCK_LABELS[block?.type] || 'Lesblok';
-  const [showCalculator, setShowCalculator] = useState(false);
   const bodyHtml =
     block?.type === 'question'
       ? linkedVraag?.content?.text || content.html || '<p>Nog geen vraagtekst ingevuld.</p>'
@@ -447,20 +446,6 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, progressReco
       </div>
 
       <div className="mt-8">
-        {block.settings?.allowCalculator && (
-          <div className="mb-5 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-            <button
-              type="button"
-              onClick={() => setShowCalculator((current) => !current)}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-emerald-800 shadow-sm"
-            >
-              <Calculator size={17} />
-              {showCalculator ? 'Rekenmachine sluiten' : 'Rekenmachine openen'}
-            </button>
-            {showCalculator && <SimpleCalculator />}
-          </div>
-        )}
-
         {block.type === 'game' ? (
           <GameBlock block={block} onComplete={onGameComplete} />
         ) : block.type === 'slidedeck' ? (
@@ -483,37 +468,6 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, progressReco
   );
 }
 
-function SimpleCalculator() {
-  const [expression, setExpression] = useState('');
-  const [result, setResult] = useState('');
-
-  const calculate = () => {
-    try {
-      setResult(String(evaluateCalculatorExpression(expression)));
-    } catch (error) {
-      setResult(error.message || 'Ongeldige berekening');
-    }
-  };
-
-  return (
-    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-      <input
-        value={expression}
-        onChange={(event) => setExpression(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') calculate();
-        }}
-        className="input-standard flex-1"
-        placeholder="Bijv. 42:70x100, sqrt(49) of 6^2"
-      />
-      <button type="button" onClick={calculate} className="rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white">
-        Bereken
-      </button>
-      {result && <span className="rounded-xl bg-white px-4 py-3 text-sm font-black text-emerald-900">{result}</span>}
-    </div>
-  );
-}
-
 function MathToolboxPanel({ tools = [], disabled = false, onInsertTool }) {
   return (
     <div className="rounded-t-3xl border border-b-0 border-fuchsia-100 bg-[var(--helix-soft-lavender)]/70 px-4 py-3">
@@ -521,10 +475,19 @@ function MathToolboxPanel({ tools = [], disabled = false, onInsertTool }) {
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Wiskunde toolbox</p>
           <p className="mt-1 text-sm font-semibold text-[var(--helix-muted)]">
-            Voeg een uitwerkschema toe aan je antwoord. Alles blijft handmatig, HELIX rekent niets uit.
+            Voeg een uitwerkschema of rekenhulp toe aan je antwoord. Schema's blijven handmatig; alleen de rekenmachine rekent.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => onInsertTool?.(MATH_TOOL_TYPES.calculator)}
+            disabled={disabled}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-black text-[var(--helix-navy)] shadow-sm ring-1 ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Calculator size={16} />
+            Rekenmachine
+          </button>
           <button
             type="button"
             onClick={() => onInsertTool?.(MATH_TOOL_TYPES.ratioTable)}
@@ -547,7 +510,7 @@ function MathToolboxPanel({ tools = [], disabled = false, onInsertTool }) {
       </div>
       {tools.length > 0 && (
         <p className="mt-3 text-xs font-black text-[var(--helix-purple)]">
-          {tools.length} uitwerkschema{tools.length === 1 ? '' : "'s"} in je antwoord
+          {tools.length} hulpmiddel{tools.length === 1 ? '' : 'en'} in je antwoord
         </p>
       )}
     </div>
@@ -576,21 +539,24 @@ function MathWorksheetList({ tools = [], disabled = false, onChangeTool, onRemov
 function MathWorksheet({ tool, disabled, onChange, onRemove, onReset }) {
   const normalized = normalizeMathTool(tool);
   if (!normalized) return null;
+  const isCalculator = normalized.type === MATH_TOOL_TYPES.calculator;
 
   return (
     <section className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h4 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">{normalized.title}</h4>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onReset}
-            disabled={disabled}
-            className="inline-flex items-center gap-1 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RotateCcw size={14} />
-            Leegmaken
-          </button>
+          {!isCalculator && (
+            <button
+              type="button"
+              onClick={onReset}
+              disabled={disabled}
+              className="inline-flex items-center gap-1 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RotateCcw size={14} />
+              Leegmaken
+            </button>
+          )}
           <button
             type="button"
             onClick={onRemove}
@@ -605,8 +571,10 @@ function MathWorksheet({ tool, disabled, onChange, onRemove, onReset }) {
 
       {normalized.type === MATH_TOOL_TYPES.ratioTable ? (
         <RatioTableWorksheet tool={normalized} disabled={disabled} onChange={onChange} />
-      ) : (
+      ) : normalized.type === MATH_TOOL_TYPES.pythagoras ? (
         <PythagorasWorksheet tool={normalized} disabled={disabled} onChange={onChange} />
+      ) : (
+        <PythagorasCalculator disabled={disabled} />
       )}
     </section>
   );

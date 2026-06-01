@@ -85,14 +85,16 @@ test('getLessonBlockRenderKey creates a stable key per lesson block', () => {
 });
 
 test('normalizes lesson block settings without overwriting explicit false values', () => {
-  assert.deepEqual(normalizeContentBlockSettings({ allowCalculator: true, allowAiHelp: false, allowMathToolbox: true }), {
-    allowCalculator: true,
+  assert.deepEqual(normalizeContentBlockSettings({ allowCalculator: true, allowAiHelp: false }), {
     allowAiHelp: false,
     allowMathToolbox: true
   });
+  assert.deepEqual(normalizeContentBlockSettings({ allowCalculator: true, allowMathToolbox: false, allowAiHelp: false }), {
+    allowAiHelp: false,
+    allowMathToolbox: false
+  });
 
   assert.deepEqual(normalizeContentBlocks([{ id: 'block-1', order: 1 }])[0].settings, {
-    allowCalculator: false,
     allowAiHelp: false,
     allowMathToolbox: false
   });

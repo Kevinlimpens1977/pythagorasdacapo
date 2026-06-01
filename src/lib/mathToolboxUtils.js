@@ -1,11 +1,13 @@
 export const MATH_TOOL_TYPES = {
   ratioTable: 'ratioTable',
-  pythagoras: 'pythagoras'
+  pythagoras: 'pythagoras',
+  calculator: 'calculator'
 };
 
 export const MATH_TOOL_LABELS = {
   ratioTable: 'Verhoudingstabel',
-  pythagoras: 'Pythagoras schema'
+  pythagoras: 'Pythagoras schema',
+  calculator: 'Rekenmachine'
 };
 
 const createId = (prefix = 'tool') => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -92,6 +94,12 @@ const normalizePythagoras = (tool = {}) => {
   };
 };
 
+const normalizeCalculator = (tool = {}) => ({
+  id: tool.id || createId('calculator'),
+  type: MATH_TOOL_TYPES.calculator,
+  title: tool.title || MATH_TOOL_LABELS.calculator
+});
+
 export const createMathToolWork = (type, id) => {
   if (type === MATH_TOOL_TYPES.ratioTable) {
     return normalizeRatioTable({ id });
@@ -101,12 +109,17 @@ export const createMathToolWork = (type, id) => {
     return normalizePythagoras({ id });
   }
 
+  if (type === MATH_TOOL_TYPES.calculator) {
+    return normalizeCalculator({ id });
+  }
+
   throw new Error(`Onbekend wiskunde-tooltype: ${type}`);
 };
 
 export const normalizeMathTool = (tool = {}) => {
   if (tool.type === MATH_TOOL_TYPES.ratioTable) return normalizeRatioTable(tool);
   if (tool.type === MATH_TOOL_TYPES.pythagoras) return normalizePythagoras(tool);
+  if (tool.type === MATH_TOOL_TYPES.calculator) return normalizeCalculator(tool);
   return null;
 };
 
@@ -213,6 +226,7 @@ export const getMathToolSummary = (tools = []) => {
   return normalized.map((tool) => {
     if (tool.type === MATH_TOOL_TYPES.ratioTable) return summarizeRatio(tool);
     if (tool.type === MATH_TOOL_TYPES.pythagoras) return summarizePythagoras(tool);
+    if (tool.type === MATH_TOOL_TYPES.calculator) return `${MATH_TOOL_LABELS.calculator}: hulpmiddel geopend`;
     return tool.title || 'Wiskunde-uitwerking';
   }).join('\n');
 };
@@ -241,6 +255,10 @@ export const hasFilledMathToolWork = (tools = []) =>
         tool.conclusion.length,
         tool.workingText
       ].some((value) => String(value).trim());
+    }
+
+    if (tool.type === MATH_TOOL_TYPES.calculator) {
+      return false;
     }
 
     return false;

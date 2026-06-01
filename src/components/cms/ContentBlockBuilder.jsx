@@ -189,26 +189,13 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
           <input
             type="checkbox"
-            checked={settings.allowCalculator}
-            onChange={() => toggleSetting('allowCalculator')}
-            className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
-          />
-          <span>
-            <span className="block text-sm font-black text-[var(--helix-navy)]">Rekenmachine toestaan</span>
-            <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Leerling mag bij dit lesblok een rekenmachine gebruiken.</span>
-          </span>
-        </label>
-
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
-          <input
-            type="checkbox"
             checked={settings.allowMathToolbox}
             onChange={() => toggleSetting('allowMathToolbox')}
             className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
           />
           <span>
             <span className="block text-sm font-black text-[var(--helix-navy)]">Wiskunde toolbox toestaan</span>
-            <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Leerling kan handmatige uitwerkschema's toevoegen, zonder automatische berekeningen.</span>
+            <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Leerling kan uitwerkschema's en dezelfde rekenmachine als losse tool gebruiken.</span>
           </span>
         </label>
 

@@ -30,6 +30,10 @@ test('creates empty manual worksheets without calculated values', () => {
   assert.deepEqual(pythagoras.squareAddition, { top: '', bottom: '', sum: '' });
   assert.deepEqual(pythagoras.conclusion, { lzSquared: '', root: '', length: '' });
   assert.equal(pythagoras.workingText, '');
+
+  const calculator = createMathToolWork('calculator', 'tool-3');
+  assert.equal(calculator.type, 'calculator');
+  assert.equal(calculator.title, 'Rekenmachine');
 });
 
 test('adds and removes ratio columns while keeping arrow operation slots aligned', () => {
@@ -91,11 +95,12 @@ test('normalizes and resets worksheets safely', () => {
       type: 'pythagoras',
       rows: [{ side: 'RZ AB', length: '6', square: '36' }]
     },
-    { id: 'unknown', type: 'calculator' }
+    { id: 'calc', type: 'calculator' },
+    { id: 'unknown', type: 'spreadsheet' }
   ];
 
   const normalized = normalizeMathToolWork(rawTools);
-  assert.equal(normalized.length, 2);
+  assert.equal(normalized.length, 3);
   assert.deepEqual(normalized[0].bottomValues, ['3', '', '']);
   assert.deepEqual(normalized[0].operations, ['x 2', '']);
   assert.deepEqual(normalized[0].topOperations, ['x 2', '']);
@@ -103,6 +108,7 @@ test('normalizes and resets worksheets safely', () => {
   assert.equal(normalized[1].rows[0].side, 'AB');
   assert.equal(normalized[1].rows.length, 3);
   assert.equal(normalized[1].workingText, '');
+  assert.equal(normalized[2].type, 'calculator');
 
   const reset = resetMathTool(normalized[1]);
   assert.deepEqual(reset.rows.map((row) => row.length), ['', '', '']);
@@ -132,4 +138,5 @@ test('detects whether a worksheet contains student input', () => {
   assert.equal(hasFilledMathToolWork([empty]), false);
   assert.equal(hasFilledMathToolWork([filled]), true);
   assert.equal(hasFilledMathToolWork([pythagorasWithWorking]), true);
+  assert.equal(hasFilledMathToolWork([createMathToolWork('calculator', 'calc')]), false);
 });
