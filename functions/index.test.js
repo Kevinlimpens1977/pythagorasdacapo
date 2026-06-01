@@ -493,6 +493,49 @@ test("getOpenRouterConfigStatus never exposes the full key", async () => {
   });
 });
 
+test("extractTextViaOcr uses server-side OpenRouter key and requires admin", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin", email: "admin@example.com" },
+    "users/student-1": { role: "student", email: "student@example.com" },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+  });
+  const requests = [];
+
+  const result = await __test.extractTextViaOcrCore({
+    auth: { uid: "admin-1" },
+    data: { imageBase64: "abc123", mimeType: "image/png" },
+    db,
+    openrouterApiKeyProvider: () => "fallback-key",
+    fetchImpl: async (url, options) => {
+      requests.push({ url, options });
+      return {
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: "Herkende tekst" } }] }),
+      };
+    },
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.text, "Herkende tekst");
+  assert.equal(requests[0].options.headers.Authorization, "Bearer sk-or-v1-abcdefghijklmnopqrstuvwxyz");
+  assert.equal(JSON.parse(requests[0].options.body).model, "openai/gpt-4o-mini");
+
+  await assert.rejects(
+    __test.extractTextViaOcrCore({
+      auth: { uid: "student-1" },
+      data: { imageBase64: "abc123", mimeType: "image/png" },
+      db,
+      openrouterApiKeyProvider: () => "fallback-key",
+      fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [] }) }),
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+});
+
 test("updateAiTutorRules stores administrator tutor rules for future prompts", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin", email: "admin@example.com" },

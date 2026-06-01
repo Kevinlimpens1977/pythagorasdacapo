@@ -19,6 +19,7 @@ const BATCH_LIMIT = 450;
 const DEFAULT_STUDENT_PASSWORD = "Test123";
 const STUDENT_EMAIL_DOMAIN = "leerling.dacapo-college.nl";
 const DEFAULT_OPENROUTER_MODEL = "google/gemini-2.0-flash-001";
+const DEFAULT_OCR_MODEL = "openai/gpt-4o-mini";
 const ALLOWED_OPENROUTER_MODELS = new Set([
   "google/gemini-2.0-flash-001",
   "gemini-3.5-flash",
@@ -176,6 +177,39 @@ function buildOpenRouterConfigStatus(config = {}) {
     updatedAt: config.updatedAt || null,
     updatedBy: config.updatedBy || null,
   };
+}
+
+function buildOcrMessages(base64Image, mimeType = "image/jpeg") {
+  return [
+    {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: "Lees alle zichtbare tekst in deze afbeelding. Geef alleen de herkende tekst terug. Behoud regels, opsommingen, formules en getallen zo goed mogelijk. Als er geen tekst zichtbaar is, antwoord dan met: [geen tekst gevonden]",
+        },
+        {
+          type: "image_url",
+          image_url: {
+            url: `data:${mimeType};base64,${base64Image}`,
+          },
+        },
+      ],
+    },
+  ];
+}
+
+function isOcrRefusalText(text = "") {
+  const normalized = String(text).toLowerCase();
+  return [
+    "can't view",
+    "can't extract",
+    "unable to extract",
+    "unable to view",
+    "as a text-based model",
+    "i'm sorry",
+    "i apologize",
+  ].some((fragment) => normalized.includes(fragment));
 }
 
 function normalizeAiTutorRules(data = {}, existing = {}) {
@@ -583,6 +617,75 @@ async function assessOpenAnswerCore({
   return {
     success: true,
     ...normalizeOpenAnswerAssessment(extractJsonObject(content)),
+  };
+}
+
+async function extractTextViaOcrCore({
+  auth,
+  data,
+  db,
+  openrouterApiKeyProvider,
+  fetchImpl = fetch,
+}) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om OCR te gebruiken.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const imageBase64 = String(data?.imageBase64 || "").trim();
+  const mimeType = String(data?.mimeType || "image/jpeg").trim();
+
+  if (!imageBase64) {
+    throw new HttpsError("invalid-argument", "Afbeelding ontbreekt.");
+  }
+
+  if (!/^image\/(jpeg|jpg|png|webp)$/i.test(mimeType)) {
+    throw new HttpsError("invalid-argument", "Alleen JPEG, PNG en WebP afbeeldingen worden ondersteund.");
+  }
+
+  if (imageBase64.length > 9_000_000) {
+    throw new HttpsError("invalid-argument", "Afbeelding is te groot voor OCR.");
+  }
+
+  const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
+  const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${runtimeConfig.apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://stellingvanpythagoras.nl",
+      "X-Title": "HELIX CMS OCR",
+    },
+    body: JSON.stringify({
+      model: DEFAULT_OCR_MODEL,
+      messages: buildOcrMessages(imageBase64, mimeType),
+      max_tokens: 2000,
+      temperature: 0,
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("OpenRouter OCR API Error:", response.status, errText);
+    throw new HttpsError("internal", "OCR kon OpenRouter niet bereiken.");
+  }
+
+  const responseData = await response.json();
+  const extractedText = String(responseData.choices?.[0]?.message?.content || "").trim();
+
+  if (!extractedText) {
+    throw new HttpsError("internal", "OCR gaf geen tekst terug.");
+  }
+
+  if (isOcrRefusalText(extractedText)) {
+    throw new HttpsError("internal", "OCR kon deze afbeelding niet lezen.");
+  }
+
+  return {
+    success: true,
+    text: extractedText,
   };
 }
 
@@ -1386,6 +1489,26 @@ exports.assessOpenAnswer = onCall({
   }
 });
 
+exports.extractTextViaOcr = onCall({
+  region: REGION,
+  secrets: [openrouterApiKey],
+}, async (request) => {
+  try {
+    return await extractTextViaOcrCore({
+      auth: request.auth,
+      data: request.data || {},
+      db: getFirestore(),
+      openrouterApiKeyProvider: () => openrouterApiKey.value(),
+    });
+  } catch (error) {
+    console.error("Error in extractTextViaOcr:", error);
+    return {
+      success: false,
+      error: error.message || "OCR kon de afbeelding niet lezen."
+    };
+  }
+});
+
 exports.askAiTutor = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -1411,6 +1534,7 @@ exports.__test = {
   assessOpenAnswerCore,
   askAiTutorCore,
   deleteAllStudentDataCore,
+  extractTextViaOcrCore,
   importStudentNumberAccountsCore,
   getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,
