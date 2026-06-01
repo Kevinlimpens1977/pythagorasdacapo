@@ -404,6 +404,7 @@ function buildAiTutorSystemPrompt({
   rules = {},
 } = {}) {
   const answerText = String(studentAnswer || "").trim();
+  const diagnosis = buildAiTutorMistakeDiagnosis({ studentAnswer: answerText });
   return `${buildAiTutorRuleSections(rules)}
 
 ## Actuele lescontext
@@ -411,11 +412,13 @@ Je helpt ${firstName} met het vakgebied van de opdracht: "${contextHeading}".
 
 ## Vraagcontext en leerlingantwoord
 Huidige leerlingpoging: ${answerText || "[nog geen poging]"}
+${diagnosis ? `\n## Automatische foutdiagnose\n${diagnosis.promptText}` : ""}
 
 ## Interactieregels voor dit antwoord
 Als de leerling nog geen antwoord of beginpoging heeft gegeven, zeg dan tegen ${firstName} dat die eerst zelf moet nadenken en een eerste antwoord of aanpak moet invullen.
 Als er wel een poging is, analyseer dan die poging kort en stel precies een volgende helpende vraag.
 Als de pogingcontext aangeeft dat het gekozen antwoord onjuist is, benoem vriendelijk dat de keuze nog niet klopt en stel een denkstapvraag.
+Als er een automatische foutdiagnose staat, gebruik die richting expliciet: benoem de vermoedelijke denkfout, verwijs naar het teken of de bewerking in de vraag, en stel een korte controlevraag.
 Verklap daarbij nooit de juiste optie, het juiste antwoord of de tekst van de correcte keuze.
 Houd je antwoord kort: maximaal 2 tot 3 volledige zinnen.
 Eindig altijd met een volledige zin en een eindteken.`;
@@ -429,6 +432,11 @@ function isCompleteAiTutorSentence(content = "") {
 }
 
 function buildAiTutorFallbackHint({ firstName = "leerling", studentAnswer = "" } = {}) {
+  const diagnosis = buildAiTutorMistakeDiagnosis({ studentAnswer });
+  if (diagnosis?.hintText) {
+    return `${firstName}, ${diagnosis.hintText}`;
+  }
+
   const answerText = String(studentAnswer || "").toLowerCase();
   if (answerText.includes("onjuist") || answerText.includes("incorrect")) {
     return `${firstName}, je gekozen antwoord lijkt nog niet te kloppen. Kijk nog eens naar de vraag en bedenk welke stap of berekening je keuze kan controleren.`;
@@ -482,11 +490,133 @@ function buildAiTutorTryFirstHint({ firstName = "leerling" } = {}) {
 
 function normalizeAiTutorContent(content, options = {}) {
   const text = String(content || "").trim();
+  if (/\b(?:geen goede hint|kan nu geen hint|kan geen goede hint|geen hint maken)\b/iu.test(text)) {
+    return buildAiTutorFallbackHint(options);
+  }
+
   if (isCompleteAiTutorSentence(text)) {
     return text;
   }
 
   return buildAiTutorFallbackHint(options);
+}
+
+function extractAiTutorQuestionText(studentAnswer = "") {
+  const match = String(studentAnswer || "").match(/^Vraag:\s*(.+)$/imu);
+  return match ? match[1].trim() : "";
+}
+
+function extractAiTutorAttemptValues(studentAnswer = "") {
+  const attemptMatch = String(studentAnswer || "").match(/Leerlingpoging:\s*(\{.*\})/isu);
+  if (!attemptMatch) return [];
+
+  try {
+    const parsed = JSON.parse(attemptMatch[1]);
+    return Object.entries(parsed)
+      .filter(([key]) => !["mathTools", "orderTouched", "orderItems"].includes(key))
+      .map(([, value]) => value)
+      .filter((value) => value !== null && value !== undefined && typeof value !== "object")
+      .map((value) => String(value).trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+const arithmeticOperatorLabels = {
+  "+": "optellen",
+  "-": "aftrekken",
+  "x": "vermenigvuldigen",
+  "*": "vermenigvuldigen",
+  "\u00d7": "vermenigvuldigen",
+  ":": "delen",
+  "/": "delen",
+};
+
+const arithmeticOperatorNames = {
+  "+": "plus-teken",
+  "-": "min-teken",
+  "x": "keer-teken",
+  "*": "keer-teken",
+  "\u00d7": "keer-teken",
+  ":": "deel-teken",
+  "/": "deel-teken",
+};
+
+function calculateSimpleOperation(left, operator, right) {
+  switch (operator) {
+    case "+": return left + right;
+    case "-": return left - right;
+    case "x":
+    case "*":
+    case "\u00d7": return left * right;
+    case ":":
+    case "/": return right === 0 ? null : left / right;
+    default: return null;
+  }
+}
+
+function findArithmeticExpressions(text = "") {
+  const expressions = [];
+  const regex = /(-?\d+(?:[,.]\d+)?)\s*([+\-x\u00d7*:/])\s*(-?\d+(?:[,.]\d+)?)/giu;
+  let match = regex.exec(String(text || ""));
+  while (match) {
+    expressions.push({
+      raw: match[0],
+      left: Number(String(match[1]).replace(",", ".")),
+      operator: match[2],
+      right: Number(String(match[3]).replace(",", ".")),
+    });
+    match = regex.exec(String(text || ""));
+  }
+  return expressions;
+}
+
+function numbersEqual(a, b) {
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
+  return Math.abs(a - b) < 0.000001;
+}
+
+function buildAiTutorMistakeDiagnosis({ studentAnswer = "" } = {}) {
+  const questionText = extractAiTutorQuestionText(studentAnswer);
+  const attemptValues = extractAiTutorAttemptValues(studentAnswer);
+  if (!questionText || !attemptValues.length) return null;
+
+  const expressions = findArithmeticExpressions(questionText);
+  const operators = ["+", "-", "x", "*", "\u00d7", ":", "/"];
+
+  for (let index = 0; index < expressions.length; index += 1) {
+    const expression = expressions[index];
+    const rawAttempt = attemptValues[index] ?? attemptValues[0];
+    const numericAttempt = Number(String(rawAttempt).replace(",", "."));
+    if (!Number.isFinite(numericAttempt)) continue;
+
+    const expectedValue = calculateSimpleOperation(expression.left, expression.operator, expression.right);
+    if (numbersEqual(numericAttempt, expectedValue)) continue;
+
+    const mistakenOperator = operators.find((operator) =>
+      operator !== expression.operator &&
+      numbersEqual(numericAttempt, calculateSimpleOperation(expression.left, operator, expression.right))
+    );
+
+    if (!mistakenOperator) continue;
+
+    const expectedLabel = arithmeticOperatorLabels[expression.operator] || "de bewerking uit de vraag";
+    const mistakenLabel = arithmeticOperatorLabels[mistakenOperator] || "een andere bewerking";
+    const signName = arithmeticOperatorNames[expression.operator] || "rekenteken";
+
+    return {
+      type: "wrong_arithmetic_operation",
+      promptText: [
+        `Vermoedelijke fout: de leerling heeft bij "${expression.raw}" waarschijnlijk ${mistakenLabel} gebruikt in plaats van ${expectedLabel}.`,
+        `Didactische richting: verwijs naar het ${signName} in de vraag en laat de leerling zelf benoemen welke bewerking gevraagd wordt.`,
+        "Geef het eindantwoord niet."
+      ].join("\n"),
+      hintText: `je lijkt bij "${expression.raw}" ${mistakenLabel} te hebben gebruikt. Kijk naar het teken tussen de getallen: welke bewerking vraagt de vraag?`,
+    };
+  }
+
+  return null;
 }
 
 function stripHtml(value = "") {
@@ -1545,6 +1675,7 @@ exports.__test = {
   updateAiTutorRulesCore,
   updateOpenRouterConfigCore,
   buildAiTutorSystemPrompt,
+  buildAiTutorMistakeDiagnosis,
   normalizeAiTutorContent,
   buildOpenAnswerAssessmentMessages,
   shouldPreserveUserDuringStudentReset,

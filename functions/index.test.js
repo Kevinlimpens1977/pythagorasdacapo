@@ -811,6 +811,49 @@ test("askAiTutor replaces incomplete model output with a complete fallback hint"
   assert.doesNotMatch(result.content, /,$/);
 });
 
+test("askAiTutor turns wrong arithmetic operations into a concrete Socratic hint", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Destiny", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: {
+      message: "Ik heb 3 keer 3 gedaan en 1 keer 1.",
+      contextHeading: "Plus sommen",
+      blockId: "block-1",
+      previousMessages: [],
+      studentAnswer: [
+        "Vraagtype: invullen",
+        "Vraag: dit is een testvraag. hoeveel is 3 + 3 = en wat is dan 1+1 = goed zo, je kunt verder",
+        "Leerlingpoging: {\"gap_1\":\"9\",\"gap_2\":\"1\"}",
+      ].join("\n"),
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: "Destiny, ik kan nu geen goede hint maken." } }] }),
+    }),
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.helpCounted, true);
+  assert.match(result.content, /Destiny/);
+  assert.match(result.content, /3 \+ 3/);
+  assert.match(result.content, /vermenigvuldig/);
+  assert.match(result.content, /teken tussen de getallen/i);
+  assert.doesNotMatch(result.content, /\b6\b/);
+  assert.doesNotMatch(result.content, /\b2\b/);
+});
+
 test("buildAiTutorSystemPrompt tells P-AI-co how to handle an incorrect multiple-choice attempt", () => {
   const prompt = __test.buildAiTutorSystemPrompt({
     contextHeading: "2+2=",
@@ -822,6 +865,20 @@ test("buildAiTutorSystemPrompt tells P-AI-co how to handle an incorrect multiple
   assert.match(prompt, /gekozen antwoord onjuist/i);
   assert.match(prompt, /verklap.*juiste antwoord/i);
   assert.match(prompt, /volledige zinnen/i);
+});
+
+test("buildAiTutorMistakeDiagnosis detects multiplication used for an addition question", () => {
+  const diagnosis = __test.buildAiTutorMistakeDiagnosis({
+    studentAnswer: [
+      "Vraagtype: invullen",
+      "Vraag: hoeveel is 3 + 3 = en daarna 1+1 =",
+      "Leerlingpoging: {\"gap_1\":\"9\",\"gap_2\":\"1\"}",
+    ].join("\n"),
+  });
+
+  assert.equal(diagnosis.type, "wrong_arithmetic_operation");
+  assert.match(diagnosis.promptText, /vermenigvuldigen gebruikt in plaats van optellen/i);
+  assert.match(diagnosis.hintText, /welke bewerking vraagt de vraag/i);
 });
 
 test("assessOpenAnswer returns a passing AI assessment as structured data", async () => {
