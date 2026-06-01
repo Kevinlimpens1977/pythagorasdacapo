@@ -78,6 +78,27 @@ test('buildContentBlockVoortgangUpdate stores draft answers without counting an 
   assert.deepEqual(update.lastAnswer, { openAnswer: 'conceptantwoord' });
 });
 
+test('buildContentBlockVoortgangUpdate clears draft state when work is completed', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    existingData: {
+      draftSaved: true,
+      attempts: 0,
+      lastAnswer: { openAnswer: 'conceptantwoord' }
+    },
+    data: {
+      completed: true,
+      isCorrect: true,
+      attempts: 1,
+      lastAnswer: { openAnswer: 'definitief antwoord' }
+    }
+  });
+
+  assert.equal(update.completed, true);
+  assert.equal(update.draftSaved, false);
+  assert.deepEqual(update.lastAnswer, { openAnswer: 'definitief antwoord' });
+});
+
 test('buildContentBlockVoortgangUpdate preserves first attempt and existing completed timestamp', () => {
   const update = buildContentBlockVoortgangUpdate({
     ...base,

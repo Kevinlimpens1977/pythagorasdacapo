@@ -31,7 +31,7 @@ export const buildContentBlockVoortgangUpdate = ({
     attempts: data.attempts ?? existingData.attempts ?? 0,
     lastAnswer: data.lastAnswer || existingData.lastAnswer || null,
     openAnswerAssessment: data.openAnswerAssessment || existingData.openAnswerAssessment || null,
-    draftSaved: data.draftSaved ?? existingData.draftSaved ?? false,
+    draftSaved: data.completed === true ? false : (data.draftSaved ?? existingData.draftSaved ?? false),
     ...resultMetadata,
     updatedAt: timestamp,
     firstAttemptAt: existingData.firstAttemptAt || timestamp

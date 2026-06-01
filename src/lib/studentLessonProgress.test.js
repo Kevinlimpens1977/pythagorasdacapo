@@ -4,6 +4,7 @@ import {
   calculateLessonProgress,
   findResumeBlockIndex,
   getCompletedBlockIds,
+  getLessonBlockRenderKey,
   shouldSaveBlockProgressBeforeNavigation
 } from './studentLessonProgress.js';
 import { normalizeContentBlockSettings, normalizeContentBlocks } from './contentBlockUtils.js';
@@ -73,6 +74,11 @@ test('shouldSaveBlockProgressBeforeNavigation saves non-question blocks that are
 
 test('shouldSaveBlockProgressBeforeNavigation ignores missing blocks', () => {
   assert.equal(shouldSaveBlockProgressBeforeNavigation({ block: null, completedIds: new Set() }), false);
+});
+
+test('getLessonBlockRenderKey creates a stable key per lesson block', () => {
+  assert.equal(getLessonBlockRenderKey({ id: 'block-1', type: 'question' }), 'lesson-block:block-1');
+  assert.equal(getLessonBlockRenderKey({ type: 'question' }), 'lesson-block:missing');
 });
 
 test('normalizes lesson block settings without overwriting explicit false values', () => {

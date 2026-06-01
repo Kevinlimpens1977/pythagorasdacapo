@@ -33,3 +33,6 @@ export const shouldSaveBlockProgressBeforeNavigation = ({ block = null, complete
   if (block.type === 'question') return false;
   return !completedIds.has(block.id);
 };
+
+export const getLessonBlockRenderKey = (block = null) =>
+  `lesson-block:${block?.id || 'missing'}`;

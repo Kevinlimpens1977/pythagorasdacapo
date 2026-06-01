@@ -30,6 +30,7 @@ import {
   calculateLessonProgress,
   findResumeBlockIndex,
   getCompletedBlockIds,
+  getLessonBlockRenderKey,
   shouldSaveBlockProgressBeforeNavigation
 } from '../lib/studentLessonProgress';
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
@@ -366,6 +367,7 @@ export default function StudentLessonPage() {
 
           <main className="helix-surface min-w-0 overflow-hidden">
             <LessonBlockContent
+              key={getLessonBlockRenderKey(currentBlock)}
               block={currentBlock}
               step={currentIndex + 1}
               totalSteps={blocks.length}
