@@ -403,6 +403,49 @@ function buildAiTutorFallbackHint({ firstName = "leerling", studentAnswer = "" }
   return `${firstName}, ik kan nu geen goede hint maken. Kijk nog eens naar je eigen antwoord en vertel welke stap je hebt gebruikt.`;
 }
 
+function hasMeaningfulAiTutorStudentAttempt(studentAnswer = "") {
+  const answerText = String(studentAnswer || "").trim();
+  if (!answerText) return false;
+
+  if (/leerling heeft nog geen optie gekozen|nog geen leerlingantwoord|nog geen poging|laat de leerling eerst zelf/iu.test(answerText)) {
+    return false;
+  }
+
+  if (/antwoordstatus:\s*gekozen antwoord is/iu.test(answerText)) {
+    return true;
+  }
+
+  if (/gekozen optie\(s\):/iu.test(answerText)) {
+    return true;
+  }
+
+  if (/(?:pythagoras schema:\s*[1-9]\d*\s+ingevulde velden|verhoudingstabel:\s*\d+\s+kolommen,\s*[1-9]\d*\s+ingevulde velden)/iu.test(answerText)) {
+    return true;
+  }
+
+  const attemptMatch = answerText.match(/Leerlingpoging:\s*(\{.*\})/isu);
+  if (!attemptMatch) {
+    return true;
+  }
+
+  try {
+    const parsed = JSON.parse(attemptMatch[1]);
+    return Object.entries(parsed).some(([key, value]) => {
+      if (key === "mathTools") return false;
+      if (key === "orderTouched") return value === true;
+      if (Array.isArray(value)) return value.length > 0;
+      if (value && typeof value === "object") return Object.keys(value).length > 0;
+      return String(value || "").trim().length > 0;
+    });
+  } catch {
+    return true;
+  }
+}
+
+function buildAiTutorTryFirstHint({ firstName = "leerling" } = {}) {
+  return `${firstName}, probeer eerst zelf een antwoord of aanpak in te vullen. Daarna help ik je met een denkstap, zonder het antwoord voor te zeggen.`;
+}
+
 function normalizeAiTutorContent(content, options = {}) {
   const text = String(content || "").trim();
   if (isCompleteAiTutorSentence(text)) {
@@ -563,6 +606,14 @@ async function askAiTutorCore({
   const hints = Array.isArray(data?.hints) ? data.hints : [];
   const studentAnswer = data?.studentAnswer || "";
   const aiTutorRules = await getAiTutorRulesRuntime(db);
+
+  if (!hasMeaningfulAiTutorStudentAttempt(studentAnswer)) {
+    return {
+      success: true,
+      content: buildAiTutorTryFirstHint({ firstName }),
+    };
+  }
+
   const systemPrompt = buildAiTutorSystemPrompt({ contextHeading, firstName, studentAnswer, rules: aiTutorRules });
 
   const messages = [

@@ -615,7 +615,13 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
 
   const result = await __test.askAiTutorCore({
     auth: { uid: "student-1" },
-    data: { message: "Ik weet het niet", contextHeading: "Breuken", blockId: "block-1", previousMessages: [] },
+    data: {
+      message: "Ik weet het niet",
+      contextHeading: "Breuken",
+      blockId: "block-1",
+      previousMessages: [],
+      studentAnswer: "Vraagtype: open\nLeerlingpoging: {\"openAnswer\":\"Ik denk dat 1/2 groter is.\"}",
+    },
     db,
     openrouterApiKeyProvider: () => "",
     fetchImpl: async (url, options) => {
@@ -635,6 +641,88 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
   assert.match(body.messages[0].content, /Gebruik nooit het woord eindantwoord/i);
   assert.match(body.messages[0].content, /Procenten altijd met verhoudingstabel/i);
   assert.equal(calls[0].options.headers.Authorization, "Bearer sk-or-v1-abcdefghijklmnopqrstuvwxyz");
+});
+
+test("askAiTutor tells the student to try first without calling OpenRouter when no answer attempt exists", async () => {
+  let fetchCalled = false;
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: {
+      message: "Help mij",
+      contextHeading: "Procenten",
+      blockId: "block-1",
+      previousMessages: [],
+      studentAnswer: [
+        "Vraag: Van de 70 kinderen lusten er 42 geen spaghetti.",
+        "Vraagtype: meerkeuze",
+        "Leerling heeft nog geen optie gekozen.",
+        "Docentinstructie: laat de leerling eerst zelf een keuze maken."
+      ].join("\n"),
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => {
+      fetchCalled = true;
+      return { ok: true, json: async () => ({ choices: [{ message: { content: "Kies 60%." } }] }) };
+    },
+  });
+
+  assert.equal(fetchCalled, false);
+  assert.equal(result.success, true);
+  assert.match(result.content, /Luna/);
+  assert.match(result.content, /probeer eerst zelf/i);
+  assert.doesNotMatch(result.content, /60%/);
+});
+
+test("askAiTutor treats empty math worksheets as no answer attempt", async () => {
+  let fetchCalled = false;
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Dylan", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: {
+      message: "Help mij met dit schema",
+      contextHeading: "Pythagoras",
+      blockId: "block-1",
+      previousMessages: [],
+      studentAnswer: [
+        "Vraagtype: open",
+        "Leerlingpoging: {\"openAnswer\":\"\",\"mathTools\":[{\"type\":\"pythagoras\",\"rows\":[]}]}",
+        "Pythagoras schema: 0 ingevulde velden"
+      ].join("\n"),
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => {
+      fetchCalled = true;
+      return { ok: true, json: async () => ({ choices: [{ message: { content: "Vul 36 en 64 in." } }] }) };
+    },
+  });
+
+  assert.equal(fetchCalled, false);
+  assert.equal(result.success, true);
+  assert.match(result.content, /probeer eerst zelf/i);
+  assert.doesNotMatch(result.content, /36 en 64/);
 });
 
 test("askAiTutor replaces incomplete model output with a complete fallback hint", async () => {
