@@ -1,3 +1,5 @@
+import { hasStudentPhoto } from './studentPhotoUtils.js';
+
 export const PHOTO_IMPORT_MATCH_STATUSES = {
   CONFIDENT_MATCH: 'confident_match',
   NEEDS_REVIEW: 'needs_review',
@@ -306,14 +308,7 @@ export const getPhotoImportReadiness = (rows = []) => {
 export const countStudentPhotos = (students = []) =>
   students.reduce(
     (counts, student = {}) => {
-      const hasPhoto = Boolean(
-        student.photoURL ||
-          student.photo?.storagePath ||
-          student.photo?.thumbStoragePath ||
-          student.photo?.url
-      );
-
-      if (hasPhoto) counts.withPhoto += 1;
+      if (hasStudentPhoto(student)) counts.withPhoto += 1;
       else counts.withoutPhoto += 1;
       return counts;
     },

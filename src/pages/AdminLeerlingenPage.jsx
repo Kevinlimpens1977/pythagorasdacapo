@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Camera, FileSpreadsheet, KeyRound, Loader2, Save, Search, UserRound, Users, X } from 'lucide-react';
+import { AlertCircle, Camera, FileSpreadsheet, KeyRound, Loader2, Save, Search, Users, X } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import * as klasService from '../services/klasService';
@@ -8,8 +8,8 @@ import {
   filterStudentAccounts
 } from '../lib/studentAccountUtils';
 import { countStudentPhotos } from '../lib/studentPhotoImportUtils';
-import { getStudentPhotoUrl } from '../services/studentPhotoImportService';
 import { useAuth } from '../components/auth/AuthProvider';
+import StudentAvatar from '../components/common/StudentAvatar';
 import StudentPhotoImportWizard from '../components/admin/StudentPhotoImportWizard';
 import StudentNumberImportPanel from '../components/admin/StudentNumberImportPanel';
 import { DEFAULT_STUDENT_PASSWORD, resetStudentPassword, syncAllStudentAuthAccounts } from '../services/studentPasswordService';
@@ -211,7 +211,7 @@ export default function AdminLeerlingenPage() {
               {filteredStudents.map((student) => (
                 <div key={student.uid} className="grid gap-4 px-5 py-4 md:grid-cols-[1.5fr_1fr_1fr_auto_auto] md:items-center">
                   <div className="flex items-center gap-3">
-                    <StudentAvatar student={student} />
+                    <StudentAvatar student={student} showPreview />
                     <div>
                       <p className="font-black text-[var(--helix-navy)]">{student.displayName || 'Naam ontbreekt'}</p>
                       <p className="helix-muted text-sm">{student.email || 'Geen e-mail'}</p>
@@ -279,48 +279,6 @@ const StatCard = ({ label, value, description }) => (
     <p className="helix-muted mt-4 text-sm leading-5">{description}</p>
   </div>
 );
-
-const StudentAvatar = ({ student }) => {
-  const [photoUrl, setPhotoUrl] = useState(student.photoURL || '');
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadPhoto = async () => {
-      try {
-        const url = await getStudentPhotoUrl(student);
-        if (!cancelled) setPhotoUrl(url);
-      } catch {
-        if (!cancelled) setPhotoUrl('');
-      }
-    };
-
-    loadPhoto();
-    return () => {
-      cancelled = true;
-    };
-  }, [student]);
-
-  return (
-    <div className="group relative shrink-0">
-      <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-[var(--helix-radius-md)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] ring-1 ring-[var(--helix-border)]">
-        {photoUrl ? (
-          <img src={photoUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <UserRound size={21} />
-        )}
-      </div>
-      {photoUrl ? (
-        <div className="pointer-events-none absolute left-0 top-12 z-30 hidden w-56 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-3 shadow-2xl group-hover:block group-focus-within:block">
-          <img src={photoUrl} alt="" className="h-40 w-full rounded-[var(--helix-radius-md)] object-cover" />
-          <p className="mt-3 font-black text-[var(--helix-navy)]">{student.displayName || 'Naam ontbreekt'}</p>
-          <p className="helix-muted text-xs">{student.klasName}</p>
-          <p className="helix-muted mt-1 break-all text-xs">{student.email || 'Geen e-mail'}</p>
-        </div>
-      ) : null}
-    </div>
-  );
-};
 
 const PasswordResetModal = ({ student, onClose, onSaved }) => {
   const [password, setPassword] = useState(DEFAULT_STUDENT_PASSWORD);

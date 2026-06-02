@@ -25,6 +25,7 @@ import {
 } from '../../lib/progressDashboardMetrics';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
+import StudentAvatar from '../common/StudentAvatar';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -450,9 +451,13 @@ export default function ClassOverview() {
           <div className="relative flex flex-col items-start justify-between gap-6 overflow-hidden bg-[var(--helix-navy)] pad-content text-white md:flex-row md:items-center">
             <div className="helix-login-visual-bg absolute inset-0 opacity-70" />
             <div className="relative flex items-center gap-6">
-              <div className="w-20 h-20 rounded-2xl bg-blue-500 flex items-center justify-center text-3xl font-black">
-                {(selectedStudent.displayName || "N").charAt(0)}
-              </div>
+              <StudentAvatar
+                student={selectedStudent}
+                size="xl"
+                shape="square"
+                fallback="initial"
+                fallbackClassName="bg-blue-500 text-white"
+              />
               <div>
                 <h2 className="font-display text-4xl font-extrabold">{selectedStudent.displayName || "Naamloos"}</h2>
                 <p className="text-slate-400 text-lg">{selectedStudent.email}</p>
@@ -951,9 +956,13 @@ export default function ClassOverview() {
                     >
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                            {(student.displayName || student.email || "?").charAt(0).toUpperCase()}
-                          </div>
+                          <StudentAvatar
+                            student={student}
+                            size="sm"
+                            shape="circle"
+                            fallback="initial"
+                            fallbackClassName="bg-blue-100 text-blue-600"
+                          />
                           <div className="flex flex-col">
                             <span className={`font-medium ${!student.displayName ? 'text-amber-600 italic' : 'text-slate-800'}`}>
                               {student.displayName && student.displayName.trim() ? student.displayName : '⚠️ Naam ontbreekt'}

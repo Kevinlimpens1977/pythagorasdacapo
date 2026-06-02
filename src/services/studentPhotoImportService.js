@@ -8,6 +8,7 @@ import {
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import app, { db, storage } from './firebase';
 import { PHOTO_IMPORT_DECISIONS, normalizePhotoImportDecision, sanitizeImportFileName } from '../lib/studentPhotoImportUtils';
+import { getStudentPhotoDirectUrl, getStudentPhotoStoragePath } from '../lib/studentPhotoUtils';
 
 const functions = getFunctions(app, 'europe-west1');
 
@@ -118,8 +119,10 @@ export const approveStudentPhotoImport = async ({ importId, klasId, rows }) => {
 };
 
 export const getStudentPhotoUrl = async (student = {}) => {
-  if (student.photoURL) return student.photoURL;
-  const storagePath = student.photo?.thumbStoragePath || student.photo?.storagePath || student.photoPath;
+  const directUrl = getStudentPhotoDirectUrl(student);
+  if (directUrl) return directUrl;
+
+  const storagePath = getStudentPhotoStoragePath(student);
   if (!storagePath) return '';
   return getDownloadURL(ref(storage, storagePath));
 };
