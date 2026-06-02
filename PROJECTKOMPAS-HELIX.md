@@ -1,6 +1,6 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 2 juni 2026
+Laatst bijgewerkt: 3 juni 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
 
@@ -13,19 +13,21 @@ Als een nieuwe Codex-chat dit document leest, moet die vooral dit weten:
 - Dev server voor dit project draait doorgaans op `http://localhost:5173/`. Poort `5174` draaide eerder een ander project.
 - Er is een GitHub-backupbranch gemaakt voor de Digidocent-leerflow: `backup/digidocent-before-learning-flow`.
 - Recente hoofdflow: de leerlingroute is uitgebreid met Digidocent, AI/open-antwoordbeoordeling, voortgangsblokjes, herstelopdrachten/challenge en leerling-foutmeldingen.
-- Bekende ongerelateerde untracked mappen kunnen in gitstatus staan: `.superpowers/` en `exports/presenter-smoke/`. Niet automatisch stagen of verwijderen.
+- Adminnavigatie is nu: `Lesstof`, `Voortgang`, `Leerlingen`, `Meldingen`, `Spellen`, `Presenter`, `Instellingen`. De oude hoofdknop `Beheer` en de oude Admin Hub zijn verwijderd.
+- Bekende ongerelateerde untracked items kunnen in gitstatus staan: `.superpowers/`, `exports/helix-button-gradient-options.html`, `exports/presenter-smoke/` en `exports/presenter-toolbar-style-options.html`. Niet automatisch stagen of verwijderen.
 - De gebruiker wil vaak eerst bevraagd worden bij grote productkeuzes, maar gaf voor de huidige Digidocent- en meldingenrichting expliciet akkoord.
 - Volledige lint kan bestaande schuld raken. Gebruik gericht `npx eslint <aangepaste bestanden>`, gerichte `node --test ...` en `npm run build`.
 
 Recente commits die een nieuwe chat moet kennen:
 
+- `b16b901 feat: vervang beheer door instellingen`
+- `c51e6a7 style: stem presenter en voortgang chrome af`
+- `aafe2bc style: gebruik helix borderstijl voor headernav`
+- `76fb702 style: maak presenter lesstof import direct`
+- `92091b1 feat: voeg klasfilter toe aan voortgangsdashboard`
+- `88f38b6 fix: toon leerlingfotos in voortgang`
+- `80a247a feat: verbeter voortgangsdashboard signalen`
 - `4a06bc1 feat: voeg leerling foutmeldingen toe`
-- `ff2c8ef fix: behoud digidocent concepttekst bij hover`
-- `1060c6d fix: stem herstelopdrachten af op foutvraag`
-- `66cc627 feat: implementeer digidocent leerflow`
-- `ecbe47a docs: voeg goalvoorstel digidocent leerflow toe`
-- `f9fcc28 fix: maak digidocent procentfeedback concreet`
-- `a294cb8 feat: maak digidocent paragraafbewust`
 
 ## Productvisie
 
@@ -72,11 +74,16 @@ Belangrijk:
 
 ### Voortgang
 
-Werkplek voor klasdashboard, leerlingvoortgang en later didactische signalen.
+Werkplek voor klasdashboard, leerlingvoortgang en didactische signalen.
 
 Huidig:
 
-- Analyse per klas, paragraaf en vraag.
+- Analyse per klas, geselecteerde klas, paragraaf, leerling en vraag.
+- Klasoverzicht heeft nu een functionele klasselector.
+- De vier dashboardlenzen zijn `Klas`, `Signalen`, `Paragraaf` en `Leerling`.
+- De drie kernblokken richten zich op docentbesluitvorming: `Nu aandacht`, `Klasbeheersing` en `Lesvoortgang`.
+- Leerlingdetail toont alleen onderdelen die daadwerkelijk aan de leerling gekoppeld/toegewezen zijn; niet-toegewezen paragrafen worden niet als `nog niet gestart` getoond.
+- Leerlingfoto's uit leerlingbeheer worden ook gebruikt in voortgangsoverzichten en profielkoppen waar beschikbaar.
 - Voortgangsblokjes in de leerlingroute tonen de status van vraagblokken.
 - Groen betekent goed afgerond zonder echte Digidocent-chat.
 - Groen met rood stippellijntje betekent goed afgerond met actieve Digidocent-hulp.
@@ -86,19 +93,22 @@ Huidig:
 
 Open richting:
 
-- Meer docentgerichte signalen voor vastlopers en inactiviteit.
-- Leerlingdrilldown en exports.
+- Verdere verfijning van knelpuntanalyse en vraagpatronen.
+- Exports en printvriendelijke rapportage.
 - Betere analyse van Digidocent-gebruik versus zelfstandig succes.
 
 ### Leerlingen
 
-Werkplek voor leerlingaccounts, klasstatus en accountoverzicht.
+Werkplek voor leerlingaccounts, klasstatus, klassenbeheer, foto's en accountoverzicht.
 
 Huidig:
 
 - Toont leerlingen uit `users` met rol `student`.
-- Toont naam, e-mail, klas en laatste activiteit/accountstatus.
-- Wachtwoordbeheer en accountflows zijn nog beperkt.
+- Toont naam, e-mail, klas, leerlingnummer, laatste activiteit/accountstatus en avatar/foto indien aanwezig.
+- Heeft acties voor auth synchroniseren, leerlingnummers koppelen, foto's importeren en klassen beheren.
+- Klassenbeheer is bereikbaar via `Leerlingen` en route `/admin/klassen`; de topnav-active state valt daar ook onder `Leerlingen`.
+- Wachtwoordbeheer per leerling is aanwezig.
+- Leerlingfoto's worden centraal via `StudentAvatar` hergebruikt in leerlinglijst en voortgang.
 
 ### Meldingen
 
@@ -136,20 +146,20 @@ Firestore:
 - Collectie `studentBugReports`.
 - De service filtert status/categorie client-side na nieuwste query om samengestelde Firestore-indexen voor V1 zoveel mogelijk te vermijden.
 
-Nieuw verkend op 28 mei 2026:
+Eerder verkend op 28 mei 2026; basis is inmiddels gebouwd:
 
 - Een importtool voor leerlingfoto's uit een geplakte/geuploade klassenfoto is technisch haalbaar.
 - Betrouwbare V1 moet een controlelijst hebben voor foto-uitsnedes en naam-matching voordat er wordt opgeslagen.
 - Bestaande leerlingen krijgen alleen een goedgekeurd `photo`-object; onbekende leerlingen moeten eerst als review/pending worden behandeld.
 - Echte nieuwe Firebase Auth accounts mogen niet client-side worden aangemaakt. Daarvoor is later een veilige Cloud Function met Firebase Admin SDK nodig.
 
-Aanbevolen implementatie-optie:
+Actuele richting:
 
-- Bouw een admin-only foto-importwizard binnen of naast `AdminLeerlingenPage`.
+- Houd de admin-only foto-importwizard binnen of naast `AdminLeerlingenPage`.
 - Hergebruik upload/plak/canvas/selectiepatronen uit `ImageCanvasEditor`.
 - Client mag bronfoto uploaden/plakken, cropvoorstellen maken, handmatige uitsnedes laten corrigeren en matches voorstellen.
 - Docent moet elke rij goedkeuren, overslaan of markeren voor latere review voordat data definitief wordt opgeslagen.
-- Definitief koppelen aan `users/{uid}` en definitief opslaan naar `student-photos/...` moet via Callable Cloud Function met Admin SDK.
+- Voor productie moet definitief koppelen aan `users/{uid}` en definitief opslaan naar `student-photos/...` bij voorkeur via Callable Cloud Function met Admin SDK.
 - De client mag geen echte Firebase Auth-leerlingaccounts bulk aanmaken.
 
 ### Spellen
@@ -168,18 +178,29 @@ Huidig:
 
 Presenter is de nieuwe digibord-first werkbordmodule, vergelijkbaar met Prowise Presenter of SMART board software, maar in HELIX-stijl en later gekoppeld aan lesroutes.
 
-Status per 28 mei 2026:
+Status per 3 juni 2026:
 
 - Presenter V1a Core is gebouwd op branch `feature/cms-platform`.
 - Route bestaat op `/admin/presenter`.
 - Eigen adminnavigatieknop `Presenter` bestaat.
+- Werkbalk en bovenrand zijn visueel gelijkgetrokken met de zachte HELIX-toolbarstijl.
+- Lesstofimport loopt primair via de onderste werkbalkknop `Lesstof`; de dubbele bovenknop `Importeer CMS` is verwijderd.
 - De module is technisch geimplementeerd en gericht getest, maar de echte digibordervaring moet nog browsermatig en praktisch worden gevalideerd.
 
 Belangrijk: behandel Presenter niet meer als alleen een plan. Behandel het als een gebouwde V1a met open validatie en polish.
 
-### Beheer
+### Instellingen
 
-Werkplek voor klassen, taken toewijzen, instellingen, publiceer-info en tijdelijke dev-acties zoals CMS-reset.
+Werkplek voor platformbrede instellingen die niet bij lesstof, leerlingen of voortgang horen.
+
+Huidig:
+
+- Hoofdnavknop `Instellingen` vervangt de oude hoofdnavknop `Beheer`.
+- `/admin/instellingen` is de nieuwe instellingen-landingspagina.
+- `/admin` redirect naar `/admin/instellingen`.
+- Digidocent/OpenRouter instellingen blijven op `/admin/ai-instellingen` en vallen route-actief onder `Instellingen`.
+- De oude `Startinformatie`-modal uit een eerdere versie is verwijderd.
+- De oude Admin Hub / Beheer-overzichtspagina is verwijderd.
 
 ### Studentprofiel
 
@@ -363,7 +384,7 @@ Beschikbaarheid:
 
 - Vraagblokken hebben Digidocent standaard aan.
 - Niet-vraag-lesblokken zoals theorie, media, YouTube/slidedeck hebben Digidocent standaard uit.
-- Admin/beheer kan per blok een escape hebben om Digidocent uit te zetten.
+- Admin/instellingen en blokinstellingen kunnen per context een escape hebben om Digidocent uit te zetten.
 
 Open-antwoordbeoordeling:
 
@@ -466,12 +487,12 @@ Presenter V1a is nog niet bewezen als volledig gevalideerde CTOUCH/digibord-erva
 
 ## Presenter V1a-plus: Tekst, Wiskundesymbolen En Gum
 
-V1a-plus is de tussenstap tussen de gebouwde Presenter Core en V1b. Deze pluslaag blijft bordgericht en haalt nog geen HELIX-lesstof binnen.
+V1a-plus is de tussenstap tussen de gebouwde Presenter Core en de diepere V1b-contentlaag. Deze pluslaag blijft primair bordgericht.
 
 Doel:
 
 - Het vrije bord completer maken voor dagelijkse wiskundeles.
-- Docenten tekst en wiskundige notatie laten toevoegen zonder meteen V1b-lesroute-import te bouwen.
+- Docenten tekst en wiskundige notatie laten toevoegen zonder meteen interactieve V1b-vraagvensters te bouwen.
 - Gumgedrag natuurlijker maken voor penstreken op een digibord.
 
 Gewenst in V1a-plus:
@@ -505,22 +526,25 @@ Gewenst in V1a-plus:
 
 Niet in V1a-plus:
 
-- HELIX-lesstof importeren.
-- Vraagvensters op het bord.
+- Interactieve vraagvensters op het bord.
 - Firebase-opslag van Presenter-sessies.
 - Export.
 
-## Presenter V1b: HELIX Content Layer
+## Presenter Content Layer
 
-V1b is nog niet gebouwd en moet pas na expliciet akkoord worden opgepakt.
+Een eerste HELIX-lesstofimport is inmiddels aanwezig in Presenter. De onderste werkbalkknop `Lesstof` opent de importroute direct; de eerdere dubbele bovenknop `Importeer CMS` is verwijderd.
 
-Richting:
+Huidige richting:
 
 - Paragraafimport via fullscreen kiesvenster.
 - Structuur: hoofdstuk -> paragraaf -> import.
 - Alleen gepubliceerde blokken importeren.
 - Import voegt nieuwe pagina's achteraan toe.
 - Import is een momentopname, geen live koppeling met CMS-wijzigingen.
+- De importroute moet direct en rustig blijven: liever via de onderste werkbalk dan via dubbele knoppen.
+
+Verdieping voor later:
+
 - Theorie en voorbeelden als grote bordobjecten.
 - Vraagvensters vrij plaatsbaar en schaalbaar.
 - Vraagvensters ondersteunen huidige vraagtypes.
@@ -532,7 +556,6 @@ Richting:
 
 Niet bouwen zonder nieuw akkoord:
 
-- HELIX-content import.
 - Interactieve vraagvensters.
 - Firebase-opslag van Presenter-sessies.
 - Export/cloudsessies.
@@ -622,9 +645,14 @@ Let op:
   - Meldingen
   - Spellen
   - Presenter
-  - Beheer
+  - Instellingen
 - Active states zijn routegroep-gebaseerd.
+- `Beheer` is als hoofdnav en oude hub verwijderd; `/admin` redirect naar `/admin/instellingen`.
+- `/admin/klassen` valt onder `Leerlingen`.
+- `/admin/taken-toewijzen` valt onder `Lesstof`.
+- `/admin/ai-instellingen` valt onder `Instellingen`.
 - HELIX design system richting is gestart: light-mode onderwijsstijl, zachte surfaces, warme accenten, Sora/Inter-achtige typografie, kaart- en knopstijl.
+- Actieve headerknoppen en voortgangtabs gebruiken de lichte HELIX-gradient als borderrand met witte vulling en donkere tekst/icons.
 
 ### CMS
 
@@ -703,9 +731,9 @@ Deze bestanden zijn prototypes/documentatie, geen productcode. Ze zijn bedoeld o
 - Aan het einde van een paragraaf komt herstel of uitdaging.
 - Herstelopdrachten gebruiken vraagtekst, verwacht antwoord, laatste antwoord en feedbacksnapshot voor betere aansluiting.
 
-## Leerlingfoto-Import V1: Implementatie-Optie
+## Leerlingfoto-Import V1
 
-Deze feature is nog niet gebouwd. Dit is de afgesproken veilige richting.
+De basis voor leerlingfoto-import en avatarhergebruik is gebouwd. De onderstaande richting blijft belangrijk voor verdere productie-hardening en privacy.
 
 ### Doel
 
@@ -722,8 +750,9 @@ De docent/admin keurt altijd expliciet goed voordat er naar leerlingdata wordt g
 
 Startpunt:
 
-- Voeg in `Leerlingen` een primaire actie toe: `Foto's importeren`.
-- Optioneel later: statcards `Met foto` en `Zonder foto`.
+- `Leerlingen` heeft een actie `Foto's importeren`.
+- De leerlingenpagina toont statcards `Met foto` en `Zonder foto`.
+- Foto's worden via de gedeelde avatarlogica ook in voortgang/profielcontext gebruikt.
 
 Wizardstappen:
 
@@ -857,7 +886,7 @@ Privacykeuze:
 - Tijdelijke importsource/crops uploaden, mits rules admin-only zijn.
 - `photoImports` conceptmetadata schrijven als admin, mits rules strak valideren.
 
-### Cloud Function / Admin SDK Vereist
+### Cloud Function / Admin SDK Voor Productie-Hardening
 
 Gebruik een callable function zoals `approveStudentPhotoImportCrop` of een batchvariant.
 
@@ -897,6 +926,8 @@ Belangrijk risico:
 
 - Presenter Core gebouwd.
 - Toolbar, pen, markeerstift, ruitjes, objecten, selectie, pagina's, clear page, auto-hide, recovery, fullscreen en meetinstrument-overlays aanwezig.
+- De donkere Presenter-bovenrand is gelijkgetrokken met de zachte toolbar-achtergrond.
+- De onderste werkbalk is de primaire route voor lesstofimport.
 - Verdere praktijkvalidatie blijft open.
 
 ### Authenticatie / Firebase
@@ -936,8 +967,7 @@ Alleen na expliciet akkoord.
 
 Focus:
 
-- HELIX-content import.
-- Vraagvensters op het bord.
+- Interactieve vraagvensters op het bord.
 - Media en slidedecks als bordobjecten.
 - Pagina-thumbnails.
 - Eventueel opslag/export later.
@@ -965,22 +995,22 @@ Nodig:
 
 Nodig:
 
-- Accountbeheer en veilige wachtwoordflows.
+- Accountbeheer en veilige wachtwoordflows verder hardenen.
 - Uitgebreidere filters.
-- Leerlingfoto-import volgens de V1 importbatch/reviewflow bouwen.
-- Avatarweergave in leerlingenlijst met hover/focus-popup toevoegen.
-- `photoImports`, `pendingStudents` en `users/{uid}.photo` datamodel implementeren.
-- Callable Cloud Function/Admin SDK gebruiken voor definitieve foto-goedkeuring en opslag.
+- Leerlingfoto-import verder hardenen volgens de V1 importbatch/reviewflow.
+- Avatarweergave uitbreiden met hover/focus-popup.
+- `photoImports`, `pendingStudents` en `users/{uid}.photo` datamodel controleren tegen de actuele implementatie.
+- Callable Cloud Function/Admin SDK overwegen/gebruiken voor definitieve foto-goedkeuring en opslag bij productiegang.
 - Als echte nieuwe leerlingaccounts bulk aangemaakt moeten worden: aparte Cloud Function/Admin SDK-flow ontwerpen.
 
 ### 7. Voortgang En Analytics Versterken
 
 Nodig:
 
-- Analyse per klas, paragraaf en vraag.
-- Knelpunten.
-- Leerlingdrilldown.
-- Signalen voor vastlopers en inactiviteit.
+- Knelpuntenanalyse per vraag en paragraaf verder verdiepen.
+- Leerlingdrilldown verder polijsten.
+- Signalen voor vastlopers, inactiviteit en Digidocent-afhankelijk succes verder aanscherpen.
+- Export/printvriendelijke rapportage ontwerpen.
 
 ### 8. Toetsmodus V1
 
@@ -1032,14 +1062,14 @@ Nodig:
 - Een mediablok is een hoofdmedia-item.
 - Presenter is digibord-first: grote touchdoelen, exacte pointercoordinaten, rustige toolmodus.
 - Presenter V1a-plus mag bordgerichte basistools toevoegen, zoals tekst, wiskundesymbolen en gumgroottes.
-- Presenter V1b niet alvast meebouwen zonder nieuw akkoord.
+- Presenter V1b-verdieping zoals interactieve vraagvensters, cloudopslag of export niet alvast meebouwen zonder nieuw akkoord.
 
 ## Actuele Technische Aandachtspunten Voor Nieuwe Agent
 
 - Werk op branch `feature/cms-platform`, tenzij de gebruiker anders zegt.
 - Recente wijzigingen zijn gepusht naar GitHub op `feature/cms-platform`, maar zijn pas live op Firebase na deploy.
 - Er bestaat een herstelbare backupbranch: `backup/digidocent-before-learning-flow`.
-- Huidige gitstatus kan lokale untracked tooling bevatten, zoals `.superpowers/` en `exports/presenter-smoke/`. Niet automatisch stagen of verwijderen.
+- Huidige gitstatus kan lokale untracked tooling/prototypes bevatten, zoals `.superpowers/`, `exports/helix-button-gradient-options.html`, `exports/presenter-smoke/` en `exports/presenter-toolbar-style-options.html`. Niet automatisch stagen of verwijderen.
 - `README.md` is nog geen betrouwbare projectdocumentatie.
 - `FIRESTORE_SCHEMA.md` is deels ouder dan de implementatie.
 - Volledige `npm run lint` kan nog falen op bestaande lint-schuld. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
@@ -1055,17 +1085,20 @@ Actuele belangrijke routes:
 - `/` leerling-overzicht/lesmateriaal
 - `/chapter/:chapterId` leerlingroute
 - `/profiel` leerlingprofiel
-- `/admin` Admin Hub
+- `/admin` legacy redirect naar `/admin/instellingen`
+- `/admin/instellingen` instellingenwerkplek
 - `/admin/lesstof` lesstofwerkplek
 - `/admin/cms` CMS platform
 - `/admin/digibord` digibord
 - `/admin/slidedecks` slidedeckcreator
 - `/dashboard` voortgang/klasdashboard
 - `/admin/leerlingen` leerlingbeheer
+- `/admin/klassen` klassenbeheer, actief onder `Leerlingen`
+- `/admin/taken-toewijzen` lesmateriaal klaarzetten, actief onder `Lesstof`
 - `/admin/meldingen` leerling-foutmeldingen
 - `/admin/spellen` spellen
 - `/admin/presenter` Presenter
-- `/admin/ai-instellingen` Digidocent/OpenRouter instellingen
+- `/admin/ai-instellingen` Digidocent/OpenRouter instellingen, actief onder `Instellingen`
 
 Belangrijke bestanden bij CMS/lesroutewerk:
 
@@ -1094,6 +1127,16 @@ Belangrijke bestanden bij leerling-foutmeldingen:
 - `src/services/studentBugReportService.js`
 - `src/lib/studentBugReportUtils.js`
 - `src/lib/studentBugReportUtils.test.js`
+
+Belangrijke bestanden bij adminnavigatie, leerlingen en instellingen:
+
+- `src/lib/adminWorkspaceNav.js`
+- `src/lib/adminWorkspaceNav.test.js`
+- `src/pages/AdminLeerlingenPage.jsx`
+- `src/pages/AdminKlassenPage.jsx`
+- `src/pages/AdminSettingsPage.jsx`
+- `src/pages/AdminAiSettingsPage.jsx`
+- `src/lib/authLoginUtils.js`
 
 Belangrijke bestanden bij Presenter:
 
@@ -1127,6 +1170,15 @@ Belangrijke services:
 - `src/services/studentBugReportService.js`
 
 Recente commitclusters die context geven:
+
+- Adminnavigatie, voortgang en stijlpolish:
+  - `b16b901 feat: vervang beheer door instellingen`
+  - `c51e6a7 style: stem presenter en voortgang chrome af`
+  - `aafe2bc style: gebruik helix borderstijl voor headernav`
+  - `76fb702 style: maak presenter lesstof import direct`
+  - `92091b1 feat: voeg klasfilter toe aan voortgangsdashboard`
+  - `88f38b6 fix: toon leerlingfotos in voortgang`
+  - `80a247a feat: verbeter voortgangsdashboard signalen`
 
 - Digidocent, leerlingroute en meldingen:
   - `4a06bc1 feat: voeg leerling foutmeldingen toe`
