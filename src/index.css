@@ -317,6 +317,31 @@ input[type=number] {
   box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
 }
 
+.admin-nav-tab {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0)) border-box;
+  color: var(--helix-muted);
+  @apply flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-extrabold transition-all focus:outline-none active:scale-95 md:px-4;
+}
+
+.admin-nav-tab:hover {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    linear-gradient(#dfe5ee, #dfe5ee) border-box;
+  color: var(--helix-navy);
+}
+
+.admin-nav-tab-active {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    var(--helix-gradient-border) border-box;
+  color: var(--helix-navy);
+  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+}
+
 /* Secondary Button - Outline Style */
 .btn-secondary {
   background: rgba(255, 255, 255, 0.82);

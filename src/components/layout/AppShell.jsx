@@ -64,11 +64,7 @@ export default function AppShell() {
                   <button
                     key={workspace.id}
                     onClick={() => navigate(workspace.path)}
-                    className={`flex items-center gap-2 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-extrabold transition-all md:px-4 ${
-                      isActive
-                        ? 'helix-gradient text-white shadow-[0_10px_24px_rgba(255,45,141,0.20)]'
-                        : 'text-[var(--helix-muted)] hover:bg-white hover:text-[var(--helix-navy)]'
-                    }`}
+                    className={`admin-nav-tab ${isActive ? 'admin-nav-tab-active' : ''}`}
                   >
                     <Icon size={18} />
                     <span className="hidden md:inline">{workspace.label}</span>
@@ -78,10 +74,10 @@ export default function AppShell() {
             ) : (
               <button
                 onClick={() => navigate('/')}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-extrabold transition-all ${
+                className={`admin-nav-tab ${
                   location.pathname === '/' || location.pathname.includes('/chapter/')
-                    ? 'helix-gradient text-white shadow-[0_10px_24px_rgba(255,45,141,0.20)]'
-                    : 'text-[var(--helix-muted)] hover:bg-white hover:text-[var(--helix-navy)]'
+                    ? 'admin-nav-tab-active'
+                    : ''
                 }`}
               >
                 <BookOpen size={18} />

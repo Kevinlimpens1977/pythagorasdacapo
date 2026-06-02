@@ -29,3 +29,12 @@ test('progress lens active tab uses the Border Signal gradient border style', ()
   assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
   assert.doesNotMatch(activeRule, /blue/);
 });
+
+test('admin header active nav uses the Border Signal gradient border style', () => {
+  const activeRule = getCssRule('.admin-nav-tab-active');
+
+  assert.match(activeRule, /border:\s*2px solid transparent/);
+  assert.match(activeRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
+  assert.doesNotMatch(activeRule, /text-white/);
+});
