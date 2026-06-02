@@ -126,7 +126,7 @@ export default function AdminAiSettingsPage() {
     <div className="helix-page min-h-screen">
       <div className="helix-container max-w-5xl">
         <div className="mb-8">
-          <p className="helix-eyebrow">Beheer</p>
+          <p className="helix-eyebrow">Instellingen</p>
           <h1 className="mt-2 font-display text-4xl font-extrabold text-[var(--helix-navy)]">Digidocent instellingen</h1>
           <p className="mt-3 max-w-2xl text-[var(--helix-muted)]">
             Stel hier de OpenRouter-koppeling in. De API-key wordt server-side opgeslagen en nooit volledig teruggestuurd naar de browser.
@@ -250,7 +250,7 @@ export default function AdminAiSettingsPage() {
 
         <section className="helix-surface mt-6 p-6">
           <div className="mb-5">
-            <p className="helix-eyebrow">Digidocent Beheer</p>
+            <p className="helix-eyebrow">Digidocent</p>
             <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">Digidocent regels</h2>
             <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
               Deze regels worden altijd meegegeven aan Digidocent voordat hij leerlingen helpt.

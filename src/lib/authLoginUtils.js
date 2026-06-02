@@ -25,7 +25,7 @@ export const getSafePostLoginTarget = ({
   isAdmin = false,
   fromPathname = '',
   fromSearch = '',
-  adminFallback = '/admin',
+  adminFallback = '/admin/instellingen',
   studentFallback = '/'
 } = {}) => {
   const fallback = isAdmin ? adminFallback : studentFallback;
@@ -44,6 +44,10 @@ export const getSafePostLoginTarget = ({
 
   if (pathname.startsWith('/admin') && !isAdmin) {
     return studentFallback;
+  }
+
+  if (isAdmin && pathname === '/admin') {
+    return adminFallback;
   }
 
   if (isAdmin && !pathname.startsWith('/admin')) {

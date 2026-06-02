@@ -5,7 +5,6 @@ import AppShell from './components/layout/AppShell';
 import TableOfContents from './components/layout/TableOfContents';
 import StudentLessonPage from './pages/StudentLessonPage';
 import ClassOverview from './components/dashboard/ClassOverview';
-import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminCropToolPage from './pages/AdminCropToolPage';
 import AdminCmsPage from './pages/AdminCmsPage';
 import AdminKlassenPage from './pages/AdminKlassenPage';
@@ -20,6 +19,7 @@ import AdminPresenterPage from './pages/AdminPresenterPage';
 import AdminSlidedecksPage from './pages/AdminSlidedecksPage';
 import AdminAiSettingsPage from './pages/AdminAiSettingsPage';
 import AdminMeldingenPage from './pages/AdminMeldingenPage';
+import AdminSettingsPage from './pages/AdminSettingsPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { user, isAdmin } = useAuth();
@@ -41,7 +41,7 @@ function AppRoutes() {
         <Route path="chapter/:chapterId" element={<StudentLessonPage />} />
         <Route path="admin" element={
           <PrivateRoute requireAdmin={true}>
-            <AdminDashboardPage />
+            <Navigate to="/admin/instellingen" replace />
           </PrivateRoute>
         } />
         <Route path="dashboard" element={
@@ -107,6 +107,11 @@ function AppRoutes() {
         <Route path="admin/ai-instellingen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminAiSettingsPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/instellingen" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminSettingsPage />
           </PrivateRoute>
         } />
       </Route>

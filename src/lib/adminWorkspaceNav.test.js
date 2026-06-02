@@ -11,17 +11,18 @@ test('getAdminWorkspaceForPath groups admin content routes under lesstof', () =>
   assert.equal(getAdminWorkspaceForPath('/admin/cms'), 'lesstof');
   assert.equal(getAdminWorkspaceForPath('/admin/digibord'), 'lesstof');
   assert.equal(getAdminWorkspaceForPath('/admin/slidedecks'), 'lesstof');
+  assert.equal(getAdminWorkspaceForPath('/admin/taken-toewijzen'), 'lesstof');
 });
 
 test('getAdminWorkspaceForPath maps dashboard and student routes to the right workspace', () => {
   assert.equal(getAdminWorkspaceForPath('/dashboard'), 'voortgang');
   assert.equal(getAdminWorkspaceForPath('/admin/leerlingen'), 'leerlingen');
+  assert.equal(getAdminWorkspaceForPath('/admin/klassen'), 'leerlingen');
   assert.equal(getAdminWorkspaceForPath('/admin/meldingen'), 'meldingen');
   assert.equal(getAdminWorkspaceForPath('/admin/spellen'), 'spellen');
-  assert.equal(getAdminWorkspaceForPath('/admin'), 'beheer');
-  assert.equal(getAdminWorkspaceForPath('/admin/klassen'), 'beheer');
-  assert.equal(getAdminWorkspaceForPath('/admin/taken-toewijzen'), 'beheer');
-  assert.equal(getAdminWorkspaceForPath('/admin/ai-instellingen'), 'beheer');
+  assert.equal(getAdminWorkspaceForPath('/admin'), 'instellingen');
+  assert.equal(getAdminWorkspaceForPath('/admin/instellingen'), 'instellingen');
+  assert.equal(getAdminWorkspaceForPath('/admin/ai-instellingen'), 'instellingen');
 });
 
 test('meldingen workspace is active only for report routes', () => {
@@ -48,4 +49,13 @@ test('presenter workspace is active only for presenter routes', () => {
   assert.ok(presenter);
   assert.equal(isAdminWorkspaceActive(presenter, '/admin/presenter'), true);
   assert.equal(isAdminWorkspaceActive(presenter, '/admin/lesstof'), false);
+});
+
+test('instellingen workspace is active only for settings routes', () => {
+  const instellingen = ADMIN_WORKSPACES.find((workspace) => workspace.id === 'instellingen');
+
+  assert.ok(instellingen);
+  assert.equal(isAdminWorkspaceActive(instellingen, '/admin/instellingen'), true);
+  assert.equal(isAdminWorkspaceActive(instellingen, '/admin/ai-instellingen'), true);
+  assert.equal(isAdminWorkspaceActive(instellingen, '/admin/klassen'), false);
 });

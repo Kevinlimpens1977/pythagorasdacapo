@@ -58,13 +58,13 @@ test('getSafePostLoginTarget restores safe admin targets for admins', () => {
     }),
     '/admin/presenter?deck=test'
   );
-  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/admin' }), '/admin');
-  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/login' }), '/admin');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/admin' }), '/admin/instellingen');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/login' }), '/admin/instellingen');
 });
 
 test('getSafePostLoginTarget blocks unsafe or unauthorized restore targets', () => {
   assert.equal(getSafePostLoginTarget({ isAdmin: false, fromPathname: '/admin/presenter' }), '/');
-  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: 'https://evil.test/admin' }), '/admin');
-  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '//evil.test/admin' }), '/admin');
-  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/\\evil' }), '/admin');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: 'https://evil.test/admin' }), '/admin/instellingen');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '//evil.test/admin' }), '/admin/instellingen');
+  assert.equal(getSafePostLoginTarget({ isAdmin: true, fromPathname: '/\\evil' }), '/admin/instellingen');
 });

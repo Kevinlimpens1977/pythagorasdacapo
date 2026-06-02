@@ -17,7 +17,7 @@ const workspaceIcons = {
   meldingen: Bug,
   spellen: Gamepad2,
   presenter: Presentation,
-  beheer: SettingsIcon
+  instellingen: SettingsIcon
 };
 
 export default function AppShell() {
@@ -28,7 +28,7 @@ export default function AppShell() {
 
   useEffect(() => {
     if (isAdmin && location.pathname === '/') {
-      navigate('/admin', { replace: true });
+      navigate('/admin/instellingen', { replace: true });
     }
   }, [isAdmin, location.pathname, navigate]);
 

@@ -3,7 +3,7 @@ export const ADMIN_WORKSPACES = [
     id: 'lesstof',
     label: 'Lesstof',
     path: '/admin/lesstof',
-    routePrefixes: ['/admin/lesstof', '/admin/cms', '/admin/digibord', '/admin/slidedecks']
+    routePrefixes: ['/admin/lesstof', '/admin/cms', '/admin/digibord', '/admin/slidedecks', '/admin/taken-toewijzen']
   },
   {
     id: 'voortgang',
@@ -15,7 +15,7 @@ export const ADMIN_WORKSPACES = [
     id: 'leerlingen',
     label: 'Leerlingen',
     path: '/admin/leerlingen',
-    routePrefixes: ['/admin/leerlingen']
+    routePrefixes: ['/admin/leerlingen', '/admin/klassen']
   },
   {
     id: 'meldingen',
@@ -36,21 +36,21 @@ export const ADMIN_WORKSPACES = [
     routePrefixes: ['/admin/presenter']
   },
   {
-    id: 'beheer',
-    label: 'Beheer',
-    path: '/admin',
-    routePrefixes: ['/admin', '/admin/klassen', '/admin/taken-toewijzen', '/admin/ai-instellingen']
+    id: 'instellingen',
+    label: 'Instellingen',
+    path: '/admin/instellingen',
+    routePrefixes: ['/admin/instellingen', '/admin/ai-instellingen']
   }
 ];
 
 export const getAdminWorkspaceForPath = (pathname = '') => {
-  if (pathname === '/admin') return 'beheer';
+  if (pathname === '/admin') return 'instellingen';
 
   const workspace = ADMIN_WORKSPACES.find((item) =>
     item.routePrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
   );
 
-  return workspace?.id || 'beheer';
+  return workspace?.id || 'instellingen';
 };
 
 export const isAdminWorkspaceActive = (workspace, pathname = '') => {
