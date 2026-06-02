@@ -16,11 +16,20 @@ test('getAdminWorkspaceForPath groups admin content routes under lesstof', () =>
 test('getAdminWorkspaceForPath maps dashboard and student routes to the right workspace', () => {
   assert.equal(getAdminWorkspaceForPath('/dashboard'), 'voortgang');
   assert.equal(getAdminWorkspaceForPath('/admin/leerlingen'), 'leerlingen');
+  assert.equal(getAdminWorkspaceForPath('/admin/meldingen'), 'meldingen');
   assert.equal(getAdminWorkspaceForPath('/admin/spellen'), 'spellen');
   assert.equal(getAdminWorkspaceForPath('/admin'), 'beheer');
   assert.equal(getAdminWorkspaceForPath('/admin/klassen'), 'beheer');
   assert.equal(getAdminWorkspaceForPath('/admin/taken-toewijzen'), 'beheer');
   assert.equal(getAdminWorkspaceForPath('/admin/ai-instellingen'), 'beheer');
+});
+
+test('meldingen workspace is active only for report routes', () => {
+  const meldingen = ADMIN_WORKSPACES.find((workspace) => workspace.id === 'meldingen');
+
+  assert.ok(meldingen);
+  assert.equal(isAdminWorkspaceActive(meldingen, '/admin/meldingen'), true);
+  assert.equal(isAdminWorkspaceActive(meldingen, '/admin/leerlingen'), false);
 });
 
 test('getAdminWorkspaceForPath groups presenter under its own workspace', () => {

@@ -68,6 +68,14 @@ const quickActions = [
     tone: 'bg-[var(--helix-navy)] text-white hover:opacity-95'
   },
   {
+    title: 'Leerlingmeldingen',
+    description: 'Bekijk door leerlingen gemelde fouten met context en status.',
+    actionLabel: 'Open Meldingen',
+    icon: AlertCircle,
+    path: '/admin/meldingen',
+    tone: 'bg-white/90 text-[var(--helix-navy)] hover:bg-white border border-[var(--helix-border)]'
+  },
+  {
     title: 'Leerlingen beheren',
     description: 'Bekijk accounts, klaskoppeling en accountstatus.',
     actionLabel: 'Open Leerlingen',
@@ -171,6 +179,14 @@ const workflowGroups = [
         icon: LayoutDashboard,
         path: '/dashboard',
         tone: 'text-sky-600 bg-sky-50'
+      },
+      {
+        title: 'Leerlingmeldingen',
+        description: 'Bekijk antwoordmodel-, taal- en technische meldingen van leerlingen.',
+        actionLabel: 'Open meldingen',
+        icon: AlertCircle,
+        path: '/admin/meldingen',
+        tone: 'text-amber-600 bg-amber-50'
       }
     ]
   },

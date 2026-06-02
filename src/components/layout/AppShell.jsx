@@ -1,10 +1,12 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
 import CmsResetButton from '../admin/CmsResetButton';
 import DeleteStudentsButton from '../admin/DeleteStudentsButton';
-import { BarChart3, BookOpen, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
+import StudentBugReportButton from '../studentBugReports/StudentBugReportButton';
+import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
+import { BarChart3, BookOpen, Bug, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import helixLogo from '../../afbeeldingen/logo.png';
 
@@ -12,6 +14,7 @@ const workspaceIcons = {
   lesstof: BookOpen,
   voortgang: BarChart3,
   leerlingen: Users,
+  meldingen: Bug,
   spellen: Gamepad2,
   presenter: Presentation,
   beheer: SettingsIcon
@@ -21,6 +24,7 @@ export default function AppShell() {
   const { currentUser, isAdmin, isDevBypass, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [studentBugReportContext, setStudentBugReportContext] = useState({});
 
   useEffect(() => {
     if (isAdmin && location.pathname === '/') {
@@ -34,6 +38,7 @@ export default function AppShell() {
   };
 
   return (
+    <StudentBugReportContext.Provider value={{ context: studentBugReportContext, setContext: setStudentBugReportContext }}>
     <div className="helix-page flex min-h-screen flex-col font-sans selection:bg-fuchsia-100 selection:text-[var(--helix-navy)]">
       <NameSetupModal />
 
@@ -100,6 +105,8 @@ export default function AppShell() {
             </button>
           )}
 
+          {!isAdmin && <StudentBugReportButton />}
+
           {!isAdmin ? (
             <button
               onClick={() => navigate('/profiel')}
@@ -139,5 +146,6 @@ export default function AppShell() {
         <Outlet />
       </main>
     </div>
+    </StudentBugReportContext.Provider>
   );
 }

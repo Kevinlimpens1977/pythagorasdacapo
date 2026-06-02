@@ -47,6 +47,7 @@ import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter'
 import GamePlayer from '../components/games/GamePlayer';
 import MediaRenderer from '../components/media/MediaRenderer';
 import AITutorChat from '../components/slides/AITutorChat';
+import { useStudentBugReportContext } from '../components/studentBugReports/StudentBugReportContext';
 import { askAiTutorCall, assessOpenAnswerCall } from '../lib/api';
 import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
@@ -107,6 +108,7 @@ export default function StudentLessonPage() {
   const { chapterId: paragraafId } = useParams();
   const navigate = useNavigate();
   const { currentUser, userData, isAdmin, klasData, klasId: authKlasId } = useAuth();
+  const { setContext: setStudentBugReportContext } = useStudentBugReportContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paragraaf, setParagraaf] = useState(null);
@@ -204,6 +206,28 @@ export default function StudentLessonPage() {
   const completedIds = useMemo(() => getCompletedBlockIds(progressRecords), [progressRecords]);
   const lessonProgress = useMemo(() => calculateLessonProgress(blocks, progressRecords), [blocks, progressRecords]);
   const currentBlock = blocks[currentIndex] || null;
+  useEffect(() => {
+    if (!currentBlock) {
+      setStudentBugReportContext({});
+      return;
+    }
+
+    setStudentBugReportContext({
+      paragraafId: paragraafId || '',
+      paragraafTitle: paragraaf?.title || '',
+      hoofdstukId: hoofdstuk?.id || paragraaf?.hoofdstukId || '',
+      hoofdstukTitle: hoofdstuk?.title || '',
+      blockId: currentBlock.id || '',
+      blockTitle: currentBlock.title || '',
+      blockType: currentBlock.type || '',
+      vraagId: currentBlock.linkedVraag?.id || currentBlock.linkedVraagId || '',
+      vraagTitle: currentBlock.linkedVraag?.title || '',
+      vraagType: currentBlock.linkedVraag?.type || currentBlock.linkedVraag?.vraagtype || ''
+    });
+
+    return () => setStudentBugReportContext({});
+  }, [currentBlock, hoofdstuk, paragraaf, paragraafId, setStudentBugReportContext]);
+
   const aiTutorStorageKey = useMemo(() => {
     if (!currentUser?.uid || !paragraafId || !currentBlock?.id) return '';
     return `helix:digidocent:${currentUser.uid}:${paragraafId}:${currentBlock.id}`;

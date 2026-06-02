@@ -19,6 +19,7 @@ import AdminSpellenPage from './pages/AdminSpellenPage';
 import AdminPresenterPage from './pages/AdminPresenterPage';
 import AdminSlidedecksPage from './pages/AdminSlidedecksPage';
 import AdminAiSettingsPage from './pages/AdminAiSettingsPage';
+import AdminMeldingenPage from './pages/AdminMeldingenPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { user, isAdmin } = useAuth();
@@ -61,6 +62,11 @@ function AppRoutes() {
         <Route path="admin/leerlingen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminLeerlingenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/meldingen" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminMeldingenPage />
           </PrivateRoute>
         } />
         <Route path="admin/spellen" element={
