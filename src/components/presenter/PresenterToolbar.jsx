@@ -113,17 +113,22 @@ const textAlignments = [
 
 const mathSymbols = ['²', '√', 'π', '÷', '×', '≤', '≥'];
 
-const shellClass = 'border-[#6f4a87] bg-[#2b1838] text-[#fbf7ff]';
-const panelClass = `rounded-lg border ${shellClass} shadow-xl`;
-const idleButtonClass = 'border-[#6f4a87] bg-[#3a224b] text-[#fbf7ff] hover:bg-[#472b5b]';
-const activeButtonClass = 'border-[#f4e8ff] bg-[#f4e8ff] text-[#24122f]';
-const dividerClass = 'bg-[#6f4a87]';
+const shellClass =
+  'border-[rgba(122,60,255,0.14)] bg-[linear-gradient(135deg,rgba(255,233,220,0.92),rgba(255,230,242,0.72),rgba(241,233,255,0.92))] text-[var(--helix-navy)] shadow-[0_16px_36px_rgba(122,60,255,0.11)]';
+const panelClass = `rounded-xl border ${shellClass}`;
+const idleButtonClass =
+  'border-[rgba(255,255,255,0.78)] bg-white/70 text-[var(--helix-navy)] hover:border-white hover:bg-white hover:text-[var(--helix-purple)]';
+const activeButtonClass =
+  'border-white bg-white text-[var(--helix-purple)] shadow-[0_8px_18px_rgba(122,60,255,0.12)]';
+const dividerClass = 'bg-[rgba(122,60,255,0.16)]';
+const toolbarLabelClass = 'text-[var(--helix-purple)]';
+const iconAccentClass = 'bg-[rgba(122,60,255,0.12)] text-[var(--helix-purple)]';
 
 const iconButtonClass =
-  `inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border ${idleButtonClass} transition disabled:cursor-not-allowed disabled:opacity-40`;
+  `inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border text-[11px] font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${idleButtonClass}`;
 
 const popoverButtonClass =
-  'inline-flex min-h-12 shrink-0 items-center justify-center rounded-md border px-4 text-sm font-black transition';
+  'inline-flex min-h-[34px] shrink-0 items-center justify-center rounded-lg border px-2.5 py-2 text-[11px] font-bold transition';
 
 export default function PresenterToolbar({
   pageLabel = 'Pagina 0/0',
@@ -225,7 +230,7 @@ export default function PresenterToolbar({
     >
       <button
         type="button"
-        className={`pointer-events-auto mx-auto mb-2 flex min-h-11 min-w-40 items-center justify-center rounded-md border px-4 text-sm font-black shadow-lg transition ${idleButtonClass}`}
+        className={`pointer-events-auto mx-auto mb-2 flex min-h-[34px] min-w-36 items-center justify-center rounded-lg border px-3 py-2 text-[11px] font-bold shadow-[0_10px_22px_rgba(122,60,255,0.12)] transition ${idleButtonClass}`}
         onClick={onTogglePinned}
         onPointerEnter={onOpen}
         onPointerDown={onOpen}
@@ -234,9 +239,9 @@ export default function PresenterToolbar({
         {pinned ? 'Werkbalk vast' : 'Werkbalk openen'}
       </button>
       {activeCategory === 'pen' || activeCategory === 'highlighter' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(56rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-3 p-3 ${panelClass}`} onPointerEnter={onOpen}>
-          <div className="flex min-h-12 flex-wrap items-center justify-center gap-2">
-            <span className="px-1 text-xs font-black uppercase tracking-[0.16em] text-[#d9c5e8]">{drawingColorLabel}</span>
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(56rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+          <div className="flex min-h-[34px] flex-wrap items-center justify-center gap-1.5">
+            <span className={`px-1 text-[10px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingColorLabel}</span>
             {drawingColors.map((color) => {
               const isActive = penColor === color.value;
 
@@ -244,24 +249,24 @@ export default function PresenterToolbar({
                 <button
                   key={color.value}
                   type="button"
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md border transition ${
-                    isActive ? 'border-[#f4e8ff] bg-[#4d3161]' : idleButtonClass
+                  className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border transition ${
+                    isActive ? activeButtonClass : idleButtonClass
                   }`}
                   onClick={() => runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, color: color.value }))}
                   aria-label={`${drawingToolLabel} kleur ${color.label}`}
                   aria-pressed={isActive}
                 >
                   <span
-                    className="block h-7 w-7 rounded-full ring-2 ring-[#2b1838]"
+                    className="block h-5 w-5 rounded-full ring-2 ring-white/80"
                     style={{ backgroundColor: color.value, opacity: previewOpacity }}
                   />
                 </button>
               );
             })}
           </div>
-          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex min-h-12 flex-wrap items-center justify-center gap-2">
-            <span className="px-1 text-xs font-black uppercase tracking-[0.16em] text-[#d9c5e8]">{drawingWidthLabel}</span>
+          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex min-h-[34px] flex-wrap items-center justify-center gap-1.5">
+            <span className={`px-1 text-[10px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingWidthLabel}</span>
             {drawingWidths.map((width) => {
               const isActive = penWidth === width.value;
 
@@ -269,7 +274,7 @@ export default function PresenterToolbar({
                 <button
                   key={width.value}
                   type="button"
-                  className={`inline-flex min-h-12 min-w-20 shrink-0 items-center justify-center gap-2 rounded-md border px-3 text-sm font-black transition ${
+                  className={`inline-flex min-h-[34px] min-w-14 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-bold transition ${
                     isActive
                       ? activeButtonClass
                       : idleButtonClass
@@ -278,11 +283,11 @@ export default function PresenterToolbar({
                   aria-label={`${drawingToolLabel} dikte ${width.label}`}
                   aria-pressed={isActive}
                 >
-                  <span className="flex h-7 w-7 items-center justify-center">
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-md ${iconAccentClass}`}>
                     <span
                       className={isHighlighter ? 'block rounded-sm' : 'block rounded-full'}
                       style={{
-                        backgroundColor: isActive ? '#24122f' : '#fbf7ff',
+                        backgroundColor: isActive ? '#7a3cff' : '#0b132b',
                         height: isHighlighter ? '8px' : `${Math.min(width.value, 16)}px`,
                         opacity: previewOpacity,
                         width: isHighlighter ? `${Math.min(width.value, 32)}px` : `${Math.min(width.value, 16)}px`
@@ -297,7 +302,7 @@ export default function PresenterToolbar({
         </div>
       ) : null}
       {activeCategory === 'background' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(42rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(42rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
           <button
             type="button"
             className={`${popoverButtonClass} ${
@@ -344,34 +349,34 @@ export default function PresenterToolbar({
         </div>
       ) : null}
       {activeCategory === 'text' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(72rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-3 p-3 ${panelClass}`} onPointerEnter={onOpen}>
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(72rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
           <button
             type="button"
             className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
             onClick={() => runAction(onCreateTextObject)}
           >
-            <Type size={18} strokeWidth={2.4} />
+            <Type size={16} strokeWidth={2.4} />
             Tekstvak
           </button>
-          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             <button
               type="button"
-              className={`inline-flex h-12 w-12 items-center justify-center rounded-md border transition ${activeTextStyle.bold ? activeButtonClass : idleButtonClass}`}
+              className={`inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg border transition ${activeTextStyle.bold ? activeButtonClass : idleButtonClass}`}
               onClick={() => handleTextStyle({ bold: !activeTextStyle.bold })}
               aria-label="Vet"
               aria-pressed={activeTextStyle.bold}
             >
-              <Bold size={20} strokeWidth={2.8} />
+              <Bold size={17} strokeWidth={2.8} />
             </button>
             <button
               type="button"
-              className={`inline-flex h-12 w-12 items-center justify-center rounded-md border transition ${activeTextStyle.italic ? activeButtonClass : idleButtonClass}`}
+              className={`inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg border transition ${activeTextStyle.italic ? activeButtonClass : idleButtonClass}`}
               onClick={() => handleTextStyle({ italic: !activeTextStyle.italic })}
               aria-label="Cursief"
               aria-pressed={activeTextStyle.italic}
             >
-              <Italic size={20} strokeWidth={2.8} />
+              <Italic size={17} strokeWidth={2.8} />
             </button>
             {textAlignments.map((alignment) => {
               const Icon = alignment.icon;
@@ -381,18 +386,18 @@ export default function PresenterToolbar({
                 <button
                   key={alignment.value}
                   type="button"
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-md border transition ${isActive ? activeButtonClass : idleButtonClass}`}
+                  className={`inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg border transition ${isActive ? activeButtonClass : idleButtonClass}`}
                   onClick={() => handleTextStyle({ align: alignment.value })}
                   aria-label={`Uitlijnen ${alignment.label}`}
                   aria-pressed={isActive}
                 >
-                  <Icon size={20} strokeWidth={2.6} />
+                  <Icon size={17} strokeWidth={2.6} />
                 </button>
               );
             })}
           </div>
-          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {textColors.map((color) => {
               const isActive = activeTextStyle.color === color.value;
 
@@ -400,19 +405,19 @@ export default function PresenterToolbar({
                 <button
                   key={color.value}
                   type="button"
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-md border transition ${
-                    isActive ? 'border-[#f4e8ff] bg-[#4d3161]' : idleButtonClass
+                  className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border transition ${
+                    isActive ? activeButtonClass : idleButtonClass
                   }`}
                   onClick={() => handleTextStyle({ color: color.value })}
                   aria-label={`Tekstkleur ${color.label}`}
                   aria-pressed={isActive}
                 >
-                  <span className="block h-7 w-7 rounded-full ring-2 ring-[#2b1838]" style={{ backgroundColor: color.value }} />
+                  <span className="block h-5 w-5 rounded-full ring-2 ring-white/80" style={{ backgroundColor: color.value }} />
                 </button>
               );
             })}
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {textSizes.map((size) => (
               <button
                 key={size.value}
@@ -425,7 +430,7 @@ export default function PresenterToolbar({
               </button>
             ))}
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {textFonts.map((font) => (
               <button
                 key={font.value}
@@ -438,13 +443,13 @@ export default function PresenterToolbar({
               </button>
             ))}
           </div>
-          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {mathSymbols.map((symbol) => (
               <button
                 key={symbol}
                 type="button"
-                className={`${popoverButtonClass} min-w-12 ${hasSelectedTextObject ? idleButtonClass : 'border-[#f08a24] bg-[#5a341f] text-[#fff7ed] hover:bg-[#704020]'}`}
+                className={`${popoverButtonClass} min-w-9 ${hasSelectedTextObject ? idleButtonClass : activeButtonClass}`}
                 onClick={() => handleTextSymbol(symbol)}
                 aria-label={`Wiskundesymbool ${symbol}`}
               >
@@ -455,8 +460,8 @@ export default function PresenterToolbar({
         </div>
       ) : null}
       {activeCategory === 'objects' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(64rem,calc(100vw-1.5rem))] flex-wrap items-stretch justify-center gap-3 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(64rem,calc(100vw-1.5rem))] flex-wrap items-stretch justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {objectTypes.map((type) => (
               <button
                 key={type}
@@ -468,13 +473,13 @@ export default function PresenterToolbar({
               </button>
             ))}
           </div>
-          <div className={`min-h-12 w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {instrumentTypes.map((instrument) => (
               <button
                 key={instrument.id}
                 type="button"
-                className={`${popoverButtonClass} border-[#f08a24] bg-[#5a341f] text-[#fff7ed] hover:bg-[#704020]`}
+                className={`${popoverButtonClass} border-[rgba(255,122,0,0.28)] bg-white/70 text-orange-700 hover:border-white hover:bg-white hover:text-[var(--helix-purple)]`}
                 onClick={() => runAction(() => onInstrument?.(instrument.id))}
               >
                 {instrument.label}
@@ -484,18 +489,18 @@ export default function PresenterToolbar({
         </div>
       ) : null}
       {activeCategory === 'lesson' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(36rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(36rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
           <button
             type="button"
             className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
             onClick={() => runAction(onOpenImport)}
           >
-            <FilePlus2 size={18} strokeWidth={2.4} />
+            <FilePlus2 size={16} strokeWidth={2.4} />
             Importeer uit CMS
           </button>
         </div>
       ) : null}
-      <div className={`pointer-events-auto mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-2 overflow-visible p-2 ${panelClass}`} onPointerEnter={onOpen}>
+      <div className={`pointer-events-auto mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-1.5 overflow-visible p-2 ${panelClass}`} onPointerEnter={onOpen}>
         <div className="flex shrink-0 flex-wrap items-center justify-center gap-1">
           <button
             type="button"
@@ -504,9 +509,9 @@ export default function PresenterToolbar({
             disabled={prevDisabled}
             aria-label="Vorige pagina"
           >
-            <ArrowLeft size={20} strokeWidth={2.4} />
+            <ArrowLeft size={17} strokeWidth={2.4} />
           </button>
-          <div className="min-w-24 max-w-32 px-2 text-center text-sm font-black text-[#fbf7ff]">{pageLabel}</div>
+          <div className="min-w-20 max-w-28 px-2 text-center text-[11px] font-black text-[var(--helix-navy)]">{pageLabel}</div>
           <button
             type="button"
             className={iconButtonClass}
@@ -514,7 +519,7 @@ export default function PresenterToolbar({
             disabled={nextDisabled}
             aria-label="Volgende pagina"
           >
-            <ArrowRight size={20} strokeWidth={2.4} />
+            <ArrowRight size={17} strokeWidth={2.4} />
           </button>
           <button
             type="button"
@@ -522,15 +527,15 @@ export default function PresenterToolbar({
             onClick={() => runAction(onAddPage)}
             aria-label="Nieuwe pagina"
           >
-            <Plus size={20} strokeWidth={2.4} />
+            <Plus size={17} strokeWidth={2.4} />
           </button>
         </div>
 
-        <div className={`mx-1 h-9 w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
+        <div className={`mx-1 h-[30px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
 
         <div className="flex shrink-0 flex-wrap items-center justify-center gap-1">
           <button type="button" className={iconButtonClass} onClick={() => runAction(onSelect)} aria-label="Selecteren">
-            <MousePointer2 size={20} strokeWidth={2.4} />
+            <MousePointer2 size={17} strokeWidth={2.4} />
           </button>
           <button
             type="button"
@@ -539,7 +544,7 @@ export default function PresenterToolbar({
             disabled={!canUndo}
             aria-label="Ongedaan maken"
           >
-            <Undo2 size={20} strokeWidth={2.4} />
+            <Undo2 size={17} strokeWidth={2.4} />
           </button>
           <button
             type="button"
@@ -548,7 +553,7 @@ export default function PresenterToolbar({
             disabled={!canRedo}
             aria-label="Opnieuw"
           >
-            <Redo2 size={20} strokeWidth={2.4} />
+            <Redo2 size={17} strokeWidth={2.4} />
           </button>
           <button
             type="button"
@@ -558,11 +563,11 @@ export default function PresenterToolbar({
             aria-label="Huidige pagina leegmaken"
             title="Huidige pagina leegmaken"
           >
-            <Trash2 size={20} strokeWidth={2.4} />
+            <Trash2 size={17} strokeWidth={2.4} />
           </button>
         </div>
 
-        <div className={`mx-1 h-9 w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
+        <div className={`mx-1 h-[30px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
 
         <div className="flex min-w-0 flex-wrap items-center justify-center gap-1">
           {categories.map((category) => {
@@ -573,7 +578,7 @@ export default function PresenterToolbar({
               <button
                 key={category.id}
                 type="button"
-                className={`inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-md border px-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-45 ${
+                className={`inline-flex h-[34px] shrink-0 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${
                   isActive
                     ? activeButtonClass
                     : idleButtonClass
@@ -582,8 +587,8 @@ export default function PresenterToolbar({
                 onClick={() => handleCategory(category)}
                 aria-pressed={isActive}
               >
-                <Icon size={19} strokeWidth={2.4} />
-                <span className="max-w-24 truncate max-lg:hidden">{category.label}</span>
+                <Icon size={17} strokeWidth={2.4} />
+                <span className="max-w-20 truncate max-lg:hidden">{category.label}</span>
               </button>
             );
           })}
@@ -597,10 +602,10 @@ export default function PresenterToolbar({
             aria-pressed={pinned}
             aria-label={pinned ? 'Werkbalk losmaken' : 'Werkbalk vastzetten'}
           >
-            <CheckSquare size={20} strokeWidth={2.4} />
+            <CheckSquare size={17} strokeWidth={2.4} />
           </button>
           <button type="button" className={iconButtonClass} onClick={onFullscreen} aria-label="Volledig scherm">
-            <Maximize2 size={20} strokeWidth={2.4} />
+            <Maximize2 size={17} strokeWidth={2.4} />
           </button>
         </div>
       </div>
