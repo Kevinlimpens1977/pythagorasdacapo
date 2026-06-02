@@ -18,36 +18,51 @@ test('getLearningResultTone marks correct work without AI as independent green',
     label: 'Zelfstandig goed',
     borderClass: 'border-emerald-700',
     fillClass: 'bg-emerald-100',
+    ringClass: '',
     scoreWeight: 1
   });
 });
 
-test('getLearningResultTone marks one AI question as minimal help', () => {
+test('getLearningResultTone marks chat-guided correct work as green with a red dotted outline', () => {
   assert.deepEqual(getLearningResultTone({ isCorrect: true, aiHelpCount: 1 }), {
-    tier: 'ai_minimal',
-    label: 'Goed met minimale AI-hulp',
+    tier: 'guided',
+    label: 'Goed met Digidocent-hulp',
     borderClass: 'border-emerald-700',
-    fillClass: 'bg-rose-100',
+    fillClass: 'bg-emerald-100',
+    ringClass: 'outline outline-2 outline-offset-2 outline-dotted outline-rose-500',
     scoreWeight: 0.75
   });
 });
 
-test('getLearningResultTone marks multiple AI questions as guided help', () => {
-  assert.deepEqual(getLearningResultTone({ isCorrect: true, aiHelpCount: 3 }), {
-    tier: 'ai_guided',
-    label: 'Goed met veel AI-hulp',
-    borderClass: 'border-emerald-700',
-    fillClass: 'bg-rose-300',
-    scoreWeight: 0.5
+test('getLearningResultTone marks max-attempt failures as red completed work', () => {
+  assert.deepEqual(getLearningResultTone({ completed: true, isCorrect: false, resultTier: 'failed' }), {
+    tier: 'failed',
+    label: 'Geparkeerd voor herstel',
+    borderClass: 'border-red-700',
+    fillClass: 'bg-red-100',
+    ringClass: '',
+    scoreWeight: 0
+  });
+});
+
+test('getLearningResultTone marks AI assessment failures as amber teacher review', () => {
+  assert.deepEqual(getLearningResultTone({ completed: true, isCorrect: false, resultTier: 'pending_teacher_review' }), {
+    tier: 'pending_teacher_review',
+    label: 'Docentbeoordeling nodig',
+    borderClass: 'border-amber-500',
+    fillClass: 'bg-amber-100',
+    ringClass: '',
+    scoreWeight: 0
   });
 });
 
 test('buildLearningResultMetadata stores result details for Firestore', () => {
-  assert.deepEqual(buildLearningResultMetadata({ isCorrect: false, aiHelpCount: 2 }), {
+  assert.deepEqual(buildLearningResultMetadata({ completed: true, isCorrect: false, aiHelpCount: 2, resultTier: 'failed' }), {
     aiHelpCount: 2,
     aiHelpUsed: true,
-    helpTier: 'in_progress',
-    resultLabel: 'Nog niet goed',
+    helpTier: 'failed',
+    resultTier: 'failed',
+    resultLabel: 'Geparkeerd voor herstel',
     scoreWeight: 0
   });
 });

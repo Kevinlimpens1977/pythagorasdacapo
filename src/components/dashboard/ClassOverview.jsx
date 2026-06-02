@@ -51,13 +51,16 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
     <div className="mt-2 flex max-w-[160px] flex-wrap gap-1" aria-label="Resultaatkwaliteit">
       {completedRecords.slice(0, 12).map((record) => {
         const tone = getLearningResultTone({
+          completed: record.completed,
           isCorrect: record.isCorrect,
-          aiHelpCount: record.aiHelpCount || 0
+          aiHelpCount: record.aiHelpCount || 0,
+          resultTier: record.resultTier,
+          helpTier: record.helpTier
         });
         return (
           <span
             key={record.id || record.blockId || record.vraagId}
-            className={`h-3 w-5 rounded-full border ${tone.borderClass} ${tone.fillClass}`}
+            className={`h-3 w-5 rounded-full border ${tone.borderClass} ${tone.fillClass} ${tone.ringClass}`}
             title={tone.label}
           />
         );
@@ -80,13 +83,16 @@ function StudentProgressRecordList({ records = [], paragraafId }) {
     <div className="mt-3 space-y-2">
       {paragraphRecords.map((record, index) => {
         const tone = getLearningResultTone({
+          completed: record.completed,
           isCorrect: record.isCorrect,
-          aiHelpCount: record.aiHelpCount || 0
+          aiHelpCount: record.aiHelpCount || 0,
+          resultTier: record.resultTier,
+          helpTier: record.helpTier
         });
         return (
           <div
             key={record.id || record.blockId || record.vraagId || index}
-            className={`rounded-xl border ${tone.borderClass} ${tone.fillClass} px-3 py-2 text-xs`}
+            className={`rounded-xl border ${tone.borderClass} ${tone.fillClass} ${tone.ringClass} px-3 py-2 text-xs`}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-black text-slate-800">
@@ -99,6 +105,7 @@ function StudentProgressRecordList({ records = [], paragraafId }) {
             <div className="mt-1 flex flex-wrap gap-3 font-semibold text-slate-600">
               <span>Pogingen: {record.attempts || 0}</span>
               <span>AI-vragen: {record.aiHelpCount || 0}</span>
+              <span>Status: {record.resultTier || tone.tier}</span>
               <span>Scorefactor: {record.scoreWeight ?? 0}</span>
             </div>
             <p className="mt-1 line-clamp-2 break-all font-medium text-slate-500">

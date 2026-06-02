@@ -25,10 +25,20 @@ export const DEFAULT_CONTENT_BLOCK_SETTINGS = {
   allowMathToolbox: false
 };
 
-export const normalizeContentBlockSettings = (settings = {}) => ({
-  allowAiHelp: settings.allowAiHelp ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp,
+export const normalizeContentBlockSettings = (settings = {}, blockType = '') => ({
+  allowAiHelp: settings.allowAiHelp ?? (blockType === 'question' ? true : DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp),
   allowMathToolbox: settings.allowMathToolbox ?? settings.allowCalculator ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowMathToolbox
 });
+
+export const buildContentBlockFromSnapshot = (snapshot) => {
+  const data = snapshot?.data?.() || {};
+  const { id: sourceDataId, ...rest } = data;
+  return {
+    ...rest,
+    ...(sourceDataId ? { sourceDataId } : {}),
+    id: snapshot.id
+  };
+};
 
 export const getDefaultContentForBlockType = (type) => {
   if (type === 'example') {
@@ -81,7 +91,7 @@ export const normalizeContentBlocks = (blocks = []) => {
     .map((block, index) => ({
       ...block,
       order: index + 1,
-      settings: normalizeContentBlockSettings(block.settings)
+      settings: normalizeContentBlockSettings(block.settings, block.type)
     }));
 };
 

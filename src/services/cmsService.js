@@ -17,7 +17,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { normalizeContentBlockSettings } from '../lib/contentBlockUtils';
+import { buildContentBlockFromSnapshot, normalizeContentBlockSettings } from '../lib/contentBlockUtils';
 
 /**
  * ==================== READ OPERATIONS ====================
@@ -239,10 +239,7 @@ export const getVragen = async (paragraafId, includeArchived = false) => {
 
     // Sort by order field in memory
     const vragen = querySnapshot.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
+      .map(buildContentBlockFromSnapshot)
       .sort((a, b) => (a.order || 0) - (b.order || 0));
 
     return vragen;
@@ -432,7 +429,7 @@ export const createContentBlock = async (paragraafId, data, userId) => {
       title: data.title || 'Nieuw lesblok',
       status: data.status || 'draft',
       content: data.content || { html: '' },
-      settings: normalizeContentBlockSettings(data.settings),
+      settings: normalizeContentBlockSettings(data.settings, data.type),
       linkedVraagId: data.linkedVraagId || null,
       createdBy: userId,
       createdAt: serverTimestamp(),

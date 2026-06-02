@@ -59,6 +59,52 @@ test('buildContentBlockVoortgangUpdate stores completed independent work with fu
   assert.equal(update.completedAt, 'now');
 });
 
+test('buildContentBlockVoortgangUpdate preserves explicit amber review status without treating AI failure as a score', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    existingData: {
+      attempts: 2
+    },
+    data: {
+      completed: true,
+      isCorrect: false,
+      attempts: 2,
+      maxAttempts: 4,
+      resultTier: 'pending_teacher_review',
+      completionReason: 'teacher_review_pending',
+      attemptStatus: 'pending_teacher_review',
+      teacherSignal: 'ai_assessment_failed',
+      lastAnswer: { openAnswer: 'mijn antwoord' }
+    }
+  });
+
+  assert.equal(update.attempts, 2);
+  assert.equal(update.resultTier, 'pending_teacher_review');
+  assert.equal(update.helpTier, 'pending_teacher_review');
+  assert.equal(update.completionReason, 'teacher_review_pending');
+  assert.equal(update.attemptStatus, 'pending_teacher_review');
+  assert.equal(update.teacherSignal, 'ai_assessment_failed');
+  assert.equal(update.scoreWeight, 0);
+});
+
+test('buildContentBlockVoortgangUpdate stores paragraph end progress type', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    data: {
+      progressType: 'paragraphEnd',
+      assignmentKind: 'remediation',
+      completed: true,
+      isCorrect: true,
+      completionReason: 'remediation_completed',
+      attempts: 1
+    }
+  });
+
+  assert.equal(update.progressType, 'paragraphEnd');
+  assert.equal(update.assignmentKind, 'remediation');
+  assert.equal(update.completionReason, 'remediation_completed');
+});
+
 test('buildContentBlockVoortgangUpdate stores draft answers without counting an attempt', () => {
   const update = buildContentBlockVoortgangUpdate({
     ...base,
@@ -76,6 +122,61 @@ test('buildContentBlockVoortgangUpdate stores draft answers without counting an 
   assert.equal(update.attempts, 0);
   assert.equal(update.draftSaved, true);
   assert.deepEqual(update.lastAnswer, { openAnswer: 'conceptantwoord' });
+});
+
+test('buildContentBlockVoortgangUpdate clears stale assessment feedback when a new draft answer is saved', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    existingData: {
+      lastAnswer: { openAnswer: 'oud antwoord' },
+      openAnswerAssessment: { feedback: 'oude feedback', answerSignature: 'old' }
+    },
+    data: {
+      completed: false,
+      isCorrect: false,
+      attempts: 1,
+      lastAnswer: { openAnswer: 'nieuw antwoord' },
+      draftSaved: true
+    }
+  });
+
+  assert.equal(update.openAnswerAssessment, null);
+});
+
+test('buildContentBlockVoortgangUpdate clears stale last assessment and amber status when a new draft answer is saved', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    existingData: {
+      completed: true,
+      resultTier: 'pending_teacher_review',
+      attemptStatus: 'pending_teacher_review',
+      completionReason: 'teacher_review_pending',
+      teacherSignal: 'ai_assessment_failed',
+      lastAnswer: { openAnswer: 'oud antwoord' },
+      lastAssessment: {
+        feedback: 'oude feedback',
+        answerSignature: 'old'
+      }
+    },
+    data: {
+      completed: false,
+      isCorrect: false,
+      resultTier: 'in_progress',
+      attemptStatus: 'open',
+      completionReason: '',
+      teacherSignal: '',
+      attempts: 1,
+      lastAnswer: { openAnswer: 'nieuw antwoord' },
+      draftSaved: true
+    }
+  });
+
+  assert.equal(update.completed, false);
+  assert.equal(update.resultTier, 'in_progress');
+  assert.equal(update.attemptStatus, 'open');
+  assert.equal(update.completionReason, '');
+  assert.equal(update.teacherSignal, '');
+  assert.equal(update.lastAssessment, null);
 });
 
 test('buildContentBlockVoortgangUpdate clears draft state when work is completed', () => {

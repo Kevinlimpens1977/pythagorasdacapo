@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {
   blockToSlide,
   buildContentBlockPreview,
+  buildContentBlockFromSnapshot,
   getDefaultContentForBlockType,
   getReorderedBlocks,
   getToggledContentBlockStatus,
   mergeCropResultsIntoBlockContent,
+  normalizeContentBlockSettings,
   normalizeContentBlocks
 } from './contentBlockUtils.js';
 
@@ -18,6 +20,47 @@ test('normalizeContentBlocks filters archived blocks and sorts by order', () => 
   ]);
 
   assert.deepEqual(blocks.map((block) => block.id), ['a', 'b']);
+});
+
+test('normalizeContentBlockSettings enables Digidocent by default only for question blocks', () => {
+  assert.deepEqual(normalizeContentBlockSettings(undefined, 'question'), {
+    allowAiHelp: true,
+    allowMathToolbox: false
+  });
+
+  assert.deepEqual(normalizeContentBlockSettings({}, 'slidedeck'), {
+    allowAiHelp: false,
+    allowMathToolbox: false
+  });
+
+  assert.deepEqual(normalizeContentBlockSettings({ allowAiHelp: false }, 'question'), {
+    allowAiHelp: false,
+    allowMathToolbox: false
+  });
+});
+
+test('normalizeContentBlocks treats existing question blocks without settings as Digidocent-enabled', () => {
+  const [question, media] = normalizeContentBlocks([
+    { id: 'question-1', order: 1, type: 'question' },
+    { id: 'media-1', order: 2, type: 'media' }
+  ]);
+
+  assert.equal(question.settings.allowAiHelp, true);
+  assert.equal(media.settings.allowAiHelp, false);
+});
+
+test('buildContentBlockFromSnapshot keeps Firestore document id when stored data contains an id field', () => {
+  const block = buildContentBlockFromSnapshot({
+    id: 'firestore-doc-id',
+    data: () => ({
+      id: 'stale-imported-id',
+      title: 'Vraag',
+      type: 'question'
+    })
+  });
+
+  assert.equal(block.id, 'firestore-doc-id');
+  assert.equal(block.sourceDataId, 'stale-imported-id');
 });
 
 test('getReorderedBlocks moves a block up and normalizes order values', () => {

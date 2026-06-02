@@ -678,7 +678,7 @@ const LessonBlockStudio = ({
     ...getDefaultContentForBlockType(block.type),
     ...(block.content || {})
   });
-  const [settings, setSettings] = useState(normalizeContentBlockSettings(block.settings));
+  const [settings, setSettings] = useState(normalizeContentBlockSettings(block.settings, block.type));
   const [linkedVraagId, setLinkedVraagId] = useState(block.linkedVraagId || '');
   const [imageData, setImageData] = useState(null);
   const [selections, setSelections] = useState([]);
@@ -840,7 +840,7 @@ const LessonBlockStudio = ({
         title,
         status,
         content,
-        settings: normalizeContentBlockSettings(settings),
+        settings: normalizeContentBlockSettings(settings, block.type),
         linkedVraagId: block.type === 'question' ? linkedVraagId || null : null
       });
     } finally {

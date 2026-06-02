@@ -167,7 +167,8 @@ test('student progress lifecycle supports draft save, resume, completion and adm
 
   assert.equal(completedRecord.completed, true);
   assert.equal(completedRecord.draftSaved, false);
-  assert.equal(completedRecord.helpTier, 'ai_minimal');
+  assert.equal(completedRecord.helpTier, 'guided');
+  assert.equal(completedRecord.resultTier, 'guided');
   assert.equal(completedRecord.scoreWeight, 0.75);
   assert.equal(completedRecord.completedAt, 'done-time');
   assert.deepEqual(groupProgressRecordsByStudent([completedRecord]), {

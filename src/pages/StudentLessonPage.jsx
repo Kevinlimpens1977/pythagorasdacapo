@@ -36,19 +36,32 @@ import {
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
 import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
 import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
-import { sanitizeOpenAnswerAssessmentFeedback } from '../lib/openAnswerAssessmentFeedback';
+import {
+  buildAnswerSignature,
+  isAssessmentForAnswer,
+  sanitizeOpenAnswerAssessmentFeedback
+} from '../lib/openAnswerAssessmentFeedback';
 import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
 import GamePlayer from '../components/games/GamePlayer';
 import MediaRenderer from '../components/media/MediaRenderer';
 import AITutorChat from '../components/slides/AITutorChat';
-import { assessOpenAnswerCall } from '../lib/api';
+import { askAiTutorCall, assessOpenAnswerCall } from '../lib/api';
 import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
 import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { buildQuestionDraftProgressPayload, hasQuestionDraftAnswer } from '../lib/questionDraftProgress';
+import {
+  buildParagraphEndPlan,
+  buildQuestionAttemptOutcome,
+  MAX_CORE_QUESTION_ATTEMPTS
+} from '../lib/studentQuestionAttemptFlow';
+import {
+  buildParagraphEndActivity,
+  buildParagraphEndProgressPayload
+} from '../lib/paragraphEndActivity';
 import {
   addRatioColumn,
   canRemoveRatioColumn,
@@ -88,6 +101,8 @@ export default function StudentLessonPage() {
   const [progressRecords, setProgressRecords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
+  const [showParagraphEnd, setShowParagraphEnd] = useState(false);
+  const skipNextAiTutorSaveRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,11 +161,17 @@ export default function StudentLessonPage() {
 
         if (cancelled) return;
 
+        const hasCompletedParagraphEnd = voortgang.some((record) =>
+          record.progressType === 'paragraphEnd' && record.completed === true
+        );
+        const loadedLessonProgress = calculateLessonProgress(enrichedBlocks, voortgang);
+
         setParagraaf(paragraafData);
         setHoofdstuk(hoofdstukData);
         setBlocks(enrichedBlocks);
         setProgressRecords(voortgang);
         setCurrentIndex(findResumeBlockIndex(enrichedBlocks, voortgang));
+        setShowParagraphEnd(loadedLessonProgress.isCompleted && !hasCompletedParagraphEnd);
       } catch (loadError) {
         console.error('Leerlingroute kon niet laden:', loadError);
         if (!cancelled) setError('Deze les kon niet goed worden geladen. Probeer het opnieuw of vraag je docent.');
@@ -170,9 +191,9 @@ export default function StudentLessonPage() {
   const lessonProgress = useMemo(() => calculateLessonProgress(blocks, progressRecords), [blocks, progressRecords]);
   const currentBlock = blocks[currentIndex] || null;
   const aiTutorStorageKey = useMemo(() => {
-    if (!currentUser?.uid || !paragraafId) return '';
-    return `helix:digidocent:${currentUser.uid}:${paragraafId}`;
-  }, [currentUser?.uid, paragraafId]);
+    if (!currentUser?.uid || !paragraafId || !currentBlock?.id) return '';
+    return `helix:digidocent:${currentUser.uid}:${paragraafId}:${currentBlock.id}`;
+  }, [currentBlock?.id, currentUser?.uid, paragraafId]);
   const [aiTutorMessages, setAiTutorMessages] = useState([]);
   const studentFirstName = useMemo(() => {
     const rawName = userData?.firstName || userData?.displayName || currentUser?.displayName || currentUser?.email || 'leerling';
@@ -204,16 +225,60 @@ export default function StudentLessonPage() {
     setProgressRecords(refreshed);
   };
 
+  const saveParagraphEndProgress = async (activity, payload) => {
+    const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+    if (!currentUser || isAdmin || !effectiveKlasId || !paragraafId) return;
+
+    const assignmentKind = payload.assignmentKind || activity.assignmentKind || 'paragraphEnd';
+    const blockId = `paragraph-end-${paragraafId}-${assignmentKind}`;
+
+    await voortgangService.saveContentBlockVoortgang(
+      currentUser.uid,
+      blockId,
+      paragraafId,
+      paragraaf?.hoofdstukId || hoofdstuk?.id || '',
+      effectiveKlasId,
+      {
+        blockTitle: activity.title || 'Paragraafafsluiting',
+        blockType: 'paragraphEnd',
+        vraagTitle: activity.title || '',
+        vraagType: assignmentKind,
+        ...payload
+      }
+    );
+
+    const refreshed = await voortgangService.getVoortgangForParagraaf(currentUser.uid, paragraafId);
+    setProgressRecords(refreshed);
+  };
+
   const getBlockProgressRecord = (blockId) =>
     progressRecords.find((record) => (record.blockId || record.vraagId) === blockId) || null;
+
+  const coreQuestionRecords = useMemo(() => (
+    blocks
+      .filter((block) => block.type === 'question')
+      .map((block) => progressRecords.find((record) => (record.blockId || record.vraagId) === block.id) || null)
+  ), [blocks, progressRecords]);
+
+  const paragraphEndPlan = useMemo(() => buildParagraphEndPlan({
+    coreQuestionRecords
+  }), [coreQuestionRecords]);
+
+  const paragraphEndActivity = useMemo(() => buildParagraphEndActivity({
+    kind: paragraphEndPlan.kind,
+    paragraaf,
+    records: paragraphEndPlan.sourceRecords || []
+  }), [paragraphEndPlan, paragraaf]);
 
   useEffect(() => {
     let timeoutId;
     if (!aiTutorStorageKey) {
+      skipNextAiTutorSaveRef.current = true;
       timeoutId = window.setTimeout(() => setAiTutorMessages([]), 0);
       return () => window.clearTimeout(timeoutId);
     }
 
+    skipNextAiTutorSaveRef.current = true;
     timeoutId = window.setTimeout(() => {
       try {
         const stored = window.localStorage.getItem(aiTutorStorageKey);
@@ -229,6 +294,10 @@ export default function StudentLessonPage() {
 
   useEffect(() => {
     if (!aiTutorStorageKey) return;
+    if (skipNextAiTutorSaveRef.current) {
+      skipNextAiTutorSaveRef.current = false;
+      return;
+    }
     try {
       window.localStorage.setItem(aiTutorStorageKey, JSON.stringify(aiTutorMessages.slice(-18)));
     } catch {
@@ -239,8 +308,26 @@ export default function StudentLessonPage() {
   const getBlockResultClasses = (block) => {
     const record = getBlockProgressRecord(block?.id);
     if (!record?.completed) return 'border-slate-300 bg-slate-100';
-    const tone = getLearningResultTone({ isCorrect: record.isCorrect, aiHelpCount: record.aiHelpCount || 0 });
-    return `${tone.borderClass} ${tone.fillClass}`;
+    const tone = getLearningResultTone({
+      completed: record.completed,
+      isCorrect: record.isCorrect,
+      aiHelpCount: record.aiHelpCount || 0,
+      resultTier: record.resultTier,
+      helpTier: record.helpTier
+    });
+    return `${tone.borderClass} ${tone.fillClass} ${tone.ringClass}`;
+  };
+
+  const advanceToNextStep = (completedBlockId = '') => {
+    const completedIndex = blocks.findIndex((block) => block.id === completedBlockId);
+    if (completedBlockId && completedIndex !== currentIndex) return;
+
+    const sourceIndex = completedIndex >= 0 ? completedIndex : currentIndex;
+    if (sourceIndex < blocks.length - 1) {
+      setCurrentIndex(sourceIndex + 1);
+    } else {
+      setShowParagraphEnd(true);
+    }
   };
 
   const saveCurrentBlockBeforeNavigation = async () => {
@@ -250,6 +337,7 @@ export default function StudentLessonPage() {
   };
 
   const goNext = async () => {
+    if (showParagraphEnd) return;
     const isCurrentQuestion = currentBlock?.type === 'question';
     const currentCompleted = completedIds.has(currentBlock?.id);
 
@@ -261,17 +349,30 @@ export default function StudentLessonPage() {
 
     if (currentIndex < blocks.length - 1) {
       setCurrentIndex((index) => index + 1);
-    } else {
-      navigate('/');
+    } else if (paragraphEndPlan.kind !== 'in_progress') {
+      setShowParagraphEnd(true);
     }
   };
 
   const goPrev = () => {
+    if (showParagraphEnd) {
+      setShowParagraphEnd(false);
+      return;
+    }
     setCurrentIndex((index) => Math.max(0, index - 1));
   };
 
   const goToStep = async (nextIndex) => {
+    setShowParagraphEnd(false);
     if (nextIndex === currentIndex) return;
+
+    if (nextIndex > currentIndex) {
+      const hasIncompleteQuestionBeforeTarget = blocks
+        .slice(0, nextIndex)
+        .some((block) => block.type === 'question' && !completedIds.has(block.id));
+      if (hasIncompleteQuestionBeforeTarget) return;
+    }
+
     await saveCurrentBlockBeforeNavigation();
     setCurrentIndex(nextIndex);
   };
@@ -351,8 +452,11 @@ export default function StudentLessonPage() {
                 {blocks.map((block, index) => {
                   const record = getBlockProgressRecord(block.id);
                   const tone = getLearningResultTone({
+                    completed: Boolean(record?.completed),
                     isCorrect: Boolean(record?.isCorrect),
-                    aiHelpCount: record?.aiHelpCount || 0
+                    aiHelpCount: record?.aiHelpCount || 0,
+                    resultTier: record?.resultTier,
+                    helpTier: record?.helpTier
                   });
                   return (
                     <span
@@ -404,25 +508,42 @@ export default function StudentLessonPage() {
           </aside>
 
           <main className="helix-surface min-w-0 overflow-hidden">
-            <LessonBlockContent
-              key={getLessonBlockRenderKey(currentBlock)}
-              block={currentBlock}
-              step={currentIndex + 1}
-              totalSteps={blocks.length}
-              isCompleted={completedIds.has(currentBlock?.id)}
-              progressRecord={getBlockProgressRecord(currentBlock?.id)}
-              studentName={studentFirstName}
-              paragraaf={paragraaf}
-              hoofdstuk={hoofdstuk}
-              blocks={blocks}
-              progressRecords={progressRecords}
-              aiTutorMessages={aiTutorMessages}
-              onAiTutorMessagesChange={setAiTutorMessages}
-              onOpenSlidedeck={setActiveSlidedeck}
-              onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
-              onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
-            />
+            {showParagraphEnd ? (
+              <ParagraphEndActivity
+                plan={paragraphEndPlan}
+                activity={paragraphEndActivity}
+                paragraaf={paragraaf}
+                onBack={() => setShowParagraphEnd(false)}
+                onFinish={async (payload) => {
+                  if (payload) {
+                    await saveParagraphEndProgress(paragraphEndActivity, payload);
+                  }
+                  navigate('/');
+                }}
+              />
+            ) : (
+              <LessonBlockContent
+                key={getLessonBlockRenderKey(currentBlock)}
+                block={currentBlock}
+                step={currentIndex + 1}
+                totalSteps={blocks.length}
+                isCompleted={completedIds.has(currentBlock?.id)}
+                progressRecord={getBlockProgressRecord(currentBlock?.id)}
+                studentName={studentFirstName}
+                paragraaf={paragraaf}
+                hoofdstuk={hoofdstuk}
+                blocks={blocks}
+                progressRecords={progressRecords}
+                aiTutorMessages={aiTutorMessages}
+                onAiTutorMessagesChange={setAiTutorMessages}
+                onOpenSlidedeck={setActiveSlidedeck}
+                onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
+                onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
+                onAutoAdvance={advanceToNextStep}
+              />
+            )}
 
+            {!showParagraphEnd && (
             <footer className="flex flex-col gap-3 border-t border-[var(--helix-border)] bg-white/72 p-4 sm:flex-row sm:items-center sm:justify-between">
               <button
                 onClick={goPrev}
@@ -446,6 +567,7 @@ export default function StudentLessonPage() {
                 <ChevronRight size={18} />
               </button>
             </footer>
+            )}
           </main>
         </div>
       </div>
@@ -472,7 +594,8 @@ function LessonBlockContent({
   onAiTutorMessagesChange,
   onOpenSlidedeck,
   onSaveProgress,
-  onGameComplete
+  onGameComplete,
+  onAutoAdvance
 }) {
   const Icon = blockIcons[block?.type] || BookOpen;
   const content = block?.content || {};
@@ -523,10 +646,170 @@ function LessonBlockContent({
             aiTutorMessages={aiTutorMessages}
             onAiTutorMessagesChange={onAiTutorMessagesChange}
             onSaveProgress={onSaveProgress}
+            onAutoAdvance={onAutoAdvance}
           />
         ) : (
           <DefaultLearningBlock block={block} bodyHtml={bodyHtml} linkedVraag={linkedVraag} />
         )}
+      </div>
+    </article>
+  );
+}
+
+function ParagraphEndActivity({
+  plan,
+  activity,
+  paragraaf,
+  onBack,
+  onFinish
+}) {
+  const [answer, setAnswer] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const isChallenge = activity.assignmentKind === 'challenge';
+  const isRemediation = activity.assignmentKind === 'remediation';
+  const isTeacherReviewPending = plan.kind === 'teacher_review_pending';
+
+  const handleSubmit = async () => {
+    if (!isRemediation && !isChallenge) {
+      await onFinish?.(null);
+      return;
+    }
+
+    setSaving(true);
+    setFeedback('');
+
+    try {
+      const assessment = isChallenge
+        ? await assessOpenAnswerCall({
+            blockId: `paragraph-end-${paragraaf?.id || 'paragraph'}-challenge`,
+            questionTitle: activity.title || 'Uitdaging',
+            questionPrompt: [
+              activity.explanation,
+              ...(activity.tasks || []).map((task) => task.prompt)
+            ].filter(Boolean).join('\n'),
+            modelAnswer: 'De leerling gebruikt de kernvaardigheid uit de paragraaf in een nieuwe situatie en licht de aanpak begrijpelijk toe.',
+            studentAnswer: answer
+          })
+        : {
+            success: true,
+            isCorrect: true,
+            feedback: 'Herstelopdracht afgerond.'
+          };
+
+      const safeFeedback = sanitizeOpenAnswerAssessmentFeedback(
+        assessment?.feedback ||
+        assessment?.error ||
+        'Je werk is opgeslagen. Als Digidocent dit niet kon beoordelen, kan je docent meekijken.'
+      );
+      setFeedback(safeFeedback);
+
+      const payload = buildParagraphEndProgressPayload({
+        activity,
+        answer,
+        assessment: {
+          ...assessment,
+          feedback: safeFeedback
+        }
+      });
+
+      await onFinish?.(payload);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isTeacherReviewPending) {
+    return (
+      <article className="min-h-[32rem] p-5 sm:p-8">
+        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+          <p className="helix-eyebrow text-amber-700">Docentbeoordeling</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold text-[var(--helix-navy)]">
+            Je docent kijkt nog mee
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm font-semibold leading-6">
+            Een open vraag kon niet betrouwbaar door Digidocent worden beoordeeld. Je hoeft daardoor niet vast te lopen; je docent ziet deze vraag als amber.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button type="button" className="btn-secondary px-5 py-3 text-sm" onClick={onBack}>
+              Terug naar les
+            </button>
+            <button type="button" className="btn-primary px-5 py-3 text-sm" onClick={() => onFinish?.(null)}>
+              Naar overzicht
+            </button>
+          </div>
+        </div>
+      </article>
+    );
+  }
+
+  if (!activity.required) {
+    return (
+      <article className="min-h-[32rem] p-5 sm:p-8">
+        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+          <h2 className="font-display text-3xl font-extrabold text-[var(--helix-navy)]">Paragraaf afgerond</h2>
+          <p className="mt-3 text-sm font-semibold text-[var(--helix-muted)]">
+            Je voortgang is opgeslagen.
+          </p>
+          <button type="button" className="btn-primary mt-6 px-5 py-3 text-sm" onClick={() => onFinish?.(null)}>
+            Naar overzicht
+          </button>
+        </div>
+      </article>
+    );
+  }
+
+  return (
+    <article className="min-h-[32rem] p-5 sm:p-8">
+      <div className="space-y-6">
+        <div>
+          <p className="helix-eyebrow">{isChallenge ? 'Uitdaging' : 'Herstel'}</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold text-[var(--helix-navy)]">
+            {activity.title}
+          </h2>
+          <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+            {activity.explanation}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {(activity.tasks || []).map((task, index) => (
+            <div key={`${task.title}-${index}`} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+              <p className="text-xs font-black uppercase tracking-widest text-[var(--helix-purple)]">
+                Opdracht {index + 1}
+              </p>
+              <h3 className="mt-1 font-display text-lg font-extrabold text-[var(--helix-navy)]">{task.title}</h3>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">{task.prompt}</p>
+            </div>
+          ))}
+        </div>
+
+        {feedback && (
+          <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-bold text-violet-950">
+            {feedback}
+          </div>
+        )}
+
+        <textarea
+          value={answer}
+          onChange={(event) => setAnswer(event.target.value)}
+          className="input-standard min-h-36 w-full resize-y leading-6"
+          placeholder={isChallenge ? 'Werk je uitdaging uit...' : 'Werk je herstelopdracht uit...'}
+        />
+
+        <div className="flex flex-wrap justify-between gap-3 border-t border-[var(--helix-border)] pt-4">
+          <button type="button" className="btn-secondary px-5 py-3 text-sm" onClick={onBack} disabled={saving}>
+            Terug
+          </button>
+          <button
+            type="button"
+            className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={handleSubmit}
+            disabled={saving || !String(answer || '').trim()}
+          >
+            {saving ? (isChallenge ? 'Digidocent beoordeelt...' : 'Opslaan...') : (isChallenge ? 'Lever uitdaging in' : 'Rond herstel af')}
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -1009,20 +1292,28 @@ function QuestionLearningBlock({
   progressRecords = [],
   aiTutorMessages = [],
   onAiTutorMessagesChange,
-  onSaveProgress
+  onSaveProgress,
+  onAutoAdvance
 }) {
   const preview = buildQuestionPreviewModel(linkedVraag || {});
+  const savedAssessment = isAssessmentForAnswer(
+    progressRecord?.openAnswerAssessment,
+    progressRecord?.lastAnswer || {}
+  ) ? progressRecord.openAnswerAssessment : null;
   const [previewAnswers, setPreviewAnswers] = useState(progressRecord?.lastAnswer || {});
   const [attempts, setAttempts] = useState(progressRecord?.attempts || 0);
-  const [submitted, setSubmitted] = useState(Boolean(progressRecord?.completed));
+  const [resultTier, setResultTier] = useState(progressRecord?.resultTier || '');
+  const [attemptStatus, setAttemptStatus] = useState(progressRecord?.attemptStatus || (progressRecord?.completed ? 'completed' : 'open'));
+  const [submitted, setSubmitted] = useState(Boolean(progressRecord?.completed && progressRecord?.attemptStatus !== 'pending_teacher_review'));
   const [saving, setSaving] = useState(false);
   const [showAiTutor, setShowAiTutor] = useState(false);
   const [aiHelpCount, setAiHelpCount] = useState(progressRecord?.aiHelpCount || 0);
   const [assessmentFeedback, setAssessmentFeedback] = useState(
-    sanitizeOpenAnswerAssessmentFeedback(progressRecord?.openAnswerAssessment?.feedback || '')
+    sanitizeOpenAnswerAssessmentFeedback(savedAssessment?.feedback || '')
   );
-  const [assessmentMissing, setAssessmentMissing] = useState(progressRecord?.openAnswerAssessment?.missing || []);
+  const [assessmentMissing, setAssessmentMissing] = useState(savedAssessment?.missing || []);
   const onSaveProgressRef = useRef(onSaveProgress);
+  const autoAdvanceTimeoutRef = useRef(null);
   const initialDraftSignature = JSON.stringify({
     previewAnswers: progressRecord?.lastAnswer || {},
     aiHelpCount: progressRecord?.aiHelpCount || 0,
@@ -1030,18 +1321,26 @@ function QuestionLearningBlock({
   });
   const lastDraftSignatureRef = useRef(initialDraftSignature);
   const resultTone = getLearningResultTone({
-    isCorrect: submitted,
-    aiHelpCount
+    completed: submitted || resultTier === 'failed' || resultTier === 'pending_teacher_review',
+    isCorrect: submitted || resultTier === 'independent' || resultTier === 'guided',
+    aiHelpCount,
+    resultTier
   });
 
   const setPreviewAnswer = (fieldId, value) => {
     if (submitted) return;
+    setAssessmentFeedback('');
+    setAssessmentMissing([]);
+    if (resultTier === 'pending_teacher_review') {
+      setResultTier('in_progress');
+      setAttemptStatus('open');
+    }
     setPreviewAnswers((current) => ({ ...current, [fieldId]: value }));
   };
   const mathTools = normalizeMathToolWork(previewAnswers.mathTools);
   const hasMathToolInput = hasFilledMathToolWork(mathTools);
   const allowMathToolbox = Boolean(block?.settings?.allowMathToolbox);
-  const allowAiHelp = Boolean(block?.settings?.allowAiHelp);
+  const allowAiHelp = block?.type === 'question' && block?.settings?.allowAiHelp !== false;
   const setMathTools = (nextTools) => setPreviewAnswer('mathTools', normalizeMathToolWork(nextTools));
   const insertMathTool = (type) => setMathTools([...mathTools, createMathToolWork(type)]);
   const updateMathTool = (toolId, nextTool) => setMathTools(mathTools.map((tool) => (tool.id === toolId ? nextTool : tool)));
@@ -1052,6 +1351,12 @@ function QuestionLearningBlock({
   useEffect(() => {
     onSaveProgressRef.current = onSaveProgress;
   }, [onSaveProgress]);
+
+  useEffect(() => () => {
+    if (autoAdvanceTimeoutRef.current) {
+      window.clearTimeout(autoAdvanceTimeoutRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (submitted || saving) return undefined;
@@ -1122,56 +1427,154 @@ function QuestionLearningBlock({
     setAssessmentFeedback('');
     setAssessmentMissing([]);
     const isOpenQuestion = preview.type === 'open';
-    const nextAttempts = attempts + 1;
-    setAttempts(nextAttempts);
     setSaving(true);
+    const answerSnapshot = {
+      ...previewAnswers,
+      ...(hasFilledMathToolWork(previewAnswers.mathTools)
+        ? { mathTools: normalizeMathToolWork(previewAnswers.mathTools) }
+        : {})
+    };
+    const answerSignature = buildAnswerSignature(answerSnapshot);
     const openStudentAnswer = [
       String(previewAnswers.openAnswer || '').trim(),
       hasFilledMathToolWork(previewAnswers.mathTools) ? getMathToolSummary(previewAnswers.mathTools) : ''
     ].filter(Boolean).join('\n\n');
 
     try {
-      const assessment = isOpenQuestion
-        ? await assessOpenAnswerCall({
+      let assessment = null;
+      if (isOpenQuestion) {
+        try {
+          assessment = await assessOpenAnswerCall({
             blockId: block.id,
             questionTitle: linkedVraag?.title || block.title || 'Open vraag',
             questionPrompt: linkedVraag?.content?.text || bodyHtml || '',
             modelAnswer: linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
             studentAnswer: openStudentAnswer
-          })
-        : null;
+          });
+        } catch {
+          assessment = {
+            success: false,
+            error: 'Digidocent kon je antwoord niet beoordelen.'
+          };
+        }
+      }
+      const aiAssessmentFailed = isOpenQuestion && !assessment?.success;
       const isCorrect = isOpenQuestion
         ? Boolean(assessment?.success && assessment.isCorrect)
         : getQuestionCorrectStatus();
+      const outcome = buildQuestionAttemptOutcome({
+        currentAttempts: attempts,
+        isCorrect,
+        aiAssessmentFailed,
+        aiHelpCount
+      });
       const openAnswerAssessment = isOpenQuestion
         ? {
             isCorrect,
+            success: Boolean(assessment?.success),
             feedback: sanitizeOpenAnswerAssessmentFeedback(
-              assessment?.feedback || assessment?.error || 'Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.'
+              aiAssessmentFailed
+                ? 'Je antwoord is opgeslagen. Digidocent kon dit nu niet beoordelen, dus je docent kan meekijken. Je kunt verder met de les.'
+                : assessment?.feedback || 'Kijk nog eens naar je eigen stappen. Welke tussenstap kun je controleren?'
             ),
-            missing: Array.isArray(assessment?.missing) ? assessment.missing : []
+            missing: Array.isArray(assessment?.missing) ? assessment.missing : [],
+            answerSignature
           }
         : null;
-      const metadata = buildLearningResultMetadata({ isCorrect, aiHelpCount });
+      let feedbackText = openAnswerAssessment?.feedback || '';
+      let missingItems = openAnswerAssessment?.missing || [];
 
-      if (isOpenQuestion && openAnswerAssessment.feedback) {
-        setAssessmentFeedback(openAnswerAssessment.feedback);
-        setAssessmentMissing(openAnswerAssessment.missing);
+      if (!isOpenQuestion && !isCorrect && !outcome.completed) {
+        const hint = await askAiTutorCall(
+          `Geef een korte socratische hint voor poging ${outcome.attempts} van ${outcome.maxAttempts}. Geef niet het antwoord, maar stuur naar de volgende denkstap.`,
+          linkedVraag?.title || block.title || 'Vraag',
+          [],
+          linkedVraag?.antwoord?.hints || [],
+          studentAnswerSummary,
+          block.id,
+          lessonContext
+        );
+        feedbackText = sanitizeOpenAnswerAssessmentFeedback(
+          hint?.success && hint?.content
+            ? hint.content
+            : 'Kijk nog eens naar wat er gevraagd wordt. Welke stap kun je controleren voordat je opnieuw probeert?'
+        );
       }
-      setSubmitted(isCorrect);
 
-      await onSaveProgress?.(isCorrect, {
-        completed: isCorrect,
-        isCorrect,
-        attempts: nextAttempts,
-        lastAnswer: previewAnswers,
+      if (outcome.resultTier === 'failed') {
+        feedbackText = 'Deze vraag wordt geparkeerd voor herstel. Je gaat zo door; aan het einde krijg je gerichte oefening bij dit onderdeel.';
+        missingItems = [];
+      }
+
+      if (outcome.resultTier === 'independent' || outcome.resultTier === 'guided') {
+        feedbackText = 'Goed gewerkt. Je gaat zo automatisch door.';
+        missingItems = [];
+      }
+
+      const metadata = buildLearningResultMetadata({
+        completed: outcome.completed,
+        isCorrect: outcome.isCorrect,
+        aiHelpCount,
+        resultTier: outcome.resultTier
+      });
+
+      if (feedbackText) {
+        setAssessmentFeedback(feedbackText);
+        setAssessmentMissing(missingItems);
+      }
+      setAttempts(outcome.attempts);
+      setResultTier(outcome.resultTier);
+      setAttemptStatus(outcome.attemptStatus);
+      setSubmitted(outcome.completed && outcome.attemptStatus !== 'pending_teacher_review');
+
+      await onSaveProgress?.(outcome.completed, {
+        completed: outcome.completed,
+        isCorrect: outcome.isCorrect,
+        attempts: outcome.attempts,
+        maxAttempts: outcome.maxAttempts,
+        resultTier: outcome.resultTier,
+        attemptStatus: outcome.attemptStatus,
+        completionReason: outcome.completionReason,
+        teacherSignal: outcome.teacherSignal,
+        lastAnswer: answerSnapshot,
         blockTitle: block.title || linkedVraag?.title || 'Vraag',
         blockType: block.type || 'question',
         vraagTitle: linkedVraag?.title || '',
         vraagType: preview.type || linkedVraag?.type || '',
-        ...(openAnswerAssessment ? { openAnswerAssessment } : {}),
+        ...(openAnswerAssessment ? {
+          openAnswerAssessment: {
+            ...openAnswerAssessment,
+            feedback: feedbackText || openAnswerAssessment.feedback,
+            missing: missingItems
+          },
+          lastAssessment: {
+            source: aiAssessmentFailed ? 'ai' : 'ai',
+            status: aiAssessmentFailed ? 'failed_to_assess' : (isCorrect ? 'correct' : 'incorrect'),
+            feedback: feedbackText || openAnswerAssessment.feedback,
+            missing: missingItems,
+            answerSignature
+          }
+        } : {
+          lastAssessment: {
+            source: 'local',
+            status: isCorrect ? 'correct' : 'incorrect',
+            feedback: feedbackText,
+            missing: [],
+            answerSignature
+          }
+        }),
         ...metadata
       });
+
+      if (outcome.shouldAutoAdvance) {
+        if (autoAdvanceTimeoutRef.current) {
+          window.clearTimeout(autoAdvanceTimeoutRef.current);
+        }
+        autoAdvanceTimeoutRef.current = window.setTimeout(
+          () => onAutoAdvance?.(block.id),
+          outcome.resultTier === 'pending_teacher_review' ? 1400 : 1200
+        );
+      }
     } finally {
       setSaving(false);
     }
@@ -1181,11 +1584,19 @@ function QuestionLearningBlock({
     if (submitted) return;
     const nextAiHelpCount = aiHelpCount + 1;
     setAiHelpCount(nextAiHelpCount);
-    const metadata = buildLearningResultMetadata({ isCorrect: submitted, aiHelpCount: nextAiHelpCount });
+    const metadata = buildLearningResultMetadata({
+      completed: submitted,
+      isCorrect: submitted,
+      aiHelpCount: nextAiHelpCount,
+      resultTier
+    });
     await onSaveProgress?.(submitted, {
       completed: submitted,
       isCorrect: submitted,
       attempts,
+      maxAttempts: MAX_CORE_QUESTION_ATTEMPTS,
+      resultTier,
+      attemptStatus,
       lastAnswer: previewAnswers,
       blockTitle: block.title || linkedVraag?.title || 'Vraag',
       blockType: block.type || 'question',
@@ -1261,16 +1672,20 @@ function QuestionLearningBlock({
     <div className="space-y-6">
       <div className="space-y-6">
         {submitted && (
-          <div className={`rounded-2xl border-2 ${resultTone.borderClass} ${resultTone.fillClass} px-4 py-3 text-sm font-black text-[var(--helix-navy)]`}>
+          <div className={`rounded-2xl border-2 ${resultTone.borderClass} ${resultTone.fillClass} ${resultTone.ringClass} px-4 py-3 text-sm font-black text-[var(--helix-navy)]`}>
             {resultTone.label}
           </div>
         )}
 
         {assessmentFeedback && (
           <div className={`rounded-2xl border-2 px-4 py-3 text-sm font-bold ${
-            submitted
+            resultTier === 'pending_teacher_review'
+              ? 'border-amber-200 bg-amber-50 text-amber-950'
+              : resultTier === 'failed'
+                ? 'border-red-200 bg-red-50 text-red-950'
+                : submitted
               ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-              : 'border-amber-200 bg-amber-50 text-amber-950'
+              : 'border-violet-200 bg-violet-50 text-violet-950'
           }`}>
             <p>{assessmentFeedback}</p>
             {assessmentMissing.length > 0 && (
@@ -1460,7 +1875,7 @@ function QuestionLearningBlock({
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--helix-border)] pt-4">
           <p className="text-sm font-bold text-[var(--helix-muted)]">
-            {attempts > 0 ? `${attempts} poging${attempts === 1 ? '' : 'en'} opgeslagen` : 'Nog geen poging opgeslagen'}
+            {attempts > 0 ? `Poging ${attempts} van ${MAX_CORE_QUESTION_ATTEMPTS}` : `Nog geen poging gedaan · max ${MAX_CORE_QUESTION_ATTEMPTS}`}
           </p>
           <button
             type="button"

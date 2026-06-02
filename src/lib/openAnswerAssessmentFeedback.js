@@ -8,3 +8,17 @@ export const sanitizeOpenAnswerAssessmentFeedback = (feedback = '') => {
   if (!text) return '';
   return rawJsonErrorPattern.test(text) ? OPEN_ANSWER_ASSESSMENT_FALLBACK : text;
 };
+
+export const buildAnswerSignature = (answer = {}) => {
+  const normalized = JSON.stringify(answer || {}, Object.keys(answer || {}).sort());
+  let hash = 0;
+  for (let index = 0; index < normalized.length; index += 1) {
+    hash = ((hash << 5) - hash + normalized.charCodeAt(index)) | 0;
+  }
+  return `${normalized.length}:${Math.abs(hash)}`;
+};
+
+export const isAssessmentForAnswer = (assessment = null, answer = {}) => {
+  if (!assessment?.answerSignature) return false;
+  return assessment.answerSignature === buildAnswerSignature(answer);
+};
