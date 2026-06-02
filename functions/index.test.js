@@ -854,6 +854,54 @@ test("askAiTutor turns wrong arithmetic operations into a concrete Socratic hint
   assert.doesNotMatch(result.content, /\b2\b/);
 });
 
+test("askAiTutor turns generic fallback output into a concrete percent-context hint", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Kevin", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/block-1": { settings: { allowAiHelp: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "google/gemini-2.0-flash-001",
+    },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: {
+      message: "klopt mijn antwoord?",
+      contextHeading: "Vraag 1",
+      blockId: "block-1",
+      previousMessages: [],
+      studentAnswer: [
+        "Vraagtype: open",
+        "Vraag: Hoeveel procent is 20% van 250?",
+        "Leerlingpoging: {\"openAnswer\":\"dus 50%\"}",
+      ].join("\n"),
+      lessonContext: [
+        "Paragraaf: 1.1 test par1",
+        "Vraagtekst op scherm: Hoeveel procent is 20% van 250?",
+        "Antwoord of aanpak: dus 50%",
+        "Feedback op huidige poging: Je antwoord mist nog een berekening en een passende eenheid."
+      ].join("\n"),
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: "Kevin, ik kan nu geen goede hint maken." } }] }),
+    }),
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(result.helpCounted, true);
+  assert.match(result.content, /Kevin/);
+  assert.match(result.content, /20% van 250/);
+  assert.match(result.content, /berekening/i);
+  assert.match(result.content, /eenheid|percentage|hoeveelheid/i);
+  assert.doesNotMatch(result.content, /ik kan nu geen goede hint maken/i);
+});
+
 test("askAiTutor returns readable math text instead of LaTeX syntax", async () => {
   const db = createDb({
     "users/student-1": { role: "student", firstName: "Destiny", klasId: "klas-1" },

@@ -437,7 +437,34 @@ function isCompleteAiTutorSentence(content = "") {
   return !/(?:,\s*|\b(?:en|of|om|als|want|maar|dat|die|kun je|kun jij|met))$/iu.test(text);
 }
 
-function buildAiTutorFallbackHint({ firstName = "leerling", studentAnswer = "" } = {}) {
+function extractAiTutorOpenAnswer(studentAnswer = "") {
+  const attemptMatch = String(studentAnswer || "").match(/Leerlingpoging:\s*(\{.*\})/isu);
+  if (!attemptMatch) return "";
+
+  try {
+    const parsed = JSON.parse(attemptMatch[1]);
+    return String(parsed.openAnswer || parsed.expectedValue || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function buildAiTutorPercentFallbackHint({ firstName = "leerling", studentAnswer = "", lessonContext = "" } = {}) {
+  const contextText = normalizeReadableMathText(`${studentAnswer}\n${lessonContext}`);
+  const percentQuestion = contextText.match(/\b\d+(?:[,.]\d+)?\s*%\s+van\s+\d+(?:[,.]\d+)?\b/iu)?.[0] || "";
+  if (!percentQuestion) return "";
+
+  const openAnswer = extractAiTutorOpenAnswer(studentAnswer);
+  const answerPart = openAnswer ? ` Je schreef "${openAnswer}".` : "";
+  return `${firstName}, kijk nog eens naar "${percentQuestion}".${answerPart} Vraagt de opdracht om een percentage of om een hoeveelheid, en welke berekening laat dat zien?`;
+}
+
+function buildAiTutorFallbackHint({ firstName = "leerling", studentAnswer = "", lessonContext = "" } = {}) {
+  const percentHint = buildAiTutorPercentFallbackHint({ firstName, studentAnswer, lessonContext });
+  if (percentHint) {
+    return percentHint;
+  }
+
   const diagnosis = buildAiTutorMistakeDiagnosis({ studentAnswer });
   if (diagnosis?.hintText) {
     return `${firstName}, ${diagnosis.hintText}`;
@@ -920,7 +947,7 @@ async function askAiTutorCore({
   const responseData = await response.json();
   return {
     success: true,
-    content: normalizeAiTutorContent(responseData.choices?.[0]?.message?.content, { firstName, studentAnswer }),
+    content: normalizeAiTutorContent(responseData.choices?.[0]?.message?.content, { firstName, studentAnswer, lessonContext }),
     helpCounted: true,
   };
 }
