@@ -13,7 +13,9 @@ export default function AITutorChat({
   lessonContext = '',
   messages,
   onMessagesChange,
-  onUserMessageSent
+  onUserMessageSent,
+  draftInput,
+  onDraftInputChange
 }) {
   const initialMessages = [
     {
@@ -24,7 +26,9 @@ export default function AITutorChat({
   const hasControlledMessages = Array.isArray(messages);
   const [localMessages, setLocalMessages] = useState(initialMessages);
   const chatMessages = hasControlledMessages && messages.length ? messages : localMessages;
-  const [input, setInput] = useState('');
+  const hasControlledDraftInput = typeof draftInput === 'string';
+  const [localInput, setLocalInput] = useState('');
+  const input = hasControlledDraftInput ? draftInput : localInput;
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -40,6 +44,14 @@ export default function AITutorChat({
     }
   };
 
+  const commitInput = (nextInput) => {
+    if (hasControlledDraftInput) {
+      onDraftInputChange?.(nextInput);
+    } else {
+      setLocalInput(nextInput);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -47,7 +59,7 @@ export default function AITutorChat({
     const userMsg = { role: 'user', content: input.trim() };
     const currentMessages = [...chatMessages, userMsg];
     commitMessages(currentMessages);
-    setInput('');
+    commitInput('');
     setIsLoading(true);
 
     try {
@@ -125,7 +137,7 @@ export default function AITutorChat({
         <input
           type="text"
           value={input}
-          onChange={(event) => setInput(event.target.value)}
+          onChange={(event) => commitInput(event.target.value)}
           placeholder="Stel een vraag aan Digidocent..."
           className="flex-1 rounded-xl border border-slate-300 px-4 py-2 outline-none focus:border-[var(--helix-purple)]"
           disabled={isLoading}

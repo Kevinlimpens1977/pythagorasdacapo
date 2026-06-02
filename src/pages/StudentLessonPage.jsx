@@ -36,6 +36,7 @@ import {
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
 import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
 import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
+import { shouldCollapseAiTutorOnMouseLeave } from '../lib/aiTutorPanelState';
 import {
   buildAnswerSignature,
   isAssessmentForAnswer,
@@ -208,10 +209,20 @@ export default function StudentLessonPage() {
     return `helix:digidocent:${currentUser.uid}:${paragraafId}:${currentBlock.id}`;
   }, [currentBlock?.id, currentUser?.uid, paragraafId]);
   const [aiTutorMessages, setAiTutorMessages] = useState([]);
+  const [aiTutorDraftInputs, setAiTutorDraftInputs] = useState({});
+  const aiTutorDraftInput = aiTutorStorageKey ? aiTutorDraftInputs[aiTutorStorageKey] || '' : '';
   const studentFirstName = useMemo(() => {
     const rawName = userData?.firstName || userData?.displayName || currentUser?.displayName || currentUser?.email || 'leerling';
     return String(rawName).split(/[ @.]/).find(Boolean) || 'leerling';
   }, [currentUser?.displayName, currentUser?.email, userData?.displayName, userData?.firstName]);
+
+  const setCurrentAiTutorDraftInput = (nextInput) => {
+    if (!aiTutorStorageKey) return;
+    setAiTutorDraftInputs((current) => ({
+      ...current,
+      [aiTutorStorageKey]: nextInput
+    }));
+  };
 
   const saveBlockProgress = async (block, completed = true, extra = {}) => {
     const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
@@ -559,7 +570,9 @@ export default function StudentLessonPage() {
                 blocks={blocks}
                 progressRecords={progressRecords}
                 aiTutorMessages={aiTutorMessages}
+                aiTutorDraftInput={aiTutorDraftInput}
                 onAiTutorMessagesChange={setAiTutorMessages}
+                onAiTutorDraftInputChange={setCurrentAiTutorDraftInput}
                 onOpenSlidedeck={setActiveSlidedeck}
                 onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
                 onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
@@ -615,7 +628,9 @@ function LessonBlockContent({
   blocks,
   progressRecords,
   aiTutorMessages,
+  aiTutorDraftInput,
   onAiTutorMessagesChange,
+  onAiTutorDraftInputChange,
   onOpenSlidedeck,
   onSaveProgress,
   onGameComplete,
@@ -668,7 +683,9 @@ function LessonBlockContent({
             blocks={blocks}
             progressRecords={progressRecords}
             aiTutorMessages={aiTutorMessages}
+            aiTutorDraftInput={aiTutorDraftInput}
             onAiTutorMessagesChange={onAiTutorMessagesChange}
+            onAiTutorDraftInputChange={onAiTutorDraftInputChange}
             onSaveProgress={onSaveProgress}
             onAutoAdvance={onAutoAdvance}
           />
@@ -1315,7 +1332,9 @@ function QuestionLearningBlock({
   blocks = [],
   progressRecords = [],
   aiTutorMessages = [],
+  aiTutorDraftInput = '',
   onAiTutorMessagesChange,
+  onAiTutorDraftInputChange,
   onSaveProgress,
   onAutoAdvance
 }) {
@@ -1943,7 +1962,11 @@ function QuestionLearningBlock({
             showAiTutor ? 'translate-x-0' : 'translate-x-[calc(100%-3.25rem)]'
           ].join(' ')}
           onMouseEnter={() => setShowAiTutor(true)}
-          onMouseLeave={() => setShowAiTutor(false)}
+          onMouseLeave={() => {
+            if (shouldCollapseAiTutorOnMouseLeave({ draftInput: aiTutorDraftInput })) {
+              setShowAiTutor(false);
+            }
+          }}
         >
           <button
             type="button"
@@ -1980,6 +2003,8 @@ function QuestionLearningBlock({
                 lessonContext={lessonContext}
                 messages={aiTutorMessages}
                 onMessagesChange={onAiTutorMessagesChange}
+                draftInput={aiTutorDraftInput}
+                onDraftInputChange={onAiTutorDraftInputChange}
                 onUserMessageSent={handleAiQuestionSent}
                 onClose={() => setShowAiTutor(false)}
               />
