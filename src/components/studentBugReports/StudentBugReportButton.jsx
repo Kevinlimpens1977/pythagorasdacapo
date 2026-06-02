@@ -13,6 +13,11 @@ import {
   getRecentStudentBugReportTimestamps
 } from '../../services/studentBugReportService';
 import { useStudentBugReportContext } from './StudentBugReportContext';
+import {
+  STUDENT_BUG_REPORT_DIALOG_BODY_CLASS,
+  STUDENT_BUG_REPORT_DIALOG_FORM_CLASS,
+  STUDENT_BUG_REPORT_DIALOG_OVERLAY_CLASS
+} from '../../lib/studentBugReportDialogLayout';
 
 const getLocalRateLimitKey = (uid = '') => `helix:studentBugReports:${uid}`;
 
@@ -128,8 +133,8 @@ export default function StudentBugReportButton() {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
-          <form onSubmit={handleSubmit} className="w-full max-w-xl overflow-hidden rounded-3xl border border-[var(--helix-border)] bg-white shadow-2xl">
+        <div className={STUDENT_BUG_REPORT_DIALOG_OVERLAY_CLASS}>
+          <form onSubmit={handleSubmit} className={STUDENT_BUG_REPORT_DIALOG_FORM_CLASS}>
             <div className="flex items-start justify-between gap-4 border-b border-[var(--helix-border)] p-5">
               <div className="flex items-start gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
@@ -152,7 +157,7 @@ export default function StudentBugReportButton() {
               </button>
             </div>
 
-            <div className="space-y-4 p-5">
+            <div className={STUDENT_BUG_REPORT_DIALOG_BODY_CLASS}>
               <label className="block">
                 <span className="mb-2 block text-sm font-black text-[var(--helix-navy)]">Soort fout</span>
                 <select
