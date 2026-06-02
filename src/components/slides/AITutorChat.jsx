@@ -53,7 +53,7 @@ export default function AITutorChat({
         ...current,
         {
           role: 'assistant',
-          content: 'Oeps, er ging iets mis met het bereiken van P-AI-co. Probeer het later nog eens.'
+          content: 'Oeps, er ging iets mis met het bereiken van Digidocent. Probeer het later nog eens.'
         }
       ]);
     } finally {
@@ -66,12 +66,12 @@ export default function AITutorChat({
       <div className="flex items-center justify-between bg-[var(--helix-navy)] p-4 text-white">
         <div className="flex items-center gap-2">
           <Bot size={24} />
-          <h3 className="text-lg font-semibold">P-AI-co</h3>
+          <h3 className="text-lg font-semibold">Digidocent</h3>
         </div>
         <button
           onClick={onClose}
           className="rounded-full p-1 transition-colors hover:bg-white/10"
-          title="Sluit P-AI-co"
+          title="Sluit Digidocent"
         >
           <X size={20} />
         </button>
@@ -112,7 +112,7 @@ export default function AITutorChat({
           type="text"
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Stel een vraag aan P-AI-co..."
+          placeholder="Stel een vraag aan Digidocent..."
           className="flex-1 rounded-xl border border-slate-300 px-4 py-2 outline-none focus:border-[var(--helix-purple)]"
           disabled={isLoading}
         />

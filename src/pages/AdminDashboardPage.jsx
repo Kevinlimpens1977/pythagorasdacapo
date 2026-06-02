@@ -143,7 +143,7 @@ const workflowGroups = [
         tone: 'text-emerald-600 bg-emerald-50'
       },
       {
-        title: 'P-AI-co instellingen',
+        title: 'Digidocent instellingen',
         description: 'Beheer OpenRouter-key, model en globale AI-hulp.',
         actionLabel: 'Open AI-beheer',
         icon: Bot,

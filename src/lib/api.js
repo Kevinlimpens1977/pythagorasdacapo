@@ -15,8 +15,8 @@ export const askAiTutorCall = async (message, contextHeading, previousMessages, 
     const result = await askTutor({ message, contextHeading, previousMessages, hints, studentAnswer, blockId });
     return result.data;
   } catch (error) {
-    console.error("AI Tutor API Error:", error);
-    return { success: false, error: "Er is een fout opgetreden bij het verbinden met de tutor." };
+    console.error("Digidocent API Error:", error);
+    return { success: false, error: "Er is een fout opgetreden bij het verbinden met Digidocent." };
   }
 };
 
@@ -39,7 +39,7 @@ export const assessOpenAnswerCall = async ({
     return result.data;
   } catch (error) {
     console.error('Open answer assessment error:', error);
-    return { success: false, error: 'P-AI-co kon je antwoord niet beoordelen.' };
+    return { success: false, error: 'Digidocent kon je antwoord niet beoordelen.' };
   }
 };
 

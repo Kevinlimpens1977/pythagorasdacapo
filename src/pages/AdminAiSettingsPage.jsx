@@ -12,7 +12,7 @@ const AI_MODEL_OPTIONS = [
   {
     id: 'google/gemini-2.0-flash-001',
     label: 'Gemini 2.0 Flash',
-    description: 'Stabiel en snel voor P-AI-co hulp en open-vraagbeoordeling.'
+    description: 'Stabiel en snel voor Digidocent hulp en open-vraagbeoordeling.'
   },
   {
     id: 'gemini-3.5-flash',
@@ -102,10 +102,10 @@ export default function AdminAiSettingsPage() {
       setMasterRules(nextRules.masterRules || '');
       setVmboRules(nextRules.vmboRules || '');
       setAdminRules(nextRules.adminRules || '');
-      setMessage('AI Tutor regels opgeslagen. Deze regels worden bij iedere P-AI-co interactie meegestuurd.');
+      setMessage('Digidocent regels opgeslagen. Deze regels worden bij iedere Digidocent interactie meegestuurd.');
     } catch (saveError) {
-      console.error('AI Tutor regels opslaan mislukt:', saveError);
-      setError(saveError.message || 'AI Tutor regels opslaan is mislukt.');
+      console.error('Digidocent regels opslaan mislukt:', saveError);
+      setError(saveError.message || 'Digidocent regels opslaan is mislukt.');
     } finally {
       setSavingRules(false);
     }
@@ -127,7 +127,7 @@ export default function AdminAiSettingsPage() {
       <div className="helix-container max-w-5xl">
         <div className="mb-8">
           <p className="helix-eyebrow">Beheer</p>
-          <h1 className="mt-2 font-display text-4xl font-extrabold text-[var(--helix-navy)]">P-AI-co instellingen</h1>
+          <h1 className="mt-2 font-display text-4xl font-extrabold text-[var(--helix-navy)]">Digidocent instellingen</h1>
           <p className="mt-3 max-w-2xl text-[var(--helix-muted)]">
             Stel hier de OpenRouter-koppeling in. De API-key wordt server-side opgeslagen en nooit volledig teruggestuurd naar de browser.
           </p>
@@ -154,7 +154,7 @@ export default function AdminAiSettingsPage() {
                 className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)]"
               />
               <span>
-                <span className="block font-black text-[var(--helix-navy)]">P-AI-co globaal inschakelen</span>
+                <span className="block font-black text-[var(--helix-navy)]">Digidocent globaal inschakelen</span>
                 <span className="mt-1 block text-sm text-[var(--helix-muted)]">
                   Per klas en per lesblok blijft daarnaast bepaald of leerlingen de knop zien.
                 </span>
@@ -250,10 +250,10 @@ export default function AdminAiSettingsPage() {
 
         <section className="helix-surface mt-6 p-6">
           <div className="mb-5">
-            <p className="helix-eyebrow">AI Tutor Beheer</p>
-            <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">AI Tutor regels</h2>
+            <p className="helix-eyebrow">Digidocent Beheer</p>
+            <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">Digidocent regels</h2>
             <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
-              Deze regels worden altijd meegegeven aan de AI-tutor voordat hij leerlingen helpt.
+              Deze regels worden altijd meegegeven aan Digidocent voordat hij leerlingen helpt.
             </p>
           </div>
 
@@ -264,7 +264,7 @@ export default function AdminAiSettingsPage() {
                 value={adminRules}
                 onChange={(event) => setAdminRules(event.target.value)}
                 className="input-standard min-h-44 w-full resize-y leading-6"
-                placeholder="Voeg hier schoolspecifieke of docentafspraken toe die P-AI-co altijd moet volgen."
+                placeholder="Voeg hier schoolspecifieke of docentafspraken toe die Digidocent altijd moet volgen."
               />
             </label>
 
@@ -292,7 +292,7 @@ export default function AdminAiSettingsPage() {
 
             <button type="button" onClick={handleSaveRules} disabled={savingRules} className="btn-primary w-fit px-5 py-3 text-sm disabled:cursor-wait disabled:opacity-60">
               {savingRules ? <Loader2 size={17} className="animate-spin" /> : <Save size={17} />}
-              AI Tutor regels opslaan
+              Digidocent regels opslaan
             </button>
           </div>
         </section>

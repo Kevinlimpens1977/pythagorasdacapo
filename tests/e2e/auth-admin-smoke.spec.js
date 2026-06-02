@@ -11,7 +11,7 @@ test('local admin can reach the AI settings workspace', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Beheer', exact: true })).toBeVisible();
 
   await page.goto('/admin/ai-instellingen');
-  await expect(page.getByRole('heading', { name: /P-AI-co instellingen/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Digidocent instellingen/i })).toBeVisible();
   await expect(page.getByText('google/gemini-2.0-flash-001').first()).toBeVisible();
   await expect(page.getByText('gemini-3.5-flash').first()).toBeVisible();
 });

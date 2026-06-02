@@ -1067,7 +1067,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
       const openAnswerAssessment = isOpenQuestion
         ? {
             isCorrect,
-            feedback: assessment?.feedback || assessment?.error || 'P-AI-co kon je antwoord niet beoordelen. Probeer het nog eens.',
+            feedback: assessment?.feedback || assessment?.error || 'Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.',
             missing: Array.isArray(assessment?.missing) ? assessment.missing : []
           }
         : null;
@@ -1117,7 +1117,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
 
   const hasAnyAnswer = hasQuestionDraftAnswer(previewAnswers);
   const aiInitialMessage = hasAnyAnswer
-    ? `Ik ben P-AI-co. Ik help je met denkvragen bij "${linkedVraag?.title || 'deze vraag'}", maar ik geef het antwoord niet letterlijk. Wat heb je al geprobeerd?`
+    ? `Ik ben Digidocent. Ik help je met denkvragen bij "${linkedVraag?.title || 'deze vraag'}", maar ik geef het antwoord niet letterlijk. Wat heb je al geprobeerd?`
     : `Hoi ${studentName}, probeer eerst zelf een antwoord in te vullen. Daarna help ik je met denkvragen, zonder het antwoord voor te zeggen.`;
   const studentAnswerSummary = buildAiTutorStudentAnswerSummary({
     vraag: linkedVraag || {},
@@ -1168,7 +1168,7 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   }
 
   return (
-    <div className={allowAiHelp && !submitted ? 'grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]' : 'space-y-6'}>
+    <div className="space-y-6">
       <div className="space-y-6">
         {submitted && (
           <div className={`rounded-2xl border-2 ${resultTone.borderClass} ${resultTone.fillClass} px-4 py-3 text-sm font-black text-[var(--helix-navy)]`}>
@@ -1378,34 +1378,46 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
             disabled={saving || submitted || (preview.type === 'open' && !String(previewAnswers.openAnswer || '').trim() && !hasMathToolInput)}
             className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {saving ? (preview.type === 'open' ? 'P-AI-co beoordeelt...' : 'Opslaan...') : submitted ? 'Vraag afgerond' : 'Controleer antwoord'}
+            {saving ? (preview.type === 'open' ? 'Digidocent beoordeelt...' : 'Opslaan...') : submitted ? 'Vraag afgerond' : 'Controleer antwoord'}
           </button>
         </div>
       </div>
 
       {allowAiHelp && !submitted && (
-        <aside className="rounded-3xl border border-fuchsia-100 bg-white p-4 shadow-sm xl:sticky xl:top-24 xl:self-start">
-          <div className="mb-3 flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-              <MessageCircle size={19} />
-            </div>
-            <div>
-              <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">P-AI-co hulp</h3>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--helix-muted)]">
-                Rechts naast de vraag. P-AI-co stelt denkvragen en geeft het antwoord niet letterlijk.
-              </p>
-            </div>
-          </div>
+        <aside
+          className={[
+            'fixed right-0 top-28 z-40 flex max-h-[calc(100vh-8rem)] w-[min(26rem,calc(100vw-1.25rem))] transition-transform duration-300 ease-out',
+            showAiTutor ? 'translate-x-0' : 'translate-x-[calc(100%-3.25rem)]'
+          ].join(' ')}
+          onMouseEnter={() => setShowAiTutor(true)}
+          onMouseLeave={() => setShowAiTutor(false)}
+        >
           <button
             type="button"
             onClick={() => setShowAiTutor((current) => !current)}
-            className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)]"
+            className="flex h-56 w-14 shrink-0 items-center justify-center rounded-l-2xl border border-r-0 border-fuchsia-100 bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)] shadow-lg transition hover:bg-white"
+            title={showAiTutor ? 'Sluit Digidocent' : 'Open Digidocent'}
           >
-            <MessageCircle size={16} />
-            {showAiTutor ? 'Sluit P-AI-co' : 'Vraag P-AI-co om hulp'}
+            <span className="flex rotate-180 items-center gap-2 [writing-mode:vertical-rl]">
+              <MessageCircle size={16} />
+              Digidocent
+            </span>
           </button>
-          {showAiTutor && (
-            <div>
+
+          <div className="min-w-0 flex-1 rounded-bl-3xl rounded-tl-3xl border border-fuchsia-100 bg-white p-3 shadow-2xl">
+            <div className="mb-3 flex items-start gap-3 px-1">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
+                <MessageCircle size={19} />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Digidocent</h3>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--helix-muted)]">
+                  Digidocent stelt denkvragen en geeft het antwoord niet letterlijk.
+                </p>
+              </div>
+            </div>
+
+            {showAiTutor && (
               <AITutorChat
                 contextHeading={linkedVraag?.title || block?.title || 'Vraag'}
                 hints={linkedVraag?.antwoord?.hints || []}
@@ -1415,8 +1427,8 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
                 onUserMessageSent={handleAiQuestionSent}
                 onClose={() => setShowAiTutor(false)}
               />
-            </div>
-          )}
+            )}
+          </div>
         </aside>
       )}
     </div>

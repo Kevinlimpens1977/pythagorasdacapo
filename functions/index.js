@@ -25,7 +25,7 @@ const ALLOWED_OPENROUTER_MODELS = new Set([
   "gemini-3.5-flash",
 ]);
 const AI_TUTOR_RULES_PATH = "apps/helix/settings/aiTutorRules";
-const DEFAULT_MASTER_RULES = `Je bent Paco, de AI-tutor van HELIX.
+const DEFAULT_MASTER_RULES = `Je bent Digidocent, de AI-hulp van HELIX.
 
 Je helpt leerlingen leren.
 Je bent geen antwoordmachine.
@@ -78,6 +78,7 @@ const AI_TUTOR_SAFETY_RULES = `Volg altijd deze prioriteit bij botsende instruct
 
 Blijf didactisch, veilig en geschikt voor leerlingen.
 Geef geen eindantwoord, geen volledige overneembare uitwerking en geen instructies die leren vervangen.`;
+const OPEN_ANSWER_ASSESSMENT_FALLBACK_ERROR = "Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.";
 
 function requireString(value, fieldName) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -161,7 +162,7 @@ function normalizeOpenRouterConfig(data = {}, existing = {}) {
   }
 
   if (!ALLOWED_OPENROUTER_MODELS.has(model)) {
-    throw new HttpsError("invalid-argument", "Kies een ondersteund P-AI-co model.");
+    throw new HttpsError("invalid-argument", "Kies een ondersteund Digidocent model.");
   }
 
   return { apiKey, model, enabled: Boolean(enabled) };
@@ -236,7 +237,7 @@ async function getAiTutorRulesRuntime(db) {
 
 async function getAiTutorRulesCore({ auth, db }) {
   if (!auth?.uid) {
-    throw new HttpsError("unauthenticated", "Log in om AI Tutor regels te bekijken.");
+    throw new HttpsError("unauthenticated", "Log in om Digidocent regels te bekijken.");
   }
 
   const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
@@ -247,7 +248,7 @@ async function getAiTutorRulesCore({ auth, db }) {
 
 async function updateAiTutorRulesCore({ auth, data, db, now }) {
   if (!auth?.uid) {
-    throw new HttpsError("unauthenticated", "Log in om AI Tutor regels op te slaan.");
+    throw new HttpsError("unauthenticated", "Log in om Digidocent regels op te slaan.");
   }
 
   const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
@@ -311,7 +312,7 @@ async function getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider) {
   const enabled = stored.enabled !== false;
 
   if (!enabled) {
-    throw new HttpsError("failed-precondition", "P-AI-co staat uit in beheer.");
+    throw new HttpsError("failed-precondition", "Digidocent staat uit in beheer.");
   }
 
   if (!apiKey) {
@@ -332,7 +333,7 @@ function getFirstName(user = {}) {
 
 async function assertAiTutorAllowed({ auth, db }) {
   if (!auth?.uid) {
-    throw new HttpsError("unauthenticated", "Log in om P-AI-co te gebruiken.");
+    throw new HttpsError("unauthenticated", "Log in om Digidocent te gebruiken.");
   }
 
   const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Gebruiker");
@@ -350,7 +351,7 @@ async function assertAiTutorAllowed({ auth, db }) {
 
   const klas = await getRequiredDoc(db.doc(`klassen/${klasId}`), "Klas");
   if (klas.data?.settings?.aiEnabled === false) {
-    throw new HttpsError("permission-denied", "P-AI-co staat uit voor jouw klas.");
+    throw new HttpsError("permission-denied", "Digidocent staat uit voor jouw klas.");
   }
 
   return { user: callerData, firstName: getFirstName(callerData), klas: klas.data };
@@ -372,7 +373,7 @@ async function assertAiTutorBlockAllowed({ db, blockId }) {
 
   const block = await getRequiredDoc(db.doc(`contentBlocks/${cleanBlockId}`), "Lesblok");
   if (block.data?.settings?.allowAiHelp !== true) {
-    throw new HttpsError("permission-denied", "P-AI-co staat uit voor dit lesblok.");
+    throw new HttpsError("permission-denied", "Digidocent staat uit voor dit lesblok.");
   }
 }
 
@@ -760,15 +761,23 @@ async function assessOpenAnswerCore({
   if (!response.ok) {
     const errText = await response.text();
     console.error("OpenRouter assessment API Error:", response.status, errText);
-    throw new HttpsError("internal", "P-AI-co kon je antwoord niet beoordelen.");
+    throw new HttpsError("internal", OPEN_ANSWER_ASSESSMENT_FALLBACK_ERROR);
   }
 
   const responseData = await response.json();
   const content = responseData.choices?.[0]?.message?.content || "";
-  return {
-    success: true,
-    ...normalizeOpenAnswerAssessment(extractJsonObject(content)),
-  };
+  try {
+    return {
+      success: true,
+      ...normalizeOpenAnswerAssessment(extractJsonObject(content)),
+    };
+  } catch {
+    console.error("Open answer assessment returned non-JSON content.");
+    return {
+      success: false,
+      error: OPEN_ANSWER_ASSESSMENT_FALLBACK_ERROR,
+    };
+  }
 }
 
 async function extractTextViaOcrCore({
@@ -900,7 +909,7 @@ async function askAiTutorCore({
   if (!response.ok) {
     const errText = await response.text();
     console.error("OpenRouter API Error:", response.status, errText);
-    throw new HttpsError("internal", "P-AI-co kon OpenRouter niet bereiken.");
+    throw new HttpsError("internal", "Digidocent kon OpenRouter niet bereiken.");
   }
 
   const responseData = await response.json();
@@ -1637,7 +1646,7 @@ exports.assessOpenAnswer = onCall({
     console.error("Error in assessOpenAnswer:", error);
     return {
       success: false,
-      error: error.message || "P-AI-co kon je antwoord niet beoordelen."
+      error: error instanceof HttpsError ? error.message : OPEN_ANSWER_ASSESSMENT_FALLBACK_ERROR
     };
   }
 });

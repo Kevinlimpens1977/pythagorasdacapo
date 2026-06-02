@@ -382,7 +382,7 @@ export default function ExerciseSlide({ slide, chapterId, onVerified, isComplete
                   onClick={() => setShowAITutor(true)}
                   className="px-10 py-6 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-4 border-indigo-100 text-3xl lg:text-4xl font-black rounded-[2.5rem] shadow-xl transition-all hover:-translate-y-2 flex items-center gap-6"
                 >
-                  <Bot size={36} /> AI Hulp
+                  <Bot size={36} /> Digidocent
                 </button>
               )}
             </div>

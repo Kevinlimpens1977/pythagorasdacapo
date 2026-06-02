@@ -207,7 +207,7 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
             className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
           />
           <span>
-            <span className="block text-sm font-black text-[var(--helix-navy)]">P-AI-co hulp toestaan</span>
+            <span className="block text-sm font-black text-[var(--helix-navy)]">Digidocent hulp toestaan</span>
             <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">AI-hulp telt mee in de resultaatkleur.</span>
           </span>
         </label>

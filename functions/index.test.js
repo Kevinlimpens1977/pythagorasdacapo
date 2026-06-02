@@ -433,7 +433,7 @@ test("updateOpenRouterConfig stores the key server-side and returns a masked sta
   assert.equal(db.store.docs["privateConfig/openrouter"].updatedBy, "admin-1");
 });
 
-test("updateOpenRouterConfig accepts only supported P-AI-co models", async () => {
+test("updateOpenRouterConfig accepts only supported Digidocent models", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin", email: "admin@example.com" },
   });
@@ -545,7 +545,7 @@ test("updateAiTutorRules stores administrator tutor rules for future prompts", a
     auth: { uid: "admin-1" },
     data: {
       adminRules: "Gebruik altijd de verhoudingstabel bij procenten.",
-      masterRules: "Je bent Paco en geeft nooit direct antwoord.",
+      masterRules: "Je bent Digidocent en geeft nooit direct antwoord.",
       vmboRules: "Pythagoras altijd met schema.",
     },
     db,
@@ -569,7 +569,7 @@ test("getAiTutorRules rejects students and returns defaults for supervisors", as
     db,
   });
 
-  assert.match(result.masterRules, /Je bent Paco/);
+  assert.match(result.masterRules, /Je bent Digidocent/);
   assert.match(result.vmboRules, /Pythagoras/);
 
   await assert.rejects(
@@ -592,7 +592,7 @@ test("askAiTutor rejects students when class AI help is disabled", async () => {
     },
     "apps/helix/settings/aiTutorRules": {
       adminRules: "Gebruik nooit het woord eindantwoord.",
-      masterRules: "Je bent Paco en stelt korte vragen.",
+      masterRules: "Je bent Digidocent en stelt korte vragen.",
       vmboRules: "Procenten altijd met verhoudingstabel.",
     },
   });
@@ -621,7 +621,7 @@ test("askAiTutor rejects students when the lesson block disallows AI help", asyn
     },
     "apps/helix/settings/aiTutorRules": {
       adminRules: "Gebruik nooit het woord eindantwoord.",
-      masterRules: "Je bent Paco en stelt korte vragen.",
+      masterRules: "Je bent Digidocent en stelt korte vragen.",
       vmboRules: "Procenten altijd met verhoudingstabel.",
     },
   });
@@ -651,7 +651,7 @@ test("askAiTutor uses configured OpenRouter model and includes the student's fir
     },
     "apps/helix/settings/aiTutorRules": {
       adminRules: "Gebruik nooit het woord eindantwoord.",
-      masterRules: "Je bent Paco en stelt korte vragen.",
+      masterRules: "Je bent Digidocent en stelt korte vragen.",
       vmboRules: "Procenten altijd met verhoudingstabel.",
     },
   });
@@ -782,7 +782,7 @@ test("askAiTutor replaces incomplete model output with a complete fallback hint"
       model: "google/gemini-2.0-flash-001",
     },
     "apps/helix/settings/aiTutorRules": {
-      masterRules: "Je bent Paco en stelt korte vragen.",
+      masterRules: "Je bent Digidocent en stelt korte vragen.",
     },
   });
 
@@ -905,12 +905,12 @@ test("normalizeReadableMathText cleans spaced LaTeX commands from tutor text", (
   assert.doesNotMatch(normalized, /times/);
 });
 
-test("buildAiTutorSystemPrompt tells P-AI-co how to handle an incorrect multiple-choice attempt", () => {
+test("buildAiTutorSystemPrompt tells Digidocent how to handle an incorrect multiple-choice attempt", () => {
   const prompt = __test.buildAiTutorSystemPrompt({
     contextHeading: "2+2=",
     firstName: "Kevin",
     studentAnswer: "Vraagtype: meerkeuze\nGekozen optie: d (onjuist)\nAntwoordstatus: gekozen antwoord is onjuist.",
-    rules: { masterRules: "Je bent Paco." },
+    rules: { masterRules: "Je bent Digidocent." },
   });
 
   assert.match(prompt, /gekozen antwoord onjuist/i);
@@ -1050,4 +1050,41 @@ test("assessOpenAnswer returns socratic feedback when an answer is incomplete", 
   assert.equal(result.isCorrect, false);
   assert.equal(result.feedback, "Welke zijden horen bij a, b en c?");
   assert.deepEqual(result.missing, ["schuine zijde", "rechthoekszijden"]);
+});
+
+test("assessOpenAnswer hides raw JSON parser errors from learners", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "privateConfig/openrouter": {
+      enabled: true,
+      apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz",
+      model: "openai/gpt-4.1-mini",
+    },
+  });
+
+  const result = await __test.assessOpenAnswerCore({
+    auth: { uid: "student-1" },
+    data: {
+      questionTitle: "Leg uit",
+      modelAnswer: "Noem de kern.",
+      studentAnswer: "Ik denk dat het zo is.",
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: "Je antwoord is nog wat kort. Welke stap kun je erbij zetten?",
+          },
+        }],
+      }),
+    }),
+  });
+
+  assert.equal(result.success, false);
+  assert.equal(result.error, "Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.");
+  assert.doesNotMatch(result.error, /json/i);
 });
