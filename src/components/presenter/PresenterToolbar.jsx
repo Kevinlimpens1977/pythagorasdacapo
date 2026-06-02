@@ -125,10 +125,10 @@ const toolbarLabelClass = 'text-[var(--helix-purple)]';
 const iconAccentClass = 'bg-[rgba(122,60,255,0.12)] text-[var(--helix-purple)]';
 
 const iconButtonClass =
-  `inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border text-[11px] font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${idleButtonClass}`;
+  `inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border text-[13px] font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${idleButtonClass}`;
 
 const popoverButtonClass =
-  'inline-flex min-h-[34px] shrink-0 items-center justify-center rounded-lg border px-2.5 py-2 text-[11px] font-bold transition';
+  'inline-flex min-h-[38px] shrink-0 items-center justify-center rounded-lg border px-3 py-2 text-[13px] font-bold transition';
 
 export default function PresenterToolbar({
   pageLabel = 'Pagina 0/0',
@@ -230,7 +230,7 @@ export default function PresenterToolbar({
     >
       <button
         type="button"
-        className={`pointer-events-auto mx-auto mb-2 flex min-h-[34px] min-w-36 items-center justify-center rounded-lg border px-3 py-2 text-[11px] font-bold shadow-[0_10px_22px_rgba(122,60,255,0.12)] transition ${idleButtonClass}`}
+        className={`pointer-events-auto mx-auto mb-2 flex min-h-[38px] min-w-40 items-center justify-center rounded-lg border px-3.5 py-2 text-[13px] font-bold shadow-[0_10px_22px_rgba(122,60,255,0.12)] transition ${idleButtonClass}`}
         onClick={onTogglePinned}
         onPointerEnter={onOpen}
         onPointerDown={onOpen}
@@ -240,8 +240,8 @@ export default function PresenterToolbar({
       </button>
       {activeCategory === 'pen' || activeCategory === 'highlighter' ? (
         <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(56rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <div className="flex min-h-[34px] flex-wrap items-center justify-center gap-1.5">
-            <span className={`px-1 text-[10px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingColorLabel}</span>
+          <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
+            <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingColorLabel}</span>
             {drawingColors.map((color) => {
               const isActive = penColor === color.value;
 
@@ -249,7 +249,7 @@ export default function PresenterToolbar({
                 <button
                   key={color.value}
                   type="button"
-                  className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border transition ${
+                  className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border transition ${
                     isActive ? activeButtonClass : idleButtonClass
                   }`}
                   onClick={() => runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, color: color.value }))}
@@ -264,9 +264,9 @@ export default function PresenterToolbar({
               );
             })}
           </div>
-          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex min-h-[34px] flex-wrap items-center justify-center gap-1.5">
-            <span className={`px-1 text-[10px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingWidthLabel}</span>
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
+            <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingWidthLabel}</span>
             {drawingWidths.map((width) => {
               const isActive = penWidth === width.value;
 
@@ -274,7 +274,7 @@ export default function PresenterToolbar({
                 <button
                   key={width.value}
                   type="button"
-                  className={`inline-flex min-h-[34px] min-w-14 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-bold transition ${
+                  className={`inline-flex min-h-[38px] min-w-16 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-bold transition ${
                     isActive
                       ? activeButtonClass
                       : idleButtonClass
@@ -358,11 +358,11 @@ export default function PresenterToolbar({
             <Type size={16} strokeWidth={2.4} />
             Tekstvak
           </button>
-          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
           <div className="flex flex-wrap items-center justify-center gap-1.5">
             <button
               type="button"
-              className={`inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg border transition ${activeTextStyle.bold ? activeButtonClass : idleButtonClass}`}
+              className={`inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border transition ${activeTextStyle.bold ? activeButtonClass : idleButtonClass}`}
               onClick={() => handleTextStyle({ bold: !activeTextStyle.bold })}
               aria-label="Vet"
               aria-pressed={activeTextStyle.bold}
@@ -371,7 +371,7 @@ export default function PresenterToolbar({
             </button>
             <button
               type="button"
-              className={`inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg border transition ${activeTextStyle.italic ? activeButtonClass : idleButtonClass}`}
+              className={`inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border transition ${activeTextStyle.italic ? activeButtonClass : idleButtonClass}`}
               onClick={() => handleTextStyle({ italic: !activeTextStyle.italic })}
               aria-label="Cursief"
               aria-pressed={activeTextStyle.italic}
@@ -386,7 +386,7 @@ export default function PresenterToolbar({
                 <button
                   key={alignment.value}
                   type="button"
-                  className={`inline-flex h-[34px] w-[34px] items-center justify-center rounded-lg border transition ${isActive ? activeButtonClass : idleButtonClass}`}
+                  className={`inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border transition ${isActive ? activeButtonClass : idleButtonClass}`}
                   onClick={() => handleTextStyle({ align: alignment.value })}
                   aria-label={`Uitlijnen ${alignment.label}`}
                   aria-pressed={isActive}
@@ -396,7 +396,7 @@ export default function PresenterToolbar({
               );
             })}
           </div>
-          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
           <div className="flex flex-wrap items-center justify-center gap-1.5">
             {textColors.map((color) => {
               const isActive = activeTextStyle.color === color.value;
@@ -405,7 +405,7 @@ export default function PresenterToolbar({
                 <button
                   key={color.value}
                   type="button"
-                  className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border transition ${
+                  className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border transition ${
                     isActive ? activeButtonClass : idleButtonClass
                   }`}
                   onClick={() => handleTextStyle({ color: color.value })}
@@ -443,13 +443,13 @@ export default function PresenterToolbar({
               </button>
             ))}
           </div>
-          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
           <div className="flex flex-wrap items-center justify-center gap-1.5">
             {mathSymbols.map((symbol) => (
               <button
                 key={symbol}
                 type="button"
-                className={`${popoverButtonClass} min-w-9 ${hasSelectedTextObject ? idleButtonClass : activeButtonClass}`}
+                className={`${popoverButtonClass} min-w-10 ${hasSelectedTextObject ? idleButtonClass : activeButtonClass}`}
                 onClick={() => handleTextSymbol(symbol)}
                 aria-label={`Wiskundesymbool ${symbol}`}
               >
@@ -473,7 +473,7 @@ export default function PresenterToolbar({
               </button>
             ))}
           </div>
-          <div className={`min-h-[34px] w-px ${dividerClass} max-sm:hidden`} />
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
           <div className="flex flex-wrap items-center justify-center gap-1.5">
             {instrumentTypes.map((instrument) => (
               <button
@@ -511,7 +511,7 @@ export default function PresenterToolbar({
           >
             <ArrowLeft size={17} strokeWidth={2.4} />
           </button>
-          <div className="min-w-20 max-w-28 px-2 text-center text-[11px] font-black text-[var(--helix-navy)]">{pageLabel}</div>
+          <div className="min-w-24 max-w-32 px-2 text-center text-[13px] font-black text-[var(--helix-navy)]">{pageLabel}</div>
           <button
             type="button"
             className={iconButtonClass}
@@ -531,7 +531,7 @@ export default function PresenterToolbar({
           </button>
         </div>
 
-        <div className={`mx-1 h-[30px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
+        <div className={`mx-1 h-[34px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
 
         <div className="flex shrink-0 flex-wrap items-center justify-center gap-1">
           <button type="button" className={iconButtonClass} onClick={() => runAction(onSelect)} aria-label="Selecteren">
@@ -567,7 +567,7 @@ export default function PresenterToolbar({
           </button>
         </div>
 
-        <div className={`mx-1 h-[30px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
+        <div className={`mx-1 h-[34px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
 
         <div className="flex min-w-0 flex-wrap items-center justify-center gap-1">
           {categories.map((category) => {
@@ -578,7 +578,7 @@ export default function PresenterToolbar({
               <button
                 key={category.id}
                 type="button"
-                className={`inline-flex h-[34px] shrink-0 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${
+                className={`inline-flex h-[38px] shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${
                   isActive
                     ? activeButtonClass
                     : idleButtonClass
@@ -588,7 +588,7 @@ export default function PresenterToolbar({
                 aria-pressed={isActive}
               >
                 <Icon size={17} strokeWidth={2.4} />
-                <span className="max-w-20 truncate max-lg:hidden">{category.label}</span>
+                <span className="max-w-24 truncate max-lg:hidden">{category.label}</span>
               </button>
             );
           })}
