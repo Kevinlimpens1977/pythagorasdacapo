@@ -1,3 +1,5 @@
+import { createMathToolWork, MATH_TOOL_TYPES, normalizeMathTool } from './mathToolboxUtils.js';
+
 const V1A_SHAPE_TYPES = new Set([
   'rectangle',
   'ellipse',
@@ -10,9 +12,15 @@ const V1A_SHAPE_TYPES = new Set([
   'angle'
 ]);
 
+const MATH_WORKSHEET_TYPES = new Set([
+  'ratioTableTool',
+  'pythagorasTool'
+]);
+
 const DUPLICATABLE_TYPES = new Set([
   ...V1A_SHAPE_TYPES,
-  'text'
+  'text',
+  ...MATH_WORKSHEET_TYPES
 ]);
 
 const SHAPE_DEFAULTS = {
@@ -74,6 +82,20 @@ const SHAPE_DEFAULTS = {
       fontFamily: 'helix',
       align: 'left'
     }
+  },
+  ratioTableTool: {
+    width: 920,
+    height: 360,
+    content: {
+      mathTool: createMathToolWork(MATH_TOOL_TYPES.ratioTable, 'presenter-ratio')
+    }
+  },
+  pythagorasTool: {
+    width: 1040,
+    height: 620,
+    content: {
+      mathTool: createMathToolWork(MATH_TOOL_TYPES.pythagoras, 'presenter-pythagoras')
+    }
   }
 };
 
@@ -88,6 +110,8 @@ const OBJECT_LABELS = {
   table: 'Tabel/raster',
   angle: 'Hoekmarkering',
   text: 'Tekst',
+  ratioTableTool: 'Verhoudingstabel',
+  pythagorasTool: 'Pythagoras schema',
   lessonBlock: 'Lesblok',
   questionWindow: 'Vraag'
 };
@@ -97,16 +121,38 @@ const cloneValue = (value) => structuredClone(value);
 export const createPresenterObject = (type, overrides = {}) => {
   const defaults = cloneValue(SHAPE_DEFAULTS[type] ?? {});
   const clonedOverrides = cloneValue(overrides);
+  const objectId = clonedOverrides.id;
+  const objectType = clonedOverrides.type ?? type;
+  const defaultMathTool = defaults.content?.mathTool;
+  const overrideMathTool = clonedOverrides.content?.mathTool;
+  const mathTool = MATH_WORKSHEET_TYPES.has(objectType)
+    ? normalizeMathTool({
+        ...(defaultMathTool || {}),
+        ...(overrideMathTool || {}),
+        id: overrideMathTool?.id || (objectId ? `${objectId}-tool` : defaultMathTool?.id)
+      })
+    : null;
 
-  return {
+  const object = {
     ...defaults,
     ...clonedOverrides,
-    type: clonedOverrides.type ?? type,
+    type: objectType,
     x: clonedOverrides.x ?? 0,
     y: clonedOverrides.y ?? 0,
     width: clonedOverrides.width ?? defaults.width ?? 0,
     height: clonedOverrides.height ?? defaults.height ?? 0,
     rotation: clonedOverrides.rotation ?? 0
+  };
+
+  if (!mathTool) return object;
+
+  return {
+    ...object,
+    content: {
+      ...(defaults.content || {}),
+      ...(clonedOverrides.content || {}),
+      mathTool
+    }
   };
 };
 
@@ -118,3 +164,21 @@ export const canDuplicatePresenterObject = (object) =>
 
 export const getPresenterObjectLabel = (object) =>
   OBJECT_LABELS[object?.type] ?? 'Object';
+
+export const isPresenterMathToolObject = (object) =>
+  MATH_WORKSHEET_TYPES.has(object?.type);
+
+export const updatePresenterMathToolObject = (object, mathTool) => {
+  if (!isPresenterMathToolObject(object)) return object;
+
+  const normalized = normalizeMathTool(mathTool);
+  if (!normalized) return object;
+
+  return {
+    ...object,
+    content: {
+      ...(object.content || {}),
+      mathTool: normalized
+    }
+  };
+};

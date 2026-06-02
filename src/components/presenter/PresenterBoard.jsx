@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getBoardScale, mapClientPointToBoard, snapPointToGrid } from '../../lib/presenterGeometry';
 import { getPresenterObjectIdsInRect, getPresenterSelectionBounds } from '../../lib/presenterModel';
+import { isPresenterMathToolObject } from '../../lib/presenterObjects';
 import PresenterBackground from './PresenterBackground';
 import PresenterInkLayer from './PresenterInkLayer';
 import PresenterObjectLayer from './PresenterObjectLayer';
@@ -235,7 +236,8 @@ export default function PresenterBoard({
   onResizeObjects,
   onDeleteObject,
   onDeleteObjects,
-  onTextChange
+  onTextChange,
+  onMathToolChange
 }) {
   const surfaceRef = useRef(null);
   const boardRef = useRef(null);
@@ -307,12 +309,12 @@ export default function PresenterBoard({
     [activeSelectedObjectIds, previewPage]
   );
 
-  const selectedObjectsAreText = useMemo(() => {
+  const selectedObjectAllowsInteriorInteraction = useMemo(() => {
     if (activeSelectedObjectIds.length !== 1) return false;
 
     const selectedId = activeSelectedObjectIds[0];
     return (Array.isArray(previewPage?.objects) ? previewPage.objects : []).some(
-      (object) => object?.id === selectedId && object?.type === 'text'
+      (object) => object?.id === selectedId && (object?.type === 'text' || isPresenterMathToolObject(object))
     );
   }, [activeSelectedObjectIds, previewPage]);
 
@@ -578,6 +580,7 @@ export default function PresenterBoard({
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
           onTextChange={onTextChange}
+          onMathToolChange={onMathToolChange}
         />
         <PresenterInkLayer page={inkPage} />
         <PresenterObjectLayer
@@ -590,6 +593,7 @@ export default function PresenterBoard({
           onInteract={onInteract}
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
+          onMathToolChange={onMathToolChange}
         />
         {interaction?.type === 'marquee' ? (
           <SelectionMarquee rect={createRectFromPoints(interaction.start, interaction.current)} scale={board.scale} />
@@ -597,7 +601,7 @@ export default function PresenterBoard({
         {selectionBounds ? (
           <SelectionTransformBox
             bounds={selectionBounds}
-            allowInteriorInteraction={selectedObjectsAreText}
+            allowInteriorInteraction={selectedObjectAllowsInteriorInteraction}
             scale={board.scale}
             onDelete={handleSelectionDelete}
             onMovePointerDown={handleSelectionPointerDown}

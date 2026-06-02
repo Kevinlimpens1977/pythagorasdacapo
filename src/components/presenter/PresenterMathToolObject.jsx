@@ -1,0 +1,423 @@
+import { Fragment, useRef, useState } from 'react';
+import { Plus, RotateCcw } from 'lucide-react';
+import {
+  addRatioColumn,
+  canRemoveRatioColumn,
+  createMathToolWork,
+  MATH_TOOL_TYPES,
+  normalizeMathTool,
+  normalizePythagorasSide,
+  removeRatioColumn,
+  updateMathToolValue
+} from '../../lib/mathToolboxUtils';
+import { evaluateCalculatorExpression } from '../../lib/calculatorEvaluator';
+
+function ToolboxInput({ value, onChange, disabled, placeholder = '', ariaLabel }) {
+  return (
+    <input
+      aria-label={ariaLabel}
+      className="h-11 min-w-24 rounded-xl border border-[var(--helix-border)] bg-white px-3 text-center text-sm font-black text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+      disabled={disabled}
+      onChange={(event) => onChange?.(event.target.value)}
+      placeholder={placeholder}
+      type="text"
+      value={value || ''}
+    />
+  );
+}
+
+function RatioOperationInput({ value, onChange, disabled, placement = 'top', markerId }) {
+  const isTop = placement === 'top';
+
+  return (
+    <div className="flex w-full flex-col items-center">
+      {isTop ? (
+        <input
+          aria-label="Bewerking boven de verhoudingstabel"
+          className="h-8 w-24 rounded-xl border border-fuchsia-100 bg-white px-2 text-center text-xs font-black text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={disabled}
+          onChange={(event) => onChange?.(event.target.value)}
+          placeholder="bewerking"
+          type="text"
+          value={value || ''}
+        />
+      ) : null}
+      <svg
+        aria-hidden="true"
+        className="h-10 w-full overflow-visible text-[var(--helix-purple)]"
+        viewBox="0 0 96 42"
+      >
+        <defs>
+          <marker
+            id={markerId}
+            markerHeight="8"
+            markerUnits="strokeWidth"
+            markerWidth="8"
+            orient="auto"
+            refX="7"
+            refY="4"
+          >
+            <path d="M 0 0 L 8 4 L 0 8 z" fill="currentColor" />
+          </marker>
+        </defs>
+        <path
+          d={isTop ? 'M 8 32 C 24 8 68 8 88 28' : 'M 8 10 C 24 34 68 34 88 14'}
+          fill="none"
+          markerEnd={`url(#${markerId})`}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="4"
+        />
+      </svg>
+      {!isTop ? (
+        <input
+          aria-label="Bewerking onder de verhoudingstabel"
+          className="h-8 w-24 rounded-xl border border-fuchsia-100 bg-white px-2 text-center text-xs font-black text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+          disabled={disabled}
+          onChange={(event) => onChange?.(event.target.value)}
+          placeholder="bewerking"
+          type="text"
+          value={value || ''}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function RatioTableWorksheet({ tool, disabled, onChange }) {
+  const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
+  const addColumn = () => onChange?.(addRatioColumn(tool));
+  const lastColumnIndex = tool.topValues.length - 1;
+  const canRemoveLastColumn = canRemoveRatioColumn(tool, lastColumnIndex);
+  const columnWidth = '7rem';
+  const labelWidth = '9rem';
+
+  return (
+    <div className="overflow-x-auto pb-2">
+      <div className="min-w-max space-y-2">
+        <div
+          className="grid items-center gap-2"
+          style={{ gridTemplateColumns: `${labelWidth} repeat(${tool.topValues.length}, ${columnWidth})` }}
+        >
+          <span />
+          {tool.topOperations.map((operation, index) => (
+            <div
+              className="col-span-1 flex items-center justify-center"
+              key={`top-operation-${index}`}
+              style={{ transform: `translateX(calc(${columnWidth} / 2))` }}
+            >
+              <RatioOperationInput
+                disabled={disabled}
+                markerId={`${tool.id}-presenter-top-${index}`}
+                onChange={(value) => change(['topOperations', index], value)}
+                placement="top"
+                value={operation}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `${labelWidth} repeat(${tool.topValues.length}, ${columnWidth})` }}
+        >
+          <ToolboxInput
+            ariaLabel="Rijnaam bovenste rij"
+            disabled={disabled}
+            onChange={(value) => change(['topLabel'], value)}
+            placeholder="rijnaam"
+            value={tool.topLabel}
+          />
+          {tool.topValues.map((value, index) => (
+            <ToolboxInput
+              ariaLabel={`Bovenste waarde kolom ${index + 1}`}
+              disabled={disabled}
+              key={`top-${index}`}
+              onChange={(nextValue) => change(['topValues', index], nextValue)}
+              value={value}
+            />
+          ))}
+          <ToolboxInput
+            ariaLabel="Rijnaam onderste rij"
+            disabled={disabled}
+            onChange={(value) => change(['bottomLabel'], value)}
+            placeholder="rijnaam"
+            value={tool.bottomLabel}
+          />
+          {tool.bottomValues.map((value, index) => (
+            <ToolboxInput
+              ariaLabel={`Onderste waarde kolom ${index + 1}`}
+              disabled={disabled}
+              key={`bottom-${index}`}
+              onChange={(nextValue) => change(['bottomValues', index], nextValue)}
+              value={value}
+            />
+          ))}
+        </div>
+
+        <div
+          className="grid items-center gap-2"
+          style={{ gridTemplateColumns: `${labelWidth} repeat(${tool.bottomValues.length}, ${columnWidth})` }}
+        >
+          <span />
+          {tool.bottomOperations.map((operation, index) => (
+            <div
+              className="col-span-1 flex items-center justify-center"
+              key={`bottom-operation-${index}`}
+              style={{ transform: `translateX(calc(${columnWidth} / 2))` }}
+            >
+              <RatioOperationInput
+                disabled={disabled}
+                markerId={`${tool.id}-presenter-bottom-${index}`}
+                onChange={(value) => change(['bottomOperations', index], value)}
+                placement="bottom"
+                value={operation}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--helix-purple)] px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={disabled}
+            onClick={addColumn}
+            type="button"
+          >
+            <Plus size={14} />
+            Kolom toevoegen
+          </button>
+          {tool.topValues.length > 2 ? (
+            <button
+              className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={disabled || !canRemoveLastColumn}
+              onClick={() => onChange?.(removeRatioColumn(tool, lastColumnIndex))}
+              title={canRemoveLastColumn ? 'Laatste lege kolom verwijderen' : 'Maak eerst de laatste kolom en de laatste bewerkingen leeg.'}
+              type="button"
+            >
+              Laatste kolom verwijderen
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PythagorasSideInput({ row, rowIndex, disabled, onChange }) {
+  return (
+    <input
+      aria-label={`Zijde rij ${rowIndex + 1}`}
+      className="h-11 w-full min-w-0 rounded-xl border border-[var(--helix-border)] bg-white px-2 text-center text-sm font-black uppercase tracking-[0.12em] text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+      disabled={disabled}
+      maxLength={2}
+      onChange={(event) => onChange(['rows', rowIndex, 'side'], normalizePythagorasSide(event.target.value))}
+      type="text"
+      value={row?.side || ''}
+    />
+  );
+}
+
+function PythagorasCalculator({ disabled = false }) {
+  const [expression, setExpression] = useState('');
+  const [display, setDisplay] = useState('0');
+
+  const appendValue = (value) => {
+    if (disabled) return;
+    setExpression((current) => `${current}${value}`);
+    setDisplay((current) => (current === '0' || current === 'Ongeldig' ? value : `${current}${value}`));
+  };
+
+  const reset = () => {
+    setExpression('');
+    setDisplay('0');
+  };
+
+  const calculate = () => {
+    if (disabled) return;
+
+    try {
+      const result = evaluateCalculatorExpression(expression);
+      setExpression(String(result));
+      setDisplay(String(result));
+    } catch {
+      setDisplay('Ongeldig');
+    }
+  };
+
+  const buttons = ['7', '8', '9', ':', '4', '5', '6', 'x', '1', '2', '3', '-', '0', ',', 'sqrt(', '+'];
+
+  return (
+    <aside className="rounded-2xl border border-fuchsia-100 bg-white p-3">
+      <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--helix-purple)]">Rekenmachine</p>
+      <div className="mb-2 rounded-xl bg-[var(--helix-navy)] px-3 py-2 text-right font-display text-xl font-black text-white">
+        {display}
+      </div>
+      <div className="grid grid-cols-4 gap-1.5">
+        {buttons.map((button) => (
+          <button
+            className="rounded-lg border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-2 py-2 text-xs font-black text-[var(--helix-navy)] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={disabled}
+            key={button}
+            onClick={() => appendValue(button)}
+            type="button"
+          >
+            {button}
+          </button>
+        ))}
+        <button
+          className="col-span-2 rounded-lg border border-[var(--helix-border)] bg-white px-2 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={disabled}
+          onClick={reset}
+          type="button"
+        >
+          C
+        </button>
+        <button
+          className="col-span-2 rounded-lg bg-[var(--helix-purple)] px-2 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={disabled}
+          onClick={calculate}
+          type="button"
+        >
+          =
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function PythagorasWorksheet({ tool, disabled, onChange }) {
+  const workingTextRef = useRef(null);
+  const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
+
+  const insertWorkingSymbol = (symbol) => {
+    const textarea = workingTextRef.current;
+    const currentValue = tool.workingText || '';
+    const start = textarea?.selectionStart ?? currentValue.length;
+    const end = textarea?.selectionEnd ?? currentValue.length;
+    const nextValue = `${currentValue.slice(0, start)}${symbol}${currentValue.slice(end)}`;
+    change(['workingText'], nextValue);
+
+    window.requestAnimationFrame(() => {
+      textarea?.focus();
+      const cursor = start + symbol.length;
+      textarea?.setSelectionRange(cursor, cursor);
+    });
+  };
+
+  return (
+    <div className="grid w-full gap-4 xl:grid-cols-[minmax(0,1fr)_15rem]">
+      <div className="space-y-4">
+        <div className="overflow-hidden rounded-2xl border border-[var(--helix-border)] bg-white">
+          <div className="grid grid-cols-[minmax(3.75rem,0.45fr)_minmax(7rem,1.1fr)_minmax(7rem,1.1fr)] bg-[var(--helix-soft-lavender)] text-xs font-black uppercase tracking-[0.12em] text-[var(--helix-purple)]">
+            <div className="px-3 py-3">Zijde</div>
+            <div className="px-3 py-3">Lengte</div>
+            <div className="px-3 py-3">Kwadraat</div>
+          </div>
+          <div className="grid grid-cols-[minmax(3.75rem,0.45fr)_minmax(7rem,1.1fr)_minmax(7rem,1.1fr)] gap-x-2 gap-y-2 p-3">
+            {tool.rows.map((row, index) => (
+              <Fragment key={row.id}>
+                <PythagorasSideInput disabled={disabled} onChange={change} row={row} rowIndex={index} />
+                <ToolboxInput
+                  ariaLabel={`Lengte rij ${index + 1}`}
+                  disabled={disabled}
+                  onChange={(value) => change(['rows', index, 'length'], value)}
+                  value={row?.length}
+                />
+                <div className="space-y-1">
+                  <ToolboxInput
+                    ariaLabel={`Kwadraat rij ${index + 1}`}
+                    disabled={disabled}
+                    onChange={(value) => change(['rows', index, 'square'], value)}
+                    value={row?.square}
+                  />
+                  {index === 1 ? (
+                    <div aria-hidden="true" className="flex items-center gap-2 px-1">
+                      <div className="h-0.5 flex-1 rounded-full bg-[var(--helix-navy)]" />
+                      <span className="text-xl font-black leading-none text-[var(--helix-navy)]">+</span>
+                    </div>
+                  ) : null}
+                </div>
+              </Fragment>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <label
+              className="text-xs font-black uppercase tracking-[0.14em] text-[var(--helix-muted)]"
+              htmlFor={`${tool.id}-presenter-working`}
+            >
+              Berekening en uitwerking
+            </label>
+            <div className="flex gap-2">
+              <button
+                aria-label="Kwadraat invoegen"
+                className="rounded-lg border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1 text-sm font-black text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={disabled}
+                onClick={() => insertWorkingSymbol('^2')}
+                type="button"
+              >
+                x^2
+              </button>
+              <button
+                aria-label="Wortel invoegen"
+                className="rounded-lg border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1 text-sm font-black text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={disabled}
+                onClick={() => insertWorkingSymbol('sqrt')}
+                type="button"
+              >
+                sqrt
+              </button>
+            </div>
+          </div>
+          <textarea
+            className="min-h-32 w-full resize-y rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-semibold leading-7 text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={disabled}
+            id={`${tool.id}-presenter-working`}
+            onChange={(event) => change(['workingText'], event.target.value)}
+            placeholder="Schrijf hier je berekening en uitwerking..."
+            ref={workingTextRef}
+            value={tool.workingText || ''}
+          />
+        </div>
+      </div>
+
+      <PythagorasCalculator disabled={disabled} />
+    </div>
+  );
+}
+
+export default function PresenterMathToolObject({ object, disabled = false, onChange }) {
+  const normalized = normalizeMathTool(object?.content?.mathTool);
+  if (!normalized) return null;
+
+  const resetTool = () => onChange?.(createMathToolWork(normalized.type, normalized.id));
+
+  return (
+    <div
+      className="h-full w-full overflow-auto rounded-2xl border border-fuchsia-100 bg-[var(--helix-surface-soft)] p-4 shadow-sm"
+      data-presenter-interactive="true"
+      xmlns="http://www.w3.org/1999/xhtml"
+    >
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h4 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">{normalized.title}</h4>
+        <button
+          className="inline-flex items-center gap-1 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={disabled}
+          onClick={resetTool}
+          type="button"
+        >
+          <RotateCcw size={14} />
+          Leegmaken
+        </button>
+      </div>
+      {normalized.type === MATH_TOOL_TYPES.ratioTable ? (
+        <RatioTableWorksheet disabled={disabled} onChange={onChange} tool={normalized} />
+      ) : (
+        <PythagorasWorksheet disabled={disabled} onChange={onChange} tool={normalized} />
+      )}
+    </div>
+  );
+}

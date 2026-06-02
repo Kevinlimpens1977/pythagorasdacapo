@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef } from 'react';
 import PresenterImportedObjectCard from './PresenterImportedObjectCard';
+import PresenterMathToolObject from './PresenterMathToolObject';
 import { isPresenterImportedObject } from './presenterContentObjectUtils.js';
+import { isPresenterMathToolObject } from '../../lib/presenterObjects';
 
 const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
@@ -376,6 +378,33 @@ function PresenterTextObject({ object, interactive, selected = false, onInteract
   );
 }
 
+function PresenterMathObject({ object, interactive, onInteract, onSelectObject, onMathToolChange }) {
+  const { width, height } = getObjectFrame(object);
+
+  const handlePointerDown = (event) => {
+    if (!interactive) return;
+
+    event.stopPropagation();
+    onInteract?.();
+    onSelectObject?.(object.id);
+  };
+
+  const handleChange = (mathTool) => {
+    onInteract?.();
+    onMathToolChange?.(object.id, mathTool);
+  };
+
+  return (
+    <foreignObject height={Math.max(1, Math.abs(height))} width={Math.max(1, Math.abs(width))} x={Math.min(0, width)} y={Math.min(0, height)}>
+      <div className="h-full w-full" xmlns="http://www.w3.org/1999/xhtml">
+        <div data-presenter-interactive="true" onPointerDown={handlePointerDown}>
+          <PresenterMathToolObject disabled={!interactive} object={object} onChange={handleChange} />
+        </div>
+      </div>
+    </foreignObject>
+  );
+}
+
 const renderSelection = (object, onDeleteObject, onInteract) => {
   const { width, height } = getObjectFrame(object);
   const selection = getSelectionFrame({ width, height });
@@ -437,7 +466,8 @@ export default function PresenterObjectLayer({
   onSelectObject,
   onObjectPointerDown,
   onDeleteObject,
-  onTextChange
+  onTextChange,
+  onMathToolChange
 }) {
   const layerId = createDomIdPart(useId());
   const width = isFinitePositiveNumber(page?.width) ? page.width : DEFAULT_PAGE_WIDTH;
@@ -494,6 +524,16 @@ export default function PresenterObjectLayer({
                 onTextChange={onTextChange}
               />
             )
+          : isPresenterMathToolObject(object)
+            ? (
+                <PresenterMathObject
+                  object={object}
+                  interactive={interactive}
+                  onInteract={onInteract}
+                  onSelectObject={onSelectObject}
+                  onMathToolChange={onMathToolChange}
+                />
+              )
           : renderObjectShape(object, markerId);
         if (!shape) return null;
 

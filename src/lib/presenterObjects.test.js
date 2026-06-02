@@ -4,7 +4,8 @@ import {
   createPresenterObject,
   canRotatePresenterObject,
   canDuplicatePresenterObject,
-  getPresenterObjectLabel
+  getPresenterObjectLabel,
+  updatePresenterMathToolObject
 } from './presenterObjects.js';
 
 const v1aShapeTypes = [
@@ -112,6 +113,40 @@ test('createPresenterObject creates V1B text object defaults', () => {
   });
 });
 
+test('createPresenterObject creates Presenter math worksheet defaults', () => {
+  const ratio = createPresenterObject('ratioTableTool', { id: 'ratio-object' });
+  const pythagoras = createPresenterObject('pythagorasTool', { id: 'pythagoras-object' });
+
+  assert.equal(ratio.type, 'ratioTableTool');
+  assert.equal(ratio.width, 920);
+  assert.equal(ratio.height, 360);
+  assert.equal(ratio.content.mathTool.type, 'ratioTable');
+  assert.deepEqual(ratio.content.mathTool.topValues, ['', '']);
+  assert.deepEqual(ratio.content.mathTool.bottomValues, ['', '']);
+  assert.deepEqual(ratio.content.mathTool.topOperations, ['']);
+  assert.deepEqual(ratio.content.mathTool.bottomOperations, ['']);
+
+  assert.equal(pythagoras.type, 'pythagorasTool');
+  assert.equal(pythagoras.width, 1040);
+  assert.equal(pythagoras.height, 620);
+  assert.equal(pythagoras.content.mathTool.type, 'pythagoras');
+  assert.deepEqual(pythagoras.content.mathTool.rows.map((row) => row.side), ['', '', '']);
+  assert.equal(pythagoras.content.mathTool.workingText, '');
+});
+
+test('updatePresenterMathToolObject updates only Presenter math worksheet content', () => {
+  const ratio = createPresenterObject('ratioTableTool', { id: 'ratio-object' });
+  const updated = updatePresenterMathToolObject(ratio, {
+    ...ratio.content.mathTool,
+    topValues: ['12', '24']
+  });
+
+  assert.notEqual(updated, ratio);
+  assert.deepEqual(updated.content.mathTool.topValues, ['12', '24']);
+  assert.deepEqual(ratio.content.mathTool.topValues, ['', '']);
+  assert.equal(updatePresenterMathToolObject({ type: 'rectangle' }, ratio.content.mathTool).type, 'rectangle');
+});
+
 test('createPresenterObject preserves nullish-safe overrides', () => {
   const object = createPresenterObject('rectangle', {
     x: 0,
@@ -177,14 +212,18 @@ test('canRotatePresenterObject returns true for V1A shapes and false for content
 
   assert.equal(canRotatePresenterObject({ type: 'lessonBlock' }), false);
   assert.equal(canRotatePresenterObject({ type: 'questionWindow' }), false);
+  assert.equal(canRotatePresenterObject({ type: 'ratioTableTool' }), false);
+  assert.equal(canRotatePresenterObject({ type: 'pythagorasTool' }), false);
 });
 
-test('canDuplicatePresenterObject returns true for V1A shapes and text, false for lesson blocks', () => {
+test('canDuplicatePresenterObject returns true for V1A shapes, text and math tools, false for lesson blocks', () => {
   for (const type of v1aShapeTypes) {
     assert.equal(canDuplicatePresenterObject({ type }), true, `${type} should duplicate`);
   }
 
   assert.equal(canDuplicatePresenterObject({ type: 'text' }), true);
+  assert.equal(canDuplicatePresenterObject({ type: 'ratioTableTool' }), true);
+  assert.equal(canDuplicatePresenterObject({ type: 'pythagorasTool' }), true);
   assert.equal(canDuplicatePresenterObject({ type: 'lessonBlock' }), false);
 });
 
@@ -199,6 +238,8 @@ test('getPresenterObjectLabel returns readable Dutch labels', () => {
   assert.equal(getPresenterObjectLabel({ type: 'table' }), 'Tabel/raster');
   assert.equal(getPresenterObjectLabel({ type: 'angle' }), 'Hoekmarkering');
   assert.equal(getPresenterObjectLabel({ type: 'text' }), 'Tekst');
+  assert.equal(getPresenterObjectLabel({ type: 'ratioTableTool' }), 'Verhoudingstabel');
+  assert.equal(getPresenterObjectLabel({ type: 'pythagorasTool' }), 'Pythagoras schema');
   assert.equal(getPresenterObjectLabel({ type: 'lessonBlock' }), 'Lesblok');
   assert.equal(getPresenterObjectLabel({ type: 'questionWindow' }), 'Vraag');
   assert.equal(getPresenterObjectLabel({ type: 'unknown' }), 'Object');

@@ -24,7 +24,7 @@ import {
   updatePresenterTool,
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
-import { createPresenterObject } from '../../lib/presenterObjects';
+import { createPresenterObject, updatePresenterMathToolObject } from '../../lib/presenterObjects';
 import {
   clearPresenterRecoveryState,
   hasRecoverablePresenterState,
@@ -745,6 +745,12 @@ export default function PresenterShell() {
     });
   }, [updateObjectOnActivePageWithHistory]);
 
+  const handleMathToolChange = useCallback((objectId, mathTool) => {
+    updateObjectOnActivePageWithHistory(objectId, (object) =>
+      updatePresenterMathToolObject(object, mathTool)
+    );
+  }, [updateObjectOnActivePageWithHistory]);
+
   const handleImportContent = (importOptions) => {
     if (getPublishedPresenterContentBlocks(importOptions?.contentBlocks).length === 0) return false;
 
@@ -1008,6 +1014,7 @@ export default function PresenterShell() {
         onDeleteObject={handleDeleteObject}
         onDeleteObjects={handleDeleteObjects}
         onTextChange={handleTextChange}
+        onMathToolChange={handleMathToolChange}
       />
       <PresenterPagePanel
         pages={pages}

@@ -32,7 +32,9 @@ const objectTypes = [
   'polygon',
   'axes',
   'table',
-  'angle'
+  'angle',
+  'ratioTableTool',
+  'pythagorasTool'
 ];
 
 const instrumentTypes = [
