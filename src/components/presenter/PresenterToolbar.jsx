@@ -112,9 +112,7 @@ const textAlignments = [
 
 const mathSymbols = ['²', '√', 'π', '÷', '×', '≤', '≥'];
 
-const shellClass =
-  'border-[rgba(122,60,255,0.14)] bg-[linear-gradient(135deg,rgba(255,233,220,0.92),rgba(255,230,242,0.72),rgba(241,233,255,0.92))] text-[var(--helix-navy)] shadow-[0_16px_36px_rgba(122,60,255,0.11)]';
-const panelClass = `rounded-xl border ${shellClass}`;
+const panelClass = 'rounded-xl border presenter-chrome-surface';
 const idleButtonClass =
   'border-[rgba(255,255,255,0.78)] bg-white/70 text-[var(--helix-navy)] hover:border-white hover:bg-white hover:text-[var(--helix-purple)]';
 const activeButtonClass =

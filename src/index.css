@@ -342,6 +342,18 @@ input[type=number] {
   box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
 }
 
+.presenter-chrome-surface {
+  border-color: rgba(122, 60, 255, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 233, 220, 0.92),
+    rgba(255, 230, 242, 0.72),
+    rgba(241, 233, 255, 0.92)
+  );
+  color: var(--helix-navy);
+  box-shadow: 0 16px 36px rgba(122, 60, 255, 0.11);
+}
+
 /* Secondary Button - Outline Style */
 .btn-secondary {
   background: rgba(255, 255, 255, 0.82);

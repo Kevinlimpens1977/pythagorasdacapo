@@ -38,3 +38,12 @@ test('admin header active nav uses the Border Signal gradient border style', () 
   assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
   assert.doesNotMatch(activeRule, /text-white/);
 });
+
+test('presenter chrome uses the shared soft toolbar surface', () => {
+  const chromeRule = getCssRule('.presenter-chrome-surface');
+
+  assert.match(chromeRule, /rgba\(255,\s*233,\s*220,\s*0\.92\)/);
+  assert.match(chromeRule, /rgba\(255,\s*230,\s*242,\s*0\.72\)/);
+  assert.match(chromeRule, /rgba\(241,\s*233,\s*255,\s*0\.92\)/);
+  assert.match(chromeRule, /color:\s*var\(--helix-navy\)/);
+});

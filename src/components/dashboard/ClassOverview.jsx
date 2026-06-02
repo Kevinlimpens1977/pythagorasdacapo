@@ -1,6 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
 import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { db } from '../../services/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
@@ -173,7 +172,6 @@ function getEvaluationScore(student, chapterId) {
 }
 
 export default function ClassOverview() {
-  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -714,12 +712,6 @@ export default function ClassOverview() {
     <div className="helix-page min-h-screen">
       <div className="helix-container">
       <div className="mb-8">
-        <button
-          onClick={() => navigate('/admin')}
-          className="mb-6 flex items-center gap-2 text-sm font-semibold text-[var(--helix-muted)] transition-colors hover:text-[var(--helix-navy)]"
-        >
-          ← Terug naar Admin Hub
-        </button>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">

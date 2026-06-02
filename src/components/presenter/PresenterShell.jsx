@@ -962,26 +962,26 @@ export default function PresenterShell() {
       {recoveredSession ? (
         <PresenterRecoveryPrompt onRestore={handleRestoreRecovery} onDiscard={handleDiscardRecovery} />
       ) : null}
-      <header className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 px-4 py-3 text-slate-50 shadow-sm">
+      <header className="presenter-chrome-surface flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Presenter</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--helix-purple)]">Presenter</p>
           <h1 className="text-lg font-black leading-tight">Digibord Core</h1>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <div className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-900 p-1">
+          <div className="flex items-center gap-1 rounded-md border border-white/70 bg-white/60 p-1 shadow-[0_8px_18px_rgba(122,60,255,0.08)]">
             <button
               type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-slate-100 transition hover:border-slate-600 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-[var(--helix-muted)] transition hover:border-white hover:bg-white hover:text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() => activatePageAt(activeIndex - 1)}
               disabled={activeIndex <= 0}
               aria-label="Vorige pagina"
             >
               <ArrowLeft size={18} strokeWidth={2.4} />
             </button>
-            <span className="min-w-24 px-2 text-center text-sm font-black text-slate-200">{pageLabel}</span>
+            <span className="min-w-24 px-2 text-center text-sm font-black text-[var(--helix-navy)]">{pageLabel}</span>
             <button
               type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-slate-100 transition hover:border-slate-600 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-[var(--helix-muted)] transition hover:border-white hover:bg-white hover:text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() => activatePageAt(activeIndex + 1)}
               disabled={activeIndex >= pages.length - 1}
               aria-label="Volgende pagina"
