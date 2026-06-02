@@ -5,12 +5,46 @@ import {
   buildClassMetricCards,
   buildClassProgressMetrics,
   buildDashboardLensTabs,
+  buildKlasFilterOptions,
+  filterStudentsByKlas,
   buildParagraphProgressSummary,
   buildStudentMetricCards,
   buildStudentProgressMetrics,
   getVisibleStudentProgressParagraphs,
   summarizeLearningQuality
 } from './progressDashboardMetrics.js';
+
+test('buildKlasFilterOptions exposes all option plus known classes with student counts', () => {
+  const options = buildKlasFilterOptions({
+    students: [
+      { id: 's1', klasId: 'h1b', displayName: 'Ada' },
+      { id: 's2', klasId: 'h1b', displayName: 'Bo' },
+      { id: 's3', klasId: 'eoa', displayName: 'Cin' },
+      { id: 's4', displayName: 'No class' }
+    ],
+    klassenMap: {
+      h1b: { name: 'H1bk1' },
+      eoa: { klasNaam: 'EOA' }
+    }
+  });
+
+  assert.deepEqual(options, [
+    { value: '', label: 'Alle klassen', count: 4 },
+    { value: 'eoa', label: 'EOA', count: 1 },
+    { value: 'h1b', label: 'H1bk1', count: 2 }
+  ]);
+});
+
+test('filterStudentsByKlas limits class dashboard data to the selected class', () => {
+  const students = [
+    { id: 's1', klasId: 'h1b' },
+    { id: 's2', klasId: 'eoa' },
+    { id: 's3', klasId: 'h1b' }
+  ];
+
+  assert.deepEqual(filterStudentsByKlas(students, 'h1b').map((student) => student.id), ['s1', 's3']);
+  assert.deepEqual(filterStudentsByKlas(students, '').map((student) => student.id), ['s1', 's2', 's3']);
+});
 
 test('summarizeLearningQuality counts independent, guided, failed and review records separately', () => {
   const quality = summarizeLearningQuality([

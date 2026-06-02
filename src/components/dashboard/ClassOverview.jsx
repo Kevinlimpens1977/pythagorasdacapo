@@ -18,6 +18,8 @@ import {
   buildClassMetricCards,
   buildClassProgressMetrics,
   buildDashboardLensTabs,
+  buildKlasFilterOptions,
+  filterStudentsByKlas,
   buildParagraphProgressSummary,
   buildStudentMetricCards,
   buildStudentProgressMetrics,
@@ -181,6 +183,7 @@ export default function ClassOverview() {
   const [expandedEvidence, setExpandedEvidence] = useState({});
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedChapterForClass, setSelectedChapterForClass] = useState(null);
+  const [selectedKlasId, setSelectedKlasId] = useState('');
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
   const [paragraphen, setParagraphen] = useState([]);
@@ -329,11 +332,15 @@ export default function ClassOverview() {
     });
   }, [getStudentParagraafAssignments, studentVoortgang]);
 
+  const klasFilterOptions = buildKlasFilterOptions({ students, klassenMap });
+  const scopedStudents = filterStudentsByKlas(students, selectedKlasId);
+  const selectedKlasOption = klasFilterOptions.find((option) => option.value === selectedKlasId) || klasFilterOptions[0];
+
   const summariesByStudentId = Object.fromEntries(
-    students.map((student) => [student.id, getStudentAssignmentSummary(student)])
+    scopedStudents.map((student) => [student.id, getStudentAssignmentSummary(student)])
   );
   const classMetrics = buildClassProgressMetrics({
-    students,
+    students: scopedStudents,
     summariesByStudentId,
     recordsByStudentId: studentVoortgang
   });
@@ -342,8 +349,8 @@ export default function ClassOverview() {
     classMetrics.students.map(({ studentId, metrics }) => [studentId, metrics])
   );
   const lensFilteredStudents = activeLens === 'signals'
-    ? students.filter((student) => (studentMetricsById[student.id]?.attention?.total || 0) > 0)
-    : students;
+    ? scopedStudents.filter((student) => (studentMetricsById[student.id]?.attention?.total || 0) > 0)
+    : scopedStudents;
 
   const filteredStudents = lensFilteredStudents
     .filter(s =>
@@ -365,7 +372,7 @@ export default function ClassOverview() {
       return sortDirection === "asc" ? compareValue : -compareValue;
     });
 
-  const activeCount = students.filter(s => {
+  const activeCount = scopedStudents.filter(s => {
     if (!s.lastActive) return false;
     const date = s.lastActive.toDate ? s.lastActive.toDate() : new Date(s.lastActive);
     const diffInMinutes = (new Date() - date) / (1000 * 60);
@@ -721,22 +728,43 @@ export default function ClassOverview() {
             <p className="mt-1 text-[var(--helix-muted)]">Real-time overzicht van je leerlingen</p>
           </div>
           <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700">
-            Nu actief: {activeCount}/{students.length}
+            Nu actief: {activeCount}/{scopedStudents.length}
           </div>
         </div>
       </div>
 
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <DashboardLensSwitch activeLens={activeLens} onSelect={setActiveLens} />
-        {activeLens === 'signals' && (
-          <p className="text-sm font-bold text-orange-700">Toont alleen leerlingen met directe signalen.</p>
-        )}
-        {activeLens === 'paragraph' && (
-          <p className="text-sm font-bold text-blue-700">Kies hieronder een paragraaf om de klas daarop te vergelijken.</p>
-        )}
-        {activeLens === 'student' && (
-          <p className="text-sm font-bold text-slate-600">Klik op een leerling om de individuele route te openen.</p>
-        )}
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+          <DashboardLensSwitch activeLens={activeLens} onSelect={setActiveLens} />
+          <div className="min-w-56">
+            <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">Klas</label>
+            <select
+              value={selectedKlasId}
+              onChange={(event) => setSelectedKlasId(event.target.value)}
+              className="input-standard w-full py-2 text-sm font-black text-[var(--helix-navy)]"
+            >
+              {klasFilterOptions.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label} ({option.count})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="text-sm font-bold text-[var(--helix-muted)]">
+          {activeLens === 'signals' && (
+            <p className="text-orange-700">Toont signalen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
+          )}
+          {activeLens === 'paragraph' && (
+            <p className="text-blue-700">Vergelijkt paragrafen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
+          )}
+          {activeLens === 'student' && (
+            <p>Klik op een leerling binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
+          )}
+          {activeLens === 'class' && (
+            <p>Toont klasdata voor {selectedKlasOption?.label || 'alle klassen'}.</p>
+          )}
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -757,7 +785,7 @@ export default function ClassOverview() {
 
       {/* Live Pythagorean Theorem Measurements Table */}
       {(() => {
-        const bcMeasurements = students
+        const bcMeasurements = scopedStudents
           .filter(s => {
             const bcValue = s.exerciseData?.['para_72']?.['p72_03']?.['bc_measurement'];
             return bcValue !== undefined && bcValue !== null;
@@ -836,7 +864,7 @@ export default function ClassOverview() {
                 ? `Signalen (${filteredStudents.length})`
                 : activeLens === 'paragraph'
                   ? 'Paragraaffocus'
-                  : `Leerlingenoverzicht (${students.length})`}
+                  : `Leerlingenoverzicht (${scopedStudents.length})`}
             </h2>
             <div className="relative w-full sm:w-64">
               <input

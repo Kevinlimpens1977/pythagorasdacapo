@@ -247,6 +247,49 @@ export const buildDashboardLensTabs = (activeLens = 'class') =>
     active: lens.key === activeLens
   }));
 
+const getKlasLabel = (klas = {}, klasId = '') =>
+  String(
+    klas.name ||
+      klas.naam ||
+      klas.klasNaam ||
+      klas.title ||
+      klas.label ||
+      klasId ||
+      'Onbekende klas'
+  ).trim();
+
+export const buildKlasFilterOptions = ({ students = [], klassenMap = {} } = {}) => {
+  const countsByKlasId = students.reduce((counts, student = {}) => {
+    if (!student.klasId) return counts;
+    counts[student.klasId] = (counts[student.klasId] || 0) + 1;
+    return counts;
+  }, {});
+
+  const klasIds = new Set([
+    ...Object.keys(klassenMap || {}),
+    ...Object.keys(countsByKlasId)
+  ]);
+
+  const classOptions = [...klasIds]
+    .map((klasId) => ({
+      value: klasId,
+      label: getKlasLabel(klassenMap[klasId] || {}, klasId),
+      count: countsByKlasId[klasId] || 0
+    }))
+    .filter((option) => option.count > 0)
+    .sort((a, b) => a.label.localeCompare(b.label, 'nl-NL', { numeric: true }));
+
+  return [
+    { value: '', label: 'Alle klassen', count: students.length },
+    ...classOptions
+  ];
+};
+
+export const filterStudentsByKlas = (students = [], selectedKlasId = '') => {
+  if (!selectedKlasId) return students;
+  return students.filter((student = {}) => student.klasId === selectedKlasId);
+};
+
 export const buildParagraphProgressSummary = ({ summary = {}, records = [], paragraafId = null } = {}) => {
   const paragraphRecords = paragraafId
     ? records.filter((record) => record.paragraafId === paragraafId)
