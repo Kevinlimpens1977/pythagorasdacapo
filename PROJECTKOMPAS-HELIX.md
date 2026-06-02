@@ -1,8 +1,31 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 28 mei 2026
+Laatst bijgewerkt: 2 juni 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
+
+## Nieuwe Chat Startcontext
+
+Als een nieuwe Codex-chat dit document leest, moet die vooral dit weten:
+
+- Werk op branch `feature/cms-platform`, tenzij de gebruiker iets anders zegt.
+- Firebase/appnaam is visueel HELIX, maar Firebase project/config kan nog `pythagoras-eoa` heten.
+- Dev server voor dit project draait doorgaans op `http://localhost:5173/`. Poort `5174` draaide eerder een ander project.
+- Er is een GitHub-backupbranch gemaakt voor de Digidocent-leerflow: `backup/digidocent-before-learning-flow`.
+- Recente hoofdflow: de leerlingroute is uitgebreid met Digidocent, AI/open-antwoordbeoordeling, voortgangsblokjes, herstelopdrachten/challenge en leerling-foutmeldingen.
+- Bekende ongerelateerde untracked mappen kunnen in gitstatus staan: `.superpowers/` en `exports/presenter-smoke/`. Niet automatisch stagen of verwijderen.
+- De gebruiker wil vaak eerst bevraagd worden bij grote productkeuzes, maar gaf voor de huidige Digidocent- en meldingenrichting expliciet akkoord.
+- Volledige lint kan bestaande schuld raken. Gebruik gericht `npx eslint <aangepaste bestanden>`, gerichte `node --test ...` en `npm run build`.
+
+Recente commits die een nieuwe chat moet kennen:
+
+- `4a06bc1 feat: voeg leerling foutmeldingen toe`
+- `ff2c8ef fix: behoud digidocent concepttekst bij hover`
+- `1060c6d fix: stem herstelopdrachten af op foutvraag`
+- `66cc627 feat: implementeer digidocent leerflow`
+- `ecbe47a docs: voeg goalvoorstel digidocent leerflow toe`
+- `f9fcc28 fix: maak digidocent procentfeedback concreet`
+- `a294cb8 feat: maak digidocent paragraafbewust`
 
 ## Productvisie
 
@@ -30,6 +53,8 @@ De inhoudelijke startcontext is VMBO 1-2 wiskunde rond Pythagoras, maar de archi
 - Lesbloktypes staan in `src/lib/contentBlockUtils.js`.
 - Vraagtypes staan in `src/lib/questionTypeRegistry.js`.
 - Presenter-code staat hoofdzakelijk in `src/components/presenter/` en `src/lib/presenter*.js`.
+- Digidocent/leerlingroute staat hoofdzakelijk in `src/pages/StudentLessonPage.jsx`, `src/components/slides/AITutorChat.jsx` en `src/lib/aiTutor*.js`.
+- Leerling-foutmeldingen staan in `src/components/studentBugReports/`, `src/pages/AdminMeldingenPage.jsx`, `src/lib/studentBugReportUtils.js` en `src/services/studentBugReportService.js`.
 - Firebase config gebruikt technisch nog project ID `pythagoras-eoa`, ook als projectnaam/appnaam in Firebase visueel naar HELIX is aangepast.
 
 ## Hoofdmodules
@@ -49,11 +74,21 @@ Belangrijk:
 
 Werkplek voor klasdashboard, leerlingvoortgang en later didactische signalen.
 
-Open richting:
+Huidig:
 
 - Analyse per klas, paragraaf en vraag.
-- Signalen voor vastlopers en inactiviteit.
+- Voortgangsblokjes in de leerlingroute tonen de status van vraagblokken.
+- Groen betekent goed afgerond zonder echte Digidocent-chat.
+- Groen met rood stippellijntje betekent goed afgerond met actieve Digidocent-hulp.
+- Rood betekent na maximaal vier foutieve pogingen geparkeerd voor herstel.
+- Amber betekent dat AI/open-antwoordbeoordeling faalde, maar de leerling mag nooit vastlopen.
+- Paragraafafsluiting kiest herstel of uitdaging op basis van de kernvraagresultaten.
+
+Open richting:
+
+- Meer docentgerichte signalen voor vastlopers en inactiviteit.
 - Leerlingdrilldown en exports.
+- Betere analyse van Digidocent-gebruik versus zelfstandig succes.
 
 ### Leerlingen
 
@@ -64,6 +99,42 @@ Huidig:
 - Toont leerlingen uit `users` met rol `student`.
 - Toont naam, e-mail, klas en laatste activiteit/accountstatus.
 - Wachtwoordbeheer en accountflows zijn nog beperkt.
+
+### Meldingen
+
+Werkplek voor door leerlingen gemelde fouten.
+
+Gebouwd per 2 juni 2026:
+
+- Leerlingen hebben in de topbar een knop `Meld een fout`.
+- De popup vraagt alleen categorie, korte toelichting en optionele extra uitleg.
+- Automatisch meegestuurd worden leerlingnaam, e-mail, uid, leerlingnummer indien bekend, klas, URL, paginatitel, paragraaf, hoofdstuk, lesblok en vraagcontext waar beschikbaar.
+- Categorieen:
+  - Antwoordmodel klopt niet
+  - Schrijffout of taal
+  - Opdracht is onduidelijk
+  - Technisch probleem
+  - Afbeelding/video/link werkt niet
+  - Anders
+- Limiet tegen misbruik: maximaal 3 meldingen per leerling per 10 minuten.
+- Adminpagina `/admin/meldingen` toont meldingen newest-first.
+- Admin kan filteren op status en categorie.
+- Statussen: Nieuw, In behandeling, Opgelost, Afgewezen.
+- Admin kan een korte adminnotitie opslaan.
+
+Belangrijke bestanden:
+
+- `src/components/studentBugReports/StudentBugReportButton.jsx`
+- `src/components/studentBugReports/StudentBugReportContext.jsx`
+- `src/pages/AdminMeldingenPage.jsx`
+- `src/services/studentBugReportService.js`
+- `src/lib/studentBugReportUtils.js`
+- `src/lib/studentBugReportUtils.test.js`
+
+Firestore:
+
+- Collectie `studentBugReports`.
+- De service filtert status/categorie client-side na nieuwste query om samengestelde Firestore-indexen voor V1 zoveel mogelijk te vermijden.
 
 Nieuw verkend op 28 mei 2026:
 
@@ -273,6 +344,82 @@ Open:
 
 - Verdere polish van bediening, fullscreen, media-PDF/documentviewer en klassikale flow.
 
+## Digidocent En Leerlingroute-AI
+
+Digidocent is de leerlingbegeleider in de leerlingroute. Hij moet socratisch helpen, context van de paragraaf kunnen gebruiken en leerlingen nooit blokkeren wanneer AI faalt.
+
+Status per 2 juni 2026:
+
+- Digidocent heet nu Digidocent, niet meer P-AI-co.
+- Digidocent is paragraafbewust: eerdere chat en voortgang binnen de paragraaf kunnen als context worden meegegeven.
+- Chatgeschiedenis wordt per paragraaf/vraag in localStorage bewaard en als gecontroleerde state gebruikt.
+- Digidocent-paneel zit als verticale knop aan de rechterkant.
+- Paneel opent bij hover/mouse-enter en sluit bij mouse-out.
+- Belangrijke UX-fix: als er concepttekst in het chatvenster staat die nog niet verstuurd is, sluit het paneel niet automatisch bij mouse-out. De concepttekst blijft per vraag bewaard.
+- Actieve chat-hulp telt als Digidocent-hulp voor voortgangskleuring.
+- Automatische foutfeedback of beoordelingsfeedback telt niet als echte Digidocent-hulp.
+
+Beschikbaarheid:
+
+- Vraagblokken hebben Digidocent standaard aan.
+- Niet-vraag-lesblokken zoals theorie, media, YouTube/slidedeck hebben Digidocent standaard uit.
+- Admin/beheer kan per blok een escape hebben om Digidocent uit te zetten.
+
+Open-antwoordbeoordeling:
+
+- Open vragen gaan primair via Digidocent/AI-beoordeling.
+- Simpele numerieke antwoorden worden lokaal beoordeeld voordat AI nodig is.
+- Voorbeelden die lokaal goed moeten kunnen: `sqrt(100) = 10`, `wortel van 100 = 10`, `3 + 3 = 6`.
+- Als AI faalt bij een open vraag, wordt de leerling niet geblokkeerd.
+- AI-falen wordt amber/pending teacher review, zodat de leerling verder kan en de docent kan meekijken.
+- Gele JSON-foutmeldingen zoals `No JSON object found` mogen niet rauw zichtbaar zijn voor leerlingen.
+
+Pogingen en voortgang:
+
+- Leerling mag maximaal 4 pogingen doen bij een vraag.
+- Fout antwoord voor poging 1-3 geeft automatisch een korte socratische hint.
+- Na poging 4 fout wordt de vraag rood/geparkeerd voor herstel.
+- Goed antwoord gaat automatisch door naar de volgende vraag/lesstap.
+- Groen blokje: goed zonder echte Digidocent-chat.
+- Groen blokje met rood stippellijntje: goed met echte Digidocent-chat.
+- Amber blokje: beoordeling faalde, leerling mag door en docent kijkt mee.
+- Rood blokje: na maximale pogingen fout, herstelopdracht nodig.
+
+Paragraafafsluiting:
+
+- Als alle kernvragen groen zijn, krijgt de leerling een uitdagende vraag op basis van dezelfde didactiek en onderwerpen.
+- Als er rode/gefaalde vragen zijn, krijgt de leerling een verplichte herstelopdracht.
+- Herstelopdrachten moeten inhoudelijk aansluiten op de foutief gemaakte vraag en foutsoort.
+- Voor veelvoorkomende simpele rekenpatronen is herstel nu concreter en niet meer generiek:
+  - `3 + 3` fout als `9` herkent optellen versus vermenigvuldigen.
+  - `wortel`-vragen leggen de inverse controle uit.
+- Voortgangpayload bewaart snapshots zoals vraagtekst, modelantwoord en laatste antwoord, zodat herstelopdrachten context hebben.
+
+Belangrijke bestanden:
+
+- `src/pages/StudentLessonPage.jsx`
+- `src/components/slides/AITutorChat.jsx`
+- `src/lib/aiTutorConversation.js`
+- `src/lib/aiTutorLessonContext.js`
+- `src/lib/aiTutorAnswerSummary.js`
+- `src/lib/aiTutorPanelState.js`
+- `src/lib/localOpenAnswerAssessment.js`
+- `src/lib/studentQuestionAttemptFlow.js`
+- `src/lib/learningResultUtils.js`
+- `src/lib/paragraphEndActivity.js`
+- `src/lib/voortgangPayload.js`
+- `src/lib/openAnswerAssessmentFeedback.js`
+
+Belangrijke tests:
+
+- `src/lib/aiTutorPanelState.test.js`
+- `src/lib/localOpenAnswerAssessment.test.js`
+- `src/lib/studentQuestionAttemptFlow.test.js`
+- `src/lib/learningResultUtils.test.js`
+- `src/lib/paragraphEndActivity.test.js`
+- `src/lib/voortgangPayload.test.js`
+- `src/lib/openAnswerAssessmentFeedback.test.js`
+
 ## Presenter V1a Core
 
 Presenter V1a is technisch gebouwd.
@@ -439,6 +586,7 @@ Belangrijke Firestore-collecties:
 - `slidedeckPackages`
 - `questionMetadata`
 - `adminCropSources`
+- `studentBugReports`
 
 Belangrijke Storage-paden:
 
@@ -471,6 +619,7 @@ Let op:
   - Lesstof
   - Voortgang
   - Leerlingen
+  - Meldingen
   - Spellen
   - Presenter
   - Beheer
@@ -546,6 +695,13 @@ Deze bestanden zijn prototypes/documentatie, geen productcode. Ze zijn bedoeld o
 - Belangrijkste vraagtypes werken in preview.
 - Controle geeft visuele goed/fout feedback.
 - Volgordevragen renderen als testweergave in plaats van leeg tekstvak.
+- Leerlingroute gebruikt voortgangsblokjes met groen, groen plus rood stippellijntje, amber en rood.
+- Digidocent is standaard beschikbaar bij vraagblokken.
+- Open antwoorden kunnen lokaal of via AI beoordeeld worden.
+- AI-falen blokkeert de leerling niet; de voortgang wordt amber en docent kan meekijken.
+- Na maximaal vier foutieve pogingen wordt een vraag rood en volgt paragraafherstel.
+- Aan het einde van een paragraaf komt herstel of uitdaging.
+- Herstelopdrachten gebruiken vraagtekst, verwacht antwoord, laatste antwoord en feedbacksnapshot voor betere aansluiting.
 
 ## Leerlingfoto-Import V1: Implementatie-Optie
 
@@ -881,15 +1037,35 @@ Nodig:
 ## Actuele Technische Aandachtspunten Voor Nieuwe Agent
 
 - Werk op branch `feature/cms-platform`, tenzij de gebruiker anders zegt.
+- Recente wijzigingen zijn gepusht naar GitHub op `feature/cms-platform`, maar zijn pas live op Firebase na deploy.
+- Er bestaat een herstelbare backupbranch: `backup/digidocent-before-learning-flow`.
 - Huidige gitstatus kan lokale untracked tooling bevatten, zoals `.superpowers/` en `exports/presenter-smoke/`. Niet automatisch stagen of verwijderen.
 - `README.md` is nog geen betrouwbare projectdocumentatie.
 - `FIRESTORE_SCHEMA.md` is deels ouder dan de implementatie.
 - Volledige `npm run lint` kan nog falen op bestaande lint-schuld. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
 - Dev server draait meestal op `http://localhost:5173/` of een nabije Vite-poort. De gebruiker gebruikt vaak `localhost` liever dan `127.0.0.1`.
+- Poort `5174` was eerder bezet door een ander project; gebruik die niet zomaar voor HELIX.
 - Voor lokale dev-login kunnen `.env.local` flags nodig zijn:
   - `VITE_ENABLE_DEV_LOGIN=true`
   - `VITE_ENABLE_DEV_ADMIN_LOGIN=true`
 - Geen Firebase Anonymous Auth gebruiken voor tests.
+
+Actuele belangrijke routes:
+
+- `/` leerling-overzicht/lesmateriaal
+- `/chapter/:chapterId` leerlingroute
+- `/profiel` leerlingprofiel
+- `/admin` Admin Hub
+- `/admin/lesstof` lesstofwerkplek
+- `/admin/cms` CMS platform
+- `/admin/digibord` digibord
+- `/admin/slidedecks` slidedeckcreator
+- `/dashboard` voortgang/klasdashboard
+- `/admin/leerlingen` leerlingbeheer
+- `/admin/meldingen` leerling-foutmeldingen
+- `/admin/spellen` spellen
+- `/admin/presenter` Presenter
+- `/admin/ai-instellingen` Digidocent/OpenRouter instellingen
 
 Belangrijke bestanden bij CMS/lesroutewerk:
 
@@ -901,7 +1077,23 @@ Belangrijke bestanden bij CMS/lesroutewerk:
 - `src/lib/fillBlankUtils.js`
 - `src/components/media/MediaRenderer.jsx`
 - `src/pages/StudentLessonPage.jsx`
+- `src/components/slides/AITutorChat.jsx`
+- `src/lib/aiTutorPanelState.js`
+- `src/lib/localOpenAnswerAssessment.js`
+- `src/lib/studentQuestionAttemptFlow.js`
+- `src/lib/paragraphEndActivity.js`
+- `src/lib/voortgangPayload.js`
+- `src/lib/learningResultUtils.js`
 - `src/components/digibord/DigibordViewer.jsx`
+
+Belangrijke bestanden bij leerling-foutmeldingen:
+
+- `src/components/studentBugReports/StudentBugReportButton.jsx`
+- `src/components/studentBugReports/StudentBugReportContext.jsx`
+- `src/pages/AdminMeldingenPage.jsx`
+- `src/services/studentBugReportService.js`
+- `src/lib/studentBugReportUtils.js`
+- `src/lib/studentBugReportUtils.test.js`
 
 Belangrijke bestanden bij Presenter:
 
@@ -932,8 +1124,18 @@ Belangrijke services:
 - `src/services/voortgangService.js`
 - `src/services/klasService.js`
 - `src/services/storageService.js`
+- `src/services/studentBugReportService.js`
 
 Recente commitclusters die context geven:
+
+- Digidocent, leerlingroute en meldingen:
+  - `4a06bc1 feat: voeg leerling foutmeldingen toe`
+  - `ff2c8ef fix: behoud digidocent concepttekst bij hover`
+  - `1060c6d fix: stem herstelopdrachten af op foutvraag`
+  - `66cc627 feat: implementeer digidocent leerflow`
+  - `ecbe47a docs: voeg goalvoorstel digidocent leerflow toe`
+  - `f9fcc28 fix: maak digidocent procentfeedback concreet`
+  - `a294cb8 feat: maak digidocent paragraafbewust`
 
 - Presenter V1a en polish:
   - `ab91c3b feat: add presenter backgrounds and grid snap`
