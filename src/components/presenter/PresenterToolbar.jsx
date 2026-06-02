@@ -7,7 +7,6 @@ import {
   Bold,
   CheckSquare,
   FileText,
-  FilePlus2,
   Grid3X3,
   Highlighter,
   Italic,
@@ -172,6 +171,10 @@ export default function PresenterToolbar({
 
   const handleCategory = (category) => {
     if (category.disabled) return;
+    if (category.id === 'lesson') {
+      runAction(onOpenImport);
+      return;
+    }
     onCategory?.(category.id);
     onAction?.();
   };
@@ -486,18 +489,6 @@ export default function PresenterToolbar({
               </button>
             ))}
           </div>
-        </div>
-      ) : null}
-      {activeCategory === 'lesson' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(36rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <button
-            type="button"
-            className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
-            onClick={() => runAction(onOpenImport)}
-          >
-            <FilePlus2 size={16} strokeWidth={2.4} />
-            Importeer uit CMS
-          </button>
         </div>
       ) : null}
       <div className={`pointer-events-auto mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-1.5 overflow-visible p-2 ${panelClass}`} onPointerEnter={onOpen}>

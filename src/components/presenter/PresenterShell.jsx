@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, FilePlus2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import {
   createPresenterHistory,
   recordPresenterPageState,
@@ -968,14 +968,6 @@ export default function PresenterShell() {
           <h1 className="text-lg font-black leading-tight">Digibord Core</h1>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <button
-            type="button"
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-slate-700 bg-slate-900 px-3 text-sm font-black text-slate-50 transition hover:border-violet-300 hover:bg-slate-800"
-            onClick={openImportDialog}
-          >
-            <FilePlus2 size={18} strokeWidth={2.4} />
-            Importeer CMS
-          </button>
           <div className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-900 p-1">
             <button
               type="button"
