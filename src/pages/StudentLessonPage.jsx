@@ -53,6 +53,7 @@ import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learn
 import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { buildQuestionDraftProgressPayload, hasQuestionDraftAnswer } from '../lib/questionDraftProgress';
+import { assessOpenAnswerLocally } from '../lib/localOpenAnswerAssessment';
 import {
   buildParagraphEndPlan,
   buildQuestionAttemptOutcome,
@@ -88,6 +89,18 @@ const blockIcons = {
 };
 
 const htmlValue = (value = '') => ({ __html: value || '' });
+
+const stripHtmlText = (value = '') =>
+  String(value || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
 
 export default function StudentLessonPage() {
   const { chapterId: paragraafId } = useParams();
@@ -257,7 +270,18 @@ export default function StudentLessonPage() {
   const coreQuestionRecords = useMemo(() => (
     blocks
       .filter((block) => block.type === 'question')
-      .map((block) => progressRecords.find((record) => (record.blockId || record.vraagId) === block.id) || null)
+      .map((block) => {
+        const record = progressRecords.find((item) => (item.blockId || item.vraagId) === block.id);
+        if (!record) return null;
+        const linkedVraag = block.linkedVraag || {};
+        return {
+          ...record,
+          questionPlainText: record.questionPlainText || stripHtmlText(linkedVraag?.content?.text || block.content?.html || block.content?.text || ''),
+          expectedAnswer: record.expectedAnswer || linkedVraag?.antwoord?.expected || linkedVraag?.antwoord?.correctValue || linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
+          modelAnswer: record.modelAnswer || linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
+          hints: record.hints || linkedVraag?.antwoord?.hints || []
+        };
+      })
   ), [blocks, progressRecords]);
 
   const paragraphEndPlan = useMemo(() => buildParagraphEndPlan({
@@ -1443,19 +1467,37 @@ function QuestionLearningBlock({
     try {
       let assessment = null;
       if (isOpenQuestion) {
-        try {
-          assessment = await assessOpenAnswerCall({
-            blockId: block.id,
-            questionTitle: linkedVraag?.title || block.title || 'Open vraag',
-            questionPrompt: linkedVraag?.content?.text || bodyHtml || '',
-            modelAnswer: linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
-            studentAnswer: openStudentAnswer
-          });
-        } catch {
+        const modelAnswer = linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || linkedVraag?.antwoord?.expected || linkedVraag?.antwoord?.correctValue || '';
+        const localAssessment = assessOpenAnswerLocally({
+          questionPrompt: linkedVraag?.content?.text || bodyHtml || '',
+          modelAnswer,
+          studentAnswer: openStudentAnswer
+        });
+
+        if (localAssessment.canAssess) {
           assessment = {
-            success: false,
-            error: 'Digidocent kon je antwoord niet beoordelen.'
+            success: true,
+            source: 'local',
+            isCorrect: localAssessment.isCorrect,
+            feedback: localAssessment.feedback,
+            missing: localAssessment.missing
           };
+        } else {
+          try {
+            assessment = await assessOpenAnswerCall({
+              blockId: block.id,
+              questionTitle: linkedVraag?.title || block.title || 'Open vraag',
+              questionPrompt: linkedVraag?.content?.text || bodyHtml || '',
+              modelAnswer,
+              studentAnswer: openStudentAnswer
+            });
+          } catch {
+            assessment = {
+              success: false,
+              source: 'ai',
+              error: 'Digidocent kon je antwoord niet beoordelen.'
+            };
+          }
         }
       }
       const aiAssessmentFailed = isOpenQuestion && !assessment?.success;
@@ -1472,6 +1514,7 @@ function QuestionLearningBlock({
         ? {
             isCorrect,
             success: Boolean(assessment?.success),
+            source: assessment?.source || 'ai',
             feedback: sanitizeOpenAnswerAssessmentFeedback(
               aiAssessmentFailed
                 ? 'Je antwoord is opgeslagen. Digidocent kon dit nu niet beoordelen, dus je docent kan meekijken. Je kunt verder met de les.'
@@ -1483,6 +1526,8 @@ function QuestionLearningBlock({
         : null;
       let feedbackText = openAnswerAssessment?.feedback || '';
       let missingItems = openAnswerAssessment?.missing || [];
+      const assessmentFeedbackForRecord = feedbackText;
+      const assessmentMissingForRecord = missingItems;
 
       if (!isOpenQuestion && !isCorrect && !outcome.completed) {
         const hint = await askAiTutorCall(
@@ -1541,17 +1586,20 @@ function QuestionLearningBlock({
         blockType: block.type || 'question',
         vraagTitle: linkedVraag?.title || '',
         vraagType: preview.type || linkedVraag?.type || '',
+        questionPlainText: stripHtmlText(linkedVraag?.content?.text || bodyHtml || ''),
+        expectedAnswer: linkedVraag?.antwoord?.expected || linkedVraag?.antwoord?.correctValue || linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
+        modelAnswer: linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
         ...(openAnswerAssessment ? {
           openAnswerAssessment: {
             ...openAnswerAssessment,
-            feedback: feedbackText || openAnswerAssessment.feedback,
-            missing: missingItems
+            feedback: assessmentFeedbackForRecord || openAnswerAssessment.feedback,
+            missing: assessmentMissingForRecord
           },
           lastAssessment: {
-            source: aiAssessmentFailed ? 'ai' : 'ai',
+            source: openAnswerAssessment.source || 'ai',
             status: aiAssessmentFailed ? 'failed_to_assess' : (isCorrect ? 'correct' : 'incorrect'),
-            feedback: feedbackText || openAnswerAssessment.feedback,
-            missing: missingItems,
+            feedback: assessmentFeedbackForRecord || openAnswerAssessment.feedback,
+            missing: assessmentMissingForRecord,
             answerSignature
           }
         } : {

@@ -105,6 +105,24 @@ test('buildContentBlockVoortgangUpdate stores paragraph end progress type', () =
   assert.equal(update.completionReason, 'remediation_completed');
 });
 
+test('buildContentBlockVoortgangUpdate stores question snapshots for remediation', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    data: {
+      completed: true,
+      isCorrect: false,
+      resultTier: 'failed',
+      questionPlainText: 'Bereken: 3 + 3',
+      expectedAnswer: '6',
+      modelAnswer: '6'
+    }
+  });
+
+  assert.equal(update.questionPlainText, 'Bereken: 3 + 3');
+  assert.equal(update.expectedAnswer, '6');
+  assert.equal(update.modelAnswer, '6');
+});
+
 test('buildContentBlockVoortgangUpdate stores draft answers without counting an attempt', () => {
   const update = buildContentBlockVoortgangUpdate({
     ...base,

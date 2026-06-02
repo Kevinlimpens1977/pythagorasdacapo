@@ -26,6 +26,31 @@ test('buildParagraphEndActivity creates remediation from failed question records
   assert.equal(activity.tasks.length <= 4, true);
 });
 
+test('buildParagraphEndActivity creates concrete remediation for an addition mistake', () => {
+  const activity = buildParagraphEndActivity({
+    kind: 'remediation',
+    paragraaf: { title: 'Rekenen' },
+    records: [
+      {
+        blockTitle: 'Vraag 4',
+        vraagTitle: 'Vraag 4',
+        questionPlainText: 'Bereken: 3 + 3',
+        expectedAnswer: '6',
+        lastAnswer: { expectedValue: '9' },
+        lastAssessment: { feedback: 'Je lijkt te vermenigvuldigen in plaats van op te tellen.' }
+      }
+    ]
+  });
+
+  const text = activity.tasks.map((task) => `${task.title}\n${task.prompt}`).join('\n');
+
+  assert.match(text, /3 \+ 3/);
+  assert.match(text, /9/);
+  assert.match(text, /optel/i);
+  assert.match(text, /4 \+ 4/);
+  assert.doesNotMatch(text, /Deze vraag wordt geparkeerd/i);
+});
+
 test('buildParagraphEndActivity creates one required challenge for a green paragraph', () => {
   const activity = buildParagraphEndActivity({
     kind: 'challenge',
