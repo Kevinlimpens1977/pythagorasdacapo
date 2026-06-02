@@ -43,6 +43,7 @@
     --helix-danger: #ef4444;
     --helix-info: #7a3cff;
     --helix-gradient: linear-gradient(135deg, #ff7a00 0%, #ff2d8d 48%, #7a3cff 100%);
+    --helix-gradient-border: linear-gradient(135deg, oklch(0.72 0.16 35), oklch(0.66 0.16 342), oklch(0.58 0.17 286));
     --helix-gradient-soft: linear-gradient(135deg, rgba(255, 122, 0, 0.14), rgba(255, 45, 141, 0.12), rgba(122, 60, 255, 0.12));
     --helix-radius-sm: 10px;
     --helix-radius-md: 14px;
@@ -255,24 +256,40 @@ input[type=number] {
 
 /* Standard Button Styles - Consistent Across App */
 .btn-primary {
-  background: var(--helix-gradient);
-  box-shadow: var(--helix-shadow-glow);
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 text-white font-extrabold rounded-2xl transition-all active:scale-95 hover:-translate-y-0.5 focus:outline-none;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    var(--helix-gradient-border) border-box;
+  color: var(--helix-navy);
+  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 font-extrabold rounded-2xl transition-all active:scale-95 hover:-translate-y-0.5 focus:outline-none;
 }
 
 .btn-primary:disabled {
-  @apply bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 hover:shadow-none hover:translate-y-0;
+  background: #eef2f7;
+  border-color: #dfe5ee;
+  color: #94a3b8;
+  box-shadow: none;
+  @apply cursor-not-allowed opacity-70 hover:translate-y-0;
 }
 
 /* Large Primary Button - Full Width (forms, auth screens) */
 .btn-primary-lg {
-  background: var(--helix-gradient);
-  box-shadow: var(--helix-shadow-glow);
-  @apply w-full py-3.5 text-white font-extrabold rounded-2xl transition-all focus:outline-none flex items-center justify-center gap-2 active:scale-95 hover:-translate-y-0.5;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    var(--helix-gradient-border) border-box;
+  color: var(--helix-navy);
+  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+  @apply w-full py-3.5 font-extrabold rounded-2xl transition-all focus:outline-none flex items-center justify-center gap-2 active:scale-95 hover:-translate-y-0.5;
 }
 
 .btn-primary-lg:disabled {
-  @apply bg-blue-400 text-white cursor-not-allowed opacity-60 hover:shadow-none;
+  background: #eef2f7;
+  border-color: #dfe5ee;
+  color: #94a3b8;
+  box-shadow: none;
+  @apply cursor-not-allowed opacity-70 hover:shadow-none;
 }
 
 /* Secondary Button - Outline Style */

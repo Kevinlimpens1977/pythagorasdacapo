@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   calculateAssignedProgress,
   getAssignedContentBlockIds,
+  getAssignedProgressRecords,
   getEffectiveContentBlocks,
   getStudentEffectiveParagrafen
 } from './assignmentUtils.js';
@@ -96,4 +97,40 @@ test('calculateAssignedProgress uses assigned block totals as denominator', () =
     percentage: 33,
     startedPercentage: 67
   });
+});
+
+test('calculateAssignedProgress matches legacy vraagId records to assigned question blocks', () => {
+  const summary = calculateAssignedProgress({
+    assignments: [
+      { paragraafId: 'p1', blocks: [{ id: 'block-q1', linkedVraagId: 'vraag-1' }] }
+    ],
+    progressRecords: [
+      { vraagId: 'vraag-1', completed: true },
+      { vraagId: 'vraag-2', completed: true }
+    ]
+  });
+
+  assert.deepEqual(summary, {
+    assignedItems: 1,
+    startedItems: 1,
+    completedItems: 1,
+    percentage: 100,
+    startedPercentage: 100
+  });
+});
+
+test('getAssignedProgressRecords returns only records linked to current assigned blocks', () => {
+  const records = getAssignedProgressRecords({
+    assignments: [
+      { paragraafId: 'p1', blocks: [{ id: 'block-q1', linkedVraagId: 'vraag-1' }] }
+    ],
+    progressRecords: [
+      { id: 'new', blockId: 'block-q1', completed: true },
+      { id: 'legacy', vraagId: 'vraag-1', completed: true },
+      { id: 'old', vraagId: 'vraag-2', completed: true }
+    ]
+  });
+
+  assert.deepEqual(records.map((record) => record.id), ['new', 'legacy']);
+  assert.deepEqual(records.map((record) => record.assignedItemId), ['block-q1', 'block-q1']);
 });

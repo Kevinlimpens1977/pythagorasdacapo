@@ -9,10 +9,20 @@ import * as cmsService from '../../services/cmsService';
 import * as klasService from '../../services/klasService';
 import {
   calculateAssignedProgress,
+  getAssignedProgressRecords,
   getEffectiveContentBlocks,
   getStudentEffectiveParagrafen
 } from '../../lib/assignmentUtils';
 import { getLearningResultTone } from '../../lib/learningResultUtils';
+import {
+  buildClassMetricCards,
+  buildClassProgressMetrics,
+  buildDashboardLensTabs,
+  buildParagraphProgressSummary,
+  buildStudentMetricCards,
+  buildStudentProgressMetrics,
+  getVisibleStudentProgressParagraphs
+} from '../../lib/progressDashboardMetrics';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
 
@@ -72,9 +82,32 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
   );
 }
 
+function DashboardLensSwitch({ activeLens = 'class', onSelect }) {
+  return (
+    <div className="flex flex-wrap gap-2" role="tablist" aria-label="Voortgangsweergave">
+      {buildDashboardLensTabs(activeLens).map((tab) => (
+        <button
+          key={tab.key}
+          type="button"
+          role="tab"
+          aria-selected={tab.active}
+          onClick={() => onSelect(tab.key)}
+          className={`rounded-xl border px-4 py-2 text-sm font-black transition ${
+            tab.active
+              ? 'border-blue-300 bg-blue-50 text-blue-700'
+              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function StudentProgressRecordList({ records = [], paragraafId }) {
   const paragraphRecords = records
-    .filter((record) => record.paragraafId === paragraafId)
+    .filter((record) => !paragraafId || record.paragraafId === paragraafId)
     .sort((a, b) => String(a.blockId || a.vraagId || '').localeCompare(String(b.blockId || b.vraagId || '')));
 
   if (!paragraphRecords.length) return null;
@@ -147,6 +180,8 @@ export default function ClassOverview() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [viewingExercise, setViewingExercise] = useState(null);
+  const [activeLens, setActiveLens] = useState('class');
+  const [expandedEvidence, setExpandedEvidence] = useState({});
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedChapterForClass, setSelectedChapterForClass] = useState(null);
   const [sortBy, setSortBy] = useState("name");
@@ -267,24 +302,17 @@ export default function ClassOverview() {
     return () => unsubscribe();
   }, []);
 
-  const getStudentAssignmentSummary = useCallback((student, paragraafFilterId = null) => {
+  const getStudentParagraafAssignments = useCallback((student, paragraafFilterId = null) => {
     const klasData = klassenMap[student.klasId];
-    if (!klasData) {
-      return {
-        assignedItems: 0,
-        startedItems: 0,
-        completedItems: 0,
-        percentage: 0,
-        startedPercentage: 0
-      };
-    }
+    if (!klasData) return [];
 
     const effectiveParagraafIds = getStudentEffectiveParagrafen(klasData, student.id);
     const targetParagrafen = paragraphen.filter((paragraaf) =>
       effectiveParagraafIds.includes(paragraaf.id) &&
       (!paragraafFilterId || paragraaf.id === paragraafFilterId)
     );
-    const assignments = targetParagrafen.map((paragraaf) => ({
+
+    return targetParagrafen.map((paragraaf) => ({
       paragraafId: paragraaf.id,
       blocks: getEffectiveContentBlocks(
         klasData,
@@ -293,14 +321,34 @@ export default function ClassOverview() {
         contentBlocksByParagraaf[paragraaf.id] || []
       )
     }));
+  }, [contentBlocksByParagraaf, klassenMap, paragraphen]);
+
+  const getStudentAssignmentSummary = useCallback((student, paragraafFilterId = null) => {
+    const assignments = getStudentParagraafAssignments(student, paragraafFilterId);
 
     return calculateAssignedProgress({
       assignments,
       progressRecords: studentVoortgang[student.id] || []
     });
-  }, [contentBlocksByParagraaf, klassenMap, paragraphen, studentVoortgang]);
+  }, [getStudentParagraafAssignments, studentVoortgang]);
 
-  const filteredStudents = students
+  const summariesByStudentId = Object.fromEntries(
+    students.map((student) => [student.id, getStudentAssignmentSummary(student)])
+  );
+  const classMetrics = buildClassProgressMetrics({
+    students,
+    summariesByStudentId,
+    recordsByStudentId: studentVoortgang
+  });
+  const classMetricCards = buildClassMetricCards(classMetrics);
+  const studentMetricsById = Object.fromEntries(
+    classMetrics.students.map(({ studentId, metrics }) => [studentId, metrics])
+  );
+  const lensFilteredStudents = activeLens === 'signals'
+    ? students.filter((student) => (studentMetricsById[student.id]?.attention?.total || 0) > 0)
+    : students;
+
+  const filteredStudents = lensFilteredStudents
     .filter(s =>
       (s.displayName || "Naamloos").toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -326,21 +374,6 @@ export default function ClassOverview() {
     const diffInMinutes = (new Date() - date) / (1000 * 60);
     return diffInMinutes < 15;
   }).length;
-
-  const warningCount = students.filter((student) => {
-    const summary = getStudentAssignmentSummary(student);
-    return summary.assignedItems > 0 && summary.completedItems === 0;
-  }).length;
-
-  // Calculate average progress from assigned work, not from loose progress records.
-  const avgProgress = students.length > 0
-    ? Math.round(
-        students.reduce((acc, student) => {
-          return acc + getStudentAssignmentSummary(student).percentage;
-        }, 0) / students.length
-      )
-    : 0;
-
   if (loading) {
     return (
       <div className="mx-auto flex h-64 w-full max-w-7xl flex-col items-center justify-center gap-4 px-6 text-[var(--helix-muted)] md:px-8">
@@ -351,9 +384,17 @@ export default function ClassOverview() {
   }
 
   if (selectedStudent) {
-    // Group paragraphs by hoofdstuk
+    const studentParagraphSummaries = Object.fromEntries(
+      paragraphen.map((paragraaf) => [paragraaf.id, getStudentAssignmentSummary(selectedStudent, paragraaf.id)])
+    );
+    const visibleStudentParagraphen = getVisibleStudentProgressParagraphs({
+      paragraphen,
+      summariesByParagraafId: studentParagraphSummaries
+    });
+
+    // Group assigned paragraphs by hoofdstuk.
     const paragraafsByHoofdstuk = {};
-    paragraphen.forEach(paragraaf => {
+    visibleStudentParagraphen.forEach(paragraaf => {
       const key = paragraaf.hoofdstukId;
       if (!paragraafsByHoofdstuk[key]) {
         paragraafsByHoofdstuk[key] = [];
@@ -361,21 +402,44 @@ export default function ClassOverview() {
       paragraafsByHoofdstuk[key].push(paragraaf);
     });
 
-    // Filter by selected chapter if set
-    const filteredHoofdstukken = selectedChapter
-      ? Object.fromEntries(Object.entries(paragraafsByHoofdstuk).filter(([key]) => key === selectedChapter))
+    const effectiveSelectedChapter = selectedChapter && paragraafsByHoofdstuk[selectedChapter] ? selectedChapter : null;
+
+    // Filter by selected chapter if set and assigned to this student.
+    const filteredHoofdstukken = effectiveSelectedChapter
+      ? Object.fromEntries(Object.entries(paragraafsByHoofdstuk).filter(([key]) => key === effectiveSelectedChapter))
       : paragraafsByHoofdstuk;
 
-    // Calculate overall progress from assigned work.
     const overallAssignmentSummary = getStudentAssignmentSummary(selectedStudent);
-    const overallProgress = overallAssignmentSummary.percentage;
+    const selectedStudentRecords = studentVoortgang[selectedStudent.id] || [];
+    const selectedStudentMetrics = buildStudentProgressMetrics({
+      summary: overallAssignmentSummary,
+      records: selectedStudentRecords
+    });
+    const selectedStudentMetricCards = buildStudentMetricCards(selectedStudentMetrics);
 
     return (
       <div className="helix-container animate-in fade-in slide-in-from-right-8 duration-500">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <DashboardLensSwitch
+            activeLens="student"
+            onSelect={(lens) => {
+              if (lens === 'student') {
+                setActiveLens('student');
+                return;
+              }
+              setSelectedStudent(null);
+              setSelectedChapter(null);
+              setActiveLens(lens);
+              setExpandedEvidence({});
+            }}
+          />
+        </div>
         <button
           onClick={() => {
             setSelectedStudent(null);
             setSelectedChapter(null);
+            setActiveLens('class');
+            setExpandedEvidence({});
           }}
           className="mb-8 flex items-center gap-2 font-bold text-[var(--helix-muted)] transition-colors hover:text-[var(--helix-navy)]"
         >
@@ -392,23 +456,21 @@ export default function ClassOverview() {
               <div>
                 <h2 className="font-display text-4xl font-extrabold">{selectedStudent.displayName || "Naamloos"}</h2>
                 <p className="text-slate-400 text-lg">{selectedStudent.email}</p>
+                <p className="mt-2 text-sm font-bold text-white/70">
+                  Laatst actief: {getRelativeTime(selectedStudent.lastActive)}
+                </p>
               </div>
             </div>
-            <div className="relative flex gap-4">
-              <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
-                <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Voortgang</div>
-                <div className="text-2xl font-black text-blue-400">{overallProgress}%</div>
-              </div>
-              <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
-                <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Laatst Actief</div>
-                <div className="text-2xl font-black">{getRelativeTime(selectedStudent.lastActive)}</div>
-              </div>
-              <div className="bg-white/10 px-6 py-3 rounded-2xl border border-white/10">
-                <div className="text-white/50 text-xs font-bold uppercase tracking-wider mb-1">Klaar</div>
-                <div className="text-2xl font-black text-emerald-400">
-                  {overallAssignmentSummary.completedItems}/{overallAssignmentSummary.assignedItems}
+            <div className="relative grid w-full gap-3 md:w-auto md:grid-cols-3">
+              {selectedStudentMetricCards.map((card) => (
+                <div key={card.key} className="min-w-40 rounded-2xl border border-white/10 bg-white/10 px-5 py-3">
+                  <div className="mb-1 text-xs font-bold uppercase tracking-wider text-white/60">{card.label}</div>
+                  <div className={`text-xl font-black ${card.tone === 'warning' ? 'text-orange-200' : card.tone === 'quality' ? 'text-emerald-300' : 'text-blue-300'}`}>
+                    {card.value}
+                  </div>
+                  <div className="mt-1 text-xs font-semibold text-white/60">{card.detail}</div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -419,7 +481,7 @@ export default function ClassOverview() {
               <div className="w-full md:w-64">
                 <label className="block text-sm font-bold text-slate-600 mb-2">Filteren op Hoofdstuk</label>
                 <select
-                  value={selectedChapter || ""}
+                  value={effectiveSelectedChapter || ""}
                   onChange={(e) => setSelectedChapter(e.target.value || null)}
                   className="input-standard w-full"
                 >
@@ -437,6 +499,11 @@ export default function ClassOverview() {
             </div>
 
             <div className="space-y-8">
+              {Object.keys(filteredHoofdstukken).length === 0 && (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm font-semibold text-slate-500">
+                  Er staan nog geen onderdelen open voor deze leerling.
+                </div>
+              )}
               {Object.entries(filteredHoofdstukken).map(([hoofdstukId, paragrafen]) => {
                 const firstPara = paragrafen[0];
                 const hoofdstukTitle = firstPara?.hoofdstukTitle || `Hoofdstuk`;
@@ -450,24 +517,48 @@ export default function ClassOverview() {
 
                     <div className="space-y-3 ml-4">
                       {paragrafen.map(paragraaf => {
-                        const paraSummary = getStudentAssignmentSummary(selectedStudent, paragraaf.id);
+                        const paraSummary = studentParagraphSummaries[paragraaf.id] || getStudentAssignmentSummary(selectedStudent, paragraaf.id);
                         const progressPercent = paraSummary.percentage;
                         const records = studentVoortgang[selectedStudent.id] || [];
+                        const paragraphAssignments = getStudentParagraafAssignments(selectedStudent, paragraaf.id);
+                        const assignedRecords = getAssignedProgressRecords({
+                          assignments: paragraphAssignments,
+                          progressRecords: records
+                        });
+                        const paragraphProgress = buildParagraphProgressSummary({
+                          summary: paraSummary,
+                          records: assignedRecords
+                        });
+                        const evidenceOpen = expandedEvidence[paragraaf.id] === true;
+                        const statusClass = paragraphProgress.signalCount > 0
+                          ? 'border-orange-200 bg-orange-50 text-orange-700'
+                          : progressPercent === 100
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : 'border-blue-200 bg-blue-50 text-blue-700';
 
                         return (
                           <div key={paragraaf.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-                            <div className="flex items-start justify-between gap-4">
+                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex-1">
-                                <h5 className="font-bold text-slate-800">
-                                  {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
-                                </h5>
-                                <p className="text-sm text-slate-500 mt-1">
-                                  {paraSummary.completedItems} / {paraSummary.assignedItems} onderdelen afgerond
-                                </p>
-                                <SupportMiniBar records={records} paragraafId={paragraaf.id} />
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <h5 className="font-bold text-slate-800">
+                                    {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                                  </h5>
+                                  <span className={`rounded-full border px-2.5 py-1 text-xs font-black ${statusClass}`}>
+                                    {paragraphProgress.statusLabel}
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-3 text-sm font-semibold text-slate-500">
+                                  <span>{paraSummary.completedItems} / {paraSummary.assignedItems} onderdelen afgerond</span>
+                                  <span>{paragraphProgress.qualityLabel}</span>
+                                  {paragraphProgress.signalCount > 0 && (
+                                    <span className="text-orange-700">{paragraphProgress.signalCount} signalen</span>
+                                  )}
+                                </div>
+                                <SupportMiniBar records={assignedRecords} />
                               </div>
 
-                              <div className="flex items-center gap-6 ml-4">
+                              <div className="flex flex-wrap items-center gap-4 lg:ml-4">
                                 <div className="w-32">
                                   <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                                     <div
@@ -481,9 +572,23 @@ export default function ClassOverview() {
                                 <div className="text-right min-w-[60px]">
                                   <div className="font-bold text-slate-800">{progressPercent}%</div>
                                 </div>
+                                {paragraphProgress.evidenceCount > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setExpandedEvidence((current) => ({
+                                        ...current,
+                                        [paragraaf.id]: !current[paragraaf.id]
+                                      }));
+                                    }}
+                                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                                  >
+                                    {evidenceOpen ? 'Verberg bewijs' : `Toon bewijs (${paragraphProgress.evidenceCount})`}
+                                  </button>
+                                )}
                               </div>
                             </div>
-                            <StudentProgressRecordList records={records} paragraafId={paragraaf.id} />
+                            {evidenceOpen && <StudentProgressRecordList records={assignedRecords} />}
                           </div>
                         );
                       })}
@@ -614,25 +719,39 @@ export default function ClassOverview() {
             </h1>
             <p className="mt-1 text-[var(--helix-muted)]">Real-time overzicht van je leerlingen</p>
           </div>
+          <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700">
+            Nu actief: {activeCount}/{students.length}
+          </div>
         </div>
+      </div>
+
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <DashboardLensSwitch activeLens={activeLens} onSelect={setActiveLens} />
+        {activeLens === 'signals' && (
+          <p className="text-sm font-bold text-orange-700">Toont alleen leerlingen met directe signalen.</p>
+        )}
+        {activeLens === 'paragraph' && (
+          <p className="text-sm font-bold text-blue-700">Kies hieronder een paragraaf om de klas daarop te vergelijken.</p>
+        )}
+        {activeLens === 'student' && (
+          <p className="text-sm font-bold text-slate-600">Klik op een leerling om de individuele route te openen.</p>
+        )}
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="helix-card flex flex-col p-6">
-          <div className="mb-2 text-sm font-medium text-[var(--helix-muted)]">Actief (laatste 15m)</div>
-          <div className="font-display text-3xl font-extrabold text-[var(--helix-navy)]">{activeCount}</div>
-        </div>
-        <div className="helix-card flex flex-col p-6">
-          <div className="mb-2 text-sm font-medium text-[var(--helix-muted)]">Gemiddelde Voortgang</div>
-          <div className="font-display text-3xl font-extrabold text-[var(--helix-purple)]">{avgProgress}%</div>
-        </div>
-        <div className="helix-alert flex flex-col p-6">
-          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-orange-700">
-            <AlertTriangle size={16} /> Aandacht Nodig
+        {classMetricCards.map((card) => (
+          <div key={card.key} className={`${card.tone === 'warning' ? 'helix-alert' : 'helix-card'} flex flex-col p-6`}>
+            <div className={`mb-2 flex items-center gap-2 text-sm font-medium ${card.tone === 'warning' ? 'text-orange-700' : 'text-[var(--helix-muted)]'}`}>
+              {card.tone === 'warning' && <AlertTriangle size={16} />}
+              {card.label}
+            </div>
+            <div className={`font-display text-3xl font-extrabold ${card.tone === 'warning' ? 'text-orange-700' : card.tone === 'quality' ? 'text-emerald-700' : 'text-[var(--helix-purple)]'}`}>
+              {card.value}
+            </div>
+            <div className="mt-2 text-xs font-bold text-[var(--helix-muted)]">{card.detail}</div>
           </div>
-          <div className="font-display text-3xl font-extrabold text-orange-700">{warningCount}</div>
-        </div>
+        ))}
       </div>
 
       {/* Live Pythagorean Theorem Measurements Table */}
@@ -711,7 +830,13 @@ export default function ClassOverview() {
       <div className="helix-surface overflow-hidden">
         <div className="space-y-4 border-b border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/72 p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <h2 className="font-display font-extrabold text-[var(--helix-navy)]">Leerlingenoverzicht ({students.length})</h2>
+            <h2 className="font-display font-extrabold text-[var(--helix-navy)]">
+              {activeLens === 'signals'
+                ? `Signalen (${filteredStudents.length})`
+                : activeLens === 'paragraph'
+                  ? 'Paragraaffocus'
+                  : `Leerlingenoverzicht (${students.length})`}
+            </h2>
             <div className="relative w-full sm:w-64">
               <input
                 type="text"
@@ -817,7 +942,11 @@ export default function ClassOverview() {
                   return (
                     <tr
                       key={student.id}
-                      onClick={() => setSelectedStudent(student)}
+                      onClick={() => {
+                        setSelectedStudent(student);
+                        setActiveLens('student');
+                        setExpandedEvidence({});
+                      }}
                       className="hover:bg-slate-50 transition-colors group cursor-pointer"
                     >
                       <td className="py-4 px-6">

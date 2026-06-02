@@ -44,20 +44,47 @@ export const getEffectiveContentBlocks = (klasData, userId, paragraafId, blocks 
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 };
 
+const buildAssignedItemMap = (assignments = []) => {
+  const itemMap = new Map();
+
+  assignments.forEach((assignment) => {
+    (assignment.blocks || []).forEach((block) => {
+      if (!block?.id) return;
+      itemMap.set(block.id, block.id);
+      if (block.linkedVraagId) itemMap.set(block.linkedVraagId, block.id);
+    });
+  });
+
+  return itemMap;
+};
+
+const getCanonicalAssignedItemId = (record = {}, itemMap = new Map()) => {
+  const candidates = [record.blockId, record.vraagId].filter(Boolean);
+  const match = candidates.find((candidate) => itemMap.has(candidate));
+  return match ? itemMap.get(match) : '';
+};
+
+export const getAssignedProgressRecords = ({ assignments = [], progressRecords = [] } = {}) => {
+  const itemMap = buildAssignedItemMap(assignments);
+
+  return progressRecords
+    .map((record) => ({
+      ...record,
+      assignedItemId: getCanonicalAssignedItemId(record, itemMap)
+    }))
+    .filter((record) => record.assignedItemId);
+};
+
 export const calculateAssignedProgress = ({ assignments = [], progressRecords = [] } = {}) => {
   const assignedIds = unique(
     assignments.flatMap((assignment) => (assignment.blocks || []).map((block) => block.id))
   );
-  const assignedSet = new Set(assignedIds);
-  const relevantProgress = progressRecords.filter((record) => {
-    const itemId = record.blockId || record.vraagId;
-    return itemId && assignedSet.has(itemId);
-  });
-  const startedIds = unique(relevantProgress.map((record) => record.blockId || record.vraagId));
+  const relevantProgress = getAssignedProgressRecords({ assignments, progressRecords });
+  const startedIds = unique(relevantProgress.map((record) => record.assignedItemId));
   const completedIds = unique(
     relevantProgress
       .filter((record) => record.completed === true)
-      .map((record) => record.blockId || record.vraagId)
+      .map((record) => record.assignedItemId)
   );
   const assignedItems = assignedIds.length;
 
