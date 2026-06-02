@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   BUG_REPORT_CATEGORIES,
   BUG_REPORT_STATUSES,
+  buildStudentBugReportRecentQuerySpec,
   buildStudentBugReportPayload,
   getStudentBugReportRateLimitState
 } from './studentBugReportUtils.js';
@@ -86,4 +87,19 @@ test('getStudentBugReportRateLimitState allows at most three reports per ten min
 
   assert.equal(state.allowed, false);
   assert.equal(state.recentCount, 3);
+});
+
+test('recent bug report query is scoped to the current student before reading Firestore', () => {
+  const spec = buildStudentBugReportRecentQuerySpec({
+    studentUid: ' student-1 ',
+    sinceMs: 1_234,
+    maxResults: 500
+  });
+
+  assert.deepEqual(spec.filters, [
+    { field: 'student.uid', operator: '==', value: 'student-1' },
+    { field: 'clientCreatedAtMs', operator: '>=', value: 1_234 }
+  ]);
+  assert.deepEqual(spec.orderBy, { field: 'clientCreatedAtMs', direction: 'desc' });
+  assert.equal(spec.limit, 300);
 });

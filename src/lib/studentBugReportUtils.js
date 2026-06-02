@@ -60,6 +60,25 @@ export const getStudentBugReportRateLimitState = ({
   };
 };
 
+export const buildStudentBugReportRecentQuerySpec = ({
+  studentUid = '',
+  sinceMs = 0,
+  maxResults = 80
+} = {}) => {
+  const safeStudentUid = cleanText(studentUid, 160);
+  const safeSinceMs = Number.isFinite(Number(sinceMs)) ? Number(sinceMs) : 0;
+  const safeLimit = Math.min(Math.max(Math.round(Number(maxResults) || 80), 1), 300);
+
+  return {
+    filters: [
+      { field: 'student.uid', operator: '==', value: safeStudentUid },
+      { field: 'clientCreatedAtMs', operator: '>=', value: safeSinceMs }
+    ],
+    orderBy: { field: 'clientCreatedAtMs', direction: 'desc' },
+    limit: safeLimit
+  };
+};
+
 export const buildStudentBugReportPayload = ({
   category = 'other',
   description = '',

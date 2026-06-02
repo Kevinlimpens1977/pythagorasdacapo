@@ -13,6 +13,7 @@ import {
 import { db } from './firebase';
 import {
   buildStudentBugReportPayload,
+  buildStudentBugReportRecentQuerySpec,
   normalizeBugReportStatus
 } from '../lib/studentBugReportUtils';
 
@@ -49,17 +50,21 @@ export const getRecentStudentBugReportTimestamps = async ({
   maxResults = 80
 } = {}) => {
   if (!studentUid) return [];
+  const recentQuerySpec = buildStudentBugReportRecentQuerySpec({
+    studentUid,
+    sinceMs,
+    maxResults
+  });
 
   const reportsQuery = query(
     collection(db, COLLECTION_NAME),
-    where('clientCreatedAtMs', '>=', sinceMs),
-    orderBy('clientCreatedAtMs', 'desc'),
-    limit(maxResults)
+    ...recentQuerySpec.filters.map((filter) => where(filter.field, filter.operator, filter.value)),
+    orderBy(recentQuerySpec.orderBy.field, recentQuerySpec.orderBy.direction),
+    limit(recentQuerySpec.limit)
   );
   const snapshot = await getDocs(reportsQuery);
   return snapshot.docs
     .map((item) => item.data())
-    .filter((item) => item?.student?.uid === studentUid)
     .map((item) => Number(item?.clientCreatedAtMs))
     .filter(Number.isFinite);
 };

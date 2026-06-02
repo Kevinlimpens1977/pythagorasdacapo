@@ -144,6 +144,25 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Leerling-foutmeldingen.
+    // Leerlingen mogen alleen eigen meldingen aanmaken en teruglezen voor rate limiting.
+    // Moderatie, status en adminnotities blijven admin-only.
+    match /studentBugReports/{reportId} {
+      allow read: if signedIn() && (
+        resource.data.student.uid == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if signedIn() &&
+        request.resource.data.student.uid == request.auth.uid &&
+        request.resource.data.status == 'new' &&
+        request.resource.data.adminNote == '' &&
+        request.resource.data.category is string &&
+        request.resource.data.description is string;
+
+      allow update, delete: if isAdmin();
+    }
+
     // Leerlingfoto-import: tijdelijke importmetadata en croprecords.
     // Definitief koppelen naar users/{uid}.photo gebeurt via Cloud Functions.
     match /photoImports/{importId} {
