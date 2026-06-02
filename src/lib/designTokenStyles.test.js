@@ -20,3 +20,12 @@ test('primary buttons use the Border Signal gradient border style', () => {
   assert.match(primaryRule, /color:\s*var\(--helix-navy\)/);
   assert.doesNotMatch(primaryRule, /text-white/);
 });
+
+test('progress lens active tab uses the Border Signal gradient border style', () => {
+  const activeRule = getCssRule('.dashboard-lens-tab-active');
+
+  assert.match(activeRule, /border:\s*2px solid transparent/);
+  assert.match(activeRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
+  assert.doesNotMatch(activeRule, /blue/);
+});

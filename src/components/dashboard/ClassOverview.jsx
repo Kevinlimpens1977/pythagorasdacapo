@@ -93,11 +93,7 @@ function DashboardLensSwitch({ activeLens = 'class', onSelect }) {
           role="tab"
           aria-selected={tab.active}
           onClick={() => onSelect(tab.key)}
-          className={`rounded-xl border px-4 py-2 text-sm font-black transition ${
-            tab.active
-              ? 'border-blue-300 bg-blue-50 text-blue-700'
-              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-          }`}
+          className={`dashboard-lens-tab ${tab.active ? 'dashboard-lens-tab-active' : ''}`}
         >
           {tab.label}
         </button>
