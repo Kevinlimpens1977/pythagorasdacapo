@@ -10,38 +10,52 @@ export default function AITutorChat({
   initialMessage = '',
   studentAnswer = '',
   blockId = '',
+  lessonContext = '',
+  messages,
+  onMessagesChange,
   onUserMessageSent
 }) {
-  const [messages, setMessages] = useState([
+  const initialMessages = [
     {
       role: 'assistant',
       content: initialMessage || `Hallo! Je hebt een fout antwoord gegeven bij "${contextHeading}". Ik help je het zelf te bedenken, zonder het antwoord direct te geven. Vertel me: waar ben je nu?`
     }
-  ]);
+  ];
+  const hasControlledMessages = Array.isArray(messages);
+  const [localMessages, setLocalMessages] = useState(initialMessages);
+  const chatMessages = hasControlledMessages && messages.length ? messages : localMessages;
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [chatMessages]);
+
+  const commitMessages = (nextMessages) => {
+    if (hasControlledMessages) {
+      onMessagesChange?.(nextMessages);
+    } else {
+      setLocalMessages(nextMessages);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMsg = { role: 'user', content: input.trim() };
-    const currentMessages = [...messages, userMsg];
-    setMessages(currentMessages);
+    const currentMessages = [...chatMessages, userMsg];
+    commitMessages(currentMessages);
     setInput('');
     setIsLoading(true);
 
     try {
       const previousMessages = buildAiTutorPreviousMessages(currentMessages);
-      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints, studentAnswer, blockId);
+      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints, studentAnswer, blockId, lessonContext);
 
       if (response?.success) {
-        setMessages((current) => [...current, { role: 'assistant', content: response.content }]);
+        commitMessages([...currentMessages, { role: 'assistant', content: response.content }]);
         if (response.helpCounted !== false) {
           onUserMessageSent?.(userMsg.content, response);
         }
@@ -49,8 +63,8 @@ export default function AITutorChat({
         throw new Error(response?.error || 'Geen geldig antwoord');
       }
     } catch {
-      setMessages((current) => [
-        ...current,
+      commitMessages([
+        ...currentMessages,
         {
           role: 'assistant',
           content: 'Oeps, er ging iets mis met het bereiken van Digidocent. Probeer het later nog eens.'
@@ -78,7 +92,7 @@ export default function AITutorChat({
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
-        {messages.map((message, index) => (
+        {chatMessages.map((message, index) => (
           <div key={`${message.role}-${index}`} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
             <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
               message.role === 'user' ? 'bg-slate-200 text-slate-600' : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'

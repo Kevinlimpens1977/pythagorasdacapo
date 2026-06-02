@@ -919,6 +919,25 @@ test("buildAiTutorSystemPrompt tells Digidocent how to handle an incorrect multi
   assert.match(prompt, /zonder LaTeX/i);
 });
 
+test("buildAiTutorSystemPrompt includes paragraph-wide lesson context", () => {
+  const prompt = __test.buildAiTutorSystemPrompt({
+    contextHeading: "Vraag 2",
+    firstName: "Kevin",
+    studentAnswer: "Vraagtype: open\nLeerlingpoging: {\"openAnswer\":\"dus 50%\"}",
+    lessonContext: [
+      "Paragraaf: 1.1 Procenten",
+      "Huidige vraag: Hoeveel procent is 20% van 250?",
+      "Eerdere vragen in deze paragraaf: Vraag 1, 2 pogingen, eenheid vergeten."
+    ].join("\n"),
+    rules: { masterRules: "Je bent Digidocent." },
+  });
+
+  assert.match(prompt, /Paragraaf: 1\.1 Procenten/);
+  assert.match(prompt, /Huidige vraag: Hoeveel procent is 20% van 250/);
+  assert.match(prompt, /Eerdere vragen in deze paragraaf/);
+  assert.match(prompt, /verbanden tussen fouten/i);
+});
+
 test("buildAiTutorMistakeDiagnosis detects multiplication used for an addition question", () => {
   const diagnosis = __test.buildAiTutorMistakeDiagnosis({
     studentAnswer: [

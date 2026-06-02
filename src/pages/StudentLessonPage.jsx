@@ -35,6 +35,8 @@ import {
 } from '../lib/studentLessonProgress';
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
 import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
+import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
+import { sanitizeOpenAnswerAssessmentFeedback } from '../lib/openAnswerAssessmentFeedback';
 import { useAuth } from '../components/auth/AuthProvider';
 import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter';
 import GamePlayer from '../components/games/GamePlayer';
@@ -167,6 +169,11 @@ export default function StudentLessonPage() {
   const completedIds = useMemo(() => getCompletedBlockIds(progressRecords), [progressRecords]);
   const lessonProgress = useMemo(() => calculateLessonProgress(blocks, progressRecords), [blocks, progressRecords]);
   const currentBlock = blocks[currentIndex] || null;
+  const aiTutorStorageKey = useMemo(() => {
+    if (!currentUser?.uid || !paragraafId) return '';
+    return `helix:digidocent:${currentUser.uid}:${paragraafId}`;
+  }, [currentUser?.uid, paragraafId]);
+  const [aiTutorMessages, setAiTutorMessages] = useState([]);
   const studentFirstName = useMemo(() => {
     const rawName = userData?.firstName || userData?.displayName || currentUser?.displayName || currentUser?.email || 'leerling';
     return String(rawName).split(/[ @.]/).find(Boolean) || 'leerling';
@@ -199,6 +206,35 @@ export default function StudentLessonPage() {
 
   const getBlockProgressRecord = (blockId) =>
     progressRecords.find((record) => (record.blockId || record.vraagId) === blockId) || null;
+
+  useEffect(() => {
+    let timeoutId;
+    if (!aiTutorStorageKey) {
+      timeoutId = window.setTimeout(() => setAiTutorMessages([]), 0);
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    timeoutId = window.setTimeout(() => {
+      try {
+        const stored = window.localStorage.getItem(aiTutorStorageKey);
+        const parsed = stored ? JSON.parse(stored) : [];
+        setAiTutorMessages(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setAiTutorMessages([]);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [aiTutorStorageKey]);
+
+  useEffect(() => {
+    if (!aiTutorStorageKey) return;
+    try {
+      window.localStorage.setItem(aiTutorStorageKey, JSON.stringify(aiTutorMessages.slice(-18)));
+    } catch {
+      // Local storage is optional; Digidocent still works in-memory.
+    }
+  }, [aiTutorMessages, aiTutorStorageKey]);
 
   const getBlockResultClasses = (block) => {
     const record = getBlockProgressRecord(block?.id);
@@ -376,6 +412,12 @@ export default function StudentLessonPage() {
               isCompleted={completedIds.has(currentBlock?.id)}
               progressRecord={getBlockProgressRecord(currentBlock?.id)}
               studentName={studentFirstName}
+              paragraaf={paragraaf}
+              hoofdstuk={hoofdstuk}
+              blocks={blocks}
+              progressRecords={progressRecords}
+              aiTutorMessages={aiTutorMessages}
+              onAiTutorMessagesChange={setAiTutorMessages}
               onOpenSlidedeck={setActiveSlidedeck}
               onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
               onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
@@ -415,7 +457,23 @@ export default function StudentLessonPage() {
   );
 }
 
-function LessonBlockContent({ block, step, totalSteps, isCompleted, progressRecord, studentName, onOpenSlidedeck, onSaveProgress, onGameComplete }) {
+function LessonBlockContent({
+  block,
+  step,
+  totalSteps,
+  isCompleted,
+  progressRecord,
+  studentName,
+  paragraaf,
+  hoofdstuk,
+  blocks,
+  progressRecords,
+  aiTutorMessages,
+  onAiTutorMessagesChange,
+  onOpenSlidedeck,
+  onSaveProgress,
+  onGameComplete
+}) {
   const Icon = blockIcons[block?.type] || BookOpen;
   const content = block?.content || {};
   const linkedVraag = block?.linkedVraag || null;
@@ -458,6 +516,12 @@ function LessonBlockContent({ block, step, totalSteps, isCompleted, progressReco
             linkedVraag={linkedVraag}
             progressRecord={progressRecord}
             studentName={studentName}
+            paragraaf={paragraaf}
+            hoofdstuk={hoofdstuk}
+            blocks={blocks}
+            progressRecords={progressRecords}
+            aiTutorMessages={aiTutorMessages}
+            onAiTutorMessagesChange={onAiTutorMessagesChange}
             onSaveProgress={onSaveProgress}
           />
         ) : (
@@ -933,7 +997,20 @@ function PythagorasCalculator({ disabled = false }) {
   );
 }
 
-function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, studentName = 'leerling', onSaveProgress }) {
+function QuestionLearningBlock({
+  block,
+  bodyHtml,
+  linkedVraag,
+  progressRecord,
+  studentName = 'leerling',
+  paragraaf,
+  hoofdstuk,
+  blocks = [],
+  progressRecords = [],
+  aiTutorMessages = [],
+  onAiTutorMessagesChange,
+  onSaveProgress
+}) {
   const preview = buildQuestionPreviewModel(linkedVraag || {});
   const [previewAnswers, setPreviewAnswers] = useState(progressRecord?.lastAnswer || {});
   const [attempts, setAttempts] = useState(progressRecord?.attempts || 0);
@@ -941,7 +1018,9 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
   const [saving, setSaving] = useState(false);
   const [showAiTutor, setShowAiTutor] = useState(false);
   const [aiHelpCount, setAiHelpCount] = useState(progressRecord?.aiHelpCount || 0);
-  const [assessmentFeedback, setAssessmentFeedback] = useState(progressRecord?.openAnswerAssessment?.feedback || '');
+  const [assessmentFeedback, setAssessmentFeedback] = useState(
+    sanitizeOpenAnswerAssessmentFeedback(progressRecord?.openAnswerAssessment?.feedback || '')
+  );
   const [assessmentMissing, setAssessmentMissing] = useState(progressRecord?.openAnswerAssessment?.missing || []);
   const onSaveProgressRef = useRef(onSaveProgress);
   const initialDraftSignature = JSON.stringify({
@@ -1067,7 +1146,9 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
       const openAnswerAssessment = isOpenQuestion
         ? {
             isCorrect,
-            feedback: assessment?.feedback || assessment?.error || 'Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.',
+            feedback: sanitizeOpenAnswerAssessmentFeedback(
+              assessment?.feedback || assessment?.error || 'Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.'
+            ),
             missing: Array.isArray(assessment?.missing) ? assessment.missing : []
           }
         : null;
@@ -1124,6 +1205,15 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
     preview,
     previewAnswers,
     bodyHtml
+  });
+  const lessonContext = buildAiTutorLessonContext({
+    paragraaf,
+    hoofdstuk,
+    blocks,
+    currentBlock: block,
+    currentPreviewAnswers: previewAnswers,
+    currentAssessmentFeedback: assessmentFeedback,
+    progressRecords
   });
 
   const getInitialOrderItems = () => {
@@ -1424,6 +1514,9 @@ function QuestionLearningBlock({ block, bodyHtml, linkedVraag, progressRecord, s
                 initialMessage={aiInitialMessage}
                 studentAnswer={studentAnswerSummary}
                 blockId={block.id}
+                lessonContext={lessonContext}
+                messages={aiTutorMessages}
+                onMessagesChange={onAiTutorMessagesChange}
                 onUserMessageSent={handleAiQuestionSent}
                 onClose={() => setShowAiTutor(false)}
               />

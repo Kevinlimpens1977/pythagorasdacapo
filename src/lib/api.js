@@ -1,5 +1,6 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import app from '../services/firebase';
+import { sanitizeOpenAnswerAssessmentFeedback } from './openAnswerAssessmentFeedback';
 
 // Get functions instance
 const functions = getFunctions(app, 'europe-west1');
@@ -9,10 +10,10 @@ if (window.location.hostname === 'localhost') {
   // connectFunctionsEmulator(functions, 'localhost', 5001);
 }
 
-export const askAiTutorCall = async (message, contextHeading, previousMessages, hints = [], studentAnswer = '', blockId = '') => {
+export const askAiTutorCall = async (message, contextHeading, previousMessages, hints = [], studentAnswer = '', blockId = '', lessonContext = '') => {
   try {
     const askTutor = httpsCallable(functions, 'askAiTutor');
-    const result = await askTutor({ message, contextHeading, previousMessages, hints, studentAnswer, blockId });
+    const result = await askTutor({ message, contextHeading, previousMessages, hints, studentAnswer, blockId, lessonContext });
     return result.data;
   } catch (error) {
     console.error("Digidocent API Error:", error);
@@ -36,7 +37,12 @@ export const assessOpenAnswerCall = async ({
       modelAnswer,
       studentAnswer
     });
-    return result.data;
+    const data = result.data || {};
+    return {
+      ...data,
+      feedback: sanitizeOpenAnswerAssessmentFeedback(data.feedback),
+      error: sanitizeOpenAnswerAssessmentFeedback(data.error)
+    };
   } catch (error) {
     console.error('Open answer assessment error:', error);
     return { success: false, error: 'Digidocent kon je antwoord niet beoordelen.' };

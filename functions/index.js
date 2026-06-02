@@ -402,14 +402,17 @@ function buildAiTutorSystemPrompt({
   contextHeading = "deze vraag",
   firstName = "leerling",
   studentAnswer = "",
+  lessonContext = "",
   rules = {},
 } = {}) {
   const answerText = String(studentAnswer || "").trim();
+  const lessonContextText = String(lessonContext || "").trim().slice(0, 6000);
   const diagnosis = buildAiTutorMistakeDiagnosis({ studentAnswer: answerText });
   return `${buildAiTutorRuleSections(rules)}
 
 ## Actuele lescontext
 Je helpt ${firstName} met het vakgebied van de opdracht: "${contextHeading}".
+${lessonContextText ? `\n## Scherm- en paragraafcontext\n${lessonContextText}` : ""}
 
 ## Vraagcontext en leerlingantwoord
 Huidige leerlingpoging: ${answerText || "[nog geen poging]"}
@@ -418,6 +421,7 @@ ${diagnosis ? `\n## Automatische foutdiagnose\n${diagnosis.promptText}` : ""}
 ## Interactieregels voor dit antwoord
 Als de leerling nog geen antwoord of beginpoging heeft gegeven, zeg dan tegen ${firstName} dat die eerst zelf moet nadenken en een eerste antwoord of aanpak moet invullen.
 Als er wel een poging is, analyseer dan die poging kort en stel precies een volgende helpende vraag.
+Gebruik de scherm- en paragraafcontext om verbanden tussen fouten, herhaalde missers, ontbrekende berekeningen, antwoord, formule en eenheid te herkennen.
 Als de pogingcontext aangeeft dat het gekozen antwoord onjuist is, benoem vriendelijk dat de keuze nog niet klopt en stel een denkstapvraag.
 Als er een automatische foutdiagnose staat, gebruik die richting expliciet: benoem de vermoedelijke denkfout, verwijs naar het teken of de bewerking in de vraag, en stel een korte controlevraag.
 Verklap daarbij nooit de juiste optie, het juiste antwoord of de tekst van de correcte keuze.
@@ -868,6 +872,7 @@ async function askAiTutorCore({
   const previousMessages = Array.isArray(data?.previousMessages) ? data.previousMessages : [];
   const hints = Array.isArray(data?.hints) ? data.hints : [];
   const studentAnswer = data?.studentAnswer || "";
+  const lessonContext = data?.lessonContext || "";
   const aiTutorRules = await getAiTutorRulesRuntime(db);
 
   if (!hasMeaningfulAiTutorStudentAttempt(studentAnswer)) {
@@ -878,7 +883,7 @@ async function askAiTutorCore({
     };
   }
 
-  const systemPrompt = buildAiTutorSystemPrompt({ contextHeading, firstName, studentAnswer, rules: aiTutorRules });
+  const systemPrompt = buildAiTutorSystemPrompt({ contextHeading, firstName, studentAnswer, lessonContext, rules: aiTutorRules });
 
   const messages = [
     { role: "system", content: systemPrompt },
