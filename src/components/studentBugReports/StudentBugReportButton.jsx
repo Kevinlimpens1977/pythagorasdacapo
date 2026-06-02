@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Bug, Send, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
@@ -16,7 +17,8 @@ import { useStudentBugReportContext } from './StudentBugReportContext';
 import {
   STUDENT_BUG_REPORT_DIALOG_BODY_CLASS,
   STUDENT_BUG_REPORT_DIALOG_FORM_CLASS,
-  STUDENT_BUG_REPORT_DIALOG_OVERLAY_CLASS
+  STUDENT_BUG_REPORT_DIALOG_OVERLAY_CLASS,
+  STUDENT_BUG_REPORT_DIALOG_PORTAL_TARGET
 } from '../../lib/studentBugReportDialogLayout';
 
 const getLocalRateLimitKey = (uid = '') => `helix:studentBugReports:${uid}`;
@@ -107,11 +109,8 @@ export default function StudentBugReportButton() {
       setDescription('');
       setDetails('');
       setCategory(BUG_REPORT_CATEGORIES[0].id);
-      setStatusText('Dank je, je melding is doorgestuurd naar je docent.');
-      window.setTimeout(() => {
-        setIsOpen(false);
-        setStatusText('');
-      }, 1400);
+      setStatusText('');
+      setIsOpen(false);
     } catch (error) {
       console.error('Foutmelding kon niet worden verzonden:', error);
       setErrorText('Je melding kon niet worden verzonden. Probeer het later opnieuw of vraag je docent.');
@@ -119,6 +118,10 @@ export default function StudentBugReportButton() {
       setSaving(false);
     }
   };
+
+  const portalTarget = typeof document !== 'undefined' && STUDENT_BUG_REPORT_DIALOG_PORTAL_TARGET === 'body'
+    ? document.body
+    : null;
 
   return (
     <>
@@ -132,7 +135,7 @@ export default function StudentBugReportButton() {
         <span className="hidden xl:inline">Meld een fout</span>
       </button>
 
-      {isOpen && (
+      {isOpen && portalTarget && createPortal(
         <div className={STUDENT_BUG_REPORT_DIALOG_OVERLAY_CLASS}>
           <form onSubmit={handleSubmit} className={STUDENT_BUG_REPORT_DIALOG_FORM_CLASS}>
             <div className="flex items-start justify-between gap-4 border-b border-[var(--helix-border)] p-5">
@@ -232,7 +235,8 @@ export default function StudentBugReportButton() {
               </button>
             </div>
           </form>
-        </div>
+        </div>,
+        portalTarget
       )}
     </>
   );

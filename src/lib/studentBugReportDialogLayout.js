@@ -6,3 +6,5 @@ export const STUDENT_BUG_REPORT_DIALOG_FORM_CLASS =
 
 export const STUDENT_BUG_REPORT_DIALOG_BODY_CLASS =
   'space-y-4 overflow-y-auto p-5';
+
+export const STUDENT_BUG_REPORT_DIALOG_PORTAL_TARGET = 'body';
