@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, BookOpen, CheckSquare, Clapperboard, Crop, FileStack, Image, Layers3 } from 'lucide-react';
+import { ArrowRight, BookOpen, CheckSquare, Clapperboard, FileStack } from 'lucide-react';
 
 const actions = [
   {
@@ -34,12 +34,6 @@ const actions = [
     icon: FileStack,
     tone: 'bg-white/90 text-[var(--helix-navy)] border border-[var(--helix-border)]'
   }
-];
-
-const capabilityCards = [
-  { title: 'Crops en OCR', description: 'Zet bronmateriaal sneller om naar uitleg, afbeeldingen en vragen.', icon: Crop },
-  { title: 'Theorie en voorbeelden', description: 'Bouw leerlingvriendelijke uitleg in vaste volgorde.', icon: Layers3 },
-  { title: 'Media', description: 'Voeg afbeeldingen, crops en visuele ondersteuning toe.', icon: Image }
 ];
 
 export default function AdminLesstofPage() {
@@ -82,26 +76,6 @@ export default function AdminLesstofPage() {
               </button>
             );
           })}
-        </section>
-
-        <section className="mt-10">
-          <h2 className="font-display text-xl font-extrabold text-[var(--helix-navy)]">Wat hoort hier?</h2>
-          <p className="mt-1 text-sm text-[var(--helix-muted)]">Alles wat nodig is om lesmateriaal te produceren en te presenteren.</p>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {capabilityCards.map((card) => {
-              const Icon = card.icon;
-
-              return (
-                <div key={card.title} className="helix-card p-5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-                    <Icon size={22} />
-                  </div>
-                  <h3 className="mt-4 font-display font-extrabold text-[var(--helix-navy)]">{card.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[var(--helix-muted)]">{card.description}</p>
-                </div>
-              );
-            })}
-          </div>
         </section>
       </div>
     </div>
