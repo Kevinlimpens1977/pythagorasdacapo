@@ -1,4 +1,4 @@
-import { isDevAdminLoginEnabled } from '../../lib/authLoginUtils';
+import { isDevAdminLoginEnabled } from '../../lib/authLoginUtils.js';
 
 const DEV_USER_STORAGE_KEY = 'helix.devUser';
 
@@ -50,6 +50,8 @@ export const createDevAdminUserData = (user = createDevAdminUser()) => ({
   klasId: null,
   isDevUser: true
 });
+
+export const shouldClearDevUserForFirebaseUser = (firebaseUser) => Boolean(firebaseUser?.uid);
 
 export const loadDevUser = () => {
   const devStudentEnabled = isDevLoginEnabled();

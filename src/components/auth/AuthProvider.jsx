@@ -12,7 +12,8 @@ import {
   isDevLoginEnabled,
   loadDevUser,
   saveDevAdminUser,
-  saveDevStudentUser
+  saveDevStudentUser,
+  shouldClearDevUserForFirebaseUser
 } from './devAuth';
 import RequiredPasswordChange from './RequiredPasswordChange';
 
@@ -67,6 +68,10 @@ export function AuthProvider({ children }) {
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        if (shouldClearDevUserForFirebaseUser(user)) {
+          clearDevUser();
+        }
+
         try {
           const userRef = doc(db, 'users', user.uid);
 

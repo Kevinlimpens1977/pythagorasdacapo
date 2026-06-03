@@ -19,6 +19,7 @@ import {
   isAdminEmail,
   shouldFallbackToRedirectLogin
 } from '../../lib/authLoginUtils';
+import { clearDevUser } from './devAuth';
 
 export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -54,6 +55,8 @@ export default function LoginScreen() {
           if (!cancelled) {
             setError('Toegang geweigerd: Alleen de administrator kan inloggen met Google.');
           }
+        } else {
+          clearDevUser();
         }
       } catch (err) {
         console.error(err);
@@ -116,6 +119,7 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
+      clearDevUser();
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
 
