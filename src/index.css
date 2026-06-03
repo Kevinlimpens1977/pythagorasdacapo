@@ -354,6 +354,58 @@ input[type=number] {
   box-shadow: 0 16px 36px rgba(122, 60, 255, 0.11);
 }
 
+.project-kompas-document {
+  color: var(--helix-navy);
+  @apply max-w-none text-base leading-8;
+}
+
+.project-kompas-document h1 {
+  @apply mb-5 mt-0 scroll-mt-28 font-display text-4xl font-extrabold;
+}
+
+.project-kompas-document h2 {
+  color: var(--helix-navy);
+  border-top: 1px solid var(--helix-border);
+  @apply mb-4 mt-10 scroll-mt-28 pt-8 font-display text-2xl font-extrabold;
+}
+
+.project-kompas-document h3 {
+  color: var(--helix-purple);
+  @apply mb-3 mt-7 scroll-mt-28 font-display text-xl font-extrabold;
+}
+
+.project-kompas-document p {
+  @apply my-4 text-[var(--helix-muted)];
+}
+
+.project-kompas-document ul {
+  @apply my-4 space-y-2 pl-5;
+}
+
+.project-kompas-document li {
+  @apply list-disc pl-1 text-[var(--helix-muted)];
+}
+
+.project-kompas-document code {
+  background: var(--helix-surface-soft);
+  border: 1px solid var(--helix-border);
+  color: var(--helix-navy);
+  @apply rounded-md px-1.5 py-0.5 text-sm font-bold;
+}
+
+.project-kompas-document pre {
+  background: #0b132b;
+  color: #f8fafc;
+  @apply my-5 overflow-auto rounded-2xl p-5 text-sm leading-7 shadow-inner;
+}
+
+.project-kompas-document pre code {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  @apply p-0 font-mono font-semibold;
+}
+
 /* Secondary Button - Outline Style */
 .btn-secondary {
   background: rgba(255, 255, 255, 0.82);

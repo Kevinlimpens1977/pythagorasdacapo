@@ -6,7 +6,7 @@ import CmsResetButton from '../admin/CmsResetButton';
 import DeleteStudentsButton from '../admin/DeleteStudentsButton';
 import StudentBugReportButton from '../studentBugReports/StudentBugReportButton';
 import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
-import { BarChart3, BookOpen, Bug, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
+import { BarChart3, BookOpen, Bug, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import helixLogo from '../../afbeeldingen/logo.png';
 
@@ -86,6 +86,22 @@ export default function AppShell() {
             )}
           </nav>
         </div>
+
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin/projectkompas')}
+            className={`hidden min-h-11 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border px-4 text-sm font-black shadow-[var(--helix-shadow-card)] transition hover:-translate-y-0.5 lg:inline-flex ${
+              location.pathname === '/admin/projectkompas'
+                ? 'border-transparent bg-[var(--helix-navy)] text-white'
+                : 'border-[var(--helix-border)] bg-white/92 text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
+            }`}
+            title="Open het actuele HELIX Projectkompas"
+          >
+            <Compass size={17} />
+            Projectkompas
+          </button>
+        )}
 
         <div className="flex items-center gap-3 md:gap-4">
           {isAdmin && <DeleteStudentsButton />}

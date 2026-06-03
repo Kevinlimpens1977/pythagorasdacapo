@@ -20,6 +20,7 @@ import AdminSlidedecksPage from './pages/AdminSlidedecksPage';
 import AdminAiSettingsPage from './pages/AdminAiSettingsPage';
 import AdminMeldingenPage from './pages/AdminMeldingenPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
+import AdminProjectKompasPage from './pages/AdminProjectKompasPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { user, isAdmin } = useAuth();
@@ -112,6 +113,11 @@ function AppRoutes() {
         <Route path="admin/instellingen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminSettingsPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/projectkompas" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminProjectKompasPage />
           </PrivateRoute>
         } />
       </Route>
