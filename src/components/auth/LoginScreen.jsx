@@ -17,8 +17,7 @@ import {
   getGoogleLoginErrorMessage,
   getSafePostLoginTarget,
   isAdminEmail,
-  shouldPreferRedirectLogin,
-  shouldFallbackToRedirectLogin
+  shouldUseRedirectLoginFallback
 } from '../../lib/authLoginUtils';
 import { clearDevUser } from './devAuth';
 
@@ -123,11 +122,6 @@ export default function LoginScreen() {
       clearDevUser();
       const provider = new GoogleAuthProvider();
 
-      if (shouldPreferRedirectLogin()) {
-        await signInWithRedirect(auth, provider);
-        return;
-      }
-
       const result = await signInWithPopup(auth, provider);
 
       if (!isAdminEmail(result.user.email)) {
@@ -138,7 +132,7 @@ export default function LoginScreen() {
       // Navigation handled automatically via useEffect when currentUser changes
     } catch (err) {
       console.error(err);
-      if (shouldFallbackToRedirectLogin(err)) {
+      if (shouldUseRedirectLoginFallback(err)) {
         const provider = new GoogleAuthProvider();
         await signInWithRedirect(auth, provider);
         return;

@@ -4,9 +4,10 @@ import {
   getEffectiveUserRole,
   getSafePostLoginTarget,
   getGoogleLoginErrorMessage,
+  isLocalhostAuthOrigin,
   isAdminEmail,
   isDevAdminLoginEnabled,
-  shouldPreferRedirectLogin,
+  shouldUseRedirectLoginFallback,
   shouldFallbackToRedirectLogin
 } from './authLoginUtils.js';
 
@@ -31,10 +32,18 @@ test('shouldFallbackToRedirectLogin only accepts popup environment failures', ()
   assert.equal(shouldFallbackToRedirectLogin({ code: 'auth/unauthorized-domain' }), false);
 });
 
-test('shouldPreferRedirectLogin uses same-tab redirect on localhost', () => {
-  assert.equal(shouldPreferRedirectLogin({ hostname: 'localhost' }), true);
-  assert.equal(shouldPreferRedirectLogin({ hostname: '127.0.0.1' }), true);
-  assert.equal(shouldPreferRedirectLogin({ hostname: 'pythagoras-eoa.firebaseapp.com' }), false);
+test('isLocalhostAuthOrigin detects local development hosts', () => {
+  assert.equal(isLocalhostAuthOrigin({ hostname: 'localhost' }), true);
+  assert.equal(isLocalhostAuthOrigin({ hostname: '127.0.0.1' }), true);
+  assert.equal(isLocalhostAuthOrigin({ hostname: 'pythagoras-eoa.firebaseapp.com' }), false);
+});
+
+test('shouldUseRedirectLoginFallback avoids localhost because Firebase redirects to HTTPS authDomain', () => {
+  assert.equal(shouldUseRedirectLoginFallback({ code: 'auth/popup-blocked' }, { hostname: 'localhost' }), false);
+  assert.equal(
+    shouldUseRedirectLoginFallback({ code: 'auth/popup-blocked' }, { hostname: 'pythagoras-eoa.firebaseapp.com' }),
+    true
+  );
 });
 
 test('getGoogleLoginErrorMessage explains known Google login failures', () => {

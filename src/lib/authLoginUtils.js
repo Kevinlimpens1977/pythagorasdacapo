@@ -18,8 +18,13 @@ export const shouldFallbackToRedirectLogin = (error) => {
   ].includes(code);
 };
 
-export const shouldPreferRedirectLogin = ({ hostname = globalThis.window?.location?.hostname } = {}) =>
+export const isLocalhostAuthOrigin = ({ hostname = globalThis.window?.location?.hostname } = {}) =>
   ['localhost', '127.0.0.1', '[::1]', '::1'].includes(String(hostname || '').toLowerCase());
+
+export const shouldUseRedirectLoginFallback = (
+  error,
+  { hostname = globalThis.window?.location?.hostname } = {}
+) => shouldFallbackToRedirectLogin(error) && !isLocalhostAuthOrigin({ hostname });
 
 export const isDevAdminLoginEnabled = (env = import.meta.env) =>
   env.DEV === true && env.VITE_ENABLE_DEV_ADMIN_LOGIN === 'true';

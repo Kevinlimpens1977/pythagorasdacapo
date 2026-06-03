@@ -32,20 +32,6 @@ const projectKompasPlugin = () => ({
 
 // https://vite.dev/config/
 export default defineConfig({
-  server: {
-    proxy: {
-      '/__/auth': {
-        target: 'https://pythagoras-eoa.firebaseapp.com',
-        changeOrigin: true,
-        secure: true
-      },
-      '/__/firebase': {
-        target: 'https://pythagoras-eoa.firebaseapp.com',
-        changeOrigin: true,
-        secure: true
-      }
-    }
-  },
   plugins: [
     tailwindcss(),
     react(),
