@@ -17,6 +17,7 @@ import {
   getGoogleLoginErrorMessage,
   getSafePostLoginTarget,
   isAdminEmail,
+  shouldPreferRedirectLogin,
   shouldFallbackToRedirectLogin
 } from '../../lib/authLoginUtils';
 import { clearDevUser } from './devAuth';
@@ -121,6 +122,12 @@ export default function LoginScreen() {
     try {
       clearDevUser();
       const provider = new GoogleAuthProvider();
+
+      if (shouldPreferRedirectLogin()) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+
       const result = await signInWithPopup(auth, provider);
 
       if (!isAdminEmail(result.user.email)) {

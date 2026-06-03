@@ -6,6 +6,7 @@ import {
   getGoogleLoginErrorMessage,
   isAdminEmail,
   isDevAdminLoginEnabled,
+  shouldPreferRedirectLogin,
   shouldFallbackToRedirectLogin
 } from './authLoginUtils.js';
 
@@ -28,6 +29,12 @@ test('shouldFallbackToRedirectLogin only accepts popup environment failures', ()
   assert.equal(shouldFallbackToRedirectLogin({ code: 'auth/operation-not-supported-in-this-environment' }), true);
   assert.equal(shouldFallbackToRedirectLogin({ code: 'auth/popup-closed-by-user' }), false);
   assert.equal(shouldFallbackToRedirectLogin({ code: 'auth/unauthorized-domain' }), false);
+});
+
+test('shouldPreferRedirectLogin uses same-tab redirect on localhost', () => {
+  assert.equal(shouldPreferRedirectLogin({ hostname: 'localhost' }), true);
+  assert.equal(shouldPreferRedirectLogin({ hostname: '127.0.0.1' }), true);
+  assert.equal(shouldPreferRedirectLogin({ hostname: 'pythagoras-eoa.firebaseapp.com' }), false);
 });
 
 test('getGoogleLoginErrorMessage explains known Google login failures', () => {

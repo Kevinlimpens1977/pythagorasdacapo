@@ -2,10 +2,11 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getFirebaseAuthDomain } from "../lib/firebaseAuthDomain.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHWzHd0ITGcHegVRz2tunTMkVS3EK2Fbo",
-  authDomain: "pythagoras-eoa.firebaseapp.com",
+  authDomain: getFirebaseAuthDomain(),
   projectId: "pythagoras-eoa",
   storageBucket: "pythagoras-eoa.firebasestorage.app",
   messagingSenderId: "103397886024",
