@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   updateProfile,
   getRedirectResult,
   signInWithRedirect,
@@ -11,9 +12,12 @@ import {
 import { auth } from '../../services/firebase';
 import { useAuth } from './AuthProvider';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Code2, ShieldCheck, LogIn, UserPlus } from 'lucide-react';
+import { Code2, KeyRound, Mail, ShieldCheck, LogIn, UserPlus } from 'lucide-react';
 import helixLogo from '../../afbeeldingen/logo.png';
 import {
+  ADMIN_EMAIL,
+  getAdminPasswordResetErrorMessage,
+  getAdminPasswordResetSuccessMessage,
   getGoogleLoginErrorMessage,
   getSafePostLoginTarget,
   isAdminEmail,
@@ -28,8 +32,10 @@ export default function LoginScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [devLoginLoading, setDevLoginLoading] = useState(false);
   const [devAdminLoginLoading, setDevAdminLoginLoading] = useState(false);
+  const [adminPasswordResetLoading, setAdminPasswordResetLoading] = useState(false);
   const {
     loginAsDevAdmin,
     loginAsDevStudent,
@@ -88,6 +94,7 @@ export default function LoginScreen() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setNotice('');
 
     try {
       if (isSignUp) {
@@ -119,6 +126,8 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
+      setError('');
+      setNotice('');
       clearDevUser();
       const provider = new GoogleAuthProvider();
 
@@ -141,9 +150,34 @@ export default function LoginScreen() {
     }
   };
 
+  const handleUseAdminEmail = () => {
+    setIsSignUp(false);
+    setEmail(ADMIN_EMAIL);
+    setNotice('Vul je admin-wachtwoord in en log in zonder Google-popup.');
+    setError('');
+  };
+
+  const handleAdminPasswordReset = async () => {
+    try {
+      setError('');
+      setNotice('');
+      setAdminPasswordResetLoading(true);
+      await sendPasswordResetEmail(auth, ADMIN_EMAIL);
+      setEmail(ADMIN_EMAIL);
+      setIsSignUp(false);
+      setNotice(getAdminPasswordResetSuccessMessage(ADMIN_EMAIL));
+    } catch (err) {
+      console.error(err);
+      setError(getAdminPasswordResetErrorMessage(err));
+    } finally {
+      setAdminPasswordResetLoading(false);
+    }
+  };
+
   const handleDeveloperLogin = async () => {
     try {
       setError('');
+      setNotice('');
       setDevLoginLoading(true);
       await loginAsDevStudent();
       // Navigation handled automatically via useEffect when currentUser changes
@@ -158,6 +192,7 @@ export default function LoginScreen() {
   const handleDeveloperAdminLogin = async () => {
     try {
       setError('');
+      setNotice('');
       setDevAdminLoginLoading(true);
       await loginAsDevAdmin();
       // Navigation handled automatically via useEffect when currentUser changes
@@ -219,6 +254,12 @@ export default function LoginScreen() {
         {error && (
           <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700 animate-shake">
             {error}
+          </div>
+        )}
+
+        {notice && (
+          <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
+            {notice}
           </div>
         )}
 
@@ -308,6 +349,32 @@ export default function LoginScreen() {
             </svg>
             Inloggen als Administrator
           </button>
+
+          <div className="mt-4 rounded-2xl border border-[var(--helix-border)] bg-white/82 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">Codex-browser</p>
+            <p className="mt-1 text-sm leading-5 text-[var(--helix-muted)]">
+              Gebruik e-mail en wachtwoord wanneer Google-login in deze browser blijft hangen.
+            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={handleUseAdminEmail}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2.5 text-sm font-bold text-[var(--helix-navy)] transition-colors hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
+              >
+                <Mail size={17} />
+                Admin e-mail invullen
+              </button>
+              <button
+                type="button"
+                onClick={handleAdminPasswordReset}
+                disabled={adminPasswordResetLoading}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-800 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <KeyRound size={17} />
+                {adminPasswordResetLoading ? 'Versturen...' : 'Wachtwoordlink sturen'}
+              </button>
+            </div>
+          </div>
         </div>
 
         {isDevLoginEnabled && (

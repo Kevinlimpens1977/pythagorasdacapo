@@ -1,5 +1,20 @@
 export const ADMIN_EMAIL = 'kevlimpens@gmail.com';
 
+export const getAdminPasswordResetSuccessMessage = (email = ADMIN_EMAIL) =>
+  `Er is een wachtwoordlink verstuurd naar ${email}. Stel je wachtwoord in en log daarna hier in met e-mail en wachtwoord.`;
+
+export const getAdminPasswordResetErrorMessage = (error) => {
+  if (error?.code === 'auth/user-not-found') {
+    return `Er bestaat nog geen Firebase Auth-account voor ${ADMIN_EMAIL}.`;
+  }
+
+  if (error?.code === 'auth/too-many-requests') {
+    return 'Te veel pogingen. Wacht even en probeer de wachtwoordlink daarna opnieuw.';
+  }
+
+  return 'Kon de wachtwoordlink niet versturen. Probeer het opnieuw of controleer Firebase Auth.';
+};
+
 export const isAdminEmail = (email) =>
   String(email || '').trim().toLowerCase() === ADMIN_EMAIL;
 

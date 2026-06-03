@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  ADMIN_EMAIL,
+  getAdminPasswordResetErrorMessage,
+  getAdminPasswordResetSuccessMessage,
   getEffectiveUserRole,
   getSafePostLoginTarget,
   getGoogleLoginErrorMessage,
@@ -10,6 +13,28 @@ import {
   shouldUseRedirectLoginFallback,
   shouldFallbackToRedirectLogin
 } from './authLoginUtils.js';
+
+test('getAdminPasswordResetSuccessMessage tells the admin how to continue', () => {
+  assert.equal(
+    getAdminPasswordResetSuccessMessage(ADMIN_EMAIL),
+    'Er is een wachtwoordlink verstuurd naar kevlimpens@gmail.com. Stel je wachtwoord in en log daarna hier in met e-mail en wachtwoord.'
+  );
+});
+
+test('getAdminPasswordResetErrorMessage explains reset failures', () => {
+  assert.equal(
+    getAdminPasswordResetErrorMessage({ code: 'auth/user-not-found' }),
+    'Er bestaat nog geen Firebase Auth-account voor kevlimpens@gmail.com.'
+  );
+  assert.equal(
+    getAdminPasswordResetErrorMessage({ code: 'auth/too-many-requests' }),
+    'Te veel pogingen. Wacht even en probeer de wachtwoordlink daarna opnieuw.'
+  );
+  assert.equal(
+    getAdminPasswordResetErrorMessage({ code: 'auth/unknown' }),
+    'Kon de wachtwoordlink niet versturen. Probeer het opnieuw of controleer Firebase Auth.'
+  );
+});
 
 test('isAdminEmail matches the configured admin case-insensitively', () => {
   assert.equal(isAdminEmail('kevlimpens@gmail.com'), true);
