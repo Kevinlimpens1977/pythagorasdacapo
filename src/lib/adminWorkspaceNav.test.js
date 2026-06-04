@@ -18,19 +18,15 @@ test('getAdminWorkspaceForPath maps dashboard and student routes to the right wo
   assert.equal(getAdminWorkspaceForPath('/dashboard'), 'voortgang');
   assert.equal(getAdminWorkspaceForPath('/admin/leerlingen'), 'leerlingen');
   assert.equal(getAdminWorkspaceForPath('/admin/klassen'), 'leerlingen');
-  assert.equal(getAdminWorkspaceForPath('/admin/meldingen'), 'meldingen');
+  assert.equal(getAdminWorkspaceForPath('/admin/meldingen'), 'instellingen');
   assert.equal(getAdminWorkspaceForPath('/admin/spellen'), 'spellen');
   assert.equal(getAdminWorkspaceForPath('/admin'), 'instellingen');
   assert.equal(getAdminWorkspaceForPath('/admin/instellingen'), 'instellingen');
   assert.equal(getAdminWorkspaceForPath('/admin/ai-instellingen'), 'instellingen');
 });
 
-test('meldingen workspace is active only for report routes', () => {
-  const meldingen = ADMIN_WORKSPACES.find((workspace) => workspace.id === 'meldingen');
-
-  assert.ok(meldingen);
-  assert.equal(isAdminWorkspaceActive(meldingen, '/admin/meldingen'), true);
-  assert.equal(isAdminWorkspaceActive(meldingen, '/admin/leerlingen'), false);
+test('meldingen is not a top-level navigation workspace', () => {
+  assert.equal(ADMIN_WORKSPACES.some((workspace) => workspace.id === 'meldingen'), false);
 });
 
 test('getAdminWorkspaceForPath groups presenter under its own workspace', () => {
@@ -57,5 +53,6 @@ test('instellingen workspace is active only for settings routes', () => {
   assert.ok(instellingen);
   assert.equal(isAdminWorkspaceActive(instellingen, '/admin/instellingen'), true);
   assert.equal(isAdminWorkspaceActive(instellingen, '/admin/ai-instellingen'), true);
+  assert.equal(isAdminWorkspaceActive(instellingen, '/admin/meldingen'), true);
   assert.equal(isAdminWorkspaceActive(instellingen, '/admin/klassen'), false);
 });

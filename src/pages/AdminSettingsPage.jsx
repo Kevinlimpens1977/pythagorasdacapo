@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Bot, SettingsIcon } from 'lucide-react';
+import { ArrowRight, Bot, Bug, SettingsIcon } from 'lucide-react';
 
 const settingsSections = [
   {
@@ -9,6 +9,14 @@ const settingsSections = [
     path: '/admin/ai-instellingen',
     icon: Bot,
     tone: 'text-violet-600 bg-violet-50'
+  },
+  {
+    title: 'Leerlingmeldingen',
+    description: 'Bekijk open bugmeldingen van leerlingen en werk status of adminnotitie bij.',
+    actionLabel: 'Open meldingen',
+    path: '/admin/meldingen',
+    icon: Bug,
+    tone: 'text-red-600 bg-red-50'
   }
 ];
 

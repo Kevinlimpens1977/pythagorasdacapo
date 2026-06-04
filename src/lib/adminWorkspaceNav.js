@@ -18,12 +18,6 @@ export const ADMIN_WORKSPACES = [
     routePrefixes: ['/admin/leerlingen', '/admin/klassen']
   },
   {
-    id: 'meldingen',
-    label: 'Meldingen',
-    path: '/admin/meldingen',
-    routePrefixes: ['/admin/meldingen']
-  },
-  {
     id: 'spellen',
     label: 'Spellen',
     path: '/admin/spellen',
@@ -39,7 +33,7 @@ export const ADMIN_WORKSPACES = [
     id: 'instellingen',
     label: 'Instellingen',
     path: '/admin/instellingen',
-    routePrefixes: ['/admin/instellingen', '/admin/ai-instellingen']
+    routePrefixes: ['/admin/instellingen', '/admin/ai-instellingen', '/admin/meldingen']
   }
 ];
 

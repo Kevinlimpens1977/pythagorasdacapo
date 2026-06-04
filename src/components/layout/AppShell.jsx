@@ -6,15 +6,15 @@ import CmsResetButton from '../admin/CmsResetButton';
 import DeleteStudentsButton from '../admin/DeleteStudentsButton';
 import StudentBugReportButton from '../studentBugReports/StudentBugReportButton';
 import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
-import { BarChart3, BookOpen, Bug, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
+import { BarChart3, BellRing, BookOpen, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
+import { getOpenStudentBugReportCount } from '../../services/studentBugReportService';
 import helixLogo from '../../afbeeldingen/logo.png';
 
 const workspaceIcons = {
   lesstof: BookOpen,
   voortgang: BarChart3,
   leerlingen: Users,
-  meldingen: Bug,
   spellen: Gamepad2,
   presenter: Presentation,
   instellingen: SettingsIcon
@@ -25,12 +25,43 @@ export default function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [studentBugReportContext, setStudentBugReportContext] = useState({});
+  const [openBugReportCount, setOpenBugReportCount] = useState(0);
 
   useEffect(() => {
     if (isAdmin && location.pathname === '/') {
       navigate('/admin/instellingen', { replace: true });
     }
   }, [isAdmin, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const refreshOpenBugReportCount = async () => {
+      try {
+        const nextCount = await getOpenStudentBugReportCount();
+        if (!cancelled) {
+          setOpenBugReportCount(nextCount);
+        }
+      } catch (error) {
+        console.warn('Open meldingen konden niet worden geladen:', error);
+        if (!cancelled) {
+          setOpenBugReportCount(0);
+        }
+      }
+    };
+
+    refreshOpenBugReportCount();
+    const intervalId = window.setInterval(refreshOpenBugReportCount, 60_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [isAdmin, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -68,6 +99,15 @@ export default function AppShell() {
                   >
                     <Icon size={18} />
                     <span className="hidden md:inline">{workspace.label}</span>
+                    {workspace.id === 'instellingen' && openBugReportCount > 0 && (
+                      <span
+                        className="admin-nav-alert"
+                        aria-label={`${openBugReportCount} open leerlingmelding${openBugReportCount === 1 ? '' : 'en'}`}
+                        title={`${openBugReportCount} open leerlingmelding${openBugReportCount === 1 ? '' : 'en'}`}
+                      >
+                        <BellRing size={13} />
+                      </span>
+                    )}
                   </button>
                 );
               })

@@ -6,7 +6,8 @@ import {
   BUG_REPORT_STATUSES,
   buildStudentBugReportRecentQuerySpec,
   buildStudentBugReportPayload,
-  getStudentBugReportRateLimitState
+  getStudentBugReportRateLimitState,
+  isOpenBugReportStatus
 } from './studentBugReportUtils.js';
 
 test('bug report categories stay concise for students', () => {
@@ -27,6 +28,13 @@ test('bug report statuses support admin workflow', () => {
     'resolved',
     'rejected'
   ]);
+});
+
+test('open bug report status is limited to unresolved admin work', () => {
+  assert.equal(isOpenBugReportStatus('new'), true);
+  assert.equal(isOpenBugReportStatus('in_progress'), true);
+  assert.equal(isOpenBugReportStatus('resolved'), false);
+  assert.equal(isOpenBugReportStatus('rejected'), false);
 });
 
 test('buildStudentBugReportPayload includes student identity and lesson context', () => {

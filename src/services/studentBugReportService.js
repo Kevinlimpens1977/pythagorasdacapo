@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   doc,
+  getCountFromServer,
   getDocs,
   limit,
   orderBy,
@@ -84,6 +85,16 @@ export const getStudentBugReports = async ({ status = '', category = '', maxResu
     .slice(0, maxResults);
 };
 
+export const getOpenStudentBugReportCount = async () => {
+  const reportsQuery = query(
+    collection(db, COLLECTION_NAME),
+    where('status', 'in', ['new', 'in_progress'])
+  );
+
+  const snapshot = await getCountFromServer(reportsQuery);
+  return snapshot.data().count;
+};
+
 export const updateStudentBugReport = async (reportId, updates = {}) => {
   if (!reportId) {
     throw new Error('reportId is required');
@@ -107,6 +118,7 @@ export const updateStudentBugReport = async (reportId, updates = {}) => {
 export default {
   createStudentBugReport,
   createStudentBugReportFromContext,
+  getOpenStudentBugReportCount,
   getRecentStudentBugReportTimestamps,
   getStudentBugReports,
   updateStudentBugReport

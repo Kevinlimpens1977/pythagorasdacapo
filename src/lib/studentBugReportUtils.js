@@ -19,12 +19,16 @@ export const BUG_REPORT_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
 const categoryIds = new Set(BUG_REPORT_CATEGORIES.map((item) => item.id));
 const statusIds = new Set(BUG_REPORT_STATUSES.map((item) => item.id));
+const openStatusIds = new Set(['new', 'in_progress']);
 
 export const normalizeBugReportCategory = (category = '') =>
   categoryIds.has(category) ? category : 'other';
 
 export const normalizeBugReportStatus = (status = '') =>
   statusIds.has(status) ? status : 'new';
+
+export const isOpenBugReportStatus = (status = '') =>
+  openStatusIds.has(normalizeBugReportStatus(status));
 
 const cleanText = (value = '', maxLength = 1600) =>
   String(value || '')

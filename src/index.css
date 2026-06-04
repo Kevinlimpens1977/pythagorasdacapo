@@ -342,6 +342,26 @@ input[type=number] {
   box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
 }
 
+.admin-nav-alert {
+  color: rgb(220 38 38);
+  background: rgb(254 226 226);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.18);
+  animation: helix-nav-alert-pulse 1.3s ease-in-out infinite;
+  @apply inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full;
+}
+
+@keyframes helix-nav-alert-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.48;
+    transform: scale(0.88);
+  }
+}
+
 .presenter-chrome-surface {
   border-color: rgba(122, 60, 255, 0.14);
   background: linear-gradient(
