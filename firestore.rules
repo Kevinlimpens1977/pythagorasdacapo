@@ -144,6 +144,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Door docenten/admins afgevinkte voortgangssignalen.
+    // Leerlingen zien of wijzigen deze moderatiestatus niet.
+    match /progressSignalAcknowledgements/{signalId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
     // Leerling-foutmeldingen.
     // Leerlingen mogen alleen eigen meldingen aanmaken en teruglezen voor rate limiting.
     // Moderatie, status en adminnotities blijven admin-only.

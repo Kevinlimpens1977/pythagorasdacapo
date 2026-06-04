@@ -8,6 +8,7 @@ const cmsShell = readFileSync(new URL('../components/cms/CmsShell.jsx', import.m
 const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlockBuilder.jsx', import.meta.url), 'utf8');
 const cropEditorPanel = readFileSync(new URL('../components/cms/CropEditorPanel.jsx', import.meta.url), 'utf8');
 const adminKlassenPage = readFileSync(new URL('../pages/AdminKlassenPage.jsx', import.meta.url), 'utf8');
+const classOverview = readFileSync(new URL('../components/dashboard/ClassOverview.jsx', import.meta.url), 'utf8');
 const takenToewijzenPage = readFileSync(new URL('../pages/TakenToewijzenPage.jsx', import.meta.url), 'utf8');
 const packageJson = readFileSync(new URL('../../package.json', import.meta.url), 'utf8');
 
@@ -35,6 +36,17 @@ test('progress lens active tab uses the Border Signal gradient border style', ()
   assert.match(activeRule, /var\(--helix-gradient-border\) border-box/);
   assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
   assert.doesNotMatch(activeRule, /blue/);
+});
+
+test('progress dashboard uses calm signal styling with selectable signal rows', () => {
+  assert.match(classOverview, /signalCount = 0/);
+  assert.match(classOverview, /openProgressSignals\.length/);
+  assert.match(classOverview, /Alle signalen selecteren/);
+  assert.match(classOverview, /Geselecteerde afvinken/);
+  assert.match(classOverview, /CheckSquare/);
+  assert.match(classOverview, /Square/);
+  assert.match(classOverview, /helix-card border-orange-100 bg-orange-50\/45/);
+  assert.doesNotMatch(classOverview, /\$\{card\.tone === 'warning' \? 'helix-alert'/);
 });
 
 test('admin header active nav uses the Border Signal gradient border style', () => {

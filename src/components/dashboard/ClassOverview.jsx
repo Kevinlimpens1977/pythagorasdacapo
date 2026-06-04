@@ -1,11 +1,16 @@
 import { useCallback, useState, useEffect } from 'react';
-import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown } from 'lucide-react';
+import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown, CheckSquare, Square } from 'lucide-react';
 import { db } from '../../services/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
 import { isAnswerCorrect } from '../../lib/answerNormalization';
+import { useAuth } from '../auth/AuthProvider';
 import * as cmsService from '../../services/cmsService';
 import * as klasService from '../../services/klasService';
+import {
+  acknowledgeProgressSignals,
+  listenToAcknowledgedProgressSignals
+} from '../../services/progressSignalService';
 import {
   calculateAssignedProgress,
   getAssignedProgressRecords,
@@ -14,6 +19,7 @@ import {
 } from '../../lib/assignmentUtils';
 import { getLearningResultTone } from '../../lib/learningResultUtils';
 import {
+  buildClassProgressSignalItems,
   buildClassMetricCards,
   buildClassProgressMetrics,
   buildDashboardLensTabs,
@@ -84,7 +90,7 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
   );
 }
 
-function DashboardLensSwitch({ activeLens = 'class', onSelect }) {
+function DashboardLensSwitch({ activeLens = 'class', onSelect, signalCount = 0 }) {
   return (
     <div className="flex flex-wrap gap-2" role="tablist" aria-label="Voortgangsweergave">
       {buildDashboardLensTabs(activeLens).map((tab) => (
@@ -97,6 +103,11 @@ function DashboardLensSwitch({ activeLens = 'class', onSelect }) {
           className={`dashboard-lens-tab ${tab.active ? 'dashboard-lens-tab-active' : ''}`}
         >
           {tab.label}
+          {tab.key === 'signals' && signalCount > 0 && (
+            <span className="ml-1 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-black leading-none text-red-700">
+              {signalCount}
+            </span>
+          )}
         </button>
       ))}
     </div>
@@ -172,6 +183,7 @@ function getEvaluationScore(student, chapterId) {
 }
 
 export default function ClassOverview() {
+  const { currentUser } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -188,6 +200,9 @@ export default function ClassOverview() {
   const [contentBlocksByParagraaf, setContentBlocksByParagraaf] = useState({});
   const [klassenMap, setKlassenMap] = useState({});
   const [studentVoortgang, setStudentVoortgang] = useState({});
+  const [acknowledgedProgressSignals, setAcknowledgedProgressSignals] = useState([]);
+  const [selectedSignalIds, setSelectedSignalIds] = useState([]);
+  const [acknowledgingSignals, setAcknowledgingSignals] = useState(false);
 
   // Load all paragraphs from CMS hierarchy
   useEffect(() => {
@@ -267,6 +282,15 @@ export default function ClassOverview() {
   }, []);
 
   useEffect(() => {
+    const unsubscribe = listenToAcknowledgedProgressSignals(
+      setAcknowledgedProgressSignals,
+      () => setAcknowledgedProgressSignals([])
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     // Query only students (no orderBy to avoid composite index requirement)
     const q = query(
       collection(db, 'users'),
@@ -337,18 +361,80 @@ export default function ClassOverview() {
   const summariesByStudentId = Object.fromEntries(
     scopedStudents.map((student) => [student.id, getStudentAssignmentSummary(student)])
   );
+  const acknowledgedSignalIds = acknowledgedProgressSignals.map((signal) => signal.signalId || signal.id);
+  const openProgressSignals = buildClassProgressSignalItems({
+    students: scopedStudents,
+    summariesByStudentId,
+    recordsByStudentId: studentVoortgang,
+    acknowledgedSignalIds
+  });
+  const openSignalStudentIds = new Set(openProgressSignals.map((signal) => signal.studentId));
   const classMetrics = buildClassProgressMetrics({
     students: scopedStudents,
     summariesByStudentId,
     recordsByStudentId: studentVoortgang
   });
-  const classMetricCards = buildClassMetricCards(classMetrics);
-  const studentMetricsById = Object.fromEntries(
-    classMetrics.students.map(({ studentId, metrics }) => [studentId, metrics])
-  );
+  const displayClassMetrics = {
+    ...classMetrics,
+    attention: {
+      ...classMetrics.attention,
+      studentCount: openSignalStudentIds.size,
+      recordCount: openProgressSignals.length
+    }
+  };
+  const classMetricCards = buildClassMetricCards(displayClassMetrics);
   const lensFilteredStudents = activeLens === 'signals'
-    ? scopedStudents.filter((student) => (studentMetricsById[student.id]?.attention?.total || 0) > 0)
+    ? scopedStudents.filter((student) => openSignalStudentIds.has(student.id))
     : scopedStudents;
+  const filteredProgressSignals = openProgressSignals.filter((signal) => {
+    const haystack = [
+      signal.studentName,
+      signal.paragraafTitle,
+      signal.label,
+      signal.detail
+    ].join(' ').toLowerCase();
+    return haystack.includes(searchQuery.toLowerCase());
+  });
+  const filteredProgressSignalIds = filteredProgressSignals.map((signal) => signal.id);
+  const selectedSignals = filteredProgressSignals.filter((signal) => selectedSignalIds.includes(signal.id));
+  const allFilteredSignalsSelected = filteredProgressSignals.length > 0 &&
+    filteredProgressSignals.every((signal) => selectedSignalIds.includes(signal.id));
+
+  const toggleSignalSelection = (signalId) => {
+    setSelectedSignalIds((current) => (
+      current.includes(signalId)
+        ? current.filter((id) => id !== signalId)
+        : [...current, signalId]
+    ));
+  };
+
+  const toggleAllFilteredSignals = () => {
+    setSelectedSignalIds((current) => {
+      if (allFilteredSignalsSelected) {
+        return current.filter((id) => !filteredProgressSignalIds.includes(id));
+      }
+      return [...new Set([...current, ...filteredProgressSignalIds])];
+    });
+  };
+
+  const acknowledgeSelectedSignals = async () => {
+    if (!selectedSignals.length || acknowledgingSignals) return;
+
+    try {
+      setAcknowledgingSignals(true);
+      await acknowledgeProgressSignals(selectedSignals, {
+        actorId: currentUser?.uid || '',
+        actorName: currentUser?.displayName || currentUser?.email || ''
+      });
+      const acknowledgedIds = new Set(selectedSignals.map((signal) => signal.id));
+      setSelectedSignalIds((current) => current.filter((id) => !acknowledgedIds.has(id)));
+    } catch (error) {
+      console.error('Signalen afvinken is mislukt:', error);
+      alert('Signalen afvinken is mislukt. Probeer het opnieuw.');
+    } finally {
+      setAcknowledgingSignals(false);
+    }
+  };
 
   const filteredStudents = lensFilteredStudents
     .filter(s =>
@@ -727,7 +813,7 @@ export default function ClassOverview() {
 
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <DashboardLensSwitch activeLens={activeLens} onSelect={setActiveLens} />
+          <DashboardLensSwitch activeLens={activeLens} onSelect={setActiveLens} signalCount={openProgressSignals.length} />
           <div className="min-w-56">
             <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">Klas</label>
             <select
@@ -745,7 +831,7 @@ export default function ClassOverview() {
         </div>
         <div className="text-sm font-bold text-[var(--helix-muted)]">
           {activeLens === 'signals' && (
-            <p className="text-orange-700">Toont signalen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
+            <p>Toont open signalen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
           )}
           {activeLens === 'paragraph' && (
             <p className="text-blue-700">Vergelijkt paragrafen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
@@ -762,7 +848,10 @@ export default function ClassOverview() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {classMetricCards.map((card) => (
-          <div key={card.key} className={`${card.tone === 'warning' ? 'helix-alert' : 'helix-card'} flex flex-col p-6`}>
+          <div
+            key={card.key}
+            className={`${card.tone === 'warning' ? 'helix-card border-orange-100 bg-orange-50/45' : 'helix-card'} flex flex-col p-6`}
+          >
             <div className={`mb-2 flex items-center gap-2 text-sm font-medium ${card.tone === 'warning' ? 'text-orange-700' : 'text-[var(--helix-muted)]'}`}>
               {card.tone === 'warning' && <AlertTriangle size={16} />}
               {card.label}
@@ -853,7 +942,7 @@ export default function ClassOverview() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <h2 className="font-display font-extrabold text-[var(--helix-navy)]">
               {activeLens === 'signals'
-                ? `Signalen (${filteredStudents.length})`
+                ? `Signalen (${filteredProgressSignals.length})`
                 : activeLens === 'paragraph'
                   ? 'Paragraaffocus'
                   : `Leerlingenoverzicht (${scopedStudents.length})`}
@@ -861,7 +950,7 @@ export default function ClassOverview() {
             <div className="relative w-full sm:w-64">
               <input
                 type="text"
-                placeholder="Zoek leerling..."
+                placeholder={activeLens === 'signals' ? 'Zoek signaal...' : 'Zoek leerling...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="input-standard w-full py-2 pl-9 pr-4 text-sm"
@@ -870,64 +959,180 @@ export default function ClassOverview() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--helix-muted)]">Paragraaf selecteren</label>
-              <select
-                value={selectedChapterForClass || ""}
-                onChange={(e) => setSelectedChapterForClass(e.target.value || null)}
-                className="input-standard w-full py-2 text-sm font-medium"
-              >
-                <option value="">Alle paragrafen (totaal voortgang)</option>
-                {paragraphen.map((para) => (
-                  <option key={para.id} value={para.id}>
-                    {para.number && `${para.number}. `}{para.title}
-                  </option>
-                ))}
-              </select>
+          {activeLens === 'signals' ? (
+            <div className="flex flex-col gap-3 rounded-2xl border border-[var(--helix-border)] bg-white/78 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-black text-[var(--helix-navy)]">
+                  {selectedSignals.length} van {filteredProgressSignals.length} signaal{filteredProgressSignals.length === 1 ? '' : 'en'} geselecteerd
+                </p>
+                <p className="text-xs font-semibold text-[var(--helix-muted)]">Afvinken betekent: gezien door docent.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={toggleAllFilteredSignals}
+                  disabled={!filteredProgressSignals.length}
+                  className="btn-secondary w-auto px-4 py-2 text-sm disabled:opacity-50"
+                >
+                  {allFilteredSignalsSelected ? 'Selectie wissen' : 'Alle signalen selecteren'}
+                </button>
+                <button
+                  type="button"
+                  onClick={acknowledgeSelectedSignals}
+                  disabled={!selectedSignals.length || acknowledgingSignals}
+                  className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
+                >
+                  <CheckCircle size={16} />
+                  {acknowledgingSignals ? 'Afvinken...' : 'Geselecteerde afvinken'}
+                </button>
+              </div>
             </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--helix-muted)]">Paragraaf selecteren</label>
+                <select
+                  value={selectedChapterForClass || ""}
+                  onChange={(e) => setSelectedChapterForClass(e.target.value || null)}
+                  className="input-standard w-full py-2 text-sm font-medium"
+                >
+                  <option value="">Alle paragrafen (totaal voortgang)</option>
+                  {paragraphen.map((para) => (
+                    <option key={para.id} value={para.id}>
+                      {para.number && `${para.number}. `}{para.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="flex gap-2 items-end">
-              <button
-                onClick={() => {
-                  setSortBy("name");
-                  setSortDirection(sortBy === "name" && sortDirection === "asc" ? "desc" : "asc");
-                }}
-                className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  sortBy === "name" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
-                }`}
-              >
-                Naam <ArrowUpDown size={14} />
-              </button>
-              <button
-                onClick={() => {
-                  setSortBy("total");
-                  setSortDirection(sortBy === "total" && sortDirection === "asc" ? "desc" : "asc");
-                }}
-                className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  sortBy === "total" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
-                }`}
-              >
-                Totaal <ArrowUpDown size={14} />
-              </button>
-              {selectedChapterForClass && (
+              <div className="flex gap-2 items-end">
                 <button
                   onClick={() => {
-                    setSortBy("chapter");
-                    setSortDirection(sortBy === "chapter" && sortDirection === "asc" ? "desc" : "asc");
+                    setSortBy("name");
+                    setSortDirection(sortBy === "name" && sortDirection === "asc" ? "desc" : "asc");
                   }}
                   className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    sortBy === "chapter" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                    sortBy === "name" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
                   }`}
                 >
-                  Paragraaf <ArrowUpDown size={14} />
+                  Naam <ArrowUpDown size={14} />
                 </button>
-              )}
+                <button
+                  onClick={() => {
+                    setSortBy("total");
+                    setSortDirection(sortBy === "total" && sortDirection === "asc" ? "desc" : "asc");
+                  }}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    sortBy === "total" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                  }`}
+                >
+                  Totaal <ArrowUpDown size={14} />
+                </button>
+                {selectedChapterForClass && (
+                  <button
+                    onClick={() => {
+                      setSortBy("chapter");
+                      setSortDirection(sortBy === "chapter" && sortDirection === "asc" ? "desc" : "asc");
+                    }}
+                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      sortBy === "chapter" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                    }`}
+                  >
+                    Paragraaf <ArrowUpDown size={14} />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
         
         <div className="overflow-x-auto">
+          {activeLens === 'signals' ? (
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-slate-200 bg-white">
+                  <th className="px-6 py-4 text-sm font-medium text-slate-500">Leerling</th>
+                  <th className="px-6 py-4 text-sm font-medium text-slate-500">Signaal</th>
+                  <th className="px-6 py-4 text-sm font-medium text-slate-500">Paragraaf</th>
+                  <th className="px-6 py-4 text-right text-sm font-medium text-slate-500">Selecteer</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredProgressSignals.length > 0 ? (
+                  filteredProgressSignals.map((signal) => {
+                    const selected = selectedSignalIds.includes(signal.id);
+                    const student = students.find((item) => item.id === signal.studentId);
+
+                    return (
+                      <tr key={signal.id} className="group transition-colors hover:bg-slate-50">
+                        <td className="px-6 py-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (student) {
+                                setSelectedStudent(student);
+                                setActiveLens('student');
+                                setExpandedEvidence({});
+                              }
+                            }}
+                            className="flex items-center gap-3 text-left"
+                          >
+                            <StudentAvatar
+                              student={student || { displayName: signal.studentName }}
+                              size="sm"
+                              shape="circle"
+                              fallback="initial"
+                              fallbackClassName="bg-blue-100 text-blue-600"
+                            />
+                            <span className="flex flex-col">
+                              <span className="font-bold text-slate-800">{signal.studentName}</span>
+                              <span className="text-[10px] font-semibold text-slate-400">{signal.klasId || 'Geen klas'}</span>
+                            </span>
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-black text-[var(--helix-navy)]">{signal.label}</span>
+                            <span className="text-sm font-medium text-[var(--helix-muted)]">{signal.detail}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-semibold text-slate-600">
+                          {signal.paragraafTitle || 'Paragraaf'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => toggleSignalSelection(signal.id)}
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border text-sm transition-all ${
+                                selected
+                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                  : 'border-[var(--helix-border)] bg-white text-slate-400 hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
+                              }`}
+                              aria-label={selected ? 'Signaal deselecteren' : 'Signaal selecteren'}
+                              title={selected ? 'Signaal deselecteren' : 'Signaal selecteren'}
+                            >
+                              {selected ? <CheckSquare size={19} /> : <Square size={19} />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="py-12 text-center text-slate-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <CheckCircle size={32} className="mb-2 text-emerald-400" />
+                        <p className="font-medium">Geen open signalen.</p>
+                        <p className="text-xs">Alles wat zichtbaar was, is afgehandeld of er zijn geen directe signalen.</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          ) : (
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200 bg-white">
@@ -1094,6 +1299,7 @@ export default function ClassOverview() {
               )}
             </tbody>
           </table>
+          )}
         </div>
       </div>
       </div>

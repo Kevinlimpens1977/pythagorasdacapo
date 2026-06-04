@@ -4,8 +4,10 @@ import assert from 'node:assert/strict';
 import {
   buildClassMetricCards,
   buildClassProgressMetrics,
+  buildClassProgressSignalItems,
   buildDashboardLensTabs,
   buildKlasFilterOptions,
+  buildStudentProgressSignalItems,
   filterStudentsByKlas,
   buildParagraphProgressSummary,
   buildStudentMetricCards,
@@ -187,6 +189,44 @@ test('buildClassProgressMetrics counts unique attention students and keeps media
     pendingTeacherReview: 0,
     inProgress: 0
   });
+});
+
+test('buildStudentProgressSignalItems creates stable teacher-facing signal rows', () => {
+  const signals = buildStudentProgressSignalItems({
+    student: { id: 's1', displayName: 'Ada Lovelace', klasId: 'h1b' },
+    summary: { assignedItems: 5, startedItems: 5, completedItems: 5, percentage: 100 },
+    records: [
+      { id: 'r1', paragraafId: 'p1', paragraafTitle: '1.1 Start', completed: true, isCorrect: true, resultTier: 'independent', blockType: 'vraag' },
+      { id: 'r2', paragraafId: 'p1', paragraafTitle: '1.1 Start', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' },
+      { id: 'r3', paragraafId: 'p1', paragraafTitle: '1.1 Start', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' },
+      { id: 'r4', paragraafId: 'p1', paragraafTitle: '1.1 Start', completed: true, resultTier: 'pending_teacher_review', blockTitle: 'Open vraag', blockType: 'vraag' },
+      { id: 'r5', paragraafId: 'p2', completed: false, attempts: 3, maxAttempts: 4, blockTitle: 'Sleepvraag', blockType: 'vraag' }
+    ]
+  });
+
+  assert.deepEqual(signals.map((signal) => signal.type), ['failedParagraph', 'teacherReview', 'stuck']);
+  assert.equal(signals[0].id, 'progressSignal__s1__failedParagraph__p1');
+  assert.equal(signals[0].studentName, 'Ada Lovelace');
+  assert.equal(signals[1].label, 'Antwoord beoordelen');
+  assert.equal(signals[2].detail, 'Sleepvraag: 3 pogingen');
+});
+
+test('buildClassProgressSignalItems filters globally acknowledged signals', () => {
+  const openSignals = buildClassProgressSignalItems({
+    students: [{ id: 's1', displayName: 'Ada' }],
+    summariesByStudentId: {
+      s1: { assignedItems: 4, startedItems: 4, completedItems: 4, percentage: 100 }
+    },
+    recordsByStudentId: {
+      s1: [
+        { id: 'r1', paragraafId: 'p1', completed: true, resultTier: 'pending_teacher_review', blockType: 'vraag' },
+        { id: 'r2', paragraafId: 'p1', completed: false, attempts: 3, blockType: 'vraag' }
+      ]
+    },
+    acknowledgedSignalIds: ['progressSignal__s1__teacherReview__r1']
+  });
+
+  assert.deepEqual(openSignals.map((signal) => signal.id), ['progressSignal__s1__stuck__r2']);
 });
 
 test('buildClassMetricCards turns class metrics into the three teacher-facing top blocks', () => {

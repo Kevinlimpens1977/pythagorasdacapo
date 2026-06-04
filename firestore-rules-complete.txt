@@ -84,6 +84,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Door docenten/admins afgevinkte voortgangssignalen.
+    match /progressSignalAcknowledgements/{signalId} {
+      allow read, create, update, delete: if isAdmin();
+    }
+
     // Tijdelijke leerlingen uit foto-import
     match /pendingStudents/{document=**} {
       allow read, write, delete: if isAdmin();

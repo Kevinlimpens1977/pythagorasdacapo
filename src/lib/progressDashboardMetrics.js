@@ -91,6 +91,161 @@ const getFailedParagraphSignalCount = (records = [], { allowCompletedShortcut = 
   }).length;
 };
 
+const buildStableSignalId = (...parts) =>
+  parts
+    .filter((part) => part !== undefined && part !== null && String(part).trim() !== '')
+    .map((part) => String(part).trim().replace(/[^a-zA-Z0-9_-]+/g, '_'))
+    .join('__');
+
+const getRecordSignalKey = (record = {}, index = 0) =>
+  record.id ||
+  record.blockId ||
+  record.vraagId ||
+  record.questionId ||
+  record.blockTitle ||
+  record.vraagTitle ||
+  `record_${index}`;
+
+const getRecordLabel = (record = {}, fallback = 'Onderdeel') =>
+  record.blockTitle ||
+  record.vraagTitle ||
+  record.questionPlainText ||
+  record.paragraafTitle ||
+  fallback;
+
+const getFailedParagraphSignalItems = ({ student = {}, records = [], summary = {} } = {}) => {
+  const normalizedSummary = normalizeSummary(summary);
+  const paragraphBuckets = new Map();
+
+  records
+    .filter(isQuestionLikeRecord)
+    .forEach((record) => {
+      const bucket = getTierBucket(record);
+      const isAssessed = bucket === 'failed' || bucket === 'guided' || bucket === 'independent';
+      if (!isAssessed) return;
+
+      const key = getParagraphSignalKey(record);
+      const current = paragraphBuckets.get(key) || {
+        assessed: 0,
+        failed: 0,
+        paragraafId: record.paragraafId || record.paragraphId || '',
+        paragraafTitle: record.paragraafTitle || record.chapterTitle || 'Paragraaf',
+        lastUpdatedAt: record.updatedAt || record.completedAt || record.firstAttemptAt || null
+      };
+      current.assessed += 1;
+      if (bucket === 'failed') current.failed += 1;
+      if (record.updatedAt || record.completedAt || record.firstAttemptAt) {
+        current.lastUpdatedAt = record.updatedAt || record.completedAt || record.firstAttemptAt;
+      }
+      paragraphBuckets.set(key, current);
+    });
+
+  return [...paragraphBuckets.entries()].flatMap(([key, bucket]) => {
+    if (!bucket.assessed) return [];
+    const enoughEvidence = bucket.assessed >= MIN_ASSESSED_QUESTIONS_FOR_FAILED_SIGNAL ||
+      normalizedSummary.percentage === 100;
+    if (!enoughEvidence || bucket.failed / bucket.assessed <= FAILED_PARAGRAPH_SIGNAL_THRESHOLD) return [];
+
+    return [{
+      id: buildStableSignalId('progressSignal', student.id || student.uid, 'failedParagraph', key),
+      type: 'failedParagraph',
+      label: 'Herstel nodig',
+      detail: `${bucket.failed}/${bucket.assessed} beoordeelde vragen gingen mis`,
+      studentId: student.id || student.uid || '',
+      studentName: student.displayName || student.email || 'Naamloos',
+      klasId: student.klasId || '',
+      paragraafId: bucket.paragraafId,
+      paragraafTitle: bucket.paragraafTitle,
+      priority: 1,
+      updatedAt: bucket.lastUpdatedAt
+    }];
+  });
+};
+
+export const buildStudentProgressSignalItems = ({ student = {}, summary = {}, records = [] } = {}) => {
+  const studentId = student.id || student.uid || '';
+  const failedParagraphSignals = getFailedParagraphSignalItems({ student, summary, records });
+  const recordSignals = records.flatMap((record, index) => {
+    const recordKey = getRecordSignalKey(record, index);
+    const base = {
+      studentId,
+      studentName: student.displayName || student.email || 'Naamloos',
+      klasId: student.klasId || record.klasId || '',
+      paragraafId: record.paragraafId || record.paragraphId || '',
+      paragraafTitle: record.paragraafTitle || record.chapterTitle || 'Paragraaf',
+      recordId: record.id || '',
+      updatedAt: record.updatedAt || record.completedAt || record.firstAttemptAt || null
+    };
+    const signals = [];
+
+    if (getTierBucket(record) === 'pendingTeacherReview') {
+      signals.push({
+        ...base,
+        id: buildStableSignalId('progressSignal', studentId, 'teacherReview', recordKey),
+        type: 'teacherReview',
+        label: 'Antwoord beoordelen',
+        detail: getRecordLabel(record, `Onderdeel ${index + 1}`),
+        priority: 2
+      });
+    }
+
+    if (record.completed !== true) {
+      const attempts = Number(record.attempts || 0);
+      const maxAttempts = Number(record.maxAttempts || 0);
+      if (attempts >= 3 || (maxAttempts > 0 && attempts >= maxAttempts - 1)) {
+        signals.push({
+          ...base,
+          id: buildStableSignalId('progressSignal', studentId, 'stuck', recordKey),
+          type: 'stuck',
+          label: 'Bijna vast',
+          detail: `${getRecordLabel(record, `Onderdeel ${index + 1}`)}: ${attempts} poging${attempts === 1 ? '' : 'en'}`,
+          priority: 3
+        });
+      }
+
+      if (record.draftSaved === true) {
+        signals.push({
+          ...base,
+          id: buildStableSignalId('progressSignal', studentId, 'staleDraft', recordKey),
+          type: 'staleDraft',
+          label: 'Concept open',
+          detail: getRecordLabel(record, `Onderdeel ${index + 1}`),
+          priority: 5
+        });
+      }
+    }
+
+    return signals;
+  });
+
+  return [...failedParagraphSignals, ...recordSignals].sort((a, b) => (
+    a.priority - b.priority || a.studentName.localeCompare(b.studentName, 'nl-NL')
+  ));
+};
+
+export const filterAcknowledgedProgressSignals = (signals = [], acknowledgedSignalIds = []) => {
+  const acknowledged = new Set(acknowledgedSignalIds);
+  return signals.filter((signal) => !acknowledged.has(signal.id));
+};
+
+export const buildClassProgressSignalItems = ({
+  students = [],
+  summariesByStudentId = {},
+  recordsByStudentId = {},
+  acknowledgedSignalIds = []
+} = {}) => {
+  const signals = students.flatMap((student) => {
+    const studentId = student.id || student.uid;
+    return buildStudentProgressSignalItems({
+      student,
+      summary: summariesByStudentId[studentId] || {},
+      records: recordsByStudentId[studentId] || []
+    });
+  });
+
+  return filterAcknowledgedProgressSignals(signals, acknowledgedSignalIds);
+};
+
 const summarizeAttention = ({ summary = {}, records = [] } = {}) => {
   const normalizedSummary = normalizeSummary(summary);
   const quality = summarizeLearningQuality(records);
