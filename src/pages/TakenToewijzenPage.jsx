@@ -1,7 +1,19 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, CheckSquare, AlertCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  BookOpenCheck,
+  CheckCircle2,
+  CheckSquare,
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  Layers3,
+  ListChecks,
+  Route,
+  UsersRound
+} from 'lucide-react';
 import klasService from '../services/klasService';
 import cmsService from '../services/cmsService';
 import { getColorStyle } from '../lib/paletColors';
@@ -14,22 +26,26 @@ const flowSteps = [
   {
     number: '1',
     title: 'Kies klas',
-    description: 'Bepaal voor welke klas je lesmateriaal klaarzet.'
+    description: 'Bepaal voor welke klas je lesmateriaal klaarzet.',
+    icon: UsersRound
   },
   {
     number: '2',
     title: 'Kies lesmateriaal',
-    description: 'Navigeer naar vak, hoofdstuk, paragraaf en lesblokken.'
+    description: 'Navigeer naar vak, hoofdstuk, paragraaf en lesblokken.',
+    icon: Route
   },
   {
     number: '3',
     title: 'Zet klaar',
-    description: 'Kies klasbreed of extra materiaal voor een leerling.'
+    description: 'Kies klasbreed of extra materiaal voor een leerling.',
+    icon: Layers3
   },
   {
     number: '4',
     title: 'Volg voortgang',
-    description: 'Bekijk daarna in Voortgang wat gestart en afgerond is.'
+    description: 'Bekijk daarna in Voortgang wat gestart en afgerond is.',
+    icon: CheckCircle2
   }
 ];
 
@@ -39,33 +55,24 @@ const FlowSteps = ({ currentStep }) => (
       const stepNumber = index + 1;
       const isActive = stepNumber === currentStep;
       const isDone = stepNumber < currentStep;
+      const StepIcon = step.icon;
 
       return (
         <div
           key={step.number}
-          className={`rounded-lg border p-4 ${
-            isActive
-              ? 'border-blue-300 bg-blue-50'
-              : isDone
-                ? 'border-emerald-200 bg-emerald-50'
-                : 'border-slate-200 bg-white'
-          }`}
+          className={`helix-action-card p-4 ${isActive || isDone ? 'helix-action-card-active' : ''}`}
         >
           <div className="flex items-center gap-3">
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black ${
-                isActive
-                  ? 'bg-blue-600 text-white'
-                  : isDone
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 text-slate-600'
+                isDone ? 'bg-emerald-50 text-emerald-700' : 'bg-[var(--helix-surface-soft)] text-[var(--helix-purple)]'
               }`}
             >
-              {step.number}
+              <StepIcon size={17} />
             </div>
-            <h2 className="font-black text-slate-900">{step.title}</h2>
+            <h2 className="font-black text-[var(--helix-navy)]">{step.title}</h2>
           </div>
-          <p className="mt-2 text-sm leading-5 text-slate-500">{step.description}</p>
+          <p className="mt-2 text-sm leading-5 text-[var(--helix-muted)]">{step.description}</p>
         </div>
       );
     })}
@@ -119,10 +126,10 @@ const AssignmentTreeNode = ({
         className={[
           'group grid min-h-[44px] grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border px-3 py-2 text-sm transition',
           isSelected
-            ? 'border-blue-200 bg-blue-50 text-slate-950'
+            ? 'border-[var(--helix-purple)] bg-white text-[var(--helix-navy)] shadow-sm'
             : isParagraaf
-              ? 'border-slate-200 bg-white text-slate-700 hover:border-blue-100 hover:bg-slate-50'
-              : 'border-transparent bg-white text-slate-800 hover:border-slate-200 hover:bg-slate-50'
+              ? 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-[var(--helix-purple)] hover:bg-white'
+              : 'border-transparent bg-white text-[var(--helix-navy)] hover:border-[var(--helix-border)] hover:bg-[var(--helix-surface-soft)]'
         ].join(' ')}
         style={{ paddingLeft: `${12 + level * 18}px` }}
         onClick={handleRowClick}
@@ -153,10 +160,10 @@ const AssignmentTreeNode = ({
             {rowLabel}
           </div>
           {isParagraaf && (
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-[var(--helix-muted)]">
               {blocks.length} lesblokken
               {Array.isArray(assignedContentBlocks[node.id]) && (
-                <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700">
+                <span className="ml-2 rounded-full bg-violet-50 px-2 py-0.5 font-bold text-[var(--helix-purple)]">
                   {assignedContentBlocks[node.id].length} geselecteerd
                 </span>
               )}
@@ -173,7 +180,7 @@ const AssignmentTreeNode = ({
               disabled={saving || isDisabled}
               onClick={(event) => event.stopPropagation()}
               onChange={() => selectedStudentId ? onToggleStudentParagraaf(node.id) : onToggleParagraaf(node.id)}
-              className="h-5 w-5 cursor-pointer rounded text-blue-600"
+              className="h-5 w-5 cursor-pointer rounded accent-[var(--helix-purple)]"
               title={isDisabled ? 'Al in klassestandaard' : ''}
             />
           </div>
@@ -186,7 +193,7 @@ const AssignmentTreeNode = ({
 
       {node.type === 'hoofdstuk' && isSelected && (
         <div
-          className="my-2 rounded-xl border border-blue-100 bg-blue-50 p-4"
+          className="my-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4"
           style={{ marginLeft: `${level * 18 + 34}px` }}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -200,7 +207,7 @@ const AssignmentTreeNode = ({
               type="button"
               onClick={() => onToggleHoofdstuk(node.id)}
               disabled={saving || selectedStudentId || chapterParagrafen.length === 0}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-secondary w-auto px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               title={selectedStudentId ? 'Bulkactie is alleen voor de klas. Kies losse extra paragrafen voor een leerling.' : ''}
             >
               Hoofdstuk aan/uit
@@ -219,7 +226,7 @@ const AssignmentTreeNode = ({
               <button
                 type="button"
                 onClick={() => onClearContentBlocks(node.id)}
-                className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                className="text-xs font-bold text-[var(--helix-purple)] hover:text-[var(--helix-navy)]"
               >
                 Alle blokken tonen
               </button>
@@ -243,7 +250,7 @@ const AssignmentTreeNode = ({
                   'flex items-start gap-3 rounded-lg border px-3 py-2 text-sm',
                   blockDisabled
                     ? 'border-slate-100 bg-slate-50 opacity-60'
-                    : 'border-slate-200 bg-white hover:border-blue-200'
+                    : 'border-slate-200 bg-white hover:border-[var(--helix-purple)]'
                 ].join(' ')}
               >
                 <input
@@ -251,7 +258,7 @@ const AssignmentTreeNode = ({
                   checked={blockChecked}
                   disabled={saving || blockDisabled}
                   onChange={() => onToggleContentBlock(node.id, block.id)}
-                  className="mt-1 h-4 w-4 cursor-pointer rounded text-blue-600"
+                  className="mt-1 h-4 w-4 cursor-pointer rounded accent-[var(--helix-purple)]"
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-bold text-slate-900">
@@ -826,20 +833,20 @@ export default function TakenToewijzenPage() {
   // Check if no klas is selected
   if (!selectedKlasId) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="helix-page min-h-screen">
+        <div className="helix-container max-w-7xl">
           {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-black uppercase tracking-widest text-blue-600">Lesstof</p>
-              <h1 className="mt-2 text-4xl font-black text-slate-900">Lesmateriaal klaarzetten</h1>
-              <p className="text-slate-600 mt-2">
+              <p className="helix-eyebrow">Lesstof</p>
+              <h1 className="helix-heading-xl">Lesmateriaal klaarzetten</h1>
+              <p className="mt-3 max-w-3xl text-lg leading-8 text-[var(--helix-muted)]">
                 Koppel gemaakte hoofdstukken, paragrafen of lesblokken aan een klas of individuele leerling.
               </p>
             </div>
             <button
               onClick={() => navigate('/admin/lesstof')}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+              className="btn-secondary w-auto px-4 py-2 text-sm"
             >
               Terug naar Lesstof
             </button>
@@ -850,18 +857,18 @@ export default function TakenToewijzenPage() {
           </div>
 
           {/* Klas Selector */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
+          <div className="helix-card p-8">
             <div className="mb-5">
-              <h2 className="text-xl font-black text-slate-900">Start met een klas</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <h2 className="text-xl font-black text-[var(--helix-navy)]">Start met een klas</h2>
+              <p className="mt-1 text-sm text-[var(--helix-muted)]">
                 Daarna kies je welk lesmateriaal je klaarzet.
               </p>
             </div>
-            <label className="block text-sm font-semibold text-slate-700 mb-3">Klas selecteren</label>
+            <label className="mb-3 block text-sm font-black text-[var(--helix-navy)]">Klas selecteren</label>
             <select
               value={selectedKlasId || ''}
               onChange={(e) => setSelectedKlasId(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="input-standard w-full text-base"
             >
               <option value="">Kies een klas...</option>
               {klassen.map(klas => (
@@ -877,20 +884,20 @@ export default function TakenToewijzenPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="helix-page min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <div className="sticky top-0 z-40 border-b border-[var(--helix-border)] bg-white/88 backdrop-blur">
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/admin/lesstof')}
-              className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="btn-secondary w-auto px-3 py-2"
             >
               <ChevronLeft size={24} />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Lesmateriaal klaarzetten</h1>
-              <p className="text-slate-600 text-sm">
+              <h1 className="text-2xl font-black text-[var(--helix-navy)]">Lesmateriaal klaarzetten</h1>
+              <p className="text-sm font-medium text-[var(--helix-muted)]">
                 {selectedKlas?.name} ({selectedKlas?.code})
               </p>
             </div>
@@ -900,7 +907,7 @@ export default function TakenToewijzenPage() {
           <select
             value={selectedKlasId}
             onChange={(e) => setSelectedKlasId(e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+            className="input-standard w-auto py-2 text-sm"
           >
             {klassen.map(klas => (
               <option key={klas.klasId} value={klas.klasId}>
@@ -912,24 +919,24 @@ export default function TakenToewijzenPage() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-8 py-8">
+      <div className="mx-auto max-w-7xl px-8 py-8">
         <div className="mb-6">
           <FlowSteps currentStep={currentFlowStep} />
         </div>
 
-        <div className="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="helix-card mb-6 p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-blue-600">Klaarzetstudio</p>
-              <h2 className="mt-1 text-xl font-black text-slate-900">Kies links het lesmateriaal, zet rechts de bestemming klaar</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="helix-eyebrow">Klaarzetstudio</p>
+              <h2 className="mt-1 text-xl font-black text-[var(--helix-navy)]">Kies links het lesmateriaal, zet rechts de bestemming klaar</h2>
+              <p className="mt-1 text-sm text-[var(--helix-muted)]">
                 Je kunt een heel hoofdstuk klaarzetten, losse paragrafen kiezen of binnen een paragraaf specifieke lesblokken selecteren.
               </p>
             </div>
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              className="btn-secondary w-auto px-4 py-2 text-sm"
             >
               Bekijk voortgang
             </button>
@@ -938,7 +945,7 @@ export default function TakenToewijzenPage() {
 
         <div className="grid grid-cols-3 gap-6 h-[calc(100vh-200px)]">
           {/* Left panel: Content Browser */}
-          <div className="col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col overflow-hidden">
+          <div className="helix-card col-span-2 flex flex-col overflow-hidden">
             {/* Breadcrumb */}
             {breadcrumbs.length > 0 && (
               <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2 overflow-x-auto">
@@ -1039,7 +1046,7 @@ export default function TakenToewijzenPage() {
                           className="p-4 border rounded-lg hover:opacity-80 cursor-pointer transition-colors flex items-center gap-3"
                           style={{ backgroundColor: style.bg, borderColor: style.border, color: style.text }}
                         >
-                          <span className="text-lg flex-shrink-0">{vak.emoji || '📚'}</span>
+                          <span className="flex-shrink-0"><BookOpenCheck size={18} /></span>
                           <span className="font-medium">{vak.naam}</span>
                           <ChevronRight size={16} className="ml-auto flex-shrink-0" style={{ opacity: 0.6 }} />
                         </div>
@@ -1066,7 +1073,7 @@ export default function TakenToewijzenPage() {
                           className="p-4 border rounded-lg hover:opacity-80 cursor-pointer transition-colors flex items-center gap-3"
                           style={{ backgroundColor: style.bg, borderColor: style.border, color: style.text }}
                         >
-                          <span className="text-lg flex-shrink-0">{lj.emoji || '📅'}</span>
+                          <span className="flex-shrink-0"><GraduationCap size={18} /></span>
                           <span className="font-medium">{lj.name}</span>
                           <ChevronRight size={16} className="ml-auto flex-shrink-0" style={{ opacity: 0.6 }} />
                         </div>
@@ -1093,7 +1100,7 @@ export default function TakenToewijzenPage() {
                           className="p-4 border rounded-lg hover:opacity-80 cursor-pointer transition-colors flex items-center gap-3"
                           style={{ backgroundColor: style.bg, borderColor: style.border, color: style.text }}
                         >
-                          <span className="text-lg flex-shrink-0">{niveau.emoji || '📊'}</span>
+                          <span className="flex-shrink-0"><ListChecks size={18} /></span>
                           <div className="flex-1">
                             <div className="font-medium">{niveau.label}</div>
                             <div className="text-xs" style={{ opacity: 0.7 }}>{niveau.name}</div>
@@ -1123,7 +1130,7 @@ export default function TakenToewijzenPage() {
                           className="p-4 border rounded-lg hover:opacity-80 cursor-pointer transition-colors flex items-center gap-3"
                           style={{ backgroundColor: style.bg, borderColor: style.border, color: style.text }}
                         >
-                          <span className="text-lg flex-shrink-0">{h.emoji || '📖'}</span>
+                          <span className="flex-shrink-0"><BookOpenCheck size={18} /></span>
                           <span className="font-medium">{h.title || (h.number ? `Hoofdstuk ${h.number}` : 'Hoofdstuk zonder naam')}</span>
                           <ChevronRight size={16} className="ml-auto flex-shrink-0" style={{ opacity: 0.6 }} />
                         </div>
@@ -1136,7 +1143,7 @@ export default function TakenToewijzenPage() {
               {/* Paragrafen */}
               {showLegacyCardBrowser && selectedHoofdstukId && (
                 <>
-                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                  <div className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h3 className="text-sm font-black text-slate-900">Hoofdstuk klaarzetten</h3>
@@ -1148,7 +1155,7 @@ export default function TakenToewijzenPage() {
                         type="button"
                         onClick={toggleHoofdstukAssignment}
                         disabled={saving || selectedStudentId || paragrafen.length === 0}
-                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="btn-secondary w-auto px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                         title={selectedStudentId ? 'Bulkactie is alleen voor de klas. Kies losse extra paragrafen voor een leerling.' : ''}
                       >
                         Hoofdstuk aan/uit
@@ -1181,7 +1188,7 @@ export default function TakenToewijzenPage() {
                               checked={isChecked}
                               onChange={() => selectedStudentId ? toggleStudentOverride(para.id) : toggleParagraafAssignment(para.id)}
                               disabled={saving || isDisabled}
-                              className="mt-1 h-5 w-5 cursor-pointer rounded text-blue-600"
+                              className="mt-1 h-5 w-5 cursor-pointer rounded accent-[var(--helix-purple)]"
                               title={isDisabled ? "Al in klassestandaard" : ""}
                             />
                             <div className="flex-1">
@@ -1192,7 +1199,7 @@ export default function TakenToewijzenPage() {
                               <div className="mt-1 text-xs text-slate-500">
                                 {(contentBlocksByParagraaf[para.id] || []).length} lesblokken
                                 {Array.isArray(assignedContentBlocks[para.id]) && (
-                                  <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 font-bold text-blue-700">
+                                  <span className="ml-2 rounded-full bg-violet-50 px-2 py-0.5 font-bold text-[var(--helix-purple)]">
                                     {assignedContentBlocks[para.id].length} geselecteerd
                                   </span>
                                 )}
@@ -1213,7 +1220,7 @@ export default function TakenToewijzenPage() {
                                   <button
                                     type="button"
                                     onClick={() => clearContentBlockSelection(para.id)}
-                                    className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                                    className="text-xs font-bold text-[var(--helix-purple)] hover:text-[var(--helix-navy)]"
                                   >
                                     Alle blokken tonen
                                   </button>
@@ -1237,7 +1244,7 @@ export default function TakenToewijzenPage() {
                                       className={`flex items-start gap-3 rounded-lg border px-3 py-2 text-sm ${
                                         blockDisabled
                                           ? 'border-slate-100 bg-slate-50 opacity-60'
-                                          : 'border-slate-200 bg-white hover:border-blue-200'
+                                          : 'border-slate-200 bg-white hover:border-[var(--helix-purple)]'
                                       }`}
                                     >
                                       <input
@@ -1245,7 +1252,7 @@ export default function TakenToewijzenPage() {
                                         checked={blockChecked}
                                         disabled={saving || blockDisabled}
                                         onChange={() => toggleContentBlockAssignment(para.id, block.id)}
-                                        className="mt-1 h-4 w-4 cursor-pointer rounded text-blue-600"
+                                        className="mt-1 h-4 w-4 cursor-pointer rounded accent-[var(--helix-purple)]"
                                       />
                                       <span className="flex-1">
                                         <span className="block font-bold text-slate-900">
@@ -1271,26 +1278,18 @@ export default function TakenToewijzenPage() {
           </div>
 
           {/* Right panel: Assignment Overview */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col overflow-hidden">
+          <div className="helix-card flex flex-col overflow-hidden">
             {/* Tabs */}
-            <div className="border-b border-slate-200 flex">
+            <div className="flex gap-2 border-b border-[var(--helix-border)] p-3">
               <button
                 onClick={() => setActiveTab('klas')}
-                className={`flex-1 px-4 py-3 font-medium transition-colors ${
-                  activeTab === 'klas'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`dashboard-lens-tab flex-1 ${activeTab === 'klas' ? 'dashboard-lens-tab-active' : ''}`}
               >
                 Klaargezet ({assignedParagrafen.length})
               </button>
               <button
                 onClick={() => setActiveTab('leerlingen')}
-                className={`flex-1 px-4 py-3 font-medium transition-colors ${
-                  activeTab === 'leerlingen'
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`dashboard-lens-tab flex-1 ${activeTab === 'leerlingen' ? 'dashboard-lens-tab-active' : ''}`}
               >
                 Per leerling ({klasStudents.length})
               </button>
@@ -1329,9 +1328,10 @@ export default function TakenToewijzenPage() {
                           <span className="font-medium text-slate-900">{displayName}</span>
                           <button
                             onClick={() => removeAssignment(paragraafId)}
+                            aria-label="Klaargezet lesmateriaal verwijderen"
                             className="text-red-600 hover:text-red-700 font-bold"
                           >
-                            ×
+                            x
                           </button>
                         </div>
                       );
@@ -1387,9 +1387,10 @@ export default function TakenToewijzenPage() {
                                       <span className="font-medium text-slate-900">{para ? getCmsItemLabel('paragraaf', para) : paraId}</span>
                                       <button
                                         onClick={() => toggleStudentOverride(paraId)}
+                                        aria-label="Extra lesmateriaal verwijderen"
                                         className="text-red-500 hover:text-red-700 font-bold ml-2"
                                       >
-                                        ×
+                                        x
                                       </button>
                                     </div>
                                   );

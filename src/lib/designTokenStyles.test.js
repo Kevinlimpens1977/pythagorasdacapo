@@ -5,6 +5,8 @@ import { readFileSync } from 'node:fs';
 const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlockBuilder.jsx', import.meta.url), 'utf8');
 const cropEditorPanel = readFileSync(new URL('../components/cms/CropEditorPanel.jsx', import.meta.url), 'utf8');
+const adminKlassenPage = readFileSync(new URL('../pages/AdminKlassenPage.jsx', import.meta.url), 'utf8');
+const takenToewijzenPage = readFileSync(new URL('../pages/TakenToewijzenPage.jsx', import.meta.url), 'utf8');
 
 const getCssRule = (selector) => {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -97,4 +99,19 @@ test('fullscreen crop editor header reuses the presenter soft chrome surface', (
   assert.doesNotMatch(cropEditorPanel, /bg-slate-950 px-5 py-3 text-white/);
   assert.doesNotMatch(cropEditorPanel, /text-fuchsia-200">Crop\/OCR studio/);
   assert.match(cropEditorPanel, /btn-secondary/);
+});
+
+test('class and assignment admin pages use Helix layout without emoji icon fallbacks', () => {
+  for (const page of [adminKlassenPage, takenToewijzenPage]) {
+    assert.match(page, /helix-page/);
+    assert.doesNotMatch(page, /min-h-screen bg-gray-50/);
+    assert.doesNotMatch(page, /[\u{1F300}-\u{1FAFF}]/u);
+    assert.doesNotMatch(page, /ð|Ã|Ÿ/);
+    assert.doesNotMatch(page, /bg-blue-600 hover:bg-blue-700 text-white/);
+  }
+
+  assert.match(adminKlassenPage, /UsersRound|Lightbulb|Bot|Calculator|BookOpenCheck/);
+  assert.match(adminKlassenPage, /dashboard-lens-tab/);
+  assert.match(takenToewijzenPage, /dashboard-lens-tab/);
+  assert.match(takenToewijzenPage, /btn-secondary/);
 });
