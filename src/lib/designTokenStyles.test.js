@@ -7,6 +7,7 @@ const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlock
 const cropEditorPanel = readFileSync(new URL('../components/cms/CropEditorPanel.jsx', import.meta.url), 'utf8');
 const adminKlassenPage = readFileSync(new URL('../pages/AdminKlassenPage.jsx', import.meta.url), 'utf8');
 const takenToewijzenPage = readFileSync(new URL('../pages/TakenToewijzenPage.jsx', import.meta.url), 'utf8');
+const packageJson = readFileSync(new URL('../../package.json', import.meta.url), 'utf8');
 
 const getCssRule = (selector) => {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -114,4 +115,15 @@ test('class and assignment admin pages use Helix layout without emoji icon fallb
   assert.match(adminKlassenPage, /dashboard-lens-tab/);
   assert.match(takenToewijzenPage, /dashboard-lens-tab/);
   assert.match(takenToewijzenPage, /btn-secondary/);
+});
+
+test('lesson route builder uses dnd-kit sortable cards with keyboard fallback', () => {
+  assert.match(packageJson, /"@dnd-kit\/core"/);
+  assert.match(packageJson, /"@dnd-kit\/sortable"/);
+  assert.match(contentBlockBuilder, /DndContext/);
+  assert.match(contentBlockBuilder, /SortableContext/);
+  assert.match(contentBlockBuilder, /KeyboardSensor/);
+  assert.match(contentBlockBuilder, /sortableKeyboardCoordinates/);
+  assert.match(contentBlockBuilder, /items=\{sortableBlockIds\}/);
+  assert.match(contentBlockBuilder, /useSortable/);
 });

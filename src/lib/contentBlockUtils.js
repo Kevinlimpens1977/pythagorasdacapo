@@ -114,6 +114,29 @@ export const getReorderedBlocks = (blocks = [], blockId, direction) => {
   }));
 };
 
+export const getReorderedBlocksByIndex = (blocks = [], blockId, targetIndex) => {
+  const normalized = normalizeContentBlocks(blocks);
+  const currentIndex = normalized.findIndex((block) => block.id === blockId);
+
+  if (currentIndex === -1) return normalized;
+
+  const safeTargetIndex = Math.min(
+    Math.max(Number.isFinite(targetIndex) ? targetIndex : currentIndex, 0),
+    normalized.length - 1
+  );
+
+  if (safeTargetIndex === currentIndex) return normalized;
+
+  const reordered = [...normalized];
+  const [movedBlock] = reordered.splice(currentIndex, 1);
+  reordered.splice(safeTargetIndex, 0, movedBlock);
+
+  return reordered.map((block, index) => ({
+    ...block,
+    order: index + 1
+  }));
+};
+
 export const htmlToPlainText = (html = '') => {
   return String(html)
     .replace(/<br\s*\/?>/gi, '\n')

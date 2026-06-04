@@ -6,6 +6,7 @@ import {
   buildContentBlockFromSnapshot,
   getDefaultContentForBlockType,
   getReorderedBlocks,
+  getReorderedBlocksByIndex,
   getToggledContentBlockStatus,
   mergeCropResultsIntoBlockContent,
   normalizeContentBlockSettings,
@@ -78,6 +79,49 @@ test('getReorderedBlocks moves a block up and normalizes order values', () => {
       { id: 'a', order: 1 },
       { id: 'c', order: 2 },
       { id: 'b', order: 3 }
+    ]
+  );
+});
+
+test('getReorderedBlocksByIndex moves dragged blocks directly to a target index', () => {
+  const blocks = [
+    { id: 'a', order: 10 },
+    { id: 'b', order: 20 },
+    { id: 'c', order: 30 },
+    { id: 'd', order: 40 }
+  ];
+
+  const reordered = getReorderedBlocksByIndex(blocks, 'd', 1);
+
+  assert.deepEqual(
+    reordered.map((block) => ({ id: block.id, order: block.order })),
+    [
+      { id: 'a', order: 1 },
+      { id: 'd', order: 2 },
+      { id: 'b', order: 3 },
+      { id: 'c', order: 4 }
+    ]
+  );
+});
+
+test('getReorderedBlocksByIndex is a no-op for missing ids and clamps target bounds', () => {
+  const blocks = [
+    { id: 'a', order: 1 },
+    { id: 'b', order: 2 },
+    { id: 'c', order: 3 }
+  ];
+
+  assert.deepEqual(
+    getReorderedBlocksByIndex(blocks, 'missing', 0).map((block) => block.id),
+    ['a', 'b', 'c']
+  );
+
+  assert.deepEqual(
+    getReorderedBlocksByIndex(blocks, 'a', 99).map((block) => ({ id: block.id, order: block.order })),
+    [
+      { id: 'b', order: 1 },
+      { id: 'c', order: 2 },
+      { id: 'a', order: 3 }
     ]
   );
 });

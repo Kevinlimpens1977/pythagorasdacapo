@@ -1,4 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -16,6 +31,7 @@ import {
   FileStack,
   FileText,
   Gamepad2,
+  GripVertical,
   Image,
   Layers,
   Maximize2,
@@ -46,6 +62,7 @@ import {
   buildContentBlockPreview,
   getDefaultContentForBlockType,
   getReorderedBlocks,
+  getReorderedBlocksByIndex,
   getToggledContentBlockStatus,
   mergeCropResultsIntoBlockContent,
   normalizeContentBlockSettings,
@@ -1257,6 +1274,154 @@ const FullscreenLessonBlockStudio = ({
   );
 };
 
+const SortableLessonBlockCard = ({
+  block,
+  index,
+  totalBlocks,
+  isEditing,
+  linkedVraag,
+  previewText,
+  confirmArchiveBlockId,
+  onMove,
+  onOpen,
+  onToggleStatus,
+  onRename,
+  onToggleArchiveConfirm,
+  onArchive
+}) => {
+  const Icon = blockIcons[block.type] || FileText;
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: block.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 20 : undefined
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`helix-card p-5 transition-shadow ${isDragging ? 'shadow-2xl ring-2 ring-[var(--helix-purple)]/25' : ''}`}
+      data-content-block-id={block.id}
+    >
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+          <button
+            type="button"
+            className="mt-1 inline-flex h-11 w-9 shrink-0 touch-none cursor-grab items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] active:cursor-grabbing focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)]"
+            aria-label={`Versleep lesblok ${index + 1}: ${block.title || CONTENT_BLOCK_LABELS[block.type]}`}
+            title="Sleep om de volgorde te wijzigen"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical size={18} />
+          </button>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
+            <Icon size={22} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="helix-badge">
+                {CONTENT_BLOCK_LABELS[block.type]}
+              </span>
+              <button
+                type="button"
+                onClick={() => onToggleStatus(block)}
+                className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 ${
+                block.status === 'published'
+                  ? 'helix-badge-success'
+                  : 'helix-badge-warning'
+              }`}>
+                {block.status === 'published' ? 'Gepubliceerd' : 'Concept'}
+              </button>
+            </div>
+            <h3 className="mt-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
+              {block.title}
+              <InlineTitleEditor
+                label="Lesbloknaam"
+                value={block.title}
+                onSave={(nextTitle) => onRename(block.id, nextTitle)}
+              />
+            </h3>
+            <p className="mt-1 text-sm text-[var(--helix-muted)]">Stap {index + 1}</p>
+            <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-[var(--helix-muted)]">{previewText}</p>
+            {linkedVraag && (
+              <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
+                Gekoppeld aan vraag {linkedVraag.number}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button
+            onClick={() => onMove(block.id, 'up')}
+            disabled={index === 0}
+            className="rounded-2xl border border-[var(--helix-border)] p-2 text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-30"
+            title="Omhoog"
+          >
+            <ArrowUp size={18} />
+          </button>
+          <button
+            onClick={() => onMove(block.id, 'down')}
+            disabled={index === totalBlocks - 1}
+            className="rounded-2xl border border-[var(--helix-border)] p-2 text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-30"
+            title="Omlaag"
+          >
+            <ArrowDown size={18} />
+          </button>
+          <button
+            onClick={() => onOpen(block.id)}
+            className={`${isEditing ? 'btn-primary' : 'btn-secondary'} w-auto px-4 py-2 text-sm`}
+          >
+            {isEditing ? 'Studio open' : 'Open studio'}
+          </button>
+          <div className="relative">
+            <button
+              onClick={() => onToggleArchiveConfirm(block.id)}
+              className="rounded-lg border border-red-100 bg-red-50 p-2 text-red-600 hover:bg-red-100"
+              title="Archiveer"
+            >
+              <Trash2 size={18} />
+            </button>
+
+            {confirmArchiveBlockId === block.id && (
+              <div className="absolute right-0 top-11 z-30 w-64 rounded-lg border border-red-100 bg-white p-3 text-left shadow-xl">
+                <p className="text-sm font-black text-slate-900">Lesblok archiveren?</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  Dit haalt het blok uit de lesroute. Je kunt deze actie later niet vanuit dit scherm terugdraaien.
+                </p>
+                <div className="mt-3 flex justify-end gap-2">
+                  <button
+                    onClick={() => onToggleArchiveConfirm(null)}
+                    className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  >
+                    Annuleer
+                  </button>
+                  <button
+                    onClick={() => onArchive(block.id)}
+                    className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                  >
+                    Archiveer
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ContentBlockBuilder({
   paragraaf,
   blocks,
@@ -1270,6 +1435,17 @@ export default function ContentBlockBuilder({
   const [creatingType, setCreatingType] = useState(null);
   const [confirmArchiveBlockId, setConfirmArchiveBlockId] = useState(null);
   const normalizedBlocks = useMemo(() => normalizeContentBlocks(blocks), [blocks]);
+  const sortableBlockIds = useMemo(() => normalizedBlocks.map((block) => block.id), [normalizedBlocks]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8
+      }
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates
+    })
+  );
   const activeBlock = useMemo(
     () => normalizedBlocks.find((block) => block.id === editingBlockId) || null,
     [editingBlockId, normalizedBlocks]
@@ -1392,6 +1568,23 @@ export default function ContentBlockBuilder({
     }
   };
 
+  const handleDragEnd = async ({ active, over }) => {
+    if (!active?.id || !over?.id || active.id === over.id) return;
+
+    const targetIndex = normalizedBlocks.findIndex((block) => block.id === over.id);
+    if (targetIndex === -1) return;
+
+    try {
+      setActionError(null);
+      const reordered = getReorderedBlocksByIndex(normalizedBlocks, active.id, targetIndex);
+      await cmsService.updateContentBlockOrder(reordered);
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon volgorde niet opslaan:', error);
+      setActionError('Kon volgorde niet opslaan.');
+    }
+  };
+
   const handleRenameParagraaf = async (nextTitle) => {
     try {
       setActionError(null);
@@ -1488,112 +1681,43 @@ export default function ContentBlockBuilder({
             </p>
           </div>
         ) : (
-          normalizedBlocks.map((block, index) => {
-            const Icon = blockIcons[block.type] || FileText;
-            const isEditing = editingBlockId === block.id;
-            const linkedVraag = block.linkedVraagId ? vragenById.get(block.linkedVraagId) : null;
-            const previewText = buildContentBlockPreview({
-              ...block,
-              linkedVraagTitle: linkedVraag ? `Vraag ${linkedVraag.number}: ${linkedVraag.title}` : null
-            });
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={sortableBlockIds} strategy={verticalListSortingStrategy}>
+              {normalizedBlocks.map((block, index) => {
+                const isEditing = editingBlockId === block.id;
+                const linkedVraag = block.linkedVraagId ? vragenById.get(block.linkedVraagId) : null;
+                const previewText = buildContentBlockPreview({
+                  ...block,
+                  linkedVraagTitle: linkedVraag ? `Vraag ${linkedVraag.number}: ${linkedVraag.title}` : null
+                });
 
-            return (
-              <div key={block.id} className="helix-card p-5">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="flex min-w-0 items-start gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-                      <Icon size={22} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="helix-badge">
-                          {CONTENT_BLOCK_LABELS[block.type]}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleBlockStatus(block)}
-                          className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 ${
-                          block.status === 'published'
-                            ? 'helix-badge-success'
-                            : 'helix-badge-warning'
-                        }`}>
-                          {block.status === 'published' ? 'Gepubliceerd' : 'Concept'}
-                        </button>
-                      </div>
-                      <h3 className="mt-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
-                        {block.title}
-                        <InlineTitleEditor
-                          label="Lesbloknaam"
-                          value={block.title}
-                          onSave={(nextTitle) => handleRenameBlock(block.id, nextTitle)}
-                        />
-                      </h3>
-                      <p className="mt-1 text-sm text-[var(--helix-muted)]">Stap {index + 1}</p>
-                      <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-[var(--helix-muted)]">{previewText}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => handleMoveBlock(block.id, 'up')}
-                      disabled={index === 0}
-                      className="rounded-2xl border border-[var(--helix-border)] p-2 text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-30"
-                      title="Omhoog"
-                    >
-                      <ArrowUp size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleMoveBlock(block.id, 'down')}
-                      disabled={index === normalizedBlocks.length - 1}
-                      className="rounded-2xl border border-[var(--helix-border)] p-2 text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-30"
-                      title="Omlaag"
-                    >
-                      <ArrowDown size={18} />
-                    </button>
-                    <button
-                      onClick={() => setEditingBlockId(block.id)}
-                      className={`${isEditing ? 'btn-primary' : 'btn-secondary'} w-auto px-3 py-2 text-sm`}
-                    >
-                      {isEditing ? 'Studio open' : 'Open studio'}
-                    </button>
-                    <div className="relative">
-                      <button
-                        onClick={() => setConfirmArchiveBlockId(confirmArchiveBlockId === block.id ? null : block.id)}
-                        className="rounded-lg border border-red-100 bg-red-50 p-2 text-red-600 hover:bg-red-100"
-                        title="Archiveer"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-
-                      {confirmArchiveBlockId === block.id && (
-                        <div className="absolute right-0 top-11 z-30 w-64 rounded-lg border border-red-100 bg-white p-3 text-left shadow-xl">
-                          <p className="text-sm font-black text-slate-900">Lesblok archiveren?</p>
-                          <p className="mt-1 text-xs leading-5 text-slate-500">
-                            Dit haalt het blok uit de lesroute. Je kunt deze actie later niet vanuit dit scherm terugdraaien.
-                          </p>
-                          <div className="mt-3 flex justify-end gap-2">
-                            <button
-                              onClick={() => setConfirmArchiveBlockId(null)}
-                              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                            >
-                              Annuleer
-                            </button>
-                            <button
-                              onClick={() => handleArchiveBlock(block.id)}
-                              className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700"
-                            >
-                              Archiveer
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            );
-          })
+                return (
+                  <SortableLessonBlockCard
+                    key={block.id}
+                    block={block}
+                    index={index}
+                    totalBlocks={normalizedBlocks.length}
+                    isEditing={isEditing}
+                    linkedVraag={linkedVraag}
+                    previewText={previewText}
+                    confirmArchiveBlockId={confirmArchiveBlockId}
+                    onMove={handleMoveBlock}
+                    onOpen={setEditingBlockId}
+                    onToggleStatus={handleToggleBlockStatus}
+                    onRename={handleRenameBlock}
+                    onToggleArchiveConfirm={(blockId) => setConfirmArchiveBlockId(
+                      confirmArchiveBlockId === blockId ? null : blockId
+                    )}
+                    onArchive={handleArchiveBlock}
+                  />
+                );
+              })}
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
