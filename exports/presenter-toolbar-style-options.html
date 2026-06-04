@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HELIX Presenter Werkbalk Stijlopties</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700;800&family=Inter:wght@400;500;600;700;800;900&family=Nunito:wght@600;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --helix-orange: #ff7a00;
+      --helix-pink: #ff2d8d;
+      --helix-purple: #7a3cff;
+      --helix-navy: #0b132b;
+      --helix-bg: #fafbff;
+      --helix-surface: #ffffff;
+      --helix-surface-soft: #f5f7fb;
+      --helix-border: #e7ebf2;
+      --helix-muted: #5b6478;
+      --helix-soft-peach: #ffe9dc;
+      --helix-soft-lavender: #f1e9ff;
+      --helix-soft-pink: #ffe6f2;
+      --helix-gradient: linear-gradient(135deg, #ff7a00 0%, #ff2d8d 48%, #7a3cff 100%);
+      --shadow-soft: 0 18px 48px rgba(11, 19, 43, 0.09);
+      --shadow-card: 0 12px 30px rgba(11, 19, 43, 0.07);
+      --focus: 0 0 0 4px rgba(122, 60, 255, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 2%, rgba(255, 233, 220, 0.74), transparent 34rem),
+        radial-gradient(circle at 90% 8%, rgba(241, 233, 255, 0.78), transparent 30rem),
+        var(--helix-bg);
+      color: var(--helix-navy);
+      font-family: Inter, system-ui, sans-serif;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 34px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 22px;
+      align-items: center;
+      margin-bottom: 26px;
+    }
+
+    .logo {
+      display: flex;
+      width: 132px;
+      min-height: 70px;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid var(--helix-border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 10px 24px rgba(11, 19, 43, 0.06);
+    }
+
+    .logo img {
+      width: 88px;
+      height: 88px;
+      object-fit: contain;
+      transform: scale(1.12);
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--helix-purple);
+      font-family: Sora, Inter, sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Sora, Inter, sans-serif;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .intro {
+      max-width: 78ch;
+      margin: 10px 0 0;
+      color: var(--helix-muted);
+      font-size: 15px;
+      font-weight: 650;
+      line-height: 1.65;
+    }
+
+    .source {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      border: 1px solid rgba(122, 60, 255, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 5px 10px;
+      color: var(--helix-muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--color, var(--helix-purple));
+    }
+
+    .section {
+      margin-top: 32px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: end;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      margin: 0;
+      font-family: Sora, Inter, sans-serif;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .section-note {
+      max-width: 58ch;
+      margin: 0;
+      color: var(--helix-muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      overflow: hidden;
+      border: 1px solid var(--helix-border);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: var(--shadow-card);
+    }
+
+    .card-head {
+      display: flex;
+      gap: 12px;
+      align-items: start;
+      justify-content: space-between;
+      padding: 15px 16px 12px;
+      border-bottom: 1px solid rgba(231, 235, 242, 0.9);
+    }
+
+    .card-title {
+      margin: 0;
+      font-family: Sora, Inter, sans-serif;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .card-meta {
+      margin: 4px 0 0;
+      color: var(--helix-muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .tag {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: var(--helix-soft-lavender);
+      padding: 5px 9px;
+      color: var(--helix-purple);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .preview {
+      padding: 14px;
+      background:
+        linear-gradient(180deg, rgba(250, 251, 255, 0.86), rgba(245, 247, 251, 0.92)),
+        radial-gradient(circle at 92% 10%, rgba(241, 233, 255, 0.9), transparent 14rem);
+    }
+
+    .swatches {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(11, 19, 43, 0.09);
+      border-radius: 9px;
+      background: var(--swatch);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    }
+
+    .toolbar-sample {
+      border: 1px solid var(--toolbar-border);
+      border-radius: var(--toolbar-radius);
+      background: var(--toolbar-bg);
+      color: var(--toolbar-text);
+      box-shadow: var(--toolbar-shadow);
+      padding: var(--toolbar-pad);
+    }
+
+    .toolbar-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--gap);
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .toolbar-main {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--gap);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .divider {
+      width: 1px;
+      height: 32px;
+      background: var(--divider);
+    }
+
+    .tool-btn {
+      display: inline-flex;
+      min-height: var(--btn-h);
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: var(--btn-border);
+      border-radius: var(--btn-radius);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      box-shadow: var(--btn-shadow);
+      padding: var(--btn-pad);
+      font-family: var(--btn-font);
+      font-size: var(--btn-size);
+      font-weight: var(--btn-weight);
+      letter-spacing: var(--btn-letter);
+      text-transform: var(--btn-case);
+      white-space: nowrap;
+    }
+
+    .tool-btn.active {
+      border-color: var(--active-border);
+      background: var(--active-bg);
+      color: var(--active-text);
+      box-shadow: var(--active-shadow);
+    }
+
+    .icon {
+      display: inline-flex;
+      width: var(--icon-size);
+      height: var(--icon-size);
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--icon-radius);
+      background: var(--icon-bg);
+      color: var(--icon-color);
+      font-size: calc(var(--icon-size) * 0.55);
+      line-height: 1;
+    }
+
+    .mini-note {
+      margin: 10px 0 0;
+      color: var(--helix-muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .bonus {
+      background: rgba(255, 233, 220, 0.54);
+      color: #9a3412;
+    }
+
+    .footer-note {
+      margin: 30px 0 0;
+      border: 1px solid rgba(122, 60, 255, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.76);
+      padding: 16px;
+      color: var(--helix-muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 680px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="logo">
+        <img src="../src/afbeeldingen/logo.png" alt="HELIX logo">
+      </div>
+      <div>
+        <p class="eyebrow">Presenter stijlverkenning</p>
+        <h1>Werkbalk opties die dichter bij HELIX liggen</h1>
+        <p class="intro">Tijdelijke keuzeplaat voor de Presenter-werkbalk. De kleuren zijn afgeleid van de app-tokens en het logo: oranje, roze, paars, navy, zachte peach/lavendel/pink surfaces, Inter en Sora.</p>
+        <div class="source">
+          <span class="chip"><span class="dot" style="--color:#ff7a00"></span>HELIX oranje</span>
+          <span class="chip"><span class="dot" style="--color:#ff2d8d"></span>HELIX roze</span>
+          <span class="chip"><span class="dot" style="--color:#7a3cff"></span>HELIX paars</span>
+          <span class="chip"><span class="dot" style="--color:#0b132b"></span>HELIX navy</span>
+          <span class="chip">Sora + Inter</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Categorie 1</p>
+          <h2>15 kleurstijlen voor de Presenter-werkbalk</h2>
+        </div>
+        <p class="section-note">De eerste 10 zijn direct passend bij de huidige app. De laatste 5 zijn bewust vrijer, maar nog steeds herleidbaar naar HELIX.</p>
+      </div>
+      <div id="colorGrid" class="grid"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Categorie 2</p>
+          <h2>15 lettertype en buttonstijl variaties</h2>
+        </div>
+        <p class="section-note">Deze previews gebruiken dezelfde kleurset, maar variëren in knopvorm, dichtheid, typografie, iconen en positioneringsgevoel.</p>
+      </div>
+      <div id="buttonGrid" class="grid"></div>
+    </section>
+
+    <p class="footer-note">Dit bestand is alleen een tijdelijke visuele beslisplaat. Er is niets aangepast in de Presenter-code. Kies gerust combinaties, bijvoorbeeld kleurstijl 04 met buttonstijl 12.</p>
+  </main>
+
+  <script>
+    const baseTools = [
+      ['↶', 'Terug'],
+      ['✎', 'Pen'],
+      ['▣', 'Objecten'],
+      ['⌗', 'Achtergrond'],
+      ['▣', "Pagina's"],
+      ['↗', 'Volledig']
+    ];
+
+    const colorStyles = [
+      {
+        name: '01 Border Signal Light',
+        meta: 'Meest app-eigen: lichte toolbar met gradient-border actieve knop.',
+        tag: 'basis',
+        swatches: ['#fafbff', '#ffffff', '#ff7a00', '#ff2d8d', '#7a3cff', '#0b132b'],
+        vars: {
+          '--toolbar-bg': 'rgba(255,255,255,0.92)',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': 'rgba(231,235,242,0.95)',
+          '--toolbar-shadow': '0 16px 36px rgba(11,19,43,0.10)',
+          '--divider': 'rgba(91,100,120,0.18)',
+          '--btn-bg': 'rgba(250,251,255,0.94)',
+          '--btn-text': '#0b132b',
+          '--btn-border': '1px solid #e7ebf2',
+          '--active-bg': 'linear-gradient(#fff,#fbfbff) padding-box, linear-gradient(135deg,#ff7a00,#ff2d8d,#7a3cff) border-box',
+          '--active-text': '#0b132b',
+          '--active-border': 'transparent'
+        }
+      },
+      {
+        name: '02 Logo Gradient Active',
+        meta: 'Rustige witte basis, alleen actieve tools krijgen het logoverloop.',
+        tag: 'basis',
+        swatches: ['#ffffff', '#f5f7fb', '#ff7a00', '#ff2d8d', '#7a3cff'],
+        vars: {
+          '--toolbar-bg': '#ffffff',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#e7ebf2',
+          '--toolbar-shadow': '0 14px 34px rgba(11,19,43,0.09)',
+          '--divider': '#e7ebf2',
+          '--btn-bg': '#f5f7fb',
+          '--btn-text': '#5b6478',
+          '--btn-border': '1px solid #e7ebf2',
+          '--active-bg': 'linear-gradient(135deg,#ff7a00,#ff2d8d,#7a3cff)',
+          '--active-text': '#ffffff',
+          '--active-border': 'transparent'
+        }
+      },
+      {
+        name: '03 Lavender Studio',
+        meta: 'Zacht lavendelvlak, prettig voor lange digibordsessies.',
+        tag: 'basis',
+        swatches: ['#fbf7ff', '#f1e9ff', '#eadcff', '#7a3cff', '#0b132b'],
+        vars: {
+          '--toolbar-bg': '#fbf7ff',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#eadcff',
+          '--toolbar-shadow': '0 14px 34px rgba(122,60,255,0.10)',
+          '--divider': '#eadcff',
+          '--btn-bg': '#ffffff',
+          '--btn-text': '#0b132b',
+          '--btn-border': '1px solid #eadcff',
+          '--active-bg': '#7a3cff',
+          '--active-text': '#ffffff',
+          '--active-border': '#7a3cff'
+        }
+      },
+      {
+        name: '04 Peach Glow',
+        meta: 'Warmer en vriendelijker, met oranje als functioneel accent.',
+        tag: 'basis',
+        swatches: ['#fff8f3', '#ffe9dc', '#ff7a00', '#ff2d8d', '#0b132b'],
+        vars: {
+          '--toolbar-bg': '#fff8f3',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#ffd7bd',
+          '--toolbar-shadow': '0 16px 34px rgba(255,122,0,0.12)',
+          '--divider': '#ffd7bd',
+          '--btn-bg': '#ffffff',
+          '--btn-text': '#5b6478',
+          '--btn-border': '1px solid #ffd7bd',
+          '--active-bg': '#ff7a00',
+          '--active-text': '#ffffff',
+          '--active-border': '#ff7a00'
+        }
+      },
+      {
+        name: '05 Soft Pink Focus',
+        meta: 'Roze als focuskleur, zonder dat de hele toolbar druk wordt.',
+        tag: 'basis',
+        swatches: ['#fff7fb', '#ffe6f2', '#ff2d8d', '#7a3cff', '#0b132b'],
+        vars: {
+          '--toolbar-bg': '#fff7fb',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#ffd0e6',
+          '--toolbar-shadow': '0 16px 34px rgba(255,45,141,0.12)',
+          '--divider': '#ffd0e6',
+          '--btn-bg': '#ffffff',
+          '--btn-text': '#5b6478',
+          '--btn-border': '1px solid #ffd0e6',
+          '--active-bg': '#ff2d8d',
+          '--active-text': '#ffffff',
+          '--active-border': '#ff2d8d'
+        }
+      },
+      {
+        name: '06 Navy Contrast',
+        meta: 'Sterker digibordgevoel, maar minder zwaar dan de huidige paars-donkere balk.',
+        tag: 'basis',
+        swatches: ['#0b132b', '#18233f', '#f1e9ff', '#ff7a00', '#ff2d8d'],
+        vars: {
+          '--toolbar-bg': '#0b132b',
+          '--toolbar-text': '#f8fbff',
+          '--toolbar-border': '#26324f',
+          '--toolbar-shadow': '0 18px 42px rgba(11,19,43,0.28)',
+          '--divider': '#30405f',
+          '--btn-bg': '#18233f',
+          '--btn-text': '#f8fbff',
+          '--btn-border': '1px solid #30405f',
+          '--active-bg': '#f1e9ff',
+          '--active-text': '#0b132b',
+          '--active-border': '#f1e9ff'
+        }
+      },
+      {
+        name: '07 Split Surface',
+        meta: 'Lichte commandobar met navy navigatieknoppen en gradient primaire acties.',
+        tag: 'basis',
+        swatches: ['#ffffff', '#0b132b', '#f5f7fb', '#ff2d8d', '#7a3cff'],
+        vars: {
+          '--toolbar-bg': 'linear-gradient(90deg,#ffffff 0 58%,#f5f7fb 58% 100%)',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#e7ebf2',
+          '--toolbar-shadow': '0 16px 36px rgba(11,19,43,0.10)',
+          '--divider': '#dfe5ee',
+          '--btn-bg': '#ffffff',
+          '--btn-text': '#0b132b',
+          '--btn-border': '1px solid #dfe5ee',
+          '--active-bg': 'linear-gradient(135deg,#ff2d8d,#7a3cff)',
+          '--active-text': '#ffffff',
+          '--active-border': 'transparent'
+        }
+      },
+      {
+        name: '08 Teaching Mint',
+        meta: 'Frisse, minder paarse variant met bestaande succesgroen als ondersteunende kleur.',
+        tag: 'basis',
+        swatches: ['#f7fffb', '#dcfce7', '#22c55e', '#7a3cff', '#0b132b'],
+        vars: {
+          '--toolbar-bg': '#f7fffb',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#c8f3d8',
+          '--toolbar-shadow': '0 14px 34px rgba(34,197,94,0.10)',
+          '--divider': '#c8f3d8',
+          '--btn-bg': '#ffffff',
+          '--btn-text': '#14532d',
+          '--btn-border': '1px solid #c8f3d8',
+          '--active-bg': '#22c55e',
+          '--active-text': '#ffffff',
+          '--active-border': '#22c55e'
+        }
+      },
+      {
+        name: '09 Chalk Soft',
+        meta: 'Bijna wit, schoolbordachtig subtiel, geschikt als toolbar niet mag overheersen.',
+        tag: 'basis',
+        swatches: ['#fbfcff', '#eef2f7', '#dfe5ee', '#0b132b', '#7a3cff'],
+        vars: {
+          '--toolbar-bg': '#fbfcff',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#dfe5ee',
+          '--toolbar-shadow': '0 10px 26px rgba(11,19,43,0.07)',
+          '--divider': '#dfe5ee',
+          '--btn-bg': '#eef2f7',
+          '--btn-text': '#334155',
+          '--btn-border': '1px solid #dfe5ee',
+          '--active-bg': '#0b132b',
+          '--active-text': '#ffffff',
+          '--active-border': '#0b132b'
+        }
+      },
+      {
+        name: '10 Purple Minimal',
+        meta: 'Paars blijft aanwezig, maar in een lichtere app-consistente dosering.',
+        tag: 'basis',
+        swatches: ['#ffffff', '#f1e9ff', '#d9c3ff', '#7a3cff', '#0b132b'],
+        vars: {
+          '--toolbar-bg': '#ffffff',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#d9c3ff',
+          '--toolbar-shadow': '0 16px 34px rgba(122,60,255,0.12)',
+          '--divider': '#eadcff',
+          '--btn-bg': '#f8f3ff',
+          '--btn-text': '#3b2467',
+          '--btn-border': '1px solid #d9c3ff',
+          '--active-bg': '#7a3cff',
+          '--active-text': '#ffffff',
+          '--active-border': '#7a3cff'
+        }
+      },
+      {
+        name: '11 Bonus: Ribbon',
+        meta: 'Een meer uitgesproken HELIX-band met witte functionele knoppen.',
+        tag: 'bonus',
+        swatches: ['#ff7a00', '#ff2d8d', '#7a3cff', '#ffffff', '#0b132b'],
+        vars: {
+          '--toolbar-bg': 'linear-gradient(135deg,#ff7a00,#ff2d8d 48%,#7a3cff)',
+          '--toolbar-text': '#ffffff',
+          '--toolbar-border': 'rgba(255,255,255,0.28)',
+          '--toolbar-shadow': '0 18px 42px rgba(255,45,141,0.20)',
+          '--divider': 'rgba(255,255,255,0.32)',
+          '--btn-bg': 'rgba(255,255,255,0.16)',
+          '--btn-text': '#ffffff',
+          '--btn-border': '1px solid rgba(255,255,255,0.28)',
+          '--active-bg': '#ffffff',
+          '--active-text': '#0b132b',
+          '--active-border': '#ffffff'
+        }
+      },
+      {
+        name: '12 Bonus: Ink Dock',
+        meta: 'Navy dock met heldere HELIX-accenten voor een presentatiemodus.',
+        tag: 'bonus',
+        swatches: ['#071027', '#111d3b', '#ff7a00', '#ff2d8d', '#7a3cff'],
+        vars: {
+          '--toolbar-bg': 'linear-gradient(180deg,#111d3b,#071027)',
+          '--toolbar-text': '#ffffff',
+          '--toolbar-border': '#243357',
+          '--toolbar-shadow': '0 20px 48px rgba(7,16,39,0.32)',
+          '--divider': '#344566',
+          '--btn-bg': '#182747',
+          '--btn-text': '#f8fbff',
+          '--btn-border': '1px solid #344566',
+          '--active-bg': 'linear-gradient(135deg,#ff7a00,#ff2d8d)',
+          '--active-text': '#ffffff',
+          '--active-border': 'transparent'
+        }
+      },
+      {
+        name: '13 Bonus: Paper Tab',
+        meta: 'Meer documentachtig, als losse tabs op papier.',
+        tag: 'bonus',
+        swatches: ['#fffdf9', '#fff3e8', '#f1e9ff', '#ff7a00', '#7a3cff'],
+        vars: {
+          '--toolbar-bg': '#fffdf9',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#f1dfcf',
+          '--toolbar-shadow': '0 14px 34px rgba(154,52,18,0.08)',
+          '--divider': '#f1dfcf',
+          '--btn-bg': '#fff7ef',
+          '--btn-text': '#6b3f1f',
+          '--btn-border': '1px solid #f1dfcf',
+          '--active-bg': '#f1e9ff',
+          '--active-text': '#3b2467',
+          '--active-border': '#cdb7ff'
+        }
+      },
+      {
+        name: '14 Bonus: Prisma Subtle',
+        meta: 'Een dunne kleurfilm, zonder zware gradientknoppen.',
+        tag: 'bonus',
+        swatches: ['#ffffff', '#f8f6ff', '#ffe6f2', '#ffe9dc', '#7a3cff'],
+        vars: {
+          '--toolbar-bg': 'linear-gradient(135deg,rgba(255,233,220,0.92),rgba(255,230,242,0.72),rgba(241,233,255,0.92))',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': 'rgba(122,60,255,0.14)',
+          '--toolbar-shadow': '0 16px 36px rgba(122,60,255,0.11)',
+          '--divider': 'rgba(122,60,255,0.16)',
+          '--btn-bg': 'rgba(255,255,255,0.72)',
+          '--btn-text': '#0b132b',
+          '--btn-border': '1px solid rgba(255,255,255,0.78)',
+          '--active-bg': '#ffffff',
+          '--active-text': '#7a3cff',
+          '--active-border': '#ffffff'
+        }
+      },
+      {
+        name: '15 Bonus: Status Bar',
+        meta: 'Meer instrumenteel, ideaal als de toolbar compacter moet worden.',
+        tag: 'bonus',
+        swatches: ['#eef2f7', '#dfe5ee', '#0b132b', '#ff2d8d', '#22c55e'],
+        vars: {
+          '--toolbar-bg': '#eef2f7',
+          '--toolbar-text': '#0b132b',
+          '--toolbar-border': '#d7deea',
+          '--toolbar-shadow': '0 8px 22px rgba(11,19,43,0.07)',
+          '--divider': '#d7deea',
+          '--btn-bg': '#ffffff',
+          '--btn-text': '#334155',
+          '--btn-border': '1px solid #d7deea',
+          '--active-bg': '#0b132b',
+          '--active-text': '#ffffff',
+          '--active-border': '#0b132b'
+        }
+      }
+    ];
+
+    const buttonStyles = [
+      ['01 HELIX Rounded', 'Sora labels, ronde knoppen zoals de app-navigatie.', 'basis', { '--btn-font': 'Sora, Inter, sans-serif', '--btn-radius': '14px', '--btn-pad': '10px 14px', '--btn-h': '42px', '--btn-size': '13px', '--btn-weight': '800', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '20px', '--toolbar-pad': '12px', '--gap': '8px', '--icon-size': '22px', '--icon-radius': '8px' }],
+      ['02 Compact Dock', 'Kleiner, dichter, geschikt voor veel tools op het bord.', 'basis', { '--btn-font': 'Inter, sans-serif', '--btn-radius': '10px', '--btn-pad': '8px 10px', '--btn-h': '36px', '--btn-size': '12px', '--btn-weight': '850', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '14px', '--toolbar-pad': '9px', '--gap': '6px', '--icon-size': '20px', '--icon-radius': '7px' }],
+      ['03 Segmented Control', 'Knoppen als segmenten, logisch voor toolgroepen.', 'basis', { '--btn-font': 'Inter, sans-serif', '--btn-radius': '8px', '--btn-pad': '9px 12px', '--btn-h': '40px', '--btn-size': '13px', '--btn-weight': '800', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '12px', '--toolbar-pad': '8px', '--gap': '4px', '--icon-size': '21px', '--icon-radius': '6px' }],
+      ['04 Icon Tile', 'Meer digibordgericht: iconen dragen de knop.', 'basis', { '--btn-font': 'Sora, Inter, sans-serif', '--btn-radius': '16px', '--btn-pad': '9px 12px', '--btn-h': '48px', '--btn-size': '12px', '--btn-weight': '800', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '22px', '--toolbar-pad': '12px', '--gap': '8px', '--icon-size': '28px', '--icon-radius': '11px' }],
+      ['05 Soft Pill', 'Vriendelijk, leerling-appachtig, minder technisch.', 'basis', { '--btn-font': 'Nunito, Inter, sans-serif', '--btn-radius': '999px', '--btn-pad': '9px 15px', '--btn-h': '42px', '--btn-size': '13px', '--btn-weight': '900', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '999px', '--toolbar-pad': '10px 12px', '--gap': '7px', '--icon-size': '22px', '--icon-radius': '999px' }],
+      ['06 Teacher Console', 'Duidelijker, rustiger, voor snel werken met minder decoratie.', 'basis', { '--btn-font': 'Inter, sans-serif', '--btn-radius': '9px', '--btn-pad': '9px 13px', '--btn-h': '40px', '--btn-size': '13px', '--btn-weight': '750', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '14px', '--toolbar-pad': '10px', '--gap': '7px', '--icon-size': '21px', '--icon-radius': '7px' }],
+      ['07 Big Board Touch', 'Grotere touch targets voor digibord of touchscreen.', 'basis', { '--btn-font': 'Sora, Inter, sans-serif', '--btn-radius': '16px', '--btn-pad': '12px 16px', '--btn-h': '52px', '--btn-size': '14px', '--btn-weight': '800', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '24px', '--toolbar-pad': '14px', '--gap': '9px', '--icon-size': '26px', '--icon-radius': '10px' }],
+      ['08 Label Light', 'Tekst rustiger, iconen subtiel, minder schreeuwerig.', 'basis', { '--btn-font': 'Inter, sans-serif', '--btn-radius': '12px', '--btn-pad': '9px 12px', '--btn-h': '40px', '--btn-size': '12px', '--btn-weight': '700', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '18px', '--toolbar-pad': '11px', '--gap': '8px', '--icon-size': '20px', '--icon-radius': '7px' }],
+      ['09 Upper Utility', 'Toolachtig met kleine uppercase labels, goed scanbaar.', 'basis', { '--btn-font': 'Inter, sans-serif', '--btn-radius': '11px', '--btn-pad': '9px 12px', '--btn-h': '40px', '--btn-size': '11px', '--btn-weight': '900', '--btn-letter': '0.08em', '--btn-case': 'uppercase', '--toolbar-radius': '16px', '--toolbar-pad': '10px', '--gap': '7px', '--icon-size': '20px', '--icon-radius': '6px' }],
+      ['10 Border Signal', 'Sluit aan op huidige app-buttons met duidelijke randen.', 'basis', { '--btn-font': 'Sora, Inter, sans-serif', '--btn-radius': '14px', '--btn-pad': '10px 14px', '--btn-h': '42px', '--btn-size': '13px', '--btn-weight': '800', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '18px', '--toolbar-pad': '12px', '--gap': '8px', '--icon-size': '22px', '--icon-radius': '8px' }],
+      ['11 Bonus: Tab Rail', 'Knoppen voelen als tabs, bruikbaar voor onderbalk met categorieen.', 'bonus', { '--btn-font': 'Sora, Inter, sans-serif', '--btn-radius': '10px 10px 4px 4px', '--btn-pad': '10px 14px', '--btn-h': '42px', '--btn-size': '13px', '--btn-weight': '800', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '12px', '--toolbar-pad': '8px 10px 12px', '--gap': '5px', '--icon-size': '22px', '--icon-radius': '7px' }],
+      ['12 Bonus: Badge Buttons', 'Acties als badges met uitgesproken iconvlak.', 'bonus', { '--btn-font': 'Nunito, Inter, sans-serif', '--btn-radius': '18px', '--btn-pad': '8px 13px 8px 8px', '--btn-h': '44px', '--btn-size': '13px', '--btn-weight': '900', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '22px', '--toolbar-pad': '12px', '--gap': '8px', '--icon-size': '28px', '--icon-radius': '12px' }],
+      ['13 Bonus: Minimal Icons', 'Veel stiller: labels kleiner, iconen compact.', 'bonus', { '--btn-font': 'Inter, sans-serif', '--btn-radius': '8px', '--btn-pad': '8px 9px', '--btn-h': '34px', '--btn-size': '11px', '--btn-weight': '750', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '12px', '--toolbar-pad': '8px', '--gap': '5px', '--icon-size': '18px', '--icon-radius': '5px' }],
+      ['14 Bonus: Friendly Dyslexia', 'Atkinson Hyperlegible, zachter en zeer leesbaar.', 'bonus', { '--btn-font': 'Atkinson Hyperlegible, Inter, sans-serif', '--btn-radius': '14px', '--btn-pad': '10px 14px', '--btn-h': '44px', '--btn-size': '14px', '--btn-weight': '800', '--btn-letter': '0', '--btn-case': 'none', '--toolbar-radius': '20px', '--toolbar-pad': '12px', '--gap': '8px', '--icon-size': '23px', '--icon-radius': '9px' }],
+      ['15 Bonus: Presenter Pro', 'Strakker, minder speels, voor professionele bordbediening.', 'bonus', { '--btn-font': 'Inter, sans-serif', '--btn-radius': '6px', '--btn-pad': '9px 12px', '--btn-h': '38px', '--btn-size': '12px', '--btn-weight': '800', '--btn-letter': '0.02em', '--btn-case': 'none', '--toolbar-radius': '10px', '--toolbar-pad': '9px', '--gap': '6px', '--icon-size': '20px', '--icon-radius': '5px' }]
+    ];
+
+    const defaultVars = {
+      '--toolbar-bg': '#ffffff',
+      '--toolbar-text': '#0b132b',
+      '--toolbar-border': '#e7ebf2',
+      '--toolbar-shadow': '0 14px 34px rgba(11,19,43,0.09)',
+      '--divider': '#e7ebf2',
+      '--btn-bg': '#f5f7fb',
+      '--btn-text': '#0b132b',
+      '--btn-border': '1px solid #e7ebf2',
+      '--btn-shadow': 'none',
+      '--active-bg': 'linear-gradient(135deg,#ff7a00,#ff2d8d,#7a3cff)',
+      '--active-text': '#ffffff',
+      '--active-border': 'transparent',
+      '--active-shadow': '0 10px 22px rgba(255,45,141,0.18)',
+      '--btn-font': 'Sora, Inter, sans-serif',
+      '--btn-radius': '14px',
+      '--btn-pad': '10px 14px',
+      '--btn-h': '42px',
+      '--btn-size': '13px',
+      '--btn-weight': '800',
+      '--btn-letter': '0',
+      '--btn-case': 'none',
+      '--toolbar-radius': '20px',
+      '--toolbar-pad': '12px',
+      '--gap': '8px',
+      '--icon-size': '22px',
+      '--icon-radius': '8px',
+      '--icon-bg': 'rgba(122,60,255,0.11)',
+      '--icon-color': '#7a3cff'
+    };
+
+    function styleText(vars) {
+      return Object.entries({ ...defaultVars, ...vars })
+        .map(([key, value]) => `${key}:${value}`)
+        .join(';');
+    }
+
+    function toolbarPreview(vars = {}, tools = baseTools) {
+      return `
+        <div class="toolbar-sample" style="${styleText(vars)}">
+          <div class="toolbar-top">
+            ${tools.slice(1, 4).map(([icon, label], index) => `
+              <button class="tool-btn ${index === 1 ? 'active' : ''}" type="button">
+                <span class="icon">${icon}</span>${label}
+              </button>
+            `).join('')}
+          </div>
+          <div class="toolbar-main">
+            ${tools.map(([icon, label], index) => `
+              ${index === 3 ? '<span class="divider"></span>' : ''}
+              <button class="tool-btn ${index === 2 ? 'active' : ''}" type="button">
+                <span class="icon">${icon}</span>${label}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function card({ name, meta, tag, swatches, vars }, mode = 'color') {
+      const badge = tag === 'bonus' ? '<span class="tag bonus">bonus</span>' : '<span class="tag">basis</span>';
+      return `
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h3 class="card-title">${name}</h3>
+              <p class="card-meta">${meta}</p>
+            </div>
+            ${badge}
+          </div>
+          <div class="preview">
+            ${mode === 'color' ? `<div class="swatches">${swatches.map((swatch) => `<span class="swatch" style="--swatch:${swatch}"></span>`).join('')}</div>` : ''}
+            ${toolbarPreview(vars)}
+            <p class="mini-note">${mode === 'color' ? 'Kleurfocus' : 'Vormfocus'}: combineer vrij met de andere categorie.</p>
+          </div>
+        </article>
+      `;
+    }
+
+    document.getElementById('colorGrid').innerHTML = colorStyles.map((item) => card(item, 'color')).join('');
+    document.getElementById('buttonGrid').innerHTML = buttonStyles.map(([name, meta, tag, vars]) => card({
+      name,
+      meta,
+      tag,
+      swatches: [],
+      vars: {
+        ...colorStyles[1].vars,
+        ...vars,
+        '--icon-bg': 'rgba(122,60,255,0.12)',
+        '--icon-color': '#7a3cff'
+      }
+    }, 'button')).join('');
+  </script>
+</body>
+</html>

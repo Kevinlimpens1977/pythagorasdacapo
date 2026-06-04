@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HELIX knopgradient opties</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: oklch(0.975 0.008 270);
+      --panel: oklch(0.995 0.004 270);
+      --ink: oklch(0.22 0.04 265);
+      --muted: oklch(0.48 0.035 265);
+      --line: oklch(0.9 0.018 265);
+      --shadow: 0 18px 44px oklch(0.31 0.045 265 / 0.12);
+      --radius: 18px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, oklch(0.99 0.006 270), var(--page) 42%, oklch(0.965 0.012 255));
+      color: var(--ink);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 42px 0 56px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.8rem);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .intro {
+      max-width: 58ch;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+      font-weight: 650;
+    }
+
+    .current {
+      min-width: 260px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .option {
+      display: flex;
+      min-height: 188px;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 12px 28px oklch(0.31 0.045 265 / 0.07);
+    }
+
+    .meta {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .name {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.25;
+      font-weight: 900;
+    }
+
+    .tag {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: oklch(0.96 0.012 260);
+      padding: 5px 8px;
+      color: oklch(0.42 0.035 265);
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 58px;
+    }
+
+    .button {
+      --g: linear-gradient(135deg, oklch(0.68 0.22 31), oklch(0.66 0.23 342), oklch(0.58 0.25 292));
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      border: 0;
+      border-radius: 15px;
+      background: var(--g);
+      box-shadow: 0 10px 20px var(--glow, oklch(0.58 0.18 310 / 0.2));
+      padding: 0 18px;
+      color: oklch(0.995 0.004 270);
+      font-size: 0.88rem;
+      font-weight: 950;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .button svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2.4;
+    }
+
+    .outline-button {
+      border: 2px solid transparent;
+      background:
+        linear-gradient(oklch(0.995 0.004 270), oklch(0.985 0.006 270)) padding-box,
+        var(--g) border-box;
+      color: oklch(0.19 0.035 265);
+      box-shadow: 0 10px 22px oklch(0.31 0.045 265 / 0.08);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 36px 0 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 28px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.15;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .section-title p {
+      max-width: 56ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+
+    code {
+      display: block;
+      overflow-wrap: anywhere;
+      border-radius: 12px;
+      background: oklch(0.965 0.01 260);
+      padding: 10px;
+      color: oklch(0.34 0.045 265);
+      font-size: 0.73rem;
+      line-height: 1.45;
+    }
+
+    .current .button {
+      --g: linear-gradient(135deg, #ff5b2e 0%, #ef2da4 52%, #8f36e8 100%);
+      --glow: oklch(0.6 0.23 315 / 0.28);
+    }
+
+    .g01 { --g: linear-gradient(135deg, oklch(0.72 0.145 35), oklch(0.68 0.145 350), oklch(0.62 0.155 292)); --glow: oklch(0.63 0.13 320 / 0.18); }
+    .g02 { --g: linear-gradient(135deg, oklch(0.76 0.13 43), oklch(0.7 0.13 7), oklch(0.63 0.14 296)); --glow: oklch(0.66 0.12 15 / 0.17); }
+    .g03 { --g: linear-gradient(135deg, oklch(0.72 0.13 24), oklch(0.68 0.12 338), oklch(0.61 0.14 278)); --glow: oklch(0.62 0.11 300 / 0.17); }
+    .g04 { --g: linear-gradient(135deg, oklch(0.74 0.12 55), oklch(0.69 0.13 356), oklch(0.62 0.13 287)); --glow: oklch(0.65 0.1 5 / 0.16); }
+    .g05 { --g: linear-gradient(135deg, oklch(0.7 0.12 28), oklch(0.65 0.12 332), oklch(0.58 0.13 270)); --glow: oklch(0.58 0.11 282 / 0.16); }
+    .g06 { --g: linear-gradient(135deg, oklch(0.76 0.115 62), oklch(0.69 0.13 12), oklch(0.61 0.13 302)); --glow: oklch(0.65 0.1 25 / 0.15); }
+    .g07 { --g: linear-gradient(135deg, oklch(0.72 0.105 20), oklch(0.65 0.115 323), oklch(0.58 0.12 258)); --glow: oklch(0.58 0.1 275 / 0.15); }
+    .g08 { --g: linear-gradient(135deg, oklch(0.7 0.115 38), oklch(0.66 0.105 351), oklch(0.58 0.12 294)); --glow: oklch(0.61 0.1 315 / 0.15); }
+    .g09 { --g: linear-gradient(135deg, oklch(0.73 0.12 48), oklch(0.68 0.105 5), oklch(0.6 0.11 286)); --glow: oklch(0.64 0.09 8 / 0.15); }
+    .g10 { --g: linear-gradient(135deg, oklch(0.7 0.105 31), oklch(0.64 0.11 345), oklch(0.56 0.115 272)); --glow: oklch(0.57 0.09 285 / 0.15); }
+    .g11 { --g: linear-gradient(135deg, oklch(0.75 0.1 66), oklch(0.68 0.115 17), oklch(0.6 0.115 296)); --glow: oklch(0.64 0.09 20 / 0.14); }
+    .g12 { --g: linear-gradient(135deg, oklch(0.72 0.095 41), oklch(0.66 0.1 358), oklch(0.59 0.11 305)); --glow: oklch(0.62 0.085 320 / 0.14); }
+    .g13 { --g: linear-gradient(135deg, oklch(0.69 0.1 25), oklch(0.63 0.105 335), oklch(0.56 0.11 285)); --glow: oklch(0.57 0.085 300 / 0.14); }
+    .g14 { --g: linear-gradient(135deg, oklch(0.74 0.095 50), oklch(0.67 0.1 348), oklch(0.6 0.105 276)); --glow: oklch(0.62 0.08 285 / 0.14); }
+    .g15 { --g: linear-gradient(135deg, oklch(0.71 0.09 34), oklch(0.65 0.095 3), oklch(0.58 0.1 292)); --glow: oklch(0.6 0.08 305 / 0.13); }
+    .g16 { --g: linear-gradient(135deg, oklch(0.73 0.085 58), oklch(0.66 0.095 13), oklch(0.59 0.1 306)); --glow: oklch(0.62 0.075 25 / 0.13); }
+    .g17 { --g: linear-gradient(135deg, oklch(0.68 0.09 28), oklch(0.62 0.095 340), oklch(0.55 0.1 278)); --glow: oklch(0.56 0.075 290 / 0.13); }
+    .g18 { --g: linear-gradient(135deg, oklch(0.72 0.08 46), oklch(0.66 0.088 352), oklch(0.58 0.095 288)); --glow: oklch(0.61 0.07 305 / 0.12); }
+    .g19 { --g: linear-gradient(135deg, oklch(0.7 0.082 35), oklch(0.64 0.085 1), oklch(0.57 0.09 300)); --glow: oklch(0.59 0.07 315 / 0.12); }
+    .g20 { --g: linear-gradient(135deg, oklch(0.69 0.078 43), oklch(0.63 0.082 347), oklch(0.56 0.088 284)); --glow: oklch(0.58 0.065 300 / 0.12); }
+    .g21 { --g: linear-gradient(135deg, oklch(0.72 0.16 35), oklch(0.66 0.16 342), oklch(0.58 0.17 286)); }
+    .g22 { --g: linear-gradient(135deg, oklch(0.75 0.135 48), oklch(0.68 0.14 4), oklch(0.59 0.15 296)); }
+    .g23 { --g: linear-gradient(135deg, oklch(0.7 0.145 25), oklch(0.65 0.135 330), oklch(0.57 0.145 275)); }
+    .g24 { --g: linear-gradient(135deg, oklch(0.76 0.13 60), oklch(0.68 0.13 355), oklch(0.6 0.14 288)); }
+    .g25 { --g: linear-gradient(135deg, oklch(0.71 0.125 38), oklch(0.66 0.13 350), oklch(0.58 0.14 305)); }
+    .g26 { --g: linear-gradient(135deg, oklch(0.7 0.12 18), oklch(0.64 0.13 325), oklch(0.57 0.135 262)); }
+    .g27 { --g: linear-gradient(135deg, oklch(0.74 0.12 52), oklch(0.67 0.12 12), oklch(0.6 0.13 300)); }
+    .g28 { --g: linear-gradient(135deg, oklch(0.73 0.11 42), oklch(0.66 0.115 338), oklch(0.59 0.125 282)); }
+    .g29 { --g: linear-gradient(135deg, oklch(0.7 0.11 31), oklch(0.64 0.115 356), oklch(0.57 0.12 294)); }
+    .g30 { --g: linear-gradient(135deg, oklch(0.75 0.105 66), oklch(0.67 0.112 16), oklch(0.6 0.12 308)); }
+    .g31 { --g: linear-gradient(135deg, oklch(0.72 0.105 24), oklch(0.64 0.108 333), oklch(0.57 0.116 270)); }
+    .g32 { --g: linear-gradient(135deg, oklch(0.73 0.1 50), oklch(0.66 0.104 348), oklch(0.59 0.112 288)); }
+    .g33 { --g: linear-gradient(135deg, oklch(0.69 0.1 36), oklch(0.63 0.102 2), oklch(0.56 0.11 302)); }
+    .g34 { --g: linear-gradient(135deg, oklch(0.74 0.095 58), oklch(0.66 0.1 20), oklch(0.59 0.108 314)); }
+    .g35 { --g: linear-gradient(135deg, oklch(0.71 0.092 30), oklch(0.64 0.096 340), oklch(0.57 0.104 280)); }
+    .g36 { --g: linear-gradient(135deg, oklch(0.72 0.088 44), oklch(0.65 0.092 354), oklch(0.58 0.1 294)); }
+    .g37 { --g: linear-gradient(135deg, oklch(0.69 0.086 24), oklch(0.62 0.092 328), oklch(0.55 0.1 268)); }
+    .g38 { --g: linear-gradient(135deg, oklch(0.73 0.084 62), oklch(0.65 0.09 10), oklch(0.58 0.098 306)); }
+    .g39 { --g: linear-gradient(135deg, oklch(0.7 0.08 38), oklch(0.63 0.085 348), oklch(0.56 0.094 286)); }
+    .g40 { --g: linear-gradient(135deg, oklch(0.68 0.075 32), oklch(0.62 0.08 338), oklch(0.55 0.088 298)); }
+
+    @media (max-width: 980px) {
+      header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .current {
+        min-width: 0;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-title {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 560px) {
+      main {
+        width: min(100% - 20px, 1180px);
+        padding-top: 24px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <span class="label">HELIX gradient keuzeplaat</span>
+        <h1>Rustiger dan nu, wel herkenbaar actief.</h1>
+        <p class="intro">
+          Twintig varianten in dezelfde warm-naar-paars familie. De bovenste rij blijft het dichtst bij de huidige knop;
+          verder naar beneden worden chroma, contrast en glow steeds stiller.
+        </p>
+      </div>
+      <aside class="current">
+        <span class="label">Huidige richting</span>
+        <div class="preview">
+          <button class="button" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="M22 2 11 13" />
+              <path d="m22 2-7 20-4-9-9-4 20-7Z" />
+            </svg>
+            Verstuur melding
+          </button>
+        </div>
+      </aside>
+    </header>
+
+    <section class="grid" aria-label="Gradient opties">
+      <article class="option"><div class="meta"><h2 class="name">01 Soft Signal</h2><span class="tag">dichtbij</span></div><div class="preview"><button class="button g01" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.72 0.145 35), oklch(0.68 0.145 350), oklch(0.62 0.155 292))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">02 Apricot Pulse</h2><span class="tag">warm</span></div><div class="preview"><button class="button g02" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.76 0.13 43), oklch(0.7 0.13 7), oklch(0.63 0.14 296))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">03 Coral Violet</h2><span class="tag">balans</span></div><div class="preview"><button class="button g03" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.72 0.13 24), oklch(0.68 0.12 338), oklch(0.61 0.14 278))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">04 Honey Rose</h2><span class="tag">zacht</span></div><div class="preview"><button class="button g04" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.74 0.12 55), oklch(0.69 0.13 356), oklch(0.62 0.13 287))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">05 Muted Flame</h2><span class="tag">dieper</span></div><div class="preview"><button class="button g05" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.7 0.12 28), oklch(0.65 0.12 332), oklch(0.58 0.13 270))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">06 Amber Bloom</h2><span class="tag">vriendelijk</span></div><div class="preview"><button class="button g06" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.76 0.115 62), oklch(0.69 0.13 12), oklch(0.61 0.13 302))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">07 Berry Ember</h2><span class="tag">rustiger</span></div><div class="preview"><button class="button g07" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.72 0.105 20), oklch(0.65 0.115 323), oklch(0.58 0.12 258))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">08 Sunset Thread</h2><span class="tag">compact</span></div><div class="preview"><button class="button g08" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.7 0.115 38), oklch(0.66 0.105 351), oklch(0.58 0.12 294))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">09 Warm Focus</h2><span class="tag">helder</span></div><div class="preview"><button class="button g09" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.73 0.12 48), oklch(0.68 0.105 5), oklch(0.6 0.11 286))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">10 Low Glow</h2><span class="tag">subtiel</span></div><div class="preview"><button class="button g10" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.7 0.105 31), oklch(0.64 0.11 345), oklch(0.56 0.115 272))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">11 Soft Amber</h2><span class="tag">luchtig</span></div><div class="preview"><button class="button g11" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.75 0.1 66), oklch(0.68 0.115 17), oklch(0.6 0.115 296))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">12 Rose Thread</h2><span class="tag">netjes</span></div><div class="preview"><button class="button g12" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.72 0.095 41), oklch(0.66 0.1 358), oklch(0.59 0.11 305))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">13 Quiet Berry</h2><span class="tag">serieus</span></div><div class="preview"><button class="button g13" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.69 0.1 25), oklch(0.63 0.105 335), oklch(0.56 0.11 285))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">14 Clear Signal</h2><span class="tag">leesbaar</span></div><div class="preview"><button class="button g14" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.74 0.095 50), oklch(0.67 0.1 348), oklch(0.6 0.105 276))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">15 Paper Warmth</h2><span class="tag">kalm</span></div><div class="preview"><button class="button g15" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.71 0.09 34), oklch(0.65 0.095 3), oklch(0.58 0.1 292))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">16 Apricot Violet</h2><span class="tag">zacht</span></div><div class="preview"><button class="button g16" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.73 0.085 58), oklch(0.66 0.095 13), oklch(0.59 0.1 306))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">17 Dusk Ember</h2><span class="tag">donkerder</span></div><div class="preview"><button class="button g17" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.68 0.09 28), oklch(0.62 0.095 340), oklch(0.55 0.1 278))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">18 Calm Arc</h2><span class="tag">mijn keuze</span></div><div class="preview"><button class="button g18" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.72 0.08 46), oklch(0.66 0.088 352), oklch(0.58 0.095 288))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">19 Quiet Action</h2><span class="tag">veilig</span></div><div class="preview"><button class="button g19" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.7 0.082 35), oklch(0.64 0.085 1), oklch(0.57 0.09 300))</code></article>
+      <article class="option"><div class="meta"><h2 class="name">20 Barely Bold</h2><span class="tag">stil</span></div><div class="preview"><button class="button g20" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>linear-gradient(135deg, oklch(0.69 0.078 43), oklch(0.63 0.082 347), oklch(0.56 0.088 284))</code></article>
+    </section>
+
+    <div class="section-title">
+      <div>
+        <span class="label">Tweede richting</span>
+        <h2>Gradientrand met witte vulling</h2>
+      </div>
+      <p>
+        Deze opties voelen meer als product-UI: actief en herkenbaar, maar minder dominant in een dashboard of formulier.
+        De rand draagt de kleur, de vulling houdt de knop rustig.
+      </p>
+    </div>
+
+    <section class="grid" aria-label="Gradientrand opties">
+      <article class="option"><div class="meta"><h2 class="name">21 Border Signal</h2><span class="tag">dichtbij</span></div><div class="preview"><button class="button outline-button g21" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.72 0.16 35), oklch(0.66 0.16 342), oklch(0.58 0.17 286)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">22 Apricot Edge</h2><span class="tag">warm</span></div><div class="preview"><button class="button outline-button g22" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.75 0.135 48), oklch(0.68 0.14 4), oklch(0.59 0.15 296)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">23 Coral Line</h2><span class="tag">helder</span></div><div class="preview"><button class="button outline-button g23" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.7 0.145 25), oklch(0.65 0.135 330), oklch(0.57 0.145 275)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">24 Honey Frame</h2><span class="tag">zacht</span></div><div class="preview"><button class="button outline-button g24" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.76 0.13 60), oklch(0.68 0.13 355), oklch(0.6 0.14 288)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">25 Sunset Rim</h2><span class="tag">balans</span></div><div class="preview"><button class="button outline-button g25" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.71 0.125 38), oklch(0.66 0.13 350), oklch(0.58 0.14 305)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">26 Berry Border</h2><span class="tag">dieper</span></div><div class="preview"><button class="button outline-button g26" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.7 0.12 18), oklch(0.64 0.13 325), oklch(0.57 0.135 262)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">27 Amber Frame</h2><span class="tag">vriendelijk</span></div><div class="preview"><button class="button outline-button g27" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.74 0.12 52), oklch(0.67 0.12 12), oklch(0.6 0.13 300)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">28 Violet Rail</h2><span class="tag">netjes</span></div><div class="preview"><button class="button outline-button g28" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.73 0.11 42), oklch(0.66 0.115 338), oklch(0.59 0.125 282)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">29 Warm Trace</h2><span class="tag">subtiel</span></div><div class="preview"><button class="button outline-button g29" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.7 0.11 31), oklch(0.64 0.115 356), oklch(0.57 0.12 294)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">30 Apricot Rail</h2><span class="tag">luchtig</span></div><div class="preview"><button class="button outline-button g30" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.75 0.105 66), oklch(0.67 0.112 16), oklch(0.6 0.12 308)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">31 Quiet Coral</h2><span class="tag">serieus</span></div><div class="preview"><button class="button outline-button g31" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.72 0.105 24), oklch(0.64 0.108 333), oklch(0.57 0.116 270)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">32 Clear Outline</h2><span class="tag">leesbaar</span></div><div class="preview"><button class="button outline-button g32" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.73 0.1 50), oklch(0.66 0.104 348), oklch(0.59 0.112 288)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">33 Product Glow</h2><span class="tag">kalm</span></div><div class="preview"><button class="button outline-button g33" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.69 0.1 36), oklch(0.63 0.102 2), oklch(0.56 0.11 302)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">34 Honey Ring</h2><span class="tag">zacht</span></div><div class="preview"><button class="button outline-button g34" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.74 0.095 58), oklch(0.66 0.1 20), oklch(0.59 0.108 314)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">35 Thin Ember</h2><span class="tag">strak</span></div><div class="preview"><button class="button outline-button g35" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.71 0.092 30), oklch(0.64 0.096 340), oklch(0.57 0.104 280)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">36 Calm Border</h2><span class="tag">mijn keuze</span></div><div class="preview"><button class="button outline-button g36" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.72 0.088 44), oklch(0.65 0.092 354), oklch(0.58 0.1 294)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">37 Dusk Line</h2><span class="tag">donkerder</span></div><div class="preview"><button class="button outline-button g37" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.69 0.086 24), oklch(0.62 0.092 328), oklch(0.55 0.1 268)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">38 Light Apricot</h2><span class="tag">licht</span></div><div class="preview"><button class="button outline-button g38" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.73 0.084 62), oklch(0.65 0.09 10), oklch(0.58 0.098 306)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">39 Quiet Frame</h2><span class="tag">veilig</span></div><div class="preview"><button class="button outline-button g39" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.7 0.08 38), oklch(0.63 0.085 348), oklch(0.56 0.094 286)) border-box;</code></article>
+      <article class="option"><div class="meta"><h2 class="name">40 Bare Outline</h2><span class="tag">stil</span></div><div class="preview"><button class="button outline-button g40" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4 20-7Z" /></svg>Verstuur melding</button></div><code>background: linear-gradient(white, white) padding-box, linear-gradient(135deg, oklch(0.68 0.075 32), oklch(0.62 0.08 338), oklch(0.55 0.088 298)) border-box;</code></article>
+    </section>
+  </main>
+</body>
+</html>
