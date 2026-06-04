@@ -25,6 +25,11 @@ import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
+import {
+  evaluateAssessmentAnswer,
+  isClosedAssessmentItem,
+  normalizeAssessmentItems
+} from '../lib/assessmentBlockUtils';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import {
   calculateLessonProgress,
@@ -2125,7 +2130,7 @@ function SlidedeckBlock({ block, onOpen }) {
 
 function AssessmentLearningBlock({ block, bodyHtml }) {
   const content = block.content || {};
-  const items = Array.isArray(content.items) ? content.items : [];
+  const items = normalizeAssessmentItems(content.items);
   const isToets = block.type === 'toets';
   const tokenTotal = Number(content.tokenConfig?.totalTokens || block.tokenTotal || 0);
 
@@ -2142,35 +2147,247 @@ function AssessmentLearningBlock({ block, bodyHtml }) {
         )}
         <p className="mt-4 text-sm font-bold">
           {items.length} {items.length === 1 ? 'vraag' : 'vragen'}
-          {tokenTotal ? ` · ${tokenTotal} tokens` : ''}
-          {isToets ? ' · Digidocent uit' : ' · Digidocent beschikbaar bij uitwerking'}
+          {tokenTotal ? ` - ${tokenTotal} tokens` : ''}
+          {isToets ? ' - Digidocent uit' : ' - Oefenfeedback beschikbaar'}
         </p>
       </div>
 
       {items.length > 0 && (
         <div className="space-y-3">
           {items.map((item, index) => (
-            <div key={item.id || `${block.id}-item-${index}`} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">
-                <span>Vraag {index + 1}</span>
-                {item.type && <span>· {item.type}</span>}
-                {Number(item.tokens) > 0 && <span>· {item.tokens} tokens</span>}
-              </div>
-              <p className="mt-2 text-base font-bold leading-7 text-[var(--helix-navy)]">{item.prompt || item.question || 'Vraag wordt nog ingevuld.'}</p>
-              {Array.isArray(item.options) && item.options.length > 0 && (
-                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                  {item.options.map((option, optionIndex) => (
-                    <li key={option.id || `${item.id}-option-${optionIndex}`} className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold text-[var(--helix-muted)]">
-                      {typeof option === 'string' ? option : option.text}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <AssessmentItemLearningCard
+              key={item.id || `${block.id}-item-${index}`}
+              item={item}
+              index={index}
+              isToets={isToets}
+            />
           ))}
         </div>
       )}
     </div>
+  );
+}
+
+function AssessmentItemLearningCard({ item, index, isToets }) {
+  const [answer, setAnswer] = useState(() => buildInitialAssessmentAnswer(item));
+  const [result, setResult] = useState(null);
+  const closed = isClosedAssessmentItem(item);
+
+  const handleCheck = () => {
+    if (!closed) {
+      setResult({
+        closed: false,
+        correct: null,
+        feedback: item.feedback || 'Je antwoord is opgeslagen om later te bespreken.'
+      });
+      return;
+    }
+    setResult(evaluateAssessmentAnswer(item, answer));
+  };
+
+  return (
+    <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+      <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">
+        <span>Vraag {index + 1}</span>
+        <span>- {item.type}</span>
+        {Number(item.tokens) > 0 && <span>- {item.tokens} tokens</span>}
+      </div>
+      <p className="mt-2 text-base font-bold leading-7 text-[var(--helix-navy)]">
+        {item.prompt || 'Vraag wordt nog ingevuld.'}
+      </p>
+
+      <div className="mt-4">
+        <AssessmentAnswerInput item={item} value={answer} onChange={setAnswer} disabled={isToets && result !== null} />
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button type="button" onClick={handleCheck} className="btn-primary px-4 py-2 text-sm">
+          {closed ? 'Controleer antwoord' : 'Antwoord inleveren'}
+        </button>
+        {result && (
+          <div className={[
+            'rounded-xl px-3 py-2 text-sm font-black',
+            result.closed === false
+              ? 'bg-blue-50 text-blue-700'
+              : result.correct
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-amber-50 text-amber-700'
+          ].join(' ')}>
+            {result.closed === false ? 'Ingeleverd' : result.correct ? 'Goed' : 'Nog niet goed'}
+          </div>
+        )}
+      </div>
+
+      {result?.feedback && (
+        <p className="mt-3 rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+          {result.feedback}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function buildInitialAssessmentAnswer(item) {
+  if (item.type === 'meerkeuze') return [];
+  if (item.type === 'koppelen') return Object.fromEntries((item.answer.pairs || []).map((pair) => [pair.id, '']));
+  if (item.type === 'invullen') return Object.fromEntries((item.answer.gaps || []).map((gap) => [gap.id, '']));
+  if (item.type === 'volgorde') return [];
+  return '';
+}
+
+function AssessmentAnswerInput({ item, value, onChange, disabled = false }) {
+  if (item.type === 'waar-niet-waar') {
+    return (
+      <div className="grid gap-2 sm:grid-cols-2">
+        {item.options.map((option) => (
+          <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
+            <input
+              type="radio"
+              name={`${item.id}-answer`}
+              checked={value === option.id}
+              disabled={disabled}
+              onChange={() => onChange(option.id)}
+              className="h-4 w-4 accent-[var(--helix-purple)]"
+            />
+            {option.text}
+          </label>
+        ))}
+      </div>
+    );
+  }
+
+  if (item.type === 'meerkeuze') {
+    const multipleCorrect = item.options.filter((option) => option.correct).length > 1;
+    return (
+      <div className="grid gap-2 sm:grid-cols-2">
+        {item.options.map((option) => (
+          <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
+            <input
+              type={multipleCorrect ? 'checkbox' : 'radio'}
+              name={`${item.id}-answer`}
+              checked={multipleCorrect ? value.includes(option.id) : value === option.id}
+              disabled={disabled}
+              onChange={() => {
+                if (!multipleCorrect) {
+                  onChange(option.id);
+                  return;
+                }
+                onChange(value.includes(option.id)
+                  ? value.filter((id) => id !== option.id)
+                  : [...value, option.id]);
+              }}
+              className="h-4 w-4 accent-[var(--helix-purple)]"
+            />
+            {option.text}
+          </label>
+        ))}
+      </div>
+    );
+  }
+
+  if (item.type === 'numeriek') {
+    return (
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem]">
+        <input
+          type="number"
+          step="0.01"
+          value={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+          className="input-standard w-full"
+          placeholder="Typ je antwoord"
+        />
+        {item.answer.unit && (
+          <span className="flex h-11 items-center rounded-xl bg-[var(--helix-surface-soft)] px-3 text-sm font-black text-[var(--helix-muted)]">
+            {item.answer.unit}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (item.type === 'koppelen') {
+    const options = item.answer.pairs.map((pair) => pair.right);
+    return (
+      <div className="space-y-2">
+        {item.answer.pairs.map((pair) => (
+          <div key={pair.id} className="grid gap-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <span className="text-sm font-black text-[var(--helix-navy)]">{pair.left}</span>
+            <select
+              value={value[pair.id] || ''}
+              disabled={disabled}
+              onChange={(event) => onChange({ ...value, [pair.id]: event.target.value })}
+              className="input-standard w-full"
+            >
+              <option value="">Kies match</option>
+              {options.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (item.type === 'invullen') {
+    return (
+      <div className="space-y-3">
+        {item.answer.text && (
+          <p className="rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+            {item.answer.text}
+          </p>
+        )}
+        {item.answer.gaps.map((gap, gapIndex) => (
+          <input
+            key={gap.id}
+            value={value[gap.id] || ''}
+            disabled={disabled}
+            onChange={(event) => onChange({ ...value, [gap.id]: event.target.value })}
+            className="input-standard w-full"
+            placeholder={`Invulantwoord ${gapIndex + 1}`}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (item.type === 'volgorde') {
+    const options = item.answer.items;
+    return (
+      <div className="space-y-2">
+        {options.map((_, positionIndex) => (
+          <div key={positionIndex} className="grid gap-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3 sm:grid-cols-[4rem_minmax(0,1fr)]">
+            <span className="flex h-11 items-center text-sm font-black text-[var(--helix-purple)]">{positionIndex + 1}</span>
+            <select
+              value={value[positionIndex] || ''}
+              disabled={disabled}
+              onChange={(event) => {
+                const next = [...value];
+                next[positionIndex] = event.target.value;
+                onChange(next);
+              }}
+              className="input-standard w-full"
+            >
+              <option value="">Kies stap</option>
+              {options.map((option) => (
+                <option key={option.id} value={option.id}>{option.text}</option>
+              ))}
+            </select>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <textarea
+      value={value}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.value)}
+      className="input-standard min-h-28 w-full resize-y leading-6"
+      placeholder="Typ je antwoord"
+    />
   );
 }
 

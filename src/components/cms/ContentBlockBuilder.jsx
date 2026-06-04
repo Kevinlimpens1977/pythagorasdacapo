@@ -129,6 +129,8 @@ const contentFieldLabels = {
 
 const cmsEmbeddableGames = getCmsEmbeddableGames();
 
+const createStudioId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 const editorFontFamilies = [
   { label: 'Standaard', value: '' },
   { label: 'Inter', value: 'Inter, system-ui, sans-serif' },
@@ -727,8 +729,34 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
 
   const setItems = (nextItems) => updateContent({ items: normalizeAssessmentItems(nextItems) });
 
+  const updateItemAt = (index, nextItem) => {
+    setItems(items.map((item, itemIndex) => itemIndex === index ? nextItem : item));
+  };
+
   const updateItem = (index, updates) => {
     setItems(items.map((item, itemIndex) => itemIndex === index ? { ...item, ...updates } : item));
+  };
+
+  const updateAnswer = (itemIndex, answerUpdates) => {
+    const item = items[itemIndex];
+    updateItem(itemIndex, {
+      answer: {
+        ...(item.answer || {}),
+        ...answerUpdates
+      }
+    });
+  };
+
+  const updateChoiceOptions = (itemIndex, nextOptions) => {
+    const item = items[itemIndex];
+    updateItem(itemIndex, {
+      answer: {
+        ...(item.answer || {}),
+        type: 'meerkeuze',
+        options: nextOptions
+      },
+      options: nextOptions
+    });
   };
 
   const updateOption = (itemIndex, optionIndex, updates) => {
@@ -736,16 +764,27 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
     const options = item.options.map((option, currentIndex) =>
       currentIndex === optionIndex ? { ...option, ...updates } : option
     );
-    updateItem(itemIndex, { options });
+    updateChoiceOptions(itemIndex, options);
   };
 
-  const setCorrectOption = (itemIndex, optionIndex) => {
+  const setSingleCorrectOption = (itemIndex, optionIndex) => {
     const item = items[itemIndex];
     const options = item.options.map((option, currentIndex) => ({
       ...option,
       correct: currentIndex === optionIndex
     }));
-    updateItem(itemIndex, { options });
+    updateChoiceOptions(itemIndex, options);
+  };
+
+  const toggleCorrectOption = (itemIndex, optionIndex) => {
+    const item = items[itemIndex];
+    const options = item.options.map((option, currentIndex) =>
+      currentIndex === optionIndex ? { ...option, correct: !option.correct } : option
+    );
+    if (options.every((option) => option.correct !== true)) {
+      options[optionIndex] = { ...options[optionIndex], correct: true };
+    }
+    updateChoiceOptions(itemIndex, options);
   };
 
   const addOption = (itemIndex) => {
@@ -754,13 +793,97 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
       ...item.options,
       createAssessmentOption({ text: `Antwoord ${item.options.length + 1}` })
     ];
-    updateItem(itemIndex, { options });
+    updateChoiceOptions(itemIndex, options);
   };
 
   const removeOption = (itemIndex, optionIndex) => {
     const item = items[itemIndex];
     const options = item.options.filter((_, currentIndex) => currentIndex !== optionIndex);
-    updateItem(itemIndex, { options });
+    updateChoiceOptions(itemIndex, options);
+  };
+
+  const updatePair = (itemIndex, pairIndex, updates) => {
+    const item = items[itemIndex];
+    const pairs = item.answer.pairs.map((pair, currentIndex) =>
+      currentIndex === pairIndex ? { ...pair, ...updates } : pair
+    );
+    updateAnswer(itemIndex, { pairs });
+  };
+
+  const addPair = (itemIndex) => {
+    const item = items[itemIndex];
+    updateAnswer(itemIndex, {
+      pairs: [
+        ...(item.answer.pairs || []),
+        { id: createStudioId('pair'), left: `Begrip ${(item.answer.pairs || []).length + 1}`, right: `Betekenis ${(item.answer.pairs || []).length + 1}` }
+      ]
+    });
+  };
+
+  const removePair = (itemIndex, pairIndex) => {
+    const item = items[itemIndex];
+    updateAnswer(itemIndex, {
+      pairs: item.answer.pairs.filter((_, currentIndex) => currentIndex !== pairIndex)
+    });
+  };
+
+  const updateGap = (itemIndex, gapIndex, updates) => {
+    const item = items[itemIndex];
+    const gaps = item.answer.gaps.map((gap, currentIndex) =>
+      currentIndex === gapIndex ? { ...gap, ...updates } : gap
+    );
+    updateAnswer(itemIndex, { gaps });
+  };
+
+  const addGap = (itemIndex) => {
+    const item = items[itemIndex];
+    updateAnswer(itemIndex, {
+      gaps: [
+        ...(item.answer.gaps || []),
+        { id: createStudioId('gap'), answer: `antwoord ${(item.answer.gaps || []).length + 1}`, alternatives: [] }
+      ]
+    });
+  };
+
+  const removeGap = (itemIndex, gapIndex) => {
+    const item = items[itemIndex];
+    updateAnswer(itemIndex, {
+      gaps: item.answer.gaps.filter((_, currentIndex) => currentIndex !== gapIndex)
+    });
+  };
+
+  const updateOrderItem = (itemIndex, orderIndex, updates) => {
+    const item = items[itemIndex];
+    const orderItems = item.answer.items.map((orderItem, currentIndex) =>
+      currentIndex === orderIndex ? { ...orderItem, ...updates } : orderItem
+    );
+    updateAnswer(itemIndex, { items: orderItems });
+  };
+
+  const moveOrderItem = (itemIndex, fromIndex, toIndex) => {
+    const item = items[itemIndex];
+    if (toIndex < 0 || toIndex >= item.answer.items.length) return;
+    const orderItems = [...item.answer.items];
+    const [moved] = orderItems.splice(fromIndex, 1);
+    orderItems.splice(toIndex, 0, moved);
+    updateAnswer(itemIndex, { items: orderItems });
+  };
+
+  const addOrderItem = (itemIndex) => {
+    const item = items[itemIndex];
+    updateAnswer(itemIndex, {
+      items: [
+        ...(item.answer.items || []),
+        { id: createStudioId('order'), text: `Stap ${(item.answer.items || []).length + 1}` }
+      ]
+    });
+  };
+
+  const removeOrderItem = (itemIndex, orderIndex) => {
+    const item = items[itemIndex];
+    updateAnswer(itemIndex, {
+      items: item.answer.items.filter((_, currentIndex) => currentIndex !== orderIndex)
+    });
   };
 
   const addItem = (type = 'meerkeuze') => {
@@ -789,16 +912,12 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <button type="button" onClick={() => addItem('meerkeuze')} className="btn-secondary w-full px-3 py-2 text-sm">
-            Meerkeuze toevoegen
-          </button>
-          <button type="button" onClick={() => addItem('waar-niet-waar')} className="btn-secondary w-full px-3 py-2 text-sm">
-            Waar/niet waar toevoegen
-          </button>
-          <button type="button" onClick={() => addItem('open')} className="btn-secondary w-full px-3 py-2 text-sm">
-            Open vraag toevoegen
-          </button>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {ASSESSMENT_ITEM_TYPES.map((type) => (
+            <button key={type.id} type="button" onClick={() => addItem(type.id)} className="btn-secondary w-full px-3 py-2 text-sm">
+              {type.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -815,7 +934,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Type</label>
                   <select
                     value={item.type}
-                    onChange={(event) => updateItem(index, updateAssessmentItemType(item, event.target.value))}
+                    onChange={(event) => updateItemAt(index, updateAssessmentItemType(item, event.target.value))}
                     className="input-standard w-full"
                   >
                     {ASSESSMENT_ITEM_TYPES.map((type) => (
@@ -884,10 +1003,12 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
               </div>
             </div>
 
-            {item.type !== 'open' && (
+            {(item.type === 'waar-niet-waar' || item.type === 'meerkeuze') && (
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Antwoordopties</p>
+                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                    Antwoordopties {item.type === 'meerkeuze' ? '(meerdere correct mogelijk)' : ''}
+                  </p>
                   {item.type === 'meerkeuze' && (
                     <button type="button" onClick={() => addOption(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
                       Optie toevoegen
@@ -896,13 +1017,13 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                 </div>
                 <div className="space-y-2">
                   {item.options.map((option, optionIndex) => (
-                    <div key={option.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[2.5rem_minmax(0,1fr)_2.5rem]">
+                    <div key={option.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_2.5rem]">
                       <label className="flex items-center justify-center" title="Correct antwoord">
                         <input
-                          type="radio"
+                          type={item.type === 'waar-niet-waar' ? 'radio' : 'checkbox'}
                           name={`${item.id}-correct`}
                           checked={option.correct === true}
-                          onChange={() => setCorrectOption(index, optionIndex)}
+                          onChange={() => item.type === 'waar-niet-waar' ? setSingleCorrectOption(index, optionIndex) : toggleCorrectOption(index, optionIndex)}
                           className="h-4 w-4 accent-[var(--helix-purple)]"
                         />
                       </label>
@@ -911,6 +1032,12 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                         onChange={(event) => updateOption(index, optionIndex, { text: event.target.value })}
                         className="input-standard w-full"
                         placeholder={`Antwoord ${optionIndex + 1}`}
+                      />
+                      <input
+                        value={option.explanation || ''}
+                        onChange={(event) => updateOption(index, optionIndex, { explanation: event.target.value })}
+                        className="input-standard w-full"
+                        placeholder="Feedback bij deze optie"
                       />
                       {item.type === 'meerkeuze' && item.options.length > 2 ? (
                         <button
@@ -926,6 +1053,187 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {item.type === 'numeriek' && (
+              <div className="mt-4 grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 md:grid-cols-[1fr_1fr_1fr]">
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Correct getal</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={item.answer.expected}
+                    onChange={(event) => updateAnswer(index, { expected: Number(event.target.value) })}
+                    className="input-standard w-full"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Tolerantie</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.answer.tolerance}
+                    onChange={(event) => updateAnswer(index, { tolerance: Math.max(0, Number(event.target.value) || 0) })}
+                    className="input-standard w-full"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Eenheid</label>
+                  <input
+                    value={item.answer.unit || ''}
+                    onChange={(event) => updateAnswer(index, { unit: event.target.value })}
+                    className="input-standard w-full"
+                    placeholder="bijv. MB, minuten"
+                  />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Hint bij fout</label>
+                  <input
+                    value={item.answer.hintBijFout || ''}
+                    onChange={(event) => updateAnswer(index, { hintBijFout: event.target.value })}
+                    className="input-standard w-full"
+                    placeholder="Korte hint die na een fout antwoord kan verschijnen"
+                  />
+                </div>
+              </div>
+            )}
+
+            {item.type === 'koppelen' && (
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Koppelparen</p>
+                  <button type="button" onClick={() => addPair(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
+                    Paar toevoegen
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {item.answer.pairs.map((pair, pairIndex) => (
+                    <div key={pair.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.5rem]">
+                      <input
+                        value={pair.left}
+                        onChange={(event) => updatePair(index, pairIndex, { left: event.target.value })}
+                        className="input-standard w-full"
+                        placeholder="Linkerkant"
+                      />
+                      <input
+                        value={pair.right}
+                        onChange={(event) => updatePair(index, pairIndex, { right: event.target.value })}
+                        className="input-standard w-full"
+                        placeholder="Rechterkant"
+                      />
+                      {item.answer.pairs.length > 1 ? (
+                        <button type="button" onClick={() => removePair(index, pairIndex)} className="flex h-11 w-11 items-center justify-center rounded-xl text-red-600 transition hover:bg-red-50" title="Paar verwijderen">
+                          <X size={16} />
+                        </button>
+                      ) : <span />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {item.type === 'invullen' && (
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Zin of korte tekst</label>
+                <textarea
+                  value={item.answer.text || ''}
+                  onChange={(event) => updateAnswer(index, { text: event.target.value })}
+                  className="input-standard min-h-20 w-full resize-y leading-6"
+                  placeholder="Schrijf de zin. De invulwoorden leg je hieronder vast."
+                />
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Invulantwoorden</p>
+                  <button type="button" onClick={() => addGap(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
+                    Invulveld toevoegen
+                  </button>
+                </div>
+                <div className="mt-2 space-y-2">
+                  {item.answer.gaps.map((gap, gapIndex) => (
+                    <div key={gap.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.5rem]">
+                      <input
+                        value={gap.answer}
+                        onChange={(event) => updateGap(index, gapIndex, { answer: event.target.value })}
+                        className="input-standard w-full"
+                        placeholder="Correct antwoord"
+                      />
+                      <input
+                        value={(gap.alternatives || []).join(', ')}
+                        onChange={(event) => updateGap(index, gapIndex, {
+                          alternatives: event.target.value.split(',').map((value) => value.trim()).filter(Boolean)
+                        })}
+                        className="input-standard w-full"
+                        placeholder="Alternatieven, gescheiden door komma"
+                      />
+                      {item.answer.gaps.length > 1 ? (
+                        <button type="button" onClick={() => removeGap(index, gapIndex)} className="flex h-11 w-11 items-center justify-center rounded-xl text-red-600 transition hover:bg-red-50" title="Invulveld verwijderen">
+                          <X size={16} />
+                        </button>
+                      ) : <span />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {item.type === 'volgorde' && (
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Correcte volgorde</p>
+                  <button type="button" onClick={() => addOrderItem(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
+                    Stap toevoegen
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {item.answer.items.map((orderItem, orderIndex) => (
+                    <div key={orderItem.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[2.5rem_minmax(0,1fr)_8rem_2.5rem]">
+                      <span className="flex h-11 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-500">{orderIndex + 1}</span>
+                      <input
+                        value={orderItem.text}
+                        onChange={(event) => updateOrderItem(index, orderIndex, { text: event.target.value })}
+                        className="input-standard w-full"
+                        placeholder={`Stap ${orderIndex + 1}`}
+                      />
+                      <div className="flex gap-1">
+                        <button type="button" onClick={() => moveOrderItem(index, orderIndex, orderIndex - 1)} disabled={orderIndex === 0} className="btn-secondary w-auto px-3 py-2 text-xs disabled:opacity-40" title="Omhoog">
+                          <ArrowUp size={14} />
+                        </button>
+                        <button type="button" onClick={() => moveOrderItem(index, orderIndex, orderIndex + 1)} disabled={orderIndex === item.answer.items.length - 1} className="btn-secondary w-auto px-3 py-2 text-xs disabled:opacity-40" title="Omlaag">
+                          <ArrowDown size={14} />
+                        </button>
+                      </div>
+                      {item.answer.items.length > 1 ? (
+                        <button type="button" onClick={() => removeOrderItem(index, orderIndex)} className="flex h-11 w-11 items-center justify-center rounded-xl text-red-600 transition hover:bg-red-50" title="Stap verwijderen">
+                          <X size={16} />
+                        </button>
+                      ) : <span />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {item.type === 'open' && (
+              <div className="mt-4 grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Modelantwoord</label>
+                  <textarea
+                    value={item.answer.modelAnswer || ''}
+                    onChange={(event) => updateAnswer(index, { modelAnswer: event.target.value })}
+                    className="input-standard min-h-24 w-full resize-y leading-6"
+                    placeholder="Wat moet in een goed antwoord terugkomen?"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Rubric / nakijkhint</label>
+                  <textarea
+                    value={item.answer.rubric || ''}
+                    onChange={(event) => updateAnswer(index, { rubric: event.target.value })}
+                    className="input-standard min-h-24 w-full resize-y leading-6"
+                    placeholder="Waar let de docent op?"
+                  />
                 </div>
               </div>
             )}
