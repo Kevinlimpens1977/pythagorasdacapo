@@ -1,7 +1,7 @@
 {
   "meta": {
     "seedId": "digitale-vaardigheden-vmbo1",
-    "generatedAt": "2026-06-04T12:29:40.522Z",
+    "generatedAt": "2026-06-04T13:21:33.400Z",
     "status": "published",
     "sourceDocuments": [
       "docs/LessenserieDigitaleVaardigheden30Lessen.md",
@@ -893,7 +893,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke drie plekken moet je op dag 1 kunnen vinden?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://support.microsoft.com/nl-nl/office/basisbewerkingen-in-microsoft-365-videotraining-396b8d9e-e118-42d0-8a0d-87d1f2f055fb",
         "caption": "Welke drie plekken moet je op dag 1 kunnen vinden?",
         "altText": "Microsoft 365 basis",
@@ -1306,7 +1306,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke fout maakt het account onveilig?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/hoe-zorg-je-dat-je-tiktok-account-niet-gehackt-wordt-tips-voor-een-veilig-wachtwoord",
         "caption": "Welke fout maakt het account onveilig?",
         "altText": "Schooltv veilig wachtwoord",
@@ -1719,7 +1719,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Wat doet het apparaat zelf en wat doet software?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/wat-doet-een-server-een-computer-die-taken-uitvoert-voor-andere-computers",
         "caption": "Wat doet het apparaat zelf en wat doet software?",
         "altText": "HackShield server",
@@ -2132,7 +2132,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welk bestand vind je het snelst en waarom?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://support.microsoft.com/nl-nl/office/basisbewerkingen-in-microsoft-365-videotraining-396b8d9e-e118-42d0-8a0d-87d1f2f055fb",
         "caption": "Welk bestand vind je het snelst en waarom?",
         "altText": "Microsoft 365 bestanden",
@@ -2545,7 +2545,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Waar probeert de afzender druk te zetten?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/wat-is-phishing-digitale-dieven-vissen-naar-jouw-persoonlijke-gegevens",
         "caption": "Waar probeert de afzender druk te zetten?",
         "altText": "HackShield phishing",
@@ -3366,7 +3366,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke knop maakt het document netter?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://support.microsoft.com/nl-nl/office/basisbewerkingen-in-microsoft-365-videotraining-396b8d9e-e118-42d0-8a0d-87d1f2f055fb",
         "caption": "Welke knop maakt het document netter?",
         "altText": "Microsoft Word basis",
@@ -3779,7 +3779,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Wanneer is iets kopiëren?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/wat-is-plagiaat-auteursrecht-betekent-dat-je-de-baas-bent-over-wat-jij-gemaakt-hebt",
         "caption": "Wanneer is iets kopiëren?",
         "altText": "HackShield plagiaat",
@@ -4192,7 +4192,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke dia kun je achterin het lokaal lezen?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://support.microsoft.com/nl-nl/office/basisbewerkingen-in-microsoft-365-videotraining-396b8d9e-e118-42d0-8a0d-87d1f2f055fb",
         "caption": "Welke dia kun je achterin het lokaal lezen?",
         "altText": "Microsoft PowerPoint basis",
@@ -5018,7 +5018,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Wanneer geef je bewerkrechten?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://support.microsoft.com/nl-nl/office/basisbewerkingen-in-microsoft-365-videotraining-396b8d9e-e118-42d0-8a0d-87d1f2f055fb",
         "caption": "Wanneer geef je bewerkrechten?",
         "altText": "OneDrive en Outlook demo",
@@ -5839,7 +5839,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke informatie wordt gevolgd of gedeeld zonder dat je daar goed over nadenkt?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/wat-doet-een-tracker-volgt-jouw-internetgedrag",
         "caption": "Welke informatie wordt gevolgd of gedeeld zonder dat je daar goed over nadenkt?",
         "altText": "HackShield tracker",
@@ -6252,7 +6252,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke acties van jou bepalen wat je daarna te zien krijgt?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/clickwise-vraag-het-ciana-algoritme",
         "caption": "Welke acties van jou bepalen wat je daarna te zien krijgt?",
         "altText": "Schooltv algoritme",
@@ -6665,7 +6665,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Wat maakt dit bericht geloofwaardig en wat maakt je toch voorzichtig?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/wat-is-clickbait-desinformatie-met-sensationele-koppen",
         "caption": "Wat maakt dit bericht geloofwaardig en wat maakt je toch voorzichtig?",
         "altText": "HackShield clickbait",
@@ -7078,7 +7078,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Wanneer verandert een grap in iets dat niet oké is?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/zijn-memes-altijd-leuk-altijd-toestemming-vragen-voordat-je-een-grappige-foto-doorstuurt",
         "caption": "Wanneer verandert een grap in iets dat niet oké is?",
         "altText": "HackShield memes",
@@ -7491,7 +7491,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke drie signalen bepalen of jij hier zou kopen?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/wat-is-witwassen-zwart-geld-legaal-laten-lijken",
         "caption": "Welke drie signalen bepalen of jij hier zou kopen?",
         "altText": "HackShield witwassen",
@@ -9165,7 +9165,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke grafiek helpt eerlijker begrijpen wat er gebeurt?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://www.terzake-excel.nl/grafiek-maken-in-excel/",
         "caption": "Welke grafiek helpt eerlijker begrijpen wat er gebeurt?",
         "altText": "Excel grafiek maken",
@@ -9578,7 +9578,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke data wordt verzameld zonder dat je het meteen merkt?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/wat-doet-een-tracker-volgt-jouw-internetgedrag",
         "caption": "Welke data wordt verzameld zonder dat je het meteen merkt?",
         "altText": "HackShield tracker",
@@ -10812,7 +10812,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Waar helpt AI en waar moet een mens controleren?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/clipphanger-wat-is-ai",
         "caption": "Waar helpt AI en waar moet een mens controleren?",
         "altText": "Schooltv wat is AI",
@@ -11225,7 +11225,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke aanwijzingen maken jou onzeker over echtheid?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/tegenlicht-in-de-klas-nepvideos-en-deepfake/nepnieuws-hoe-weet-je-wat-waar-is-en-wat-niet",
         "caption": "Welke aanwijzingen maken jou onzeker over echtheid?",
         "altText": "Schooltv deepfake",
@@ -11638,7 +11638,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welke stap moet preciezer zodat iedereen hetzelfde doet?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://schooltv.nl/video-item/clipphanger-wat-is-een-algoritme",
         "caption": "Welke stap moet preciezer zodat iedereen hetzelfde doet?",
         "altText": "Schooltv algoritme",
@@ -12464,7 +12464,7 @@
       },
       "content": {
         "html": "<p>Kijkvraag: Welk bewijsstuk overtuigt het meest en waarom?</p>",
-        "mediaKind": "youtube",
+        "mediaKind": "link",
         "mediaUrl": "https://www.kennisnet.nl/digitale-geletterdheid/",
         "caption": "Welk bewijsstuk overtuigt het meest en waarom?",
         "altText": "Kennisnet digitale geletterdheid",

@@ -45,7 +45,7 @@ const countLabel = (node) => {
 const blockTypePills = (node) => {
   if (node.type !== 'paragraaf' || !node.counts.blocks?.total) return [];
 
-  return ['theory', 'example', 'question', 'media', 'summary', 'game', 'slidedeck']
+  return ['theory', 'example', 'question', 'media', 'summary', 'quiz', 'toets', 'game', 'slidedeck']
     .map((type) => ({ type, count: node.counts.blocks[type] || 0 }))
     .filter((item) => item.count > 0)
     .map((item) => `${CONTENT_BLOCK_LABELS[item.type][0]}${item.count}`);
@@ -345,7 +345,10 @@ export default function NavigationTree({
     () => ({
       vakken: vakken.length,
       paragrafen: paragrafen.length,
-      vragen: vragen.length,
+      vragen: vragen.length + contentBlocks.reduce((total, block) => {
+        if (block.isArchived === true || (block.type !== 'quiz' && block.type !== 'toets')) return total;
+        return total + (Array.isArray(block.content?.items) ? block.content.items.length : 0);
+      }, 0),
       blokken: contentBlocks.filter((block) => block.isArchived !== true).length
     }),
     [vakken.length, paragrafen.length, vragen.length, contentBlocks]

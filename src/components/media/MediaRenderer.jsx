@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, FileText, Maximize2, X } from 'lucide-react';
+import { ExternalLink, FileText, Link as LinkIcon, Maximize2, X } from 'lucide-react';
 import { MEDIA_KINDS, normalizeMediaContent, parseYouTubeUrl } from '../../lib/mediaUtils';
 
 const getYoutubeEmbedUrl = (url) => parseYouTubeUrl(url)?.embedUrl || '';
@@ -117,6 +117,26 @@ function MediaSurface({ mediaKind, mediaUrl, title, altText, fullscreen = false,
         title={title}
         className={`${frameClass} border-0 bg-white`}
       />
+    );
+  }
+
+  if (mediaKind === MEDIA_KINDS.LINK) {
+    return (
+      <div className={`${frameClass} flex flex-col items-center justify-center gap-3 bg-[var(--helix-surface-soft)] p-6 text-center`}>
+        <LinkIcon className="text-[var(--helix-purple)]" size={38} />
+        <p className="max-w-xl text-sm font-bold leading-6 text-[var(--helix-navy)]">
+          Deze media staat op een externe website.
+        </p>
+        <a
+          href={mediaUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-xl border border-[var(--helix-border)] bg-white px-4 py-2 text-sm font-black text-[var(--helix-navy)] shadow-sm transition hover:border-[var(--helix-purple)]/30 hover:bg-[var(--helix-soft-lavender)]"
+        >
+          <ExternalLink size={16} />
+          Open link
+        </a>
+      </div>
     );
   }
 

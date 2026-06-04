@@ -33,6 +33,7 @@ import {
   Gamepad2,
   GripVertical,
   Image,
+  Link as LinkIcon,
   Layers,
   Maximize2,
   Pencil,
@@ -97,7 +98,7 @@ const blockSelectorDescriptions = {
   question: 'Interactieve oefening',
   quiz: 'Speelse afsluitcheck',
   toets: 'Formele afsluiting',
-  media: 'Afbeelding, video of PDF',
+  media: 'Afbeelding, video, PDF of link',
   summary: 'Kernpunten',
   game: 'Educatieve game',
   slidedeck: 'Presentatie-PDF'
@@ -529,6 +530,7 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder, 
 
 const mediaKindOptions = [
   { value: MEDIA_KINDS.IMAGE, label: 'Afbeelding', accept: 'image/*' },
+  { value: MEDIA_KINDS.LINK, label: 'Link', accept: '' },
   { value: MEDIA_KINDS.YOUTUBE, label: 'YouTube', accept: '' },
   { value: MEDIA_KINDS.VIDEO, label: 'Video', accept: 'video/*,.mp4,.webm,.ogg,.ogv,.mov,.m4v' },
   { value: MEDIA_KINDS.PDF, label: 'PDF', accept: 'application/pdf' }
@@ -593,6 +595,17 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
     if (file) await uploadFile(new File([file], `geplakte-afbeelding-${Date.now()}.png`, { type: file.type }));
   };
 
+  const handleLinkChange = (value) => {
+    updateContent({
+      mediaKind: MEDIA_KINDS.LINK,
+      mediaUrl: value,
+      storagePath: '',
+      fileName: '',
+      contentType: 'text/external-url',
+      size: 0
+    });
+  };
+
   const handleYoutubeChange = (value) => {
     const parsed = parseYouTubeUrl(value);
     updateContent({
@@ -621,16 +634,22 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
       </div>
 
       <div className="mt-4 space-y-4">
-        {mediaKind === MEDIA_KINDS.YOUTUBE ? (
+        {mediaKind === MEDIA_KINDS.YOUTUBE || mediaKind === MEDIA_KINDS.LINK ? (
           <div>
-            <label className="mb-2 block text-sm font-bold text-slate-700">YouTube-link</label>
+            <label className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700">
+              {mediaKind === MEDIA_KINDS.LINK && <LinkIcon size={15} />}
+              {mediaKind === MEDIA_KINDS.YOUTUBE ? 'YouTube-link' : 'Externe link'}
+            </label>
             <input
               value={content.mediaUrl || ''}
-              onChange={(event) => handleYoutubeChange(event.target.value)}
+              onChange={(event) => {
+                if (mediaKind === MEDIA_KINDS.YOUTUBE) handleYoutubeChange(event.target.value);
+                else handleLinkChange(event.target.value);
+              }}
               className="input-standard w-full"
-              placeholder="https://www.youtube.com/watch?v=..."
+              placeholder={mediaKind === MEDIA_KINDS.YOUTUBE ? 'https://www.youtube.com/watch?v=...' : 'https://voorbeeld.nl/uitleg'}
             />
-            {content.mediaUrl && !parseYouTubeUrl(content.mediaUrl) && (
+            {mediaKind === MEDIA_KINDS.YOUTUBE && content.mediaUrl && !parseYouTubeUrl(content.mediaUrl) && (
               <p className="mt-2 text-xs font-bold text-red-600">Deze link lijkt geen geldige YouTube-link.</p>
             )}
           </div>

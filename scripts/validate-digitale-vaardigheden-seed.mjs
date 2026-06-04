@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { getGameById } from '../src/lib/gameRegistry.js';
+import { MEDIA_KINDS, parseYouTubeUrl } from '../src/lib/mediaUtils.js';
 
 const seedPath = path.resolve('docs/seeds/digitale-vaardigheden-vmbo1.seed.json');
 const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
@@ -34,6 +35,20 @@ for (const block of seed.contentBlocks || []) {
 
   if (block.type === 'toets' && block.settings?.allowAiHelp !== false) {
     fail(`${block.id} should disable Digidocent for toets/eindtoets`);
+  }
+
+  if (block.type === 'media') {
+    const mediaKind = block.content?.mediaKind;
+    const mediaUrl = block.content?.mediaUrl || '';
+    if (!Object.values(MEDIA_KINDS).includes(mediaKind)) {
+      fail(`${block.id} has unsupported mediaKind ${mediaKind}`);
+    }
+    if (mediaKind === MEDIA_KINDS.YOUTUBE && !parseYouTubeUrl(mediaUrl)) {
+      fail(`${block.id} marks a non-YouTube URL as youtube`);
+    }
+    if (mediaUrl && mediaKind === MEDIA_KINDS.IMAGE && !/\.(png|jpe?g|webp|gif)($|[?#])/i.test(mediaUrl)) {
+      fail(`${block.id} marks a non-image URL as image`);
+    }
   }
 
   const visibleContent = JSON.stringify({

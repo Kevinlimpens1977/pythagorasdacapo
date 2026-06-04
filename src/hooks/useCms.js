@@ -279,30 +279,35 @@ export const useCms = (includeArchived = false) => {
   }, [loadContentBlocks, loadVragen, selectedParagraafId]);
 
   const setVak = useCallback((vakId) => {
+    if (selectedVakId === vakId) return;
     setSelectedVakId(vakId);
     clearBelowVak();
-  }, [clearBelowVak]);
+  }, [clearBelowVak, selectedVakId]);
 
   const setLeerjaar = useCallback((leerjaarId) => {
+    if (selectedLeerjaarId === leerjaarId) return;
     setSelectedLeerjaarId(leerjaarId);
     clearBelowLeerjaar();
-  }, [clearBelowLeerjaar]);
+  }, [clearBelowLeerjaar, selectedLeerjaarId]);
 
   const setNiveau = useCallback((niveauId) => {
+    if (selectedNiveauId === niveauId) return;
     setSelectedNiveauId(niveauId);
     clearBelowNiveau();
-  }, [clearBelowNiveau]);
+  }, [clearBelowNiveau, selectedNiveauId]);
 
   const setHoofdstuk = useCallback((hoofdstukId) => {
+    if (selectedHoofdstukId === hoofdstukId) return;
     setSelectedHoofdstukId(hoofdstukId);
     setSelectedParagraafId(null);
     clearBelowParagraaf();
-  }, [clearBelowParagraaf]);
+  }, [clearBelowParagraaf, selectedHoofdstukId]);
 
   const setParagraaf = useCallback((paragraafId) => {
+    if (selectedParagraafId === paragraafId) return;
     setSelectedParagraafId(paragraafId);
     clearBelowParagraaf();
-  }, [clearBelowParagraaf]);
+  }, [clearBelowParagraaf, selectedParagraafId]);
 
   const setVraag = useCallback((vraagId) => {
     setSelectedVraagId(vraagId);

@@ -45,6 +45,12 @@ export const getContentBlockTypeCounts = (blocks = [], { includeArchived = false
   return counts;
 };
 
+export const getAssessmentItemCount = (blocks = [], { includeArchived = false } = {}) =>
+  visibleBlocks(blocks, includeArchived).reduce((count, block) => {
+    if (block.type !== 'quiz' && block.type !== 'toets') return count;
+    return count + (Array.isArray(block.content?.items) ? block.content.items.length : 0);
+  }, 0);
+
 const nodeMatchesQuery = (node, query) => {
   if (!query) return true;
   return normalizeText(`${node.label} ${node.searchText || ''}`).includes(query);
@@ -130,6 +136,7 @@ export const buildCmsNavigationTree = (
                   },
                   children: hoofdstukParagrafen.map((paragraaf) => {
                     const paragraafBlocks = visibleContentBlocks.filter((block) => block.paragraafId === paragraaf.id);
+                    const legacyVraagCount = visibleVragen.filter((vraag) => vraag.paragraafId === paragraaf.id).length;
 
                     return {
                       ...paragraaf,
@@ -137,7 +144,7 @@ export const buildCmsNavigationTree = (
                       archived: isCmsItemArchived(paragraaf),
                       label: getCmsItemLabel('paragraaf', paragraaf),
                       counts: {
-                        vragen: visibleVragen.filter((vraag) => vraag.paragraafId === paragraaf.id).length,
+                        vragen: legacyVraagCount + getAssessmentItemCount(paragraafBlocks, { includeArchived }),
                         blocks: getContentBlockTypeCounts(paragraafBlocks, { includeArchived })
                       },
                       searchText: visibleVragen

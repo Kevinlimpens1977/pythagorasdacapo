@@ -2,14 +2,16 @@ export const MEDIA_KINDS = {
   IMAGE: 'image',
   YOUTUBE: 'youtube',
   VIDEO: 'video',
-  PDF: 'pdf'
+  PDF: 'pdf',
+  LINK: 'link'
 };
 
 export const MEDIA_KIND_LABELS = {
   [MEDIA_KINDS.IMAGE]: 'Afbeelding',
   [MEDIA_KINDS.YOUTUBE]: 'YouTube',
   [MEDIA_KINDS.VIDEO]: 'Video',
-  [MEDIA_KINDS.PDF]: 'PDF'
+  [MEDIA_KINDS.PDF]: 'PDF',
+  [MEDIA_KINDS.LINK]: 'Link'
 };
 
 const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -44,7 +46,7 @@ export const inferMediaKind = ({ mediaKind, contentType, url } = {}) => {
   if (['mp4', 'webm', 'ogg', 'ogv', 'mov', 'm4v'].includes(extension)) return MEDIA_KINDS.VIDEO;
   if (extension === 'pdf') return MEDIA_KINDS.PDF;
 
-  return MEDIA_KINDS.IMAGE;
+  return url ? MEDIA_KINDS.LINK : MEDIA_KINDS.IMAGE;
 };
 
 export const getMediaKindFromFile = (file = {}) => {

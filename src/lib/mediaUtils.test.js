@@ -75,3 +75,10 @@ test('normalizeMediaContent supports uploaded video aliases', () => {
     }
   );
 });
+
+test('normalizeMediaContent treats normal web pages as external links', () => {
+  assert.equal(
+    normalizeMediaContent({ mediaUrl: 'https://schooltv.nl/video-item/wat-is-phishing' }).mediaKind,
+    MEDIA_KINDS.LINK
+  );
+});

@@ -10,6 +10,16 @@ const gameIdForTitle = (title) => `dv-${slug(title)}`;
 
 const media = (url, label, kijkvraag) => ({ url, label, kijkvraag });
 
+const mediaKindForUrl = (url = '') => {
+  const value = String(url || '').trim();
+  if (!value) return 'image';
+  if (/youtube\.com|youtu\.be/i.test(value)) return 'youtube';
+  if (/\.pdf($|[?#])/i.test(value)) return 'pdf';
+  if (/\.(png|jpe?g|webp|gif)($|[?#])/i.test(value)) return 'image';
+  if (/\.(mp4|webm|ogg|ogv|mov|m4v)($|[?#])/i.test(value)) return 'video';
+  return 'link';
+};
+
 const lessons = [
   {
     chapter: 1,
@@ -399,7 +409,7 @@ const buildBlocks = (chapter, paragraph) => {
       title: paragraph.media.label || 'Media',
       content: {
         html: html([`Kijkvraag: ${paragraph.media.kijkvraag}`]),
-        mediaKind: paragraph.media.url ? 'youtube' : 'image',
+        mediaKind: mediaKindForUrl(paragraph.media.url),
         mediaUrl: paragraph.media.url || '',
         caption: paragraph.media.kijkvraag,
         altText: paragraph.media.label || ''
