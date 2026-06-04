@@ -48,7 +48,7 @@ test('admin header active nav uses the Border Signal gradient border style', () 
 
 test('admin logo opens the lesson workspace instead of settings', () => {
   assert.match(appShell, /const handleLogoClick = \(\) =>/);
-  assert.match(appShell, /navigate\(isAdmin \? '\/admin\/cms' : '\/'\)/);
+  assert.match(appShell, /navigate\(isAdmin \? '\/admin\/lesstof' : '\/'\)/);
   assert.match(appShell, /aria-label=\{isAdmin \? 'Ga naar Lesstof' : 'Ga naar HELIX start'\}/);
 });
 

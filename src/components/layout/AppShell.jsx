@@ -69,7 +69,7 @@ export default function AppShell() {
   };
 
   const handleLogoClick = () => {
-    navigate(isAdmin ? '/admin/cms' : '/');
+    navigate(isAdmin ? '/admin/lesstof' : '/');
   };
 
   return (
