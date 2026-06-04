@@ -8,6 +8,9 @@ const emptyQualityCounts = () => ({
   inProgress: 0
 });
 
+const FAILED_PARAGRAPH_SIGNAL_THRESHOLD = 0.4;
+const MIN_ASSESSED_QUESTIONS_FOR_FAILED_SIGNAL = 3;
+
 const normalizeSummary = (summary = {}) => ({
   assignedItems: Number(summary.assignedItems || 0),
   startedItems: Number(summary.startedItems || 0),
@@ -55,9 +58,43 @@ export const summarizeLearningQuality = (records = []) => {
   };
 };
 
+const getParagraphSignalKey = (record = {}) =>
+  record.paragraafId ||
+  record.paragraphId ||
+  record.paragraafDocId ||
+  record.paragraafTitle ||
+  '__single_paragraph__';
+
+const getFailedParagraphSignalCount = (records = [], { allowCompletedShortcut = false, summary = {} } = {}) => {
+  const normalizedSummary = normalizeSummary(summary);
+  const paragraphBuckets = new Map();
+
+  records
+    .filter(isQuestionLikeRecord)
+    .forEach((record) => {
+      const bucket = getTierBucket(record);
+      const isAssessed = bucket === 'failed' || bucket === 'guided' || bucket === 'independent';
+      if (!isAssessed) return;
+
+      const key = getParagraphSignalKey(record);
+      const current = paragraphBuckets.get(key) || { assessed: 0, failed: 0 };
+      current.assessed += 1;
+      if (bucket === 'failed') current.failed += 1;
+      paragraphBuckets.set(key, current);
+    });
+
+  return [...paragraphBuckets.values()].filter(({ assessed, failed }) => {
+    if (!assessed) return false;
+    const enoughEvidence = assessed >= MIN_ASSESSED_QUESTIONS_FOR_FAILED_SIGNAL ||
+      (allowCompletedShortcut && normalizedSummary.percentage === 100);
+    return enoughEvidence && failed / assessed > FAILED_PARAGRAPH_SIGNAL_THRESHOLD;
+  }).length;
+};
+
 const summarizeAttention = ({ summary = {}, records = [] } = {}) => {
   const normalizedSummary = normalizeSummary(summary);
   const quality = summarizeLearningQuality(records);
+  const failed = getFailedParagraphSignalCount(records, { summary: normalizedSummary });
   const stuck = records.filter((record) => {
     if (record.completed === true) return false;
     const attempts = Number(record.attempts || 0);
@@ -68,12 +105,12 @@ const summarizeAttention = ({ summary = {}, records = [] } = {}) => {
   const notStarted = normalizedSummary.assignedItems > 0 && normalizedSummary.startedItems === 0 ? 1 : 0;
 
   return {
-    failed: quality.counts.failed,
+    failed,
     pendingTeacherReview: quality.counts.pendingTeacherReview,
     stuck,
     staleDraft,
     notStarted,
-    total: quality.counts.failed + quality.counts.pendingTeacherReview + stuck + staleDraft + notStarted
+    total: failed + quality.counts.pendingTeacherReview + stuck + staleDraft
   };
 };
 
@@ -86,9 +123,6 @@ const getNextAction = (attention) => {
   }
   if (attention.stuck > 0) {
     return { type: 'help_now', label: 'Kort helpen', priority: 3 };
-  }
-  if (attention.notStarted > 0) {
-    return { type: 'not_started', label: 'Nog niet gestart', priority: 4 };
   }
   if (attention.staleDraft > 0) {
     return { type: 'check_later', label: 'Check later', priority: 5 };
@@ -191,7 +225,7 @@ export const buildClassMetricCards = (metrics = {}) => {
       key: 'quality',
       label: 'Klasbeheersing',
       value: `${qualityCounts.independent}/${qualityTotal}`,
-      detail: `${qualityCounts.guided} met Digidocent, ${qualityCounts.failed + qualityCounts.pendingTeacherReview} aandacht`,
+      detail: `${qualityCounts.guided} met Digidocent, ${metrics.attention?.recordCount || 0} signalen`,
       tone: 'quality'
     },
     {
@@ -228,7 +262,7 @@ export const buildStudentMetricCards = (metrics = {}) => {
       key: 'quality',
       label: 'Leerkwaliteit',
       value: `${qualityCounts.independent} zelfstandig`,
-      detail: `${qualityCounts.guided} met Digidocent, ${qualityCounts.failed + qualityCounts.pendingTeacherReview} aandacht`,
+      detail: `${qualityCounts.guided} met Digidocent, ${attentionTotal} signalen`,
       tone: 'quality'
     }
   ];
@@ -297,11 +331,14 @@ export const buildParagraphProgressSummary = ({ summary = {}, records = [], para
   const route = normalizeSummary(summary);
   const quality = summarizeLearningQuality(paragraphRecords);
   const attention = summarizeAttention({ summary: route, records: paragraphRecords });
+  const failed = getFailedParagraphSignalCount(paragraphRecords, {
+    allowCompletedShortcut: true,
+    summary: route
+  });
   const statusLabel = (() => {
-    if (attention.failed > 0) return 'Herstel nodig';
+    if (failed > 0) return 'Herstel nodig';
     if (attention.pendingTeacherReview > 0) return 'Docent kijkt mee';
     if (attention.stuck > 0) return 'Bijna vast';
-    if (attention.notStarted > 0) return 'Nog niet gestart';
     if (route.percentage === 100) return 'Afgerond';
     if (route.startedItems > 0) return 'Bezig';
     return 'Nog niet gestart';
@@ -309,11 +346,14 @@ export const buildParagraphProgressSummary = ({ summary = {}, records = [], para
 
   return {
     statusLabel,
-    signalCount: attention.failed + attention.pendingTeacherReview + attention.stuck,
+    signalCount: failed + attention.pendingTeacherReview + attention.stuck,
     evidenceCount: paragraphRecords.length,
     qualityLabel: `${quality.counts.independent} zelfstandig, ${quality.counts.guided} met Digidocent`,
     quality,
-    attention
+    attention: {
+      ...attention,
+      failed
+    }
   };
 };
 

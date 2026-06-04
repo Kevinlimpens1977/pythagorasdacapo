@@ -76,8 +76,9 @@ test('buildStudentProgressMetrics prioritizes teacher action over route percenta
       startedPercentage: 80
     },
     records: [
-      { completed: true, isCorrect: true, aiHelpCount: 0, blockType: 'vraag' },
-      { completed: true, isCorrect: false, resultTier: 'failed', attempts: 4, maxAttempts: 4, blockType: 'vraag' }
+      { paragraafId: 'p1', completed: true, isCorrect: true, aiHelpCount: 0, blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', attempts: 4, maxAttempts: 4, blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', attempts: 4, maxAttempts: 4, blockType: 'vraag' }
     ]
   });
 
@@ -87,7 +88,7 @@ test('buildStudentProgressMetrics prioritizes teacher action over route percenta
   assert.equal(metrics.attention.total, 1);
 });
 
-test('buildStudentProgressMetrics detects not-started assigned work without treating inactive completed students as urgent', () => {
+test('buildStudentProgressMetrics keeps not-started assigned work out of teacher signals', () => {
   const notStarted = buildStudentProgressMetrics({
     summary: {
       assignedItems: 5,
@@ -109,10 +110,45 @@ test('buildStudentProgressMetrics detects not-started assigned work without trea
     records: [{ completed: true, isCorrect: true, aiHelpCount: 0, blockType: 'vraag' }]
   });
 
-  assert.equal(notStarted.nextAction.type, 'not_started');
+  assert.equal(notStarted.nextAction.type, 'continue');
   assert.equal(notStarted.attention.notStarted, 1);
+  assert.equal(notStarted.attention.total, 0);
   assert.equal(completed.nextAction.type, 'continue');
   assert.equal(completed.attention.total, 0);
+});
+
+test('buildStudentProgressMetrics only flags remediation after more than forty percent failed in a paragraph', () => {
+  const oneLooseMistake = buildStudentProgressMetrics({
+    summary: { assignedItems: 5, startedItems: 2, completedItems: 2, percentage: 40 },
+    records: [
+      { paragraafId: 'p1', completed: true, isCorrect: true, resultTier: 'independent', blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' }
+    ]
+  });
+
+  const belowThreshold = buildStudentProgressMetrics({
+    summary: { assignedItems: 5, startedItems: 5, completedItems: 5, percentage: 100 },
+    records: [
+      { paragraafId: 'p1', completed: true, isCorrect: true, resultTier: 'independent', blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: true, resultTier: 'guided', blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' }
+    ]
+  });
+
+  const aboveThreshold = buildStudentProgressMetrics({
+    summary: { assignedItems: 5, startedItems: 5, completedItems: 5, percentage: 100 },
+    records: [
+      { paragraafId: 'p1', completed: true, isCorrect: true, resultTier: 'independent', blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' }
+    ]
+  });
+
+  assert.equal(oneLooseMistake.attention.failed, 0);
+  assert.equal(oneLooseMistake.attention.total, 0);
+  assert.equal(belowThreshold.attention.failed, 0);
+  assert.equal(aboveThreshold.attention.failed, 1);
+  assert.equal(aboveThreshold.nextAction.type, 'remediation');
 });
 
 test('buildClassProgressMetrics counts unique attention students and keeps median progress visible', () => {
@@ -130,21 +166,22 @@ test('buildClassProgressMetrics counts unique attention students and keeps media
     },
     recordsByStudentId: {
       s1: [
-        { completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' },
-        { completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' }
+        { paragraafId: 'p1', completed: true, isCorrect: true, resultTier: 'independent', blockType: 'vraag' },
+        { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' },
+        { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' }
       ],
       s2: [{ completed: true, isCorrect: true, aiHelpCount: 1, blockType: 'vraag' }],
       s3: []
     }
   });
 
-  assert.equal(metrics.attention.studentCount, 2);
-  assert.equal(metrics.attention.recordCount, 2);
+  assert.equal(metrics.attention.studentCount, 1);
+  assert.equal(metrics.attention.recordCount, 1);
   assert.equal(metrics.progress.averagePercentage, 47);
   assert.equal(metrics.progress.medianPercentage, 50);
   assert.equal(metrics.progress.belowFortyCount, 1);
   assert.deepEqual(metrics.quality.counts, {
-    independent: 0,
+    independent: 1,
     guided: 1,
     failed: 2,
     pendingTeacherReview: 0,
@@ -171,6 +208,7 @@ test('buildClassMetricCards turns class metrics into the three teacher-facing to
   assert.deepEqual(cards.map((card) => card.label), ['Nu aandacht', 'Klasbeheersing', 'Lesvoortgang']);
   assert.equal(cards[0].value, '3');
   assert.equal(cards[1].value, '6/12');
+  assert.equal(cards[1].detail, '3 met Digidocent, 5 signalen');
   assert.equal(cards[2].detail, 'Gem. 64%, 2 onder 40%');
 });
 
@@ -194,7 +232,7 @@ test('buildStudentMetricCards turns student metrics into next action, route and 
   assert.deepEqual(cards.map((card) => card.label), ['Volgende actie', 'Routepositie', 'Leerkwaliteit']);
   assert.equal(cards[0].value, 'Antwoord beoordelen');
   assert.equal(cards[1].value, '7/10');
-  assert.equal(cards[2].detail, '2 met Digidocent, 2 aandacht');
+  assert.equal(cards[2].detail, '2 met Digidocent, 2 signalen');
 });
 
 test('buildDashboardLensTabs exposes the four teacher lenses with one active tab', () => {
@@ -211,7 +249,7 @@ test('buildParagraphProgressSummary summarizes paragraph status without exposing
     paragraafId: 'p1',
     records: [
       { paragraafId: 'p1', completed: true, isCorrect: true, aiHelpCount: 0, blockType: 'vraag' },
-      { paragraafId: 'p1', completed: true, isCorrect: true, aiHelpCount: 1, blockType: 'vraag' },
+      { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' },
       { paragraafId: 'p1', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' },
       { paragraafId: 'p2', completed: true, isCorrect: false, resultTier: 'failed', blockType: 'vraag' }
     ]
@@ -220,7 +258,7 @@ test('buildParagraphProgressSummary summarizes paragraph status without exposing
   assert.equal(summary.statusLabel, 'Herstel nodig');
   assert.equal(summary.signalCount, 1);
   assert.equal(summary.evidenceCount, 3);
-  assert.equal(summary.qualityLabel, '1 zelfstandig, 1 met Digidocent');
+  assert.equal(summary.qualityLabel, '1 zelfstandig, 0 met Digidocent');
 });
 
 test('getVisibleStudentProgressParagraphs hides paragraphs without assigned work for the selected student', () => {
