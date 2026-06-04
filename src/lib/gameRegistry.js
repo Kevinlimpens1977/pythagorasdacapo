@@ -41,55 +41,85 @@ export const GAME_REGISTRY = [
     status: GAME_STATUSES.PROTOTYPE
   },
   {
-    gameId: 'breuken-sprint',
-    title: 'Breuken Sprint',
-    description: 'Placeholder voor een snelle oefenvorm rond breuken vereenvoudigen en vergelijken.',
-    subject: 'Wiskunde',
-    topic: 'Breuken',
+    gameId: 'dv-account-escape',
+    title: 'Account Escape',
+    description: 'Placeholder voor een escape-oefening rond HELIX, OneDrive, Outlook, school-ELO en veilig uitloggen.',
+    subject: 'Digitale vaardigheden',
+    topic: 'Schoolaccount en digitale schooltas',
     level: 'VMBO leerjaar 1',
-    learningGoals: [
-      'Breuken herkennen en vergelijken',
-      'Eenvoudige breuken vereenvoudigen',
-      'Snelheid combineren met nauwkeurigheid'
-    ],
-    skills: ['hoofdrekenen', 'patroonherkenning', 'tempo'],
-    estimatedMinutes: 4,
-    route: '/admin/spellen/breuken-sprint',
-    componentKey: 'placeholder',
-    cmsEmbeddable: false,
-    supportedModes: [GAME_MODES.STANDALONE],
-    tokenRewardPotential: {
-      min: 0,
-      max: 15,
-      basis: 'accuracy'
-    },
-    status: GAME_STATUSES.PLANNED
-  },
-  {
-    gameId: 'begrippen-match',
-    title: 'Begrippen Match',
-    description: 'Placeholder voor een koppelspel waarin leerlingen begrippen aan voorbeelden verbinden.',
-    subject: 'Algemeen',
-    topic: 'Begrippen oefenen',
-    level: 'VMBO onderbouw',
-    learningGoals: [
-      'Belangrijke begrippen actief ophalen',
-      'Voorbeelden aan definities koppelen',
-      'Misvattingen zichtbaar maken'
-    ],
-    skills: ['begrijpend lezen', 'classificeren', 'feedback verwerken'],
+    learningGoals: ['Schoolapps herkennen', 'Veilig inloggen en uitloggen', 'Digitale startproblemen oplossen'],
+    skills: ['navigeren', 'accountveiligheid', 'probleemoplossend werken'],
     estimatedMinutes: 5,
-    route: '/admin/spellen/begrippen-match',
+    route: '/admin/spellen/dv-account-escape',
     componentKey: 'placeholder',
     cmsEmbeddable: true,
     supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
-    tokenRewardPotential: {
-      min: 0,
-      max: 20,
-      basis: 'completion'
-    },
+    tokenRewardPotential: { min: 0, max: 10, basis: 'completion' },
     status: GAME_STATUSES.PLANNED
-  }
+  },
+  {
+    gameId: 'dv-password-lab',
+    title: 'Password Lab',
+    description: 'Placeholder waarin leerlingen nepwachtwoorden rangschikken van zwak naar sterk.',
+    subject: 'Digitale vaardigheden',
+    topic: 'Wachtwoorden',
+    level: 'VMBO leerjaar 1',
+    learningGoals: ['Sterke wachtwoordzinnen herkennen', 'Onveilige patronen vermijden', 'Accountregels toepassen'],
+    skills: ['veilig handelen', 'classificeren'],
+    estimatedMinutes: 5,
+    route: '/admin/spellen/dv-password-lab',
+    componentKey: 'placeholder',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 10, basis: 'accuracy_completion' },
+    status: GAME_STATUSES.PLANNED
+  },
+  ...[
+    ['dv-hardware-hunt', 'Hardware Hunt', 'Koppel hardware, software, invoer en uitvoer aan de juiste functie.', 'Device, hardware en software'],
+    ['dv-bestandenrace', 'Bestandenrace', 'Kies per schoolvoorbeeld de beste map en bestandsnaam.', 'Bestanden organiseren'],
+    ['dv-phishing-detective', 'Phishing Detective', 'Klik verdachte plekken aan in fictieve berichten.', 'Phishing herkennen'],
+    ['dv-schoolstart-escape', 'Schoolstart Escape', 'Los vijf kamers op: account, OneDrive, Outlook, bestanden en phishing.', 'Checkpoint veilig starten'],
+    ['dv-opmaakdokter', 'Opmaakdokter', 'Verbeter veelvoorkomende opmaakfouten in een schooldocument.', 'Word-documenten'],
+    ['dv-plagiaatpolitie', 'Plagiaatpolitie', 'Beoordeel zinnen als eigen woorden, citaat of kopie zonder bron.', 'Bronnen en plagiaat'],
+    ['dv-dia-dokter', 'Dia Dokter', 'Kies verbeteringen voor drukke of onduidelijke dia’s.', 'PowerPoint'],
+    ['dv-pitchtimer', 'Pitchtimer', 'Oefen een korte uitleg zonder alles voor te lezen.', 'Presenteren'],
+    ['dv-deelrechten-duel', 'Deelrechten Duel', 'Kies per situatie de juiste deelrechten.', 'Samenwerken met OneDrive'],
+    ['dv-microsoft-maker-challenge', 'Microsoft Maker Challenge', 'Vind fouten in document, dia, mail en deelinstelling.', 'Checkpoint Microsoft tools'],
+    ['dv-privacy-thermometer', 'Privacy Thermometer', 'Sorteer privacy-scenario’s in groen, oranje of rood.', 'Privacy'],
+    ['dv-feed-sorteerspel', 'Feed Sorteerspel', 'Stuur een fictieve feed en zie hoe keuzes aanbevelingen veranderen.', 'Social media algoritmes'],
+    ['dv-bronbattle', 'Bronbattle', 'Rangschik bronnen op betrouwbaarheid en bewijs.', 'Bronnen beoordelen'],
+    ['dv-grenzenkompas', 'Grenzenkompas', 'Kies bij online scenario’s: oké, twijfel, niet oké of hulp nodig.', 'Cyberpesten en grenzen'],
+    ['dv-webshop-inspecteur', 'Webshop Inspecteur', 'Vind signalen in fictieve webshops en bepaal veilig, twijfel of niet kopen.', 'Online shoppen'],
+    ['dv-mediawijs-boss', 'Mediawijs Boss', 'Combineer privacy, broncheck, groepschat en kooplink in één boss-level.', 'Checkpoint mediawijsheid'],
+    ['dv-tabel-tetris', 'Tabel Tetris', 'Sleep gegevens naar de juiste Excel-kolommen.', 'Excel-tabellen'],
+    ['dv-formule-fixer', 'Formule Fixer', 'Repareer foute Excel-formules.', 'Excel-formules'],
+    ['dv-grafiek-judge', 'Grafiek Judge', 'Beoordeel grafieken op duidelijkheid en eerlijkheid.', 'Grafieken'],
+    ['dv-data-spoorzoeker', 'Data Spoorzoeker', 'Volg dataspuren door een gewone schooldag.', 'Data en privacy'],
+    ['dv-claim-checker', 'Claim Checker', 'Sorteer claims in sterk bewijs, twijfel of zwak bewijs.', 'Claims en data'],
+    ['dv-dashboard-dash', 'Dashboard Dash', 'Kies de beste visualisatie bij een onderzoeksvraag.', 'Data-dashboard'],
+    ['dv-prompt-duel', 'Prompt Duel', 'Kies en verbeter prompts voor een AI-chatbot.', 'AI en prompts'],
+    ['dv-echt-nep-of-twijfel', 'Echt, nep of twijfel?', 'Verzamel bewijschecks bij AI-beelden en deepfakes.', 'AI-beelden'],
+    ['dv-algoritme-estafette', 'Algoritme Estafette', 'Leg stappenkaarten in de juiste volgorde en test het algoritme.', 'Algoritmes'],
+    ['dv-debug-sprint', 'Debug Sprint', 'Vind fouten in mini-programma’s en verbeter de stap.', 'Programmeren en debuggen'],
+    ['dv-portfolio-quest', 'Portfolio Quest', 'Verzamel bewijsstukken voor badges en herstel ontbrekende onderdelen.', 'Portfolio'],
+    ['dv-certificaat-quest-finale', 'Certificaat Quest Finale', 'Beantwoord portfoliovragen en geef feedback tijdens de eindexpo.', 'Eindexpo']
+  ].map(([gameId, title, description, topic]) => ({
+    gameId,
+    title,
+    description: `Placeholder: ${description}`,
+    subject: 'Digitale vaardigheden',
+    topic,
+    level: 'VMBO leerjaar 1',
+    learningGoals: ['Begrippen toepassen', 'Keuzes uitleggen', 'Lesstof actief herhalen'],
+    skills: ['digitale geletterdheid', 'kritisch denken', 'feedback verwerken'],
+    estimatedMinutes: 5,
+    route: `/admin/spellen/${gameId}`,
+    componentKey: 'placeholder',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: gameId.includes('checkpoint') || gameId.includes('boss') || gameId.includes('finale') ? 20 : 10, basis: 'completion' },
+    status: GAME_STATUSES.PLANNED
+  }))
 ];
 
 export const getGameById = (gameId) => {

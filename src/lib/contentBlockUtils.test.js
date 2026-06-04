@@ -24,9 +24,24 @@ test('normalizeContentBlocks filters archived blocks and sorts by order', () => 
   assert.deepEqual(blocks.map((block) => block.id), ['a', 'b']);
 });
 
-test('normalizeContentBlockSettings enables Digidocent by default only for question blocks', () => {
+test('normalizeContentBlockSettings enables Digidocent by default for answer practice blocks but never enables math toolbox', () => {
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'question'), {
     allowAiHelp: true,
+    allowMathToolbox: false
+  });
+
+  assert.deepEqual(normalizeContentBlockSettings(undefined, 'quiz'), {
+    allowAiHelp: true,
+    allowMathToolbox: false
+  });
+
+  assert.deepEqual(normalizeContentBlockSettings({ allowMathToolbox: true, allowCalculator: true }, 'quiz'), {
+    allowAiHelp: true,
+    allowMathToolbox: false
+  });
+
+  assert.deepEqual(normalizeContentBlockSettings(undefined, 'toets'), {
+    allowAiHelp: false,
     allowMathToolbox: false
   });
 
@@ -154,6 +169,8 @@ test('blockToSlide maps supported content block types to slide types', () => {
   assert.equal(blockToSlide({ id: 'example-1', type: 'example' }).type, 'demo_exercise');
   assert.equal(blockToSlide({ id: 'media-1', type: 'media' }).type, 'theory');
   assert.equal(blockToSlide({ id: 'summary-1', type: 'summary' }).type, 'summary');
+  assert.equal(blockToSlide({ id: 'quiz-1', type: 'quiz', content: { items: [{ id: 'q1' }] } }).type, 'quiz');
+  assert.equal(blockToSlide({ id: 'toets-1', type: 'toets', content: { items: [{ id: 't1' }] } }).type, 'toets');
   assert.equal(blockToSlide({ id: 'game-1', type: 'game', content: { gameId: 'pythagoras-trainer' } }).type, 'game');
   assert.equal(blockToSlide({ id: 'deck-1', type: 'slidedeck', content: { generatedDeckUrl: 'https://example.test/deck.pdf' } }).type, 'slidedeck');
 });
@@ -190,6 +207,42 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
     html: '',
     gameId: '',
     settings: {},
+    crops: []
+  });
+
+  assert.deepEqual(getDefaultContentForBlockType('quiz'), {
+    html: '',
+    assessmentType: 'quiz',
+    items: [],
+    attemptPolicy: {
+      maxAttempts: null,
+      scoring: 'best',
+      allowTeacherReset: true
+    },
+    tokenConfig: {
+      enabled: true,
+      totalTokens: 15
+    },
+    sourceBasis: [],
+    sourceNotes: '',
+    crops: []
+  });
+
+  assert.deepEqual(getDefaultContentForBlockType('toets'), {
+    html: '',
+    assessmentType: 'toets',
+    items: [],
+    attemptPolicy: {
+      maxAttempts: 2,
+      scoring: 'best',
+      allowTeacherReset: true
+    },
+    tokenConfig: {
+      enabled: true,
+      totalTokens: 25
+    },
+    sourceBasis: [],
+    sourceNotes: '',
     crops: []
   });
 
@@ -261,6 +314,14 @@ test('buildContentBlockPreview shows useful route card text', () => {
       content: { deckTitle: 'Digitale vaardigheden' }
     }),
     'Digitale vaardigheden'
+  );
+
+  assert.equal(
+    buildContentBlockPreview({
+      type: 'quiz',
+      content: { items: [{ id: 'q1' }, { id: 'q2' }], tokenConfig: { totalTokens: 15 } }
+    }),
+    '2 items · 15 tokens'
   );
 
   assert.equal(

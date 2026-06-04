@@ -84,6 +84,8 @@ const blockIcons = {
   theory: BookOpen,
   example: Layers3,
   question: CheckCircle2,
+  quiz: CheckCircle2,
+  toets: FileText,
   media: Image,
   summary: FileText,
   game: Gamepad2,
@@ -694,6 +696,8 @@ function LessonBlockContent({
           <GameBlock block={block} onComplete={onGameComplete} />
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
+        ) : block.type === 'quiz' || block.type === 'toets' ? (
+          <AssessmentLearningBlock block={block} bodyHtml={bodyHtml} />
         ) : block.type === 'question' ? (
           <QuestionLearningBlock
             key={block.id}
@@ -2115,6 +2119,57 @@ function SlidedeckBlock({ block, onOpen }) {
         <PlayCircle size={18} />
         Presentatie openen
       </button>
+    </div>
+  );
+}
+
+function AssessmentLearningBlock({ block, bodyHtml }) {
+  const content = block.content || {};
+  const items = Array.isArray(content.items) ? content.items : [];
+  const isToets = block.type === 'toets';
+  const tokenTotal = Number(content.tokenConfig?.totalTokens || block.tokenTotal || 0);
+
+  return (
+    <div className="space-y-6">
+      <div className={`rounded-3xl border p-6 ${isToets ? 'border-blue-100 bg-blue-50 text-blue-950' : 'border-emerald-100 bg-emerald-50 text-emerald-950'}`}>
+        <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
+        <h3 className="mt-2 font-display text-2xl font-extrabold">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
+        {bodyHtml && (
+          <div
+            className="prose prose-sm mt-4 max-w-none"
+            dangerouslySetInnerHTML={htmlValue(bodyHtml)}
+          />
+        )}
+        <p className="mt-4 text-sm font-bold">
+          {items.length} {items.length === 1 ? 'vraag' : 'vragen'}
+          {tokenTotal ? ` · ${tokenTotal} tokens` : ''}
+          {isToets ? ' · Digidocent uit' : ' · Digidocent beschikbaar bij uitwerking'}
+        </p>
+      </div>
+
+      {items.length > 0 && (
+        <div className="space-y-3">
+          {items.map((item, index) => (
+            <div key={item.id || `${block.id}-item-${index}`} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">
+                <span>Vraag {index + 1}</span>
+                {item.type && <span>· {item.type}</span>}
+                {Number(item.tokens) > 0 && <span>· {item.tokens} tokens</span>}
+              </div>
+              <p className="mt-2 text-base font-bold leading-7 text-[var(--helix-navy)]">{item.prompt || item.question || 'Vraag wordt nog ingevuld.'}</p>
+              {Array.isArray(item.options) && item.options.length > 0 && (
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {item.options.map((option, optionIndex) => (
+                    <li key={option.id || `${item.id}-option-${optionIndex}`} className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold text-[var(--helix-muted)]">
+                      {typeof option === 'string' ? option : option.text}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,8 @@ export const CONTENT_BLOCK_TYPES = [
   'theory',
   'example',
   'question',
+  'quiz',
+  'toets',
   'media',
   'summary',
   'game',
@@ -14,6 +16,8 @@ export const CONTENT_BLOCK_LABELS = {
   theory: 'Theorie',
   example: 'Voorbeeld',
   question: 'Vraag',
+  quiz: 'Quiz',
+  toets: 'Toets',
   media: 'Media',
   summary: 'Samenvatting',
   game: 'Game',
@@ -26,8 +30,8 @@ export const DEFAULT_CONTENT_BLOCK_SETTINGS = {
 };
 
 export const normalizeContentBlockSettings = (settings = {}, blockType = '') => ({
-  allowAiHelp: settings.allowAiHelp ?? (blockType === 'question' ? true : DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp),
-  allowMathToolbox: settings.allowMathToolbox ?? settings.allowCalculator ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowMathToolbox
+  allowAiHelp: settings.allowAiHelp ?? (['question', 'quiz'].includes(blockType) ? true : DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp),
+  allowMathToolbox: false
 });
 
 export const buildContentBlockFromSnapshot = (snapshot) => {
@@ -63,6 +67,26 @@ export const getDefaultContentForBlockType = (type) => {
 
   if (type === 'question') {
     return { html: '', exercise: { fields: [] }, crops: [] };
+  }
+
+  if (type === 'quiz' || type === 'toets') {
+    return {
+      html: '',
+      assessmentType: type,
+      items: [],
+      attemptPolicy: {
+        maxAttempts: type === 'quiz' ? null : 2,
+        scoring: 'best',
+        allowTeacherReset: true
+      },
+      tokenConfig: {
+        enabled: true,
+        totalTokens: type === 'quiz' ? 15 : 25
+      },
+      sourceBasis: [],
+      sourceNotes: '',
+      crops: []
+    };
   }
 
   if (type === 'game') {
@@ -223,6 +247,13 @@ export const buildContentBlockPreview = (block = {}) => {
     return block.linkedVraagTitle || (block.linkedVraagId ? `Gekoppelde vraag: ${block.linkedVraagId}` : 'Nog geen vraag gekoppeld');
   }
 
+  if (block.type === 'quiz' || block.type === 'toets') {
+    const count = Array.isArray(block.content?.items) ? block.content.items.length : 0;
+    const tokenTotal = Number(block.content?.tokenConfig?.totalTokens || block.tokenTotal || 0);
+    const itemText = count === 1 ? '1 item' : `${count} items`;
+    return [itemText, tokenTotal ? `${tokenTotal} tokens` : ''].filter(Boolean).join(' · ');
+  }
+
   if (block.type === 'game') {
     return block.content?.gameTitle || block.content?.gameId || 'Nog geen game gekozen';
   }
@@ -308,6 +339,15 @@ export const blockToSlide = (block) => {
       ...base,
       type: 'exercise',
       exercise: block.content?.exercise || { fields: [] }
+    };
+  }
+
+  if (block.type === 'quiz' || block.type === 'toets') {
+    return {
+      ...base,
+      type: block.type,
+      assessmentType: block.content?.assessmentType || block.type,
+      itemCount: Array.isArray(block.content?.items) ? block.content.items.length : 0
     };
   }
 
