@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlockBuilder.jsx', import.meta.url), 'utf8');
 
 const getCssRule = (selector) => {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -64,6 +65,21 @@ test('secondary studio buttons use the Border Signal gradient on hover and focus
   assert.doesNotMatch(secondaryRule, /var\(--helix-gradient-border\) border-box/);
   assert.match(hoverRule, /var\(--helix-gradient-border\) border-box/);
   assert.match(focusRule, /var\(--helix-gradient-border\) border-box/);
+});
+
+test('lesblok studio toolbar controls use compact outline states instead of filled gradients', () => {
+  const controlRule = getCssRule('.studio-toolbar-control');
+  const activeRule = getCssRule('.studio-toolbar-control-active');
+  const hoverRule = getCssRule('.studio-toolbar-control:hover');
+
+  assert.match(controlRule, /border:\s*2px solid transparent/);
+  assert.match(controlRule, /linear-gradient\(#dfe5ee,\s*#dfe5ee\) border-box/);
+  assert.doesNotMatch(controlRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(activeRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
+  assert.match(hoverRule, /var\(--helix-gradient-border\) border-box/);
+  assert.doesNotMatch(contentBlockBuilder, /helix-gradient text-white/);
+  assert.match(contentBlockBuilder, /studio-toolbar-control/);
 });
 
 test('presenter chrome uses the shared soft toolbar surface', () => {

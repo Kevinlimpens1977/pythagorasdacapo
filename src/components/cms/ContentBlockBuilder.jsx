@@ -297,7 +297,7 @@ const InlineTitleEditor = ({ label, value, onSave }) => {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-bold text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)]"
+              className="btn-secondary w-auto px-3 py-2 text-xs"
             >
               <X size={14} />
               Annuleer
@@ -306,7 +306,7 @@ const InlineTitleEditor = ({ label, value, onSave }) => {
               type="button"
               onClick={saveTitle}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--helix-navy)] px-3 py-2 text-xs font-bold text-white hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
+              className="btn-primary w-auto px-3 py-2 text-xs disabled:cursor-wait disabled:opacity-60"
             >
               <Check size={14} />
               {saving ? 'Opslaan...' : 'Opslaan'}
@@ -337,12 +337,15 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
     editor.chain().focus().setFontFamily(value).run();
   };
 
+  const toolbarControlClass = (active = false, extra = '') =>
+    `studio-toolbar-control ${active ? 'studio-toolbar-control-active' : ''} ${extra}`.trim();
+
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`rounded-md px-2.5 py-1 text-sm font-black ${editor.isActive('bold') ? 'helix-gradient text-white' : 'bg-white text-slate-700'}`}
+        className={toolbarControlClass(editor.isActive('bold'), 'font-black')}
         title="Vet"
       >
         B
@@ -350,7 +353,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`rounded-md px-2.5 py-1 text-sm italic ${editor.isActive('italic') ? 'helix-gradient text-white' : 'bg-white text-slate-700'}`}
+        className={toolbarControlClass(editor.isActive('italic'), 'italic')}
         title="Cursief"
       >
         I
@@ -358,7 +361,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`rounded-md px-2.5 py-1 text-sm font-bold ${editor.isActive('bulletList') ? 'helix-gradient text-white' : 'bg-white text-slate-700'}`}
+        className={toolbarControlClass(editor.isActive('bulletList'))}
         title="Lijst"
       >
         Lijst
@@ -368,7 +371,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
 
       <select
         onChange={(event) => applyFontFamily(event.target.value)}
-        className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm font-bold text-slate-700"
+        className="studio-toolbar-control py-1"
         defaultValue=""
         title="Lettertype"
       >
@@ -379,7 +382,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
 
       <select
         onChange={(event) => applyFontSize(event.target.value)}
-        className="rounded-md border border-slate-200 bg-white px-2 py-1 text-sm font-bold text-slate-700"
+        className="studio-toolbar-control py-1"
         defaultValue=""
         title="Fontgrootte"
       >
@@ -388,7 +391,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
         ))}
       </select>
 
-      <label className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-black uppercase tracking-wide text-slate-500">
+      <label className="studio-toolbar-control text-xs uppercase tracking-wide text-[var(--helix-muted)]">
         Kleur
         <input
           type="color"
@@ -402,7 +405,7 @@ const EditorToolbar = ({ editor, onOpenFullscreen, fullscreen = false }) => {
         <button
           type="button"
           onClick={onOpenFullscreen}
-          className="ml-auto inline-flex items-center gap-2 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1.5 text-sm font-black text-[var(--helix-purple)] transition hover:bg-white"
+          className="studio-toolbar-control ml-auto px-3 py-1.5"
           title="Editor groot openen"
         >
           <Maximize2 size={15} />
@@ -480,7 +483,7 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder, 
             <button
               type="button"
               onClick={() => setIsFullscreenOpen(false)}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-bold text-slate-100 transition-colors hover:bg-slate-900"
+              className="btn-secondary w-auto px-4 py-2 text-sm"
             >
               <X size={16} />
               Sluit
@@ -586,11 +589,7 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
             key={option.value}
             type="button"
             onClick={() => changeKind(option.value)}
-            className={`rounded-xl px-3 py-2 text-sm font-black transition ${
-              mediaKind === option.value
-                ? 'helix-gradient text-white shadow-lg shadow-fuchsia-500/10'
-                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-            }`}
+            className={`${mediaKind === option.value ? 'btn-primary' : 'btn-secondary'} w-auto px-3 py-2 text-sm`}
           >
             {option.label}
           </button>
@@ -629,7 +628,7 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-secondary w-auto px-4 py-2 text-sm"
               >
                 <Upload size={16} />
                 {uploading ? 'Uploaden...' : 'Bestand kiezen'}
@@ -897,7 +896,7 @@ const LessonBlockStudio = ({
         </div>
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+          <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
             Sluit
           </button>
           <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -976,7 +975,7 @@ const LessonBlockStudio = ({
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-            <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
               Sluit
             </button>
             <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -1052,7 +1051,7 @@ const LessonBlockStudio = ({
                   href={selectedSlidedeck.generatedDeckPdf?.downloadURL}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)] hover:bg-white"
+                  className="btn-secondary w-auto px-4 py-2 text-sm"
                 >
                   Bekijk PDF
                 </a>
@@ -1075,7 +1074,7 @@ const LessonBlockStudio = ({
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-            <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
               Sluit
             </button>
             <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -1155,7 +1154,7 @@ const LessonBlockStudio = ({
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-            <button onClick={onCancel} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">
+            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
               Sluit
             </button>
             <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -1174,7 +1173,7 @@ const LessonBlockStudio = ({
             <button
               onClick={handleProcessCrops}
               disabled={processing || !imageData || selections.length === 0}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn-secondary w-auto px-4 py-2 text-sm"
             >
               <Scissors size={16} />
               {processing ? 'Verwerken...' : 'Crops verwerken'}
@@ -1234,7 +1233,7 @@ const FullscreenLessonBlockStudio = ({
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-2 text-sm font-bold text-[var(--helix-navy)] shadow-sm transition hover:bg-[var(--helix-surface-soft)]"
+            className="btn-secondary w-auto px-4 py-2 text-sm"
           >
             <X size={17} />
             Terug naar lesroute
