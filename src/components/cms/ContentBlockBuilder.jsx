@@ -28,6 +28,7 @@ import {
   BookOpen,
   Check,
   CheckSquare,
+  Copy,
   FileStack,
   FileText,
   Gamepad2,
@@ -71,6 +72,17 @@ import {
   normalizeContentBlocks
 } from '../../lib/contentBlockUtils';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
+import {
+  ASSESSMENT_ITEM_TYPES,
+  createAssessmentOption,
+  createAssessmentItem,
+  duplicateAssessmentItem,
+  moveAssessmentItem,
+  normalizeAssessmentItems,
+  removeAssessmentItem,
+  sumAssessmentItemTokens,
+  updateAssessmentItemType
+} from '../../lib/assessmentBlockUtils';
 import {
   buildDefaultAnswerForQuestionType,
   buildDefaultTokenConfigForQuestionType
@@ -706,6 +718,234 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
   );
 };
 
+const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenTotal = 0 }) => {
+  const items = normalizeAssessmentItems(content.items);
+  const assessmentLabel = blockType === 'toets' ? 'toets' : 'quiz';
+  const tokenTotal = Math.max(0, Math.round(Number(content.tokenConfig?.totalTokens ?? blockTokenTotal) || 0));
+  const itemTokenTotal = sumAssessmentItemTokens(items);
+  const tokenDelta = itemTokenTotal - tokenTotal;
+
+  const setItems = (nextItems) => updateContent({ items: normalizeAssessmentItems(nextItems) });
+
+  const updateItem = (index, updates) => {
+    setItems(items.map((item, itemIndex) => itemIndex === index ? { ...item, ...updates } : item));
+  };
+
+  const updateOption = (itemIndex, optionIndex, updates) => {
+    const item = items[itemIndex];
+    const options = item.options.map((option, currentIndex) =>
+      currentIndex === optionIndex ? { ...option, ...updates } : option
+    );
+    updateItem(itemIndex, { options });
+  };
+
+  const setCorrectOption = (itemIndex, optionIndex) => {
+    const item = items[itemIndex];
+    const options = item.options.map((option, currentIndex) => ({
+      ...option,
+      correct: currentIndex === optionIndex
+    }));
+    updateItem(itemIndex, { options });
+  };
+
+  const addOption = (itemIndex) => {
+    const item = items[itemIndex];
+    const options = [
+      ...item.options,
+      createAssessmentOption({ text: `Antwoord ${item.options.length + 1}` })
+    ];
+    updateItem(itemIndex, { options });
+  };
+
+  const removeOption = (itemIndex, optionIndex) => {
+    const item = items[itemIndex];
+    const options = item.options.filter((_, currentIndex) => currentIndex !== optionIndex);
+    updateItem(itemIndex, { options });
+  };
+
+  const addItem = (type = 'meerkeuze') => {
+    const suggestedTokens = tokenTotal > 0 ? Math.max(1, Math.round(tokenTotal / Math.max(1, items.length + 1))) : 0;
+    setItems([...items, createAssessmentItem({ type, tokens: suggestedTokens, prompt: 'Nieuwe vraag' })]);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">
+              {assessmentLabel}vragen
+            </p>
+            <p className="mt-1 text-sm font-bold leading-6 text-slate-600">
+              Bewerk de vragen die in dit afsluitblok aan leerlingen worden getoond.
+            </p>
+          </div>
+          <div className={[
+            'rounded-xl px-3 py-2 text-sm font-black',
+            tokenDelta === 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+          ].join(' ')}>
+            {itemTokenTotal}/{tokenTotal} tokens
+            {tokenDelta !== 0 && ` (${tokenDelta > 0 ? '+' : ''}${tokenDelta})`}
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <button type="button" onClick={() => addItem('meerkeuze')} className="btn-secondary w-full px-3 py-2 text-sm">
+            Meerkeuze toevoegen
+          </button>
+          <button type="button" onClick={() => addItem('waar-niet-waar')} className="btn-secondary w-full px-3 py-2 text-sm">
+            Waar/niet waar toevoegen
+          </button>
+          <button type="button" onClick={() => addItem('open')} className="btn-secondary w-full px-3 py-2 text-sm">
+            Open vraag toevoegen
+          </button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {items.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm font-bold text-slate-500">
+            Nog geen vragen. Voeg hierboven een vraag toe.
+          </div>
+        ) : items.map((item, index) => (
+          <article key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+              <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[9rem_minmax(0,1fr)_7rem]">
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Type</label>
+                  <select
+                    value={item.type}
+                    onChange={(event) => updateItem(index, updateAssessmentItemType(item, event.target.value))}
+                    className="input-standard w-full"
+                  >
+                    {ASSESSMENT_ITEM_TYPES.map((type) => (
+                      <option key={type.id} value={type.id}>{type.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">
+                    Vraag {index + 1}
+                  </label>
+                  <textarea
+                    value={item.prompt}
+                    onChange={(event) => updateItem(index, { prompt: event.target.value })}
+                    className="input-standard min-h-24 w-full resize-y leading-6"
+                    placeholder="Typ de vraag voor leerlingen"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Tokens</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={item.tokens}
+                    onChange={(event) => updateItem(index, { tokens: Math.max(0, Math.round(Number(event.target.value) || 0)) })}
+                    className="input-standard w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setItems(moveAssessmentItem(items, index, index - 1))}
+                  disabled={index === 0}
+                  className="btn-secondary w-auto px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+                  title="Omhoog"
+                >
+                  <ArrowUp size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setItems(moveAssessmentItem(items, index, index + 1))}
+                  disabled={index === items.length - 1}
+                  className="btn-secondary w-auto px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+                  title="Omlaag"
+                >
+                  <ArrowDown size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setItems(duplicateAssessmentItem(items, index))}
+                  className="btn-secondary w-auto px-3 py-2 text-sm"
+                  title="Dupliceren"
+                >
+                  <Copy size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setItems(removeAssessmentItem(items, index))}
+                  className="btn-secondary w-auto px-3 py-2 text-sm text-red-600"
+                  title="Verwijderen"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+
+            {item.type !== 'open' && (
+              <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Antwoordopties</p>
+                  {item.type === 'meerkeuze' && (
+                    <button type="button" onClick={() => addOption(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
+                      Optie toevoegen
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {item.options.map((option, optionIndex) => (
+                    <div key={option.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[2.5rem_minmax(0,1fr)_2.5rem]">
+                      <label className="flex items-center justify-center" title="Correct antwoord">
+                        <input
+                          type="radio"
+                          name={`${item.id}-correct`}
+                          checked={option.correct === true}
+                          onChange={() => setCorrectOption(index, optionIndex)}
+                          className="h-4 w-4 accent-[var(--helix-purple)]"
+                        />
+                      </label>
+                      <input
+                        value={option.text}
+                        onChange={(event) => updateOption(index, optionIndex, { text: event.target.value })}
+                        className="input-standard w-full"
+                        placeholder={`Antwoord ${optionIndex + 1}`}
+                      />
+                      {item.type === 'meerkeuze' && item.options.length > 2 ? (
+                        <button
+                          type="button"
+                          onClick={() => removeOption(index, optionIndex)}
+                          className="flex h-11 w-11 items-center justify-center rounded-xl text-red-600 transition hover:bg-red-50"
+                          title="Optie verwijderen"
+                        >
+                          <X size={16} />
+                        </button>
+                      ) : (
+                        <span />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4">
+              <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Feedback na beantwoorden</label>
+              <textarea
+                value={item.feedback}
+                onChange={(event) => updateItem(index, { feedback: event.target.value })}
+                className="input-standard min-h-20 w-full resize-y leading-6"
+                placeholder="Korte feedback of bespreekzin"
+              />
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const LessonBlockStudio = ({
   block,
   paragraaf,
@@ -878,11 +1118,27 @@ const LessonBlockStudio = ({
     try {
       setSaving(true);
       setError(null);
+      const isAssessmentBlock = block.type === 'quiz' || block.type === 'toets';
+      const normalizedContent = isAssessmentBlock
+        ? {
+            ...content,
+            items: normalizeAssessmentItems(content.items),
+            assessmentType: block.type,
+            tokenConfig: {
+              enabled: content.tokenConfig?.enabled !== false,
+              totalTokens: Math.max(0, Math.round(Number(content.tokenConfig?.totalTokens ?? block.tokenTotal) || 0))
+            }
+          }
+        : content;
 
       await onSave(block.id, {
         title,
         status,
-        content,
+        content: normalizedContent,
+        ...(isAssessmentBlock ? {
+          tokenConfig: normalizedContent.tokenConfig,
+          tokenTotal: normalizedContent.tokenConfig.totalTokens
+        } : {}),
         settings: normalizeContentBlockSettings(settings, block.type),
         linkedVraagId: block.type === 'question' ? linkedVraagId || null : null
       });
@@ -890,6 +1146,136 @@ const LessonBlockStudio = ({
       setSaving(false);
     }
   };
+
+  if (block.type === 'quiz' || block.type === 'toets') {
+    const isToets = block.type === 'toets';
+    const tokenTotal = Math.max(0, Math.round(Number(content.tokenConfig?.totalTokens ?? block.tokenTotal) || 0));
+    const maxAttempts = content.attemptPolicy?.maxAttempts ?? (isToets ? 1 : 0);
+
+    return (
+      <div className="overflow-hidden rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/60">
+        <div className="border-b border-fuchsia-100 bg-white px-5 py-4">
+          <div className="grid gap-3 md:grid-cols-[1fr_12rem]">
+            <div>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Bloktitel</label>
+              <input value={title} onChange={(event) => setTitle(event.target.value)} className="input-standard w-full" />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Status</label>
+              <StatusSelect value={status} onChange={setStatus} />
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-5 bg-white p-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+            <StudioRichEditor
+              label={contentFieldLabels[block.type]}
+              value={content.html || ''}
+              onChange={(html) => updateContent({ html })}
+              onEditorReady={setBlockEditor}
+              placeholder={isToets ? 'Schrijf de toetsinstructie voor leerlingen.' : 'Schrijf de quizintro voor leerlingen.'}
+            />
+
+            <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Totaal tokens</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={tokenTotal}
+                  onChange={(event) => updateContent({
+                    tokenConfig: {
+                      ...(content.tokenConfig || {}),
+                      enabled: Number(event.target.value) > 0,
+                      totalTokens: Math.max(0, Math.round(Number(event.target.value) || 0))
+                    }
+                  })}
+                  className="input-standard w-full"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Max pogingen</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={maxAttempts || 0}
+                  onChange={(event) => {
+                    const value = Math.max(0, Math.round(Number(event.target.value) || 0));
+                    updateContent({
+                      attemptPolicy: {
+                        ...(content.attemptPolicy || {}),
+                        maxAttempts: value === 0 ? null : value
+                      }
+                    });
+                  }}
+                  className="input-standard w-full"
+                />
+                <p className="mt-2 text-xs font-bold text-slate-500">0 betekent onbeperkt.</p>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Score telt als</label>
+                <select
+                  value={content.attemptPolicy?.scoring || 'best'}
+                  onChange={(event) => updateContent({
+                    attemptPolicy: {
+                      ...(content.attemptPolicy || {}),
+                      scoring: event.target.value
+                    }
+                  })}
+                  className="input-standard w-full"
+                >
+                  <option value="best">Beste poging</option>
+                  <option value="latest">Laatste poging</option>
+                </select>
+              </div>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3">
+                <input
+                  type="checkbox"
+                  checked={content.attemptPolicy?.allowTeacherReset !== false}
+                  onChange={(event) => updateContent({
+                    attemptPolicy: {
+                      ...(content.attemptPolicy || {}),
+                      allowTeacherReset: event.target.checked
+                    }
+                  })}
+                  className="mt-1 h-4 w-4 accent-[var(--helix-purple)]"
+                />
+                <span>
+                  <span className="block text-sm font-black text-slate-900">Docent mag resetten</span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Handig als een leerling opnieuw mag proberen.</span>
+                </span>
+              </label>
+              <BlockSettingsPanel settings={settings} onChange={setSettings} />
+            </div>
+          </div>
+
+          <AssessmentStudioFields
+            blockType={block.type}
+            content={content}
+            updateContent={updateContent}
+            blockTokenTotal={block.tokenTotal}
+          />
+
+          <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
+            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
+              Sluit
+            </button>
+            <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
+              <Save size={16} />
+              {saving ? 'Opslaan...' : 'Blok opslaan'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (block.type === 'question') {
     return (
