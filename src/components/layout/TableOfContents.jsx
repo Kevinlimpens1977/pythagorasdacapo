@@ -182,7 +182,7 @@ export default function TableOfContents() {
                       <button
                         key={paragraaf.id}
                         onClick={() => navigate(`/chapter/${paragraaf.id}`)}
-                        className="group flex w-full items-center justify-between gap-4 rounded-3xl border border-[var(--helix-border)] bg-white/84 p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-100 hover:shadow-[var(--helix-shadow-card)] active:scale-[0.99]"
+                        className="group helix-action-card flex w-full items-center justify-between gap-4 p-4 text-left"
                       >
                         <div className="flex min-w-0 flex-1 items-center gap-4">
                           <div

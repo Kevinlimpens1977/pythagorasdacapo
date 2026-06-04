@@ -60,11 +60,7 @@ export default function AdminSpellenPage() {
               <button
                 key={game.gameId}
                 onClick={() => setSelectedGameId(game.gameId)}
-                className={`helix-action-card w-full p-5 text-left ${
-                  selectedGame?.gameId === game.gameId
-                    ? 'helix-action-card-active'
-                    : ''
-                }`}
+                className="helix-action-card w-full p-5 text-left"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>

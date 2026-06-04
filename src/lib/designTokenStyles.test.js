@@ -39,17 +39,18 @@ test('admin header active nav uses the Border Signal gradient border style', () 
   assert.doesNotMatch(activeRule, /text-white/);
 });
 
-test('action cards share the Border Signal active gradient outline', () => {
+test('clickable action cards show the Border Signal gradient only on interaction', () => {
   const cardRule = getCssRule('.helix-action-card');
-  const activeCardRule = getCssRule('.helix-action-card-active');
+  const hoverRule = getCssRule('.helix-action-card:hover');
+  const focusRule = getCssRule('.helix-action-card:focus-visible');
 
   assert.match(cardRule, /border:\s*2px solid transparent/);
   assert.match(cardRule, /linear-gradient\(#dfe5ee,\s*#dfe5ee\) border-box/);
   assert.match(cardRule, /color:\s*var\(--helix-navy\)/);
-  assert.match(activeCardRule, /border:\s*2px solid transparent/);
-  assert.match(activeCardRule, /var\(--helix-gradient-border\) border-box/);
-  assert.match(activeCardRule, /color:\s*var\(--helix-navy\)/);
-  assert.doesNotMatch(activeCardRule, /text-white/);
+  assert.doesNotMatch(cardRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(hoverRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(focusRule, /var\(--helix-gradient-border\) border-box/);
+  assert.doesNotMatch(hoverRule, /text-white/);
 });
 
 test('presenter chrome uses the shared soft toolbar surface', () => {

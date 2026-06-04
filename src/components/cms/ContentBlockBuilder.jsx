@@ -151,7 +151,7 @@ const BlockTypeButton = ({ type, onClick, disabled }) => {
     <button
       onClick={() => onClick(type)}
       disabled={disabled}
-      className="group flex min-h-[9.75rem] min-w-0 flex-col justify-between rounded-3xl border border-[var(--helix-border)] bg-white px-4 py-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-fuchsia-200 hover:bg-[var(--helix-surface-soft)] hover:shadow-[var(--helix-shadow-card)] focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 disabled:cursor-wait disabled:opacity-60"
+      className="group helix-action-card flex min-h-[9.75rem] min-w-0 flex-col justify-between px-4 py-4 text-left disabled:cursor-wait disabled:opacity-60"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] transition group-hover:scale-105 group-hover:bg-white">

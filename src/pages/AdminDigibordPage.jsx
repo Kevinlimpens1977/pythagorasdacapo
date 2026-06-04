@@ -34,7 +34,7 @@ const DigibordCard = ({ type, item, childCount = 0, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-100"
+      className="group helix-action-card relative overflow-hidden p-5 text-left"
     >
       <div className="flex min-h-[9rem] flex-col justify-between">
         <div>

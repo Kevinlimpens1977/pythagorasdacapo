@@ -7,16 +7,14 @@ const actions = [
     description: 'Maak theorie, voorbeelden, vragen, afbeeldingen en lesroutes met de crop- en OCR-workflow.',
     actionLabel: 'Open CMS',
     path: '/admin/cms',
-    icon: BookOpen,
-    highlighted: true
+    icon: BookOpen
   },
   {
     title: 'Lesmateriaal klaarzetten',
     description: 'Koppel hoofdstukken, paragrafen of specifieke lesblokken aan een klas of individuele leerling.',
     actionLabel: 'Open klaarzetstudio',
     path: '/admin/taken-toewijzen',
-    icon: CheckSquare,
-    highlighted: true
+    icon: CheckSquare
   },
   {
     title: 'Digibord presenteren',
@@ -56,7 +54,7 @@ export default function AdminLesstofPage() {
               <button
                 key={action.title}
                 onClick={() => navigate(action.path)}
-                className={`group helix-action-card p-6 text-left ${action.highlighted ? 'helix-action-card-active' : ''}`}
+                className="group helix-action-card p-6 text-left"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">

@@ -49,7 +49,7 @@ export default function AdminSettingsPage() {
                 key={section.title}
                 type="button"
                 onClick={() => navigate(section.path)}
-                className="group helix-card p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-[var(--helix-shadow-soft)] focus:outline-none"
+                className="group helix-action-card p-5 text-left"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
