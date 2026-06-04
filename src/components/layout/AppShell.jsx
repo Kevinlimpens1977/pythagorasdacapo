@@ -68,6 +68,10 @@ export default function AppShell() {
     navigate('/login');
   };
 
+  const handleLogoClick = () => {
+    navigate(isAdmin ? '/admin/cms' : '/');
+  };
+
   return (
     <StudentBugReportContext.Provider value={{ context: studentBugReportContext, setContext: setStudentBugReportContext }}>
     <div className="helix-page flex min-h-screen flex-col font-sans selection:bg-fuchsia-100 selection:text-[var(--helix-navy)]">
@@ -76,9 +80,9 @@ export default function AppShell() {
       <header className="sticky top-0 z-[100] flex min-h-20 items-center justify-between border-b border-[var(--helix-border)] bg-white/86 px-4 shadow-[0_14px_34px_-28px_rgba(11,19,43,0.45)] backdrop-blur-2xl md:px-10">
         <div className="flex min-w-0 items-center gap-4 md:gap-8">
           <h1
-            onClick={() => navigate('/')}
+            onClick={handleLogoClick}
             className="helix-brand group flex shrink-0 cursor-pointer items-center transition-opacity hover:opacity-90"
-            aria-label="Ga naar HELIX start"
+            aria-label={isAdmin ? 'Ga naar Lesstof' : 'Ga naar HELIX start'}
           >
             <span className="flex h-14 w-36 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm transition-transform group-hover:scale-[1.02] md:h-16 md:w-44">
               <img src={helixLogo} alt="HELIX" className="h-20 w-20 max-w-none scale-[1.2] object-contain" />

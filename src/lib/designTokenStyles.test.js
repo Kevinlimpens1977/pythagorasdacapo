@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+const appShell = readFileSync(new URL('../components/layout/AppShell.jsx', import.meta.url), 'utf8');
 const cmsShell = readFileSync(new URL('../components/cms/CmsShell.jsx', import.meta.url), 'utf8');
 const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlockBuilder.jsx', import.meta.url), 'utf8');
 const cropEditorPanel = readFileSync(new URL('../components/cms/CropEditorPanel.jsx', import.meta.url), 'utf8');
@@ -43,6 +44,12 @@ test('admin header active nav uses the Border Signal gradient border style', () 
   assert.match(activeRule, /var\(--helix-gradient-border\) border-box/);
   assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
   assert.doesNotMatch(activeRule, /text-white/);
+});
+
+test('admin logo opens the lesson workspace instead of settings', () => {
+  assert.match(appShell, /const handleLogoClick = \(\) =>/);
+  assert.match(appShell, /navigate\(isAdmin \? '\/admin\/cms' : '\/'\)/);
+  assert.match(appShell, /aria-label=\{isAdmin \? 'Ga naar Lesstof' : 'Ga naar HELIX start'\}/);
 });
 
 test('clickable action cards show the Border Signal gradient only on interaction', () => {
