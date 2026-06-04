@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlockBuilder.jsx', import.meta.url), 'utf8');
+const cropEditorPanel = readFileSync(new URL('../components/cms/CropEditorPanel.jsx', import.meta.url), 'utf8');
 
 const getCssRule = (selector) => {
   const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -89,4 +90,11 @@ test('presenter chrome uses the shared soft toolbar surface', () => {
   assert.match(chromeRule, /rgba\(255,\s*230,\s*242,\s*0\.72\)/);
   assert.match(chromeRule, /rgba\(241,\s*233,\s*255,\s*0\.92\)/);
   assert.match(chromeRule, /color:\s*var\(--helix-navy\)/);
+});
+
+test('fullscreen crop editor header reuses the presenter soft chrome surface', () => {
+  assert.match(cropEditorPanel, /presenter-chrome-surface/);
+  assert.doesNotMatch(cropEditorPanel, /bg-slate-950 px-5 py-3 text-white/);
+  assert.doesNotMatch(cropEditorPanel, /text-fuchsia-200">Crop\/OCR studio/);
+  assert.match(cropEditorPanel, /btn-secondary/);
 });

@@ -190,11 +190,11 @@ export default function CropEditorPanel({
       )}
 
       {isFullscreenOpen && (
-        <div className="fixed inset-0 z-[1000] flex flex-col bg-slate-950">
-          <div className="flex items-center justify-between gap-4 border-b border-slate-800 bg-slate-950 px-5 py-3 text-white">
+        <div className="fixed inset-0 z-[1000] flex flex-col bg-[var(--helix-bg)]">
+          <div className="presenter-chrome-surface flex items-center justify-between gap-4 border-b border-[var(--helix-border)] px-5 py-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-fuchsia-200">Crop/OCR studio</p>
-              <h2 className="text-lg font-black">Bronmateriaal groot bewerken</h2>
+              <p className="helix-eyebrow">Crop/OCR studio</p>
+              <h2 className="text-lg font-black text-[var(--helix-navy)]">Bronmateriaal groot bewerken</h2>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -207,7 +207,7 @@ export default function CropEditorPanel({
               </button>
               <button
                 onClick={() => setIsFullscreenOpen(false)}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm font-bold text-slate-100 transition-colors hover:bg-slate-900"
+                className="btn-secondary w-auto px-4 py-2 text-sm"
               >
                 <X size={16} />
                 Sluit
@@ -219,7 +219,7 @@ export default function CropEditorPanel({
             <div className="min-w-0">
               {renderCanvas(true)}
             </div>
-            <aside className="flex min-h-0 flex-col border-l border-slate-800 bg-white">
+            <aside className="flex min-h-0 flex-col border-l border-slate-200 bg-white">
               <div className="border-b border-slate-200 p-4">
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Selecties</p>
                 <p className="mt-1 text-sm leading-5 text-slate-600">
