@@ -127,3 +127,12 @@ test('lesson route builder uses dnd-kit sortable cards with keyboard fallback', 
   assert.match(contentBlockBuilder, /items=\{sortableBlockIds\}/);
   assert.match(contentBlockBuilder, /useSortable/);
 });
+
+test('question route blocks avoid duplicate linked-question wording', () => {
+  assert.match(contentBlockBuilder, /formatQuestionLabel/);
+  assert.match(contentBlockBuilder, /Titel in lesroute/);
+  assert.match(contentBlockBuilder, /Vraag bewerken/);
+  assert.doesNotMatch(contentBlockBuilder, /Gekoppeld aan vraag/);
+  assert.doesNotMatch(contentBlockBuilder, /Open vraagstudio/);
+  assert.doesNotMatch(contentBlockBuilder, /Vraag \\{vraag\.number\\}: \\{vraag\.title\\}/);
+});

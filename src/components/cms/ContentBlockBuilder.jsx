@@ -64,6 +64,7 @@ import {
   getReorderedBlocks,
   getReorderedBlocksByIndex,
   getToggledContentBlockStatus,
+  formatQuestionLabel,
   mergeCropResultsIntoBlockContent,
   normalizeContentBlockSettings,
   normalizeContentBlocks
@@ -707,6 +708,7 @@ const LessonBlockStudio = ({
   const selectedVraag = vragen.find((vraag) => vraag.id === linkedVraagId);
   const selectedGame = cmsEmbeddableGames.find((game) => game.gameId === content.gameId);
   const selectedSlidedeck = slidedeckPackages.find((deck) => deck.id === content.slidedeckPackageId);
+  const selectedVraagLabel = selectedVraag ? formatQuestionLabel(selectedVraag) : 'Nog geen vraag gekozen';
   const Icon = blockIcons[block.type] || FileText;
 
   useEffect(() => {
@@ -869,7 +871,7 @@ const LessonBlockStudio = ({
       <div className="rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/60 p-5">
         <div className="grid gap-4 md:grid-cols-[1fr_12rem]">
           <div>
-            <label className="mb-2 block text-sm font-bold text-slate-700">Bloktitel</label>
+            <label className="mb-2 block text-sm font-bold text-slate-700">Titel in lesroute</label>
             <input value={title} onChange={(event) => setTitle(event.target.value)} className="input-standard w-full" />
           </div>
           <div>
@@ -879,12 +881,12 @@ const LessonBlockStudio = ({
         </div>
 
         <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
-          <label className="mb-2 block text-sm font-bold text-slate-700">Gekoppelde vraag</label>
+          <label className="mb-2 block text-sm font-bold text-slate-700">Vraag</label>
           <select value={linkedVraagId} onChange={(event) => setLinkedVraagId(event.target.value)} className="input-standard w-full">
             <option value="">Kies een bestaande vraag</option>
             {vragen.map((vraag) => (
               <option key={vraag.id} value={vraag.id}>
-                Vraag {vraag.number}: {vraag.title}
+                {formatQuestionLabel(vraag)}
               </option>
             ))}
           </select>
@@ -892,10 +894,10 @@ const LessonBlockStudio = ({
           <div className="mt-4 flex flex-col gap-3 rounded-lg bg-slate-50 p-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="font-black text-slate-900">
-                {selectedVraag ? selectedVraag.title : 'Nog geen vraag gekoppeld'}
+                {selectedVraagLabel}
               </p>
               <p className="mt-1 text-sm leading-5 text-slate-500">
-                De volledige vraag, afbeeldingen en OCR bewerk je in de vraagstudio.
+                Bewerk de vraaginhoud, afbeeldingen, OCR en antwoordinstellingen in de vraagstudio.
               </p>
             </div>
             <button
@@ -903,7 +905,7 @@ const LessonBlockStudio = ({
               disabled={!linkedVraagId}
               className="btn-secondary w-auto px-4 py-2 text-sm"
             >
-              Open vraagstudio
+              Vraag bewerken
             </button>
           </div>
         </div>
@@ -1279,7 +1281,6 @@ const SortableLessonBlockCard = ({
   index,
   totalBlocks,
   isEditing,
-  linkedVraag,
   previewText,
   confirmArchiveBlockId,
   onMove,
@@ -1353,11 +1354,6 @@ const SortableLessonBlockCard = ({
             </h3>
             <p className="mt-1 text-sm text-[var(--helix-muted)]">Stap {index + 1}</p>
             <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-[var(--helix-muted)]">{previewText}</p>
-            {linkedVraag && (
-              <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
-                Gekoppeld aan vraag {linkedVraag.number}
-              </p>
-            )}
           </div>
         </div>
 
@@ -1692,7 +1688,7 @@ export default function ContentBlockBuilder({
                 const linkedVraag = block.linkedVraagId ? vragenById.get(block.linkedVraagId) : null;
                 const previewText = buildContentBlockPreview({
                   ...block,
-                  linkedVraagTitle: linkedVraag ? `Vraag ${linkedVraag.number}: ${linkedVraag.title}` : null
+                  linkedVraagTitle: linkedVraag ? formatQuestionLabel(linkedVraag) : null
                 });
 
                 return (
@@ -1702,7 +1698,6 @@ export default function ContentBlockBuilder({
                     index={index}
                     totalBlocks={normalizedBlocks.length}
                     isEditing={isEditing}
-                    linkedVraag={linkedVraag}
                     previewText={previewText}
                     confirmArchiveBlockId={confirmArchiveBlockId}
                     onMove={handleMoveBlock}

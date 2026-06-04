@@ -8,6 +8,7 @@ import {
   getReorderedBlocks,
   getReorderedBlocksByIndex,
   getToggledContentBlockStatus,
+  formatQuestionLabel,
   mergeCropResultsIntoBlockContent,
   normalizeContentBlockSettings,
   normalizeContentBlocks
@@ -124,6 +125,13 @@ test('getReorderedBlocksByIndex is a no-op for missing ids and clamps target bou
       { id: 'a', order: 3 }
     ]
   );
+});
+
+test('formatQuestionLabel suppresses duplicate default question titles', () => {
+  assert.equal(formatQuestionLabel({ number: 6, title: 'Vraag 6' }), 'Vraag 6');
+  assert.equal(formatQuestionLabel({ number: '6', title: 'Wat betekent DV?' }), 'Vraag 6 - Wat betekent DV?');
+  assert.equal(formatQuestionLabel({ title: 'Controleer begrip' }), 'Controleer begrip');
+  assert.equal(formatQuestionLabel(null), 'Vraag');
 });
 
 test('blockToSlide maps supported content block types to slide types', () => {

@@ -137,6 +137,21 @@ export const getReorderedBlocksByIndex = (blocks = [], blockId, targetIndex) => 
   }));
 };
 
+export const formatQuestionLabel = (vraag = null) => {
+  if (!vraag) return 'Vraag';
+
+  const numberValue = String(vraag.number ?? '').trim();
+  const title = String(vraag.title || '').trim();
+  const numberLabel = numberValue ? `Vraag ${numberValue}` : '';
+
+  if (!numberLabel) return title || 'Vraag';
+  if (!title) return numberLabel;
+
+  return title.toLocaleLowerCase('nl-NL') === numberLabel.toLocaleLowerCase('nl-NL')
+    ? numberLabel
+    : `${numberLabel} - ${title}`;
+};
+
 export const htmlToPlainText = (html = '') => {
   return String(html)
     .replace(/<br\s*\/?>/gi, '\n')
