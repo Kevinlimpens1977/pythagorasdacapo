@@ -45,6 +45,10 @@
     --helix-gradient: linear-gradient(135deg, #ff7a00 0%, #ff2d8d 48%, #7a3cff 100%);
     --helix-gradient-border: linear-gradient(135deg, oklch(0.72 0.16 35), oklch(0.66 0.16 342), oklch(0.58 0.17 286));
     --helix-gradient-soft: linear-gradient(135deg, rgba(255, 122, 0, 0.14), rgba(255, 45, 141, 0.12), rgba(122, 60, 255, 0.12));
+    --helix-page-background:
+      radial-gradient(circle at top left, rgba(255, 233, 220, 0.72), transparent 34rem),
+      radial-gradient(circle at 82% 12%, rgba(241, 233, 255, 0.8), transparent 28rem),
+      var(--helix-bg);
     --helix-radius-sm: 10px;
     --helix-radius-md: 14px;
     --helix-radius-lg: 18px;
@@ -56,15 +60,24 @@
   }
 }
 
+html {
+  min-height: 100%;
+  background: var(--helix-page-background);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
 body {
-  background:
-    radial-gradient(circle at top left, rgba(255, 233, 220, 0.72), transparent 34rem),
-    radial-gradient(circle at 82% 12%, rgba(241, 233, 255, 0.8), transparent 28rem),
-    var(--helix-bg);
+  min-height: 100dvh;
+  background: transparent;
   color: var(--helix-text);
   font-family: 'Inter', system-ui, sans-serif;
   @apply antialiased overflow-x-hidden;
   text-rendering: geometricPrecision;
+}
+
+#root {
+  min-height: 100dvh;
 }
 
 h1,
@@ -134,10 +147,7 @@ input[type=number] {
 
 .helix-page {
   min-height: 100%;
-  background:
-    radial-gradient(circle at top left, rgba(255, 233, 220, 0.72), transparent 34rem),
-    radial-gradient(circle at 88% 10%, rgba(241, 233, 255, 0.75), transparent 28rem),
-    var(--helix-bg);
+  background: transparent;
   color: var(--helix-text);
 }
 

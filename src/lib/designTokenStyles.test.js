@@ -52,6 +52,22 @@ test('admin logo opens the lesson workspace instead of settings', () => {
   assert.match(appShell, /aria-label=\{isAdmin \? 'Ga naar Lesstof' : 'Ga naar HELIX start'\}/);
 });
 
+test('Helix page background is drawn once on the document canvas', () => {
+  const htmlRule = getCssRule('html');
+  const bodyRule = getCssRule('body');
+  const pageRule = getCssRule('.helix-page');
+
+  assert.match(css, /--helix-page-background:/);
+  assert.match(css, /radial-gradient\(circle at top left,\s*rgba\(255,\s*233,\s*220,\s*0\.72\),\s*transparent 34rem\)/);
+  assert.match(css, /radial-gradient\(circle at 82% 12%,\s*rgba\(241,\s*233,\s*255,\s*0\.8\),\s*transparent 28rem\)/);
+  assert.match(htmlRule, /background:\s*var\(--helix-page-background\)/);
+  assert.match(htmlRule, /background-attachment:\s*fixed/);
+  assert.match(htmlRule, /background-repeat:\s*no-repeat/);
+  assert.match(bodyRule, /background:\s*transparent/);
+  assert.match(pageRule, /background:\s*transparent/);
+  assert.doesNotMatch(pageRule, /radial-gradient/);
+});
+
 test('clickable action cards show the Border Signal gradient only on interaction', () => {
   const cardRule = getCssRule('.helix-action-card');
   const hoverRule = getCssRule('.helix-action-card:hover');
