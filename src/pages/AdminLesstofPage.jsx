@@ -8,7 +8,7 @@ const actions = [
     actionLabel: 'Open CMS',
     path: '/admin/cms',
     icon: BookOpen,
-    tone: 'bg-[var(--helix-navy)] text-white'
+    highlighted: true
   },
   {
     title: 'Lesmateriaal klaarzetten',
@@ -16,23 +16,21 @@ const actions = [
     actionLabel: 'Open klaarzetstudio',
     path: '/admin/taken-toewijzen',
     icon: CheckSquare,
-    tone: 'helix-gradient text-white'
+    highlighted: true
   },
   {
     title: 'Digibord presenteren',
     description: 'Open je vak, leerjaar, hoofdstuk en paragraaf als klassikale presentatie.',
     actionLabel: 'Open Digibord',
     path: '/admin/digibord',
-    icon: Clapperboard,
-    tone: 'bg-white/90 text-[var(--helix-navy)] border border-[var(--helix-border)]'
+    icon: Clapperboard
   },
   {
     title: 'Slidedecks / NotebookLM',
     description: 'Maak bron-PDFs en prompts voor NotebookLM en upload gegenereerde presentatie-PDFs terug naar Helix.',
     actionLabel: 'Open Slidedeckcreator',
     path: '/admin/slidedecks',
-    icon: FileStack,
-    tone: 'bg-white/90 text-[var(--helix-navy)] border border-[var(--helix-border)]'
+    icon: FileStack
   }
 ];
 
@@ -58,7 +56,7 @@ export default function AdminLesstofPage() {
               <button
                 key={action.title}
                 onClick={() => navigate(action.path)}
-                className={`group rounded-3xl p-6 text-left shadow-[var(--helix-shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--helix-shadow-soft)] focus:outline-none ${action.tone}`}
+                className={`group helix-action-card p-6 text-left ${action.highlighted ? 'helix-action-card-active' : ''}`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">

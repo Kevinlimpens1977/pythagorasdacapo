@@ -60,10 +60,10 @@ export default function AdminSpellenPage() {
               <button
                 key={game.gameId}
                 onClick={() => setSelectedGameId(game.gameId)}
-                className={`w-full rounded-[var(--helix-radius-lg)] border p-5 text-left transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)] ${
+                className={`helix-action-card w-full p-5 text-left ${
                   selectedGame?.gameId === game.gameId
-                    ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] shadow-[var(--helix-shadow-card)]'
-                    : 'border-[var(--helix-border)] bg-white shadow-[var(--helix-shadow-soft)] hover:shadow-[var(--helix-shadow-card)]'
+                    ? 'helix-action-card-active'
+                    : ''
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">

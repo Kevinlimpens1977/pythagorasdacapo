@@ -39,6 +39,19 @@ test('admin header active nav uses the Border Signal gradient border style', () 
   assert.doesNotMatch(activeRule, /text-white/);
 });
 
+test('action cards share the Border Signal active gradient outline', () => {
+  const cardRule = getCssRule('.helix-action-card');
+  const activeCardRule = getCssRule('.helix-action-card-active');
+
+  assert.match(cardRule, /border:\s*2px solid transparent/);
+  assert.match(cardRule, /linear-gradient\(#dfe5ee,\s*#dfe5ee\) border-box/);
+  assert.match(cardRule, /color:\s*var\(--helix-navy\)/);
+  assert.match(activeCardRule, /border:\s*2px solid transparent/);
+  assert.match(activeCardRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(activeCardRule, /color:\s*var\(--helix-navy\)/);
+  assert.doesNotMatch(activeCardRule, /text-white/);
+});
+
 test('presenter chrome uses the shared soft toolbar surface', () => {
   const chromeRule = getCssRule('.presenter-chrome-surface');
 

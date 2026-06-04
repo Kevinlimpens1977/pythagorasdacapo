@@ -165,6 +165,32 @@ input[type=number] {
   border-radius: var(--helix-radius-lg);
 }
 
+.helix-action-card {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    linear-gradient(#dfe5ee, #dfe5ee) border-box;
+  color: var(--helix-navy);
+  box-shadow: var(--helix-shadow-card);
+  @apply rounded-[var(--helix-radius-lg)] transition-all focus:outline-none active:scale-[0.99] hover:-translate-y-0.5;
+}
+
+.helix-action-card:hover {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
+    linear-gradient(#cbd5e1, #cbd5e1) border-box;
+  box-shadow: var(--helix-shadow-soft);
+}
+
+.helix-action-card-active {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    var(--helix-gradient-border) border-box;
+  color: var(--helix-navy);
+  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+}
+
 .helix-eyebrow {
   color: var(--helix-purple);
   font-family: 'Sora', 'Inter', system-ui, sans-serif;

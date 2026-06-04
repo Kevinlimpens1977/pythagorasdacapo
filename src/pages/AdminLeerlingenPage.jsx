@@ -133,7 +133,7 @@ export default function AdminLeerlingenPage() {
               type="button"
               onClick={handleSyncAuthAccounts}
               disabled={syncingAuthAccounts}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-purple)] bg-white px-5 text-sm font-black text-[var(--helix-purple)] shadow-[var(--helix-shadow-card)] transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-primary min-h-12 px-5 text-sm"
             >
               {syncingAuthAccounts ? <Loader2 size={18} className="animate-spin" /> : <KeyRound size={18} />}
               Auth synchroniseren
@@ -144,7 +144,7 @@ export default function AdminLeerlingenPage() {
                 setShowNumberImport((value) => !value);
                 setShowPhotoImport(false);
               }}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-5 text-sm font-black text-white shadow-[var(--helix-shadow-card)] transition hover:translate-y-[-1px]"
+              className="btn-primary min-h-12 px-5 text-sm"
             >
               <FileSpreadsheet size={18} />
               Leerlingnummers koppelen
@@ -155,7 +155,7 @@ export default function AdminLeerlingenPage() {
                 setShowPhotoImport((value) => !value);
                 setShowNumberImport(false);
               }}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-5 text-sm font-black text-white shadow-[var(--helix-shadow-card)] transition hover:translate-y-[-1px]"
+              className="btn-primary min-h-12 px-5 text-sm"
             >
               <Camera size={18} />
               Foto's importeren
