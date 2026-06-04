@@ -53,6 +53,19 @@ test('clickable action cards show the Border Signal gradient only on interaction
   assert.doesNotMatch(hoverRule, /text-white/);
 });
 
+test('secondary studio buttons use the Border Signal gradient on hover and focus only', () => {
+  const secondaryRule = getCssRule('.btn-secondary');
+  const hoverRule = getCssRule('.btn-secondary:hover');
+  const focusRule = getCssRule('.btn-secondary:focus-visible');
+
+  assert.match(secondaryRule, /border:\s*2px solid transparent/);
+  assert.match(secondaryRule, /linear-gradient\(#dfe5ee,\s*#dfe5ee\) border-box/);
+  assert.match(secondaryRule, /color:\s*var\(--helix-navy\)/);
+  assert.doesNotMatch(secondaryRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(hoverRule, /var\(--helix-gradient-border\) border-box/);
+  assert.match(focusRule, /var\(--helix-gradient-border\) border-box/);
+});
+
 test('presenter chrome uses the shared soft toolbar surface', () => {
   const chromeRule = getCssRule('.presenter-chrome-surface');
 

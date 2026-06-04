@@ -885,7 +885,7 @@ const LessonBlockStudio = ({
             <button
               onClick={() => linkedVraagId && onEditLinkedQuestion(linkedVraagId)}
               disabled={!linkedVraagId}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn-secondary w-auto px-4 py-2 text-sm"
             >
               Open vraagstudio
             </button>
@@ -1553,11 +1553,7 @@ export default function ContentBlockBuilder({
                     </button>
                     <button
                       onClick={() => setEditingBlockId(block.id)}
-                      className={`rounded-2xl border px-3 py-2 text-sm font-bold transition ${
-                        isEditing
-                          ? 'border-transparent bg-[var(--helix-navy)] text-white shadow-sm'
-                          : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]'
-                      }`}
+                      className={`${isEditing ? 'btn-primary' : 'btn-secondary'} w-auto px-3 py-2 text-sm`}
                     >
                       {isEditing ? 'Studio open' : 'Open studio'}
                     </button>
