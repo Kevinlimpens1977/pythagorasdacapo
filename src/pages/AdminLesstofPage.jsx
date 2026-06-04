@@ -54,9 +54,9 @@ export default function AdminLesstofPage() {
               <button
                 key={action.title}
                 onClick={() => navigate(action.path)}
-                className="group helix-action-card p-6 text-left"
+                className="group helix-action-card flex h-full flex-col p-6 text-left"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-1 items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
                       <Icon size={24} />
@@ -68,7 +68,7 @@ export default function AdminLesstofPage() {
                   </div>
                   <ArrowRight size={20} className="mt-2 shrink-0 transition-transform group-hover:translate-x-1" />
                 </div>
-                <p className="mt-6 text-sm font-black">{action.actionLabel}</p>
+                <p className="mt-auto pt-6 text-center text-sm font-black">{action.actionLabel}</p>
               </button>
             );
           })}
