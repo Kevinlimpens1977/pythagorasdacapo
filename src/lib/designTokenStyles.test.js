@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
+const cmsShell = readFileSync(new URL('../components/cms/CmsShell.jsx', import.meta.url), 'utf8');
 const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlockBuilder.jsx', import.meta.url), 'utf8');
 const cropEditorPanel = readFileSync(new URL('../components/cms/CropEditorPanel.jsx', import.meta.url), 'utf8');
 const adminKlassenPage = readFileSync(new URL('../pages/AdminKlassenPage.jsx', import.meta.url), 'utf8');
@@ -126,6 +127,14 @@ test('lesson route builder uses dnd-kit sortable cards with keyboard fallback', 
   assert.match(contentBlockBuilder, /sortableKeyboardCoordinates/);
   assert.match(contentBlockBuilder, /items=\{sortableBlockIds\}/);
   assert.match(contentBlockBuilder, /useSortable/);
+});
+
+test('cms contentstudio keeps the left navigation rail full viewport height', () => {
+  assert.match(cmsShell, /h-\[calc\(100dvh-5rem\)\]/);
+  assert.match(cmsShell, /overflow-hidden/);
+  assert.match(cmsShell, /self-stretch/);
+  assert.match(cmsShell, /bg-white\/95/);
+  assert.match(cmsShell, /className="custom-scrollbar flex-1 overflow-y-auto/);
 });
 
 test('question route blocks avoid duplicate linked-question wording', () => {

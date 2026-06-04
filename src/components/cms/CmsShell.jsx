@@ -236,7 +236,7 @@ export default function CmsShell() {
 
   return (
     <>
-      <div ref={shellRef} className="relative flex h-full min-h-0 bg-[var(--helix-bg)]">
+      <div ref={shellRef} className="relative flex h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)] overflow-hidden bg-[var(--helix-bg)]">
         {/* Toggle Button - Fixed Left Edge (when sidebar closed) */}
         {!sidebarOpen && (
           <button
@@ -252,7 +252,7 @@ export default function CmsShell() {
         {/* Left Sidebar - Navigation Tree (Collapsible) */}
         <div
           className={[
-            'relative flex-shrink-0 overflow-hidden border-r border-[var(--helix-border)] bg-white/86 backdrop-blur-xl',
+            'relative flex-shrink-0 self-stretch overflow-hidden border-r border-[var(--helix-border)] bg-white/95 backdrop-blur-xl',
             isResizingSidebar ? '' : 'transition-[width,opacity] duration-300 ease-in-out',
             sidebarOpen ? 'opacity-100' : 'w-0 border-r-0 opacity-0'
           ].join(' ')}
