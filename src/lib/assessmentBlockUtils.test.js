@@ -72,6 +72,24 @@ test('normalizeAssessmentItem repairs missing ids, invalid type and missing corr
   assert.ok(item.id);
 });
 
+test('normalizeAssessmentItem preserves option feedback and misconception notes privately', () => {
+  const item = normalizeAssessmentItem({
+    type: 'meerkeuze',
+    answer: {
+      options: [
+        { text: '123456', correct: false, explanation: 'Te raden', misconception: 'Leerling denkt dat kort makkelijker is.' },
+        { text: 'Wachtwoordzin', correct: true, feedback: 'Sterk', misconceptie: 'Legacy veld' }
+      ]
+    }
+  });
+
+  assert.equal(item.answer.options[0].explanation, 'Te raden');
+  assert.equal(item.answer.options[0].misconception, 'Leerling denkt dat kort makkelijker is.');
+  assert.equal(item.answer.options[1].explanation, 'Sterk');
+  assert.equal(item.answer.options[1].misconception, 'Legacy veld');
+  assert.equal(item.options[0].misconception, 'Leerling denkt dat kort makkelijker is.');
+});
+
 test('normalizeAssessmentItem preserves didactic taxonomy fields', () => {
   const item = normalizeAssessmentItem({
     type: 'open',

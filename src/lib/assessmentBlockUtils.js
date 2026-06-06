@@ -77,11 +77,12 @@ export const normalizeAssessmentTaxonomy = (item = {}) => {
   };
 };
 
-export const createAssessmentOption = ({ text = '', correct = false, explanation = '' } = {}) => ({
+export const createAssessmentOption = ({ text = '', correct = false, explanation = '', misconception = '' } = {}) => ({
   id: createId('option'),
   text,
   correct,
-  explanation
+  explanation,
+  misconception
 });
 
 const defaultOptionsForType = (type) => {
@@ -148,7 +149,8 @@ const normalizeOption = (option = {}, index = 0) => ({
   id: option.id || createId('option'),
   text: String(option.text ?? option.label ?? `Antwoord ${index + 1}`),
   correct: option.correct === true,
-  explanation: String(option.explanation ?? option.feedback ?? '')
+  explanation: String(option.explanation ?? option.feedback ?? ''),
+  misconception: String(option.misconception ?? option.misconceptie ?? option.misconceptionNote ?? '')
 });
 
 export const normalizeAssessmentOption = normalizeOption;

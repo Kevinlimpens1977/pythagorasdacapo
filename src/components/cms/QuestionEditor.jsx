@@ -34,7 +34,8 @@ const createChoiceOption = (text = '', correct = false) => ({
   id: `option-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   text,
   correct,
-  explanation: ''
+  explanation: '',
+  misconception: ''
 });
 
 const createFillBlankGap = () => ({
@@ -72,7 +73,8 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           id: option.id || `option-${index + 1}`,
           text: option.text || '',
           correct: Boolean(option.correct),
-          explanation: option.explanation || ''
+          explanation: option.explanation || option.feedback || '',
+          misconception: option.misconception || option.misconceptie || ''
         }))
       : buildDefaultAnswerForQuestionType('meerkeuze').options
   ));
@@ -148,7 +150,8 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           id: option.id || `option-${index + 1}`,
           text: option.text || '',
           correct: Boolean(option.correct),
-          explanation: option.explanation || ''
+          explanation: option.explanation || '',
+          misconception: option.misconception || ''
         }))
       };
     }
@@ -748,7 +751,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             </p>
             <div className="space-y-3">
               {meerkeuzeOptions.map((option, index) => (
-                <div key={option.id} className="grid grid-cols-[auto_1fr_1fr_auto] gap-3 items-end">
+                <div key={option.id} className="grid gap-3 items-end xl:grid-cols-[auto_1fr_1fr_1fr_auto]">
                   <label className="flex items-center gap-2 pb-2 text-xs font-semibold text-gray-700">
                     <input
                       type="checkbox"
@@ -780,6 +783,18 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
                       onChange={(e) => handleUpdateOption(index, 'explanation', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       placeholder="Waarom wel/niet?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      Misconceptie
+                    </label>
+                    <input
+                      type="text"
+                      value={option.misconception || ''}
+                      onChange={(e) => handleUpdateOption(index, 'misconception', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      placeholder="Welke denkfout hoort hierbij?"
                     />
                   </div>
                   <button

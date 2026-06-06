@@ -16,8 +16,8 @@ test('buildPublicQuestionSnapshot removes private answer keys from multiple choi
     antwoord: {
       type: 'meerkeuze',
       options: [
-        { id: 'a', text: '123456', correct: false, explanation: 'Te raden' },
-        { id: 'b', text: 'Een unieke wachtwoordzin', correct: true, explanation: 'Sterk' }
+        { id: 'a', text: '123456', correct: false, explanation: 'Te raden', misconception: 'Kort lijkt makkelijker.' },
+        { id: 'b', text: 'Een unieke wachtwoordzin', correct: true, explanation: 'Sterk', misconception: 'Sterke optie.' }
       ]
     },
     vraagMetadata: {
@@ -33,6 +33,7 @@ test('buildPublicQuestionSnapshot removes private answer keys from multiple choi
   ]);
   assert.equal(publicQuestion.antwoord.options.some((option) => 'correct' in option), false);
   assert.equal(publicQuestion.antwoord.options.some((option) => 'explanation' in option), false);
+  assert.equal(publicQuestion.antwoord.options.some((option) => 'misconception' in option), false);
   assert.deepEqual(publicQuestion.vraagMetadata, { difficulty: 2 });
   assert.equal(hasQuestionAnswerKey(publicQuestion), false);
 });

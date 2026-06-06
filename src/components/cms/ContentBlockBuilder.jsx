@@ -1196,7 +1196,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                 </div>
                 <div className="space-y-2">
                   {item.options.map((option, optionIndex) => (
-                    <div key={option.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_2.5rem]">
+                    <div key={option.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[2.5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_2.5rem]">
                       <label className="flex items-center justify-center" title="Correct antwoord">
                         <input
                           type={item.type === 'waar-niet-waar' ? 'radio' : 'checkbox'}
@@ -1217,6 +1217,12 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                         onChange={(event) => updateOption(index, optionIndex, { explanation: event.target.value })}
                         className="input-standard w-full"
                         placeholder="Feedback bij deze optie"
+                      />
+                      <input
+                        value={option.misconception || ''}
+                        onChange={(event) => updateOption(index, optionIndex, { misconception: event.target.value })}
+                        className="input-standard w-full"
+                        placeholder="Misconceptie of denkfout"
                       />
                       {item.type === 'meerkeuze' && item.options.length > 2 ? (
                         <button
