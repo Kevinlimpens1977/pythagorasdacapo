@@ -40,3 +40,17 @@ test('firestore rules expose sanitized public questions to signed-in users only'
   assert.match(block, /allow read: if signedIn\(\)/);
   assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
 });
+
+test('firestore rules keep private content blocks admin-only', () => {
+  const block = getRuleBlock('match /contentBlocks/{document=**}');
+
+  assert.match(block, /allow read: if isAdminOrSupervisor\(\)/);
+  assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
+});
+
+test('firestore rules expose sanitized public content blocks to signed-in users only', () => {
+  const block = getRuleBlock('match /publicContentBlocks/{document=**}');
+
+  assert.match(block, /allow read: if signedIn\(\)/);
+  assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
+});

@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { buildContentBlockFromSnapshot, normalizeContentBlockSettings } from '../lib/contentBlockUtils';
+import { buildPublicContentBlockSnapshot } from '../lib/publicContentBlockView';
 import { buildPublicQuestionSnapshot } from '../lib/publicQuestionView';
 
 /**
@@ -250,6 +251,24 @@ export const getVragen = async (paragraafId, includeArchived = false) => {
   }
 };
 
+export const getPublicVragen = async (paragraafId, includeArchived = false) => {
+  try {
+    const constraints = [where('paragraafId', '==', paragraafId)];
+    if (!includeArchived) constraints.push(where('isArchived', '==', false));
+    const q = query(collection(db, 'publicQuestions'), ...constraints);
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs
+      .map(buildContentBlockFromSnapshot)
+      .filter((vraag) => includeArchived || vraag.isArchived !== true)
+      .filter((vraag) => vraag.status === 'published')
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  } catch (error) {
+    console.error(`Error fetching public vragen for ${paragraafId}:`, error);
+    return [];
+  }
+};
+
 /**
  * Get single question by ID
  * @param {string} vraagId
@@ -320,6 +339,53 @@ export const getContentBlocks = async (paragraafId, includeDrafts = true, includ
     console.error(`Error fetching content blocks for ${paragraafId}:`, error);
     return [];
   }
+};
+
+export const getPublicContentBlocks = async (paragraafId, includeDrafts = false, includeArchived = false) => {
+  try {
+    const constraints = [where('paragraafId', '==', paragraafId)];
+    if (!includeArchived) constraints.push(where('isArchived', '==', false));
+    const q = query(collection(db, 'publicContentBlocks'), ...constraints);
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .filter(block => includeArchived || block.isArchived !== true)
+      .filter(block => includeDrafts || block.status === 'published')
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  } catch (error) {
+    console.error(`Error fetching public content blocks for ${paragraafId}:`, error);
+    return [];
+  }
+};
+
+export const getContentBlock = async (blockId) => {
+  try {
+    const docSnap = await getDoc(doc(db, 'contentBlocks', blockId));
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching content block ${blockId}:`, error);
+    return null;
+  }
+};
+
+const upsertPublicContentBlockSnapshot = async (blockId, data) => {
+  await setDoc(
+    doc(db, 'publicContentBlocks', blockId),
+    {
+      ...buildPublicContentBlockSnapshot({
+        ...data,
+        id: blockId
+      }),
+      updatedAt: serverTimestamp()
+    }
+  );
 };
 
 /**
@@ -448,7 +514,7 @@ export const createContentBlock = async (paragraafId, data, userId) => {
     const nextOrder = Math.max(...blocks.map(block => block.order || 0), 0) + 1;
     const blockId = `block-${paragraaf.code?.replace('.', '') || paragraafId}-${data.type}-${Date.now()}`;
 
-    await setDoc(doc(db, 'contentBlocks', blockId), {
+    const blockData = {
       id: blockId,
       vakId: paragraaf.vakId,
       leerjaarId: paragraaf.leerjaarId,
@@ -466,7 +532,10 @@ export const createContentBlock = async (paragraafId, data, userId) => {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       isArchived: false
-    });
+    };
+
+    await setDoc(doc(db, 'contentBlocks', blockId), blockData);
+    await upsertPublicContentBlockSnapshot(blockId, blockData);
 
     return blockId;
   } catch (error) {
@@ -526,10 +595,17 @@ export const updateVraag = async (vraagId, data) => {
  */
 export const updateContentBlock = async (blockId, data) => {
   try {
+    const currentBlock = await getContentBlock(blockId);
+    const nextBlock = {
+      ...(currentBlock || {}),
+      ...data,
+      id: blockId
+    };
     await updateDoc(doc(db, 'contentBlocks', blockId), {
       ...data,
       updatedAt: serverTimestamp()
     });
+    await upsertPublicContentBlockSnapshot(blockId, nextBlock);
   } catch (error) {
     console.error(`Error updating content block ${blockId}:`, error);
     throw error;
@@ -544,12 +620,16 @@ export const updateContentBlock = async (blockId, data) => {
 export const updateContentBlockOrder = async (blocks) => {
   try {
     await Promise.all(
-      blocks.map((block) =>
-        updateDoc(doc(db, 'contentBlocks', block.id), {
+      blocks.map(async (block) => {
+        await updateDoc(doc(db, 'contentBlocks', block.id), {
           order: block.order,
           updatedAt: serverTimestamp()
-        })
-      )
+        });
+        await upsertPublicContentBlockSnapshot(block.id, {
+          ...block,
+          order: block.order
+        });
+      })
     );
   } catch (error) {
     console.error('Error updating content block order:', error);
@@ -1011,8 +1091,12 @@ export default {
   getParagrafen,
   getParagraaf,
   getVragen,
+  getPublicVragen,
   getVraag,
+  getPublicVraag,
   getContentBlocks,
+  getPublicContentBlocks,
+  getContentBlock,
   // Write - Vak
   createVak,
   updateVak,
@@ -1035,7 +1119,6 @@ export default {
   createContentBlock,
   updateParagraaf,
   updateVraag,
-  getPublicVraag,
   updateContentBlock,
   updateContentBlockOrder,
   archiveParagraaf,

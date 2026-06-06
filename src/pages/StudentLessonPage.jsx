@@ -30,6 +30,7 @@ import {
   isClosedAssessmentItem,
   normalizeAssessmentItems
 } from '../lib/assessmentBlockUtils';
+import { hasAssessmentItemAnswerKey } from '../lib/publicContentBlockView';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import {
   calculateLessonProgress,
@@ -150,7 +151,9 @@ export default function StudentLessonPage() {
 
         const [paragraafData, contentBlocks, voortgang] = await Promise.all([
           cmsService.getParagraaf(paragraafId),
-          cmsService.getContentBlocks(paragraafId, false),
+          isAdmin
+            ? cmsService.getContentBlocks(paragraafId, false)
+            : cmsService.getPublicContentBlocks(paragraafId, false),
           currentUser ? voortgangService.getVoortgangForParagraaf(currentUser.uid, paragraafId) : []
         ]);
 
@@ -2146,7 +2149,25 @@ function SlidedeckBlock({ block, onOpen }) {
 
 function AssessmentLearningBlock({ block, bodyHtml }) {
   const content = block.content || {};
-  const items = normalizeAssessmentItems(content.items);
+  const rawItems = Array.isArray(content.items) ? content.items : [];
+  const items = normalizeAssessmentItems(rawItems).map((item, index) => {
+    const rawItem = rawItems[index] || {};
+    if (rawItem.publicSnapshotVersion !== 1 && rawItem.answerKeyAvailable !== false) return item;
+    return {
+      ...item,
+      ...rawItem,
+      id: rawItem.id || item.id,
+      type: rawItem.type || item.type,
+      vraagtype: rawItem.vraagtype || item.vraagtype,
+      prompt: rawItem.prompt ?? item.prompt,
+      answer: rawItem.answer || item.answer,
+      options: Array.isArray(rawItem.options) ? rawItem.options : item.options,
+      feedback: rawItem.feedback || '',
+      tokens: Math.max(0, Math.round(Number(rawItem.tokens) || 0)),
+      answerKeyAvailable: false,
+      publicSnapshotVersion: 1
+    };
+  });
   const isToets = block.type === 'toets';
   const tokenTotal = Number(content.tokenConfig?.totalTokens || block.tokenTotal || 0);
 
@@ -2188,13 +2209,14 @@ function AssessmentItemLearningCard({ item, index, isToets }) {
   const [answer, setAnswer] = useState(() => buildInitialAssessmentAnswer(item));
   const [result, setResult] = useState(null);
   const closed = isClosedAssessmentItem(item);
+  const answerKeyAvailable = hasAssessmentItemAnswerKey(item);
 
   const handleCheck = () => {
-    if (!closed) {
+    if (!closed || !answerKeyAvailable) {
       setResult({
         closed: false,
         correct: null,
-        feedback: item.feedback || 'Je antwoord is opgeslagen om later te bespreken.'
+        feedback: item.feedback || 'Je antwoord is opgeslagen. Je docent kijkt deze vraag na, zodat het antwoordmodel niet zichtbaar hoeft te zijn in de leerlingbrowser.'
       });
       return;
     }
@@ -2213,12 +2235,12 @@ function AssessmentItemLearningCard({ item, index, isToets }) {
       </p>
 
       <div className="mt-4">
-        <AssessmentAnswerInput item={item} value={answer} onChange={setAnswer} disabled={isToets && result !== null} />
+        <AssessmentAnswerInput item={item} value={answer} onChange={setAnswer} disabled={isToets && result !== null} answerKeyAvailable={answerKeyAvailable} />
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button type="button" onClick={handleCheck} className="btn-primary px-4 py-2 text-sm">
-          {closed ? 'Controleer antwoord' : 'Antwoord inleveren'}
+          {closed && answerKeyAvailable ? 'Controleer antwoord' : 'Antwoord inleveren'}
         </button>
         {result && (
           <div className={[
@@ -2251,7 +2273,7 @@ function buildInitialAssessmentAnswer(item) {
   return '';
 }
 
-function AssessmentAnswerInput({ item, value, onChange, disabled = false }) {
+function AssessmentAnswerInput({ item, value, onChange, disabled = false, answerKeyAvailable = true }) {
   if (item.type === 'waar-niet-waar') {
     return (
       <div className="grid gap-2 sm:grid-cols-2">
@@ -2273,7 +2295,7 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false }) {
   }
 
   if (item.type === 'meerkeuze') {
-    const multipleCorrect = item.options.filter((option) => option.correct).length > 1;
+    const multipleCorrect = answerKeyAvailable && item.options.filter((option) => option.correct).length > 1;
     return (
       <div className="grid gap-2 sm:grid-cols-2">
         {item.options.map((option) => (
@@ -2313,7 +2335,7 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false }) {
           className="input-standard w-full"
           placeholder="Typ je antwoord"
         />
-        {item.answer.unit && (
+        {item.answer?.unit && (
           <span className="flex h-11 items-center rounded-xl bg-[var(--helix-surface-soft)] px-3 text-sm font-black text-[var(--helix-muted)]">
             {item.answer.unit}
           </span>
@@ -2323,10 +2345,13 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false }) {
   }
 
   if (item.type === 'koppelen') {
-    const options = item.answer.pairs.map((pair) => pair.right);
+    const pairs = Array.isArray(item.answer?.pairs) ? item.answer.pairs : [];
+    const options = Array.isArray(item.answer?.options) && item.answer.options.length > 0
+      ? item.answer.options.map((option) => option.text).filter(Boolean)
+      : pairs.map((pair) => pair.right).filter(Boolean);
     return (
       <div className="space-y-2">
-        {item.answer.pairs.map((pair) => (
+        {pairs.map((pair) => (
           <div key={pair.id} className="grid gap-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <span className="text-sm font-black text-[var(--helix-navy)]">{pair.left}</span>
             <select
@@ -2347,14 +2372,15 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false }) {
   }
 
   if (item.type === 'invullen') {
+    const gaps = Array.isArray(item.answer?.gaps) ? item.answer.gaps : [];
     return (
       <div className="space-y-3">
-        {item.answer.text && (
+        {item.answer?.text && (
           <p className="rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
             {item.answer.text}
           </p>
         )}
-        {item.answer.gaps.map((gap, gapIndex) => (
+        {gaps.map((gap, gapIndex) => (
           <input
             key={gap.id}
             value={value[gap.id] || ''}
@@ -2369,7 +2395,7 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false }) {
   }
 
   if (item.type === 'volgorde') {
-    const options = item.answer.items;
+    const options = Array.isArray(item.answer?.items) ? item.answer.items : [];
     return (
       <div className="space-y-2">
         {options.map((_, positionIndex) => (

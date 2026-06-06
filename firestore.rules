@@ -96,6 +96,11 @@ service cloud.firestore {
     }
 
     match /contentBlocks/{document=**} {
+      allow read: if isAdminOrSupervisor();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /publicContentBlocks/{document=**} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();
     }
