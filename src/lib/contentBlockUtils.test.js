@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   blockToSlide,
   buildContentBlockPreview,
+  buildContentBlocksFromQuerySnapshot,
   buildContentBlockFromSnapshot,
   getDefaultContentForBlockType,
   getReorderedBlocks,
@@ -105,6 +106,32 @@ test('buildContentBlockFromSnapshot keeps Firestore document id when stored data
 
   assert.equal(block.id, 'firestore-doc-id');
   assert.equal(block.sourceDataId, 'stale-imported-id');
+});
+
+test('buildContentBlocksFromQuerySnapshot keeps unique Firestore ids when stored ids are duplicated', () => {
+  const blocks = buildContentBlocksFromQuerySnapshot({
+    docs: [
+      {
+        id: 'firestore-doc-a',
+        data: () => ({
+          id: 'block_question_missing',
+          type: 'question',
+          order: 1
+        })
+      },
+      {
+        id: 'firestore-doc-b',
+        data: () => ({
+          id: 'block_question_missing',
+          type: 'question',
+          order: 2
+        })
+      }
+    ]
+  });
+
+  assert.deepEqual(blocks.map((block) => block.id), ['firestore-doc-a', 'firestore-doc-b']);
+  assert.deepEqual(blocks.map((block) => block.sourceDataId), ['block_question_missing', 'block_question_missing']);
 });
 
 test('getReorderedBlocks moves a block up and normalizes order values', () => {
