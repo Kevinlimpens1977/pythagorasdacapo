@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8');
 const appShell = readFileSync(new URL('../components/layout/AppShell.jsx', import.meta.url), 'utf8');
 const cmsShell = readFileSync(new URL('../components/cms/CmsShell.jsx', import.meta.url), 'utf8');
+const navigationTree = readFileSync(new URL('../components/cms/NavigationTree.jsx', import.meta.url), 'utf8');
 const contentBlockBuilder = readFileSync(new URL('../components/cms/ContentBlockBuilder.jsx', import.meta.url), 'utf8');
 const cropEditorPanel = readFileSync(new URL('../components/cms/CropEditorPanel.jsx', import.meta.url), 'utf8');
 const adminKlassenPage = readFileSync(new URL('../pages/AdminKlassenPage.jsx', import.meta.url), 'utf8');
@@ -170,6 +171,14 @@ test('cms contentstudio keeps the left navigation rail full viewport height', ()
   assert.match(cmsShell, /self-stretch/);
   assert.match(cmsShell, /bg-white\/95/);
   assert.match(cmsShell, /className="custom-scrollbar flex-1 overflow-y-auto/);
+});
+
+test('cms navigation exposes edit actions without hidden double-click instructions', () => {
+  assert.doesNotMatch(navigationTree, /Dubbelklik voor bewerkingsopties/);
+  assert.doesNotMatch(navigationTree, /onDoubleClick/);
+  assert.match(navigationTree, /title="Bewerkingsopties"/);
+  assert.match(navigationTree, /Pencil/);
+  assert.match(navigationTree, /Trash2/);
 });
 
 test('question route blocks avoid duplicate linked-question wording', () => {

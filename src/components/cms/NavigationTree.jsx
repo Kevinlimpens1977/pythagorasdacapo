@@ -3,6 +3,7 @@ import {
   BookOpen,
   ChevronDown,
   ChevronRight,
+  MoreHorizontal,
   PanelLeftClose,
   Pencil,
   Plus,
@@ -113,7 +114,7 @@ const TreeNode = ({
     <div className={isChapterBand ? 'mt-2' : undefined}>
       <div
         className={[
-          'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_minmax(0,1fr)_7rem] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
+          'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
           isActiveParagraaf
             ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[#f5edff] text-[var(--helix-navy)]'
             : isActivePath
@@ -152,15 +153,7 @@ const TreeNode = ({
           {hasChildren && (isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />)}
         </button>
 
-        <span
-          className="relative min-w-0"
-          onDoubleClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onOpenActions(node.id);
-          }}
-          title="Dubbelklik voor bewerkingsopties"
-        >
+        <span className="min-w-0">
           {editingName ? (
             <input
               value={draftName}
@@ -187,9 +180,54 @@ const TreeNode = ({
               ))}
             </span>
           )}
+        </span>
+
+        <span className="relative flex min-w-0 items-center justify-end gap-1">
+          {mutedCount && (
+            <span
+              className={[
+                'inline-flex w-[5.5rem] shrink-0 justify-center whitespace-nowrap rounded-lg px-2 py-1 text-[10px] font-extrabold leading-none',
+                isActiveParagraaf
+                  ? 'bg-white text-[var(--helix-purple)]'
+                  : isChapterBand
+                    ? 'bg-white/85 text-[var(--helix-purple)]'
+                    : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
+              ].join(' ')}
+            >
+              {mutedCount}
+            </span>
+          )}
+          {onCreateChild && canCreateChild && (
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                onCreateChild(node.id);
+              }}
+              className={[
+                'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--helix-border)] transition-colors',
+                isChapterBand || isActiveParagraaf ? 'bg-white text-[var(--helix-purple)] hover:bg-white' : 'bg-white text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
+              ].join(' ')}
+              title={`Nieuw onderdeel toevoegen`}
+            >
+              <Plus size={15} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              if (actionsOpen) onCloseActions?.();
+              else onOpenActions(node.id);
+            }}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)]/30 hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)]"
+            title="Bewerkingsopties"
+            aria-label={`Bewerkingsopties voor ${displayLabel}`}
+          >
+            <MoreHorizontal size={15} />
+          </button>
           {actionsOpen && (
             <span
-              className="absolute left-0 top-full z-50 mt-2 w-40 rounded-2xl border border-[var(--helix-border)] bg-white p-1.5 text-left shadow-xl"
+              className="absolute right-0 top-full z-50 mt-2 w-40 rounded-2xl border border-[var(--helix-border)] bg-white p-1.5 text-left shadow-xl"
               onClick={(event) => event.stopPropagation()}
             >
               <button
@@ -209,42 +247,9 @@ const TreeNode = ({
                 className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-extrabold text-red-600 transition hover:bg-red-50"
               >
                 <Trash2 size={14} />
-                Verwijderen
+                Archiveren
               </button>
             </span>
-          )}
-        </span>
-
-        <span className="relative flex min-w-0 items-center justify-end">
-          {mutedCount && (
-            <span
-              className={[
-                'inline-flex w-[7rem] shrink-0 justify-center whitespace-nowrap rounded-lg px-2 py-1 text-[10px] font-extrabold leading-none transition-opacity',
-                isActiveParagraaf
-                  ? 'bg-white text-[var(--helix-purple)]'
-                  : isChapterBand
-                    ? 'bg-white/85 text-[var(--helix-purple)]'
-                    : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]',
-                onCreateChild && canCreateChild ? 'group-hover:opacity-25' : ''
-              ].join(' ')}
-            >
-              {mutedCount}
-            </span>
-          )}
-          {onCreateChild && canCreateChild && (
-            <button
-              onClick={(event) => {
-                event.stopPropagation();
-                onCreateChild(node.id);
-              }}
-              className={[
-                'absolute right-0 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100',
-                isChapterBand || isActiveParagraaf ? 'bg-white text-[var(--helix-purple)] hover:bg-white' : 'bg-white text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
-              ].join(' ')}
-              title={`Nieuw onderdeel toevoegen`}
-            >
-              <Plus size={15} />
-            </button>
           )}
         </span>
       </div>
