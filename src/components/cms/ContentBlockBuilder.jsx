@@ -115,6 +115,10 @@ import {
   buildDefaultAnswerForQuestionType,
   buildDefaultTokenConfigForQuestionType
 } from '../../lib/questionTypeRegistry';
+import {
+  LESSON_ROUTE_TEMPLATES,
+  buildLessonRouteTemplateBlocks
+} from '../../lib/lessonRouteTemplates';
 import { getDeckReadySlidedeckPackages } from '../../services/slidedeckService';
 import { buildSlidedeckCreatorUrl } from '../../lib/slidedeckCmsLink';
 import { uploadMediaAsset } from '../../services/mediaService';
@@ -2625,6 +2629,7 @@ export default function ContentBlockBuilder({
   const [editingBlockId, setEditingBlockId] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [creatingType, setCreatingType] = useState(null);
+  const [applyingTemplateId, setApplyingTemplateId] = useState(null);
   const [confirmArchiveBlockId, setConfirmArchiveBlockId] = useState(null);
   const normalizedBlocks = useMemo(() => normalizeContentBlocks(blocks), [blocks]);
   const sortableBlockIds = useMemo(() => normalizedBlocks.map((block) => block.id), [normalizedBlocks]);
@@ -2722,6 +2727,72 @@ export default function ContentBlockBuilder({
       setActionError('Kon lesblok niet aanmaken.');
     } finally {
       setCreatingType(null);
+    }
+  };
+
+  const handleApplyTemplate = async (templateId) => {
+    const templateBlocks = buildLessonRouteTemplateBlocks(templateId);
+    if (templateBlocks.length === 0) return;
+
+    try {
+      setApplyingTemplateId(templateId);
+      setActionError(null);
+      const userId = auth.currentUser?.uid || 'unknown-admin';
+      let nextQuestionNumber = getNextQuestionNumber(vragen);
+      let firstBlockId = null;
+
+      for (const templateBlock of templateBlocks) {
+        if (templateBlock.type === 'question') {
+          const vraagtype = 'open';
+          const antwoord = buildDefaultAnswerForQuestionType(vraagtype);
+          const { blockId } = await cmsService.createQuestionContentBlock(
+            paragraaf.id,
+            {
+              number: nextQuestionNumber,
+              title: templateBlock.question?.title || `Vraag ${nextQuestionNumber}`,
+              status: templateBlock.status,
+              vraagtype,
+              content: templateBlock.question?.content || { text: '<p></p>', images: [] },
+              vraagMetadata: {
+                tokenConfig: buildDefaultTokenConfigForQuestionType(vraagtype, antwoord)
+              },
+              antwoord
+            },
+            {
+              title: templateBlock.title,
+              status: templateBlock.status,
+              content: templateBlock.content,
+              settings: templateBlock.settings
+            },
+            userId
+          );
+          firstBlockId ||= blockId;
+          nextQuestionNumber += 1;
+          continue;
+        }
+
+        const blockId = await cmsService.createContentBlock(
+          paragraaf.id,
+          {
+            type: templateBlock.type,
+            title: templateBlock.title,
+            status: templateBlock.status,
+            content: templateBlock.content,
+            settings: templateBlock.settings,
+            linkedVraagId: null
+          },
+          userId
+        );
+        firstBlockId ||= blockId;
+      }
+
+      await onRefresh();
+      if (firstBlockId) setEditingBlockId(firstBlockId);
+    } catch (error) {
+      console.error('Kon lesroute-template niet toepassen:', error);
+      setActionError('Kon lesroute-template niet toepassen.');
+    } finally {
+      setApplyingTemplateId(null);
     }
   };
 
@@ -2879,6 +2950,35 @@ export default function ContentBlockBuilder({
         )}
 
         <div className="mt-6 rounded-[2rem] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3 sm:p-4">
+          <div className="mb-5">
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="helix-eyebrow">Routepatroon</p>
+                <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Start vanuit template</h3>
+              </div>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">
+                {LESSON_ROUTE_TEMPLATES.length} templates
+              </p>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-5">
+              {LESSON_ROUTE_TEMPLATES.map((template) => (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => handleApplyTemplate(template.id)}
+                  disabled={applyingTemplateId !== null || creatingType !== null}
+                  className="rounded-2xl border border-[var(--helix-border)] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-fuchsia-200 hover:shadow-sm disabled:cursor-wait disabled:opacity-60"
+                >
+                  <span className="block text-sm font-black text-[var(--helix-navy)]">{template.label}</span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--helix-muted)]">{template.description}</span>
+                  <span className="mt-3 block text-xs font-black uppercase tracking-wide text-[var(--helix-purple)]">
+                    {applyingTemplateId === template.id ? 'Maken...' : `${template.blocks.length} blokken`}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="helix-eyebrow">Toevoegen</p>
@@ -2890,7 +2990,7 @@ export default function ContentBlockBuilder({
           </div>
           <div className="grid grid-cols-2 auto-rows-fr gap-3 sm:grid-cols-3 xl:grid-cols-4 min-[1800px]:grid-cols-7">
             {CONTENT_BLOCK_TYPES.map((type) => (
-              <BlockTypeButton key={type} type={type} onClick={handleCreateBlock} disabled={creatingType !== null} />
+              <BlockTypeButton key={type} type={type} onClick={handleCreateBlock} disabled={creatingType !== null || applyingTemplateId !== null} />
             ))}
           </div>
         </div>
