@@ -11,6 +11,31 @@ const parseNumber = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const makeUniqueId = (id, index, seenIds, prefix = 'item') => {
+  const baseId = String(id || createId(`${prefix}-${index + 1}`));
+  if (!seenIds.has(baseId)) {
+    seenIds.add(baseId);
+    return baseId;
+  }
+
+  let suffix = 2;
+  let candidate = `${baseId}-${suffix}`;
+  while (seenIds.has(candidate)) {
+    suffix += 1;
+    candidate = `${baseId}-${suffix}`;
+  }
+  seenIds.add(candidate);
+  return candidate;
+};
+
+const withUniqueIds = (items = [], prefix = 'item') => {
+  const seenIds = new Set();
+  return items.map((item, index) => ({
+    ...item,
+    id: makeUniqueId(item.id, index, seenIds, prefix)
+  }));
+};
+
 const questionTypeItems = QUESTION_TYPES.map(({ id, label, description }) => ({ id, label, description }));
 
 export const ASSESSMENT_COGNITIVE_SKILLS = [
@@ -162,15 +187,15 @@ const normalizeChoiceAnswer = (type, rawAnswer = {}, legacyOptions = []) => {
     : Array.isArray(legacyOptions) && legacyOptions.length > 0
       ? legacyOptions
       : fallbackOptions;
-  const options = sourceOptions.map(normalizeOption);
+  const options = withUniqueIds(sourceOptions.map(normalizeOption), 'option');
 
   if (type === 'waar-niet-waar') {
     const trueOption = options[0] || normalizeOption({ text: 'Waar', correct: true });
     const falseOption = options[1] || normalizeOption({ text: 'Niet waar', correct: false }, 1);
-    const nextOptions = [
+    const nextOptions = withUniqueIds([
       { ...trueOption, text: trueOption.text || 'Waar' },
       { ...falseOption, text: falseOption.text || 'Niet waar' }
-    ];
+    ], 'option');
     if (nextOptions.every((option) => option.correct !== true)) {
       nextOptions[0] = { ...nextOptions[0], correct: true };
     }
@@ -200,7 +225,7 @@ const normalizePair = (pair = {}, index = 0) => ({
 
 const normalizeMatchingAnswer = (rawAnswer = {}) => {
   const pairs = Array.isArray(rawAnswer.pairs) && rawAnswer.pairs.length > 0
-    ? rawAnswer.pairs.map(normalizePair)
+    ? withUniqueIds(rawAnswer.pairs.map(normalizePair), 'pair')
     : defaultAnswerForAssessmentType('koppelen').pairs;
   return { type: 'koppelen', pairs };
 };
@@ -216,7 +241,7 @@ const normalizeGap = (gap = {}, index = 0) => ({
 const normalizeFillInAnswer = (rawAnswer = {}) => {
   const fallback = defaultAnswerForAssessmentType('invullen');
   const gaps = Array.isArray(rawAnswer.gaps) && rawAnswer.gaps.length > 0
-    ? rawAnswer.gaps.map(normalizeGap)
+    ? withUniqueIds(rawAnswer.gaps.map(normalizeGap), 'gap')
     : fallback.gaps;
   const segments = Array.isArray(rawAnswer.segments) && rawAnswer.segments.length > 0
     ? rawAnswer.segments
@@ -236,7 +261,7 @@ const normalizeOrderItem = (item = {}, index = 0) => ({
 
 const normalizeOrderAnswer = (rawAnswer = {}) => {
   const items = Array.isArray(rawAnswer.items) && rawAnswer.items.length > 0
-    ? rawAnswer.items.map(normalizeOrderItem)
+    ? withUniqueIds(rawAnswer.items.map(normalizeOrderItem), 'order')
     : defaultAnswerForAssessmentType('volgorde').items;
   return { type: 'volgorde', items };
 };
@@ -302,29 +327,12 @@ export const normalizeAssessmentItem = (item = {}, index = 0) => {
   };
 };
 
-const makeUniqueItemId = (id, index, seenIds) => {
-  const baseId = String(id || createId(`assessment-${index + 1}`));
-  if (!seenIds.has(baseId)) {
-    seenIds.add(baseId);
-    return baseId;
-  }
-
-  let suffix = 2;
-  let candidate = `${baseId}-${suffix}`;
-  while (seenIds.has(candidate)) {
-    suffix += 1;
-    candidate = `${baseId}-${suffix}`;
-  }
-  seenIds.add(candidate);
-  return candidate;
-};
-
 export const normalizeAssessmentItems = (items = []) =>
   (() => {
     const seenIds = new Set();
     return (Array.isArray(items) ? items : []).map(normalizeAssessmentItem).map((item, index) => ({
       ...item,
-      id: makeUniqueItemId(item.id, index, seenIds)
+      id: makeUniqueId(item.id, index, seenIds, 'assessment')
     }));
   })();
 

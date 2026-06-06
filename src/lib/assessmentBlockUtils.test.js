@@ -163,6 +163,57 @@ test('normalizeAssessmentItems makes duplicate imported item ids unique for stab
   assert.deepEqual(items.map((item) => item.id), ['S1', 'S1-2', 'S1-3']);
 });
 
+test('normalizeAssessmentItem makes duplicate nested answer ids unique for stable rendering', () => {
+  const choice = normalizeAssessmentItem({
+    type: 'meerkeuze',
+    answer: {
+      options: [
+        { id: 'S1', text: 'Kort wachtwoord' },
+        { id: 'S1', text: 'Wachtwoordzin', correct: true }
+      ]
+    }
+  });
+
+  assert.deepEqual(choice.answer.options.map((option) => option.id), ['S1', 'S1-2']);
+  assert.deepEqual(choice.options.map((option) => option.id), ['S1', 'S1-2']);
+
+  const matching = normalizeAssessmentItem({
+    type: 'koppelen',
+    answer: {
+      pairs: [
+        { id: 'S1', left: '2FA', right: 'Extra controle' },
+        { id: 'S1', left: 'Back-up', right: 'Hersteloptie' }
+      ]
+    }
+  });
+
+  assert.deepEqual(matching.answer.pairs.map((pair) => pair.id), ['S1', 'S1-2']);
+
+  const fillIn = normalizeAssessmentItem({
+    type: 'invullen',
+    answer: {
+      gaps: [
+        { id: 'S1', answer: 'herstelmail' },
+        { id: 'S1', answer: 'authenticator' }
+      ]
+    }
+  });
+
+  assert.deepEqual(fillIn.answer.gaps.map((gap) => gap.id), ['S1', 'S1-2']);
+
+  const order = normalizeAssessmentItem({
+    type: 'volgorde',
+    answer: {
+      items: [
+        { id: 'S1', text: 'Open instellingen' },
+        { id: 'S1', text: 'Controleer herstelopties' }
+      ]
+    }
+  });
+
+  assert.deepEqual(order.answer.items.map((item) => item.id), ['S1', 'S1-2']);
+});
+
 test('sumAssessmentItemTokens totals normalized item tokens', () => {
   assert.equal(sumAssessmentItemTokens([{ tokens: 3 }, { tokens: '4' }, { tokens: -2 }]), 7);
 });
