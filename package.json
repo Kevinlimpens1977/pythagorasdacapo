@@ -8,7 +8,8 @@
     "build": "vite build",
     "test:e2e": "playwright test",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backfill:public-content": "node scripts/backfill-public-content-snapshots.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
