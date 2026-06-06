@@ -1,3 +1,5 @@
+import { normalizeContentBlockSettings } from './contentBlockUtils.js';
+
 const cleanText = (value) => String(value || '').trim();
 
 const allowedId = (value, allowedValues, fallback) =>
@@ -216,7 +218,7 @@ export const buildPublicContentBlockSnapshot = (block = {}) => ({
   title: block.title || '',
   status: block.status || 'draft',
   content: sanitizeContent(block),
-  settings: block.settings || {},
+  settings: normalizeContentBlockSettings(block.settings, block.type),
   linkedVraagId: block.linkedVraagId || null,
   linkedVraagTitle: block.linkedVraagTitle || '',
   isArchived: block.isArchived === true,

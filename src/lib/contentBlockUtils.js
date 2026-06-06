@@ -26,12 +26,25 @@ export const CONTENT_BLOCK_LABELS = {
 
 export const DEFAULT_CONTENT_BLOCK_SETTINGS = {
   allowAiHelp: false,
-  allowMathToolbox: false
+  allowMathToolbox: false,
+  differentiationLevel: 'basis'
 };
+
+export const CONTENT_BLOCK_DIFFERENTIATION_LEVELS = [
+  { id: 'steun', label: 'Steun' },
+  { id: 'basis', label: 'Basis' },
+  { id: 'plus', label: 'Plus' }
+];
+
+export const normalizeContentBlockDifferentiationLevel = (value = '') =>
+  CONTENT_BLOCK_DIFFERENTIATION_LEVELS.some((level) => level.id === value) ? value : DEFAULT_CONTENT_BLOCK_SETTINGS.differentiationLevel;
 
 export const normalizeContentBlockSettings = (settings = {}, blockType = '') => ({
   allowAiHelp: settings.allowAiHelp ?? (['question', 'quiz'].includes(blockType) ? true : DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp),
-  allowMathToolbox: false
+  allowMathToolbox: false,
+  differentiationLevel: normalizeContentBlockDifferentiationLevel(
+    settings.differentiationLevel || settings.targetLevel || settings.routeLevel
+  )
 });
 
 export const buildContentBlockFromSnapshot = (snapshot) => {

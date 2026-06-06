@@ -61,6 +61,7 @@ import {
 } from '../../lib/mediaUtils';
 import {
   CONTENT_BLOCK_LABELS,
+  CONTENT_BLOCK_DIFFERENTIATION_LEVELS,
   CONTENT_BLOCK_TYPES,
   buildContentBlockPreview,
   getDefaultContentForBlockType,
@@ -267,10 +268,31 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
     });
   };
 
+  const updateSetting = (field, value) => {
+    onChange({
+      ...settings,
+      [field]: value
+    });
+  };
+
   return (
     <div className="rounded-2xl border border-fuchsia-100 bg-white p-4">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Leerlingtools</p>
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Leerlingtools en differentiatie</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
+          <span className="block text-sm font-black text-[var(--helix-navy)]">Routevariant</span>
+          <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Markeer dit blok als steun, basis of plus.</span>
+          <select
+            value={settings.differentiationLevel || 'basis'}
+            onChange={(event) => updateSetting('differentiationLevel', event.target.value)}
+            className="input-standard mt-3 w-full bg-white"
+          >
+            {CONTENT_BLOCK_DIFFERENTIATION_LEVELS.map((level) => (
+              <option key={level.id} value={level.id}>{level.label}</option>
+            ))}
+          </select>
+        </label>
+
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
           <input
             type="checkbox"

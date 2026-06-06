@@ -6,6 +6,24 @@ import {
   hasAssessmentItemAnswerKey
 } from './publicContentBlockView.js';
 
+test('buildPublicContentBlockSnapshot normalizes differentiation settings', () => {
+  const publicBlock = buildPublicContentBlockSnapshot({
+    id: 'block-diff',
+    type: 'theory',
+    settings: {
+      allowAiHelp: true,
+      allowMathToolbox: true,
+      differentiationLevel: 'plus'
+    }
+  });
+
+  assert.deepEqual(publicBlock.settings, {
+    allowAiHelp: true,
+    allowMathToolbox: false,
+    differentiationLevel: 'plus'
+  });
+});
+
 test('buildPublicContentBlockSnapshot removes answer keys from multiple choice assessment items', () => {
   const publicBlock = buildPublicContentBlockSnapshot({
     id: 'block-1',

@@ -27,33 +27,45 @@ test('normalizeContentBlocks filters archived blocks and sorts by order', () => 
 test('normalizeContentBlockSettings enables Digidocent by default for answer practice blocks but never enables math toolbox', () => {
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'question'), {
     allowAiHelp: true,
-    allowMathToolbox: false
+    allowMathToolbox: false,
+    differentiationLevel: 'basis'
   });
 
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'quiz'), {
     allowAiHelp: true,
-    allowMathToolbox: false
+    allowMathToolbox: false,
+    differentiationLevel: 'basis'
   });
 
   assert.deepEqual(normalizeContentBlockSettings({ allowMathToolbox: true, allowCalculator: true }, 'quiz'), {
     allowAiHelp: true,
-    allowMathToolbox: false
+    allowMathToolbox: false,
+    differentiationLevel: 'basis'
   });
 
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'toets'), {
     allowAiHelp: false,
-    allowMathToolbox: false
+    allowMathToolbox: false,
+    differentiationLevel: 'basis'
   });
 
   assert.deepEqual(normalizeContentBlockSettings({}, 'slidedeck'), {
     allowAiHelp: false,
-    allowMathToolbox: false
+    allowMathToolbox: false,
+    differentiationLevel: 'basis'
   });
 
   assert.deepEqual(normalizeContentBlockSettings({ allowAiHelp: false }, 'question'), {
     allowAiHelp: false,
-    allowMathToolbox: false
+    allowMathToolbox: false,
+    differentiationLevel: 'basis'
   });
+});
+
+test('normalizeContentBlockSettings keeps supported differentiation levels', () => {
+  assert.equal(normalizeContentBlockSettings({ differentiationLevel: 'steun' }, 'theory').differentiationLevel, 'steun');
+  assert.equal(normalizeContentBlockSettings({ differentiationLevel: 'plus' }, 'summary').differentiationLevel, 'plus');
+  assert.equal(normalizeContentBlockSettings({ differentiationLevel: 'anders' }, 'media').differentiationLevel, 'basis');
 });
 
 test('normalizeContentBlocks treats existing question blocks without settings as Digidocent-enabled', () => {
@@ -64,6 +76,7 @@ test('normalizeContentBlocks treats existing question blocks without settings as
 
   assert.equal(question.settings.allowAiHelp, true);
   assert.equal(media.settings.allowAiHelp, false);
+  assert.equal(question.settings.differentiationLevel, 'basis');
 });
 
 test('buildContentBlockFromSnapshot keeps Firestore document id when stored data contains an id field', () => {
