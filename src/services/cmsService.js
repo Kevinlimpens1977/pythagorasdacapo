@@ -19,7 +19,11 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { buildContentBlockFromSnapshot, normalizeContentBlockSettings } from '../lib/contentBlockUtils';
+import {
+  buildContentBlockFromSnapshot,
+  buildContentBlocksFromQuerySnapshot,
+  normalizeContentBlockSettings
+} from '../lib/contentBlockUtils';
 import { buildQuestionContentBlockCreateBundle } from '../lib/questionBlockContract';
 import { buildDuplicateContentBlockPayload } from '../lib/contentBlockBulkActions';
 import { buildPublicContentBlockSnapshot } from '../lib/publicContentBlockView';
@@ -332,11 +336,7 @@ export const getContentBlocks = async (paragraafId, includeDrafts = true, includ
     const q = query(collection(db, 'contentBlocks'), ...constraints);
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
+    return buildContentBlocksFromQuerySnapshot(querySnapshot)
       .filter(block => includeArchived || block.isArchived !== true)
       .filter(block => includeDrafts || block.status === 'published')
       .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -354,11 +354,7 @@ export const getPublicContentBlocks = async (paragraafId, includeDrafts = false,
     const q = query(collection(db, 'publicContentBlocks'), ...constraints);
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
+    return buildContentBlocksFromQuerySnapshot(querySnapshot)
       .filter(block => includeArchived || block.isArchived !== true)
       .filter(block => includeDrafts || block.status === 'published')
       .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -409,10 +405,7 @@ export const getAssignedPublicContentBlocks = async ({
     );
 
     return querySnapshots
-      .flatMap((snapshot) => snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })))
+      .flatMap((snapshot) => buildContentBlocksFromQuerySnapshot(snapshot))
       .filter(block => includeArchived || block.isArchived !== true)
       .filter(block => block.status === 'published')
       .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -426,7 +419,7 @@ export const getContentBlock = async (blockId) => {
   try {
     const docSnap = await getDoc(doc(db, 'contentBlocks', blockId));
     if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() };
+      return buildContentBlockFromSnapshot(docSnap);
     }
     return null;
   } catch (error) {

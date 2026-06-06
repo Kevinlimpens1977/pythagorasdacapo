@@ -72,6 +72,10 @@ export const buildContentBlockFromSnapshot = (snapshot) => {
   };
 };
 
+export const buildContentBlocksFromQuerySnapshot = (querySnapshot) => {
+  return (querySnapshot?.docs || []).map(buildContentBlockFromSnapshot);
+};
+
 export const getDefaultContentForBlockType = (type) => {
   if (type === 'example') {
     return { html: '', steps: [], imageUrl: '', crops: [] };
