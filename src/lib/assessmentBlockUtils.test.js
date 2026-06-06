@@ -153,6 +153,16 @@ test('normalizeAssessmentItems tolerates non-array input', () => {
   assert.deepEqual(normalizeAssessmentItems(null), []);
 });
 
+test('normalizeAssessmentItems makes duplicate imported item ids unique for stable rendering', () => {
+  const items = normalizeAssessmentItems([
+    { id: 'S1', type: 'open', prompt: 'Vraag 1' },
+    { id: 'S1', type: 'open', prompt: 'Vraag 2' },
+    { id: 'S1', type: 'open', prompt: 'Vraag 3' }
+  ]);
+
+  assert.deepEqual(items.map((item) => item.id), ['S1', 'S1-2', 'S1-3']);
+});
+
 test('sumAssessmentItemTokens totals normalized item tokens', () => {
   assert.equal(sumAssessmentItemTokens([{ tokens: 3 }, { tokens: '4' }, { tokens: -2 }]), 7);
 });

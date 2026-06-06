@@ -77,6 +77,7 @@ import {
 import {
   CONTENT_BLOCK_STATUSES,
   getContentBlockStatusLabel,
+  getReadinessIssueRenderKey,
   normalizeContentBlockStatus,
   validateContentBlockReadiness,
   validateParagraphReadiness
@@ -2431,8 +2432,8 @@ const ParagraphMetadataPanel = ({ paragraaf, blocks, onSave }) => {
 
       {readiness.errors.length > 0 && (
         <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
-          {readiness.errors.slice(0, 4).map((issue) => (
-            <p key={issue.code}>{issue.message}</p>
+          {readiness.errors.slice(0, 4).map((issue, issueIndex) => (
+            <p key={getReadinessIssueRenderKey(issue, issueIndex)}>{issue.message}</p>
           ))}
         </div>
       )}

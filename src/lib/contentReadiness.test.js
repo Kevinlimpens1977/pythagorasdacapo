@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   CONTENT_BLOCK_STATUSES,
   getContentBlockStatusLabel,
+  getReadinessIssueRenderKey,
   normalizeContentBlockStatus,
   validateContentBlockReadiness,
   validateParagraphReadiness
@@ -16,6 +17,23 @@ test('content readiness normalizes the full status model', () => {
   assert.equal(normalizeContentBlockStatus('bad-value'), 'draft');
   assert.equal(normalizeContentBlockStatus(''), 'draft');
   assert.equal(getContentBlockStatusLabel('needs_review'), 'Review nodig');
+});
+
+test('readiness issue render keys stay unique when multiple blocks have the same issue code', () => {
+  const issues = [
+    { code: 'block_question_missing', message: 'Vraag: Koppel eerst een vraag.' },
+    { code: 'block_question_missing', message: 'Vraag: Koppel eerst een vraag.' },
+    { code: 'block_question_missing', message: 'Vraag: Koppel eerst een vraag.' }
+  ];
+
+  assert.deepEqual(
+    issues.map((issue, index) => getReadinessIssueRenderKey(issue, index)),
+    [
+      'block_question_missing-0',
+      'block_question_missing-1',
+      'block_question_missing-2'
+    ]
+  );
 });
 
 test('theory and summary blocks need visible text before publication', () => {

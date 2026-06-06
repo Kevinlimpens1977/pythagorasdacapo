@@ -206,6 +206,9 @@ export const validateContentBlockReadiness = (block = {}) => {
 const hasListOrText = (value) =>
   Array.isArray(value) ? value.some((item) => hasText(item)) : hasText(value);
 
+export const getReadinessIssueRenderKey = (issue = {}, index = 0) =>
+  `${issue.code || 'issue'}-${index}`;
+
 export const validateParagraphReadiness = ({ paragraaf = {}, blocks = [] } = {}) => {
   const errors = [];
   const warnings = [];

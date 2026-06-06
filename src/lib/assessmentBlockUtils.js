@@ -302,8 +302,31 @@ export const normalizeAssessmentItem = (item = {}, index = 0) => {
   };
 };
 
+const makeUniqueItemId = (id, index, seenIds) => {
+  const baseId = String(id || createId(`assessment-${index + 1}`));
+  if (!seenIds.has(baseId)) {
+    seenIds.add(baseId);
+    return baseId;
+  }
+
+  let suffix = 2;
+  let candidate = `${baseId}-${suffix}`;
+  while (seenIds.has(candidate)) {
+    suffix += 1;
+    candidate = `${baseId}-${suffix}`;
+  }
+  seenIds.add(candidate);
+  return candidate;
+};
+
 export const normalizeAssessmentItems = (items = []) =>
-  (Array.isArray(items) ? items : []).map(normalizeAssessmentItem);
+  (() => {
+    const seenIds = new Set();
+    return (Array.isArray(items) ? items : []).map(normalizeAssessmentItem).map((item, index) => ({
+      ...item,
+      id: makeUniqueItemId(item.id, index, seenIds)
+    }));
+  })();
 
 export const sumAssessmentItemTokens = (items = []) =>
   normalizeAssessmentItems(items).reduce((sum, item) => sum + item.tokens, 0);
