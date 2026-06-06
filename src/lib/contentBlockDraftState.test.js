@@ -18,6 +18,7 @@ test('buildContentBlockDraftSnapshot keeps editable block fields only', () => {
     content: { html: '<p>Les</p>' },
     settings: { allowAiHelp: true },
     linkedVraagId: 'vraag-1',
+    publicationOverride: { enabled: true, reason: 'Live voor demonstratie.' },
     updatedAt: 'server-field'
   });
 
@@ -26,17 +27,19 @@ test('buildContentBlockDraftSnapshot keeps editable block fields only', () => {
     status: 'ready',
     content: { html: '<p>Les</p>' },
     settings: { allowAiHelp: true },
-    linkedVraagId: 'vraag-1'
+    linkedVraagId: 'vraag-1',
+    publicationOverride: { enabled: true, reason: 'Live voor demonstratie.' }
   });
 });
 
-test('hasContentBlockDraftChanges detects changed title, status, content, settings and linked question', () => {
+test('hasContentBlockDraftChanges detects changed title, status, content, settings, linked question and override', () => {
   const initial = {
     title: 'Uitleg',
     status: 'draft',
     content: { html: '<p>Start</p>' },
     settings: { allowAiHelp: false },
-    linkedVraagId: ''
+    linkedVraagId: '',
+    publicationOverride: { enabled: false, reason: '' }
   };
 
   assert.equal(hasContentBlockDraftChanges(initial, { ...initial }), false);
@@ -45,6 +48,7 @@ test('hasContentBlockDraftChanges detects changed title, status, content, settin
   assert.equal(hasContentBlockDraftChanges(initial, { ...initial, content: { html: '<p>Anders</p>' } }), true);
   assert.equal(hasContentBlockDraftChanges(initial, { ...initial, settings: { allowAiHelp: true } }), true);
   assert.equal(hasContentBlockDraftChanges(initial, { ...initial, linkedVraagId: 'vraag-1' }), true);
+  assert.equal(hasContentBlockDraftChanges(initial, { ...initial, publicationOverride: { enabled: true, reason: 'Live voor demonstratie.' } }), true);
 });
 
 test('hasContentBlockDraftChanges is stable for object key order', () => {

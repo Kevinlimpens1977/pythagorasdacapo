@@ -17,13 +17,18 @@ export const buildContentBlockDraftSnapshot = ({
   status = 'draft',
   content = {},
   settings = {},
-  linkedVraagId = ''
+  linkedVraagId = '',
+  publicationOverride = {}
 } = {}) => ({
   title,
   status,
   content,
   settings,
-  linkedVraagId: linkedVraagId || ''
+  linkedVraagId: linkedVraagId || '',
+  publicationOverride: {
+    enabled: publicationOverride?.enabled === true,
+    reason: String(publicationOverride?.reason || '')
+  }
 });
 
 export const hasContentBlockDraftChanges = (initial = {}, current = {}) =>

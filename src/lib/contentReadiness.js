@@ -37,6 +37,35 @@ const createIssue = (code, message, severity = 'error') => ({
   severity
 });
 
+const normalizeOverrideReason = (value = '') =>
+  String(value || '').replace(/\s+/g, ' ').trim();
+
+const validatePublicationOverride = ({ status, errors = [], publicationOverride = {} } = {}) => {
+  const normalizedStatus = normalizeContentBlockStatus(status);
+  const requested = publicationOverride?.enabled === true;
+  const reason = normalizeOverrideReason(publicationOverride?.reason);
+  const overrideErrors = [];
+
+  if (requested && !reason) {
+    overrideErrors.push(createIssue('override_reason_missing', 'Leg een adminreden vast voor deze publicatie-override.'));
+  }
+
+  const isActive = READY_STATUSES.has(normalizedStatus) &&
+    errors.length > 0 &&
+    requested &&
+    overrideErrors.length === 0;
+
+  return {
+    requested,
+    isActive,
+    reason,
+    createdBy: publicationOverride?.createdBy || '',
+    createdAt: publicationOverride?.createdAt || '',
+    issueCodes: errors.map((issue) => issue.code),
+    errors: overrideErrors
+  };
+};
+
 const getAnswerType = (question = {}) =>
   question.vraagtype || question.questionType || question.antwoord?.type || question.answer?.type || 'open';
 
@@ -194,12 +223,19 @@ export const validateContentBlockReadiness = (block = {}) => {
     errors.push(...validateGameBlock(block));
   }
 
+  const publicationOverride = validatePublicationOverride({
+    status,
+    errors,
+    publicationOverride: block.publicationOverride
+  });
+
   return {
     status,
     isPublicationIntent: READY_STATUSES.has(status),
-    canPublish: errors.length === 0,
+    canPublish: errors.length === 0 || publicationOverride.isActive,
     errors,
-    warnings
+    warnings,
+    publicationOverride
   };
 };
 

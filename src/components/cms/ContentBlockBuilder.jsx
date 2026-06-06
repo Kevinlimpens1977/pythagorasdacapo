@@ -353,6 +353,35 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
   );
 };
 
+const PublicationOverridePanel = ({
+  visible,
+  readiness,
+  reason,
+  onReasonChange
+}) => {
+  if (!visible) return null;
+
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+      <p className="text-sm font-black text-amber-900">Admin-override voor publicatie</p>
+      <p className="mt-1 text-xs font-bold leading-5 text-amber-800">
+        Dit blok mist nog basiseisen. Alleen bewust publiceren als je hieronder vastlegt waarom dit toch live mag.
+      </p>
+      <ul className="mt-3 space-y-1 text-xs font-bold text-amber-900">
+        {readiness.errors.map((issue, index) => (
+          <li key={getReadinessIssueRenderKey(issue, index)}>{issue.message}</li>
+        ))}
+      </ul>
+      <textarea
+        value={reason}
+        onChange={(event) => onReasonChange(event.target.value)}
+        className="input-standard mt-3 min-h-20 w-full resize-y bg-white text-sm leading-6"
+        placeholder="Bijvoorbeeld: kort klassikaal demonstratieblok, inhoud wordt na de les aangevuld."
+      />
+    </div>
+  );
+};
+
 const StudioTextArea = ({ label, value, onChange, placeholder, className = '' }) => (
   <div>
     <label className="mb-2 block text-sm font-bold text-slate-700">{label}</label>
@@ -1482,6 +1511,7 @@ const LessonBlockStudio = ({
   const [error, setError] = useState(null);
   const [slidedeckPackages, setSlidedeckPackages] = useState([]);
   const [loadingSlidedecks, setLoadingSlidedecks] = useState(false);
+  const [publicationOverrideReason, setPublicationOverrideReason] = useState(block.publicationOverride?.reason || '');
   const [localDraftSavedAt, setLocalDraftSavedAt] = useState(null);
   const recoveryCheckedRef = useRef(false);
 
@@ -1512,13 +1542,45 @@ const LessonBlockStudio = ({
     setContent((current) => ({ ...current, ...updates }));
   };
 
+  const publicationOverrideDraft = useMemo(() => ({
+    enabled: isPublicationIntentStatus(status) && publicationOverrideReason.trim().length > 0,
+    reason: publicationOverrideReason,
+    createdBy: block.publicationOverride?.createdBy || '',
+    createdAt: block.publicationOverride?.createdAt || '',
+    issueCodes: block.publicationOverride?.issueCodes || []
+  }), [block.publicationOverride, publicationOverrideReason, status]);
+
+  const readinessPreview = useMemo(() => validateContentBlockReadiness({
+    ...block,
+    title,
+    status,
+    content,
+    linkedVraagId: block.type === 'question' ? linkedVraagId || null : block.linkedVraagId,
+    linkedVraag: block.type === 'question' ? selectedVraag : null,
+    publicationOverride: publicationOverrideDraft
+  }), [block, content, linkedVraagId, publicationOverrideDraft, selectedVraag, status, title]);
+
+  const shouldShowPublicationOverride =
+    isPublicationIntentStatus(status) &&
+    readinessPreview.errors.length > 0;
+
+  const publicationOverridePanel = (
+    <PublicationOverridePanel
+      visible={shouldShowPublicationOverride}
+      readiness={readinessPreview}
+      reason={publicationOverrideReason}
+      onReasonChange={setPublicationOverrideReason}
+    />
+  );
+
   const draftSnapshot = useMemo(() => buildContentBlockDraftSnapshot({
     title,
     status,
     content,
     settings,
-    linkedVraagId: block.type === 'question' ? linkedVraagId : block.linkedVraagId || ''
-  }), [block.linkedVraagId, block.type, content, linkedVraagId, settings, status, title]);
+    linkedVraagId: block.type === 'question' ? linkedVraagId : block.linkedVraagId || '',
+    publicationOverride: publicationOverrideDraft
+  }), [block.linkedVraagId, block.type, content, linkedVraagId, publicationOverrideDraft, settings, status, title]);
   const draftHasChanges = hasContentBlockDraftChanges(block, draftSnapshot);
   const localDraftStorageKey = useMemo(
     () => getContentBlockDraftStorageKey(block.id),
@@ -1569,6 +1631,7 @@ const LessonBlockStudio = ({
       });
       setSettings(normalizeContentBlockSettings(restored.settings, block.type));
       setLinkedVraagId(restored.linkedVraagId || '');
+      setPublicationOverrideReason(restored.publicationOverride?.reason || '');
       setLocalDraftSavedAt(storedDraft.savedAt || Date.now());
     }, 0);
 
@@ -1749,7 +1812,8 @@ const LessonBlockStudio = ({
         status,
         content: normalizedContent,
         linkedVraagId: block.type === 'question' ? linkedVraagId || null : block.linkedVraagId,
-        linkedVraag: block.type === 'question' ? selectedVraag : null
+        linkedVraag: block.type === 'question' ? selectedVraag : null,
+        publicationOverride: publicationOverrideDraft
       });
 
       if (isPublicationIntentStatus(status) && !readiness.canPublish) {
@@ -1766,7 +1830,19 @@ const LessonBlockStudio = ({
           tokenTotal: normalizedContent.tokenConfig.totalTokens
         } : {}),
         settings: normalizeContentBlockSettings(settings, block.type),
-        linkedVraagId: block.type === 'question' ? linkedVraagId || null : null
+        linkedVraagId: block.type === 'question' ? linkedVraagId || null : null,
+        publicationOverride: readiness.publicationOverride.isActive
+          ? {
+              enabled: true,
+              reason: readiness.publicationOverride.reason,
+              issueCodes: readiness.publicationOverride.issueCodes,
+              createdBy: block.publicationOverride?.createdBy || auth.currentUser?.uid || 'unknown-admin',
+              createdAt: block.publicationOverride?.createdAt || new Date().toISOString()
+            }
+          : {
+              enabled: false,
+              reason: ''
+            }
       });
       if (localDraftStorageKey && typeof window !== 'undefined') {
         window.localStorage.removeItem(localDraftStorageKey);
@@ -1884,6 +1960,7 @@ const LessonBlockStudio = ({
                   <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Handig als een leerling opnieuw mag proberen.</span>
                 </span>
               </label>
+              {publicationOverridePanel}
               <BlockSettingsPanel settings={settings} onChange={setSettings} />
             </div>
           </div>
@@ -1956,6 +2033,7 @@ const LessonBlockStudio = ({
         </div>
 
         <div className="mt-4">
+          {publicationOverridePanel}
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
         </div>
 
@@ -2038,6 +2116,7 @@ const LessonBlockStudio = ({
             placeholder="Schrijf een korte instructie of context voordat leerlingen de game starten."
           />
 
+          {publicationOverridePanel}
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
@@ -2160,6 +2239,7 @@ const LessonBlockStudio = ({
             placeholder="Schrijf optioneel een korte introductie voordat leerlingen de presentatie openen."
           />
 
+          {publicationOverridePanel}
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
@@ -2242,6 +2322,7 @@ const LessonBlockStudio = ({
             />
           )}
 
+          {publicationOverridePanel}
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">

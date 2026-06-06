@@ -56,6 +56,45 @@ test('theory and summary blocks need visible text before publication', () => {
   assert.deepEqual(readySummary.errors, []);
 });
 
+test('publication override allows admin publication only with a reason', () => {
+  const invalidPublishedBlock = {
+    type: 'summary',
+    status: 'published',
+    content: { html: '<p>   </p>' }
+  };
+
+  const withoutOverride = validateContentBlockReadiness(invalidPublishedBlock);
+
+  assert.equal(withoutOverride.canPublish, false);
+  assert.equal(withoutOverride.publicationOverride.isActive, false);
+
+  const blankOverride = validateContentBlockReadiness({
+    ...invalidPublishedBlock,
+    publicationOverride: {
+      enabled: true,
+      reason: '   ',
+      createdBy: 'admin-1'
+    }
+  });
+
+  assert.equal(blankOverride.canPublish, false);
+  assert.equal(blankOverride.publicationOverride.isActive, false);
+  assert.deepEqual(blankOverride.publicationOverride.errors.map((issue) => issue.code), ['override_reason_missing']);
+
+  const withOverride = validateContentBlockReadiness({
+    ...invalidPublishedBlock,
+    publicationOverride: {
+      enabled: true,
+      reason: 'Kort live gezet voor klassikale demonstratie; wordt na de les aangevuld.',
+      createdBy: 'admin-1'
+    }
+  });
+
+  assert.equal(withOverride.canPublish, true);
+  assert.equal(withOverride.publicationOverride.isActive, true);
+  assert.deepEqual(withOverride.publicationOverride.issueCodes, ['content_missing']);
+});
+
 test('question blocks need a valid linked question and answer contract before publication', () => {
   const missingQuestion = validateContentBlockReadiness({
     type: 'question',
