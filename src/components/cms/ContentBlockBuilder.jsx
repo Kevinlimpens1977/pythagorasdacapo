@@ -2957,7 +2957,7 @@ export default function ContentBlockBuilder({
       if (firstBlockId) setEditingBlockId(firstBlockId);
     } catch (error) {
       console.error('Kon lesroute-template niet toepassen:', error);
-      setActionError('Kon lesroute-template niet toepassen.');
+      setActionError(getCmsWriteErrorMessage(error, getCmsWriteErrorContext(), 'Kon lesroute-template niet toepassen.'));
     } finally {
       setApplyingTemplateId(null);
     }
@@ -2971,7 +2971,7 @@ export default function ContentBlockBuilder({
       setEditingBlockId(null);
     } catch (error) {
       console.error('Kon lesblok niet opslaan:', error);
-      setActionError('Kon lesblok niet opslaan.');
+      setActionError(getCmsWriteErrorMessage(error, getCmsWriteErrorContext(), 'Kon lesblok niet opslaan.'));
     }
   };
 
@@ -2985,7 +2985,7 @@ export default function ContentBlockBuilder({
       setArchiveUndo(buildContentBlockArchiveUndo(blockToArchive));
     } catch (error) {
       console.error('Kon lesblok niet archiveren:', error);
-      setActionError('Kon lesblok niet archiveren.');
+      setActionError(getCmsWriteErrorMessage(error, getCmsWriteErrorContext(), 'Kon lesblok niet archiveren.'));
     }
   };
 
@@ -2999,7 +2999,7 @@ export default function ContentBlockBuilder({
       setArchiveUndo(null);
     } catch (error) {
       console.error('Kon lesblok niet herstellen:', error);
-      setActionError('Kon lesblok niet herstellen.');
+      setActionError(getCmsWriteErrorMessage(error, getCmsWriteErrorContext(), 'Kon lesblok niet herstellen.'));
     }
   };
 
