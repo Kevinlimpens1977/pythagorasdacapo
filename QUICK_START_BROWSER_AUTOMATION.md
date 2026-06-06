@@ -31,6 +31,15 @@ python notebooklm_upload_and_generate.py \
   --questions 0
 ```
 
+For production runs, add `--production`. This stops the workflow when a source upload fails, when NotebookLM reports zero sources, or when source processing times out:
+
+```bash
+python notebooklm_upload_and_generate.py \
+  --source @boekafbeeldingen/7punt11.jpg \
+  --title "7.1 Rechthoekige Driehoeken" \
+  --production
+```
+
 ## What Happens
 
 **First time:**

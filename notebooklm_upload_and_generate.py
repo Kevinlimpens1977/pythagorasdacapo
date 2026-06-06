@@ -39,6 +39,26 @@ except ImportError:
     BROWSER_AUTOMATION_AVAILABLE = False
 
 
+def should_abort_source_stage(production_mode: bool,
+                              upload_results: Optional[List[bool]],
+                              source_count: int,
+                              sources_ready: bool) -> Tuple[bool, str]:
+    """Return whether source validation should stop the workflow."""
+    if not production_mode:
+        return False, ""
+
+    if upload_results and not all(upload_results):
+        return True, "upload_failed"
+
+    if source_count == 0:
+        return True, "zero_sources"
+
+    if sources_ready is False:
+        return True, "sources_not_ready"
+
+    return False, ""
+
+
 class NotebookLMWorkflow:
     """Complete NotebookLM notebook → sources → slidedeck workflow"""
 
@@ -512,7 +532,8 @@ class NotebookLMWorkflow:
     async def run(self, title: str, slides: int = 12, questions: int = 4,
                  source_files: Optional[List[str]] = None,
                  source_text: Optional[str] = None,
-                 notebook_id: Optional[str] = None) -> bool:
+                 notebook_id: Optional[str] = None,
+                 production_mode: bool = False) -> bool:
         """Run complete workflow"""
 
         self.log("=== NotebookLM Slidedeck Workflow ===")
@@ -544,20 +565,61 @@ class NotebookLMWorkflow:
         # 4. Upload sources
         if sources:
             self.log(f"\n[STEP 4] Uploading {len(sources)} source(s)...")
+            upload_results = []
             for source_path in sources:
-                if not await self.upload_source(nb_id, source_path):
-                    self.log(f"[WARN] Failed to upload {source_path}, continuing anyway...", "WARNING")
+                upload_ok = await self.upload_source(nb_id, source_path)
+                upload_results.append(upload_ok)
+                if not upload_ok:
+                    if production_mode:
+                        self.log(f"[WARN] Failed to upload {source_path}; production mode will stop.", "WARNING")
+                    else:
+                        self.log(f"[WARN] Failed to upload {source_path}, continuing anyway...", "WARNING")
+
+            should_abort, reason = should_abort_source_stage(
+                production_mode=production_mode,
+                upload_results=upload_results,
+                source_count=-1,
+                sources_ready=True
+            )
+            if should_abort:
+                self.log(f"[FAIL] Production mode stopped after source upload validation: {reason}", "ERROR")
+                return False
 
             # 5. Verify sources are present
             self.log(f"\n[STEP 5] Verifying sources...")
             source_count = await self.verify_sources_present(nb_id)
             if source_count <= 0:
-                self.log(f"[WARN] No sources found, attempting generation anyway...", "WARNING")
+                if production_mode and source_count == 0:
+                    self.log(f"[WARN] No sources found; production mode will stop.", "WARNING")
+                else:
+                    self.log(f"[WARN] No sources found, attempting generation anyway...", "WARNING")
+            should_abort, reason = should_abort_source_stage(
+                production_mode=production_mode,
+                upload_results=upload_results,
+                source_count=source_count,
+                sources_ready=True
+            )
+            if should_abort:
+                self.log(f"[FAIL] Production mode stopped after source count validation: {reason}", "ERROR")
+                return False
 
             # 6. Wait for processing
             self.log(f"\n[STEP 6] Waiting for source processing...")
-            if not await self.wait_for_sources_ready(nb_id):
-                self.log("[WARN] Timeout waiting for sources, attempting generation anyway...", "WARNING")
+            sources_ready = await self.wait_for_sources_ready(nb_id)
+            if not sources_ready:
+                if production_mode:
+                    self.log("[WARN] Timeout waiting for sources; production mode will stop.", "WARNING")
+                else:
+                    self.log("[WARN] Timeout waiting for sources, attempting generation anyway...", "WARNING")
+            should_abort, reason = should_abort_source_stage(
+                production_mode=production_mode,
+                upload_results=upload_results,
+                source_count=source_count,
+                sources_ready=sources_ready
+            )
+            if should_abort:
+                self.log(f"[FAIL] Production mode stopped after source processing validation: {reason}", "ERROR")
+                return False
 
         # 7. Generate slidedeck
         self.log(f"\n[STEP 7] Generating slidedeck...")
@@ -661,6 +723,11 @@ Examples:
     parser.add_argument("--title", required=True, help="Slidedeck title / notebook name")
     parser.add_argument("--slides", type=int, default=12, help="Target slide count")
     parser.add_argument("--questions", type=int, default=4, help="Practice questions")
+    parser.add_argument(
+        "--production",
+        action="store_true",
+        help="Stop when any source upload fails, when zero sources are present, or when source processing times out"
+    )
 
     args = parser.parse_args()
 
@@ -674,7 +741,8 @@ Examples:
         questions=args.questions,
         source_files=args.source,
         source_text=args.source_text,
-        notebook_id=args.notebook_id
+        notebook_id=args.notebook_id,
+        production_mode=args.production
     )
 
     sys.exit(0 if success else 1)
