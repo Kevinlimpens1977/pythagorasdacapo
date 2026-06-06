@@ -10,7 +10,7 @@ import {
 test('LESSON_ROUTE_TEMPLATES exposes the expected starter patterns', () => {
   assert.deepEqual(
     LESSON_ROUTE_TEMPLATES.map((template) => template.id),
-    ['uitleg_oefenen', 'notebooklm_check', 'herhalen', 'steunroute', 'plusroute']
+    ['uitleg_oefenen', 'notebooklm_check', 'herhalen', 'toetsroute', 'steunroute', 'plusroute']
   );
 });
 
@@ -36,6 +36,14 @@ test('buildLessonRouteTemplateBlocks starts NotebookLM route with a slidedeck', 
 
   assert.equal(blocks[0].type, 'slidedeck');
   assert.equal(blocks.filter((block) => block.type === 'question').length, 2);
+});
+
+test('buildLessonRouteTemplateBlocks creates a toetsroute with preparation and toets block', () => {
+  const blocks = buildLessonRouteTemplateBlocks('toetsroute');
+
+  assert.deepEqual(blocks.map((block) => block.type), ['summary', 'question', 'quiz', 'toets']);
+  assert.equal(blocks[3].content.assessmentType, 'toets');
+  assert.equal(blocks[3].content.tokenConfig.totalTokens, 25);
 });
 
 test('getLessonRouteTemplate and builder handle unknown ids', () => {

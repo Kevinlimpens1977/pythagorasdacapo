@@ -5,6 +5,7 @@ const createDraft = ({
   title,
   description = '',
   differentiationLevel = 'basis',
+  scaffoldingRole = 'zelf_proberen',
   questionTitle = ''
 }) => ({
   type,
@@ -14,7 +15,7 @@ const createDraft = ({
     ...getDefaultContentForBlockType(type),
     html: description ? `<p>${description}</p>` : getDefaultContentForBlockType(type).html || ''
   },
-  settings: normalizeContentBlockSettings({ differentiationLevel }, type),
+  settings: normalizeContentBlockSettings({ differentiationLevel, scaffoldingRole }, type),
   question: type === 'question'
     ? {
         title: questionTitle || title,
@@ -57,6 +58,17 @@ export const LESSON_ROUTE_TEMPLATES = [
       { type: 'example', title: 'Herhaalvoorbeeld', description: 'Laat nog een voorbeeld zien.' },
       { type: 'question', title: 'Zelf proberen' },
       { type: 'quiz', title: 'Korte quiz', description: 'Controleer of de basis weer staat.' }
+    ]
+  },
+  {
+    id: 'toetsroute',
+    label: 'Toetsroute',
+    description: 'Herhalen, laatste check, oefenquiz en toetsmoment.',
+    blocks: [
+      { type: 'summary', title: 'Toetsvoorbereiding', scaffoldingRole: 'reflecteren', description: 'Haal leerdoelen, begrippen en aanpak kort op.' },
+      { type: 'question', title: 'Laatste checkvraag', scaffoldingRole: 'zelf_proberen' },
+      { type: 'quiz', title: 'Oefenquiz', scaffoldingRole: 'zelf_proberen', description: 'Laat leerlingen nog een korte oefencheck maken.' },
+      { type: 'toets', title: 'Toetsmoment', scaffoldingRole: 'bewijs_leveren', description: 'Laat leerlingen laten zien wat ze zelfstandig beheersen.' }
     ]
   },
   {
