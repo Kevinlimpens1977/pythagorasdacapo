@@ -36,7 +36,8 @@ test('buildDuplicateContentBlockPayload creates draft copy without source ids', 
   assert.deepEqual(payload.settings, {
     allowAiHelp: false,
     allowMathToolbox: false,
-    differentiationLevel: 'basis'
+    differentiationLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
   });
 });
 

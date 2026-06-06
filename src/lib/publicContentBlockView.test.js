@@ -20,8 +20,21 @@ test('buildPublicContentBlockSnapshot normalizes differentiation settings', () =
   assert.deepEqual(publicBlock.settings, {
     allowAiHelp: true,
     allowMathToolbox: false,
-    differentiationLevel: 'plus'
+    differentiationLevel: 'plus',
+    scaffoldingRole: 'zelf_proberen'
   });
+});
+
+test('buildPublicContentBlockSnapshot exposes normalized block scaffolding role', () => {
+  const publicBlock = buildPublicContentBlockSnapshot({
+    id: 'block-role',
+    type: 'example',
+    settings: {
+      scaffoldingRole: 'samen_oefenen'
+    }
+  });
+
+  assert.equal(publicBlock.settings.scaffoldingRole, 'samen_oefenen');
 });
 
 test('buildPublicContentBlockSnapshot removes answer keys from multiple choice assessment items', () => {

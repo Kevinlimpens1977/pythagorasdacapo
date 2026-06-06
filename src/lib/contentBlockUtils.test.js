@@ -28,37 +28,43 @@ test('normalizeContentBlockSettings enables Digidocent by default for answer pra
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'question'), {
     allowAiHelp: true,
     allowMathToolbox: false,
-    differentiationLevel: 'basis'
+    differentiationLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
   });
 
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'quiz'), {
     allowAiHelp: true,
     allowMathToolbox: false,
-    differentiationLevel: 'basis'
+    differentiationLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
   });
 
   assert.deepEqual(normalizeContentBlockSettings({ allowMathToolbox: true, allowCalculator: true }, 'quiz'), {
     allowAiHelp: true,
     allowMathToolbox: false,
-    differentiationLevel: 'basis'
+    differentiationLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
   });
 
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'toets'), {
     allowAiHelp: false,
     allowMathToolbox: false,
-    differentiationLevel: 'basis'
+    differentiationLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
   });
 
   assert.deepEqual(normalizeContentBlockSettings({}, 'slidedeck'), {
     allowAiHelp: false,
     allowMathToolbox: false,
-    differentiationLevel: 'basis'
+    differentiationLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
   });
 
   assert.deepEqual(normalizeContentBlockSettings({ allowAiHelp: false }, 'question'), {
     allowAiHelp: false,
     allowMathToolbox: false,
-    differentiationLevel: 'basis'
+    differentiationLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
   });
 });
 
@@ -66,6 +72,13 @@ test('normalizeContentBlockSettings keeps supported differentiation levels', () 
   assert.equal(normalizeContentBlockSettings({ differentiationLevel: 'steun' }, 'theory').differentiationLevel, 'steun');
   assert.equal(normalizeContentBlockSettings({ differentiationLevel: 'plus' }, 'summary').differentiationLevel, 'plus');
   assert.equal(normalizeContentBlockSettings({ differentiationLevel: 'anders' }, 'media').differentiationLevel, 'basis');
+});
+
+test('normalizeContentBlockSettings keeps supported scaffolding roles per block', () => {
+  assert.equal(normalizeContentBlockSettings({ scaffoldingRole: 'ik_doe_voor' }, 'theory').scaffoldingRole, 'ik_doe_voor');
+  assert.equal(normalizeContentBlockSettings({ learningPhase: 'samen_oefenen' }, 'example').scaffoldingRole, 'samen_oefenen');
+  assert.equal(normalizeContentBlockSettings({ blockRole: 'bewijs_leveren' }, 'question').scaffoldingRole, 'bewijs_leveren');
+  assert.equal(normalizeContentBlockSettings({ scaffoldingRole: 'anders' }, 'summary').scaffoldingRole, 'zelf_proberen');
 });
 
 test('normalizeContentBlocks treats existing question blocks without settings as Digidocent-enabled', () => {
@@ -77,6 +90,7 @@ test('normalizeContentBlocks treats existing question blocks without settings as
   assert.equal(question.settings.allowAiHelp, true);
   assert.equal(media.settings.allowAiHelp, false);
   assert.equal(question.settings.differentiationLevel, 'basis');
+  assert.equal(question.settings.scaffoldingRole, 'zelf_proberen');
 });
 
 test('buildContentBlockFromSnapshot keeps Firestore document id when stored data contains an id field', () => {

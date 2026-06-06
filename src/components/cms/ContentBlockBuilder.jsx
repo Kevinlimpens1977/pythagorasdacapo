@@ -62,6 +62,7 @@ import {
 import {
   CONTENT_BLOCK_LABELS,
   CONTENT_BLOCK_DIFFERENTIATION_LEVELS,
+  CONTENT_BLOCK_SCAFFOLDING_ROLES,
   CONTENT_BLOCK_TYPES,
   buildContentBlockPreview,
   getDefaultContentForBlockType,
@@ -301,6 +302,20 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
           >
             {CONTENT_BLOCK_DIFFERENTIATION_LEVELS.map((level) => (
               <option key={level.id} value={level.id}>{level.label}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
+          <span className="block text-sm font-black text-[var(--helix-navy)]">Rol in de lesroute</span>
+          <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Kies of dit blok voordoet, samen oefent of bewijs vraagt.</span>
+          <select
+            value={settings.scaffoldingRole || 'zelf_proberen'}
+            onChange={(event) => updateSetting('scaffoldingRole', event.target.value)}
+            className="input-standard mt-3 w-full bg-white"
+          >
+            {CONTENT_BLOCK_SCAFFOLDING_ROLES.map((role) => (
+              <option key={role.id} value={role.id}>{role.label}</option>
             ))}
           </select>
         </label>

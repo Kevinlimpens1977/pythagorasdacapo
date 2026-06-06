@@ -27,7 +27,8 @@ export const CONTENT_BLOCK_LABELS = {
 export const DEFAULT_CONTENT_BLOCK_SETTINGS = {
   allowAiHelp: false,
   allowMathToolbox: false,
-  differentiationLevel: 'basis'
+  differentiationLevel: 'basis',
+  scaffoldingRole: 'zelf_proberen'
 };
 
 export const CONTENT_BLOCK_DIFFERENTIATION_LEVELS = [
@@ -39,11 +40,25 @@ export const CONTENT_BLOCK_DIFFERENTIATION_LEVELS = [
 export const normalizeContentBlockDifferentiationLevel = (value = '') =>
   CONTENT_BLOCK_DIFFERENTIATION_LEVELS.some((level) => level.id === value) ? value : DEFAULT_CONTENT_BLOCK_SETTINGS.differentiationLevel;
 
+export const CONTENT_BLOCK_SCAFFOLDING_ROLES = [
+  { id: 'ik_doe_voor', label: 'Ik doe voor' },
+  { id: 'samen_oefenen', label: 'Samen oefenen' },
+  { id: 'zelf_proberen', label: 'Zelf proberen' },
+  { id: 'bewijs_leveren', label: 'Bewijs leveren' },
+  { id: 'reflecteren', label: 'Reflecteren' }
+];
+
+export const normalizeContentBlockScaffoldingRole = (value = '') =>
+  CONTENT_BLOCK_SCAFFOLDING_ROLES.some((role) => role.id === value) ? value : DEFAULT_CONTENT_BLOCK_SETTINGS.scaffoldingRole;
+
 export const normalizeContentBlockSettings = (settings = {}, blockType = '') => ({
   allowAiHelp: settings.allowAiHelp ?? (['question', 'quiz'].includes(blockType) ? true : DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp),
   allowMathToolbox: false,
   differentiationLevel: normalizeContentBlockDifferentiationLevel(
     settings.differentiationLevel || settings.targetLevel || settings.routeLevel
+  ),
+  scaffoldingRole: normalizeContentBlockScaffoldingRole(
+    settings.scaffoldingRole || settings.learningPhase || settings.blockRole
   )
 });
 
