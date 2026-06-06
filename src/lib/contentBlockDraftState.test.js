@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   buildContentBlockDraftSnapshot,
-  hasContentBlockDraftChanges
+  hasContentBlockDraftChanges,
+  shouldCloseContentBlockDraft
 } from './contentBlockDraftState.js';
 
 test('buildContentBlockDraftSnapshot keeps editable block fields only', () => {
@@ -50,4 +51,18 @@ test('hasContentBlockDraftChanges is stable for object key order', () => {
     ),
     false
   );
+});
+
+test('shouldCloseContentBlockDraft only asks confirmation when there are unsaved changes', () => {
+  let confirmCalls = 0;
+  const confirmFn = () => {
+    confirmCalls += 1;
+    return false;
+  };
+
+  assert.equal(shouldCloseContentBlockDraft(false, confirmFn), true);
+  assert.equal(confirmCalls, 0);
+  assert.equal(shouldCloseContentBlockDraft(true, confirmFn), false);
+  assert.equal(confirmCalls, 1);
+  assert.equal(shouldCloseContentBlockDraft(true, () => true), true);
 });

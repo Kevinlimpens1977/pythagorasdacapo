@@ -28,3 +28,8 @@ export const buildContentBlockDraftSnapshot = ({
 
 export const hasContentBlockDraftChanges = (initial = {}, current = {}) =>
   stableStringify(buildContentBlockDraftSnapshot(initial)) !== stableStringify(buildContentBlockDraftSnapshot(current));
+
+export const shouldCloseContentBlockDraft = (
+  hasDraftChanges,
+  confirmFn = () => true
+) => !hasDraftChanges || confirmFn('Je hebt niet-opgeslagen wijzigingen. Weet je zeker dat je de lesblokstudio wilt sluiten?');

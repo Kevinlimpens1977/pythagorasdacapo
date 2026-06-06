@@ -84,7 +84,7 @@ import {
   getParagraphReviewStatusLabel,
   normalizeParagraphMetadata
 } from '../../lib/paragraphMetadata';
-import { hasContentBlockDraftChanges } from '../../lib/contentBlockDraftState';
+import { hasContentBlockDraftChanges, shouldCloseContentBlockDraft } from '../../lib/contentBlockDraftState';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
   ASSESSMENT_ITEM_TYPES,
@@ -1292,7 +1292,8 @@ const LessonBlockStudio = ({
   vragen,
   onSave,
   onCancel,
-  onEditLinkedQuestion
+  onEditLinkedQuestion,
+  onDraftDirtyChange
 }) => {
   const [title, setTitle] = useState(block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok');
   const [status, setStatus] = useState(block.status || 'draft');
@@ -1338,10 +1339,11 @@ const LessonBlockStudio = ({
     linkedVraagId: block.type === 'question' ? linkedVraagId : block.linkedVraagId || ''
   });
 
+  useEffect(() => {
+    onDraftDirtyChange?.(draftHasChanges);
+  }, [draftHasChanges, onDraftDirtyChange]);
+
   const handleCancel = () => {
-    if (draftHasChanges && !window.confirm('Je hebt niet-opgeslagen wijzigingen. Weet je zeker dat je de lesblokstudio wilt sluiten?')) {
-      return;
-    }
     onCancel();
   };
 
@@ -2009,6 +2011,25 @@ const FullscreenLessonBlockStudio = ({
   onEditLinkedQuestion
 }) => {
   const Icon = blockIcons[block.type] || FileText;
+  const [draftHasChanges, setDraftHasChanges] = useState(false);
+
+  const requestCancel = () => {
+    if (shouldCloseContentBlockDraft(draftHasChanges, (message) => window.confirm(message))) {
+      onCancel();
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        requestCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
 
   return (
     <div className="fixed inset-0 z-[900] flex flex-col bg-[var(--helix-bg)]">
@@ -2031,7 +2052,7 @@ const FullscreenLessonBlockStudio = ({
 
           <button
             type="button"
-            onClick={onCancel}
+            onClick={requestCancel}
             className="btn-secondary w-auto px-4 py-2 text-sm"
           >
             <X size={17} />
@@ -2047,8 +2068,9 @@ const FullscreenLessonBlockStudio = ({
             paragraaf={paragraaf}
             vragen={vragen}
             onSave={onSave}
-            onCancel={onCancel}
+            onCancel={requestCancel}
             onEditLinkedQuestion={onEditLinkedQuestion}
+            onDraftDirtyChange={setDraftHasChanges}
           />
         </div>
       </main>
@@ -2391,19 +2413,6 @@ export default function ContentBlockBuilder({
       document.body.style.overflow = previousOverflow;
     };
   }, [activeBlock, editingBlockId]);
-
-  useEffect(() => {
-    if (!editingBlockId) return undefined;
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setEditingBlockId(null);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editingBlockId]);
 
   const handleCreateBlock = async (type) => {
     try {
