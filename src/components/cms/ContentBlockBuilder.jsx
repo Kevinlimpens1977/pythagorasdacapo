@@ -84,7 +84,15 @@ import {
   getParagraphReviewStatusLabel,
   normalizeParagraphMetadata
 } from '../../lib/paragraphMetadata';
-import { hasContentBlockDraftChanges, shouldCloseContentBlockDraft } from '../../lib/contentBlockDraftState';
+import {
+  buildContentBlockDraftSnapshot,
+  buildStoredContentBlockDraft,
+  getContentBlockDraftStorageKey,
+  hasContentBlockDraftChanges,
+  parseStoredContentBlockDraft,
+  shouldCloseContentBlockDraft,
+  shouldRecoverStoredContentBlockDraft
+} from '../../lib/contentBlockDraftState';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
   ASSESSMENT_ITEM_TYPES,
@@ -1310,6 +1318,8 @@ const LessonBlockStudio = ({
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [slidedeckPackages, setSlidedeckPackages] = useState([]);
+  const [localDraftSavedAt, setLocalDraftSavedAt] = useState(null);
+  const recoveryCheckedRef = useRef(false);
 
   const selectedVraag = vragen.find((vraag) => vraag.id === linkedVraagId);
   const selectedGame = cmsEmbeddableGames.find((game) => game.gameId === content.gameId);
@@ -1331,17 +1341,91 @@ const LessonBlockStudio = ({
     setContent((current) => ({ ...current, ...updates }));
   };
 
-  const draftHasChanges = hasContentBlockDraftChanges(block, {
+  const draftSnapshot = useMemo(() => buildContentBlockDraftSnapshot({
     title,
     status,
     content,
     settings,
     linkedVraagId: block.type === 'question' ? linkedVraagId : block.linkedVraagId || ''
-  });
+  }), [block.linkedVraagId, block.type, content, linkedVraagId, settings, status, title]);
+  const draftHasChanges = hasContentBlockDraftChanges(block, draftSnapshot);
+  const localDraftStorageKey = useMemo(
+    () => getContentBlockDraftStorageKey(block.id),
+    [block.id]
+  );
+  const localDraftStatusLabel = localDraftSavedAt
+    ? `Lokaal concept bewaard om ${new Date(localDraftSavedAt).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`
+    : draftHasChanges
+      ? 'Niet opgeslagen'
+      : '';
+  const localDraftNotice = localDraftStatusLabel ? (
+    <div className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-amber-700">
+      {localDraftStatusLabel}
+    </div>
+  ) : null;
 
   useEffect(() => {
     onDraftDirtyChange?.(draftHasChanges);
   }, [draftHasChanges, onDraftDirtyChange]);
+
+  useEffect(() => {
+    if (recoveryCheckedRef.current || !localDraftStorageKey || typeof window === 'undefined') return;
+    recoveryCheckedRef.current = true;
+
+    const storedDraft = parseStoredContentBlockDraft(
+      window.localStorage.getItem(localDraftStorageKey),
+      block.id
+    );
+    if (!shouldRecoverStoredContentBlockDraft(block, storedDraft)) return;
+
+    const savedLabel = storedDraft.savedAt
+      ? new Date(storedDraft.savedAt).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+      : 'eerder';
+    const shouldRestore = window.confirm(`Er is een lokale conceptversie van dit lesblok opgeslagen om ${savedLabel}. Wil je die herstellen?`);
+
+    if (!shouldRestore) {
+      window.localStorage.removeItem(localDraftStorageKey);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const restored = storedDraft.snapshot;
+      setTitle(restored.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok');
+      setStatus(restored.status || 'draft');
+      setContent({
+        ...getDefaultContentForBlockType(block.type),
+        ...(restored.content || {})
+      });
+      setSettings(normalizeContentBlockSettings(restored.settings, block.type));
+      setLinkedVraagId(restored.linkedVraagId || '');
+      setLocalDraftSavedAt(storedDraft.savedAt || Date.now());
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [block, localDraftStorageKey]);
+
+  useEffect(() => {
+    if (!localDraftStorageKey || typeof window === 'undefined') return undefined;
+
+    if (!draftHasChanges) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const savedAt = Date.now();
+      window.localStorage.setItem(
+        localDraftStorageKey,
+        JSON.stringify(buildStoredContentBlockDraft({
+          blockId: block.id,
+          snapshot: draftSnapshot,
+          savedAt
+        }))
+      );
+      setLocalDraftSavedAt(savedAt);
+    }, 400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [block.id, draftHasChanges, draftSnapshot, localDraftStorageKey]);
 
   const handleCancel = () => {
     onCancel();
@@ -1513,6 +1597,10 @@ const LessonBlockStudio = ({
         settings: normalizeContentBlockSettings(settings, block.type),
         linkedVraagId: block.type === 'question' ? linkedVraagId || null : null
       });
+      if (localDraftStorageKey && typeof window !== 'undefined') {
+        window.localStorage.removeItem(localDraftStorageKey);
+        setLocalDraftSavedAt(null);
+      }
     } finally {
       setSaving(false);
     }
@@ -1537,6 +1625,8 @@ const LessonBlockStudio = ({
             </div>
           </div>
         </div>
+
+        {localDraftNotice}
 
         {error && (
           <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700">
@@ -1662,6 +1752,8 @@ const LessonBlockStudio = ({
           </div>
         </div>
 
+        {localDraftNotice}
+
         <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
           <label className="mb-2 block text-sm font-bold text-slate-700">Vraag</label>
           <select value={linkedVraagId} onChange={(event) => setLinkedVraagId(event.target.value)} className="input-standard w-full">
@@ -1724,6 +1816,8 @@ const LessonBlockStudio = ({
             </div>
           </div>
         </div>
+
+        {localDraftNotice}
 
         <div className="space-y-4 bg-white p-5">
           <div>
@@ -1804,6 +1898,8 @@ const LessonBlockStudio = ({
             </div>
           </div>
         </div>
+
+        {localDraftNotice}
 
         {error && (
           <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700">
@@ -1907,6 +2003,8 @@ const LessonBlockStudio = ({
           </div>
         </div>
       </div>
+
+      {localDraftNotice}
 
       {error && (
         <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700">

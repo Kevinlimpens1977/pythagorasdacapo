@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 
 import {
   buildContentBlockDraftSnapshot,
+  buildStoredContentBlockDraft,
+  getContentBlockDraftStorageKey,
   hasContentBlockDraftChanges,
+  parseStoredContentBlockDraft,
+  shouldRecoverStoredContentBlockDraft,
   shouldCloseContentBlockDraft
 } from './contentBlockDraftState.js';
 
@@ -65,4 +69,52 @@ test('shouldCloseContentBlockDraft only asks confirmation when there are unsaved
   assert.equal(shouldCloseContentBlockDraft(true, confirmFn), false);
   assert.equal(confirmCalls, 1);
   assert.equal(shouldCloseContentBlockDraft(true, () => true), true);
+});
+
+test('content block draft storage keys are scoped per block', () => {
+  assert.equal(
+    getContentBlockDraftStorageKey('block-1'),
+    'helix:content-block-draft:block-1'
+  );
+  assert.equal(getContentBlockDraftStorageKey(''), '');
+});
+
+test('stored content block drafts parse only for the expected block', () => {
+  const snapshot = buildContentBlockDraftSnapshot({
+    title: 'Lokale versie',
+    status: 'draft',
+    content: { html: '<p>Werk</p>' },
+    settings: { allowAiHelp: true },
+    linkedVraagId: 'vraag-1'
+  });
+  const stored = buildStoredContentBlockDraft({
+    blockId: 'block-1',
+    snapshot,
+    savedAt: 1710000000000
+  });
+
+  assert.deepEqual(parseStoredContentBlockDraft(JSON.stringify(stored), 'block-1'), stored);
+  assert.equal(parseStoredContentBlockDraft(JSON.stringify(stored), 'block-2'), null);
+  assert.equal(parseStoredContentBlockDraft('geen json', 'block-1'), null);
+});
+
+test('shouldRecoverStoredContentBlockDraft detects a meaningful local draft', () => {
+  const initial = buildContentBlockDraftSnapshot({
+    title: 'Server',
+    content: { html: '<p>Server</p>' }
+  });
+  const sameStored = buildStoredContentBlockDraft({
+    blockId: 'block-1',
+    snapshot: initial,
+    savedAt: 1710000000000
+  });
+  const changedStored = buildStoredContentBlockDraft({
+    blockId: 'block-1',
+    snapshot: { ...initial, title: 'Lokaal' },
+    savedAt: 1710000000001
+  });
+
+  assert.equal(shouldRecoverStoredContentBlockDraft(initial, null), false);
+  assert.equal(shouldRecoverStoredContentBlockDraft(initial, sameStored), false);
+  assert.equal(shouldRecoverStoredContentBlockDraft(initial, changedStored), true);
 });
