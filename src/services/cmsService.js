@@ -15,10 +15,12 @@ import {
   orderBy,
   setDoc,
   updateDoc,
+  writeBatch,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { buildContentBlockFromSnapshot, normalizeContentBlockSettings } from '../lib/contentBlockUtils';
+import { buildQuestionContentBlockCreateBundle } from '../lib/questionBlockContract';
 import { buildPublicContentBlockSnapshot } from '../lib/publicContentBlockView';
 import { buildPublicQuestionSnapshot } from '../lib/publicQuestionView';
 
@@ -601,6 +603,44 @@ export const createContentBlock = async (paragraafId, data, userId) => {
   }
 };
 
+export const createQuestionContentBlock = async (paragraafId, vraagData, blockData, userId) => {
+  try {
+    const paragraaf = await getParagraaf(paragraafId);
+    if (!paragraaf) throw new Error('Paragraaf not found');
+
+    const [vragen, blocks] = await Promise.all([
+      getVragen(paragraafId),
+      getContentBlocks(paragraafId)
+    ]);
+    const nextVraagOrder = Math.max(...vragen.map(v => v.order || 0), 0) + 1;
+    const nextBlockOrder = Math.max(...blocks.map(block => block.order || 0), 0) + 1;
+    const bundle = buildQuestionContentBlockCreateBundle({
+      paragraaf,
+      vraagData,
+      blockData,
+      nextVraagOrder,
+      nextBlockOrder,
+      userId,
+      timestamp: serverTimestamp()
+    });
+    const batch = writeBatch(db);
+
+    batch.set(doc(db, 'vraag', bundle.vraagId), bundle.vraag);
+    batch.set(doc(db, 'publicQuestions', bundle.vraagId), buildPublicQuestionSnapshot(bundle.vraag), { merge: true });
+    batch.set(doc(db, 'contentBlocks', bundle.blockId), bundle.block);
+    batch.set(doc(db, 'publicContentBlocks', bundle.blockId), buildPublicContentBlockSnapshot(bundle.block), { merge: true });
+    await batch.commit();
+
+    return {
+      vraagId: bundle.vraagId,
+      blockId: bundle.blockId
+    };
+  } catch (error) {
+    console.error('Error creating question content block:', error);
+    throw error;
+  }
+};
+
 /**
  * Update a paragraph
  * @param {string} paragraafId
@@ -1175,6 +1215,7 @@ export default {
   createParagraaf,
   createVraag,
   createContentBlock,
+  createQuestionContentBlock,
   updateParagraaf,
   updateVraag,
   updateContentBlock,

@@ -2651,13 +2651,12 @@ export default function ContentBlockBuilder({
       setCreatingType(type);
       setActionError(null);
       const userId = auth.currentUser?.uid || 'unknown-admin';
-      let linkedVraagId = null;
 
       if (type === 'question') {
         const number = getNextQuestionNumber(vragen);
         const vraagtype = 'open';
         const antwoord = buildDefaultAnswerForQuestionType(vraagtype);
-        linkedVraagId = await cmsService.createVraag(
+        const { blockId } = await cmsService.createQuestionContentBlock(
           paragraaf.id,
           {
             number,
@@ -2670,8 +2669,16 @@ export default function ContentBlockBuilder({
             },
             antwoord
           },
+          {
+            title: 'Vraag',
+            status: 'draft',
+            content: getDefaultContentForBlockType(type)
+          },
           userId
         );
+        await onRefresh();
+        setEditingBlockId(blockId);
+        return;
       }
 
       const blockId = await cmsService.createContentBlock(
@@ -2681,7 +2688,7 @@ export default function ContentBlockBuilder({
           title: type === 'question' ? 'Vraag' : CONTENT_BLOCK_LABELS[type],
           status: 'draft',
           content: getDefaultContentForBlockType(type),
-          linkedVraagId
+          linkedVraagId: null
         },
         userId
       );
