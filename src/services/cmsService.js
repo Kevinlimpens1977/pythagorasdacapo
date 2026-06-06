@@ -21,6 +21,7 @@ import {
 import { db } from './firebase';
 import { buildContentBlockFromSnapshot, normalizeContentBlockSettings } from '../lib/contentBlockUtils';
 import { buildQuestionContentBlockCreateBundle } from '../lib/questionBlockContract';
+import { buildDuplicateContentBlockPayload } from '../lib/contentBlockBulkActions';
 import { buildPublicContentBlockSnapshot } from '../lib/publicContentBlockView';
 import { buildPublicQuestionSnapshot } from '../lib/publicQuestionView';
 
@@ -734,6 +735,39 @@ export const updateContentBlockOrder = async (blocks) => {
   }
 };
 
+export const duplicateContentBlock = async (blockId, userId = 'unknown-admin') => {
+  try {
+    const block = await getContentBlock(blockId);
+    if (!block) throw new Error('Content block not found');
+
+    const duplicatePayload = buildDuplicateContentBlockPayload(block);
+
+    if (block.type === 'question') {
+      const linkedVraag = block.linkedVraagId ? await getVraag(block.linkedVraagId) : null;
+      const vraagtype = linkedVraag?.vraagtype || 'open';
+      const result = await createQuestionContentBlock(
+        block.paragraafId,
+        {
+          title: `${linkedVraag?.title || block.title || 'Vraag'} (kopie)`,
+          status: 'draft',
+          vraagtype,
+          content: linkedVraag?.content || { text: '', images: [] },
+          vraagMetadata: linkedVraag?.vraagMetadata || {},
+          antwoord: linkedVraag?.antwoord || {}
+        },
+        duplicatePayload,
+        userId
+      );
+      return result.blockId;
+    }
+
+    return createContentBlock(block.paragraafId, duplicatePayload, userId);
+  } catch (error) {
+    console.error(`Error duplicating content block ${blockId}:`, error);
+    throw error;
+  }
+};
+
 /**
  * Archive a paragraph (soft delete)
  * @param {string} paragraafId
@@ -1220,6 +1254,7 @@ export default {
   updateVraag,
   updateContentBlock,
   updateContentBlockOrder,
+  duplicateContentBlock,
   archiveParagraaf,
   archiveVraag,
   archiveContentBlock,

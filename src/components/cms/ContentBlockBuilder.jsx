@@ -99,6 +99,10 @@ import {
   buildContentBlockArchiveUndo,
   shouldShowContentBlockArchiveUndo
 } from '../../lib/contentBlockArchiveUndo';
+import {
+  getBulkSelectionLabel,
+  getSelectedContentBlocks
+} from '../../lib/contentBlockBulkActions';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
   ASSESSMENT_COGNITIVE_SKILLS,
@@ -2490,10 +2494,12 @@ const SortableLessonBlockCard = ({
   isEditing,
   previewText,
   confirmArchiveBlockId,
+  isSelected,
   onMove,
   onOpen,
   onToggleStatus,
   onRename,
+  onToggleSelected,
   onToggleArchiveConfirm,
   onArchive
 }) => {
@@ -2523,6 +2529,15 @@ const SortableLessonBlockCard = ({
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+          <label className="mt-2 inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelected(block.id)}
+              className="h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
+              aria-label={`Selecteer lesblok ${index + 1}`}
+            />
+          </label>
           <button
             type="button"
             className="mt-1 inline-flex h-11 w-9 shrink-0 touch-none cursor-grab items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] active:cursor-grabbing focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)]"
@@ -2636,8 +2651,15 @@ export default function ContentBlockBuilder({
   const [applyingTemplateId, setApplyingTemplateId] = useState(null);
   const [confirmArchiveBlockId, setConfirmArchiveBlockId] = useState(null);
   const [archiveUndo, setArchiveUndo] = useState(null);
+  const [selectedBlockIds, setSelectedBlockIds] = useState(() => new Set());
+  const [bulkAction, setBulkAction] = useState(null);
   const normalizedBlocks = useMemo(() => normalizeContentBlocks(blocks), [blocks]);
   const sortableBlockIds = useMemo(() => normalizedBlocks.map((block) => block.id), [normalizedBlocks]);
+  const selectedBlocks = useMemo(
+    () => getSelectedContentBlocks(normalizedBlocks, selectedBlockIds),
+    [normalizedBlocks, selectedBlockIds]
+  );
+  const allVisibleSelected = normalizedBlocks.length > 0 && selectedBlocks.length === normalizedBlocks.length;
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -2677,6 +2699,31 @@ export default function ContentBlockBuilder({
       document.body.style.overflow = previousOverflow;
     };
   }, [activeBlock, editingBlockId]);
+
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      setSelectedBlockIds((current) => {
+        const visibleIds = new Set(normalizedBlocks.map((block) => block.id));
+        const next = new Set([...current].filter((id) => visibleIds.has(id)));
+        return next.size === current.size ? current : next;
+      });
+    });
+  }, [normalizedBlocks]);
+
+  const toggleSelectedBlock = (blockId) => {
+    setSelectedBlockIds((current) => {
+      const next = new Set(current);
+      if (next.has(blockId)) next.delete(blockId);
+      else next.add(blockId);
+      return next;
+    });
+  };
+
+  const toggleSelectAllBlocks = () => {
+    setSelectedBlockIds(allVisibleSelected ? new Set() : new Set(normalizedBlocks.map((block) => block.id)));
+  };
+
+  const clearBulkSelection = () => setSelectedBlockIds(new Set());
 
   const handleCreateBlock = async (type) => {
     try {
@@ -2841,6 +2888,80 @@ export default function ContentBlockBuilder({
     }
   };
 
+  const handleBulkPublish = async () => {
+    if (selectedBlocks.length === 0) return;
+
+    try {
+      setBulkAction('publish');
+      setActionError(null);
+      const invalidBlock = selectedBlocks.find((block) => {
+        const readiness = validateContentBlockReadiness({
+          ...block,
+          status: 'published',
+          linkedVraag: block.linkedVraagId ? vragenById.get(block.linkedVraagId) : null
+        });
+        return !readiness.canPublish;
+      });
+
+      if (invalidBlock) {
+        const readiness = validateContentBlockReadiness({
+          ...invalidBlock,
+          status: 'published',
+          linkedVraag: invalidBlock.linkedVraagId ? vragenById.get(invalidBlock.linkedVraagId) : null
+        });
+        setActionError(`Bulk-publiceren gestopt bij "${invalidBlock.title}": ${formatReadinessErrors(readiness)}`);
+        return;
+      }
+
+      await Promise.all(selectedBlocks.map((block) => cmsService.updateContentBlock(block.id, { status: 'published' })));
+      clearBulkSelection();
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon geselecteerde lesblokken niet publiceren:', error);
+      setActionError('Kon geselecteerde lesblokken niet publiceren.');
+    } finally {
+      setBulkAction(null);
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedBlocks.length === 0) return;
+    if (!window.confirm(`${selectedBlocks.length} geselecteerde lesblokken archiveren?`)) return;
+
+    try {
+      setBulkAction('archive');
+      setActionError(null);
+      await Promise.all(selectedBlocks.map((block) => cmsService.archiveContentBlock(block.id)));
+      clearBulkSelection();
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon geselecteerde lesblokken niet archiveren:', error);
+      setActionError('Kon geselecteerde lesblokken niet archiveren.');
+    } finally {
+      setBulkAction(null);
+    }
+  };
+
+  const handleBulkDuplicate = async () => {
+    if (selectedBlocks.length === 0) return;
+
+    try {
+      setBulkAction('duplicate');
+      setActionError(null);
+      const userId = auth.currentUser?.uid || 'unknown-admin';
+      for (const block of selectedBlocks) {
+        await cmsService.duplicateContentBlock(block.id, userId);
+      }
+      clearBulkSelection();
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon geselecteerde lesblokken niet dupliceren:', error);
+      setActionError('Kon geselecteerde lesblokken niet dupliceren.');
+    } finally {
+      setBulkAction(null);
+    }
+  };
+
   const handleMoveBlock = async (blockId, direction) => {
     try {
       setActionError(null);
@@ -2983,6 +3104,55 @@ export default function ContentBlockBuilder({
           </div>
         )}
 
+        <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-black text-[var(--helix-navy)]">
+            <input
+              type="checkbox"
+              checked={allVisibleSelected}
+              onChange={toggleSelectAllBlocks}
+              className="h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
+            />
+            {getBulkSelectionLabel(selectedBlocks.length)}
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleBulkPublish}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Publiceer
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkDuplicate}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Copy size={14} />
+              Dupliceer
+            </button>
+            <button
+              type="button"
+              onClick={handleBulkArchive}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs font-black text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Archiveer
+            </button>
+            {selectedBlocks.length > 0 && (
+              <button
+                type="button"
+                onClick={clearBulkSelection}
+                disabled={bulkAction !== null}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Wis selectie
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="mt-6 rounded-[2rem] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3 sm:p-4">
           <div className="mb-5">
             <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -3062,10 +3232,12 @@ export default function ContentBlockBuilder({
                     isEditing={isEditing}
                     previewText={previewText}
                     confirmArchiveBlockId={confirmArchiveBlockId}
+                    isSelected={selectedBlockIds.has(block.id)}
                     onMove={handleMoveBlock}
                     onOpen={setEditingBlockId}
                     onToggleStatus={handleToggleBlockStatus}
                     onRename={handleRenameBlock}
+                    onToggleSelected={toggleSelectedBlock}
                     onToggleArchiveConfirm={(blockId) => setConfirmArchiveBlockId(
                       confirmArchiveBlockId === blockId ? null : blockId
                     )}
