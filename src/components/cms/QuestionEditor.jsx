@@ -20,6 +20,7 @@ import {
   normalizeQuestionAnswerIds,
   normalizeQuestionTokenConfig
 } from '../../lib/questionTypeRegistry';
+import { QUESTION_STATUS_OPTIONS } from '../../lib/questionStatusUtils';
 import {
   buildFillBlankTextFromSegments,
   buildSegmentsFromLegacyFillBlank,
@@ -454,8 +455,9 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
             onChange={(e) => setStatus(e.target.value)}
             className="input-standard w-full"
           >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
+            {QUESTION_STATUS_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>{option.label}</option>
+            ))}
           </select>
         </div>
       </div>
