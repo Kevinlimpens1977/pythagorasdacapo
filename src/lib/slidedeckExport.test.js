@@ -39,6 +39,12 @@ const deckPackage = {
     SOURCE_BASED: 2,
     NEEDS_REVIEW: 0
   },
+  reviewChecklist: {
+    sourceFaithful: true,
+    answersChecked: true,
+    languageLevelChecked: true,
+    privacyChecked: false
+  },
   citations: [{ slide: 1, source: 'Bron-PDF', note: 'Definitie.' }]
 };
 
@@ -51,6 +57,12 @@ test('buildSlidedeckExportMetadata preserves source, files and review metadata',
   assert.equal(metadata.files.sourcePdf.downloadURL, 'https://example.test/source.pdf');
   assert.equal(metadata.files.generatedDeckPdf.fileName, 'deck.pdf');
   assert.equal(metadata.review.reviewStatus, 'approved');
+  assert.deepEqual(metadata.review.checklist, {
+    sourceFaithful: true,
+    answersChecked: true,
+    languageLevelChecked: true,
+    privacyChecked: false
+  });
   assert.equal(metadata.sourceText, deckPackage.sourceText);
   assert.equal(metadata.prompt.snapshot, deckPackage.promptSnapshot);
 });
@@ -69,6 +81,7 @@ test('buildSlidedeckHtmlExport escapes source text and includes PDF links', () =
   assert.match(html, /HELIX slidedeck export/);
   assert.match(html, /https:\/\/example\.test\/source\.pdf/);
   assert.match(html, /https:\/\/example\.test\/deck\.pdf/);
+  assert.match(html, /Checklist compleet/);
   assert.match(html, /&lt;script&gt;ongewenste html&lt;\/script&gt;/);
   assert.doesNotMatch(html, /<script>ongewenste html<\/script>/);
 });

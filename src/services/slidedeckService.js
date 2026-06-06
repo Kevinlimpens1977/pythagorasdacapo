@@ -21,6 +21,7 @@ import {
   canUseSlidedeckPackageInCms,
   normalizeSlidedeckReviewStatus
 } from '../lib/slidedeckReview';
+import { normalizeSlidedeckReviewChecklist } from '../lib/slidedeckReviewChecklist';
 
 export const SLIDEDECK_STATUSES = {
   SOURCE_READY: 'sourceReady',
@@ -235,12 +236,14 @@ export const updateSlidedeckReview = async (packageId, data = {}, userId = 'unkn
   const existingPackage = await getSlidedeckPackage(packageId);
   const reviewStatus = normalizeSlidedeckReviewStatus(data.reviewStatus);
   const teacherDecisionNote = String(data.teacherDecisionNote || '').trim();
+  const reviewChecklist = normalizeSlidedeckReviewChecklist(data.reviewChecklist || existingPackage?.reviewChecklist);
   const teacherDecisionLog = [
     ...(Array.isArray(existingPackage?.teacherDecisionLog) ? existingPackage.teacherDecisionLog : []),
     {
       action: 'review_status_updated',
       reviewStatus,
       note: teacherDecisionNote,
+      reviewChecklist,
       userId,
       createdAt: new Date().toISOString()
     }
@@ -249,6 +252,7 @@ export const updateSlidedeckReview = async (packageId, data = {}, userId = 'unkn
   await updateDoc(doc(db, 'slidedeckPackages', packageId), {
     reviewStatus,
     teacherDecisionNote,
+    reviewChecklist,
     teacherDecisionLog,
     updatedAt: serverTimestamp()
   });

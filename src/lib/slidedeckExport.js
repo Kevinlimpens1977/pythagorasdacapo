@@ -1,3 +1,5 @@
+import { normalizeSlidedeckReviewChecklist } from './slidedeckReviewChecklist.js';
+
 const splitLines = (value = '') =>
   String(value || '')
     .split(/\r?\n/)
@@ -89,6 +91,7 @@ export const buildSlidedeckExportMetadata = (deckPackage = {}, { exportedAt = ne
   review: {
     reviewStatus: deckPackage.reviewStatus || 'needs_review',
     teacherDecisionNote: deckPackage.teacherDecisionNote || '',
+    checklist: normalizeSlidedeckReviewChecklist(deckPackage.reviewChecklist),
     sourceTagsSummary: deckPackage.sourceTagsSummary || {},
     citations: Array.isArray(deckPackage.citations) ? deckPackage.citations : [],
     teacherDecisionLog: Array.isArray(deckPackage.teacherDecisionLog) ? deckPackage.teacherDecisionLog : []
@@ -134,6 +137,7 @@ export const buildSlidedeckHtmlExport = (deckPackage = {}, options = {}) => {
     <dt>Pakket-ID</dt><dd>${escapeHtml(metadata.packageId || 'Onbekend')}</dd>
     <dt>Status</dt><dd>${escapeHtml(metadata.status || 'Onbekend')}</dd>
     <dt>Reviewstatus</dt><dd>${escapeHtml(metadata.review.reviewStatus)}</dd>
+    <dt>Checklist compleet</dt><dd>${Object.values(metadata.review.checklist).every(Boolean) ? 'Ja' : 'Nee'}</dd>
     <dt>Geexporteerd op</dt><dd>${escapeHtml(metadata.exportedAt)}</dd>
   </dl>
 

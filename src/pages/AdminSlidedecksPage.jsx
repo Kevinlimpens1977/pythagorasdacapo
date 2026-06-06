@@ -28,6 +28,11 @@ import {
   getSlidedeckReviewStatusLabel,
   validateSlidedeckSourceInputs
 } from '../lib/slidedeckReview';
+import {
+  SLIDEDECK_REVIEW_CHECKLIST_ITEMS,
+  isSlidedeckReviewChecklistComplete,
+  normalizeSlidedeckReviewChecklist
+} from '../lib/slidedeckReviewChecklist';
 
 const emptyContext = {
   vakId: '',
@@ -83,6 +88,30 @@ const downloadTextFile = ({ content, fileName, contentType }) => {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 };
 
+const PdfReviewPane = ({ title, href }) => (
+  <div className="rounded-lg border border-slate-200 bg-white p-3">
+    <div className="mb-2 flex items-center justify-between gap-2">
+      <p className="text-xs font-black uppercase tracking-wide text-slate-500">{title}</p>
+      {href ? (
+        <a href={href} target="_blank" rel="noreferrer" className="text-xs font-black text-blue-700 hover:underline">
+          Open
+        </a>
+      ) : null}
+    </div>
+    {href ? (
+      <iframe
+        src={href}
+        title={title}
+        className="h-52 w-full rounded-md border border-slate-200 bg-slate-50"
+      />
+    ) : (
+      <div className="flex h-52 items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-xs font-bold text-slate-400">
+        Nog geen PDF beschikbaar.
+      </div>
+    )}
+  </div>
+);
+
 export default function AdminSlidedecksPage() {
   const { currentUser } = useAuth();
   const [searchParams] = useSearchParams();
@@ -103,6 +132,7 @@ export default function AdminSlidedecksPage() {
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [reviewDrafts, setReviewDrafts] = useState({});
+  const [reviewChecklistDrafts, setReviewChecklistDrafts] = useState({});
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
@@ -394,8 +424,24 @@ export default function AdminSlidedecksPage() {
     }
   };
 
+  const getReviewChecklistDraft = (item) =>
+    reviewChecklistDrafts[item.id] || normalizeSlidedeckReviewChecklist(item.reviewChecklist);
+
+  const handleReviewChecklistChange = (packageId, checkId, checked) => {
+    const item = packages.find((deckPackage) => deckPackage.id === packageId);
+    const currentChecklist = item ? getReviewChecklistDraft(item) : normalizeSlidedeckReviewChecklist();
+    setReviewChecklistDrafts((current) => ({
+      ...current,
+      [packageId]: {
+        ...currentChecklist,
+        [checkId]: checked
+      }
+    }));
+  };
+
   const handleUpdateReview = async (packageId, reviewStatus) => {
-    const teacherDecisionNote = reviewDrafts[packageId] || '';
+    const item = packages.find((deckPackage) => deckPackage.id === packageId);
+    const teacherDecisionNote = reviewDrafts[packageId] ?? item?.teacherDecisionNote ?? '';
     if (reviewStatus === 'teacher_decision' && !teacherDecisionNote.trim()) {
       setError('Leg eerst kort vast waarom dit deck via docentbesluit gebruikt mag worden.');
       return;
@@ -405,7 +451,11 @@ export default function AdminSlidedecksPage() {
       setError('');
       await slidedeckService.updateSlidedeckReview(
         packageId,
-        { reviewStatus, teacherDecisionNote },
+        {
+          reviewStatus,
+          teacherDecisionNote,
+          reviewChecklist: item ? getReviewChecklistDraft(item) : normalizeSlidedeckReviewChecklist()
+        },
         currentUser?.uid || 'unknown-admin'
       );
       setPackages(await slidedeckService.getSlidedeckPackages());
@@ -646,6 +696,36 @@ export default function AdminSlidedecksPage() {
                               {getSlidedeckReviewStatusLabel(item.reviewStatus)}
                             </span>
                             <a href={item.generatedDeckPdf.downloadURL} target="_blank" rel="noreferrer" className="font-black text-blue-700 hover:underline">Open PDF</a>
+                          </div>
+                          <div className="grid gap-3 xl:grid-cols-[minmax(220px,1fr)_minmax(220px,1fr)_minmax(220px,0.8fr)]">
+                            <PdfReviewPane title="Bron-PDF" href={item.sourcePdf?.downloadURL} />
+                            <PdfReviewPane title="NotebookLM-PDF" href={item.generatedDeckPdf?.downloadURL} />
+                            <div className="rounded-lg border border-slate-200 bg-white p-3">
+                              <p className="text-xs font-black uppercase tracking-wide text-slate-500">Reviewchecklist</p>
+                              <div className="mt-3 space-y-2">
+                                {SLIDEDECK_REVIEW_CHECKLIST_ITEMS.map((checkItem) => {
+                                  const checklist = getReviewChecklistDraft(item);
+                                  return (
+                                    <label key={checkItem.id} className="flex items-start gap-2 text-xs font-bold leading-5 text-slate-700">
+                                      <input
+                                        type="checkbox"
+                                        checked={checklist[checkItem.id]}
+                                        onChange={(event) => handleReviewChecklistChange(item.id, checkItem.id, event.target.checked)}
+                                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-100"
+                                      />
+                                      <span>{checkItem.label}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                              <p className={`mt-3 rounded-md px-2 py-1 text-xs font-black ${
+                                isSlidedeckReviewChecklistComplete(getReviewChecklistDraft(item))
+                                  ? 'bg-green-50 text-green-700'
+                                  : 'bg-amber-50 text-amber-700'
+                              }`}>
+                                {isSlidedeckReviewChecklistComplete(getReviewChecklistDraft(item)) ? 'Checklist compleet' : 'Nog te controleren'}
+                              </p>
+                            </div>
                           </div>
                           <textarea
                             value={reviewDrafts[item.id] ?? item.teacherDecisionNote ?? ''}
