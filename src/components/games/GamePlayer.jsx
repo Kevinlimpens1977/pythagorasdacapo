@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { AlertCircle, Clock, Play, Trophy } from 'lucide-react';
-import PythagorasTrainerGame from './PythagorasTrainerGame';
+import GameComponentRenderer from '../../games/GameComponentRenderer';
+import { isPlayableGameComponentKey } from '../../games/gameComponentKeys';
 import {
   createLocalGameResult,
   GAME_RESULT_HANDLING,
@@ -15,6 +16,7 @@ export default function GamePlayer({
   const game = getGameById(gameId);
   const [startedAt, setStartedAt] = useState(null);
   const [lastResult, setLastResult] = useState(null);
+  const hasPlayableComponent = game ? isPlayableGameComponentKey(game.componentKey) : false;
 
   const normalizedContext = useMemo(
     () => ({
@@ -106,8 +108,12 @@ export default function GamePlayer({
       </div>
 
       <div className="border-t border-slate-200 p-6">
-        {game.componentKey === 'pythagorasTrainer' ? (
-          <PythagorasTrainerGame onStart={setStartedAt} onComplete={handleCompleteGame} />
+        {hasPlayableComponent ? (
+          <GameComponentRenderer
+            componentKey={game.componentKey}
+            onStart={setStartedAt}
+            onComplete={handleCompleteGame}
+          />
         ) : (
           <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
             <Trophy size={34} className="mx-auto text-slate-300" />

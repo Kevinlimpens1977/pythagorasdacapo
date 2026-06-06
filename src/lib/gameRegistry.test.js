@@ -74,3 +74,12 @@ test('GO 2B marks Pythagoras Trainer as the first playable prototype', () => {
   assert.equal(pythagorasTrainer.componentKey, 'pythagorasTrainer');
   assert.equal(pythagorasTrainer.status, 'prototype');
 });
+
+test('Account Escape is available as a playable digitale vaardigheden prototype', () => {
+  const accountEscape = getGameById('dv-account-escape');
+
+  assert.equal(accountEscape.componentKey, 'accountEscape');
+  assert.equal(accountEscape.status, 'prototype');
+  assert.equal(accountEscape.cmsEmbeddable, true);
+  assert.equal(accountEscape.supportedModes.includes('cmsBlock'), true);
+});

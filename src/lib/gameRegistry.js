@@ -43,19 +43,25 @@ export const GAME_REGISTRY = [
   {
     gameId: 'dv-account-escape',
     title: 'Account Escape',
-    description: 'Placeholder voor een escape-oefening rond HELIX, OneDrive, Outlook, school-ELO en veilig uitloggen.',
+    description: 'Speelbare schoolstart-escape rond HELIX, OneDrive, Outlook, bestanden terugvinden en veilig uitloggen.',
     subject: 'Digitale vaardigheden',
     topic: 'Schoolaccount en digitale schooltas',
     level: 'VMBO leerjaar 1',
-    learningGoals: ['Schoolapps herkennen', 'Veilig inloggen en uitloggen', 'Digitale startproblemen oplossen'],
-    skills: ['navigeren', 'accountveiligheid', 'probleemoplossend werken'],
+    learningGoals: [
+      'HELIX herkennen als startplek voor de lesroute',
+      'Schoolwerk veilig en overzichtelijk in OneDrive plaatsen',
+      'Duidelijke bestandsnamen herkennen',
+      'Outlook gebruiken voor schoolmail zonder wachtwoorden te delen',
+      'Een gedeeld apparaat veilig afsluiten'
+    ],
+    skills: ['navigeren', 'accountveiligheid', 'bestanden organiseren', 'veilig handelen'],
     estimatedMinutes: 5,
     route: '/admin/spellen/dv-account-escape',
-    componentKey: 'placeholder',
+    componentKey: 'accountEscape',
     cmsEmbeddable: true,
     supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
-    tokenRewardPotential: { min: 0, max: 10, basis: 'completion' },
-    status: GAME_STATUSES.PLANNED
+    tokenRewardPotential: { min: 0, max: 10, basis: 'score_accuracy_completion' },
+    status: GAME_STATUSES.PROTOTYPE
   },
   {
     gameId: 'dv-password-lab',
