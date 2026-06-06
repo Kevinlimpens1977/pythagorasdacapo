@@ -18,6 +18,11 @@ import * as slidedeckService from '../services/slidedeckService';
 import { createSourcePdfBlob } from '../lib/sourcePdfGenerator';
 import { fillNotebookPrompt } from '../lib/notebookPromptTemplates';
 import {
+  buildSlidedeckExportFileName,
+  buildSlidedeckHtmlExport,
+  buildSlidedeckJsonExport
+} from '../lib/slidedeckExport';
+import {
   SLIDEDECK_REVIEW_STATUSES,
   getSlidedeckReviewStatusLabel,
   validateSlidedeckSourceInputs
@@ -65,6 +70,16 @@ const formatDate = (value) => {
     hour: '2-digit',
     minute: '2-digit'
   }).format(new Date(value));
+};
+
+const downloadTextFile = ({ content, fileName, contentType }) => {
+  const blob = new Blob([content], { type: contentType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 };
 
 export default function AdminSlidedecksPage() {
@@ -302,6 +317,16 @@ export default function AdminSlidedecksPage() {
     setSuccess('Prompt gekopieerd naar klembord.');
   };
 
+  const handleDownloadExport = (item, format) => {
+    const isHtml = format === 'html';
+    downloadTextFile({
+      content: isHtml ? buildSlidedeckHtmlExport(item) : buildSlidedeckJsonExport(item),
+      fileName: buildSlidedeckExportFileName(item, isHtml ? 'html' : 'json'),
+      contentType: isHtml ? 'text/html;charset=utf-8' : 'application/json;charset=utf-8'
+    });
+    setSuccess(`${isHtml ? 'HTML' : 'JSON'}-export gedownload.`);
+  };
+
   const handleUploadDeck = async (packageId, file) => {
     if (!file) return;
     if (file.type !== 'application/pdf') {
@@ -506,20 +531,21 @@ export default function AdminSlidedecksPage() {
             <Library className="text-slate-400" size={24} />
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[920px] text-left text-sm">
+            <table className="w-full min-w-[1040px] text-left text-sm">
               <thead className="bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-6 py-4">Datum</th>
                   <th className="px-6 py-4">Onderwerp</th>
                   <th className="px-6 py-4">Prompt</th>
                   <th className="px-6 py-4">Bronbestand</th>
+                  <th className="px-6 py-4">Exportcontract</th>
                   <th className="px-6 py-4">NotebookLM deck</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {packages.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-10 text-center font-bold text-slate-400">Nog geen slidedeckpakketten gemaakt.</td>
+                    <td colSpan={6} className="px-6 py-10 text-center font-bold text-slate-400">Nog geen slidedeckpakketten gemaakt.</td>
                   </tr>
                 ) : packages.map((item) => (
                   <tr key={item.id} className="align-top">
@@ -541,6 +567,26 @@ export default function AdminSlidedecksPage() {
                         <Download size={15} />
                         Download
                       </a>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => handleDownloadExport(item, 'json')}
+                          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 font-black text-slate-700 hover:bg-slate-50"
+                          title="Download metadata, bronnen, prompt en bestandslinks als JSON"
+                        >
+                          <FileText size={15} />
+                          JSON
+                        </button>
+                        <button
+                          onClick={() => handleDownloadExport(item, 'html')}
+                          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 font-black text-slate-700 hover:bg-slate-50"
+                          title="Download controleerbare HTML-export met metadata"
+                        >
+                          <FileText size={15} />
+                          HTML
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       {item.generatedDeckPdf?.downloadURL ? (
