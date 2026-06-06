@@ -84,6 +84,7 @@ import {
   getParagraphReviewStatusLabel,
   normalizeParagraphMetadata
 } from '../../lib/paragraphMetadata';
+import { hasContentBlockDraftChanges } from '../../lib/contentBlockDraftState';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
   ASSESSMENT_ITEM_TYPES,
@@ -1329,6 +1330,21 @@ const LessonBlockStudio = ({
     setContent((current) => ({ ...current, ...updates }));
   };
 
+  const draftHasChanges = hasContentBlockDraftChanges(block, {
+    title,
+    status,
+    content,
+    settings,
+    linkedVraagId: block.type === 'question' ? linkedVraagId : block.linkedVraagId || ''
+  });
+
+  const handleCancel = () => {
+    if (draftHasChanges && !window.confirm('Je hebt niet-opgeslagen wijzigingen. Weet je zeker dat je de lesblokstudio wilt sluiten?')) {
+      return;
+    }
+    onCancel();
+  };
+
   const handleCropTypeChange = (selectionId, newType) => {
     setSelections((current) =>
       current.map((selection) =>
@@ -1617,7 +1633,7 @@ const LessonBlockStudio = ({
           />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
+            <button onClick={handleCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
               Sluit
             </button>
             <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -1679,7 +1695,7 @@ const LessonBlockStudio = ({
         </div>
 
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
+          <button onClick={handleCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
             Sluit
           </button>
           <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -1758,7 +1774,7 @@ const LessonBlockStudio = ({
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
+            <button onClick={handleCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
               Sluit
             </button>
             <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -1857,7 +1873,7 @@ const LessonBlockStudio = ({
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
+            <button onClick={handleCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
               Sluit
             </button>
             <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
@@ -1937,7 +1953,7 @@ const LessonBlockStudio = ({
           <BlockSettingsPanel settings={settings} onChange={setSettings} />
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
-            <button onClick={onCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
+            <button onClick={handleCancel} className="btn-secondary w-auto px-4 py-2 text-sm">
               Sluit
             </button>
             <button onClick={handleSave} disabled={saving} className="btn-primary px-4 py-2 text-sm disabled:opacity-60">
