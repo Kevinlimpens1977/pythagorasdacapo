@@ -101,6 +101,7 @@ import {
   buildContentBlockArchiveUndo,
   shouldShowContentBlockArchiveUndo
 } from '../../lib/contentBlockArchiveUndo';
+import { getCmsWriteErrorMessage } from '../../lib/cmsWriteErrorUtils';
 import {
   buildBulkContentBlockSettingsPatch,
   getBulkMovedContentBlocks,
@@ -259,6 +260,10 @@ const isPublicationIntentStatus = (status) =>
 
 const formatReadinessErrors = (result) =>
   result.errors.map((issue) => issue.message).join(' ');
+
+const getCmsWriteErrorContext = () => ({
+  hasFirebaseUser: Boolean(auth.currentUser?.uid)
+});
 
 const getStatusBadgeClass = (status) => {
   const normalized = normalizeContentBlockStatus(status);
@@ -2881,7 +2886,7 @@ export default function ContentBlockBuilder({
       setEditingBlockId(blockId);
     } catch (error) {
       console.error('Kon lesblok niet aanmaken:', error);
-      setActionError('Kon lesblok niet aanmaken.');
+      setActionError(getCmsWriteErrorMessage(error, getCmsWriteErrorContext(), 'Kon lesblok niet aanmaken.'));
     } finally {
       setCreatingType(null);
     }
