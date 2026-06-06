@@ -15,6 +15,12 @@ import {
   DEFAULT_NOTEBOOK_PROMPT,
   DEFAULT_NOTEBOOK_PROMPT_NAME
 } from '../lib/notebookPromptTemplates';
+import {
+  buildInitialSlidedeckReviewMetadata,
+  buildSlidedeckDeckUploadMetadata,
+  canUseSlidedeckPackageInCms,
+  normalizeSlidedeckReviewStatus
+} from '../lib/slidedeckReview';
 
 export const SLIDEDECK_STATUSES = {
   SOURCE_READY: 'sourceReady',
@@ -91,7 +97,7 @@ export const getSlidedeckPackage = async (packageId) => {
 
 export const getDeckReadySlidedeckPackages = async () => {
   const packages = await getSlidedeckPackages();
-  return packages.filter((item) => item.generatedDeckPdf?.downloadURL);
+  return packages.filter(canUseSlidedeckPackageInCms);
 };
 
 export const getSlidedeckPdfBytes = async ({ storagePath, downloadURL }) => {
@@ -163,6 +169,14 @@ export const createSlidedeckPackage = async ({
     sourcePdfBlob,
     'application/pdf'
   );
+  const reviewMetadata = buildInitialSlidedeckReviewMetadata({
+    learningGoals,
+    sourceText,
+    imageFiles,
+    promptTemplateId,
+    promptTemplateName,
+    promptSnapshot
+  });
 
   await setDoc(packageRef, {
     title,
@@ -176,6 +190,7 @@ export const createSlidedeckPackage = async ({
     sourceAssets: uploadedAssets,
     generatedDeckPdf: null,
     status: SLIDEDECK_STATUSES.SOURCE_READY,
+    ...reviewMetadata,
     createdBy: userId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
@@ -190,6 +205,8 @@ export const uploadGeneratedDeckPdf = async (packageId, file, userId) => {
     file,
     'application/pdf'
   );
+  const existingPackage = await getSlidedeckPackage(packageId);
+  const uploadMetadata = buildSlidedeckDeckUploadMetadata({ file, userId });
 
   await updateDoc(doc(db, 'slidedeckPackages', packageId), {
     generatedDeckPdf: {
@@ -198,11 +215,43 @@ export const uploadGeneratedDeckPdf = async (packageId, file, userId) => {
       ...generatedDeckPdf
     },
     status: SLIDEDECK_STATUSES.DECK_UPLOADED,
+    reviewStatus: uploadMetadata.reviewStatus,
+    generationManifest: {
+      ...(existingPackage?.generationManifest || {}),
+      ...uploadMetadata.generationManifest
+    },
+    teacherDecisionLog: [
+      ...(Array.isArray(existingPackage?.teacherDecisionLog) ? existingPackage.teacherDecisionLog : []),
+      ...uploadMetadata.teacherDecisionLog
+    ],
     deckUploadedBy: userId,
     updatedAt: serverTimestamp()
   });
 
   return generatedDeckPdf;
+};
+
+export const updateSlidedeckReview = async (packageId, data = {}, userId = 'unknown-admin') => {
+  const existingPackage = await getSlidedeckPackage(packageId);
+  const reviewStatus = normalizeSlidedeckReviewStatus(data.reviewStatus);
+  const teacherDecisionNote = String(data.teacherDecisionNote || '').trim();
+  const teacherDecisionLog = [
+    ...(Array.isArray(existingPackage?.teacherDecisionLog) ? existingPackage.teacherDecisionLog : []),
+    {
+      action: 'review_status_updated',
+      reviewStatus,
+      note: teacherDecisionNote,
+      userId,
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  await updateDoc(doc(db, 'slidedeckPackages', packageId), {
+    reviewStatus,
+    teacherDecisionNote,
+    teacherDecisionLog,
+    updatedAt: serverTimestamp()
+  });
 };
 
 export default {
@@ -214,5 +263,6 @@ export default {
   getDeckReadySlidedeckPackages,
   getSlidedeckPdfBytes,
   createSlidedeckPackage,
-  uploadGeneratedDeckPdf
+  uploadGeneratedDeckPdf,
+  updateSlidedeckReview
 };

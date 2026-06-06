@@ -17,6 +17,11 @@ import * as cmsService from '../services/cmsService';
 import * as slidedeckService from '../services/slidedeckService';
 import { createSourcePdfBlob } from '../lib/sourcePdfGenerator';
 import { fillNotebookPrompt } from '../lib/notebookPromptTemplates';
+import {
+  SLIDEDECK_REVIEW_STATUSES,
+  getSlidedeckReviewStatusLabel,
+  validateSlidedeckSourceInputs
+} from '../lib/slidedeckReview';
 
 const emptyContext = {
   vakId: '',
@@ -79,6 +84,7 @@ export default function AdminSlidedecksPage() {
   const [promptDraft, setPromptDraft] = useState('');
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
+  const [reviewDrafts, setReviewDrafts] = useState({});
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
@@ -244,8 +250,9 @@ export default function AdminSlidedecksPage() {
   };
 
   const handleGeneratePackage = async () => {
-    if (!title.trim()) {
-      setError('Geef het slidedeckpakket eerst een onderwerp.');
+    const sourceValidation = validateSlidedeckSourceInputs({ title, learningGoals, sourceText });
+    if (!sourceValidation.canCreate) {
+      setError(sourceValidation.errors.map((issue) => issue.message).join(' '));
       return;
     }
 
@@ -310,6 +317,28 @@ export default function AdminSlidedecksPage() {
     } catch (uploadError) {
       console.error('Kon NotebookLM PDF niet uploaden:', uploadError);
       setError('Kon NotebookLM PDF niet uploaden.');
+    }
+  };
+
+  const handleUpdateReview = async (packageId, reviewStatus) => {
+    const teacherDecisionNote = reviewDrafts[packageId] || '';
+    if (reviewStatus === 'teacher_decision' && !teacherDecisionNote.trim()) {
+      setError('Leg eerst kort vast waarom dit deck via docentbesluit gebruikt mag worden.');
+      return;
+    }
+
+    try {
+      setError('');
+      await slidedeckService.updateSlidedeckReview(
+        packageId,
+        { reviewStatus, teacherDecisionNote },
+        currentUser?.uid || 'unknown-admin'
+      );
+      setPackages(await slidedeckService.getSlidedeckPackages());
+      setSuccess('Reviewstatus opgeslagen.');
+    } catch (reviewError) {
+      console.error('Kon reviewstatus niet opslaan:', reviewError);
+      setError('Kon reviewstatus niet opslaan.');
     }
   };
 
@@ -515,9 +544,35 @@ export default function AdminSlidedecksPage() {
                     </td>
                     <td className="px-6 py-4">
                       {item.generatedDeckPdf?.downloadURL ? (
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-green-700">Deck geupload</span>
-                          <a href={item.generatedDeckPdf.downloadURL} target="_blank" rel="noreferrer" className="font-black text-blue-700 hover:underline">Open PDF</a>
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-green-700">Deck geupload</span>
+                            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-amber-700">
+                              {getSlidedeckReviewStatusLabel(item.reviewStatus)}
+                            </span>
+                            <a href={item.generatedDeckPdf.downloadURL} target="_blank" rel="noreferrer" className="font-black text-blue-700 hover:underline">Open PDF</a>
+                          </div>
+                          <textarea
+                            value={reviewDrafts[item.id] ?? item.teacherDecisionNote ?? ''}
+                            onChange={(event) => setReviewDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
+                            className="input-standard min-h-20 w-full resize-y text-xs leading-5"
+                            placeholder="Reviewnotitie of onderbouwing bij docentbesluit"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            {SLIDEDECK_REVIEW_STATUSES.map((status) => (
+                              <button
+                                key={status}
+                                onClick={() => handleUpdateReview(item.id, status)}
+                                className={`rounded-lg border px-3 py-2 text-xs font-black ${
+                                  item.reviewStatus === status
+                                    ? 'border-blue-200 bg-blue-50 text-blue-700'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                                }`}
+                              >
+                                {getSlidedeckReviewStatusLabel(status)}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       ) : (
                         <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 font-black text-slate-700 hover:bg-slate-50">
