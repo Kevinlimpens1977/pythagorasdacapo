@@ -13,6 +13,7 @@ export const CONTENT_BLOCK_STATUS_LABELS = {
 const READY_STATUSES = new Set(['ready', 'published']);
 const TEXT_BLOCK_TYPES = new Set(['theory', 'example', 'summary']);
 const ASSESSMENT_BLOCK_TYPES = new Set(['quiz', 'toets']);
+const CLOSING_CHECK_BLOCK_TYPES = new Set(['question', 'quiz', 'toets']);
 
 export const normalizeContentBlockStatus = (status) =>
   CONTENT_BLOCK_STATUSES.includes(status) ? status : 'draft';
@@ -249,12 +250,14 @@ export const validateParagraphReadiness = ({ paragraaf = {}, blocks = [] } = {})
   const errors = [];
   const warnings = [];
   const metadata = normalizeParagraphMetadata(paragraaf);
+  const hasLearningGoals = hasListOrText(metadata.learningGoals);
+  const hasEvidenceProduct = hasListOrText(metadata.evidenceProduct);
 
-  if (!hasListOrText(metadata.learningGoals)) {
+  if (!hasLearningGoals) {
     errors.push(createIssue('paragraph_learning_goals_missing', 'Vul minimaal een leerdoel voor deze paragraaf in.'));
   }
 
-  if (!hasListOrText(metadata.evidenceProduct)) {
+  if (!hasEvidenceProduct) {
     errors.push(createIssue('paragraph_evidence_missing', 'Vul het bewijsproduct of de eindprestatie voor deze paragraaf in.'));
   }
 
@@ -277,6 +280,21 @@ export const validateParagraphReadiness = ({ paragraaf = {}, blocks = [] } = {})
       ));
     });
   });
+
+  if (hasLearningGoals && hasEvidenceProduct) {
+    const hasClosingCheck = blockResults.some((result) =>
+      CLOSING_CHECK_BLOCK_TYPES.has(result.blockType) &&
+      result.isPublicationIntent &&
+      result.canPublish === true
+    );
+
+    if (!hasClosingCheck) {
+      errors.push(createIssue(
+        'paragraph_closing_check_missing',
+        'Voeg minimaal een gepubliceerde of klare vraag, quiz of toets toe als afsluitcheck.'
+      ));
+    }
+  }
 
   return {
     canPublish: errors.length === 0,

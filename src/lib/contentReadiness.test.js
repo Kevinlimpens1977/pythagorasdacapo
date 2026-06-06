@@ -226,10 +226,84 @@ test('paragraph readiness requires learning goals and evidence before route publ
       evidenceProduct: 'Leerling levert een correct gedeeld document in.'
     },
     blocks: [
-      { id: 'b1', type: 'summary', status: 'published', content: { html: '<p>Klaar.</p>' } }
+      { id: 'b1', type: 'summary', status: 'published', content: { html: '<p>Klaar.</p>' } },
+      {
+        id: 'q1',
+        type: 'question',
+        status: 'published',
+        linkedVraagId: 'vraag-1',
+        linkedVraag: {
+          id: 'vraag-1',
+          status: 'published',
+          vraagtype: 'open',
+          content: { text: '<p>Wat lever je in?</p>' },
+          antwoord: { type: 'open', modelAnswer: 'Een correct gedeeld document.' }
+        }
+      }
     ]
   });
 
   assert.equal(ready.canPublish, true);
-  assert.equal(ready.blockResults.length, 1);
+  assert.equal(ready.blockResults.length, 2);
+});
+
+test('paragraph readiness requires a complete closing check block', () => {
+  const paragraph = {
+    title: '1.1 Mijn digitale schooltas',
+    learningGoals: ['Ik open mijn schoolmail.'],
+    evidenceProduct: 'Leerling levert een correct gedeeld document in.'
+  };
+
+  const withoutClosingCheck = validateParagraphReadiness({
+    paragraaf: paragraph,
+    blocks: [
+      { id: 'b1', type: 'summary', status: 'published', content: { html: '<p>Onthoud de stappen.</p>' } }
+    ]
+  });
+
+  assert.equal(withoutClosingCheck.canPublish, false);
+  assert.deepEqual(withoutClosingCheck.errors.map((issue) => issue.code), ['paragraph_closing_check_missing']);
+
+  const withDraftQuestion = validateParagraphReadiness({
+    paragraaf: paragraph,
+    blocks: [
+      {
+        id: 'q1',
+        type: 'question',
+        status: 'draft',
+        linkedVraagId: 'vraag-1',
+        linkedVraag: {
+          id: 'vraag-1',
+          status: 'published',
+          vraagtype: 'open',
+          content: { text: '<p>Wat doe je na het openen van je schoolmail?</p>' },
+          antwoord: { type: 'open', modelAnswer: 'Ik controleer de afzender en onderwerpregel.' }
+        }
+      }
+    ]
+  });
+
+  assert.equal(withDraftQuestion.canPublish, false);
+  assert.deepEqual(withDraftQuestion.errors.map((issue) => issue.code), ['paragraph_closing_check_missing']);
+
+  const withClosingCheck = validateParagraphReadiness({
+    paragraaf: paragraph,
+    blocks: [
+      {
+        id: 'q1',
+        type: 'question',
+        status: 'published',
+        linkedVraagId: 'vraag-1',
+        linkedVraag: {
+          id: 'vraag-1',
+          status: 'published',
+          vraagtype: 'open',
+          content: { text: '<p>Wat doe je na het openen van je schoolmail?</p>' },
+          antwoord: { type: 'open', modelAnswer: 'Ik controleer de afzender en onderwerpregel.' }
+        }
+      }
+    ]
+  });
+
+  assert.equal(withClosingCheck.canPublish, true);
 });
