@@ -101,6 +101,7 @@ import {
   shouldShowContentBlockArchiveUndo
 } from '../../lib/contentBlockArchiveUndo';
 import {
+  buildBulkContentBlockSettingsPatch,
   getBulkSelectionLabel,
   getSelectedContentBlocks
 } from '../../lib/contentBlockBulkActions';
@@ -2983,6 +2984,27 @@ export default function ContentBlockBuilder({
     }
   };
 
+  const handleBulkSettingsPatch = async (settingsPatch, actionName) => {
+    if (selectedBlocks.length === 0) return;
+
+    try {
+      setBulkAction(actionName);
+      setActionError(null);
+      await Promise.all(
+        selectedBlocks.map((block) =>
+          cmsService.updateContentBlock(block.id, buildBulkContentBlockSettingsPatch(block, settingsPatch))
+        )
+      );
+      clearBulkSelection();
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon instellingen voor geselecteerde lesblokken niet aanpassen:', error);
+      setActionError('Kon instellingen voor geselecteerde lesblokken niet aanpassen.');
+    } finally {
+      setBulkAction(null);
+    }
+  };
+
   const handleMoveBlock = async (blockId, direction) => {
     try {
       setActionError(null);
@@ -3152,6 +3174,38 @@ export default function ContentBlockBuilder({
             >
               <Copy size={14} />
               Dupliceer
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkSettingsPatch({ allowAiHelp: true }, 'ai-on')}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Digidocent aan
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkSettingsPatch({ allowAiHelp: false }, 'ai-off')}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Digidocent uit
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkSettingsPatch({ allowMathToolbox: true }, 'toolbox-on')}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Toolbox aan
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkSettingsPatch({ allowMathToolbox: false }, 'toolbox-off')}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Toolbox uit
             </button>
             <button
               type="button"

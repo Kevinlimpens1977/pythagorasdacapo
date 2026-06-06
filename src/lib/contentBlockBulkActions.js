@@ -27,3 +27,13 @@ export const buildDuplicateContentBlockPayload = (block = {}) => {
     linkedVraagId: null
   };
 };
+
+export const buildBulkContentBlockSettingsPatch = (block = {}, settingsPatch = {}) => {
+  const type = block.type || 'theory';
+  return {
+    settings: normalizeContentBlockSettings({
+      ...(block.settings || {}),
+      ...settingsPatch
+    }, type)
+  };
+};

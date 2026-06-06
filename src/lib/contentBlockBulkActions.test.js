@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildBulkContentBlockSettingsPatch,
   buildDuplicateContentBlockPayload,
   getBulkSelectionLabel,
   getSelectedContentBlocks
@@ -48,4 +49,30 @@ test('buildDuplicateContentBlockPayload marks linked question copies as draft wr
   assert.equal(payload.title, 'Vraag (kopie)');
   assert.equal(payload.status, 'draft');
   assert.equal(payload.linkedVraagId, null);
+});
+
+test('buildBulkContentBlockSettingsPatch toggles Digidocent and toolbox settings safely', () => {
+  assert.deepEqual(
+    buildBulkContentBlockSettingsPatch(blocks[0], { allowAiHelp: true, allowMathToolbox: true }),
+    {
+      settings: {
+        allowAiHelp: true,
+        allowMathToolbox: true,
+        differentiationLevel: 'basis',
+        scaffoldingRole: 'zelf_proberen'
+      }
+    }
+  );
+
+  assert.deepEqual(
+    buildBulkContentBlockSettingsPatch(blocks[1], { allowAiHelp: false }),
+    {
+      settings: {
+        allowAiHelp: false,
+        allowMathToolbox: false,
+        differentiationLevel: 'basis',
+        scaffoldingRole: 'zelf_proberen'
+      }
+    }
+  );
 });

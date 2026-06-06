@@ -25,7 +25,7 @@ test('normalizeContentBlocks filters archived blocks and sorts by order', () => 
   assert.deepEqual(blocks.map((block) => block.id), ['a', 'b']);
 });
 
-test('normalizeContentBlockSettings enables Digidocent by default for answer practice blocks but never enables math toolbox', () => {
+test('normalizeContentBlockSettings enables Digidocent by default for answer practice blocks and preserves explicit toolbox choice', () => {
   assert.deepEqual(normalizeContentBlockSettings(undefined, 'question'), {
     allowAiHelp: true,
     allowMathToolbox: false,
@@ -42,7 +42,7 @@ test('normalizeContentBlockSettings enables Digidocent by default for answer pra
 
   assert.deepEqual(normalizeContentBlockSettings({ allowMathToolbox: true, allowCalculator: true }, 'quiz'), {
     allowAiHelp: true,
-    allowMathToolbox: false,
+    allowMathToolbox: true,
     differentiationLevel: 'basis',
     scaffoldingRole: 'zelf_proberen'
   });

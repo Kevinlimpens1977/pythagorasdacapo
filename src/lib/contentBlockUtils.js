@@ -53,7 +53,7 @@ export const normalizeContentBlockScaffoldingRole = (value = '') =>
 
 export const normalizeContentBlockSettings = (settings = {}, blockType = '') => ({
   allowAiHelp: settings.allowAiHelp ?? (['question', 'quiz'].includes(blockType) ? true : DEFAULT_CONTENT_BLOCK_SETTINGS.allowAiHelp),
-  allowMathToolbox: false,
+  allowMathToolbox: Boolean(settings.allowMathToolbox ?? settings.allowCalculator ?? DEFAULT_CONTENT_BLOCK_SETTINGS.allowMathToolbox),
   differentiationLevel: normalizeContentBlockDifferentiationLevel(
     settings.differentiationLevel || settings.targetLevel || settings.routeLevel
   ),

@@ -19,7 +19,7 @@ test('buildPublicContentBlockSnapshot normalizes differentiation settings', () =
 
   assert.deepEqual(publicBlock.settings, {
     allowAiHelp: true,
-    allowMathToolbox: false,
+    allowMathToolbox: true,
     differentiationLevel: 'plus',
     scaffoldingRole: 'zelf_proberen'
   });
