@@ -2217,7 +2217,10 @@ const LessonBlockStudio = ({
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <a
-                  href={buildSlidedeckCreatorUrl({ paragraafId: paragraaf?.id || block.paragraafId })}
+                  href={buildSlidedeckCreatorUrl({
+                    paragraafId: paragraaf?.id || block.paragraafId,
+                    contentBlockId: block.id
+                  })}
                   target="_blank"
                   rel="noreferrer"
                   className="btn-primary w-auto px-4 py-2 text-sm"

@@ -10,6 +10,13 @@ test('buildSlidedeckCreatorUrl links a CMS paragraph to the Slidedeckcreator', (
   );
 });
 
+test('buildSlidedeckCreatorUrl can carry the source CMS slidedeck block id', () => {
+  assert.equal(
+    buildSlidedeckCreatorUrl({ paragraafId: 'paragraaf 7.3', contentBlockId: 'block deck 1' }),
+    '/admin/slidedecks?paragraafId=paragraaf+7.3&contentBlockId=block+deck+1'
+  );
+});
+
 test('buildSlidedeckCreatorUrl falls back to the Slidedeckcreator without query data', () => {
   assert.equal(buildSlidedeckCreatorUrl({ paragraafId: '' }), '/admin/slidedecks');
 });

@@ -44,7 +44,8 @@ const emptyContext = {
   hoofdstukId: '',
   hoofdstukTitle: '',
   paragraafId: '',
-  paragraafTitle: ''
+  paragraafTitle: '',
+  contentBlockId: ''
 };
 
 const createImageItem = (file) => ({
@@ -116,6 +117,7 @@ export default function AdminSlidedecksPage() {
   const { currentUser } = useAuth();
   const [searchParams] = useSearchParams();
   const preselectParagraafId = searchParams.get('paragraafId') || '';
+  const preselectContentBlockId = searchParams.get('contentBlockId') || '';
   const [packages, setPackages] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -185,7 +187,8 @@ export default function AdminSlidedecksPage() {
         hoofdstukId: hoofdstuk?.id || '',
         hoofdstukTitle: hoofdstuk ? readableCodeTitle(hoofdstuk, '') : '',
         paragraafId: paragraaf.id,
-        paragraafTitle
+        paragraafTitle,
+        contentBlockId: preselectContentBlockId
       });
       if (paragraafTitle) setTitle((current) => current || paragraafTitle);
 
@@ -253,7 +256,8 @@ export default function AdminSlidedecksPage() {
       hoofdstukId: '',
       hoofdstukTitle: '',
       paragraafId: '',
-      paragraafTitle: ''
+      paragraafTitle: '',
+      contentBlockId: ''
     }));
     setNiveaus([]);
     setHoofdstukken([]);
@@ -270,7 +274,8 @@ export default function AdminSlidedecksPage() {
       hoofdstukId: '',
       hoofdstukTitle: '',
       paragraafId: '',
-      paragraafTitle: ''
+      paragraafTitle: '',
+      contentBlockId: ''
     }));
     setHoofdstukken([]);
     setParagrafen([]);
@@ -284,7 +289,8 @@ export default function AdminSlidedecksPage() {
       hoofdstukId,
       hoofdstukTitle: hoofdstuk ? readableCodeTitle(hoofdstuk, '') : '',
       paragraafId: '',
-      paragraafTitle: ''
+      paragraafTitle: '',
+      contentBlockId: ''
     }));
     setParagrafen([]);
     if (hoofdstukId) setParagrafen(await cmsService.getParagrafen(hoofdstukId));
@@ -295,7 +301,8 @@ export default function AdminSlidedecksPage() {
     setContext((current) => ({
       ...current,
       paragraafId,
-      paragraafTitle: paragraaf ? readableName(paragraaf, '') : ''
+      paragraafTitle: paragraaf ? readableName(paragraaf, '') : '',
+      contentBlockId: paragraafId === preselectParagraafId ? preselectContentBlockId : ''
     }));
   };
 
@@ -415,9 +422,15 @@ export default function AdminSlidedecksPage() {
 
     try {
       setError('');
-      await slidedeckService.uploadGeneratedDeckPdf(packageId, file, currentUser?.uid || 'unknown-admin');
+      const uploadResult = await slidedeckService.uploadGeneratedDeckPdf(packageId, file, currentUser?.uid || 'unknown-admin');
       setPackages(await slidedeckService.getSlidedeckPackages());
-      setSuccess('NotebookLM slidedeck-PDF opgeslagen.');
+      if (uploadResult.cmsSyncResult?.error) {
+        setSuccess('NotebookLM slidedeck-PDF opgeslagen. CMS-koppeling kon niet automatisch worden bijgewerkt.');
+      } else if (uploadResult.cmsSyncResult?.updatedCount > 0) {
+        setSuccess(`NotebookLM slidedeck-PDF opgeslagen en ${uploadResult.cmsSyncResult.updatedCount} CMS-lesblok bijgewerkt.`);
+      } else {
+        setSuccess('NotebookLM slidedeck-PDF opgeslagen.');
+      }
     } catch (uploadError) {
       console.error('Kon NotebookLM PDF niet uploaden:', uploadError);
       setError('Kon NotebookLM PDF niet uploaden.');
@@ -449,7 +462,7 @@ export default function AdminSlidedecksPage() {
 
     try {
       setError('');
-      await slidedeckService.updateSlidedeckReview(
+      const reviewResult = await slidedeckService.updateSlidedeckReview(
         packageId,
         {
           reviewStatus,
@@ -459,7 +472,13 @@ export default function AdminSlidedecksPage() {
         currentUser?.uid || 'unknown-admin'
       );
       setPackages(await slidedeckService.getSlidedeckPackages());
-      setSuccess('Reviewstatus opgeslagen.');
+      if (reviewResult.cmsSyncResult?.error) {
+        setSuccess('Reviewstatus opgeslagen. CMS-koppeling kon niet automatisch worden bijgewerkt.');
+      } else if (reviewResult.cmsSyncResult?.updatedCount > 0) {
+        setSuccess(`Reviewstatus opgeslagen en ${reviewResult.cmsSyncResult.updatedCount} CMS-lesblok bijgewerkt.`);
+      } else {
+        setSuccess('Reviewstatus opgeslagen.');
+      }
     } catch (reviewError) {
       console.error('Kon reviewstatus niet opslaan:', reviewError);
       setError('Kon reviewstatus niet opslaan.');

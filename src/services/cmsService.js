@@ -26,6 +26,7 @@ import {
 } from '../lib/contentBlockUtils';
 import { buildQuestionContentBlockCreateBundle } from '../lib/questionBlockContract';
 import { buildDuplicateContentBlockPayload } from '../lib/contentBlockBulkActions';
+import { buildSlidedeckCmsBlockSyncPatch } from '../lib/slidedeckCmsSync';
 import { buildPublicContentBlockSnapshot } from '../lib/publicContentBlockView';
 import { buildPublicQuestionSnapshot } from '../lib/publicQuestionView';
 
@@ -703,6 +704,41 @@ export const updateContentBlock = async (blockId, data) => {
   }
 };
 
+export const syncSlidedeckPackageToCmsBlocks = async (deckPackage = {}, { contentBlockId = '' } = {}) => {
+  if (!deckPackage.id) return { updatedCount: 0, blockIds: [] };
+
+  const targetBlockIds = new Set([
+    contentBlockId,
+    deckPackage.linkedContext?.contentBlockId
+  ].filter(Boolean));
+
+  try {
+    const linkedBlocksQuery = query(
+      collection(db, 'contentBlocks'),
+      where('content.slidedeckPackageId', '==', deckPackage.id)
+    );
+    const linkedBlocksSnapshot = await getDocs(linkedBlocksQuery);
+    linkedBlocksSnapshot.docs.forEach((blockDoc) => targetBlockIds.add(blockDoc.id));
+
+    const updatedBlockIds = [];
+    for (const blockId of targetBlockIds) {
+      const block = await getContentBlock(blockId);
+      const patch = buildSlidedeckCmsBlockSyncPatch({ block, deckPackage });
+      if (!patch) continue;
+      await updateContentBlock(blockId, patch);
+      updatedBlockIds.push(blockId);
+    }
+
+    return {
+      updatedCount: updatedBlockIds.length,
+      blockIds: updatedBlockIds
+    };
+  } catch (error) {
+    console.error('Error syncing slidedeck package to CMS blocks:', error);
+    throw error;
+  }
+};
+
 /**
  * Persist block order after moving blocks up/down
  * @param {Array<Object>} blocks
@@ -1246,6 +1282,7 @@ export default {
   updateParagraaf,
   updateVraag,
   updateContentBlock,
+  syncSlidedeckPackageToCmsBlocks,
   updateContentBlockOrder,
   duplicateContentBlock,
   archiveParagraaf,

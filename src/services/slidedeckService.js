@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { getBytes, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from './firebase';
+import { syncSlidedeckPackageToCmsBlocks } from './cmsService';
 import {
   DEFAULT_NOTEBOOK_PROMPT,
   DEFAULT_NOTEBOOK_PROMPT_NAME
@@ -208,28 +209,56 @@ export const uploadGeneratedDeckPdf = async (packageId, file, userId) => {
   );
   const existingPackage = await getSlidedeckPackage(packageId);
   const uploadMetadata = buildSlidedeckDeckUploadMetadata({ file, userId });
+  const generatedDeckPdfReference = {
+    fileName: file.name || 'notebooklm-slidedeck.pdf',
+    size: file.size || 0,
+    ...generatedDeckPdf
+  };
+  const nextGenerationManifest = {
+    ...(existingPackage?.generationManifest || {}),
+    ...uploadMetadata.generationManifest
+  };
+  const nextTeacherDecisionLog = [
+    ...(Array.isArray(existingPackage?.teacherDecisionLog) ? existingPackage.teacherDecisionLog : []),
+    ...uploadMetadata.teacherDecisionLog
+  ];
 
   await updateDoc(doc(db, 'slidedeckPackages', packageId), {
-    generatedDeckPdf: {
-      fileName: file.name || 'notebooklm-slidedeck.pdf',
-      size: file.size || 0,
-      ...generatedDeckPdf
-    },
+    generatedDeckPdf: generatedDeckPdfReference,
     status: SLIDEDECK_STATUSES.DECK_UPLOADED,
     reviewStatus: uploadMetadata.reviewStatus,
-    generationManifest: {
-      ...(existingPackage?.generationManifest || {}),
-      ...uploadMetadata.generationManifest
-    },
-    teacherDecisionLog: [
-      ...(Array.isArray(existingPackage?.teacherDecisionLog) ? existingPackage.teacherDecisionLog : []),
-      ...uploadMetadata.teacherDecisionLog
-    ],
+    generationManifest: nextGenerationManifest,
+    teacherDecisionLog: nextTeacherDecisionLog,
     deckUploadedBy: userId,
     updatedAt: serverTimestamp()
   });
 
-  return generatedDeckPdf;
+  let cmsSyncResult;
+  try {
+    cmsSyncResult = await syncSlidedeckPackageToCmsBlocks({
+      ...(existingPackage || {}),
+      id: packageId,
+      generatedDeckPdf: generatedDeckPdfReference,
+      status: SLIDEDECK_STATUSES.DECK_UPLOADED,
+      reviewStatus: uploadMetadata.reviewStatus,
+      generationManifest: nextGenerationManifest,
+      teacherDecisionLog: nextTeacherDecisionLog
+    }, {
+      contentBlockId: existingPackage?.linkedContext?.contentBlockId || ''
+    });
+  } catch (syncError) {
+    console.error('Kon CMS-lesblok niet automatisch bijwerken na slidedeckupload:', syncError);
+    cmsSyncResult = {
+      updatedCount: 0,
+      blockIds: [],
+      error: syncError.message || 'CMS-koppeling mislukt.'
+    };
+  }
+
+  return {
+    generatedDeckPdf: generatedDeckPdfReference,
+    cmsSyncResult
+  };
 };
 
 export const updateSlidedeckReview = async (packageId, data = {}, userId = 'unknown-admin') => {
@@ -256,6 +285,29 @@ export const updateSlidedeckReview = async (packageId, data = {}, userId = 'unkn
     teacherDecisionLog,
     updatedAt: serverTimestamp()
   });
+
+  let cmsSyncResult;
+  try {
+    cmsSyncResult = await syncSlidedeckPackageToCmsBlocks({
+      ...(existingPackage || {}),
+      id: packageId,
+      reviewStatus,
+      teacherDecisionNote,
+      reviewChecklist,
+      teacherDecisionLog
+    }, {
+      contentBlockId: existingPackage?.linkedContext?.contentBlockId || ''
+    });
+  } catch (syncError) {
+    console.error('Kon CMS-lesblok niet automatisch bijwerken na slidedeckreview:', syncError);
+    cmsSyncResult = {
+      updatedCount: 0,
+      blockIds: [],
+      error: syncError.message || 'CMS-koppeling mislukt.'
+    };
+  }
+
+  return { cmsSyncResult };
 };
 
 export default {
