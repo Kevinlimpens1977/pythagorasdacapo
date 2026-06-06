@@ -75,8 +75,15 @@ import {
   CONTENT_BLOCK_STATUSES,
   getContentBlockStatusLabel,
   normalizeContentBlockStatus,
-  validateContentBlockReadiness
+  validateContentBlockReadiness,
+  validateParagraphReadiness
 } from '../../lib/contentReadiness';
+import {
+  PARAGRAPH_REVIEW_STATUSES,
+  buildParagraphMetadataUpdate,
+  getParagraphReviewStatusLabel,
+  normalizeParagraphMetadata
+} from '../../lib/paragraphMetadata';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
   ASSESSMENT_ITEM_TYPES,
@@ -2033,6 +2040,149 @@ const FullscreenLessonBlockStudio = ({
   );
 };
 
+const ParagraphMetadataPanel = ({ paragraaf, blocks, onSave }) => {
+  const metadata = normalizeParagraphMetadata(paragraaf);
+  const [learningGoalsText, setLearningGoalsText] = useState(metadata.learningGoals.join('\n'));
+  const [evidenceProduct, setEvidenceProduct] = useState(metadata.evidenceProduct);
+  const [sloKerndoelenText, setSloKerndoelenText] = useState(metadata.sloKerndoelen.join('\n'));
+  const [targetGroup, setTargetGroup] = useState(metadata.targetGroup);
+  const [estimatedMinutes, setEstimatedMinutes] = useState(String(metadata.estimatedMinutes || ''));
+  const [reviewStatus, setReviewStatus] = useState(metadata.reviewStatus);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  const draftPayload = useMemo(() => buildParagraphMetadataUpdate({
+    learningGoalsText,
+    evidenceProduct,
+    sloKerndoelenText,
+    targetGroup,
+    estimatedMinutes,
+    reviewStatus
+  }), [estimatedMinutes, evidenceProduct, learningGoalsText, reviewStatus, sloKerndoelenText, targetGroup]);
+
+  const readiness = useMemo(() => validateParagraphReadiness({
+    paragraaf: {
+      ...paragraaf,
+      ...draftPayload
+    },
+    blocks
+  }), [blocks, draftPayload, paragraaf]);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setSaveError('');
+      await onSave(draftPayload);
+    } catch (error) {
+      console.error('Kon routekwaliteit niet opslaan:', error);
+      setSaveError('Kon routekwaliteit niet opslaan.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <section className="mt-6 rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="helix-eyebrow">Routekwaliteit</p>
+          <h3 className="mt-1 font-display text-xl font-extrabold text-[var(--helix-navy)]">Leerdoelen en bewijsproduct</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--helix-muted)]">
+            Maak expliciet wat leerlingen leren, wat ze opleveren en wanneer deze paragraaf inhoudelijk klaar is.
+          </p>
+        </div>
+        <div className={`rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-wide ${readiness.canPublish ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+          {readiness.canPublish ? 'Basiseisen compleet' : 'Basiseisen missen'}
+        </div>
+      </div>
+
+      {saveError && (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          {saveError}
+        </div>
+      )}
+
+      {readiness.errors.length > 0 && (
+        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          {readiness.errors.slice(0, 4).map((issue) => (
+            <p key={issue.code}>{issue.message}</p>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_1fr]">
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold text-slate-700">Leerdoelen</span>
+          <textarea
+            value={learningGoalsText}
+            onChange={(event) => setLearningGoalsText(event.target.value)}
+            className="input-standard min-h-32 w-full resize-y leading-6"
+            placeholder="Een leerdoel per regel"
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold text-slate-700">Bewijsproduct / eindprestatie</span>
+          <textarea
+            value={evidenceProduct}
+            onChange={(event) => setEvidenceProduct(event.target.value)}
+            className="input-standard min-h-32 w-full resize-y leading-6"
+            placeholder="Wat levert de leerling op of laat de leerling zien?"
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-bold text-slate-700">Kerndoel / SLO-koppeling</span>
+          <textarea
+            value={sloKerndoelenText}
+            onChange={(event) => setSloKerndoelenText(event.target.value)}
+            className="input-standard min-h-24 w-full resize-y leading-6"
+            placeholder="Een kerndoel of SLO-koppeling per regel"
+          />
+        </label>
+
+        <div className="grid gap-4 md:grid-cols-[1fr_10rem]">
+          <label className="block">
+            <span className="mb-2 block text-sm font-bold text-slate-700">Doelgroep / niveau</span>
+            <input
+              value={targetGroup}
+              onChange={(event) => setTargetGroup(event.target.value)}
+              className="input-standard w-full"
+              placeholder="Bijvoorbeeld VMBO 1-2 / EOA"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-bold text-slate-700">Lestijd</span>
+            <input
+              type="number"
+              min="0"
+              value={estimatedMinutes}
+              onChange={(event) => setEstimatedMinutes(event.target.value)}
+              className="input-standard w-full"
+              placeholder="45"
+            />
+          </label>
+          <label className="block md:col-span-2">
+            <span className="mb-2 block text-sm font-bold text-slate-700">Reviewstatus</span>
+            <select value={reviewStatus} onChange={(event) => setReviewStatus(event.target.value)} className="input-standard w-full">
+              {PARAGRAPH_REVIEW_STATUSES.map((status) => (
+                <option key={status} value={status}>{getParagraphReviewStatusLabel(status)}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div className="mt-5 flex justify-end">
+        <button onClick={handleSave} disabled={saving} className="btn-primary w-auto px-5 py-3 text-sm disabled:opacity-60">
+          <Save size={16} />
+          {saving ? 'Opslaan...' : 'Routekwaliteit opslaan'}
+        </button>
+      </div>
+    </section>
+  );
+};
+
 const SortableLessonBlockCard = ({
   block,
   index,
@@ -2207,6 +2357,13 @@ export default function ContentBlockBuilder({
   const vragenById = useMemo(() => {
     return new Map(vragen.map((vraag) => [vraag.id, vraag]));
   }, [vragen]);
+  const blocksWithLinkedQuestions = useMemo(() => normalizedBlocks.map((block) => {
+    if (block.type !== 'question') return block;
+    return {
+      ...block,
+      linkedVraag: block.linkedVraagId ? vragenById.get(block.linkedVraagId) : null
+    };
+  }), [normalizedBlocks, vragenById]);
 
   useEffect(() => {
     if (!editingBlockId || !activeBlock) return undefined;
@@ -2347,6 +2504,18 @@ export default function ContentBlockBuilder({
     }
   };
 
+  const handleSaveParagraphMetadata = async (metadataUpdate) => {
+    try {
+      setActionError(null);
+      await cmsService.updateParagraaf(paragraaf.id, metadataUpdate);
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon routekwaliteit niet opslaan:', error);
+      setActionError('Kon routekwaliteit niet opslaan.');
+      throw error;
+    }
+  };
+
   const handleRenameBlock = async (blockId, nextTitle) => {
     try {
       setActionError(null);
@@ -2409,6 +2578,13 @@ export default function ContentBlockBuilder({
             <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">lesblokken</p>
           </div>
         </div>
+
+        <ParagraphMetadataPanel
+          key={paragraaf.id}
+          paragraaf={paragraaf}
+          blocks={blocksWithLinkedQuestions}
+          onSave={handleSaveParagraphMetadata}
+        />
 
         {actionError && (
           <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">

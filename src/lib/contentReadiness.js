@@ -1,3 +1,5 @@
+import { normalizeParagraphMetadata } from './paragraphMetadata.js';
+
 export const CONTENT_BLOCK_STATUSES = ['draft', 'needs_review', 'ready', 'published', 'archived'];
 
 export const CONTENT_BLOCK_STATUS_LABELS = {
@@ -204,23 +206,16 @@ export const validateContentBlockReadiness = (block = {}) => {
 const hasListOrText = (value) =>
   Array.isArray(value) ? value.some((item) => hasText(item)) : hasText(value);
 
-const getParagraphLearningGoals = (paragraaf = {}) =>
-  paragraaf.learningGoals || paragraaf.leerdoelen || paragraaf.goals || paragraaf.doelen || '';
-
-const getParagraphEvidence = (paragraaf = {}) =>
-  paragraaf.evidenceProduct || paragraaf.bewijsproduct || paragraaf.finalProduct || paragraaf.eindprestatie || '';
-
 export const validateParagraphReadiness = ({ paragraaf = {}, blocks = [] } = {}) => {
   const errors = [];
   const warnings = [];
-  const learningGoals = getParagraphLearningGoals(paragraaf);
-  const evidenceProduct = getParagraphEvidence(paragraaf);
+  const metadata = normalizeParagraphMetadata(paragraaf);
 
-  if (!hasListOrText(learningGoals)) {
+  if (!hasListOrText(metadata.learningGoals)) {
     errors.push(createIssue('paragraph_learning_goals_missing', 'Vul minimaal een leerdoel voor deze paragraaf in.'));
   }
 
-  if (!hasListOrText(evidenceProduct)) {
+  if (!hasListOrText(metadata.evidenceProduct)) {
     errors.push(createIssue('paragraph_evidence_missing', 'Vul het bewijsproduct of de eindprestatie voor deze paragraaf in.'));
   }
 
