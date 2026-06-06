@@ -32,10 +32,11 @@ const stripHtml = (value = '') =>
 
 const hasText = (value) => stripHtml(value).length > 0;
 
-const createIssue = (code, message, severity = 'error') => ({
+const createIssue = (code, message, severity = 'error', options = {}) => ({
   code,
   message,
-  severity
+  severity,
+  ...options
 });
 
 const normalizeOverrideReason = (value = '') =>
@@ -43,6 +44,8 @@ const normalizeOverrideReason = (value = '') =>
 
 const validatePublicationOverride = ({ status, errors = [], publicationOverride = {} } = {}) => {
   const normalizedStatus = normalizeContentBlockStatus(status);
+  const overrideableErrors = errors.filter((issue) => issue.overrideAllowed !== false);
+  const nonOverrideableErrors = errors.filter((issue) => issue.overrideAllowed === false);
   const requested = publicationOverride?.enabled === true;
   const reason = normalizeOverrideReason(publicationOverride?.reason);
   const overrideErrors = [];
@@ -52,7 +55,8 @@ const validatePublicationOverride = ({ status, errors = [], publicationOverride 
   }
 
   const isActive = READY_STATUSES.has(normalizedStatus) &&
-    errors.length > 0 &&
+    overrideableErrors.length > 0 &&
+    nonOverrideableErrors.length === 0 &&
     requested &&
     overrideErrors.length === 0;
 
@@ -62,9 +66,48 @@ const validatePublicationOverride = ({ status, errors = [], publicationOverride 
     reason,
     createdBy: publicationOverride?.createdBy || '',
     createdAt: publicationOverride?.createdAt || '',
-    issueCodes: errors.map((issue) => issue.code),
+    issueCodes: overrideableErrors.map((issue) => issue.code),
     errors: overrideErrors
   };
+};
+
+const getSourceTagCount = (sourceReview = {}, tag) =>
+  Math.max(0, Number(sourceReview.sourceTagsSummary?.[tag] || 0));
+
+const validateSourceReview = (block = {}) => {
+  const sourceReview = block.sourceReview || null;
+  if (!sourceReview || typeof sourceReview !== 'object') return [];
+
+  const errors = [];
+  const reviewStatus = String(sourceReview.reviewStatus || '').trim();
+  const teacherDecisionNote = normalizeOverrideReason(sourceReview.teacherDecisionNote || block.teacherDecisionNote);
+  const hasNeedsReview = reviewStatus === 'needs_review' || getSourceTagCount(sourceReview, 'NEEDS_REVIEW') > 0;
+  const hasAiSuggestion = getSourceTagCount(sourceReview, 'AI_SUGGESTION') > 0;
+  const isTeacherDecision = reviewStatus === 'teacher_decision';
+  const isApproved = reviewStatus === 'approved';
+
+  if (reviewStatus === 'rejected') {
+    errors.push(createIssue('source_review_rejected', 'Deze AI/source-bijdrage is afgewezen.', 'error', { overrideAllowed: false }));
+  }
+
+  if (isTeacherDecision && !teacherDecisionNote) {
+    errors.push(createIssue(
+      'source_teacher_decision_note_missing',
+      'Leg een docentnotitie vast voordat AI/source-output via docentbesluit live mag.',
+      'error',
+      { overrideAllowed: false }
+    ));
+  }
+
+  if (!isApproved && !isTeacherDecision && hasNeedsReview) {
+    errors.push(createIssue('source_review_required', 'Controleer en keur de bron- of AI-bijdrage eerst goed.', 'error', { overrideAllowed: false }));
+  }
+
+  if (!isApproved && !isTeacherDecision && hasAiSuggestion) {
+    errors.push(createIssue('source_ai_review_required', 'AI-suggesties mogen pas live na goedkeuring of docentbesluit.', 'error', { overrideAllowed: false }));
+  }
+
+  return errors;
 };
 
 const getAnswerType = (question = {}) =>
@@ -223,6 +266,8 @@ export const validateContentBlockReadiness = (block = {}) => {
   if (block.type === 'game') {
     errors.push(...validateGameBlock(block));
   }
+
+  errors.push(...validateSourceReview(block));
 
   const publicationOverride = validatePublicationOverride({
     status,

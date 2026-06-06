@@ -204,6 +204,73 @@ test('slidedeck blocks need an uploaded generated deck before publication', () =
   assert.equal(readyDeck.canPublish, true);
 });
 
+test('content blocks with AI or source review flags need approval before publication', () => {
+  const baseBlock = {
+    type: 'theory',
+    status: 'published',
+    content: { html: '<p>Brongebaseerde uitleg.</p>' }
+  };
+
+  const needsReview = validateContentBlockReadiness({
+    ...baseBlock,
+    sourceReview: {
+      reviewStatus: 'needs_review',
+      sourceTagsSummary: { NEEDS_REVIEW: 1 }
+    }
+  });
+
+  assert.equal(needsReview.canPublish, false);
+  assert.deepEqual(needsReview.errors.map((issue) => issue.code), ['source_review_required']);
+
+  const aiSuggestion = validateContentBlockReadiness({
+    ...baseBlock,
+    sourceReview: {
+      sourceTagsSummary: { AI_SUGGESTION: 1 }
+    }
+  });
+
+  assert.equal(aiSuggestion.canPublish, false);
+  assert.deepEqual(aiSuggestion.errors.map((issue) => issue.code), ['source_ai_review_required']);
+
+  const aiSuggestionWithGenericOverride = validateContentBlockReadiness({
+    ...baseBlock,
+    sourceReview: {
+      sourceTagsSummary: { AI_SUGGESTION: 1 }
+    },
+    publicationOverride: {
+      enabled: true,
+      reason: 'Algemene override is niet genoeg voor AI-output.',
+      createdBy: 'admin-1'
+    }
+  });
+
+  assert.equal(aiSuggestionWithGenericOverride.canPublish, false);
+  assert.equal(aiSuggestionWithGenericOverride.publicationOverride.isActive, false);
+
+  const teacherDecisionWithoutNote = validateContentBlockReadiness({
+    ...baseBlock,
+    sourceReview: {
+      reviewStatus: 'teacher_decision',
+      sourceTagsSummary: { AI_SUGGESTION: 1 },
+      teacherDecisionNote: ''
+    }
+  });
+
+  assert.equal(teacherDecisionWithoutNote.canPublish, false);
+  assert.deepEqual(teacherDecisionWithoutNote.errors.map((issue) => issue.code), ['source_teacher_decision_note_missing']);
+
+  const teacherDecisionWithNote = validateContentBlockReadiness({
+    ...baseBlock,
+    sourceReview: {
+      reviewStatus: 'teacher_decision',
+      sourceTagsSummary: { AI_SUGGESTION: 1 },
+      teacherDecisionNote: 'Docent heeft voorbeeld herschreven en gecontroleerd.'
+    }
+  });
+
+  assert.equal(teacherDecisionWithNote.canPublish, true);
+});
+
 test('paragraph readiness requires learning goals and evidence before route publication', () => {
   const result = validateParagraphReadiness({
     paragraaf: {
