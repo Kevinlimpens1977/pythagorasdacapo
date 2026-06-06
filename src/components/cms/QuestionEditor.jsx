@@ -17,6 +17,7 @@ import {
   buildDefaultAnswerForQuestionType,
   buildDefaultTokenConfigForQuestionType,
   getQuestionTypeDefinition,
+  normalizeQuestionAnswerIds,
   normalizeQuestionTokenConfig
 } from '../../lib/questionTypeRegistry';
 import {
@@ -52,9 +53,12 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   },
   ref
 ) {
+  const initialVraagtype = vraag?.vraagtype || vraag?.antwoord?.type || 'open';
+  const initialAntwoord = normalizeQuestionAnswerIds(initialVraagtype, vraag?.antwoord || {});
+
   // Form state
   const [title, setTitle] = useState(vraag?.title || '');
-  const [vraagtype, setVraagtype] = useState(vraag?.vraagtype || 'open');
+  const [vraagtype, setVraagtype] = useState(initialVraagtype);
   const [status, setStatus] = useState(vraag?.status || 'draft');
   const [difficulty, setDifficulty] = useState(vraag?.vraagMetadata?.difficulty || 3);
   const [showCalculator, setShowCalculator] = useState(vraag?.vraagMetadata?.showCalculator || false);
@@ -66,10 +70,10 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   const [activeTextSegmentIndex, setActiveTextSegmentIndex] = useState(0);
 
   // Antwoord state (per vraagtype)
-  const [openModelAnswer, setOpenModelAnswer] = useState(vraag?.antwoord?.modelAnswer || '');
+  const [openModelAnswer, setOpenModelAnswer] = useState(initialAntwoord.modelAnswer || '');
   const [meerkeuzeOptions, setMeerkeuzeOptions] = useState(() => (
-    vraag?.antwoord?.type === 'meerkeuze' && Array.isArray(vraag?.antwoord?.options)
-      ? vraag.antwoord.options.map((option, index) => ({
+    initialAntwoord.type === 'meerkeuze' && Array.isArray(initialAntwoord.options)
+      ? initialAntwoord.options.map((option, index) => ({
           id: option.id || `option-${index + 1}`,
           text: option.text || '',
           correct: Boolean(option.correct),
@@ -83,8 +87,8 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   const [antwoordUnit, setAntwoordUnit] = useState(vraag?.antwoord?.unit || '');
   const [antwoordHint, setAntwoordHint] = useState(vraag?.antwoord?.hintBijFout || '');
   const [koppelenPairs, setKoppelenPairs] = useState(() => (
-    vraag?.antwoord?.type === 'koppelen' && Array.isArray(vraag?.antwoord?.pairs)
-      ? vraag.antwoord.pairs.map((pair, index) => ({
+    initialAntwoord.type === 'koppelen' && Array.isArray(initialAntwoord.pairs)
+      ? initialAntwoord.pairs.map((pair, index) => ({
           id: pair.id || `pair-${index + 1}`,
           left: pair.left || '',
           right: pair.right || ''
@@ -92,15 +96,15 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
       : [{ id: `pair-${Date.now()}`, left: '', right: '' }]
   ));
   const [invullenSegments, setInvullenSegments] = useState(() => {
-    if (vraag?.antwoord?.type !== 'invullen') return [{ type: 'text', text: '' }];
-    if (Array.isArray(vraag?.antwoord?.segments) && vraag.antwoord.segments.length > 0) {
-      return vraag.antwoord.segments;
+    if (initialAntwoord.type !== 'invullen') return [{ type: 'text', text: '' }];
+    if (Array.isArray(initialAntwoord.segments) && initialAntwoord.segments.length > 0) {
+      return initialAntwoord.segments;
     }
-    return buildSegmentsFromLegacyFillBlank(vraag.antwoord.text || '', vraag.antwoord.gaps || []);
+    return buildSegmentsFromLegacyFillBlank(initialAntwoord.text || '', initialAntwoord.gaps || []);
   });
   const [volgordeItems, setVolgordeItems] = useState(() => (
-    vraag?.antwoord?.type === 'volgorde' && Array.isArray(vraag?.antwoord?.items)
-      ? vraag.antwoord.items.map((item) => ({
+    initialAntwoord.type === 'volgorde' && Array.isArray(initialAntwoord.items)
+      ? initialAntwoord.items.map((item) => ({
           id: item.id || createVolgordeItem().id,
           text: item.text || ''
         }))
@@ -108,8 +112,8 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
   ));
   const [tokenConfig, setTokenConfig] = useState(() => (
     normalizeQuestionTokenConfig(
-      vraag?.vraagtype || 'open',
-      vraag?.antwoord || buildDefaultAnswerForQuestionType(vraag?.vraagtype || 'open'),
+      initialVraagtype,
+      initialAntwoord || buildDefaultAnswerForQuestionType(initialVraagtype),
       vraag?.vraagMetadata?.tokenConfig
     )
   ));
@@ -144,7 +148,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     }
 
     if (vraagtype === 'meerkeuze') {
-      return {
+      return normalizeQuestionAnswerIds(vraagtype, {
         type: 'meerkeuze',
         options: meerkeuzeOptions.map((option, index) => ({
           id: option.id || `option-${index + 1}`,
@@ -153,7 +157,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
           explanation: option.explanation || '',
           misconception: option.misconception || ''
         }))
-      };
+      });
     }
 
     if (vraagtype === 'numeriek') {
@@ -167,34 +171,34 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
     }
 
     if (vraagtype === 'koppelen') {
-      return {
+      return normalizeQuestionAnswerIds(vraagtype, {
         type: 'koppelen',
         pairs: koppelenPairs.map((pair) => ({
           id: pair.id,
           left: pair.left || '',
           right: pair.right || ''
         }))
-      };
+      });
     }
 
     if (vraagtype === 'invullen') {
       const gaps = getFillBlankGapsFromSegments(invullenSegments);
-      return {
+      return normalizeQuestionAnswerIds(vraagtype, {
         type: 'invullen',
         text: buildFillBlankTextFromSegments(invullenSegments),
         segments: invullenSegments,
         gaps
-      };
+      });
     }
 
     if (vraagtype === 'volgorde') {
-      return {
+      return normalizeQuestionAnswerIds(vraagtype, {
         type: 'volgorde',
         items: volgordeItems.map((item) => ({
           id: item.id,
           text: item.text || ''
         }))
-      };
+      });
     }
 
     return { type: vraagtype };

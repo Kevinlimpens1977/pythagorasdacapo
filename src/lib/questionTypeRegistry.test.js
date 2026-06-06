@@ -5,6 +5,8 @@ import {
   QUESTION_TYPES,
   buildDefaultAnswerForQuestionType,
   buildDefaultTokenConfigForQuestionType,
+  getAnswerPartsForQuestionType,
+  normalizeQuestionAnswerIds,
   normalizeQuestionTokenConfig
 } from './questionTypeRegistry.js';
 
@@ -45,6 +47,67 @@ test('token config distributes default tokens over answer parts', () => {
       ]
     }
   );
+});
+
+test('question answer id normalization repairs duplicate imported ids', () => {
+  assert.deepEqual(
+    normalizeQuestionAnswerIds('meerkeuze', {
+      type: 'meerkeuze',
+      options: [
+        { id: 'S1', text: 'A' },
+        { id: 'S1', text: 'B' }
+      ]
+    }).options.map((option) => option.id),
+    ['S1', 'S1-2']
+  );
+
+  assert.deepEqual(
+    normalizeQuestionAnswerIds('koppelen', {
+      type: 'koppelen',
+      pairs: [
+        { id: 'S1', left: 'A', right: '1' },
+        { id: 'S1', left: 'B', right: '2' }
+      ]
+    }).pairs.map((pair) => pair.id),
+    ['S1', 'S1-2']
+  );
+
+  const fillBlank = normalizeQuestionAnswerIds('invullen', {
+    type: 'invullen',
+    segments: [
+      { type: 'gap', id: 'S1', answer: 'mail' },
+      { type: 'gap', id: 'S1', answer: 'cloud' }
+    ],
+    gaps: [
+      { id: 'S1', answer: 'mail' },
+      { id: 'S1', answer: 'cloud' }
+    ]
+  });
+
+  assert.deepEqual(fillBlank.segments.map((segment) => segment.id), ['S1', 'S1-2']);
+  assert.deepEqual(fillBlank.gaps.map((gap) => gap.id), ['S1', 'S1-2']);
+
+  assert.deepEqual(
+    normalizeQuestionAnswerIds('volgorde', {
+      type: 'volgorde',
+      items: [
+        { id: 'S1', text: 'Eerst' },
+        { id: 'S1', text: 'Daarna' }
+      ]
+    }).items.map((item) => item.id),
+    ['S1', 'S1-2']
+  );
+});
+
+test('answer parts use unique ids when imported answer ids are duplicated', () => {
+  const parts = getAnswerPartsForQuestionType('meerkeuze', {
+    options: [
+      { id: 'S1', text: 'A' },
+      { id: 'S1', text: 'B' }
+    ]
+  });
+
+  assert.deepEqual(parts.map((part) => part.id), ['S1', 'S1-2']);
 });
 
 test('token config normalization preserves existing values and adds missing answer parts', () => {

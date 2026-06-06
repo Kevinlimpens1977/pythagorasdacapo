@@ -2,6 +2,42 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 
 const createId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+const makeUniqueId = (id, index, seenIds, prefix = 'item') => {
+  const baseId = String(id || `${prefix}-${index + 1}`);
+  if (!seenIds.has(baseId)) {
+    seenIds.add(baseId);
+    return baseId;
+  }
+
+  let suffix = 2;
+  let candidate = `${baseId}-${suffix}`;
+  while (seenIds.has(candidate)) {
+    suffix += 1;
+    candidate = `${baseId}-${suffix}`;
+  }
+  seenIds.add(candidate);
+  return candidate;
+};
+
+const withUniqueIds = (items = [], prefix = 'item') => {
+  const seenIds = new Set();
+  return items.map((item, index) => ({
+    ...item,
+    id: makeUniqueId(item?.id, index, seenIds, prefix)
+  }));
+};
+
+const normalizeFillBlankSegments = (segments = []) => {
+  const seenGapIds = new Set();
+  return segments.map((segment, index) => {
+    if (segment?.type !== 'gap') return segment;
+    return {
+      ...segment,
+      id: makeUniqueId(segment.id, index, seenGapIds, 'gap')
+    };
+  });
+};
+
 const distributeTokens = (totalTokens, parts) => {
   if (parts.length === 0) return [];
 
@@ -99,10 +135,50 @@ export const getQuestionTypeDefinition = (questionType) =>
 export const buildDefaultAnswerForQuestionType = (questionType) =>
   clone(getQuestionTypeDefinition(questionType).defaultAnswer());
 
+export const normalizeQuestionAnswerIds = (questionType, answer = {}) => {
+  const definition = getQuestionTypeDefinition(questionType);
+  const source = answer || {};
+
+  if (definition.id === 'meerkeuze') {
+    return {
+      ...source,
+      type: 'meerkeuze',
+      options: withUniqueIds(Array.isArray(source.options) ? source.options : [], 'option')
+    };
+  }
+
+  if (definition.id === 'koppelen') {
+    return {
+      ...source,
+      type: 'koppelen',
+      pairs: withUniqueIds(Array.isArray(source.pairs) ? source.pairs : [], 'pair')
+    };
+  }
+
+  if (definition.id === 'invullen') {
+    return {
+      ...source,
+      type: 'invullen',
+      segments: Array.isArray(source.segments) ? normalizeFillBlankSegments(source.segments) : source.segments,
+      gaps: withUniqueIds(Array.isArray(source.gaps) ? source.gaps : [], 'gap')
+    };
+  }
+
+  if (definition.id === 'volgorde') {
+    return {
+      ...source,
+      type: 'volgorde',
+      items: withUniqueIds(Array.isArray(source.items) ? source.items : [], 'item')
+    };
+  }
+
+  return source;
+};
+
 export const getAnswerPartsForQuestionType = (questionType, answer) => {
   const definition = getQuestionTypeDefinition(questionType);
   const builder = answerPartBuilders[definition.id] || answerPartBuilders.open;
-  return builder(answer || {});
+  return builder(normalizeQuestionAnswerIds(definition.id, answer || {}));
 };
 
 export const buildDefaultTokenConfigForQuestionType = (questionType, answer, totalTokens = 10) => {
