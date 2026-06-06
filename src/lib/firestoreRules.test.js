@@ -34,10 +34,10 @@ test('firestore rules keep private question answer documents admin-only', () => 
   assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
 });
 
-test('firestore rules expose sanitized public questions to signed-in users only', () => {
+test('firestore rules expose sanitized public questions only when published and assigned', () => {
   const block = getRuleBlock('match /publicQuestions/{document=**}');
 
-  assert.match(block, /allow read: if signedIn\(\)/);
+  assert.match(block, /allow read: if canReadPublicParagraphContent\(\)/);
   assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
 });
 
@@ -48,9 +48,19 @@ test('firestore rules keep private content blocks admin-only', () => {
   assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
 });
 
-test('firestore rules expose sanitized public content blocks to signed-in users only', () => {
-  const block = getRuleBlock('match /publicContentBlocks/{document=**}');
+test('firestore rules expose sanitized public content blocks only when published and assigned', () => {
+  const block = getRuleBlock('match /publicContentBlocks/{blockId}');
 
-  assert.match(block, /allow read: if signedIn\(\)/);
+  assert.match(block, /allow read: if canReadPublicContentBlock\(blockId\)/);
   assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
+});
+
+test('firestore rules define published assignment helpers for public student content', () => {
+  assert.match(rules, /function isPublishedPublicResource\(\)/);
+  assert.match(rules, /resource\.data\.status == 'published'/);
+  assert.match(rules, /resource\.data\.isArchived != true/);
+  assert.match(rules, /function isAssignedParagraph\(paragraafId\)/);
+  assert.match(rules, /studentKlasDoc\(\)\.data\.enabledParagrafen\.hasAny\(\[paragraafId\]\)/);
+  assert.match(rules, /function isAssignedContentBlock\(paragraafId, blockId\)/);
+  assert.match(rules, /blockId in studentKlasDoc\(\)\.data\.enabledContentBlocks\[paragraafId\]/);
 });

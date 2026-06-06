@@ -81,7 +81,7 @@ export default function StudentProfilePage() {
         const validParagrafen = paragraafDetails.filter(Boolean);
         const paragrafenWithQuestions = await Promise.all(
           validParagrafen.map(async (paragraaf) => {
-            const vragen = await cmsService.getVragen(paragraaf.id).catch(() => []);
+            const vragen = await cmsService.getPublicVragen(paragraaf.id).catch(() => []);
             return {
               ...paragraaf,
               vragen: vragen || []

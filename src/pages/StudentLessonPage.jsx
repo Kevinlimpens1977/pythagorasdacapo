@@ -153,7 +153,11 @@ export default function StudentLessonPage() {
           cmsService.getParagraaf(paragraafId),
           isAdmin
             ? cmsService.getContentBlocks(paragraafId, false)
-            : cmsService.getPublicContentBlocks(paragraafId, false),
+            : cmsService.getAssignedPublicContentBlocks({
+                paragraafId,
+                klasData,
+                userId: currentUser?.uid || ''
+              }),
           currentUser ? voortgangService.getVoortgangForParagraaf(currentUser.uid, paragraafId) : []
         ]);
 

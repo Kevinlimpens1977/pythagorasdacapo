@@ -9,6 +9,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  documentId,
   query,
   where,
   orderBy,
@@ -254,6 +255,7 @@ export const getVragen = async (paragraafId, includeArchived = false) => {
 export const getPublicVragen = async (paragraafId, includeArchived = false) => {
   try {
     const constraints = [where('paragraafId', '==', paragraafId)];
+    constraints.push(where('status', '==', 'published'));
     if (!includeArchived) constraints.push(where('isArchived', '==', false));
     const q = query(collection(db, 'publicQuestions'), ...constraints);
     const querySnapshot = await getDocs(q);
@@ -344,6 +346,7 @@ export const getContentBlocks = async (paragraafId, includeDrafts = true, includ
 export const getPublicContentBlocks = async (paragraafId, includeDrafts = false, includeArchived = false) => {
   try {
     const constraints = [where('paragraafId', '==', paragraafId)];
+    if (!includeDrafts) constraints.push(where('status', '==', 'published'));
     if (!includeArchived) constraints.push(where('isArchived', '==', false));
     const q = query(collection(db, 'publicContentBlocks'), ...constraints);
     const querySnapshot = await getDocs(q);
@@ -358,6 +361,60 @@ export const getPublicContentBlocks = async (paragraafId, includeDrafts = false,
       .sort((a, b) => (a.order || 0) - (b.order || 0));
   } catch (error) {
     console.error(`Error fetching public content blocks for ${paragraafId}:`, error);
+    return [];
+  }
+};
+
+const chunkIds = (ids = [], size = 30) => {
+  const chunks = [];
+  for (let index = 0; index < ids.length; index += size) {
+    chunks.push(ids.slice(index, index + size));
+  }
+  return chunks;
+};
+
+const getExplicitAssignedBlockIds = ({ klasData = {}, userId = '', paragraafId = '' } = {}) => {
+  const classSelection = klasData?.enabledContentBlocks?.[paragraafId];
+  const studentExtraBlockIds = klasData?.studentOverrides?.[userId]?.extraContentBlocks?.[paragraafId] || [];
+  if (!Array.isArray(classSelection)) return null;
+  return [...new Set([...classSelection, ...studentExtraBlockIds].filter(Boolean))];
+};
+
+export const getAssignedPublicContentBlocks = async ({
+  paragraafId,
+  klasData,
+  userId,
+  includeArchived = false
+} = {}) => {
+  const explicitBlockIds = getExplicitAssignedBlockIds({ klasData, userId, paragraafId });
+  if (!explicitBlockIds) {
+    return getPublicContentBlocks(paragraafId, false, includeArchived);
+  }
+  if (explicitBlockIds.length === 0) return [];
+
+  try {
+    const querySnapshots = await Promise.all(
+      chunkIds(explicitBlockIds).map((ids) => {
+        const constraints = [
+          where(documentId(), 'in', ids),
+          where('paragraafId', '==', paragraafId),
+          where('status', '==', 'published')
+        ];
+        if (!includeArchived) constraints.push(where('isArchived', '==', false));
+        return getDocs(query(collection(db, 'publicContentBlocks'), ...constraints));
+      })
+    );
+
+    return querySnapshots
+      .flatMap((snapshot) => snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })))
+      .filter(block => includeArchived || block.isArchived !== true)
+      .filter(block => block.status === 'published')
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  } catch (error) {
+    console.error(`Error fetching assigned public content blocks for ${paragraafId}:`, error);
     return [];
   }
 };
@@ -1096,6 +1153,7 @@ export default {
   getPublicVraag,
   getContentBlocks,
   getPublicContentBlocks,
+  getAssignedPublicContentBlocks,
   getContentBlock,
   // Write - Vak
   createVak,

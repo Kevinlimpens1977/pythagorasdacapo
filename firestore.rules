@@ -27,6 +27,87 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function hasStudentKlas() {
+      return signedIn() &&
+        userDoc().data.klasId is string &&
+        exists(/databases/$(database)/documents/klassen/$(userDoc().data.klasId));
+    }
+
+    function studentKlasDoc() {
+      return get(/databases/$(database)/documents/klassen/$(userDoc().data.klasId));
+    }
+
+    function isPublishedPublicResource() {
+      return resource.data.status == 'published' &&
+        resource.data.isArchived != true;
+    }
+
+    function hasClassAssignedParagraph(paragraafId) {
+      return studentKlasDoc().data.keys().hasAny(['enabledParagrafen']) &&
+        studentKlasDoc().data.enabledParagrafen.hasAny([paragraafId]);
+    }
+
+    function hasStudentOverride() {
+      return studentKlasDoc().data.keys().hasAny(['studentOverrides']) &&
+        studentKlasDoc().data.studentOverrides.keys().hasAny([request.auth.uid]);
+    }
+
+    function hasStudentAssignedParagraph(paragraafId) {
+      return hasStudentOverride() &&
+        studentKlasDoc().data.studentOverrides[request.auth.uid].keys().hasAny(['extraParagrafen']) &&
+        studentKlasDoc().data.studentOverrides[request.auth.uid].extraParagrafen.hasAny([paragraafId]);
+    }
+
+    function isAssignedParagraph(paragraafId) {
+      return hasStudentKlas() && (
+        hasClassAssignedParagraph(paragraafId) ||
+        hasStudentAssignedParagraph(paragraafId)
+      );
+    }
+
+    function hasExplicitClassContentSelection(paragraafId) {
+      return studentKlasDoc().data.keys().hasAny(['enabledContentBlocks']) &&
+        studentKlasDoc().data.enabledContentBlocks.keys().hasAny([paragraafId]);
+    }
+
+    function hasClassAssignedContentBlock(paragraafId, blockId) {
+      return hasExplicitClassContentSelection(paragraafId) &&
+        blockId in studentKlasDoc().data.enabledContentBlocks[paragraafId] &&
+        studentKlasDoc().data.enabledContentBlocks[paragraafId].hasAny([blockId]);
+    }
+
+    function hasStudentAssignedContentBlock(paragraafId, blockId) {
+      return hasStudentOverride() &&
+        studentKlasDoc().data.studentOverrides[request.auth.uid].keys().hasAny(['extraContentBlocks']) &&
+        studentKlasDoc().data.studentOverrides[request.auth.uid].extraContentBlocks.keys().hasAny([paragraafId]) &&
+        studentKlasDoc().data.studentOverrides[request.auth.uid].extraContentBlocks[paragraafId].hasAny([blockId]);
+    }
+
+    function isAssignedContentBlock(paragraafId, blockId) {
+      return isAssignedParagraph(paragraafId) && (
+        (
+          !hasExplicitClassContentSelection(paragraafId) &&
+          !hasStudentAssignedContentBlock(paragraafId, blockId)
+        ) ||
+        hasClassAssignedContentBlock(paragraafId, blockId) ||
+        hasStudentAssignedContentBlock(paragraafId, blockId)
+      );
+    }
+
+    function canReadPublicParagraphContent() {
+      return isAdminOrSupervisor() || (
+        isPublishedPublicResource() &&
+        isAssignedParagraph(resource.data.paragraafId)
+      );
+    }
+
+    function canReadPublicContentBlock(blockId) {
+      return isAdminOrSupervisor() || (
+        isPublishedPublicResource() &&
+        isAssignedContentBlock(resource.data.paragraafId, blockId)
+      );
+    }
+
     // Gebruikers
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
@@ -91,7 +172,7 @@ service cloud.firestore {
     }
 
     match /publicQuestions/{document=**} {
-      allow read: if signedIn();
+      allow read: if canReadPublicParagraphContent();
       allow create, update, delete: if isAdmin();
     }
 
@@ -100,8 +181,8 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    match /publicContentBlocks/{document=**} {
-      allow read: if signedIn();
+    match /publicContentBlocks/{blockId} {
+      allow read: if canReadPublicContentBlock(blockId);
       allow create, update, delete: if isAdmin();
     }
 

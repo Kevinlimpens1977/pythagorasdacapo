@@ -44,7 +44,11 @@ export default function TableOfContents() {
           validParagrafen.map(async (paragraaf) => {
             const [vragen, contentBlocks] = await Promise.all([
               cmsService.getPublicVragen(paragraaf.id).catch(() => []),
-              cmsService.getPublicContentBlocks(paragraaf.id, false).catch(() => [])
+              cmsService.getAssignedPublicContentBlocks({
+                paragraafId: paragraaf.id,
+                klasData,
+                userId: currentUser?.uid || ''
+              }).catch(() => [])
             ]);
             const visibleContentBlocks = currentUser?.uid
               ? getEffectiveContentBlocks(klasData, currentUser.uid, paragraaf.id, contentBlocks)
