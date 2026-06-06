@@ -71,6 +71,12 @@ import {
   normalizeContentBlockSettings,
   normalizeContentBlocks
 } from '../../lib/contentBlockUtils';
+import {
+  CONTENT_BLOCK_STATUSES,
+  getContentBlockStatusLabel,
+  normalizeContentBlockStatus,
+  validateContentBlockReadiness
+} from '../../lib/contentReadiness';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
   ASSESSMENT_ITEM_TYPES,
@@ -206,10 +212,28 @@ const BlockTypeButton = ({ type, onClick, disabled }) => {
   );
 };
 
+const STATUS_OPTIONS = CONTENT_BLOCK_STATUSES.filter((status) => status !== 'archived');
+const PUBLICATION_INTENT_STATUSES = new Set(['ready', 'published']);
+
+const isPublicationIntentStatus = (status) =>
+  PUBLICATION_INTENT_STATUSES.has(normalizeContentBlockStatus(status));
+
+const formatReadinessErrors = (result) =>
+  result.errors.map((issue) => issue.message).join(' ');
+
+const getStatusBadgeClass = (status) => {
+  const normalized = normalizeContentBlockStatus(status);
+  if (normalized === 'published') return 'helix-badge-success';
+  if (normalized === 'ready') return 'bg-blue-50 text-blue-700';
+  if (normalized === 'needs_review') return 'bg-amber-50 text-amber-700';
+  return 'helix-badge-warning';
+};
+
 const StatusSelect = ({ value, onChange }) => (
   <select value={value} onChange={(event) => onChange(event.target.value)} className="input-standard w-full">
-    <option value="draft">Concept</option>
-    <option value="published">Gepubliceerd</option>
+    {STATUS_OPTIONS.map((status) => (
+      <option key={status} value={status}>{getContentBlockStatusLabel(status)}</option>
+    ))}
   </select>
 );
 
@@ -1439,6 +1463,20 @@ const LessonBlockStudio = ({
           }
         : content;
 
+      const readiness = validateContentBlockReadiness({
+        ...block,
+        title,
+        status,
+        content: normalizedContent,
+        linkedVraagId: block.type === 'question' ? linkedVraagId || null : block.linkedVraagId,
+        linkedVraag: block.type === 'question' ? selectedVraag : null
+      });
+
+      if (isPublicationIntentStatus(status) && !readiness.canPublish) {
+        setError(`Nog niet klaar voor publicatie: ${formatReadinessErrors(readiness)}`);
+        return;
+      }
+
       await onSave(block.id, {
         title,
         status,
@@ -2010,6 +2048,7 @@ const SortableLessonBlockCard = ({
   onArchive
 }) => {
   const Icon = blockIcons[block.type] || FileText;
+  const status = normalizeContentBlockStatus(block.status);
   const {
     attributes,
     listeners,
@@ -2055,12 +2094,8 @@ const SortableLessonBlockCard = ({
               <button
                 type="button"
                 onClick={() => onToggleStatus(block)}
-                className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 ${
-                block.status === 'published'
-                  ? 'helix-badge-success'
-                  : 'helix-badge-warning'
-              }`}>
-                {block.status === 'published' ? 'Gepubliceerd' : 'Concept'}
+                className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 ${getStatusBadgeClass(status)}`}>
+                {getContentBlockStatusLabel(status)}
               </button>
             </div>
             <h3 className="mt-2 font-display text-lg font-extrabold text-[var(--helix-navy)]">
@@ -2327,8 +2362,20 @@ export default function ContentBlockBuilder({
   const handleToggleBlockStatus = async (block) => {
     try {
       setActionError(null);
+      const nextStatus = getToggledContentBlockStatus(block.status);
+      const readiness = validateContentBlockReadiness({
+        ...block,
+        status: nextStatus,
+        linkedVraag: block.linkedVraagId ? vragenById.get(block.linkedVraagId) : null
+      });
+
+      if (isPublicationIntentStatus(nextStatus) && !readiness.canPublish) {
+        setActionError(`Nog niet klaar voor ${getContentBlockStatusLabel(nextStatus).toLocaleLowerCase('nl-NL')}: ${formatReadinessErrors(readiness)}`);
+        return;
+      }
+
       await cmsService.updateContentBlock(block.id, {
-        status: getToggledContentBlockStatus(block.status)
+        status: nextStatus
       });
       await onRefresh();
     } catch (error) {

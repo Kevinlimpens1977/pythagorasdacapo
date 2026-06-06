@@ -381,5 +381,9 @@ export const blocksToSlides = (blocks = []) => {
     .map(blockToSlide);
 };
 
-export const getToggledContentBlockStatus = (status) =>
-  status === 'published' ? 'draft' : 'published';
+export const getToggledContentBlockStatus = (status) => {
+  if (status === 'published') return 'draft';
+  if (status === 'ready') return 'published';
+  if (status === 'needs_review') return 'ready';
+  return 'ready';
+};

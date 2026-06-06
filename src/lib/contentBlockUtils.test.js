@@ -340,8 +340,10 @@ test('buildContentBlockPreview shows useful route card text', () => {
   );
 });
 
-test('getToggledContentBlockStatus switches published and draft route statuses', () => {
+test('getToggledContentBlockStatus cycles route statuses through ready before published', () => {
   assert.equal(getToggledContentBlockStatus('published'), 'draft');
-  assert.equal(getToggledContentBlockStatus('draft'), 'published');
-  assert.equal(getToggledContentBlockStatus(undefined), 'published');
+  assert.equal(getToggledContentBlockStatus('ready'), 'published');
+  assert.equal(getToggledContentBlockStatus('needs_review'), 'ready');
+  assert.equal(getToggledContentBlockStatus('draft'), 'ready');
+  assert.equal(getToggledContentBlockStatus(undefined), 'ready');
 });
