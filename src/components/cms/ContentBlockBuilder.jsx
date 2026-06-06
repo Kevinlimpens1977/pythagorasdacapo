@@ -95,6 +95,10 @@ import {
   shouldCloseContentBlockDraft,
   shouldRecoverStoredContentBlockDraft
 } from '../../lib/contentBlockDraftState';
+import {
+  buildContentBlockArchiveUndo,
+  shouldShowContentBlockArchiveUndo
+} from '../../lib/contentBlockArchiveUndo';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
   ASSESSMENT_COGNITIVE_SKILLS,
@@ -2593,7 +2597,7 @@ const SortableLessonBlockCard = ({
               <div className="absolute right-0 top-11 z-30 w-64 rounded-lg border border-red-100 bg-white p-3 text-left shadow-xl">
                 <p className="text-sm font-black text-slate-900">Lesblok archiveren?</p>
                 <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Dit haalt het blok uit de lesroute. Je kunt deze actie later niet vanuit dit scherm terugdraaien.
+                  Dit haalt het blok uit de lesroute. Na archiveren kun je het direct vanuit deze melding herstellen.
                 </p>
                 <div className="mt-3 flex justify-end gap-2">
                   <button
@@ -2631,6 +2635,7 @@ export default function ContentBlockBuilder({
   const [creatingType, setCreatingType] = useState(null);
   const [applyingTemplateId, setApplyingTemplateId] = useState(null);
   const [confirmArchiveBlockId, setConfirmArchiveBlockId] = useState(null);
+  const [archiveUndo, setArchiveUndo] = useState(null);
   const normalizedBlocks = useMemo(() => normalizeContentBlocks(blocks), [blocks]);
   const sortableBlockIds = useMemo(() => normalizedBlocks.map((block) => block.id), [normalizedBlocks]);
   const sensors = useSensors(
@@ -2811,12 +2816,28 @@ export default function ContentBlockBuilder({
   const handleArchiveBlock = async (blockId) => {
     try {
       setActionError(null);
+      const blockToArchive = normalizedBlocks.find((block) => block.id === blockId);
       await cmsService.archiveContentBlock(blockId);
       await onRefresh();
       setConfirmArchiveBlockId(null);
+      setArchiveUndo(buildContentBlockArchiveUndo(blockToArchive));
     } catch (error) {
       console.error('Kon lesblok niet archiveren:', error);
       setActionError('Kon lesblok niet archiveren.');
+    }
+  };
+
+  const handleUndoArchiveBlock = async () => {
+    if (!archiveUndo?.blockId) return;
+
+    try {
+      setActionError(null);
+      await cmsService.updateContentBlock(archiveUndo.blockId, { isArchived: false });
+      await onRefresh();
+      setArchiveUndo(null);
+    } catch (error) {
+      console.error('Kon lesblok niet herstellen:', error);
+      setActionError('Kon lesblok niet herstellen.');
     }
   };
 
@@ -2946,6 +2967,19 @@ export default function ContentBlockBuilder({
         {actionError && (
           <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             {actionError}
+          </div>
+        )}
+
+        {shouldShowContentBlockArchiveUndo(archiveUndo) && (
+          <div className="mt-5 flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 sm:flex-row sm:items-center sm:justify-between">
+            <span>{archiveUndo.message}</span>
+            <button
+              type="button"
+              onClick={handleUndoArchiveBlock}
+              className="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-emerald-700 hover:bg-emerald-100"
+            >
+              Herstel
+            </button>
           </div>
         )}
 
