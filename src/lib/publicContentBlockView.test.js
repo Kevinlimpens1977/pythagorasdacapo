@@ -19,6 +19,12 @@ test('buildPublicContentBlockSnapshot removes answer keys from multiple choice a
           id: 'item-1',
           type: 'meerkeuze',
           prompt: 'Wat is veilig?',
+          taxonomy: {
+            learningGoal: 'Ik kan een veilig wachtwoord kiezen',
+            cognitiveSkill: 'herkennen',
+            masteryLevel: 'basis',
+            scaffoldingRole: 'zelf_proberen'
+          },
           answer: {
             options: [
               { id: 'a', text: '123456', correct: false, explanation: 'Te zwak' },
@@ -37,6 +43,12 @@ test('buildPublicContentBlockSnapshot removes answer keys from multiple choice a
   ]);
   assert.equal(publicBlock.content.items[0].feedback, '');
   assert.equal(publicBlock.content.items[0].answerKeyAvailable, false);
+  assert.deepEqual(publicBlock.content.items[0].taxonomy, {
+    learningGoal: 'Ik kan een veilig wachtwoord kiezen',
+    cognitiveSkill: 'herkennen',
+    masteryLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
+  });
   assert.equal(hasAssessmentItemAnswerKey(publicBlock.content.items[0]), false);
 });
 

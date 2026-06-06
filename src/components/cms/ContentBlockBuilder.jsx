@@ -95,10 +95,14 @@ import {
 } from '../../lib/contentBlockDraftState';
 import { getCmsEmbeddableGames } from '../../lib/gameRegistry';
 import {
+  ASSESSMENT_COGNITIVE_SKILLS,
   ASSESSMENT_ITEM_TYPES,
+  ASSESSMENT_MASTERY_LEVELS,
+  ASSESSMENT_SCAFFOLDING_ROLES,
   createAssessmentOption,
   createAssessmentItem,
   duplicateAssessmentItem,
+  getAssessmentMatrixSummary,
   moveAssessmentItem,
   normalizeAssessmentItems,
   removeAssessmentItem,
@@ -760,12 +764,29 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
   );
 };
 
+const MatrixSummaryList = ({ title, rows = [] }) => (
+  <div className="rounded-xl border border-indigo-100 bg-white p-3">
+    <p className="mb-2 text-xs font-black uppercase tracking-wide text-indigo-700">{title}</p>
+    <div className="space-y-2">
+      {rows.map((row) => (
+        <div key={row.key} className="flex items-center justify-between gap-3 rounded-lg bg-indigo-50 px-3 py-2">
+          <span className="min-w-0 truncate text-sm font-bold text-indigo-950">{row.label}</span>
+          <span className="shrink-0 text-xs font-black text-indigo-700">
+            {row.items}x / {row.tokens}t
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenTotal = 0 }) => {
   const items = normalizeAssessmentItems(content.items);
   const assessmentLabel = blockType === 'toets' ? 'toets' : 'quiz';
   const tokenTotal = Math.max(0, Math.round(Number(content.tokenConfig?.totalTokens ?? blockTokenTotal) || 0));
   const itemTokenTotal = sumAssessmentItemTokens(items);
   const tokenDelta = itemTokenTotal - tokenTotal;
+  const matrixSummary = getAssessmentMatrixSummary(items);
 
   const setItems = (nextItems) => updateContent({ items: normalizeAssessmentItems(nextItems) });
 
@@ -775,6 +796,16 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
 
   const updateItem = (index, updates) => {
     setItems(items.map((item, itemIndex) => itemIndex === index ? { ...item, ...updates } : item));
+  };
+
+  const updateTaxonomy = (index, updates) => {
+    const item = items[index];
+    updateItem(index, {
+      taxonomy: {
+        ...(item.taxonomy || {}),
+        ...updates
+      }
+    });
   };
 
   const updateAnswer = (itemIndex, answerUpdates) => {
@@ -961,6 +992,27 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
         </div>
       </div>
 
+      {items.length > 0 && (
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-700">Toetsmatrijs</p>
+              <p className="mt-1 text-sm font-bold text-indigo-950">
+                {matrixSummary.totalItems} vragen - {matrixSummary.totalTokens} tokens
+              </p>
+            </div>
+            <div className="text-xs font-black uppercase tracking-[0.14em] text-indigo-700">
+              Dekking per leerdoel, vaardigheid en niveau
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 lg:grid-cols-3">
+            <MatrixSummaryList title="Leerdoelen" rows={matrixSummary.byLearningGoal} />
+            <MatrixSummaryList title="Vaardigheden" rows={matrixSummary.byCognitiveSkill} />
+            <MatrixSummaryList title="Niveaus" rows={matrixSummary.byMasteryLevel} />
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4">
         {items.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm font-bold text-slate-500">
@@ -1040,6 +1092,57 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                 >
                   <Trash2 size={15} />
                 </button>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 p-3">
+              <p className="mb-3 text-xs font-black uppercase tracking-wide text-violet-700">Didactische dekking</p>
+              <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Leerdoel</label>
+                  <input
+                    value={item.taxonomy?.learningGoal || ''}
+                    onChange={(event) => updateTaxonomy(index, { learningGoal: event.target.value })}
+                    className="input-standard w-full"
+                    placeholder="Bijv. Ik kan broninformatie controleren"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Vaardigheid</label>
+                  <select
+                    value={item.taxonomy?.cognitiveSkill || 'begrijpen'}
+                    onChange={(event) => updateTaxonomy(index, { cognitiveSkill: event.target.value })}
+                    className="input-standard w-full"
+                  >
+                    {ASSESSMENT_COGNITIVE_SKILLS.map((skill) => (
+                      <option key={skill.id} value={skill.id}>{skill.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Niveau</label>
+                  <select
+                    value={item.taxonomy?.masteryLevel || 'basis'}
+                    onChange={(event) => updateTaxonomy(index, { masteryLevel: event.target.value })}
+                    className="input-standard w-full"
+                  >
+                    {ASSESSMENT_MASTERY_LEVELS.map((level) => (
+                      <option key={level.id} value={level.id}>{level.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Rol</label>
+                  <select
+                    value={item.taxonomy?.scaffoldingRole || 'zelf_proberen'}
+                    onChange={(event) => updateTaxonomy(index, { scaffoldingRole: event.target.value })}
+                    className="input-standard w-full"
+                  >
+                    {ASSESSMENT_SCAFFOLDING_ROLES.map((role) => (
+                      <option key={role.id} value={role.id}>{role.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 

@@ -4,6 +4,7 @@ import {
   createAssessmentItem,
   duplicateAssessmentItem,
   evaluateAssessmentAnswer,
+  getAssessmentMatrixSummary,
   moveAssessmentItem,
   normalizeAssessmentItem,
   normalizeAssessmentItems,
@@ -20,6 +21,12 @@ test('createAssessmentItem creates useful defaults for supported item types', ()
   assert.equal(multipleChoice.options[0].correct, true);
   assert.equal(multipleChoice.answer.options.length, 2);
   assert.equal(multipleChoice.tokens, 4);
+  assert.deepEqual(multipleChoice.taxonomy, {
+    learningGoal: '',
+    cognitiveSkill: 'begrijpen',
+    masteryLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
+  });
 
   const trueFalse = createAssessmentItem({ type: 'waar-niet-waar' });
   assert.deepEqual(trueFalse.options.map((option) => option.text), ['Waar', 'Niet waar']);
@@ -56,7 +63,37 @@ test('normalizeAssessmentItem repairs missing ids, invalid type and missing corr
   assert.equal(item.options[0].correct, true);
   assert.equal(item.answer.options[0].correct, true);
   assert.equal(item.tokens, 3);
+  assert.deepEqual(item.taxonomy, {
+    learningGoal: '',
+    cognitiveSkill: 'begrijpen',
+    masteryLevel: 'basis',
+    scaffoldingRole: 'zelf_proberen'
+  });
   assert.ok(item.id);
+});
+
+test('normalizeAssessmentItem preserves didactic taxonomy fields', () => {
+  const item = normalizeAssessmentItem({
+    type: 'open',
+    prompt: 'Leg uit hoe je broncontrole doet.',
+    learningGoal: 'Ik kan een bron controleren',
+    cognitiveSkill: 'uitleggen',
+    masteryLevel: 'plus',
+    scaffoldingRole: 'bewijs_leveren',
+    taxonomy: {
+      learningGoal: 'Ik kan veilig informatie beoordelen',
+      cognitiveSkill: 'maken_controleren',
+      masteryLevel: 'verdieping',
+      scaffoldingRole: 'reflecteren'
+    }
+  });
+
+  assert.deepEqual(item.taxonomy, {
+    learningGoal: 'Ik kan veilig informatie beoordelen',
+    cognitiveSkill: 'maken_controleren',
+    masteryLevel: 'verdieping',
+    scaffoldingRole: 'reflecteren'
+  });
 });
 
 test('normalizeAssessmentItem keeps professional answer models for all assessment types', () => {
@@ -100,6 +137,42 @@ test('normalizeAssessmentItems tolerates non-array input', () => {
 
 test('sumAssessmentItemTokens totals normalized item tokens', () => {
   assert.equal(sumAssessmentItemTokens([{ tokens: 3 }, { tokens: '4' }, { tokens: -2 }]), 7);
+});
+
+test('getAssessmentMatrixSummary groups items by learning goal, skill and level', () => {
+  const summary = getAssessmentMatrixSummary([
+    {
+      type: 'meerkeuze',
+      tokens: 2,
+      taxonomy: { learningGoal: 'Bronnen checken', cognitiveSkill: 'herkennen', masteryLevel: 'basis' }
+    },
+    {
+      type: 'open',
+      tokens: 4,
+      taxonomy: { learningGoal: 'Bronnen checken', cognitiveSkill: 'uitleggen', masteryLevel: 'plus' }
+    },
+    {
+      type: 'numeriek',
+      tokens: 1,
+      taxonomy: { learningGoal: '', cognitiveSkill: 'toepassen', masteryLevel: 'basis' }
+    }
+  ]);
+
+  assert.equal(summary.totalItems, 3);
+  assert.equal(summary.totalTokens, 7);
+  assert.deepEqual(summary.byLearningGoal, [
+    { key: 'Bronnen checken', label: 'Bronnen checken', items: 2, tokens: 6 },
+    { key: 'geen_leerdoel', label: 'Geen leerdoel gekoppeld', items: 1, tokens: 1 }
+  ]);
+  assert.deepEqual(summary.byCognitiveSkill.map((row) => [row.key, row.items]), [
+    ['herkennen', 1],
+    ['toepassen', 1],
+    ['uitleggen', 1]
+  ]);
+  assert.deepEqual(summary.byMasteryLevel.map((row) => [row.key, row.tokens]), [
+    ['basis', 3],
+    ['plus', 4]
+  ]);
 });
 
 test('move, duplicate and remove assessment items keep stable behavior', () => {

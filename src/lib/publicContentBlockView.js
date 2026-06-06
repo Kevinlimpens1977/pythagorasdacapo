@@ -1,7 +1,32 @@
 const cleanText = (value) => String(value || '').trim();
 
+const allowedId = (value, allowedValues, fallback) =>
+  allowedValues.includes(value) ? value : fallback;
+
 const getItemType = (item = {}) =>
   item.type || item.vraagtype || item.answer?.type || item.antwoord?.type || 'open';
+
+const sanitizeTaxonomy = (item = {}) => {
+  const taxonomy = item.taxonomy || {};
+  return {
+    learningGoal: cleanText(taxonomy.learningGoal || item.learningGoal || item.leerdoel),
+    cognitiveSkill: allowedId(
+      taxonomy.cognitiveSkill || item.cognitiveSkill,
+      ['herkennen', 'begrijpen', 'toepassen', 'uitleggen', 'maken_controleren'],
+      'begrijpen'
+    ),
+    masteryLevel: allowedId(
+      taxonomy.masteryLevel || item.masteryLevel,
+      ['basis', 'plus', 'verdieping'],
+      'basis'
+    ),
+    scaffoldingRole: allowedId(
+      taxonomy.scaffoldingRole || item.scaffoldingRole,
+      ['ik_doe_voor', 'samen_oefenen', 'zelf_proberen', 'bewijs_leveren', 'reflecteren'],
+      'zelf_proberen'
+    )
+  };
+};
 
 const sanitizeOptions = (options = []) =>
   (Array.isArray(options) ? options : []).map((option, index) => ({
@@ -116,6 +141,7 @@ const sanitizeAssessmentItems = (items = []) =>
         : [],
       feedback: '',
       tokens: Math.max(0, Math.round(Number(item.tokens) || 0)),
+      taxonomy: sanitizeTaxonomy(item),
       answerKeyAvailable: false,
       publicSnapshotVersion: 1
     };

@@ -13,6 +13,28 @@ const parseNumber = (value, fallback = 0) => {
 
 const questionTypeItems = QUESTION_TYPES.map(({ id, label, description }) => ({ id, label, description }));
 
+export const ASSESSMENT_COGNITIVE_SKILLS = [
+  { id: 'herkennen', label: 'Herkennen' },
+  { id: 'begrijpen', label: 'Begrijpen' },
+  { id: 'toepassen', label: 'Toepassen' },
+  { id: 'uitleggen', label: 'Uitleggen' },
+  { id: 'maken_controleren', label: 'Maken/controleren' }
+];
+
+export const ASSESSMENT_MASTERY_LEVELS = [
+  { id: 'basis', label: 'Basis' },
+  { id: 'plus', label: 'Plus' },
+  { id: 'verdieping', label: 'Verdieping' }
+];
+
+export const ASSESSMENT_SCAFFOLDING_ROLES = [
+  { id: 'ik_doe_voor', label: 'Ik doe voor' },
+  { id: 'samen_oefenen', label: 'Samen oefenen' },
+  { id: 'zelf_proberen', label: 'Zelf proberen' },
+  { id: 'bewijs_leveren', label: 'Bewijs leveren' },
+  { id: 'reflecteren', label: 'Reflecteren' }
+];
+
 export const ASSESSMENT_ITEM_TYPES = [
   { id: 'waar-niet-waar', label: 'Waar / niet waar', description: 'Snelle ja/nee-check met twee vaste opties.' },
   ...questionTypeItems
@@ -29,6 +51,31 @@ export const CLOSED_ASSESSMENT_ITEM_TYPES = new Set([
 
 export const getAssessmentItemType = (type) =>
   ASSESSMENT_ITEM_TYPES.some((itemType) => itemType.id === type) ? type : 'meerkeuze';
+
+const getAllowedId = (value, allowedItems, fallback) =>
+  allowedItems.some((item) => item.id === value) ? value : fallback;
+
+export const normalizeAssessmentTaxonomy = (item = {}) => {
+  const taxonomy = item.taxonomy || {};
+  return {
+    learningGoal: String(taxonomy.learningGoal ?? item.learningGoal ?? item.leerdoel ?? '').trim(),
+    cognitiveSkill: getAllowedId(
+      taxonomy.cognitiveSkill ?? item.cognitiveSkill ?? item.taxonomyLevel,
+      ASSESSMENT_COGNITIVE_SKILLS,
+      'begrijpen'
+    ),
+    masteryLevel: getAllowedId(
+      taxonomy.masteryLevel ?? item.masteryLevel ?? item.niveau,
+      ASSESSMENT_MASTERY_LEVELS,
+      'basis'
+    ),
+    scaffoldingRole: getAllowedId(
+      taxonomy.scaffoldingRole ?? item.scaffoldingRole ?? item.rol,
+      ASSESSMENT_SCAFFOLDING_ROLES,
+      'zelf_proberen'
+    )
+  };
+};
 
 export const createAssessmentOption = ({ text = '', correct = false, explanation = '' } = {}) => ({
   id: createId('option'),
@@ -230,7 +277,8 @@ export const createAssessmentItem = ({ type = 'meerkeuze', tokens = 0, prompt = 
     answer,
     options: itemType === 'open' || !Array.isArray(answer.options) ? [] : answer.options.map(clone),
     feedback: '',
-    tokens: Math.max(0, Math.round(Number(tokens) || 0))
+    tokens: Math.max(0, Math.round(Number(tokens) || 0)),
+    taxonomy: normalizeAssessmentTaxonomy({})
   };
 };
 
@@ -247,7 +295,8 @@ export const normalizeAssessmentItem = (item = {}, index = 0) => {
     answer,
     options: Array.isArray(answer.options) ? answer.options.map(clone) : [],
     feedback: String(item.feedback ?? item.explanation ?? ''),
-    tokens: Math.max(0, Math.round(Number(item.tokens) || 0))
+    tokens: Math.max(0, Math.round(Number(item.tokens) || 0)),
+    taxonomy: normalizeAssessmentTaxonomy(item)
   };
 };
 
@@ -256,6 +305,63 @@ export const normalizeAssessmentItems = (items = []) =>
 
 export const sumAssessmentItemTokens = (items = []) =>
   normalizeAssessmentItems(items).reduce((sum, item) => sum + item.tokens, 0);
+
+const createMatrixRow = ({ key, label, items = 0, tokens = 0 }) => ({
+  key,
+  label,
+  items,
+  tokens
+});
+
+const summarizeBy = (items = [], getKey, getLabel) => {
+  const rowsByKey = new Map();
+  items.forEach((item) => {
+    const key = getKey(item);
+    const current = rowsByKey.get(key) || createMatrixRow({
+      key,
+      label: getLabel(key),
+      items: 0,
+      tokens: 0
+    });
+    rowsByKey.set(key, {
+      ...current,
+      items: current.items + 1,
+      tokens: current.tokens + item.tokens
+    });
+  });
+  return [...rowsByKey.values()].sort((a, b) => a.label.localeCompare(b.label, 'nl-NL'));
+};
+
+const labelFor = (items, fallbackLabel) => (key) =>
+  items.find((item) => item.id === key)?.label || fallbackLabel;
+
+export const getAssessmentMatrixSummary = (items = []) => {
+  const normalizedItems = normalizeAssessmentItems(items);
+  return {
+    totalItems: normalizedItems.length,
+    totalTokens: sumAssessmentItemTokens(normalizedItems),
+    byLearningGoal: summarizeBy(
+      normalizedItems,
+      (item) => item.taxonomy.learningGoal || 'geen_leerdoel',
+      (key) => key === 'geen_leerdoel' ? 'Geen leerdoel gekoppeld' : key
+    ),
+    byCognitiveSkill: summarizeBy(
+      normalizedItems,
+      (item) => item.taxonomy.cognitiveSkill,
+      labelFor(ASSESSMENT_COGNITIVE_SKILLS, 'Onbekend')
+    ),
+    byMasteryLevel: summarizeBy(
+      normalizedItems,
+      (item) => item.taxonomy.masteryLevel,
+      labelFor(ASSESSMENT_MASTERY_LEVELS, 'Onbekend')
+    ),
+    byScaffoldingRole: summarizeBy(
+      normalizedItems,
+      (item) => item.taxonomy.scaffoldingRole,
+      labelFor(ASSESSMENT_SCAFFOLDING_ROLES, 'Onbekend')
+    )
+  };
+};
 
 export const moveAssessmentItem = (items = [], fromIndex, toIndex) => {
   const normalized = normalizeAssessmentItems(items);
