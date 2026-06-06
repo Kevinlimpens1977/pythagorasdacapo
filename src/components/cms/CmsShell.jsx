@@ -331,13 +331,22 @@ export default function CmsShell() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => cms.selectedParagraafId && navigate(`/chapter/${cms.selectedParagraafId}`)}
+                  onClick={() => cms.selectedParagraafId && navigate(`/chapter/${cms.selectedParagraafId}?preview=published`)}
                   disabled={!cms.selectedParagraafId}
                   className="inline-flex items-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-3 py-2 text-sm font-bold text-[var(--helix-muted)] transition-colors hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
-                  title="Preview van de huidige lesroute"
+                  title="Preview met gepubliceerde lesblokken"
                 >
                   <Eye size={16} />
-                  Preview
+                  Gepubliceerd
+                </button>
+                <button
+                  onClick={() => cms.selectedParagraafId && navigate(`/chapter/${cms.selectedParagraafId}?preview=draft`)}
+                  disabled={!cms.selectedParagraafId}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 text-sm font-bold text-fuchsia-700 transition-colors hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  title="Preview inclusief conceptblokken"
+                >
+                  <Eye size={16} />
+                  Conceptpreview
                 </button>
                 <button
                   onClick={() => {

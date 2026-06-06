@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   BookOpen,
@@ -86,6 +86,7 @@ import {
   resetMathTool,
   updateMathToolValue
 } from '../lib/mathToolboxUtils';
+import { getLessonPreviewMode, shouldIncludeDraftBlocksForPreview } from '../lib/lessonPreviewMode';
 
 const blockIcons = {
   theory: BookOpen,
@@ -115,6 +116,7 @@ const stripHtmlText = (value = '') =>
 
 export default function StudentLessonPage() {
   const { chapterId: paragraafId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { currentUser, userData, isAdmin, klasData, klasId: authKlasId } = useAuth();
   const { setContext: setStudentBugReportContext } = useStudentBugReportContext();
@@ -128,6 +130,8 @@ export default function StudentLessonPage() {
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
   const [showParagraphEnd, setShowParagraphEnd] = useState(false);
   const skipNextAiTutorSaveRef = useRef(false);
+  const previewMode = getLessonPreviewMode(searchParams.get('preview') || '');
+  const includeDraftPreview = shouldIncludeDraftBlocksForPreview({ isAdmin, previewMode });
 
   useEffect(() => {
     let cancelled = false;
@@ -152,7 +156,7 @@ export default function StudentLessonPage() {
         const [paragraafData, contentBlocks, voortgang] = await Promise.all([
           cmsService.getParagraaf(paragraafId),
           isAdmin
-            ? cmsService.getContentBlocks(paragraafId, false)
+            ? cmsService.getContentBlocks(paragraafId, includeDraftPreview)
             : cmsService.getAssignedPublicContentBlocks({
                 paragraafId,
                 klasData,
@@ -218,7 +222,7 @@ export default function StudentLessonPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentUser, isAdmin, klasData, paragraafId]);
+  }, [currentUser, includeDraftPreview, isAdmin, klasData, paragraafId]);
 
   const completedIds = useMemo(() => getCompletedBlockIds(progressRecords), [progressRecords]);
   const lessonProgress = useMemo(() => calculateLessonProgress(blocks, progressRecords), [blocks, progressRecords]);
@@ -546,6 +550,15 @@ export default function StudentLessonPage() {
             </div>
           </div>
         </header>
+
+        {isAdmin && (
+          <div className="rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-muted)] shadow-sm">
+            <span className="text-[var(--helix-navy)]">Adminpreview:</span>{' '}
+            {includeDraftPreview
+              ? 'conceptblokken zijn inbegrepen in deze weergave.'
+              : 'alleen gepubliceerde blokken worden getoond in deze weergave.'}
+          </div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="helix-card p-3 lg:sticky lg:top-24 lg:self-start">
