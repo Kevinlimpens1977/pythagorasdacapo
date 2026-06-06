@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -31,6 +31,7 @@ import {
   Copy,
   FileStack,
   FileText,
+  FilePlus2,
   Gamepad2,
   GripVertical,
   Image,
@@ -114,6 +115,7 @@ import {
   buildDefaultTokenConfigForQuestionType
 } from '../../lib/questionTypeRegistry';
 import { getDeckReadySlidedeckPackages } from '../../services/slidedeckService';
+import { buildSlidedeckCreatorUrl } from '../../lib/slidedeckCmsLink';
 import { uploadMediaAsset } from '../../services/mediaService';
 import MediaRenderer from '../media/MediaRenderer';
 import CropEditorPanel from './CropEditorPanel';
@@ -1421,6 +1423,7 @@ const LessonBlockStudio = ({
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [slidedeckPackages, setSlidedeckPackages] = useState([]);
+  const [loadingSlidedecks, setLoadingSlidedecks] = useState(false);
   const [localDraftSavedAt, setLocalDraftSavedAt] = useState(null);
   const recoveryCheckedRef = useRef(false);
 
@@ -1430,15 +1433,22 @@ const LessonBlockStudio = ({
   const selectedVraagLabel = selectedVraag ? formatQuestionLabel(selectedVraag) : 'Nog geen vraag gekozen';
   const Icon = blockIcons[block.type] || FileText;
 
+  const loadSlidedeckPackages = useCallback(async () => {
+    try {
+      setLoadingSlidedecks(true);
+      setSlidedeckPackages(await getDeckReadySlidedeckPackages());
+    } catch (deckError) {
+      console.error('Kon slidedecks niet laden:', deckError);
+      setError('Kon slidedecks niet laden. Controleer Firestore rules.');
+    } finally {
+      setLoadingSlidedecks(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (block.type !== 'slidedeck') return;
-    getDeckReadySlidedeckPackages()
-      .then(setSlidedeckPackages)
-      .catch((deckError) => {
-        console.error('Kon slidedecks niet laden:', deckError);
-        setError('Kon slidedecks niet laden. Controleer Firestore rules.');
-      });
-  }, [block.type]);
+    void Promise.resolve().then(loadSlidedeckPackages);
+  }, [block.type, loadSlidedeckPackages]);
 
   const updateContent = (updates) => {
     setContent((current) => ({ ...current, ...updates }));
@@ -2058,8 +2068,29 @@ const LessonBlockStudio = ({
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm font-bold text-slate-500">
-              Maak eerst een slidedeckpakket en upload de NotebookLM PDF via Lesstof &gt; Slidedecks.
+            <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5">
+              <p className="text-sm font-bold text-slate-600">
+                Maak eerst een slidedeckpakket en upload de NotebookLM PDF via Lesstof &gt; Slidedecks.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href={buildSlidedeckCreatorUrl({ paragraafId: paragraaf?.id || block.paragraafId })}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-primary w-auto px-4 py-2 text-sm"
+                >
+                  <FilePlus2 size={16} />
+                  Maak NotebookLM-pakket
+                </a>
+                <button
+                  type="button"
+                  onClick={() => loadSlidedeckPackages()}
+                  disabled={loadingSlidedecks}
+                  className="btn-secondary w-auto px-4 py-2 text-sm disabled:opacity-60"
+                >
+                  {loadingSlidedecks ? 'Laden...' : 'Ververs lijst'}
+                </button>
+              </div>
             </div>
           )}
 

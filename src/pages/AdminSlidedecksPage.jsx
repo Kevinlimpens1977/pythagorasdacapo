@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Clipboard,
   Copy,
@@ -84,6 +85,8 @@ const downloadTextFile = ({ content, fileName, contentType }) => {
 
 export default function AdminSlidedecksPage() {
   const { currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const preselectParagraafId = searchParams.get('paragraafId') || '';
   const [packages, setPackages] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,6 +122,51 @@ export default function AdminSlidedecksPage() {
     [templates, selectedTemplateId]
   );
 
+  const prefillContextFromParagraafId = async (paragraafId) => {
+    if (!paragraafId) return '';
+
+    try {
+      const paragraaf = await cmsService.getParagraaf(paragraafId);
+      if (!paragraaf) return '';
+
+      const hoofdstuk = paragraaf.hoofdstukId ? await cmsService.getHoofdstuk(paragraaf.hoofdstukId) : null;
+      const niveau = hoofdstuk?.niveauId ? await cmsService.getNiveau(hoofdstuk.niveauId) : null;
+      const leerjaar = niveau?.leerjaarId ? await cmsService.getLeerjaar(niveau.leerjaarId) : null;
+      const vak = leerjaar?.vakId ? await cmsService.getVak(leerjaar.vakId) : null;
+      const [nextLeerjaren, nextNiveaus, nextHoofdstukken, nextParagrafen] = await Promise.all([
+        vak?.id ? cmsService.getLeerjaren(vak.id) : [],
+        leerjaar?.id ? cmsService.getNiveaus(leerjaar.id) : [],
+        niveau?.id ? cmsService.getHoofdstukken(niveau.id) : [],
+        hoofdstuk?.id ? cmsService.getParagrafen(hoofdstuk.id) : []
+      ]);
+      const paragraafTitle = readableName(paragraaf, '');
+
+      setLeerjaren(nextLeerjaren);
+      setNiveaus(nextNiveaus);
+      setHoofdstukken(nextHoofdstukken);
+      setParagrafen(nextParagrafen);
+      setContext({
+        vakId: vak?.id || '',
+        vakTitle: readableName(vak, ''),
+        leerjaarId: leerjaar?.id || '',
+        leerjaarTitle: readableName(leerjaar, leerjaar?.year ? `Jaar ${leerjaar.year}` : ''),
+        niveauId: niveau?.id || '',
+        niveauTitle: readableName(niveau, ''),
+        hoofdstukId: hoofdstuk?.id || '',
+        hoofdstukTitle: hoofdstuk ? readableCodeTitle(hoofdstuk, '') : '',
+        paragraafId: paragraaf.id,
+        paragraafTitle
+      });
+      if (paragraafTitle) setTitle((current) => current || paragraafTitle);
+
+      return paragraafTitle;
+    } catch (prefillError) {
+      console.error('Kon paragraafcontext niet vooraf invullen:', prefillError);
+      setError('Kon de paragraafcontext voor het slidedeckpakket niet vooraf invullen.');
+      return '';
+    }
+  };
+
   const loadInitialData = async () => {
     setLoading(true);
     setError('');
@@ -131,11 +179,12 @@ export default function AdminSlidedecksPage() {
       setTemplates(nextTemplates);
       setPackages(nextPackages);
       setVakken(nextVakken);
+      const preselectedTitle = await prefillContextFromParagraafId(preselectParagraafId);
 
       const defaultTemplate = nextTemplates.find((template) => template.isDefault) || nextTemplates[0];
       if (defaultTemplate) {
         setSelectedTemplateId(defaultTemplate.id);
-        setPromptDraft(fillNotebookPrompt(defaultTemplate.body, title));
+        setPromptDraft(fillNotebookPrompt(defaultTemplate.body, preselectedTitle || title));
       }
     } catch (loadError) {
       console.error('Kon slidedeckdata niet laden:', loadError);
