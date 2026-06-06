@@ -61,6 +61,7 @@ import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { buildQuestionDraftProgressPayload, hasQuestionDraftAnswer } from '../lib/questionDraftProgress';
 import { assessOpenAnswerLocally } from '../lib/localOpenAnswerAssessment';
+import { hasQuestionAnswerKey } from '../lib/publicQuestionView';
 import {
   buildParagraphEndPlan,
   buildQuestionAttemptOutcome,
@@ -169,7 +170,9 @@ export default function StudentLessonPage() {
         const enrichedBlocks = await Promise.all(
           visibleBlocks.map(async (block) => {
             if (block.type !== 'question' || !block.linkedVraagId) return block;
-            const vraag = await cmsService.getVraag(block.linkedVraagId);
+            const vraag = isAdmin
+              ? await cmsService.getVraag(block.linkedVraagId)
+              : await cmsService.getPublicVraag(block.linkedVraagId);
             return {
               ...block,
               linkedVraag: vraag,
@@ -1372,6 +1375,7 @@ function QuestionLearningBlock({
   onAutoAdvance
 }) {
   const preview = buildQuestionPreviewModel(linkedVraag || {});
+  const answerKeyAvailable = hasQuestionAnswerKey(linkedVraag || {});
   const savedAssessment = isAssessmentForAnswer(
     progressRecord?.openAnswerAssessment,
     progressRecord?.lastAnswer || {}
@@ -1464,6 +1468,8 @@ function QuestionLearningBlock({
   };
 
   const getQuestionCorrectStatus = () => {
+    if (!answerKeyAvailable) return false;
+
     if (preview.type === 'invullen') {
       return preview.fields.length > 0 && preview.fields.every((field) =>
         getPreviewAnswerStatus(previewAnswers[field.id], field.answer) === 'correct'
@@ -1503,6 +1509,7 @@ function QuestionLearningBlock({
     setAssessmentFeedback('');
     setAssessmentMissing([]);
     const isOpenQuestion = preview.type === 'open';
+    const autoAssessmentUnavailable = !isOpenQuestion && !answerKeyAvailable;
     setSaving(true);
     const answerSnapshot = {
       ...previewAnswers,
@@ -1552,10 +1559,10 @@ function QuestionLearningBlock({
           }
         }
       }
-      const aiAssessmentFailed = isOpenQuestion && !assessment?.success;
+      const aiAssessmentFailed = (isOpenQuestion && !assessment?.success) || autoAssessmentUnavailable;
       const isCorrect = isOpenQuestion
         ? Boolean(assessment?.success && assessment.isCorrect)
-        : getQuestionCorrectStatus();
+        : !autoAssessmentUnavailable && getQuestionCorrectStatus();
       const outcome = buildQuestionAttemptOutcome({
         currentAttempts: attempts,
         isCorrect,
@@ -1596,6 +1603,11 @@ function QuestionLearningBlock({
             ? hint.content
             : 'Kijk nog eens naar wat er gevraagd wordt. Welke stap kun je controleren voordat je opnieuw probeert?'
         );
+      }
+
+      if (autoAssessmentUnavailable) {
+        feedbackText = 'Je antwoord is opgeslagen. Je docent kijkt deze vraag na, zodat het antwoordmodel niet zichtbaar hoeft te zijn in de leerlingbrowser.';
+        missingItems = [];
       }
 
       if (outcome.resultTier === 'failed') {
@@ -1810,7 +1822,9 @@ function QuestionLearningBlock({
           {preview.segments.map((segment, index) => (
             segment.type === 'gap' ? (() => {
               const field = preview.fields.find((item) => item.id === segment.id);
-              const status = getPreviewAnswerStatus(previewAnswers[segment.id], field?.answer);
+              const status = answerKeyAvailable
+                ? getPreviewAnswerStatus(previewAnswers[segment.id], field?.answer)
+                : 'empty';
               return (
                 <span key={segment.id} className="inline-flex items-center">
                   <input
@@ -1837,7 +1851,7 @@ function QuestionLearningBlock({
             (() => {
               const fieldId = option.id || `option-${index + 1}`;
               const checked = Boolean(previewAnswers[fieldId]);
-              const status = checked ? (option.correct ? 'correct' : 'incorrect') : 'empty';
+              const status = checked && answerKeyAvailable ? (option.correct ? 'correct' : 'incorrect') : 'empty';
               return (
                 <label
                   key={fieldId}
@@ -1863,7 +1877,7 @@ function QuestionLearningBlock({
         <div className="space-y-3">
           {currentOrderItems.length > 0 ? (
             currentOrderItems.map((item, index) => {
-              const status = orderWasChanged ? (isOrderCorrect ? 'correct' : 'incorrect') : 'empty';
+              const status = orderWasChanged && answerKeyAvailable ? (isOrderCorrect ? 'correct' : 'incorrect') : 'empty';
               return (
                 <div
                   key={item.id}
@@ -1903,7 +1917,9 @@ function QuestionLearningBlock({
       ) : preview.type === 'numeriek' ? (
         <div className="flex flex-wrap items-center gap-3">
           {(() => {
-            const status = getPreviewAnswerStatus(previewAnswers.expectedValue, linkedVraag.antwoord?.expected ?? linkedVraag.antwoord?.correctValue);
+            const status = answerKeyAvailable
+              ? getPreviewAnswerStatus(previewAnswers.expectedValue, linkedVraag.antwoord?.expected ?? linkedVraag.antwoord?.correctValue)
+              : 'empty';
             return (
               <>
                 <input

@@ -86,6 +86,11 @@ service cloud.firestore {
     }
 
     match /vraag/{document=**} {
+      allow read: if isAdminOrSupervisor();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /publicQuestions/{document=**} {
       allow read: if signedIn();
       allow create, update, delete: if isAdmin();
     }

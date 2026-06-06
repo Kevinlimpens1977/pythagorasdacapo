@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { buildContentBlockFromSnapshot, normalizeContentBlockSettings } from '../lib/contentBlockUtils';
+import { buildPublicQuestionSnapshot } from '../lib/publicQuestionView';
 
 /**
  * ==================== READ OPERATIONS ====================
@@ -267,6 +268,33 @@ export const getVraag = async (vraagId) => {
   }
 };
 
+export const getPublicVraag = async (vraagId) => {
+  try {
+    const docSnap = await getDoc(doc(db, 'publicQuestions', vraagId));
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching public vraag ${vraagId}:`, error);
+    return null;
+  }
+};
+
+const upsertPublicQuestionSnapshot = async (vraagId, data) => {
+  await setDoc(
+    doc(db, 'publicQuestions', vraagId),
+    {
+      ...buildPublicQuestionSnapshot({
+        ...data,
+        id: vraagId
+      }),
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
+};
+
 /**
  * Get all content blocks for a paragraph
  * @param {string} paragraafId
@@ -366,7 +394,7 @@ export const createVraag = async (paragraafId, data, userId) => {
     const vragen = await getVragen(paragraafId);
     const nextOrder = Math.max(...vragen.map(v => v.order || 0), 0) + 1;
 
-    await setDoc(doc(db, 'vraag', vraagId), {
+    const vraagData = {
       vakId: paragraaf.vakId,
       leerjaarId: paragraaf.leerjaarId,
       niveauId: paragraaf.niveauId,
@@ -392,7 +420,10 @@ export const createVraag = async (paragraafId, data, userId) => {
       },
       antwoord: data.antwoord || {},
       isArchived: false
-    });
+    };
+
+    await setDoc(doc(db, 'vraag', vraagId), vraagData);
+    await upsertPublicQuestionSnapshot(vraagId, vraagData);
 
     return vraagId;
   } catch (error) {
@@ -470,10 +501,17 @@ export const updateParagraaf = async (paragraafId, data) => {
  */
 export const updateVraag = async (vraagId, data) => {
   try {
+    const currentVraag = await getVraag(vraagId);
+    const nextVraag = {
+      ...(currentVraag || {}),
+      ...data,
+      id: vraagId
+    };
     await updateDoc(doc(db, 'vraag', vraagId), {
       ...data,
       updatedAt: serverTimestamp()
     });
+    await upsertPublicQuestionSnapshot(vraagId, nextVraag);
   } catch (error) {
     console.error(`Error updating vraag ${vraagId}:`, error);
     throw error;
@@ -997,6 +1035,7 @@ export default {
   createContentBlock,
   updateParagraaf,
   updateVraag,
+  getPublicVraag,
   updateContentBlock,
   updateContentBlockOrder,
   archiveParagraaf,

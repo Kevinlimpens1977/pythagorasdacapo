@@ -26,3 +26,17 @@ test('firestore rules keep bug report moderation admin-only', () => {
 
   assert.match(block, /allow update, delete: if isAdmin\(\)/);
 });
+
+test('firestore rules keep private question answer documents admin-only', () => {
+  const block = getRuleBlock('match /vraag/{document=**}');
+
+  assert.match(block, /allow read: if isAdminOrSupervisor\(\)/);
+  assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
+});
+
+test('firestore rules expose sanitized public questions to signed-in users only', () => {
+  const block = getRuleBlock('match /publicQuestions/{document=**}');
+
+  assert.match(block, /allow read: if signedIn\(\)/);
+  assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
+});
