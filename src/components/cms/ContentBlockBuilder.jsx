@@ -101,6 +101,7 @@ import {
   buildContentBlockArchiveUndo,
   shouldShowContentBlockArchiveUndo
 } from '../../lib/contentBlockArchiveUndo';
+import { getContentBlockPublicationOverview } from '../../lib/cmsNavigationUtils';
 import { getCmsWriteErrorMessage } from '../../lib/cmsWriteErrorUtils';
 import {
   buildBulkContentBlockSettingsPatch,
@@ -2764,6 +2765,10 @@ export default function ContentBlockBuilder({
   const [selectedBlockIds, setSelectedBlockIds] = useState(() => new Set());
   const [bulkAction, setBulkAction] = useState(null);
   const normalizedBlocks = useMemo(() => normalizeContentBlocks(blocks), [blocks]);
+  const publicationOverview = useMemo(
+    () => getContentBlockPublicationOverview(normalizedBlocks),
+    [normalizedBlocks]
+  );
   const sortableBlockIds = useMemo(() => normalizedBlocks.map((block) => block.id), [normalizedBlocks]);
   const selectedBlocks = useMemo(
     () => getSelectedContentBlocks(normalizedBlocks, selectedBlockIds),
@@ -3220,9 +3225,30 @@ export default function ContentBlockBuilder({
               Bouw de leerlingroute in volgorde. Elk blok open je als studio met eigen tekst, media, crops en OCR.
             </p>
           </div>
-          <div className="rounded-2xl bg-[var(--helix-surface-soft)] px-4 py-3 text-right">
-            <p className="font-display text-2xl font-extrabold text-[var(--helix-navy)]">{normalizedBlocks.length}</p>
-            <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">lesblokken</p>
+          <div className="w-full rounded-2xl bg-[var(--helix-surface-soft)] px-4 py-3 md:w-auto md:min-w-[23rem]">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="font-display text-2xl font-extrabold text-[var(--helix-navy)]">{publicationOverview.total}</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">lesblokken</p>
+              </div>
+              <p className="text-right text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
+                Publicatie
+              </p>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {publicationOverview.items.map((item) => (
+                <div
+                  key={item.status}
+                  className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2"
+                  title={`${item.label}: ${item.count} lesblokken`}
+                >
+                  <p className="text-sm font-black text-[var(--helix-navy)]">{item.count}</p>
+                  <p className="truncate text-[0.68rem] font-bold uppercase tracking-wide text-[var(--helix-muted)]">
+                    {item.label}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

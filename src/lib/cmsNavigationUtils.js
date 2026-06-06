@@ -1,4 +1,5 @@
 import { CONTENT_BLOCK_TYPES } from './contentBlockUtils.js';
+import { getContentBlockStatusLabel, normalizeContentBlockStatus } from './contentReadiness.js';
 
 const normalizeText = (value = '') => String(value).toLowerCase().trim();
 
@@ -43,6 +44,36 @@ export const getContentBlockTypeCounts = (blocks = [], { includeArchived = false
   });
 
   return counts;
+};
+
+const PUBLICATION_OVERVIEW_STATUSES = ['draft', 'needs_review', 'ready', 'published'];
+
+export const getContentBlockPublicationOverview = (blocks = [], { includeArchived = false } = {}) => {
+  const counts = PUBLICATION_OVERVIEW_STATUSES.reduce(
+    (acc, status) => ({
+      ...acc,
+      [status]: 0
+    }),
+    {}
+  );
+
+  visibleBlocks(blocks, includeArchived).forEach((block) => {
+    const status = normalizeContentBlockStatus(block.status);
+    if (!PUBLICATION_OVERVIEW_STATUSES.includes(status)) return;
+    counts[status] += 1;
+  });
+
+  const items = PUBLICATION_OVERVIEW_STATUSES.map((status) => ({
+    status,
+    label: getContentBlockStatusLabel(status),
+    count: counts[status]
+  }));
+
+  return {
+    total: items.reduce((sum, item) => sum + item.count, 0),
+    counts,
+    items
+  };
 };
 
 export const getAssessmentItemCount = (blocks = [], { includeArchived = false } = {}) =>

@@ -4,6 +4,7 @@ import {
   buildCmsNavigationTree,
   getAssessmentItemCount,
   getCmsItemLabel,
+  getContentBlockPublicationOverview,
   getContentBlockTypeCounts
 } from './cmsNavigationUtils.js';
 
@@ -42,6 +43,32 @@ test('getContentBlockTypeCounts ignores archived blocks and counts types', () =>
     slidedeck: 1,
     published: 3,
     draft: 3
+  });
+});
+
+test('getContentBlockPublicationOverview counts visible blocks by normalized publication status', () => {
+  assert.deepEqual(getContentBlockPublicationOverview([
+    { id: 'b-1', status: 'draft' },
+    { id: 'b-2', status: 'needs_review' },
+    { id: 'b-3', status: 'ready' },
+    { id: 'b-4', status: 'published' },
+    { id: 'b-5', status: 'unknown' },
+    { id: 'b-6', status: 'published', isArchived: true },
+    { id: 'b-7', status: 'archived' }
+  ]), {
+    total: 5,
+    counts: {
+      draft: 2,
+      needs_review: 1,
+      ready: 1,
+      published: 1
+    },
+    items: [
+      { status: 'draft', label: 'Concept', count: 2 },
+      { status: 'needs_review', label: 'Review nodig', count: 1 },
+      { status: 'ready', label: 'Klaar', count: 1 },
+      { status: 'published', label: 'Gepubliceerd', count: 1 }
+    ]
   });
 });
 
