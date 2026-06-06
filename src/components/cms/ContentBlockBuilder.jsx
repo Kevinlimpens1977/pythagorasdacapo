@@ -102,6 +102,7 @@ import {
 } from '../../lib/contentBlockArchiveUndo';
 import {
   buildBulkContentBlockSettingsPatch,
+  getBulkMovedContentBlocks,
   getBulkSelectionLabel,
   getSelectedContentBlocks
 } from '../../lib/contentBlockBulkActions';
@@ -3005,6 +3006,23 @@ export default function ContentBlockBuilder({
     }
   };
 
+  const handleBulkMove = async (direction) => {
+    if (selectedBlocks.length === 0) return;
+
+    try {
+      setBulkAction(`move-${direction}`);
+      setActionError(null);
+      const reordered = getBulkMovedContentBlocks(normalizedBlocks, selectedBlockIds, direction);
+      await cmsService.updateContentBlockOrder(reordered);
+      await onRefresh();
+    } catch (error) {
+      console.error('Kon geselecteerde lesblokken niet verplaatsen:', error);
+      setActionError('Kon geselecteerde lesblokken niet verplaatsen.');
+    } finally {
+      setBulkAction(null);
+    }
+  };
+
   const handleMoveBlock = async (blockId, direction) => {
     try {
       setActionError(null);
@@ -3165,6 +3183,24 @@ export default function ContentBlockBuilder({
               className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
             >
               Publiceer
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkMove('up')}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ArrowUp size={14} />
+              Omhoog
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkMove('down')}
+              disabled={selectedBlocks.length === 0 || bulkAction !== null}
+              className="btn-secondary w-auto px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ArrowDown size={14} />
+              Omlaag
             </button>
             <button
               type="button"

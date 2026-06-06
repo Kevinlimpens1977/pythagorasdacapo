@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   buildBulkContentBlockSettingsPatch,
   buildDuplicateContentBlockPayload,
+  getBulkMovedContentBlocks,
   getBulkSelectionLabel,
   getSelectedContentBlocks
 } from './contentBlockBulkActions.js';
@@ -74,5 +75,26 @@ test('buildBulkContentBlockSettingsPatch toggles Digidocent and toolbox settings
         scaffoldingRole: 'zelf_proberen'
       }
     }
+  );
+});
+
+test('getBulkMovedContentBlocks moves selected blocks as one group', () => {
+  const movedUp = getBulkMovedContentBlocks(blocks, new Set(['b2', 'b3']), 'up');
+  assert.deepEqual(movedUp.map((block) => block.id), ['b2', 'b3', 'b1']);
+  assert.deepEqual(movedUp.map((block) => block.order), [1, 2, 3]);
+
+  const movedDown = getBulkMovedContentBlocks(blocks, new Set(['b1', 'b2']), 'down');
+  assert.deepEqual(movedDown.map((block) => block.id), ['b3', 'b1', 'b2']);
+  assert.deepEqual(movedDown.map((block) => block.order), [1, 2, 3]);
+});
+
+test('getBulkMovedContentBlocks is stable at route edges', () => {
+  assert.deepEqual(
+    getBulkMovedContentBlocks(blocks, new Set(['b1']), 'up').map((block) => block.id),
+    ['b1', 'b2', 'b3']
+  );
+  assert.deepEqual(
+    getBulkMovedContentBlocks(blocks, new Set(['b3']), 'down').map((block) => block.id),
+    ['b1', 'b2', 'b3']
   );
 });

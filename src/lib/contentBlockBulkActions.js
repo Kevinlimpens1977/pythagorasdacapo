@@ -37,3 +37,34 @@ export const buildBulkContentBlockSettingsPatch = (block = {}, settingsPatch = {
     }, type)
   };
 };
+
+export const getBulkMovedContentBlocks = (blocks = [], selectedIds = new Set(), direction = 'up') => {
+  const selected = selectedIds instanceof Set ? selectedIds : new Set(selectedIds || []);
+  if (selected.size === 0) return blocks.map((block, index) => ({ ...block, order: index + 1 }));
+
+  const ordered = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const indexes = ordered
+    .map((block, index) => (selected.has(block.id) ? index : -1))
+    .filter((index) => index >= 0);
+
+  if (indexes.length === 0) return ordered.map((block, index) => ({ ...block, order: index + 1 }));
+
+  const minIndex = Math.min(...indexes);
+  const maxIndex = Math.max(...indexes);
+  const movingDown = direction === 'down';
+  if (!movingDown && minIndex === 0) return ordered.map((block, index) => ({ ...block, order: index + 1 }));
+  if (movingDown && maxIndex === ordered.length - 1) return ordered.map((block, index) => ({ ...block, order: index + 1 }));
+
+  const selectedBlocks = ordered.filter((block) => selected.has(block.id));
+  const remainingBlocks = ordered.filter((block) => !selected.has(block.id));
+  const insertionIndex = movingDown ? maxIndex - selectedBlocks.length + 2 : minIndex - 1;
+
+  return [
+    ...remainingBlocks.slice(0, insertionIndex),
+    ...selectedBlocks,
+    ...remainingBlocks.slice(insertionIndex)
+  ].map((block, index) => ({
+    ...block,
+    order: index + 1
+  }));
+};
