@@ -82,20 +82,85 @@ const getTextSelectionOffsets = (element) => {
   const isInsideElement = (node) => node === element || (node && element.contains(node));
   if (!isInsideElement(range.startContainer) || !isInsideElement(range.endContainer)) return null;
 
+  const start = getInnerTextOffsetForDomPosition(element, range.startContainer, range.startOffset);
+  const end = getInnerTextOffsetForDomPosition(element, range.endContainer, range.endOffset);
+  if (!isFiniteNumber(start) || !isFiniteNumber(end)) return null;
+
+  return { start, end };
+};
+
+const getNodePath = (root, node) => {
+  if (node === root) return [];
+  if (!node || !root.contains(node)) return null;
+
+  const path = [];
+  let current = node;
+  while (current && current !== root) {
+    const parent = current.parentNode;
+    if (!parent) return null;
+    path.unshift(Array.prototype.indexOf.call(parent.childNodes, current));
+    current = parent;
+  }
+
+  return current === root ? path : null;
+};
+
+const getNodeByPath = (root, path) => {
+  let current = root;
+
+  for (const index of path) {
+    current = current?.childNodes?.[index] ?? null;
+    if (!current) return null;
+  }
+
+  return current;
+};
+
+const getElementText = (element) => element?.innerText ?? element?.textContent ?? '';
+
+const getInnerTextOffsetForDomPosition = (element, container, offset) => {
+  if (!element || !container || typeof document === 'undefined' || typeof window === 'undefined') return null;
+
+  const path = getNodePath(element, container);
+  if (!path) return null;
+
+  const nodeTypes = window.Node;
+  if (!nodeTypes) return null;
+
+  const marker = `\uE000presenter-caret-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}\uE001`;
+  const clone = element.cloneNode(true);
+  const cloneContainer = getNodeByPath(clone, path);
+  if (!cloneContainer) return null;
+
   try {
-    const startRange = range.cloneRange();
-    startRange.selectNodeContents(element);
-    startRange.setEnd(range.startContainer, range.startOffset);
+    if (cloneContainer.nodeType === nodeTypes.TEXT_NODE) {
+      const text = cloneContainer.textContent ?? '';
+      const safeOffset = Math.max(0, Math.min(text.length, getNumber(offset)));
+      cloneContainer.textContent = `${text.slice(0, safeOffset)}${marker}${text.slice(safeOffset)}`;
+    } else {
+      const childOffset = Math.max(0, Math.min(cloneContainer.childNodes?.length ?? 0, getNumber(offset)));
+      cloneContainer.insertBefore(document.createTextNode(marker), cloneContainer.childNodes?.[childOffset] ?? null);
+    }
 
-    const endRange = range.cloneRange();
-    endRange.selectNodeContents(element);
-    endRange.setEnd(range.endContainer, range.endOffset);
+    clone.setAttribute('aria-hidden', 'true');
+    clone.setAttribute('tabindex', '-1');
+    clone.style.position = 'fixed';
+    clone.style.left = '-10000px';
+    clone.style.top = '0';
+    clone.style.visibility = 'hidden';
+    clone.style.pointerEvents = 'none';
 
-    return {
-      start: startRange.toString().length,
-      end: endRange.toString().length
-    };
+    if (document.body) {
+      document.body.appendChild(clone);
+    }
+
+    const text = getElementText(clone);
+    const markerIndex = text.indexOf(marker);
+    clone.remove();
+
+    return markerIndex >= 0 ? markerIndex : null;
   } catch {
+    clone.remove?.();
     return null;
   }
 };
@@ -104,30 +169,67 @@ const findTextPosition = (root, offset) => {
   if (!root || typeof document === 'undefined' || typeof window === 'undefined') return null;
 
   const nodeFilter = window.NodeFilter;
-  if (!nodeFilter) return { node: root, offset: 0 };
+  const nodeTypes = window.Node;
+  if (!nodeFilter || !nodeTypes) return { node: root, offset: 0 };
 
-  const targetOffset = isFiniteNumber(offset) ? Math.max(0, offset) : 0;
-  const walker = document.createTreeWalker(root, nodeFilter.SHOW_TEXT);
-  let remaining = targetOffset;
-  let lastTextNode = null;
+  const targetOffset = Math.max(0, Math.min(getElementText(root).length, isFiniteNumber(offset) ? offset : 0));
+  const candidates = [];
+  const seenCandidates = new Set();
 
-  while (walker.nextNode()) {
-    const node = walker.currentNode;
-    const length = node.textContent?.length ?? 0;
-    lastTextNode = node;
+  const addCandidate = (node, candidateOffset) => {
+    if (!node) return;
+    const path = getNodePath(root, node);
+    if (!path) return;
 
-    if (remaining <= length) {
-      return { node, offset: remaining };
+    const key = `${path.join('.')}:${candidateOffset}`;
+    if (seenCandidates.has(key)) return;
+
+    seenCandidates.add(key);
+    candidates.push({ node, offset: candidateOffset });
+  };
+
+  const addElementBoundaries = (element) => {
+    const childCount = element.childNodes?.length ?? 0;
+    for (let index = 0; index <= childCount; index += 1) {
+      addCandidate(element, index);
     }
+  };
 
-    remaining -= length;
+  addElementBoundaries(root);
+
+  const elementWalker = document.createTreeWalker(root, nodeFilter.SHOW_ELEMENT);
+  while (elementWalker.nextNode()) {
+    const node = elementWalker.currentNode;
+    if (node !== root) {
+      addElementBoundaries(node);
+    }
   }
 
-  if (lastTextNode) {
-    return { node: lastTextNode, offset: lastTextNode.textContent?.length ?? 0 };
+  const textWalker = document.createTreeWalker(root, nodeFilter.SHOW_TEXT);
+  while (textWalker.nextNode()) {
+    const node = textWalker.currentNode;
+    const length = node.textContent?.length ?? 0;
+    for (let index = 0; index <= length; index += 1) {
+      addCandidate(node, index);
+    }
   }
 
-  return { node: root, offset: root.childNodes?.length ?? 0 };
+  let fallback = { node: root, offset: root.childNodes?.length ?? 0 };
+  let fallbackDistance = Number.POSITIVE_INFINITY;
+
+  for (const candidate of candidates) {
+    const measuredOffset = getInnerTextOffsetForDomPosition(root, candidate.node, candidate.offset);
+    if (!isFiniteNumber(measuredOffset)) continue;
+    if (measuredOffset === targetOffset) return candidate;
+
+    const distance = Math.abs(measuredOffset - targetOffset);
+    if (distance < fallbackDistance) {
+      fallback = candidate;
+      fallbackDistance = distance;
+    }
+  }
+
+  return fallback;
 };
 
 const moveCaretToOffset = (element, offset) => {
