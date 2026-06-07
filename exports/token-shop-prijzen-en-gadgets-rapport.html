@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HELIX Tokenshop - ideeen voor zichtbare prijzen en gadgets</title>
+  <style>
+    :root {
+      --ink: #142033;
+      --muted: #607089;
+      --line: #d9e2ee;
+      --paper: #fbfcff;
+      --panel: #ffffff;
+      --soft: #eef5ff;
+      --mint: #dff8ed;
+      --gold: #ffcf5a;
+      --blue: #2563eb;
+      --green: #14956d;
+      --rose: #e44f70;
+      --violet: #7c3aed;
+      --shadow: 0 18px 48px rgba(20, 32, 51, .12);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
+
+    img, svg { max-width: 100%; display: block; }
+
+    a { color: var(--blue); }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 28px;
+      align-items: center;
+      padding: 34px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, #ffffff 0%, #eef5ff 58%, #fff7df 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { line-height: 1.12; margin: 0; }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(34px, 5vw, 62px);
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 44px;
+      font-size: clamp(25px, 3vw, 38px);
+    }
+
+    h3 {
+      margin-top: 0;
+      font-size: 22px;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .72);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .coin {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: #5b3b00;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: inset 0 -2px rgba(91, 59, 0, .18);
+    }
+
+    .section-intro {
+      max-width: 840px;
+      margin: 12px 0 24px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(20, 32, 51, .06);
+      overflow: hidden;
+    }
+
+    .card-body { padding: 18px; }
+
+    .card p, .card ul { color: var(--muted); }
+    .card ul { padding-left: 19px; }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 27px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: #1f4f92;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .price {
+      color: #7a4b00;
+      font-weight: 900;
+    }
+
+    .visual {
+      min-height: 210px;
+      background: #f4f8ff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .note {
+      border-left: 5px solid var(--green);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      background: var(--mint);
+      color: #114637;
+      font-weight: 700;
+    }
+
+    .warning {
+      border-left-color: var(--rose);
+      background: #fff0f3;
+      color: #743143;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(20, 32, 51, .05);
+    }
+
+    th, td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #edf4ff;
+      color: #20355a;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .scenario {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .mini-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mini strong { color: var(--ink); display: block; margin-bottom: 3px; }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      margin-bottom: 12px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .footer {
+      margin-top: 48px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .avatar-card {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      padding: 20px;
+    }
+
+    .avatar-preview {
+      width: min(100%, 320px);
+      border: 1px solid #bfd0e7;
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 18px 40px rgba(20, 32, 51, .15);
+      overflow: hidden;
+    }
+
+    .profile-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      background: #142033;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .profile-body {
+      padding: 16px;
+      background: #f5f9ff;
+    }
+
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .portrait {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 82px;
+      height: 82px;
+      border: 5px solid var(--gold);
+      border-radius: 50%;
+      background: #bfe3ff;
+      color: #234;
+      font-size: 42px;
+      font-weight: 900;
+    }
+
+    .portrait::after {
+      content: "LVL";
+      position: absolute;
+      right: -8px;
+      bottom: 4px;
+      padding: 3px 5px;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: var(--green);
+      color: #fff;
+      font-size: 10px;
+      letter-spacing: .04em;
+    }
+
+    .shop-shelf {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .shop-tile {
+      display: grid;
+      place-items: center;
+      min-height: 76px;
+      border: 1px solid #c8d7ea;
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      font-weight: 900;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .badge-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .shop-badge {
+      display: grid;
+      place-items: center;
+      height: 54px;
+      border-radius: 50%;
+      color: #fff;
+      font-weight: 900;
+      box-shadow: inset 0 -5px rgba(0, 0, 0, .14);
+    }
+
+    .shop-badge:nth-child(1) { background: var(--blue); }
+    .shop-badge:nth-child(2) { background: var(--green); }
+    .shop-badge:nth-child(3) { background: var(--rose); }
+    .shop-badge:nth-child(4) { background: var(--violet); }
+    .shop-badge:nth-child(5) { background: #f59e0b; }
+
+    @media (max-width: 900px) {
+      .hero, .scenario { grid-template-columns: 1fr; }
+      .grid-2, .grid-3, .grid-4, .roadmap { grid-template-columns: 1fr; }
+      .hero { padding: 22px; }
+      .mini-list { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 18px; }
+      .card, table, .hero { box-shadow: none; }
+      .hero { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Adviesrapport voor HELIX</p>
+        <h1>Tokenshop-prijzen die leerlingen echt willen tonen</h1>
+        <p class="lead">
+          Ideeen voor zichtbare, veilige en schaalbare beloningen: avatars, profielversieringen,
+          shopbadges, mini-collectibles en klaservaringen die inzet belonen zonder het leren oneerlijk te maken.
+        </p>
+        <div class="hero-actions">
+          <span class="pill"><span class="coin">H</span> Richting: cosmetisch en zichtbaar</span>
+          <span class="pill">VMBO 1-2 vriendelijk</span>
+          <span class="pill">Past op huidige tokenShopItems</span>
+        </div>
+      </div>
+
+      <div class="avatar-card">
+        <div class="avatar-preview" aria-label="Voorbeeld leerlingprofiel met gekochte avatar-items">
+          <div class="profile-bar">
+            <span>Mijn HELIX-profiel</span>
+            <span><span class="coin">H</span> 340</span>
+          </div>
+          <div class="profile-body">
+            <div class="profile-row">
+              <div class="portrait">K</div>
+              <div>
+                <strong>Kevin uit 1B</strong>
+                <div class="tag-row">
+                  <span class="tag">Gouden avatarframe</span>
+                  <span class="tag">Data Detective-pin</span>
+                </div>
+              </div>
+            </div>
+            <div class="badge-row" aria-label="Gekochte zichtbare shopbadges">
+              <div class="shop-badge">AI</div>
+              <div class="shop-badge">XLS</div>
+              <div class="shop-badge">SAFE</div>
+              <div class="shop-badge">CODE</div>
+              <div class="shop-badge">TOP</div>
+            </div>
+            <div class="shop-shelf">
+              <div class="shop-tile">Avatar<br>skin</div>
+              <div class="shop-tile">Profiel<br>banner</div>
+              <div class="shop-tile">Victory<br>effect</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>1. Kernadvies</h2>
+      <p class="section-intro">
+        Maak de tokenshop vooral een plek voor zelfexpressie. Leerlingen sparen harder als hun aankoop zichtbaar is
+        in de header, bij hun avatar, in hun profiel, in de klaslijst of na het afronden van een opdracht.
+      </p>
+      <div class="grid grid-3">
+        <article class="card">
+          <div class="visual">
+            <svg viewBox="0 0 420 220" role="img" aria-label="Avatarwinkel met verschillende avatars">
+              <rect width="420" height="220" fill="#eff6ff"/>
+              <rect x="24" y="30" width="368" height="154" rx="8" fill="#fff" stroke="#c9d8ec"/>
+              <circle cx="94" cy="105" r="42" fill="#bfdbfe" stroke="#f6c343" stroke-width="7"/>
+              <circle cx="94" cy="98" r="16" fill="#1f2937"/>
+              <path d="M64 136c17-25 53-25 70 0" fill="#2563eb"/>
+              <circle cx="210" cy="105" r="42" fill="#bbf7d0" stroke="#34d399" stroke-width="7"/>
+              <rect x="186" y="86" width="48" height="44" rx="10" fill="#0f172a"/>
+              <circle cx="326" cy="105" r="42" fill="#fde68a" stroke="#e44f70" stroke-width="7"/>
+              <path d="M302 93h52l-10 46h-34z" fill="#7c3aed"/>
+              <text x="28" y="204" fill="#607089" font-size="14" font-weight="700">Avatar skins: zichtbaar bij profiel, header en feedbackmomenten</text>
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3>Start met avatar-uiterlijk</h3>
+            <p>Dit is de meest directe beloning: een leerling ziet meteen wat hij of zij gekocht heeft.</p>
+            <div class="tag-row">
+              <span class="tag">MVP-ready</span>
+              <span class="tag">Zeer zichtbaar</span>
+              <span class="tag">Herhaalbaar</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="visual">
+            <svg viewBox="0 0 420 220" role="img" aria-label="Shopbadges naast een leerlingnaam">
+              <rect width="420" height="220" fill="#f7fee7"/>
+              <rect x="36" y="42" width="348" height="136" rx="8" fill="#fff" stroke="#c9d8ec"/>
+              <text x="58" y="82" fill="#142033" font-size="24" font-weight="800">Samira</text>
+              <text x="58" y="110" fill="#607089" font-size="14" font-weight="700">1A - Digitale vaardigheden</text>
+              <circle cx="72" cy="146" r="22" fill="#2563eb"/><text x="63" y="153" fill="#fff" font-size="14" font-weight="900">AI</text>
+              <circle cx="126" cy="146" r="22" fill="#14956d"/><text x="116" y="153" fill="#fff" font-size="14" font-weight="900">XL</text>
+              <circle cx="180" cy="146" r="22" fill="#e44f70"/><text x="166" y="153" fill="#fff" font-size="13" font-weight="900">VIP</text>
+              <rect x="238" y="126" width="110" height="40" rx="20" fill="#ffcf5a"/>
+              <text x="257" y="152" fill="#5b3b00" font-size="14" font-weight="900">340 tokens</text>
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3>Noem ze shopbadges</h3>
+            <p>Houd ze gescheiden van leerbadges. Een shopbadge is cosmetisch, een hoofdstukbadge is bewijs.</p>
+            <div class="tag-row">
+              <span class="tag">Heldere taal</span>
+              <span class="tag">Geen verwarring</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="visual">
+            <svg viewBox="0 0 420 220" role="img" aria-label="Tokenshop met betaalbare en dure items">
+              <rect width="420" height="220" fill="#fff7ed"/>
+              <rect x="34" y="30" width="110" height="150" rx="8" fill="#fff" stroke="#c9d8ec"/>
+              <rect x="160" y="30" width="110" height="150" rx="8" fill="#fff" stroke="#c9d8ec"/>
+              <rect x="286" y="30" width="80" height="150" rx="8" fill="#fff" stroke="#c9d8ec"/>
+              <circle cx="89" cy="80" r="28" fill="#bfdbfe"/>
+              <rect x="58" y="123" width="64" height="22" rx="11" fill="#ffcf5a"/>
+              <text x="69" y="139" fill="#5b3b00" font-size="12" font-weight="900">50</text>
+              <path d="M204 60h50v50h-50z" fill="#7c3aed"/>
+              <rect x="190" y="123" width="78" height="22" rx="11" fill="#ffcf5a"/>
+              <text x="207" y="139" fill="#5b3b00" font-size="12" font-weight="900">150</text>
+              <polygon points="326,50 356,105 296,105" fill="#14956d"/>
+              <rect x="296" y="123" width="60" height="22" rx="11" fill="#ffcf5a"/>
+              <text x="310" y="139" fill="#5b3b00" font-size="12" font-weight="900">500</text>
+            </svg>
+          </div>
+          <div class="card-body">
+            <h3>Werk met prijsladders</h3>
+            <p>Geef snelle aankopen voor vroege motivatie en dure prestige-items voor spaargedrag.</p>
+            <div class="tag-row">
+              <span class="tag">25-50</span>
+              <span class="tag">100-200</span>
+              <span class="tag">500+</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. Prijscategorieen voor de shop</h2>
+      <p class="section-intro">
+        Uitgangspunt uit de Digitale Vaardigheden-docs: ongeveer 100 tokens per gewone les. Een leerling moet dus
+        na een les al iets kleins kunnen kopen, maar ook meerdere weken kunnen sparen voor iets bijzonders.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Laag</th>
+            <th>Prijs</th>
+            <th>Doel</th>
+            <th>Voorbeelden</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Micro-beloning</td>
+            <td class="price">25-50 tokens</td>
+            <td>Snel succes na korte inzet.</td>
+            <td>Sticker voor profiel, kleine shopbadge, een kleuraccent voor avatarframe, tijdelijke confetti.</td>
+          </tr>
+          <tr>
+            <td>Standaard gadget</td>
+            <td class="price">75-150 tokens</td>
+            <td>Na 1 of 2 lessen iets zichtbaar kopen.</td>
+            <td>Avatar-skin, naamplaatje, profielachtergrond, emote voor afrondingsscherm.</td>
+          </tr>
+          <tr>
+            <td>Premium item</td>
+            <td class="price">200-350 tokens</td>
+            <td>Leerlingen leren sparen voor een opvallender item.</td>
+            <td>Geanimeerde rand, seizoensavatar, thema-banner, speciale status op klasoverzicht.</td>
+          </tr>
+          <tr>
+            <td>Prestige item</td>
+            <td class="price">500-900 tokens</td>
+            <td>Lange termijn motivatie zonder leerinhoud af te sluiten.</td>
+            <td>Legendary profielset, collectiepack, maandtitel, persoonlijke avatar-combinatie.</td>
+          </tr>
+          <tr>
+            <td>Sociale klasbeloning</td>
+            <td class="price">1000+ tokens samen</td>
+            <td>Groepsmotivatie en samenwerking.</td>
+            <td>Klassethema voor een week, gezamenlijke digitale trofee, klasbanner in dashboard.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>3. Concrete shopideeen</h2>
+      <p class="section-intro">
+        Hieronder staan beloningen die aansluiten op HELIX. Per item staat wat de leerling ermee kan en hoe zichtbaar
+        het item is in de leeromgeving.
+      </p>
+
+      <div class="grid grid-2">
+        <article class="card">
+          <div class="card-body">
+            <h3>Avatar skins</h3>
+            <p><strong>Wat koopt de leerling?</strong> Een andere avatarstijl: robot, astronaut, data-detective, Microsoft-maker, AI-verkenner of veilige-netwerker.</p>
+            <p><strong>Waar zichtbaar?</strong> Header, profiel, klaslijst, opdrachtfeedback en tokenshop.</p>
+            <p><strong>Voorbeeldprijzen:</strong> basis skin <span class="price">100</span>, speciale skin <span class="price">250</span>, limited skin <span class="price">600</span>.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Avatar frames</h3>
+            <p><strong>Wat koopt de leerling?</strong> Een rand rond de avatar: goud, neonblauw, veilig-groen, data-grid, glitch, sterrennacht.</p>
+            <p><strong>Waar zichtbaar?</strong> Vooral naast naam en avatar. Ideaal voor snelle herkenbaarheid.</p>
+            <p><strong>Voorbeeldprijzen:</strong> kleurframe <span class="price">50</span>, patroonframe <span class="price">125</span>, animated frame <span class="price">350</span>.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Shopbadges en pins</h3>
+            <p><strong>Wat koopt de leerling?</strong> Cosmetische pins zoals "AI Fan", "Excel Ninja", "Veilig Online", "Debug Held" of "Bronnenbaas".</p>
+            <p><strong>Waar zichtbaar?</strong> Profiel en compact naast de naam, maximaal 3 tegelijk actief.</p>
+            <p><strong>Let op:</strong> noem dit shopbadges of pins, niet hoofdstukbadges. Hoofdstukbadges blijven bewijs van leren.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Naamplaatjes en titels</h3>
+            <p><strong>Wat koopt de leerling?</strong> Een korte titel onder de naam: "Bestandenbaas", "Slimme Starter", "Bron Detective", "Code Checker".</p>
+            <p><strong>Waar zichtbaar?</strong> Profielkaart, klasoverzicht en eventueel bij ingeleverd werk.</p>
+            <p><strong>Voorbeeldprijzen:</strong> gewone titel <span class="price">75</span>, speciale titel <span class="price">200</span>.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Profielachtergronden</h3>
+            <p><strong>Wat koopt de leerling?</strong> Een banner of achtergrond voor het profiel: cloud-schooltas, mediawijs-studio, data-dashboard, AI-lab.</p>
+            <p><strong>Waar zichtbaar?</strong> Profielpagina en eventueel in een kleine preview op de tokenshop.</p>
+            <p><strong>Waarom sterk?</strong> Leerlingen voelen eigenaarschap over hun digitale plek.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Victory effects</h3>
+            <p><strong>Wat koopt de leerling?</strong> Een effect na afronden van een opdracht: confetti, muntregen, scanlijn, sterrensprong, rustige glow.</p>
+            <p><strong>Waar zichtbaar?</strong> Alleen op het eigen scherm na succesmomenten.</p>
+            <p><strong>Didactisch veilig:</strong> leuk, maar niet storend voor klasgenoten. Zet animatie altijd kort en subtiel.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Collectiekaarten</h3>
+            <p><strong>Wat koopt de leerling?</strong> Digitale kaartjes rond thema's: phishing-signalen, Excel-formules, AI-begrippen, broncheck-tips.</p>
+            <p><strong>Waar zichtbaar?</strong> In een verzamelalbum. Sommige kaarten zijn puur leuk, andere herhalen leerstof kort.</p>
+            <p><strong>Voorbeeld:</strong> "Sterke wachtwoorden kaart 3/6" als collectible met mini-tip.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Seizoensitems</h3>
+            <p><strong>Wat koopt de leerling?</strong> Tijdelijke items rond toetsweek, schoolstart, mediawijs-week, kerst, open dag of projectweek.</p>
+            <p><strong>Waar zichtbaar?</strong> Zelfde plekken als avatars en pins.</p>
+            <p><strong>Waarom sterk?</strong> Schaarste werkt motiverend, zolang items later niet verplicht voelen.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Klaspot</h3>
+            <p><strong>Wat koopt de klas?</strong> Leerlingen kunnen tokens doneren aan een klasdoel: klasbanner, digitale trofee of weekthema.</p>
+            <p><strong>Waar zichtbaar?</strong> Klasdashboard met voortgangsbalk.</p>
+            <p><strong>Let op:</strong> doneren moet vrijwillig zijn. Geen leerling mag druk voelen om tokens af te staan.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-body">
+            <h3>Docent-goedgekeurde privileges</h3>
+            <p><strong>Wat koopt de leerling?</strong> Kleine klasprivileges: eigen werkplek kiezen, digibordkleur kiezen, startervraag kiezen, muziekloos rustig werkmoment kiezen.</p>
+            <p><strong>Waar zichtbaar?</strong> Als aanvraag in admin/docentdashboard, niet automatisch.</p>
+            <p><strong>Advies:</strong> alleen gebruiken als schoolregels dit toestaan en de docent controle houdt.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>4. Voorbeeld van leerlingervaring</h2>
+      <div class="card scenario">
+        <div class="card-body">
+          <svg viewBox="0 0 220 220" role="img" aria-label="Leerling koopt avatar en pins">
+            <rect width="220" height="220" rx="8" fill="#eef5ff"/>
+            <circle cx="110" cy="88" r="50" fill="#bfdbfe" stroke="#ffcf5a" stroke-width="8"/>
+            <circle cx="92" cy="78" r="7" fill="#142033"/>
+            <circle cx="120" cy="78" r="7" fill="#142033"/>
+            <path d="M85 106c18 17 42 17 58 0" fill="none" stroke="#142033" stroke-width="6" stroke-linecap="round"/>
+            <rect x="42" y="150" width="144" height="38" rx="19" fill="#142033"/>
+            <text x="64" y="174" fill="#fff" font-size="14" font-weight="900">Nieuwe look actief</text>
+          </svg>
+        </div>
+        <div class="card-body">
+          <h3>Van sparen naar zichtbaar eigenaarschap</h3>
+          <div class="mini-list">
+            <div class="mini"><strong>1. Werken</strong> De leerling verdient tokens via lesblokken, quizzen, praktijkbewijzen en challenges.</div>
+            <div class="mini"><strong>2. Sparen</strong> In de header ziet de leerling het actuele saldo en een link naar de shop.</div>
+            <div class="mini"><strong>3. Kopen</strong> De leerling koopt een avatarframe of shopbadge. De aankoop komt in `tokenPurchases`.</div>
+            <div class="mini"><strong>4. Tonen</strong> De leerling activeert maximaal 1 avatar, 1 frame, 1 banner en 3 pins tegelijk.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. Welke items passen in de huidige shop?</h2>
+      <p class="section-intro">
+        De huidige shop kan al titel, beschrijving, prijs, sortering, zichtbaarheid en afbeelding opslaan. Daarmee kun je
+        direct een catalogus maken. Voor echt zichtbaar dragen is later extra entitlement-data nodig.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Itemtype</th>
+            <th>Kan nu als catalogusitem?</th>
+            <th>Extra nodig voor zichtbaar gebruik</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Avatar-skin</td>
+            <td>Ja, met afbeelding en prijs.</td>
+            <td>Veld `itemType: avatarSkin`, asset-url, actieve keuze per leerling.</td>
+          </tr>
+          <tr>
+            <td>Avatarframe</td>
+            <td>Ja.</td>
+            <td>CSS-token of frame-asset, `activeFrameItemId` op leerlingprofiel.</td>
+          </tr>
+          <tr>
+            <td>Shopbadge/pin</td>
+            <td>Ja.</td>
+            <td>Icon/label, max-aantal actieve pins, plek in profiel/header.</td>
+          </tr>
+          <tr>
+            <td>Profielbanner</td>
+            <td>Ja.</td>
+            <td>Banner-afbeelding, preview-formaat, actieve bannerkeuze.</td>
+          </tr>
+          <tr>
+            <td>Victory effect</td>
+            <td>Ja, als item.</td>
+            <td>Korte animatieconfiguratie en aan/uit-instelling.</td>
+          </tr>
+          <tr>
+            <td>Klaspot</td>
+            <td>Nee, dit is een apart mechanisme.</td>
+            <td>Donatie-transacties, doelbedrag, klasdashboard en anti-druk regels.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. Adminbeheer dat je later wilt toevoegen</h2>
+      <div class="grid grid-3">
+        <div class="card"><div class="card-body"><h3>Itemtype</h3><p>Laat admin kiezen uit avatar, frame, pin, banner, effect, collectible of klasbeloning. Dat maakt filtering en activatie eenvoudiger.</p></div></div>
+        <div class="card"><div class="card-body"><h3>Zichtbaarheid</h3><p>Velden voor actief, verborgen, limited edition, beschikbaar vanaf/tot, max 1 aankoop of herhaalbaar.</p></div></div>
+        <div class="card"><div class="card-body"><h3>Assetcontrole</h3><p>Upload aparte afbeeldingen voor shopkaart, profielpreview en klein icoon. Zo blijft de UI scherp en snel.</p></div></div>
+        <div class="card"><div class="card-body"><h3>Voorraad</h3><p>Optioneel: maximaal aantal aankopen per item. Handig voor limited items, minder nodig voor normale cosmetische items.</p></div></div>
+        <div class="card"><div class="card-body"><h3>Leerlinguitrusting</h3><p>Admin kan zien wat een leerling bezit en welk item actief gedragen wordt. Eventueel misplaatste items kunnen worden ingetrokken.</p></div></div>
+        <div class="card"><div class="card-body"><h3>Balansbewaking</h3><p>Dashboard met duurste items, meest gekochte items, gemiddelde saldo's en leerlingen die nooit iets kopen.</p></div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>7. Motivatie zonder valkuilen</h2>
+      <div class="grid grid-2">
+        <div class="note">
+          Goed: beloningen die status, plezier en eigenaarschap geven zonder leerstof af te sluiten. Laat leerlingen kiezen wat bij hen past en maak kleine aankopen snel bereikbaar.
+        </div>
+        <div class="note warning">
+          Vermijd: betalen met tokens voor hogere cijfers, extra kansen die leerresultaten beinvloeden, toegang tot verplichte lesstof, publieke ranglijsten met schaamte-effect of items die leerlingen buitensluiten.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>8. Aanbevolen MVP-route</h2>
+      <div class="roadmap">
+        <div class="step">
+          <h3>Catalogus vullen</h3>
+          <p>Maak 20 shopitems: 5 skins, 5 frames, 5 pins, 3 banners, 2 victory effects.</p>
+        </div>
+        <div class="step">
+          <h3>Aankopen tonen</h3>
+          <p>Voeg een "Mijn spullen"-paneel toe waar leerlingen gekochte items zien.</p>
+        </div>
+        <div class="step">
+          <h3>Actief kiezen</h3>
+          <p>Laat leerlingen 1 avatar, 1 frame, 1 banner en 3 pins tegelijk activeren.</p>
+        </div>
+        <div class="step">
+          <h3>Overal zichtbaar</h3>
+          <p>Toon actieve items in header, profiel, klaslijst en opdrachtfeedback.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>9. Eerste voorbeeldcatalogus</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Naam</th>
+            <th>Type</th>
+            <th>Prijs</th>
+            <th>Beschrijving voor leerling</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Gouden Starterframe</td><td>Avatarframe</td><td class="price">50</td><td>Geef je profielfoto een gouden rand.</td></tr>
+          <tr><td>AI Verkenner</td><td>Avatar-skin</td><td class="price">120</td><td>Een avatarlook voor leerlingen die slim met AI leren werken.</td></tr>
+          <tr><td>Excel Ninja Pin</td><td>Shopbadge/pin</td><td class="price">75</td><td>Toon dat jij formules en tabellen aandurft.</td></tr>
+          <tr><td>Mediawijs Schild</td><td>Shopbadge/pin</td><td class="price">90</td><td>Een zichtbaar schild voor veilig online gedrag.</td></tr>
+          <tr><td>Data Dashboard Banner</td><td>Profielbanner</td><td class="price">180</td><td>Maak je profielachtergrond een mini-dashboard.</td></tr>
+          <tr><td>Muntregen</td><td>Victory effect</td><td class="price">220</td><td>Een korte muntanimatie wanneer je een opdracht afrondt.</td></tr>
+          <tr><td>Debug Held Titel</td><td>Naamplaatje</td><td class="price">150</td><td>Laat onder je naam zien dat jij fouten durft op te lossen.</td></tr>
+          <tr><td>Legendary HELIX Set</td><td>Bundel</td><td class="price">750</td><td>Frame, banner en pin in dezelfde stijl voor spaarders.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer class="footer">
+      <strong>Samenvatting:</strong> begin met cosmetische zichtbaarheid. Gebruik de bestaande tokenshop voor catalogus en aankoop,
+      voeg daarna een lightweight entitlement-laag toe waarmee leerlingen gekochte items kunnen activeren. Bewaar het onderscheid:
+      leerbadges zijn bewijs, shopbadges zijn expressie.
+    </footer>
+  </main>
+</body>
+</html>
