@@ -1,6 +1,6 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 3 juni 2026
+Laatst bijgewerkt: 7 juni 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
 
@@ -8,26 +8,29 @@ Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees
 
 Als een nieuwe Codex-chat dit document leest, moet die vooral dit weten:
 
-- Werk op branch `feature/cms-platform`, tenzij de gebruiker iets anders zegt.
+- Werk op branch `codex/digitale-vaardigheden-seed`, tenzij de gebruiker iets anders zegt.
 - Firebase/appnaam is visueel HELIX, maar Firebase project/config kan nog `pythagoras-eoa` heten.
-- Dev server voor dit project draait doorgaans op `http://localhost:5173/`. Poort `5174` draaide eerder een ander project.
-- Er is een GitHub-backupbranch gemaakt voor de Digidocent-leerflow: `backup/digidocent-before-learning-flow`.
+- Dev server voor dit project draait doorgaans op `http://localhost:5173/` of `http://127.0.0.1:5173/`. Poort `5174` draaide eerder een ander project.
+- Er is een GitHub-backupbranch voor de meest recente lesstof-bouwen-verbeteringen: `backup/voor-lesstof-bouwen-verbeteringen-2026-06-06`. Eerdere backup: `backup/digidocent-before-learning-flow`.
 - Recente hoofdflow: de leerlingroute is uitgebreid met Digidocent, AI/open-antwoordbeoordeling, voortgangsblokjes, herstelopdrachten/challenge en leerling-foutmeldingen.
+- Recente CMS-flow: contentblocks hebben nu bron-/reviewflags, readiness, publicatie-overzicht, veilige public snapshots en zichtbaar bewerkmenu in de navigatieboom.
+- Recente NotebookLM-flow: slidedeckpackages krijgen bronmanifest, generatie-/reviewmetadata en kunnen na upload/review terug synchroniseren naar het geopende CMS-slidedeckblok.
 - Adminnavigatie is nu: `Lesstof`, `Voortgang`, `Leerlingen`, `Meldingen`, `Spellen`, `Presenter`, `Instellingen`. De oude hoofdknop `Beheer` en de oude Admin Hub zijn verwijderd.
-- Bekende ongerelateerde untracked items kunnen in gitstatus staan: `.superpowers/`, `exports/helix-button-gradient-options.html`, `exports/presenter-smoke/` en `exports/presenter-toolbar-style-options.html`. Niet automatisch stagen of verwijderen.
+- Bekende ongerelateerde untracked items kunnen in gitstatus staan, bijvoorbeeld losse screenshots in `exports/`. Niet automatisch stagen of verwijderen.
 - De gebruiker wil vaak eerst bevraagd worden bij grote productkeuzes, maar gaf voor de huidige Digidocent- en meldingenrichting expliciet akkoord.
-- Volledige lint kan bestaande schuld raken. Gebruik gericht `npx eslint <aangepaste bestanden>`, gerichte `node --test ...` en `npm run build`.
+- Volledige lint kan bestaande repo-brede schuld raken. Gebruik gericht `npx eslint <aangepaste bestanden>`, gerichte `node --test ...` en `npm run build`.
 
 Recente commits die een nieuwe chat moet kennen:
 
-- `b16b901 feat: vervang beheer door instellingen`
-- `c51e6a7 style: stem presenter en voortgang chrome af`
-- `aafe2bc style: gebruik helix borderstijl voor headernav`
-- `76fb702 style: maak presenter lesstof import direct`
-- `92091b1 feat: voeg klasfilter toe aan voortgangsdashboard`
-- `88f38b6 fix: toon leerlingfotos in voortgang`
-- `80a247a feat: verbeter voortgangsdashboard signalen`
-- `4a06bc1 feat: voeg leerling foutmeldingen toe`
+- `9570701 fix: expose cms navigation edit actions`
+- `07bed60 feat: sync uploaded slidedecks to cms blocks`
+- `11eafe5 fix: explain cms archive permission failures`
+- `1c8f71a feat: add publication overview for lesson blocks`
+- `801488c fix: use Dutch question status labels`
+- `cdbc25c feat: gate content blocks with source review flags`
+- `75f8503 fix: normalize duplicate question answer ids`
+- `f447659 feat: require closing check for paragraph readiness`
+- `780f797 fix: explain CMS write permission errors`
 
 ## Productvisie
 
@@ -53,6 +56,10 @@ De inhoudelijke startcontext is VMBO 1-2 wiskunde rond Pythagoras, maar de archi
 - Belangrijke routes staan in `src/App.jsx`.
 - Adminnavigatie staat in `src/lib/adminWorkspaceNav.js`.
 - Lesbloktypes staan in `src/lib/contentBlockUtils.js`.
+- Contentblock-readiness staat in `src/lib/contentReadiness.js`.
+- Paragraafmetadata staat in `src/lib/paragraphMetadata.js`.
+- Publieke leerlingweergaves staan in `src/lib/publicContentBlockView.js` en `src/lib/publicQuestionView.js`.
+- Slidedeck-review en CMS-sync staan in `src/lib/slidedeckReview.js` en `src/lib/slidedeckCmsSync.js`.
 - Vraagtypes staan in `src/lib/questionTypeRegistry.js`.
 - Presenter-code staat hoofdzakelijk in `src/components/presenter/` en `src/lib/presenter*.js`.
 - Digidocent/leerlingroute staat hoofdzakelijk in `src/pages/StudentLessonPage.jsx`, `src/components/slides/AITutorChat.jsx` en `src/lib/aiTutor*.js`.
@@ -71,6 +78,8 @@ Belangrijk:
 - CMS gebruikt een navigatieboom en lesroute-builder.
 - Contentblocks zijn de centrale waarheid voor leerlingroutes en digibordpresentatie.
 - Vraag is geen losse hoofdflow, maar een lesbloktype binnen een bredere lesroute.
+- Publiceren is nu gekoppeld aan readiness: blokken moeten inhoudelijk compleet zijn, bron-/AI-review respecteren en waar nodig een docentbesluit of override-reden hebben.
+- Paragrafen kunnen leerdoelen, bewijsproduct, SLO-koppeling, doelgroep, geschatte tijd en reviewstatus bewaren.
 
 ### Voortgang
 
@@ -178,9 +187,9 @@ Huidig:
 
 Presenter is de nieuwe digibord-first werkbordmodule, vergelijkbaar met Prowise Presenter of SMART board software, maar in HELIX-stijl en later gekoppeld aan lesroutes.
 
-Status per 3 juni 2026:
+Status per 7 juni 2026:
 
-- Presenter V1a Core is gebouwd op branch `feature/cms-platform`.
+- Presenter V1a Core is gebouwd en blijft onderdeel van de huidige HELIX-basis.
 - Route bestaat op `/admin/presenter`.
 - Eigen adminnavigatieknop `Presenter` bestaat.
 - Werkbalk en bovenrand zijn visueel gelijkgetrokken met de zachte HELIX-toolbarstijl.
@@ -230,10 +239,12 @@ Huidige contentblocktypes:
 1. Theorie
 2. Voorbeeld
 3. Vraag
-4. Media
-5. Samenvatting
-6. Game
-7. Slidedeck
+4. Quiz
+5. Toets
+6. Media
+7. Samenvatting
+8. Game
+9. Slidedeck
 
 ### Theorie
 
@@ -259,6 +270,14 @@ Huidige vraagtypes:
 Vraagtypes gebruiken een uitbreidbare registry in `src/lib/questionTypeRegistry.js`.
 
 Tokenvelden bestaan alvast als metadata per vraagtype, maar het tokensysteem zelf is nog niet gebouwd. Echte tokenuitgifte moet later server-side gebeuren.
+
+### Quiz
+
+Korte controle- of oefenserie binnen een lesroute. Quizblokken gebruiken vraagachtige assessmentdata, maar zijn bedoeld als compacte tussentijdse check.
+
+### Toets
+
+Meer formele toets- of afsluitvorm binnen de lesroute. Toetsblokken worden apart getypeerd zodat later pogingbeheer, scorelogica en toetsmodus kunnen groeien zonder gewone oefenvragen te vervuilen.
 
 ### Media
 
@@ -332,15 +351,16 @@ Onder Lesstof bestaat een hybride Slidedeckcreator.
 Workflow:
 
 1. Docent vult titel/onderwerp in.
-2. Docent kiest optioneel CMS-context: vak, leerjaar, niveau, hoofdstuk, paragraaf.
-3. Docent vult leerdoelen in.
-4. Docent voegt brontekst toe.
-5. Docent uploadt of plakt afbeeldingen.
-6. Docent kiest of beheert prompttemplate.
-7. HELIX genereert bron-PDF en bewaart prompt-snapshot.
-8. Docent gebruikt bron-PDF en prompt in NotebookLM.
-9. Docent uploadt de door NotebookLM gegenereerde presentatie-PDF terug naar HELIX.
-10. CMS kan het pakket als Slidedeck-lesblok selecteren zodra `generatedDeckPdf` aanwezig is.
+2. Docent kiest optioneel CMS-context: vak, leerjaar, niveau, hoofdstuk, paragraaf en eventueel het geopende `contentBlockId`.
+3. Docent vult leerdoelen en bronmateriaal in.
+4. Docent uploadt of plakt afbeeldingen.
+5. Docent kiest of beheert prompttemplate.
+6. HELIX genereert bron-PDF en bewaart prompt-snapshot, `sourceManifest`, `generationManifest`, `sourceTagsSummary` en waar mogelijk citatie-/bronverwijzingen.
+7. Docent gebruikt bron-PDF en prompt in NotebookLM.
+8. Docent uploadt de door NotebookLM gegenereerde presentatie-PDF terug naar HELIX.
+9. Pakket gaat naar review: bron-PDF, NotebookLM-PDF, checklist, AI-suggesties en docentbesluit worden naast elkaar beoordeeld.
+10. Alleen `approved` of expliciet `teacher_decision` met notitie geldt als deck-ready voor CMS-selectie en publicatie.
+11. Als het pakket vanuit een leeg CMS-slidedeckblok is gemaakt, synchroniseert upload/review terug naar dat blok.
 
 Datakeuzes:
 
@@ -349,6 +369,9 @@ Datakeuzes:
 - PDF's en assets in Firebase Storage.
 - PDF-bestanden niet als binary in Firestore.
 - Slidedeck-lesblok verwijst naar een slidedeckpakket.
+- JSON/HTML-export blijft deel van de platformcontracten: JSON voor HELIX-inname, HTML voor snelle preview/controle.
+- Source tags blijven belangrijk: `SOURCE_BASED`, `AI_SUGGESTION`, `NEEDS_REVIEW`, `TEACHER_DECISION`.
+- Slidedeckblokken met `AI_SUGGESTION` of `NEEDS_REVIEW` mogen niet als publiceerbaar worden behandeld zonder review of docentbesluit.
 
 ## Digibord
 
@@ -357,7 +380,7 @@ Digibord is de bestaande contentblock-gebaseerde presentatielaag. Presenter is d
 Huidig:
 
 - Gebruikt gepubliceerde `contentBlocks` als bron.
-- Toont theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck digibordvriendelijker.
+- Toont theorie, voorbeeld, vraag, quiz, toets, media, samenvatting, game en slidedeck digibordvriendelijker.
 - Slidedeck-PDF kan fullscreen en slide-per-page worden gepresenteerd.
 - Media gebruikt gedeelde `MediaRenderer`.
 
@@ -604,6 +627,8 @@ Belangrijke Firestore-collecties:
 - `paragraaf`
 - `vraag`
 - `contentBlocks`
+- `publicQuestions`
+- `publicContentBlocks`
 - `voortgang`
 - `promptTemplates`
 - `slidedeckPackages`
@@ -627,11 +652,13 @@ Belangrijke Storage-paden:
 Let op:
 
 - `FIRESTORE_SCHEMA.md` is nuttig, maar deels ouder dan de daadwerkelijke services.
-- Firebase rules zijn tijdens development deels permissief/testgericht.
-- Productierijpe Firestore en Storage rules zijn nog een hardeningfase.
-- Leerlingen mogen uiteindelijk alleen eigen voortgang en toegewezen/gepubliceerde lesstof zien.
-- CMS-writes moeten uiteindelijk beperkt zijn tot admin/docent.
+- `vraag` en `contentBlocks` zijn de private CMS-bronnen voor admin/docent.
+- `publicQuestions` en `publicContentBlocks` zijn leerlingveilige snapshots voor gepubliceerde/toegewezen lesstof.
+- Studenten horen via rules alleen eigen voortgang, eigen profielbasis en gepubliceerde/toegewezen publieke snapshots te lezen.
+- CMS-writes zijn bedoeld voor admin/docent/supervisor, niet voor leerlingen.
+- Productierijpe Firestore en Storage rules blijven een hardeningfase, maar de scheiding private CMS-data versus publieke snapshots is nu de gewenste richting.
 - Tokens en leerlingaccount-aanmaak moeten server-side worden gevalideerd.
+- Backfillscript voor bestaande publieke snapshots: `scripts/backfill-public-content-snapshots.mjs` via `npm run backfill:public-content`.
 
 ## Wat Al Is Volbracht
 
@@ -657,6 +684,7 @@ Let op:
 ### CMS
 
 - CMS-shell en navigatieboom professioneler gemaakt.
+- Bewerken in de CMS-navigatieboom is zichtbaar gemaakt via een menu/actieknop; verborgen dubbelklik-acties zijn niet meer de primaire route.
 - Sidebar kan volledig worden ingeklapt.
 - Sidebar is sleepbaar breder/smaller.
 - Count-badges staan in een vaste rechterkolom en blijven op een regel.
@@ -664,9 +692,18 @@ Let op:
 - Hoofdstukbanden-stijl is toegepast voor betere UX.
 - Actieve paragraaf gebruikt lichte paarse achtergrond.
 - Lesbloktype-selector is responsief en compact.
-- Contentblock-statusbadges kunnen wisselen tussen `concept` en `published`.
+- Contentblock-statusmodel is uitgebreid naar `draft`, `needs_review`, `ready`, `published` en `archived`.
+- Readiness-checks bestaan per bloktype en tonen waarom iets nog niet publiceerbaar is.
+- Bron-/reviewflags kunnen publicatie blokkeren; `AI_SUGGESTION` en `NEEDS_REVIEW` vereisen review of een expliciet docentbesluit.
+- Admin override-redenen worden vastgelegd wanneer een docent bewust buiten automatische readiness om publiceert.
+- Publicatie-overzicht in de routebuilder laat zien welke blokken klaar zijn, welke blokkeren en wat er nog moet gebeuren.
+- Paragraafmetadata ondersteunt leerdoelen, bewijsproduct, SLO-koppeling, doelgroep, geschatte tijd en reviewstatus.
+- Lesblokstudio heeft dirty-state bescherming, lokale conceptrecovery en guardrails bij sluiten/Escape.
+- Bulkacties bestaan voor publiceren, archiveren, dupliceren, verplaatsen en toggles zoals Digidocent/math toolbox waar passend.
+- Archiveren heeft foutuitleg en herstel/undo-richting in plaats van stil falen.
+- Routetemplates bestaan voor o.a. uitleg + voorbeeld + vragen + samenvatting, NotebookLM-route, herhaalroute, toetsroute, steunroute en plusroute.
 - Lesrouteblokken hebben volgorde via omhoog/omlaag-knoppen.
-- Contentblocks voor theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck bestaan.
+- Contentblocks voor theorie, voorbeeld, vraag, quiz, toets, media, samenvatting, game en slidedeck bestaan.
 
 ### Tree En Style Verkenningen
 
@@ -704,8 +741,13 @@ Deze bestanden zijn prototypes/documentatie, geen productcode. Ze zijn bedoeld o
 - Slidedeckpackages in Firestore.
 - PDF en assets in Storage.
 - Upload van NotebookLM gegenereerde PDF bij bestaande package.
+- Bronmanifest, generatie-manifest, source tags, citaties en reviewmetadata worden bij packages bewaard.
+- Reviewflow met checklist, statuslabels en docentbesluit is toegevoegd.
+- Alleen deck-ready packages horen in CMS-selectie/publicatie gebruikt te worden.
+- Vanuit een leeg CMS-slidedeckblok kan de creator openen met paragraaf/context en `contentBlockId`.
+- Upload en review kunnen packagegegevens terug synchroniseren naar het gekoppelde CMS-slidedeckblok.
 - CMS-lesbloktype `slidedeck` toegevoegd.
-- Slidedeck selector toont alleen packages met geuploade presentatie-PDF.
+- Slidedeck selector toont alleen pakketten die inhoudelijk klaar/reviewbaar genoeg zijn voor lesgebruik.
 - Digibord kan Slidedeck-PDF fullscreen presenteren.
 
 ### Media V1
@@ -720,6 +762,8 @@ Deze bestanden zijn prototypes/documentatie, geen productcode. Ze zijn bedoeld o
 ### Leerlingroute / Preview
 
 - Gepubliceerde vraagblokken renderen in preview.
+- Preview kan concept/draft versus gepubliceerde route bewuster tonen via querymodus, zodat docenten kunnen controleren zonder per ongeluk leerlingdata te publiceren.
+- Leerlingroute hoort publieke snapshots (`publicContentBlocks`, `publicQuestions`) te gebruiken voor leerlingveilige weergave.
 - Belangrijkste vraagtypes werken in preview.
 - Controle geeft visuele goed/fout feedback.
 - Volgordevragen renderen als testweergave in plaats van leeg tekstvak.
@@ -976,10 +1020,11 @@ Focus:
 
 Nodig:
 
-- Verdere polish voor theorie, voorbeeld, vraag, media, samenvatting, game en slidedeck.
+- Verdere polish voor theorie, voorbeeld, vraag, quiz, toets, media, samenvatting, game en slidedeck.
 - Rustige empty states.
 - Mobiele layout.
 - Consistente fullscreen-ervaring.
+- Controleren dat leerlingroutes overal publieke snapshots gebruiken waar leerlingen lezen.
 
 ### 5. CMS Lesblokstudio Verfijnen
 
@@ -990,6 +1035,8 @@ Nodig:
 - Fontgrootte, fontkleur en lettertypes verder UX-polishen.
 - Mediablokstudio eenvoudiger maken.
 - Slidedeckblokstudio verder afstemmen op presentatieworkflow.
+- Readiness/publicatie-overzicht in echte docentflow browsermatig valideren.
+- Public snapshot-backfill en rules in staging/productie zorgvuldig controleren.
 
 ### 6. Leerlingbeheer Uitbreiden
 
@@ -1027,8 +1074,9 @@ Nodig:
 - Productierijpe Firestore rules.
 - Productierijpe Storage rules.
 - Geen dev-bypass in productie.
-- Leerlingrechten beperken tot eigen/toegewezen data.
+- Leerlingrechten beperken tot eigen/toegewezen data en publieke snapshots.
 - Admin/docent writes expliciet beperken.
+- Verifieren dat private `vraag`/`contentBlocks` niet direct student-readable zijn.
 
 ### 10. Documentatie En Schema Opschonen
 
@@ -1066,13 +1114,15 @@ Nodig:
 
 ## Actuele Technische Aandachtspunten Voor Nieuwe Agent
 
-- Werk op branch `feature/cms-platform`, tenzij de gebruiker anders zegt.
-- Recente wijzigingen zijn gepusht naar GitHub op `feature/cms-platform`, maar zijn pas live op Firebase na deploy.
-- Er bestaat een herstelbare backupbranch: `backup/digidocent-before-learning-flow`.
-- Huidige gitstatus kan lokale untracked tooling/prototypes bevatten, zoals `.superpowers/`, `exports/helix-button-gradient-options.html`, `exports/presenter-smoke/` en `exports/presenter-toolbar-style-options.html`. Niet automatisch stagen of verwijderen.
+- Werk op branch `codex/digitale-vaardigheden-seed`, tenzij de gebruiker anders zegt.
+- Recente wijzigingen zijn gepusht naar GitHub op `codex/digitale-vaardigheden-seed`, maar zijn pas live op Firebase na deploy.
+- Er bestaat een herstelbare backupbranch: `backup/voor-lesstof-bouwen-verbeteringen-2026-06-06`; eerdere backup voor Digidocent: `backup/digidocent-before-learning-flow`.
+- Huidige gitstatus kan lokale untracked screenshots/prototypes bevatten, vooral in `exports/`. Niet automatisch stagen of verwijderen.
 - `README.md` is nog geen betrouwbare projectdocumentatie.
 - `FIRESTORE_SCHEMA.md` is deels ouder dan de implementatie.
 - Volledige `npm run lint` kan nog falen op bestaande lint-schuld. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
+- Recente brede lib-teststatus: expliciete `src/lib` testset draaide groen met 427 tests.
+- Recente buildstatus: `npm run build` slaagde, met bekende Vite-waarschuwingen over chunkgrootte en dynamische imports voor `firestoreService.js`/`storageService.js`.
 - Dev server draait meestal op `http://localhost:5173/` of een nabije Vite-poort. De gebruiker gebruikt vaak `localhost` liever dan `127.0.0.1`.
 - Poort `5174` was eerder bezet door een ander project; gebruik die niet zomaar voor HELIX.
 - Voor lokale dev-login kunnen `.env.local` flags nodig zijn:
