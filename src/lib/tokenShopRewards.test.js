@@ -7,16 +7,8 @@ import {
   normalizeLoadout
 } from './tokenShopRewards.js';
 
-test('default token shop catalog is subject-neutral and covers visible reward types', () => {
-  assert.equal(DEFAULT_TOKEN_SHOP_ITEMS.length >= 18, true);
-  assert.equal(DEFAULT_TOKEN_SHOP_ITEMS.every((item) => item.title && item.price > 0 && item.imageUrl), true);
-  assert.deepEqual(
-    [...new Set(DEFAULT_TOKEN_SHOP_ITEMS.map((item) => item.itemType))].sort(),
-    ['avatarFrame', 'avatarSkin', 'profileBanner', 'shopBadge', 'titleBadge', 'victoryEffect'].sort()
-  );
-
-  const forbiddenSubjectWords = /(AI|Excel|Mediawijs|Debug|Data|Bron|Microsoft|Wachtwoord|Formule)/i;
-  assert.equal(DEFAULT_TOKEN_SHOP_ITEMS.some((item) => forbiddenSubjectWords.test(`${item.title} ${item.description}`)), false);
+test('default token shop catalog is empty so admins build the avatar shop manually', () => {
+  assert.deepEqual(DEFAULT_TOKEN_SHOP_ITEMS, []);
 });
 
 test('normalizeLoadout keeps only known active equipment fields', () => {

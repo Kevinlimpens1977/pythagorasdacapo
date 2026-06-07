@@ -27,9 +27,9 @@ const emptyItem = {
   title: '',
   description: '',
   price: 5,
-  itemType: 'shopBadge',
+  itemType: 'avatarSkin',
   rarity: 'common',
-  targetSlot: 'pin',
+  targetSlot: 'avatarSkin',
   imageUrl: '',
   imageStoragePath: '',
   enabled: true,
@@ -128,6 +128,7 @@ export default function AdminTokenManagementPage() {
   const totalBalance = Object.values(accounts).reduce((sum, account) => sum + (Number(account.balance) || 0), 0);
 
   const startEditItem = (item) => {
+    const itemType = item.itemType || 'avatarSkin';
     setItemDraft({
       itemId: item.id,
       title: item.title || '',
@@ -135,9 +136,9 @@ export default function AdminTokenManagementPage() {
       price: Number(item.price) || 0,
       imageUrl: item.imageUrl || '',
       imageStoragePath: item.imageStoragePath || '',
-      itemType: item.itemType || 'shopBadge',
+      itemType,
       rarity: item.rarity || 'common',
-      targetSlot: item.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[item.itemType] || 'pin',
+      targetSlot: item.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType] || 'avatarSkin',
       enabled: item.enabled !== false,
       repeatable: item.repeatable === true,
       sortOrder: Number(item.sortOrder) || 0
@@ -188,7 +189,11 @@ export default function AdminTokenManagementPage() {
     setError('');
     try {
       const results = await seedDefaultTokenShopCatalog();
-      setMessage(`${results.length} standaard shopitems zijn toegevoegd of bijgewerkt.`);
+      setMessage(
+        results.length === 0
+          ? 'Er staat geen standaardcatalogus meer klaar. Upload handmatig je nieuwe avatars.'
+          : `${results.length} standaard shopitems zijn toegevoegd of bijgewerkt.`
+      );
     } catch (err) {
       console.error('Standaardcatalogus laden mislukt:', err);
       setError(err.message || 'Standaardcatalogus laden is mislukt.');
@@ -245,8 +250,8 @@ export default function AdminTokenManagementPage() {
         <section className="mt-8 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white px-5 py-4 shadow-[var(--helix-shadow-card)]">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="font-black text-[var(--helix-navy)]">Standaardcatalogus</h2>
-              <p className="helix-muted mt-1 text-sm">Vul de shop met algemene avatars, frames, pins, banners, titels en effecten voor klas 1-4 VMBO.</p>
+              <h2 className="font-black text-[var(--helix-navy)]">Avatarcatalogus</h2>
+              <p className="helix-muted mt-1 text-sm">De oude standaardbadges zijn leeggezet. Voeg hier straks handmatig je nieuwe avatars toe.</p>
             </div>
             <button type="button" onClick={handleSeedCatalog} disabled={seedingCatalog} className="btn-primary min-h-11 text-sm disabled:opacity-45">
               {seedingCatalog ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
