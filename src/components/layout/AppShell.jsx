@@ -10,6 +10,8 @@ import TokenBalancePill from '../tokens/TokenBalancePill';
 import { BarChart3, BellRing, BookOpen, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import { getOpenStudentBugReportCount } from '../../services/studentBugReportService';
+import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../../services/tokenService';
+import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewards';
 import helixLogo from '../../afbeeldingen/logo.png';
 
 const workspaceIcons = {
@@ -27,6 +29,9 @@ export default function AppShell() {
   const location = useLocation();
   const [studentBugReportContext, setStudentBugReportContext] = useState({});
   const [openBugReportCount, setOpenBugReportCount] = useState(0);
+  const [studentLoadout, setStudentLoadout] = useState({ activePinIds: [] });
+  const [rewardItems, setRewardItems] = useState([]);
+  const canShowStudentRewards = !isAdmin && !isDevBypass && Boolean(currentUser?.uid);
 
   useEffect(() => {
     if (isAdmin && location.pathname === '/') {
@@ -63,6 +68,34 @@ export default function AppShell() {
       window.clearInterval(intervalId);
     };
   }, [isAdmin, location.pathname]);
+
+  useEffect(() => {
+    if (!canShowStudentRewards) {
+      return undefined;
+    }
+
+    const unsubscribers = [
+      subscribeStudentTokenLoadout(
+        currentUser.uid,
+        setStudentLoadout,
+        (error) => console.warn('Actieve shopitems konden niet worden geladen:', error)
+      ),
+      subscribeActiveTokenShopItems(
+        setRewardItems,
+        (error) => console.warn('Shopitem-catalogus kon niet worden geladen voor de header:', error)
+      )
+    ];
+
+    return () => unsubscribers.forEach((unsubscribe) => unsubscribe?.());
+  }, [canShowStudentRewards, currentUser?.uid]);
+
+  const normalizedLoadout = normalizeLoadout(studentLoadout);
+  const activeRewards = canShowStudentRewards
+    ? getActiveRewardItems({ loadout: normalizedLoadout, items: rewardItems })
+    : [];
+  const activeFrame = activeRewards.find((item) => item.itemType === 'avatarFrame');
+  const activeTitle = activeRewards.find((item) => item.itemType === 'titleBadge');
+  const activePins = activeRewards.filter((item) => item.itemType === 'shopBadge').slice(0, 3);
 
   const handleLogout = () => {
     logout();
@@ -182,10 +215,28 @@ export default function AppShell() {
               }`}
               title="Mijn profiel"
             >
-              <User size={22} />
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 bg-white"
+                style={{ borderColor: activeFrame?.previewStyle?.accent || 'transparent' }}
+              >
+                <User size={20} />
+              </span>
               <span className="hidden flex-col items-end lg:flex">
                 <span className="text-sm font-bold">{currentUser?.displayName || 'Gebruiker'}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--helix-purple)]">Leerling</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--helix-purple)]">{activeTitle?.title || 'Leerling'}</span>
+                {activePins.length > 0 && (
+                  <span className="mt-1 flex max-w-48 justify-end gap-1 overflow-hidden">
+                    {activePins.map((pin) => (
+                      <span
+                        key={pin.id}
+                        className="rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-white"
+                        style={{ background: pin.previewStyle?.accent || 'var(--helix-purple)' }}
+                      >
+                        {pin.previewStyle?.shortLabel || pin.title}
+                      </span>
+                    ))}
+                  </span>
+                )}
               </span>
             </button>
           ) : (
