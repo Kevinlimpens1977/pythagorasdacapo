@@ -89,6 +89,30 @@ const TOKEN_TRANSACTION_TYPES = {
 const TOKEN_SOURCE_KINDS = new Set(["contentBlock", "question", "game"]);
 const TOKEN_SHOP_IMAGE_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 const TOKEN_SHOP_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+const TOKEN_SHOP_ITEM_TYPES = new Set([
+  "avatarSkin",
+  "avatarFrame",
+  "shopBadge",
+  "profileBanner",
+  "victoryEffect",
+  "titleBadge",
+]);
+const TOKEN_SHOP_RARITIES = new Set(["common", "rare", "epic", "legendary"]);
+const TOKEN_SHOP_TARGET_SLOT_BY_TYPE = {
+  avatarSkin: "avatarSkin",
+  avatarFrame: "avatarFrame",
+  shopBadge: "pin",
+  profileBanner: "profileBanner",
+  victoryEffect: "victoryEffect",
+  titleBadge: "titleBadge",
+};
+const TOKEN_SHOP_LOADOUT_FIELD_BY_TYPE = {
+  avatarSkin: "activeAvatarSkinId",
+  avatarFrame: "activeAvatarFrameId",
+  profileBanner: "activeProfileBannerId",
+  victoryEffect: "activeVictoryEffectId",
+  titleBadge: "activeTitleBadgeId",
+};
 const DEFAULT_GAME_TOKEN_REWARD_RULES = {
   "pythagoras-trainer": { enabled: true, min: 0, max: 25, basis: "score_accuracy_completion" },
   "dv-account-escape": { enabled: true, min: 0, max: 10, basis: "score_accuracy_completion" },
@@ -238,6 +262,10 @@ function normalizeShopItemPayload(data = {}, existing = {}) {
     throw new HttpsError("invalid-argument", "Tokenprijs mag niet negatief zijn.");
   }
 
+  const itemType = normalizeShopItemType(data.itemType ?? existing.itemType);
+  const rarity = normalizeShopItemRarity(data.rarity ?? existing.rarity);
+  const targetSlot = String(data.targetSlot ?? existing.targetSlot ?? TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType]).trim();
+
   return {
     title,
     description: String(data.description ?? existing.description ?? "").trim(),
@@ -245,8 +273,32 @@ function normalizeShopItemPayload(data = {}, existing = {}) {
     imageUrl: String(data.imageUrl ?? existing.imageUrl ?? "").trim(),
     imageStoragePath: String(data.imageStoragePath ?? existing.imageStoragePath ?? "").trim(),
     enabled: data.enabled ?? existing.enabled ?? true,
+    repeatable: data.repeatable ?? existing.repeatable ?? false,
     sortOrder: normalizeInteger(data.sortOrder ?? existing.sortOrder, 0),
+    itemType,
+    rarity,
+    targetSlot: targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType],
+    previewStyle: normalizePreviewStyle(data.previewStyle ?? existing.previewStyle),
   };
+}
+
+function normalizeShopItemType(value = "") {
+  const itemType = String(value || "shopBadge").trim();
+  return TOKEN_SHOP_ITEM_TYPES.has(itemType) ? itemType : "shopBadge";
+}
+
+function normalizeShopItemRarity(value = "") {
+  const rarity = String(value || "common").trim();
+  return TOKEN_SHOP_RARITIES.has(rarity) ? rarity : "common";
+}
+
+function normalizePreviewStyle(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key, entry]) => typeof key === "string" && ["string", "number", "boolean"].includes(typeof entry))
+      .slice(0, 12),
+  );
 }
 
 function getTokenShopImageExtension({ fileName = "", contentType = "" } = {}) {
@@ -1911,6 +1963,10 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
       throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
     }
 
+    if (item.repeatable !== true && await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId })) {
+      throw new HttpsError("already-exists", "Je bezit dit shopitem al.");
+    }
+
     const price = normalizeNonNegativeInteger(item.price, 0);
     const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
     const nextAccount = buildBalancePatch(account, price, TOKEN_TRANSACTION_TYPES.SPEND, timestamp);
@@ -1921,6 +1977,9 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
       price,
       imageUrl: item.imageUrl || "",
       imageStoragePath: item.imageStoragePath || "",
+      itemType: normalizeShopItemType(item.itemType),
+      rarity: normalizeShopItemRarity(item.rarity),
+      targetSlot: item.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[normalizeShopItemType(item.itemType)],
     };
     const transactionData = {
       studentUid: auth.uid,
@@ -1954,6 +2013,69 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
       purchasePath: purchaseRef.path,
     };
   });
+}
+
+async function hasPurchasedTokenShopItem({ db, studentUid, itemId }) {
+  const purchaseSnapshot = await db.collection("tokenPurchases").where("studentUid", "==", studentUid).get();
+  return purchaseSnapshot.docs.some((purchase) => {
+    const data = purchase.data() || {};
+    return data.itemId === itemId;
+  });
+}
+
+async function equipTokenShopItemCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen kunnen shopitems activeren.");
+  }
+
+  const itemId = requireString(data.itemId, "itemId");
+  const itemSnapshot = await db.doc(`tokenShopItems/${itemId}`).get();
+  if (!itemSnapshot.exists) {
+    throw new HttpsError("not-found", "Shopitem bestaat niet.");
+  }
+
+  const item = itemSnapshot.data() || {};
+  if (item.enabled === false) {
+    throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
+  }
+
+  const purchased = await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId });
+  if (!purchased) {
+    throw new HttpsError("failed-precondition", "Je kunt alleen gekochte shopitems activeren.");
+  }
+
+  const itemType = normalizeShopItemType(item.itemType);
+  const targetSlot = item.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType];
+  const timestamp = getServerTimestamp(now);
+  const loadoutRef = db.doc(`studentTokenLoadouts/${auth.uid}`);
+  const loadoutSnapshot = await loadoutRef.get();
+  const currentLoadout = loadoutSnapshot.exists ? loadoutSnapshot.data() || {} : {};
+  const patch = {
+    studentUid: auth.uid,
+    updatedAt: timestamp,
+  };
+
+  if (itemType === "shopBadge") {
+    const activePinIds = Array.isArray(currentLoadout.activePinIds)
+      ? currentLoadout.activePinIds.filter(Boolean)
+      : [];
+    patch.activePinIds = [...activePinIds.filter((id) => id !== itemId), itemId].slice(-3);
+  } else {
+    const fieldName = TOKEN_SHOP_LOADOUT_FIELD_BY_TYPE[itemType];
+    if (!fieldName) {
+      throw new HttpsError("invalid-argument", "Dit shopitem kan niet worden geactiveerd.");
+    }
+    patch[fieldName] = itemId;
+  }
+
+  await loadoutRef.set(patch, { merge: true });
+
+  return {
+    equipped: true,
+    itemId,
+    targetSlot,
+  };
 }
 
 async function adjustStudentTokensCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
@@ -2102,6 +2224,16 @@ exports.purchaseTokenShopItem = onCall({
   region: REGION,
 }, async (request) => {
   return purchaseTokenShopItemCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
+exports.equipTokenShopItem = onCall({
+  region: REGION,
+}, async (request) => {
+  return equipTokenShopItemCore({
     auth: request.auth,
     data: request.data || {},
     db: getFirestore(),
@@ -2287,6 +2419,7 @@ exports.__test = {
   awardTokensForActivityCore,
   createOrUpdateTokenShopItemCore,
   deleteAllStudentDataCore,
+  equipTokenShopItemCore,
   extractTextViaOcrCore,
   importStudentNumberAccountsCore,
   getAiTutorRulesCore,

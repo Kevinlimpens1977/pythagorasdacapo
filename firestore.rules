@@ -270,6 +270,11 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    match /studentTokenLoadouts/{studentUid} {
+      allow read: if isOwner(studentUid) || isAdmin();
+      allow create, update, delete: if false;
+    }
+
     match /tokenAwardClaims/{claimId} {
       allow read, create, update, delete: if false;
     }

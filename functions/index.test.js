@@ -293,6 +293,33 @@ test("purchaseTokenShopItem atomically spends tokens and records purchase snapsh
   assert.equal(db.store.docs[result.transactionPath].type, "spend");
 });
 
+test("purchaseTokenShopItem prevents duplicate cosmetic purchases unless repeatable", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenAccounts/student-1": { balance: 50, earnedTotal: 50, spentTotal: 0, adjustedTotal: 0 },
+    "tokenShopItems/item-1": {
+      title: "Sterrenstarter Pin",
+      price: 10,
+      enabled: true,
+      repeatable: false,
+    },
+    "tokenPurchases/purchase-1": {
+      studentUid: "student-1",
+      itemId: "item-1",
+    },
+  });
+
+  await assert.rejects(
+    () => __test.purchaseTokenShopItemCore({
+      auth: { uid: "student-1" },
+      data: { itemId: "item-1" },
+      db,
+      now: () => "timestamp",
+    }),
+    (error) => error instanceof HttpsError && error.code === "already-exists",
+  );
+});
+
 test("adjustStudentTokens requires admin role and a reason", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin" },
@@ -357,6 +384,10 @@ test("createOrUpdateTokenShopItem validates price and stores admin-managed catal
       imageStoragePath: "token-shop-items/item-1/cover.webp",
       enabled: true,
       sortOrder: 2,
+      itemType: "avatarFrame",
+      rarity: "rare",
+      targetSlot: "avatarFrame",
+      previewStyle: { accent: "#2563eb" },
     },
     db,
     now: () => "timestamp",
@@ -370,7 +401,12 @@ test("createOrUpdateTokenShopItem validates price and stores admin-managed catal
     imageUrl: "https://example.test/sticker.png",
     imageStoragePath: "token-shop-items/item-1/cover.webp",
     enabled: true,
+    repeatable: false,
     sortOrder: 2,
+    itemType: "avatarFrame",
+    rarity: "rare",
+    targetSlot: "avatarFrame",
+    previewStyle: { accent: "#2563eb" },
     updatedAt: "timestamp",
     updatedBy: "admin-1",
     createdAt: "timestamp",
@@ -391,6 +427,90 @@ test("createOrUpdateTokenShopItem accepts the configured admin email even before
   });
 
   assert.deepEqual(result, { itemId: "premium-skin", saved: true });
+});
+
+test("equipTokenShopItem requires an owned visible shop item and updates the learner loadout", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student" },
+    "tokenShopItems/gouden-frame": {
+      title: "Gouden Starterframe",
+      enabled: true,
+      itemType: "avatarFrame",
+      targetSlot: "avatarFrame",
+    },
+    "tokenPurchases/purchase-1": {
+      studentUid: "student-1",
+      itemId: "gouden-frame",
+    },
+  });
+
+  const result = await __test.equipTokenShopItemCore({
+    auth: { uid: "student-1" },
+    data: { itemId: "gouden-frame" },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(result, {
+    equipped: true,
+    itemId: "gouden-frame",
+    targetSlot: "avatarFrame",
+  });
+  assert.deepEqual(db.store.docs["studentTokenLoadouts/student-1"], {
+    studentUid: "student-1",
+    activeAvatarFrameId: "gouden-frame",
+    updatedAt: "timestamp",
+  });
+});
+
+test("equipTokenShopItem keeps at most three active shop badge pins", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student" },
+    "tokenShopItems/pin-4": {
+      title: "Superster Pin",
+      enabled: true,
+      itemType: "shopBadge",
+      targetSlot: "pin",
+    },
+    "tokenPurchases/purchase-1": { studentUid: "student-1", itemId: "pin-1" },
+    "tokenPurchases/purchase-2": { studentUid: "student-1", itemId: "pin-2" },
+    "tokenPurchases/purchase-3": { studentUid: "student-1", itemId: "pin-3" },
+    "tokenPurchases/purchase-4": { studentUid: "student-1", itemId: "pin-4" },
+    "studentTokenLoadouts/student-1": {
+      studentUid: "student-1",
+      activePinIds: ["pin-1", "pin-2", "pin-3"],
+    },
+  });
+
+  await __test.equipTokenShopItemCore({
+    auth: { uid: "student-1" },
+    data: { itemId: "pin-4" },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(db.store.docs["studentTokenLoadouts/student-1"].activePinIds, ["pin-2", "pin-3", "pin-4"]);
+});
+
+test("equipTokenShopItem rejects unpurchased items", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student" },
+    "tokenShopItems/gouden-frame": {
+      title: "Gouden Starterframe",
+      enabled: true,
+      itemType: "avatarFrame",
+    },
+  });
+
+  await assert.rejects(
+    () => __test.equipTokenShopItemCore({
+      auth: { uid: "student-1" },
+      data: { itemId: "gouden-frame" },
+      db,
+      now: () => "timestamp",
+    }),
+    (error) => error instanceof HttpsError && error.code === "failed-precondition",
+  );
 });
 
 test("uploadTokenShopItemImage stores image bytes server-side for admins only", async () => {

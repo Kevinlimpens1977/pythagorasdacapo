@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Coins, Gift, Loader2, ReceiptText, ShoppingBag } from 'lucide-react';
+import { BadgeCheck, CheckCircle2, Coins, Gift, Loader2, ReceiptText, ShoppingBag, Sparkles, UserCircle } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import {
+  equipTokenShopItem,
   purchaseTokenShopItem,
   subscribeActiveTokenShopItems,
+  subscribeStudentTokenLoadout,
   subscribeStudentPurchases,
   subscribeStudentTokenTransactions,
   subscribeTokenAccount
 } from '../services/tokenService';
+import {
+  getActiveRewardItems,
+  getRewardRarityLabel,
+  getRewardTypeLabel,
+  normalizeLoadout
+} from '../lib/tokenShopRewards';
 
 const formatDate = (value) => {
   if (!value) return 'Zojuist';
@@ -22,9 +30,11 @@ export default function StudentTokenShopPage() {
   const [items, setItems] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [purchases, setPurchases] = useState([]);
+  const [loadout, setLoadout] = useState({ activePinIds: [] });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [buyingId, setBuyingId] = useState('');
+  const [equippingId, setEquippingId] = useState('');
 
   useEffect(() => {
     if (!currentUser?.uid || isDevBypass) {
@@ -35,7 +45,8 @@ export default function StudentTokenShopPage() {
       subscribeTokenAccount(currentUser.uid, setAccount, (err) => setError(err.message)),
       subscribeActiveTokenShopItems(setItems, (err) => setError(err.message)),
       subscribeStudentTokenTransactions(currentUser.uid, setTransactions, (err) => console.warn('Tokenhistoriek niet geladen:', err), 12),
-      subscribeStudentPurchases(currentUser.uid, setPurchases, (err) => console.warn('Aankopen niet geladen:', err))
+      subscribeStudentPurchases(currentUser.uid, setPurchases, (err) => console.warn('Aankopen niet geladen:', err)),
+      subscribeStudentTokenLoadout(currentUser.uid, setLoadout, (err) => console.warn('Uitrusting niet geladen:', err))
     ];
 
     return () => unsubscribers.forEach((unsubscribe) => unsubscribe?.());
@@ -45,6 +56,45 @@ export default function StudentTokenShopPage() {
     () => new Set(purchases.map((purchase) => purchase.itemId)),
     [purchases]
   );
+
+  const itemsById = useMemo(
+    () => new Map(items.map((item) => [item.id, item])),
+    [items]
+  );
+
+  const normalizedLoadout = useMemo(
+    () => normalizeLoadout(loadout),
+    [loadout]
+  );
+
+  const activeRewardItems = useMemo(
+    () => getActiveRewardItems({ loadout: normalizedLoadout, items }),
+    [items, normalizedLoadout]
+  );
+
+  const activeIds = useMemo(
+    () => new Set([
+      normalizedLoadout.activeAvatarFrameId,
+      normalizedLoadout.activeAvatarSkinId,
+      normalizedLoadout.activeProfileBannerId,
+      normalizedLoadout.activeVictoryEffectId,
+      normalizedLoadout.activeTitleBadgeId,
+      ...normalizedLoadout.activePinIds
+    ].filter(Boolean)),
+    [normalizedLoadout]
+  );
+
+  const ownedItems = useMemo(
+    () => purchases
+      .map((purchase) => itemsById.get(purchase.itemId) || { id: purchase.itemId, ...(purchase.item || purchase.itemSnapshot || {}) })
+      .filter((item) => item?.id),
+    [itemsById, purchases]
+  );
+
+  const activeTitle = activeRewardItems.find((item) => item.itemType === 'titleBadge');
+  const activeFrame = activeRewardItems.find((item) => item.itemType === 'avatarFrame');
+  const activeBanner = activeRewardItems.find((item) => item.itemType === 'profileBanner');
+  const activePins = activeRewardItems.filter((item) => item.itemType === 'shopBadge');
 
   const handleBuy = async (item) => {
     setMessage('');
@@ -58,6 +108,21 @@ export default function StudentTokenShopPage() {
       setError(err.message || 'Aankoop is mislukt.');
     } finally {
       setBuyingId('');
+    }
+  };
+
+  const handleEquip = async (item) => {
+    setMessage('');
+    setError('');
+    setEquippingId(item.id);
+    try {
+      await equipTokenShopItem(item.id);
+      setMessage(`${item.title} is nu actief.`);
+    } catch (err) {
+      console.error('Shopitem activeren mislukt:', err);
+      setError(err.message || 'Activeren is mislukt.');
+    } finally {
+      setEquippingId('');
     }
   };
 
@@ -97,6 +162,7 @@ export default function StudentTokenShopPage() {
                 const price = Math.max(0, Number(item.price) || 0);
                 const canBuy = Number(account.balance || 0) >= price;
                 const bought = purchaseIds.has(item.id);
+                const active = activeIds.has(item.id);
                 return (
                   <article key={item.id} className="helix-card overflow-hidden">
                     <div className="aspect-[16/10] bg-[var(--helix-surface-soft)]">
@@ -109,6 +175,11 @@ export default function StudentTokenShopPage() {
                       )}
                     </div>
                     <div className="p-5">
+                      <div className="mb-3 flex flex-wrap gap-2">
+                        <span className="helix-badge">{getRewardTypeLabel(item.itemType)}</span>
+                        <span className="helix-badge bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">{getRewardRarityLabel(item.rarity)}</span>
+                        {active ? <span className="helix-badge-success">Actief</span> : null}
+                      </div>
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <h2 className="text-xl font-black text-[var(--helix-navy)]">{item.title || 'Shopitem'}</h2>
@@ -119,15 +190,27 @@ export default function StudentTokenShopPage() {
                           {price}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleBuy(item)}
-                        disabled={!canBuy || buyingId === item.id}
-                        className="btn-primary mt-5 min-h-11 w-full text-sm disabled:cursor-not-allowed disabled:opacity-45"
-                      >
-                        {buyingId === item.id ? <Loader2 size={18} className="animate-spin" /> : bought ? <CheckCircle2 size={18} /> : <ShoppingBag size={18} />}
-                        {bought ? 'Nog een keer kopen' : canBuy ? 'Kopen' : 'Nog even sparen'}
-                      </button>
+                      {bought ? (
+                        <button
+                          type="button"
+                          onClick={() => handleEquip(item)}
+                          disabled={active || equippingId === item.id}
+                          className="btn-primary mt-5 min-h-11 w-full text-sm disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {equippingId === item.id ? <Loader2 size={18} className="animate-spin" /> : active ? <CheckCircle2 size={18} /> : <Sparkles size={18} />}
+                          {active ? 'Actief in je profiel' : 'Activeren'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleBuy(item)}
+                          disabled={!canBuy || buyingId === item.id}
+                          className="btn-primary mt-5 min-h-11 w-full text-sm disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {buyingId === item.id ? <Loader2 size={18} className="animate-spin" /> : <ShoppingBag size={18} />}
+                          {canBuy ? 'Kopen' : 'Nog even sparen'}
+                        </button>
+                      )}
                     </div>
                   </article>
                 );
@@ -135,6 +218,60 @@ export default function StudentTokenShopPage() {
             </div>
 
             <aside className="space-y-5">
+              <section className="helix-surface overflow-hidden p-0">
+                <div className="p-5" style={{ background: activeBanner?.previewStyle?.accent ? `${activeBanner.previewStyle.accent}18` : 'var(--helix-surface-soft)' }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-[var(--helix-muted)]">Mijn profiel</p>
+                      <h2 className="mt-1 font-black text-[var(--helix-navy)]">{currentUser?.displayName || 'Leerling'}</h2>
+                      <p className="helix-muted mt-1 text-sm">{activeTitle?.title || 'Kies een titel in je shop'}</p>
+                    </div>
+                    <div
+                      className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 bg-white shadow-[var(--helix-shadow-card)]"
+                      style={{ borderColor: activeFrame?.previewStyle?.accent || 'var(--helix-border)' }}
+                    >
+                      <UserCircle size={46} className="text-[var(--helix-purple)]" />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {activePins.length === 0 ? (
+                      <span className="helix-badge">Nog geen actieve pins</span>
+                    ) : activePins.map((pin) => (
+                      <span key={pin.id} className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-black text-white" style={{ background: pin.previewStyle?.accent || 'var(--helix-purple)' }}>
+                        <BadgeCheck size={14} />
+                        {pin.title}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              <section className="helix-surface p-5">
+                <div className="flex items-center gap-2">
+                  <Gift size={18} className="text-[var(--helix-purple)]" />
+                  <h2 className="font-black text-[var(--helix-navy)]">Mijn spullen</h2>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {ownedItems.length === 0 ? (
+                    <p className="helix-muted text-sm">Koop je eerste gadget om hem hier te activeren.</p>
+                  ) : ownedItems.slice(0, 8).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleEquip(item)}
+                      disabled={activeIds.has(item.id) || equippingId === item.id}
+                      className="flex w-full items-center justify-between gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-2 text-left disabled:opacity-70"
+                    >
+                      <span>
+                        <span className="block text-sm font-black text-[var(--helix-navy)]">{item.title || 'Gadget'}</span>
+                        <span className="helix-muted text-xs">{getRewardTypeLabel(item.itemType)}</span>
+                      </span>
+                      <span className="text-xs font-black text-[var(--helix-purple)]">{activeIds.has(item.id) ? 'Actief' : 'Kies'}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
               <section className="helix-surface p-5">
                 <div className="flex items-center gap-2">
                   <ReceiptText size={18} className="text-[var(--helix-purple)]" />

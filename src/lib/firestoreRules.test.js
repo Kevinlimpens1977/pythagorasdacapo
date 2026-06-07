@@ -88,6 +88,13 @@ test('firestore rules expose token transactions and purchases to owner and admin
   assert.match(purchases, /allow create, update, delete: if false/);
 });
 
+test('firestore rules expose token loadouts to owner and admin without client writes', () => {
+  const block = getRuleBlock('match /studentTokenLoadouts/{studentUid}');
+
+  assert.match(block, /allow read: if isOwner\(studentUid\) \|\| isAdmin\(\)/);
+  assert.match(block, /allow create, update, delete: if false/);
+});
+
 test('firestore rules let students read active shop items while catalog management stays admin-only', () => {
   const block = getRuleBlock('match /tokenShopItems/{itemId}');
 

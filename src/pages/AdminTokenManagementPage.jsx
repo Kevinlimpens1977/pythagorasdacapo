@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Coins, ImagePlus, Loader2, PlusCircle, Save, Search, ShoppingBag, SlidersHorizontal, UserRoundCog } from 'lucide-react';
+import { Coins, ImagePlus, Loader2, PlusCircle, Save, Search, ShoppingBag, SlidersHorizontal, Sparkles, UserRoundCog } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import {
@@ -7,21 +7,33 @@ import {
   createOrUpdateTokenShopItem,
   fetchTokenAccounts,
   fetchTokenPurchases,
+  seedDefaultTokenShopCatalog,
   subscribeAllTokenShopItems,
   uploadTokenShopItemImage
 } from '../services/tokenService';
 import * as klasService from '../services/klasService';
 import { enrichStudentsWithClassName, filterStudentAccounts } from '../lib/studentAccountUtils';
 import { useAuth } from '../components/auth/AuthProvider';
+import {
+  getRewardRarityLabel,
+  getRewardTypeLabel,
+  TOKEN_SHOP_ITEM_TYPES,
+  TOKEN_SHOP_RARITY_LABELS,
+  TOKEN_SHOP_TARGET_SLOT_BY_TYPE
+} from '../lib/tokenShopRewards';
 
 const emptyItem = {
   itemId: '',
   title: '',
   description: '',
   price: 5,
+  itemType: 'shopBadge',
+  rarity: 'common',
+  targetSlot: 'pin',
   imageUrl: '',
   imageStoragePath: '',
   enabled: true,
+  repeatable: false,
   sortOrder: 0
 };
 
@@ -39,6 +51,7 @@ export default function AdminTokenManagementPage() {
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [savingItem, setSavingItem] = useState(false);
+  const [seedingCatalog, setSeedingCatalog] = useState(false);
   const [adjusting, setAdjusting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -122,10 +135,22 @@ export default function AdminTokenManagementPage() {
       price: Number(item.price) || 0,
       imageUrl: item.imageUrl || '',
       imageStoragePath: item.imageStoragePath || '',
+      itemType: item.itemType || 'shopBadge',
+      rarity: item.rarity || 'common',
+      targetSlot: item.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[item.itemType] || 'pin',
       enabled: item.enabled !== false,
+      repeatable: item.repeatable === true,
       sortOrder: Number(item.sortOrder) || 0
     });
     setImageFile(null);
+  };
+
+  const updateItemType = (itemType) => {
+    setItemDraft({
+      ...itemDraft,
+      itemType,
+      targetSlot: TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType] || 'pin'
+    });
   };
 
   const handleSaveItem = async (event) => {
@@ -142,6 +167,7 @@ export default function AdminTokenManagementPage() {
       await createOrUpdateTokenShopItem({
         ...itemDraft,
         itemId,
+        targetSlot: itemDraft.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemDraft.itemType] || 'pin',
         imageUrl: image.downloadURL || '',
         imageStoragePath: image.storagePath || ''
       });
@@ -153,6 +179,21 @@ export default function AdminTokenManagementPage() {
       setError(err.message || 'Shopitem opslaan is mislukt.');
     } finally {
       setSavingItem(false);
+    }
+  };
+
+  const handleSeedCatalog = async () => {
+    setSeedingCatalog(true);
+    setMessage('');
+    setError('');
+    try {
+      const results = await seedDefaultTokenShopCatalog();
+      setMessage(`${results.length} standaard shopitems zijn toegevoegd of bijgewerkt.`);
+    } catch (err) {
+      console.error('Standaardcatalogus laden mislukt:', err);
+      setError(err.message || 'Standaardcatalogus laden is mislukt.');
+    } finally {
+      setSeedingCatalog(false);
     }
   };
 
@@ -200,6 +241,19 @@ export default function AdminTokenManagementPage() {
 
         {message ? <div className="mt-5 rounded-[var(--helix-radius-md)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</div> : null}
         {error ? <div className="mt-5 rounded-[var(--helix-radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{error}</div> : null}
+
+        <section className="mt-8 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white px-5 py-4 shadow-[var(--helix-shadow-card)]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="font-black text-[var(--helix-navy)]">Standaardcatalogus</h2>
+              <p className="helix-muted mt-1 text-sm">Vul de shop met algemene avatars, frames, pins, banners, titels en effecten voor klas 1-4 VMBO.</p>
+            </div>
+            <button type="button" onClick={handleSeedCatalog} disabled={seedingCatalog} className="btn-primary min-h-11 text-sm disabled:opacity-45">
+              {seedingCatalog ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+              Standaardcatalogus aanvullen
+            </button>
+          </div>
+        </section>
 
         <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
           <div className="helix-surface">
@@ -298,13 +352,31 @@ export default function AdminTokenManagementPage() {
                 <input value={itemDraft.title} onChange={(event) => setItemDraft({ ...itemDraft, title: event.target.value })} className="input-standard" placeholder="Titel" required />
                 <textarea value={itemDraft.description} onChange={(event) => setItemDraft({ ...itemDraft, description: event.target.value })} className="input-standard min-h-24" placeholder="Beschrijving" />
                 <div className="grid gap-3 sm:grid-cols-2">
+                  <select value={itemDraft.itemType} onChange={(event) => updateItemType(event.target.value)} className="input-standard">
+                    {TOKEN_SHOP_ITEM_TYPES.map((itemType) => (
+                      <option key={itemType} value={itemType}>{getRewardTypeLabel(itemType)}</option>
+                    ))}
+                  </select>
+                  <select value={itemDraft.rarity} onChange={(event) => setItemDraft({ ...itemDraft, rarity: event.target.value })} className="input-standard">
+                    {Object.entries(TOKEN_SHOP_RARITY_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
                   <input type="number" min="0" value={itemDraft.price} onChange={(event) => setItemDraft({ ...itemDraft, price: event.target.value })} className="input-standard" placeholder="Prijs" required />
                   <input type="number" value={itemDraft.sortOrder} onChange={(event) => setItemDraft({ ...itemDraft, sortOrder: event.target.value })} className="input-standard" placeholder="Sorteervolgorde" />
                 </div>
-                <label className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-navy)]">
-                  <input type="checkbox" checked={itemDraft.enabled} onChange={(event) => setItemDraft({ ...itemDraft, enabled: event.target.checked })} className="h-4 w-4 accent-[var(--helix-purple)]" />
-                  Zichtbaar in tokenshop
-                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-navy)]">
+                    <input type="checkbox" checked={itemDraft.enabled} onChange={(event) => setItemDraft({ ...itemDraft, enabled: event.target.checked })} className="h-4 w-4 accent-[var(--helix-purple)]" />
+                    Zichtbaar in tokenshop
+                  </label>
+                  <label className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-navy)]">
+                    <input type="checkbox" checked={itemDraft.repeatable} onChange={(event) => setItemDraft({ ...itemDraft, repeatable: event.target.checked })} className="h-4 w-4 accent-[var(--helix-purple)]" />
+                    Herhaalbaar kopen
+                  </label>
+                </div>
                 <label className="flex cursor-pointer items-center gap-3 rounded-[var(--helix-radius-md)] border border-dashed border-[var(--helix-border)] bg-white px-3 py-4 text-sm font-bold text-[var(--helix-muted)] hover:border-[var(--helix-purple)]">
                   <ImagePlus size={18} />
                   <span>{imageFile ? imageFile.name : itemDraft.imageUrl ? 'Afbeelding vervangen' : 'Afbeelding uploaden'}</span>
@@ -329,7 +401,7 @@ export default function AdminTokenManagementPage() {
                   <p className="helix-muted text-sm">Nog niets gekocht.</p>
                 ) : selectedPurchases.map((purchase) => (
                   <div key={purchase.id} className="rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3">
-                    <p className="font-black text-[var(--helix-navy)]">{purchase.itemSnapshot?.title || purchase.itemId || 'Shopitem'}</p>
+                    <p className="font-black text-[var(--helix-navy)]">{purchase.itemSnapshot?.title || purchase.item?.title || purchase.itemId || 'Shopitem'}</p>
                     <p className="mt-1 text-sm font-bold text-amber-700">{Number(purchase.price) || 0} tokens</p>
                   </div>
                 ))}
@@ -350,6 +422,9 @@ export default function AdminTokenManagementPage() {
                   <div className="min-w-0">
                     <p className="truncate font-black text-[var(--helix-navy)]">{item.title || 'Shopitem'}</p>
                     <p className="mt-1 text-sm font-black text-amber-700">{Number(item.price) || 0} tokens</p>
+                    <p className="mt-1 text-xs font-black text-[var(--helix-purple)]">
+                      {getRewardTypeLabel(item.itemType)} · {getRewardRarityLabel(item.rarity)}
+                    </p>
                     <p className={`mt-1 text-xs font-black ${item.enabled === false ? 'text-slate-400' : 'text-emerald-700'}`}>
                       {item.enabled === false ? 'Verborgen' : 'Actief'}
                     </p>
