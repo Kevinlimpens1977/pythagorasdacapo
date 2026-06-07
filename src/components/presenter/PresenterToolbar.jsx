@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,6 +17,7 @@ import {
   Plus,
   Redo2,
   Shapes,
+  Sigma,
   Type,
   Trash2,
   Undo2
@@ -110,7 +112,7 @@ const textAlignments = [
   { label: 'Rechts', value: 'right', icon: AlignRight }
 ];
 
-const mathSymbols = ['²', '√', 'π', '÷', '×', '≤', '≥'];
+const mathSymbols = ['π', '√', '²', '³', '×', '÷', '≤', '≥', '≈', '≠', '∠', '°'];
 
 const panelClass = 'rounded-xl border presenter-chrome-surface';
 const idleButtonClass =
@@ -157,11 +159,12 @@ export default function PresenterToolbar({
   onTextStyle,
   onTextSymbol,
   selectedTextStyle,
-  hasSelectedTextObject = false,
   onInstrument,
   onOpenImport,
   onFullscreen
 }) {
+  const [symbolsOpen, setSymbolsOpen] = useState(false);
+
   const runAction = (action) => {
     action?.();
     onAction?.();
@@ -173,6 +176,7 @@ export default function PresenterToolbar({
       runAction(onOpenImport);
       return;
     }
+    setSymbolsOpen(false);
     onCategory?.(category.id);
     onAction?.();
   };
@@ -219,6 +223,7 @@ export default function PresenterToolbar({
 
   const handleTextSymbol = (symbol) => {
     onTextSymbol?.(symbol);
+    setSymbolsOpen(false);
     onAction?.();
   };
 
@@ -445,18 +450,35 @@ export default function PresenterToolbar({
             ))}
           </div>
           <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {mathSymbols.map((symbol) => (
-              <button
-                key={symbol}
-                type="button"
-                className={`${popoverButtonClass} min-w-10 ${hasSelectedTextObject ? idleButtonClass : activeButtonClass}`}
-                onClick={() => handleTextSymbol(symbol)}
-                aria-label={`Wiskundesymbool ${symbol}`}
-              >
-                {symbol}
-              </button>
-            ))}
+          <div className="relative flex items-center justify-center">
+            <button
+              type="button"
+              className={`${iconButtonClass} ${symbolsOpen ? activeButtonClass : idleButtonClass}`}
+              onClick={() => {
+                setSymbolsOpen((current) => !current);
+                onAction?.();
+              }}
+              aria-label="Wiskundesymbolen"
+              aria-expanded={symbolsOpen}
+              title="Wiskundesymbolen"
+            >
+              <Sigma size={18} strokeWidth={2.8} />
+            </button>
+            {symbolsOpen ? (
+              <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-20 grid w-max max-w-[min(22rem,calc(100vw-2rem))] grid-cols-4 gap-1.5 rounded-lg border border-white/80 bg-white/95 p-2 shadow-[0_16px_32px_rgba(17,24,39,0.16)] backdrop-blur">
+                {mathSymbols.map((symbol) => (
+                  <button
+                    key={symbol}
+                    type="button"
+                    className={`${iconButtonClass} bg-white text-[18px] text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]`}
+                    onClick={() => handleTextSymbol(symbol)}
+                    aria-label={`Wiskundesymbool ${symbol}`}
+                  >
+                    {symbol}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       ) : null}

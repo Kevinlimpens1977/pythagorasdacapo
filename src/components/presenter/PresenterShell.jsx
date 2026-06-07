@@ -1128,7 +1128,6 @@ export default function PresenterShell() {
         onTextStyle={handleTextStyle}
         onTextSymbol={handleTextSymbol}
         selectedTextStyle={selectedTextStyle}
-        hasSelectedTextObject={Boolean(selectedTextObject)}
         onInstrument={handleInstrument}
         onOpenImport={openImportDialog}
         onFullscreen={handleFullscreen}
