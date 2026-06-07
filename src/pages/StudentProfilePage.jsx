@@ -7,7 +7,6 @@ import * as voortgangService from '../services/voortgangService';
 import { buildStudentProgressSummary } from '../lib/progressSummary';
 import { changeCurrentUserPassword } from '../services/studentPasswordService';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
-import HelixBrandBanner from '../components/common/HelixBrandBanner';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../lib/tokenShopRewards';
 
@@ -208,94 +207,101 @@ export default function StudentProfilePage() {
         </h1>
       </div>
 
-      <section className="grid gap-5 lg:grid-cols-[1.1fr_1.9fr]">
-        <div className="helix-card p-6">
-          <div className="flex items-center gap-4">
-            <div
-              className="profile-avatar-badge group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-visible rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"
-              style={{ '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)' }}
-            >
-              <div className="token-profile-avatar flex h-16 w-16 overflow-hidden rounded-full border-2 bg-white">
-                {activeAvatar?.imageUrl ? (
-                  <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
-                ) : (
-                  <UserCircle size={38} />
-                )}
-              </div>
-              <div className="profile-avatar-popover pointer-events-none absolute left-0 top-[calc(100%+0.75rem)] z-30 w-56 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-3 opacity-0 shadow-[var(--helix-shadow-soft)] transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">
-                <div className="aspect-square overflow-hidden rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)]">
+      <section className="grid items-start gap-5 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.45fr)]">
+        <aside className="grid gap-5">
+          <div className="helix-card p-6">
+            <div className="flex items-center gap-4">
+              <div
+                className="profile-avatar-badge group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-visible rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"
+                style={{ '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)' }}
+              >
+                <div className="token-profile-avatar flex h-16 w-16 overflow-hidden rounded-full border-2 bg-white">
                   {activeAvatar?.imageUrl ? (
-                    <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-contain" />
+                    <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-[var(--helix-purple)]">
-                      <UserCircle size={72} />
-                    </div>
+                    <UserCircle size={38} />
                   )}
                 </div>
-                <p className="mt-2 text-center text-xs font-black uppercase tracking-widest text-[var(--helix-purple)]">
-                  {activeAvatar?.title || 'Starter Avatar'}
-                </p>
+                <div className="profile-avatar-popover pointer-events-none absolute left-0 top-[calc(100%+0.75rem)] z-30 w-56 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-3 opacity-0 shadow-[var(--helix-shadow-soft)] transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+                  <div className="aspect-square overflow-hidden rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)]">
+                    {activeAvatar?.imageUrl ? (
+                      <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-contain" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[var(--helix-purple)]">
+                        <UserCircle size={72} />
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-2 text-center text-xs font-black uppercase tracking-widest text-[var(--helix-purple)]">
+                    {activeAvatar?.title || 'Starter Avatar'}
+                  </p>
+                </div>
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xl font-black text-[var(--helix-navy)]">{displayName}</h2>
+                <p className="text-sm font-semibold text-[var(--helix-purple)]">Leerling</p>
+                <span className="mt-2 inline-flex max-w-full items-center rounded-full border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-3 py-1 text-xs font-black text-[var(--helix-purple)] shadow-sm">
+                  <span className="truncate">{activeAvatar?.title || 'Starter Avatar'}</span>
+                </span>
               </div>
             </div>
-            <div className="min-w-0">
-              <h2 className="text-xl font-black text-[var(--helix-navy)]">{displayName}</h2>
-              <p className="text-sm font-semibold text-[var(--helix-purple)]">Leerling</p>
-              <span className="mt-2 inline-flex max-w-full items-center rounded-full border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-3 py-1 text-xs font-black text-[var(--helix-purple)] shadow-sm">
-                <span className="truncate">{activeAvatar?.title || 'Starter Avatar'}</span>
-              </span>
-            </div>
-          </div>
 
-          <div className="mt-6 space-y-3 text-sm">
-            <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-4 py-3">
-              <Mail size={18} className="text-slate-400" />
-              <span className="font-medium text-[var(--helix-navy)]">{email}</span>
-            </div>
-            <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-4 py-3">
-              <GraduationCap size={18} className="text-slate-400" />
-              <span className="font-medium text-[var(--helix-navy)]">{klasName}</span>
+            <div className="mt-6 space-y-3 text-sm">
+              <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-4 py-3">
+                <Mail size={18} className="text-slate-400" />
+                <span className="font-medium text-[var(--helix-navy)]">{email}</span>
+              </div>
+              <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-4 py-3">
+                <GraduationCap size={18} className="text-slate-400" />
+                <span className="font-medium text-[var(--helix-navy)]">{klasName}</span>
+              </div>
             </div>
           </div>
 
           <StudentPasswordForm currentUser={currentUser} />
-        </div>
+        </aside>
 
-        <HelixBrandBanner variant="compact" logoClassName="hidden" className="rounded-[var(--helix-radius-xl)] p-6">
-          <div>
-            <div className="flex items-center justify-between gap-4">
+        <div className="grid gap-5">
+          <section className="helix-card p-6">
+            <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
               <div>
-                <p className="text-sm font-black uppercase tracking-widest text-[var(--helix-purple)]">
-                  Mijn voortgang
-                </p>
-                <h2 className="mt-2 text-3xl font-black text-[var(--helix-navy)]">{summary.progressPercent}% afgerond</h2>
+                <div className="flex items-center justify-between gap-4 md:block">
+                  <div>
+                    <p className="text-sm font-black uppercase tracking-widest text-[var(--helix-purple)]">
+                      Mijn voortgang
+                    </p>
+                    <h2 className="mt-2 text-3xl font-black text-[var(--helix-navy)]">{summary.progressPercent}% afgerond</h2>
+                  </div>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] md:hidden">
+                    <BarChart3 size={30} />
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <ProgressBar value={summary.progressPercent} tone="green" />
+                  <div className="mt-3 flex items-center justify-between text-sm font-semibold text-[var(--helix-muted)]">
+                    <span>{summary.completedQuestions} afgerond</span>
+                    <span>{summary.totalQuestions} vragen totaal</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-                <BarChart3 size={30} />
+
+              <div className="hidden h-20 w-20 items-center justify-center rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] md:flex">
+                <BarChart3 size={38} />
               </div>
             </div>
+          </section>
 
-            <div className="mt-6">
-              <ProgressBar value={summary.progressPercent} tone="green" />
-              <div className="mt-3 flex items-center justify-between text-sm font-semibold text-[var(--helix-muted)]">
-                <span>{summary.completedQuestions} afgerond</span>
-                <span>{summary.totalQuestions} vragen totaal</span>
-              </div>
-            </div>
-          </div>
-        </HelixBrandBanner>
-      </section>
-
-      <section className="mt-8">
-        {summary.chapterGroups.length === 0 ? (
-          <EmptyState
-            icon={BookOpen}
-            title="Nog geen taken klaarstaan"
-            description="Je docent heeft nog geen lesmateriaal aan jouw klas gekoppeld."
-          />
-        ) : (
-          <div className="space-y-6">
-            {summary.chapterGroups.map((chapter) => (
-              <div key={chapter.id} className="rounded-lg border border-slate-200 bg-white shadow-sm">
+          {summary.chapterGroups.length === 0 ? (
+            <EmptyState
+              icon={BookOpen}
+              title="Nog geen taken klaarstaan"
+              description="Je docent heeft nog geen lesmateriaal aan jouw klas gekoppeld."
+            />
+          ) : (
+            <div className="space-y-5">
+              {summary.chapterGroups.map((chapter) => (
+                <div key={chapter.id} className="rounded-lg border border-slate-200 bg-white shadow-sm">
                 <div className="border-b border-slate-100 px-6 py-5">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
@@ -350,9 +356,10 @@ export default function StudentProfilePage() {
                   })}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );
@@ -400,7 +407,7 @@ const StudentPasswordForm = ({ currentUser }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-6 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
+    <form onSubmit={handleSubmit} className="helix-card p-5">
       <div className="flex items-center gap-2">
         <KeyRound size={18} className="text-[var(--helix-purple)]" />
         <h3 className="font-black text-[var(--helix-navy)]">Wachtwoord wijzigen</h3>
