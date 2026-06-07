@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef } from 'react';
 import PresenterImportedObjectCard from './PresenterImportedObjectCard';
 import PresenterMathToolObject from './PresenterMathToolObject';
 import { isPresenterImportedObject } from './presenterContentObjectUtils.js';
@@ -68,6 +68,81 @@ const moveCaretToEnd = (element) => {
   const range = document.createRange();
   range.selectNodeContents(element);
   range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
+};
+
+const getTextSelectionOffsets = (element) => {
+  if (!element || typeof window === 'undefined' || typeof document === 'undefined') return null;
+
+  const selection = window.getSelection?.();
+  if (!selection || selection.rangeCount === 0) return null;
+
+  const range = selection.getRangeAt(0);
+  const isInsideElement = (node) => node === element || (node && element.contains(node));
+  if (!isInsideElement(range.startContainer) || !isInsideElement(range.endContainer)) return null;
+
+  try {
+    const startRange = range.cloneRange();
+    startRange.selectNodeContents(element);
+    startRange.setEnd(range.startContainer, range.startOffset);
+
+    const endRange = range.cloneRange();
+    endRange.selectNodeContents(element);
+    endRange.setEnd(range.endContainer, range.endOffset);
+
+    return {
+      start: startRange.toString().length,
+      end: endRange.toString().length
+    };
+  } catch {
+    return null;
+  }
+};
+
+const findTextPosition = (root, offset) => {
+  if (!root || typeof document === 'undefined' || typeof window === 'undefined') return null;
+
+  const nodeFilter = window.NodeFilter;
+  if (!nodeFilter) return { node: root, offset: 0 };
+
+  const targetOffset = isFiniteNumber(offset) ? Math.max(0, offset) : 0;
+  const walker = document.createTreeWalker(root, nodeFilter.SHOW_TEXT);
+  let remaining = targetOffset;
+  let lastTextNode = null;
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    const length = node.textContent?.length ?? 0;
+    lastTextNode = node;
+
+    if (remaining <= length) {
+      return { node, offset: remaining };
+    }
+
+    remaining -= length;
+  }
+
+  if (lastTextNode) {
+    return { node: lastTextNode, offset: lastTextNode.textContent?.length ?? 0 };
+  }
+
+  return { node: root, offset: root.childNodes?.length ?? 0 };
+};
+
+const moveCaretToOffset = (element, offset) => {
+  if (!element || typeof window === 'undefined' || typeof document === 'undefined') return;
+
+  const selection = window.getSelection?.();
+  if (!selection || typeof document.createRange !== 'function') return;
+
+  const position = findTextPosition(element, offset);
+  if (!position) return;
+
+  const range = document.createRange();
+  element.focus?.();
+  range.setStart(position.node, position.offset);
+  range.collapse(true);
   selection.removeAllRanges();
   selection.addRange(range);
 };
@@ -305,12 +380,28 @@ const renderObjectShape = (object, markerId) => {
   }
 };
 
-function PresenterTextObject({ object, interactive, selected = false, onInteract, onSelectObject, onTextChange }) {
+function PresenterTextObject({
+  object,
+  interactive,
+  selected = false,
+  textCaretRequest,
+  onInteract,
+  onSelectObject,
+  onTextChange,
+  onTextCursorChange
+}) {
   const editorRef = useRef(null);
   const focusAtEndRef = useRef(false);
   const { width, height } = getObjectFrame(object);
   const textStyle = getTextStyle(object);
   const text = getTextContent(object);
+
+  const reportCursor = useCallback(() => {
+    const selection = getTextSelectionOffsets(editorRef.current);
+    if (selection) {
+      onTextCursorChange?.(object.id, selection);
+    }
+  }, [object.id, onTextCursorChange]);
 
   useEffect(() => {
     const editor = editorRef.current;
@@ -320,8 +411,28 @@ function PresenterTextObject({ object, interactive, selected = false, onInteract
     }
   }, [text]);
 
+  useEffect(() => {
+    if (textCaretRequest?.objectId !== object.id) return;
+
+    const editor = editorRef.current;
+    if (!editor || typeof window === 'undefined') return;
+
+    const restoreCaret = () => {
+      moveCaretToOffset(editor, textCaretRequest.offset);
+      reportCursor();
+    };
+
+    if (typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(restoreCaret);
+      return;
+    }
+
+    restoreCaret();
+  }, [object.id, reportCursor, textCaretRequest]);
+
   const handleInput = (event) => {
     onTextChange?.(object.id, event.currentTarget.innerText);
+    reportCursor();
   };
 
   const handleFocus = () => {
@@ -329,8 +440,20 @@ function PresenterTextObject({ object, interactive, selected = false, onInteract
     onSelectObject?.(object.id);
     if (focusAtEndRef.current) {
       focusAtEndRef.current = false;
-      requestAnimationFrame(() => moveCaretToEnd(editorRef.current));
+      const focusAtEnd = () => {
+        moveCaretToEnd(editorRef.current);
+        reportCursor();
+      };
+
+      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(focusAtEnd);
+      } else {
+        focusAtEnd();
+      }
+      return;
     }
+
+    reportCursor();
   };
 
   const handlePointerDown = (event) => {
@@ -351,9 +474,13 @@ function PresenterTextObject({ object, interactive, selected = false, onInteract
           data-placeholder={PRESENTER_TEXT_PLACEHOLDER}
           data-presenter-interactive="true"
           dir="ltr"
+          onBlur={reportCursor}
           onFocus={handleFocus}
           onInput={handleInput}
+          onKeyUp={reportCursor}
+          onMouseUp={reportCursor}
           onPointerDown={handlePointerDown}
+          onPointerUp={reportCursor}
           ref={editorRef}
           role="textbox"
           suppressContentEditableWarning
@@ -467,6 +594,8 @@ export default function PresenterObjectLayer({
   onObjectPointerDown,
   onDeleteObject,
   onTextChange,
+  textCaretRequest,
+  onTextCursorChange,
   onMathToolChange
 }) {
   const layerId = createDomIdPart(useId());
@@ -522,6 +651,8 @@ export default function PresenterObjectLayer({
                 onInteract={onInteract}
                 onSelectObject={onSelectObject}
                 onTextChange={onTextChange}
+                textCaretRequest={textCaretRequest}
+                onTextCursorChange={onTextCursorChange}
               />
             )
           : isPresenterMathToolObject(object)

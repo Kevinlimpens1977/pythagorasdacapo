@@ -237,6 +237,8 @@ export default function PresenterBoard({
   onDeleteObject,
   onDeleteObjects,
   onTextChange,
+  textCaretRequest,
+  onTextCursorChange,
   onMathToolChange
 }) {
   const surfaceRef = useRef(null);
@@ -580,6 +582,8 @@ export default function PresenterBoard({
           onSelectObject={onSelectObject}
           onDeleteObject={onDeleteObject}
           onTextChange={onTextChange}
+          textCaretRequest={textCaretRequest}
+          onTextCursorChange={onTextCursorChange}
           onMathToolChange={onMathToolChange}
         />
         <PresenterInkLayer page={inkPage} />
