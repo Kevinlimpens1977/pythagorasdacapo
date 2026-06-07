@@ -15,7 +15,9 @@ Als een nieuwe Codex-chat dit document leest, moet die vooral dit weten:
 - Recente hoofdflow: de leerlingroute is uitgebreid met Digidocent, AI/open-antwoordbeoordeling, voortgangsblokjes, herstelopdrachten/challenge en leerling-foutmeldingen.
 - Recente CMS-flow: contentblocks hebben nu bron-/reviewflags, readiness, publicatie-overzicht, veilige public snapshots en zichtbaar bewerkmenu in de navigatieboom.
 - Recente NotebookLM-flow: slidedeckpackages krijgen bronmanifest, generatie-/reviewmetadata en kunnen na upload/review terug synchroniseren naar het geopende CMS-slidedeckblok.
-- Adminnavigatie is nu: `Lesstof`, `Voortgang`, `Leerlingen`, `Meldingen`, `Spellen`, `Presenter`, `Instellingen`. De oude hoofdknop `Beheer` en de oude Admin Hub zijn verwijderd.
+- Adminnavigatie is nu in code: `Lesstof`, `Voortgang`, `Leerlingen`, `Spellen`, `Presenter`, `Instellingen`. `Meldingen` staat als route `/admin/meldingen` onder `Instellingen` met open-meldingenbadge; `Projectkompas` heeft een aparte adminknop en route `/admin/projectkompas`.
+- Recente Presenter-flow: naast V1a Core zijn tekstobjecten, een beperkt wiskundesymbolenpalet, verhoudingstabel/Pythagoras-bordtools, paginathumbnails en HELIX-lesstofimport als snapshotpagina's aanwezig. Gum/borstelgroottes zijn in de actuele codecheck nog niet als aparte toolbarflow zichtbaar.
+- Recente leerlingbeheer-flow: leerlingfoto-import ondersteunt klassenfoto upload/plakken, PDF-fotolijstimport op basis van tekstlaag, reviewrijen en definitieve goedkeuring via Callable Function `approveStudentPhotoImportCrop`.
 - Bekende ongerelateerde untracked items kunnen in gitstatus staan, bijvoorbeeld losse screenshots in `exports/`. Niet automatisch stagen of verwijderen.
 - De gebruiker wil vaak eerst bevraagd worden bij grote productkeuzes, maar gaf voor de huidige Digidocent- en meldingenrichting expliciet akkoord.
 - Volledige lint kan bestaande repo-brede schuld raken. Gebruik gericht `npx eslint <aangepaste bestanden>`, gerichte `node --test ...` en `npm run build`.
@@ -53,6 +55,7 @@ De inhoudelijke startcontext is VMBO 1-2 wiskunde rond Pythagoras, maar de archi
 
 - Frontend: React 19, Vite, Tailwind CSS 4, lucide-react.
 - Backend/data: Firebase Authentication, Firestore en Firebase Storage.
+- Cloud Functions staan in `functions/index.js` en bevatten onder andere OpenRouter/Digidocent, OCR, leerlingaccount-sync, wachtwoordreset en leerlingfoto-importgoedkeuring.
 - Belangrijke routes staan in `src/App.jsx`.
 - Adminnavigatie staat in `src/lib/adminWorkspaceNav.js`.
 - Lesbloktypes staan in `src/lib/contentBlockUtils.js`.
@@ -155,20 +158,22 @@ Firestore:
 - Collectie `studentBugReports`.
 - De service filtert status/categorie client-side na nieuwste query om samengestelde Firestore-indexen voor V1 zoveel mogelijk te vermijden.
 
-Eerder verkend op 28 mei 2026; basis is inmiddels gebouwd:
+Leerlingfoto-import is inmiddels gebouwd als leerlingbeheerflow:
 
-- Een importtool voor leerlingfoto's uit een geplakte/geuploade klassenfoto is technisch haalbaar.
-- Betrouwbare V1 moet een controlelijst hebben voor foto-uitsnedes en naam-matching voordat er wordt opgeslagen.
-- Bestaande leerlingen krijgen alleen een goedgekeurd `photo`-object; onbekende leerlingen moeten eerst als review/pending worden behandeld.
-- Echte nieuwe Firebase Auth accounts mogen niet client-side worden aangemaakt. Daarvoor is later een veilige Cloud Function met Firebase Admin SDK nodig.
+- Import uit geplakte/geuploade klassenfoto is aanwezig.
+- Import uit PDF-fotolijst is aanwezig via tekstlaagdetectie en foto-uitsnedevoorstellen.
+- Betrouwbare V1 heeft een controlelijst/reviewtabel voor foto-uitsnedes en naam-matching voordat er wordt opgeslagen.
+- Bestaande leerlingen krijgen alleen een goedgekeurd `photo`-object.
+- Onbekende leerlingen kunnen via `pending_new` als geimporteerd `users`-studentdocument met foto worden aangemaakt; dit is nog geen Firebase Auth-account.
+- Echte nieuwe Firebase Auth accounts mogen niet client-side worden aangemaakt; daarvoor blijft een aparte veilige Cloud Function/Admin SDK-flow nodig.
 
 Actuele richting:
 
 - Houd de admin-only foto-importwizard binnen of naast `AdminLeerlingenPage`.
 - Hergebruik upload/plak/canvas/selectiepatronen uit `ImageCanvasEditor`.
-- Client mag bronfoto uploaden/plakken, cropvoorstellen maken, handmatige uitsnedes laten corrigeren en matches voorstellen.
-- Docent moet elke rij goedkeuren, overslaan of markeren voor latere review voordat data definitief wordt opgeslagen.
-- Voor productie moet definitief koppelen aan `users/{uid}` en definitief opslaan naar `student-photos/...` bij voorkeur via Callable Cloud Function met Admin SDK.
+- Client mag bronfoto uploaden/plakken, PDF-fotolijst verwerken, cropvoorstellen maken, handmatige uitsnedes laten corrigeren en matches voorstellen.
+- Docent moet elke rij goedkeuren, overslaan/afwijzen of als nieuwe geimporteerde leerling markeren voordat data definitief wordt opgeslagen.
+- Definitief koppelen aan `users/{uid}` en definitief opslaan naar `student-photos/...` gebeurt via Callable Cloud Function `approveStudentPhotoImportCrop`.
 - De client mag geen echte Firebase Auth-leerlingaccounts bulk aanmaken.
 
 ### Spellen
@@ -208,6 +213,9 @@ Huidig:
 - `/admin/instellingen` is de nieuwe instellingen-landingspagina.
 - `/admin` redirect naar `/admin/instellingen`.
 - Digidocent/OpenRouter instellingen blijven op `/admin/ai-instellingen` en vallen route-actief onder `Instellingen`.
+- Leerling-foutmeldingen staan technisch op `/admin/meldingen` en vallen in de actuele adminnavigatie route-actief onder `Instellingen`.
+- De adminshell toont bij `Instellingen` een open-meldingenbadge wanneer er open leerlingmeldingen zijn.
+- `/admin/projectkompas` toont dit document in de app en is bereikbaar via een aparte `Projectkompas`-knop buiten de hoofdworkspace-tabs.
 - De oude `Startinformatie`-modal uit een eerdere versie is verwijderd.
 - De oude Admin Hub / Beheer-overzichtspagina is verwijderd.
 
@@ -482,17 +490,19 @@ Gebouwd:
 - Toolbar zonder horizontale scroll.
 - Pen met kleur- en diktekeuze.
 - Markeerstift met kleur- en diktekeuze.
-- Gum voor penstreken.
+- Geen aparte gumtool zichtbaar in de actuele toolbarcode; gum/borstelgedrag blijft open V1a-plus werk.
 - Achtergronden: wit, lijnen en vierkante ruitjes.
 - Ruitjes blijven vierkant en kunnen als wiskundeschrift dienen.
 - Snap-to-grid voor relevante tekenacties.
 - Vormobjecten: rechthoek, cirkel/ovaal, lijn, pijl, driehoek en verwante objecten.
+- Extra bordobjecten in actuele code: tekst, verhoudingstabel-tool en Pythagoras-schema-tool.
 - Objectlaag met selectie.
 - Selectiekader/marquee-selectie.
 - Objecten verslepen en schalen via transformaties.
 - Rood verwijderpunt/kruisje bij geselecteerde objecten.
 - Pagina helemaal leegmaken.
 - Tijdelijke meetinstrument-overlays: liniaal, geodriehoek, passer, gradenboog.
+- Paginathumbnails bestaan in `PresenterPageThumbnail.jsx`.
 
 Verificatiestatus:
 
@@ -518,15 +528,19 @@ Doel:
 - Docenten tekst en wiskundige notatie laten toevoegen zonder meteen interactieve V1b-vraagvensters te bouwen.
 - Gumgedrag natuurlijker maken voor penstreken op een digibord.
 
-Gewenst in V1a-plus:
+Actueel deels gebouwd in V1a-plus:
 
 - Teksttool in de toolbar.
 - Klik/tap op het bord om een tekstobject te plaatsen.
 - Tekstobjecten zijn selecteerbaar, verplaatsbaar en schaalbaar zoals andere objecten.
 - Tekstobjecten blijven recht en leesbaar.
-- Basale tekstinstellingen: tekstgrootte en eventueel vet/cursief als dit UX-matig rustig blijft.
-- Wiskundesymbolenpalet bij tekstinvoer.
-- Minimaal gewenste symbolen:
+- Basale tekstinstellingen: kleur, grootte, fontkeuze, vet/cursief en uitlijning.
+- Wiskundesymbolenpalet bij tekstinvoer bestaat, maar is nog beperkt.
+- Actuele zichtbare symbolen in `PresenterToolbar.jsx`: `Â²`, `âˆš`, `Ï€`, `Ã·`, `Ã—`, `â‰¤`, `â‰¥`.
+
+Nog gewenst in V1a-plus:
+
+- Wiskundesymbolenpalet uitbreiden tot de bredere doelset:
   - `π`
   - `√`
   - `²`
@@ -562,20 +576,22 @@ Huidige richting:
 - Paragraafimport via fullscreen kiesvenster.
 - Structuur: hoofdstuk -> paragraaf -> import.
 - Alleen gepubliceerde blokken importeren.
+- Actuele import ondersteunt gepubliceerde `theory`, `example`, `media`, `question` en `slidedeck` als snapshotpagina/object.
 - Import voegt nieuwe pagina's achteraan toe.
 - Import is een momentopname, geen live koppeling met CMS-wijzigingen.
 - De importroute moet direct en rustig blijven: liever via de onderste werkbalk dan via dubbele knoppen.
+- Tokenmetadata wordt bij import uit snapshots gestript.
 
 Verdieping voor later:
 
-- Theorie en voorbeelden als grote bordobjecten.
-- Vraagvensters vrij plaatsbaar en schaalbaar.
-- Vraagvensters ondersteunen huidige vraagtypes.
+- Theorie, voorbeelden, media, vragen en slidedecks bestaan als geimporteerde bordobjecten, maar verdere browsermatige praktijkpolish blijft nodig.
+- Vraagvensters zijn vrij plaatsbaar en schaalbaar als Presenter-objecten; interactieve leerling-/scorelogica op het bord blijft later werk.
+- Vraagvensters renderen previews voor huidige vraagtypes via `presenterContentObjectUtils.js`; echte klassikale interactie en scoreflow blijven later werk.
 - `Controleer` verschijnt pas na input.
 - Feedback via subtiele groene/rode rand.
 - Tokens blijven onzichtbaar in Presenter.
 - Media binnen geimporteerde blokken gebruikt grote digibordvriendelijke controls.
-- Echte pagina-thumbnails in linker paneel.
+- Paginathumbnails bestaan, maar verdere visuele/performantiepolish blijft open.
 
 Niet bouwen zonder nieuw akkoord:
 
@@ -669,15 +685,17 @@ Let op:
   - Lesstof
   - Voortgang
   - Leerlingen
-  - Meldingen
   - Spellen
   - Presenter
   - Instellingen
+- `Meldingen` draait als `/admin/meldingen` onder `Instellingen`, met open-meldingenbadge in de adminshell.
+- `Projectkompas` draait als aparte adminknop/route `/admin/projectkompas`.
 - Active states zijn routegroep-gebaseerd.
 - `Beheer` is als hoofdnav en oude hub verwijderd; `/admin` redirect naar `/admin/instellingen`.
 - `/admin/klassen` valt onder `Leerlingen`.
 - `/admin/taken-toewijzen` valt onder `Lesstof`.
 - `/admin/ai-instellingen` valt onder `Instellingen`.
+- `/admin/meldingen` valt in de actuele code onder `Instellingen`.
 - HELIX design system richting is gestart: light-mode onderwijsstijl, zachte surfaces, warme accenten, Sora/Inter-achtige typografie, kaart- en knopstijl.
 - Actieve headerknoppen en voortgangtabs gebruiken de lichte HELIX-gradient als borderrand met witte vulling en donkere tekst/icons.
 
@@ -781,7 +799,7 @@ De basis voor leerlingfoto-import en avatarhergebruik is gebouwd. De onderstaand
 
 ### Doel
 
-Een administrator kan een klassenfoto/screenshot uploaden of plakken, leerlingfoto's uitsnijden, bestaande leerlingen matchen en na controle de foto als avatar aan het leerlingaccount koppelen.
+Een administrator kan een klassenfoto/screenshot uploaden of plakken, een PDF-fotolijst importeren, leerlingfoto's uitsnijden, bestaande leerlingen matchen en na controle de foto als avatar aan het leerlingaccount koppelen.
 
 Belangrijk principe:
 
@@ -802,6 +820,7 @@ Wizardstappen:
 
 1. `Bron`
    - Upload of plak een JPG/PNG/WebP klassenfoto of screenshot.
+   - Alternatief: upload een PDF-fotolijst; de app leest namen uit de PDF-tekstlaag en maakt foto-uitsnedes op basis van naamposities.
    - Gebruik een duidelijke drop/upload-zone.
    - Toon foutmelding bij ongeldig bestand.
    - Waarschuw bij groot bestand.
@@ -819,9 +838,10 @@ Wizardstappen:
 
 4. `Goedkeuren`
    - Opslaan mag pas wanneer alle rijen een expliciete beslissing hebben.
-   - Mogelijke beslissingen: koppelen, overslaan, later reviewen.
+   - Mogelijke beslissingen in de actuele code: koppelen aan bestaande leerling (`approve`), nieuwe geimporteerde leerling aanmaken (`pending_new`) of afwijzen/overslaan (`reject`).
    - Toon progress voor `uitsnijden`, `uploaden`, `opslaan`.
    - Ondersteun gedeeltelijk succes: geslaagde foto's blijven gekoppeld, mislukte rijen krijgen retry/overslaan.
+   - Definitief opslaan gebruikt Callable Function `approveStudentPhotoImportCrop`; developer-login mag de wizard previewen maar niet definitief koppelen.
 
 Na goedkeuren:
 
@@ -884,7 +904,7 @@ photoImports/{importId}/crops/{cropId} {
 }
 ```
 
-Voor onbekende leerlingen:
+Voor onbekende leerlingen volgens het oorspronkelijke datamodel:
 
 ```js
 pendingStudents/{pendingId} {
@@ -901,6 +921,11 @@ pendingStudents/{pendingId} {
   resolvedUserId
 }
 ```
+
+Actuele codecheck 7 juni 2026:
+
+- `approveStudentPhotoImportCrop` maakt bij `pending_new` direct een geimporteerd `users/{photo_import_...}`-studentdocument met `isImportedStudent: true`, lege e-mail en gekoppelde foto.
+- `pendingStudents` bestaat nog in rules/resetcontext, maar is niet de hoofdroute van de huidige goedkeurfunctie.
 
 ### Storage
 
@@ -924,29 +949,41 @@ Privacykeuze:
 ### Client-Side Mag
 
 - Afbeelding uploaden of plakken.
+- PDF-fotolijst verwerken via `pdfjs-dist`, mits de PDF bruikbare tekstlaag/namen bevat.
 - Canvas-crops maken.
 - Lokale preview/review tonen.
 - Bestaande leerlingen uit dezelfde klas tonen en handmatig matchen.
-- Tijdelijke importsource/crops uploaden, mits rules admin-only zijn.
-- `photoImports` conceptmetadata schrijven als admin, mits rules strak valideren.
+- Tijdelijke importsource/crops uploaden.
+- `photoImports` en croprecords schrijven als admin.
+
+Actuele rules-nuance:
+
+- Firestore `photoImports` en `pendingStudents` zijn admin-only.
+- Storage `photo-imports/...` staat in de actuele `storage.rules` nog open voor iedere ingelogde gebruiker.
+- Storage `student-photos/...` is read voor iedere ingelogde gebruiker en write false; definitieve writes lopen via Admin SDK.
 
 ### Cloud Function / Admin SDK Voor Productie-Hardening
 
-Gebruik een callable function zoals `approveStudentPhotoImportCrop` of een batchvariant.
+Callable Function `approveStudentPhotoImportCrop` bestaat in `functions/index.js`.
 
-De function moet:
+De function doet nu:
 
-- Controleren dat caller admin/docent is.
+- Controleren dat caller de klas mag beheren.
 - Controleren dat caller toegang heeft tot `klasId`.
 - Verifieren dat `matchedUserId` bestaat.
 - Verifieren dat `matchedUserId.role == "student"`.
-- Verifieren dat de leerling in dezelfde klas zit of bewust door admin is gekozen.
-- Afbeeldingen normaliseren naar vaste veilige formaten en afmetingen.
-- Tijdelijke crop kopieren/verplaatsen naar `student-photos/...`.
+- Verifieren dat de leerling in dezelfde klas zit, met bewuste adminoverride-optie.
+- Tijdelijke crop kopieren naar `student-photos/...`.
 - `users/{uid}.photo` bijwerken.
-- `pendingStudents` aanmaken of mergen voor onbekende leerlingen.
+- Bij `pending_new` een geimporteerd leerlingdocument met foto aanmaken.
+- Afwijzen/overslaan als `reject` verwerken.
+
+Nog hardenen:
+
+- Afbeeldingen server-side normaliseren/resizen naar vaste veilige formaten; V1 kopieert dezelfde client-WebP naar avatar en thumb.
 - Oude importbestanden opruimen.
 - Eventueel oude leerlingfoto's vervangen/verwijderen.
+- Batchvariant of betere gedeeltelijk-succes/retry-flow uitwerken.
 
 ### Securityregels
 
@@ -959,7 +996,7 @@ Voor productie-hardening:
 - `student-photos` read alleen admin/docent en eventueel de leerling zelf.
 - `photo-imports` read/write alleen admin/docent en tijdelijk met `expiresAt`.
 - Storage moet MIME en bestandsgrootte beperken tot veilige image-types.
-- PDF is voor V1 leerlingfoto-import niet nodig, tenzij later expliciet gekozen.
+- PDF-fotolijstimport is inmiddels gekozen en gebouwd; hardening moet rekening houden met `application/pdf` als bron alleen in deze importflow.
 
 Belangrijk risico:
 
@@ -970,8 +1007,11 @@ Belangrijk risico:
 
 - Presenter Core gebouwd.
 - Toolbar, pen, markeerstift, ruitjes, objecten, selectie, pagina's, clear page, auto-hide, recovery, fullscreen en meetinstrument-overlays aanwezig.
+- Tekstobjecten, beperkt wiskundesymbolenpalet, verhoudingstabel-tool, Pythagoras-schema-tool en paginathumbnails zijn inmiddels in code aanwezig.
+- Een aparte gumtool met borstelgroottes is in de actuele codecheck nog niet zichtbaar.
 - De donkere Presenter-bovenrand is gelijkgetrokken met de zachte toolbar-achtergrond.
 - De onderste werkbalk is de primaire route voor lesstofimport.
+- HELIX-lesstofimport maakt snapshotpagina's/objecten van gepubliceerde theorie, voorbeeld, media, vraag en slidedeck.
 - Verdere praktijkvalidatie blijft open.
 
 ### Authenticatie / Firebase
@@ -993,15 +1033,16 @@ Nodig:
 - Meetinstrumenten beoordelen op digibordgevoel.
 - Performance bij veel penstreken/objecten testen.
 
-### 2. Presenter V1a-plus Bouwen
+### 2. Presenter V1a-plus Afronden
 
-Alleen bordgerichte uitbreidingen, nog zonder HELIX-contentlaag.
+Alleen bordgerichte afronding; tekst en een beperkte symbolenbasis zijn al gebouwd.
 
 Focus:
 
-- Teksttool toevoegen.
-- Tekstobjecten selecteerbaar, verplaatsbaar en schaalbaar maken.
+- Teksttool browsermatig valideren en polijsten.
+- Tekstobjecten, selectie, verplaatsen en schalen op touch/groot scherm valideren.
 - Wiskundesymbolenpalet toevoegen met o.a. `π`, `√`, `²`, `³`, `×`, `÷`, `≤`, `≥`, `≈`, `≠`, `∠` en `°`.
+- Nuance: het symbolenpalet bestaat al beperkt; de symboolregel hierboven betekent uitbreiden tot de volledige doelset en browsermatig valideren.
 - Gum uitbreiden met borstel-diameteropties small, medium en large.
 - Gum alleen pen-/markeerstiftstreken laten wissen, zodat objecten niet per ongeluk verdwijnen.
 
@@ -1012,8 +1053,8 @@ Alleen na expliciet akkoord.
 Focus:
 
 - Interactieve vraagvensters op het bord.
-- Media en slidedecks als bordobjecten.
-- Pagina-thumbnails.
+- Media en slidedecks als rijkere interactieve bordobjecten.
+- Paginathumbnails verder polijsten.
 - Eventueel opslag/export later.
 
 ### 4. Leerlingroute Afronden
@@ -1044,11 +1085,12 @@ Nodig:
 
 - Accountbeheer en veilige wachtwoordflows verder hardenen.
 - Uitgebreidere filters.
-- Leerlingfoto-import verder hardenen volgens de V1 importbatch/reviewflow.
+- Leerlingfoto-import verder hardenen volgens de bestaande upload/PDF/review/Callable Function-flow.
 - Avatarweergave uitbreiden met hover/focus-popup.
-- `photoImports`, `pendingStudents` en `users/{uid}.photo` datamodel controleren tegen de actuele implementatie.
-- Callable Cloud Function/Admin SDK overwegen/gebruiken voor definitieve foto-goedkeuring en opslag bij productiegang.
-- Als echte nieuwe leerlingaccounts bulk aangemaakt moeten worden: aparte Cloud Function/Admin SDK-flow ontwerpen.
+- `photoImports`, `users/{uid}.photo` en de huidige `pending_new`-route naar geimporteerde `users`-documenten controleren tegen privacy- en beheerwensen.
+- `pendingStudents` alleen als eventueel later reviewmodel heroverwegen; de huidige goedkeurfunctie gebruikt die collectie niet als hoofdpad.
+- Callable Cloud Function/Admin SDK bestaat voor definitieve foto-goedkeuring; harden nu vooral rules, server-side resizing, cleanup en batch/retry.
+- Als echte Firebase Auth-accounts voor nieuwe leerlingen bulk aangemaakt moeten worden: aparte Cloud Function/Admin SDK-flow ontwerpen.
 
 ### 7. Voortgang En Analytics Versterken
 
@@ -1121,6 +1163,8 @@ Nodig:
 - `README.md` is nog geen betrouwbare projectdocumentatie.
 - `FIRESTORE_SCHEMA.md` is deels ouder dan de implementatie.
 - Volledige `npm run lint` kan nog falen op bestaande lint-schuld. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
+- Firestore rules zijn verder dan een dev-basis voor publieke snapshots en leerlingfoto-import, maar Storage rules voor `photo-imports` en `student-photos` zijn nog pragmatisch en moeten voor productie opnieuw beoordeeld worden.
+- Functions zijn onderdeel van de actuele architectuur; gebruik `functions/index.js` en `functions/index.test.js` bij Digidocent, OCR, leerlingwachtwoorden, leerlingaccount-sync en foto-importgoedkeuring.
 - Recente brede lib-teststatus: expliciete `src/lib` testset draaide groen met 427 tests.
 - Recente buildstatus: `npm run build` slaagde, met bekende Vite-waarschuwingen over chunkgrootte en dynamische imports voor `firestoreService.js`/`storageService.js`.
 - Dev server draait meestal op `http://localhost:5173/` of een nabije Vite-poort. De gebruiker gebruikt vaak `localhost` liever dan `127.0.0.1`.
@@ -1145,10 +1189,11 @@ Actuele belangrijke routes:
 - `/admin/leerlingen` leerlingbeheer
 - `/admin/klassen` klassenbeheer, actief onder `Leerlingen`
 - `/admin/taken-toewijzen` lesmateriaal klaarzetten, actief onder `Lesstof`
-- `/admin/meldingen` leerling-foutmeldingen
+- `/admin/meldingen` leerling-foutmeldingen, actief onder `Instellingen`
 - `/admin/spellen` spellen
 - `/admin/presenter` Presenter
 - `/admin/ai-instellingen` Digidocent/OpenRouter instellingen, actief onder `Instellingen`
+- `/admin/projectkompas` actueel Projectkompas in de app
 
 Belangrijke bestanden bij CMS/lesroutewerk:
 
@@ -1184,6 +1229,12 @@ Belangrijke bestanden bij adminnavigatie, leerlingen en instellingen:
 - `src/lib/adminWorkspaceNav.test.js`
 - `src/pages/AdminLeerlingenPage.jsx`
 - `src/pages/AdminKlassenPage.jsx`
+- `src/components/admin/StudentPhotoImportWizard.jsx`
+- `src/services/studentPhotoImportService.js`
+- `src/services/studentPhotoPdfListImportService.js`
+- `src/lib/studentPhotoImportUtils.js`
+- `src/lib/studentPhotoPdfListUtils.js`
+- `src/lib/studentPhotoUtils.js`
 - `src/pages/AdminSettingsPage.jsx`
 - `src/pages/AdminAiSettingsPage.jsx`
 - `src/lib/authLoginUtils.js`
@@ -1197,9 +1248,15 @@ Belangrijke bestanden bij Presenter:
 - `src/components/presenter/PresenterInkLayer.jsx`
 - `src/components/presenter/PresenterObjectLayer.jsx`
 - `src/components/presenter/PresenterBackground.jsx`
+- `src/components/presenter/PresenterImportDialog.jsx`
+- `src/components/presenter/PresenterImportedObjectCard.jsx`
+- `src/components/presenter/PresenterMathToolObject.jsx`
+- `src/components/presenter/PresenterPageThumbnail.jsx`
 - `src/components/presenter/PresenterInstrumentOverlay.jsx`
 - `src/components/presenter/PresenterPagePanel.jsx`
 - `src/components/presenter/PresenterRecoveryPrompt.jsx`
+- `src/components/presenter/presenterContentObjectUtils.js`
+- `src/lib/presenterContentImport.js`
 - `src/lib/presenterModel.js`
 - `src/lib/presenterHistory.js`
 - `src/lib/presenterGeometry.js`
@@ -1218,6 +1275,9 @@ Belangrijke services:
 - `src/services/klasService.js`
 - `src/services/storageService.js`
 - `src/services/studentBugReportService.js`
+- `src/services/studentPhotoImportService.js`
+- `functions/index.js`
+- `functions/index.test.js`
 
 Recente commitclusters die context geven:
 
