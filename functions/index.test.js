@@ -106,9 +106,12 @@ const createDb = (initialDocs = {}) => {
 
 const createBucket = () => {
   const copies = [];
+  const saves = [];
 
   return {
+    name: "test-bucket",
     copies,
+    saves,
     file(path) {
       return {
         path,
@@ -117,6 +120,9 @@ const createBucket = () => {
         },
         async copy(destination) {
           copies.push({ from: path, to: destination.path });
+        },
+        async save(buffer, options) {
+          saves.push({ path, buffer, options });
         },
       };
     },
@@ -370,6 +376,56 @@ test("createOrUpdateTokenShopItem validates price and stores admin-managed catal
     createdAt: "timestamp",
     createdBy: "admin-1",
   });
+});
+
+test("uploadTokenShopItemImage stores image bytes server-side for admins only", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin" },
+    "users/student-1": { role: "student" },
+  });
+  const bucket = createBucket();
+
+  await assert.rejects(
+    () => __test.uploadTokenShopItemImageCore({
+      auth: { uid: "student-1" },
+      data: {
+        itemId: "premium-skin",
+        fileName: "skin.png",
+        contentType: "image/png",
+        imageBase64: Buffer.from("png-bytes").toString("base64"),
+      },
+      db,
+      bucket,
+      now: () => "timestamp",
+      tokenFactory: () => "download-token",
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+
+  const result = await __test.uploadTokenShopItemImageCore({
+    auth: { uid: "admin-1" },
+    data: {
+      itemId: "premium-skin",
+      fileName: "skin.png",
+      contentType: "image/png",
+      imageBase64: Buffer.from("png-bytes").toString("base64"),
+    },
+    db,
+    bucket,
+    now: () => "timestamp",
+    tokenFactory: () => "download-token",
+  });
+
+  assert.equal(result.storagePath, "token-shop-items/premium-skin/image_timestamp.png");
+  assert.equal(
+    result.downloadURL,
+    "https://firebasestorage.googleapis.com/v0/b/test-bucket/o/token-shop-items%2Fpremium-skin%2Fimage_timestamp.png?alt=media&token=download-token",
+  );
+  assert.equal(bucket.saves.length, 1);
+  assert.equal(bucket.saves[0].path, "token-shop-items/premium-skin/image_timestamp.png");
+  assert.equal(bucket.saves[0].buffer.toString(), "png-bytes");
+  assert.equal(bucket.saves[0].options.contentType, "image/png");
+  assert.equal(bucket.saves[0].options.metadata.metadata.firebaseStorageDownloadTokens, "download-token");
 });
 
 test("approveStudentPhotoImportCrop creates a student with photo for pending_new decisions", async () => {

@@ -8,8 +8,7 @@ import {
   where
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import app, { db, storage } from './firebase';
+import app, { db } from './firebase';
 
 const functions = getFunctions(app, 'europe-west1');
 
@@ -147,23 +146,27 @@ export const createOrUpdateTokenShopItem = async (item) => {
   return result.data;
 };
 
+const readFileAsBase64 = (file) => (
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
+    reader.onerror = () => reject(reader.error || new Error('Afbeelding kon niet worden gelezen.'));
+    reader.readAsDataURL(file);
+  })
+);
+
 export const uploadTokenShopItemImage = async ({ itemId, file }) => {
   if (!itemId || !file) {
     throw new Error('itemId en bestand zijn verplicht.');
   }
 
-  const extension = String(file.name || '').split('.').pop()?.toLowerCase() || 'png';
-  const storagePath = `token-shop-items/${itemId}/image_${Date.now()}.${extension}`;
-  const storageRef = ref(storage, storagePath);
-
-  await uploadBytes(storageRef, file, {
+  const uploadImage = httpsCallable(functions, 'uploadTokenShopItemImage');
+  const result = await uploadImage({
+    itemId,
+    fileName: file.name || 'shopitem.png',
     contentType: file.type || 'image/png',
-    customMetadata: { itemId }
+    imageBase64: await readFileAsBase64(file)
   });
 
-  return {
-    storagePath,
-    downloadURL: await getDownloadURL(storageRef)
-  };
+  return result.data;
 };
-

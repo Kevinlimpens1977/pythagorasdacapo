@@ -4,6 +4,7 @@ const { initializeApp } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
+const { randomUUID } = require("crypto");
 
 initializeApp();
 
@@ -85,6 +86,8 @@ const TOKEN_TRANSACTION_TYPES = {
   ADJUSTMENT: "adjustment",
 };
 const TOKEN_SOURCE_KINDS = new Set(["contentBlock", "question", "game"]);
+const TOKEN_SHOP_IMAGE_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+const TOKEN_SHOP_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 const DEFAULT_GAME_TOKEN_REWARD_RULES = {
   "pythagoras-trainer": { enabled: true, min: 0, max: 25, basis: "score_accuracy_completion" },
   "dv-account-escape": { enabled: true, min: 0, max: 10, basis: "score_accuracy_completion" },
@@ -243,6 +246,22 @@ function normalizeShopItemPayload(data = {}, existing = {}) {
     enabled: data.enabled ?? existing.enabled ?? true,
     sortOrder: normalizeInteger(data.sortOrder ?? existing.sortOrder, 0),
   };
+}
+
+function getTokenShopImageExtension({ fileName = "", contentType = "" } = {}) {
+  const explicitExtension = String(fileName || "").split(".").pop()?.toLowerCase();
+  if (["png", "jpg", "jpeg", "webp", "gif"].includes(explicitExtension)) {
+    return explicitExtension === "jpeg" ? "jpg" : explicitExtension;
+  }
+
+  if (contentType === "image/jpeg") return "jpg";
+  if (contentType === "image/webp") return "webp";
+  if (contentType === "image/gif") return "gif";
+  return "png";
+}
+
+function buildFirebaseStorageDownloadUrl({ bucketName, storagePath, token }) {
+  return `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(storagePath)}?alt=media&token=${token}`;
 }
 
 function requireString(value, fieldName) {
@@ -1980,6 +1999,64 @@ async function createOrUpdateTokenShopItemCore({ auth, data = {}, db, now = Fiel
   return { itemId, saved: true };
 }
 
+async function uploadTokenShopItemImageCore({
+  auth,
+  data = {},
+  db,
+  bucket,
+  now = () => Date.now(),
+  tokenFactory = randomUUID,
+}) {
+  const caller = await getCallerDoc({ auth, db });
+  assertAdminRole(caller.data);
+
+  const itemId = cleanIdPart(data.itemId || "");
+  if (!itemId) {
+    throw new HttpsError("invalid-argument", "itemId is ongeldig.");
+  }
+
+  const contentType = String(data.contentType || "image/png").trim().toLowerCase();
+  if (!TOKEN_SHOP_IMAGE_CONTENT_TYPES.has(contentType)) {
+    throw new HttpsError("invalid-argument", "Alleen PNG, JPG, WebP of GIF-afbeeldingen zijn toegestaan.");
+  }
+
+  const imageBase64 = requireString(data.imageBase64, "imageBase64");
+  const imageBuffer = Buffer.from(imageBase64, "base64");
+  if (!imageBuffer.length || imageBuffer.length > TOKEN_SHOP_IMAGE_MAX_BYTES) {
+    throw new HttpsError("invalid-argument", "Afbeelding moet kleiner zijn dan 4 MB.");
+  }
+
+  const timestamp = typeof now === "function" ? now() : Date.now();
+  const extension = getTokenShopImageExtension({
+    fileName: data.fileName || "",
+    contentType,
+  });
+  const downloadToken = tokenFactory();
+  const storagePath = `token-shop-items/${itemId}/image_${cleanIdPart(timestamp)}.${extension}`;
+
+  await bucket.file(storagePath).save(imageBuffer, {
+    contentType,
+    resumable: false,
+    metadata: {
+      cacheControl: "public,max-age=3600",
+      metadata: {
+        firebaseStorageDownloadTokens: downloadToken,
+        itemId,
+        uploadedBy: auth.uid,
+      },
+    },
+  });
+
+  return {
+    storagePath,
+    downloadURL: buildFirebaseStorageDownloadUrl({
+      bucketName: bucket.name,
+      storagePath,
+      token: downloadToken,
+    }),
+  };
+}
+
 exports.approveStudentPhotoImportCrop = onCall({
   region: REGION,
 }, async (request) => {
@@ -2028,6 +2105,17 @@ exports.createOrUpdateTokenShopItem = onCall({
     auth: request.auth,
     data: request.data || {},
     db: getFirestore(),
+  });
+});
+
+exports.uploadTokenShopItemImage = onCall({
+  region: REGION,
+}, async (request) => {
+  return uploadTokenShopItemImageCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    bucket: getStorage().bucket(),
   });
 });
 
@@ -2188,6 +2276,7 @@ exports.__test = {
   syncAllStudentAuthAccountsCore,
   updateAiTutorRulesCore,
   updateOpenRouterConfigCore,
+  uploadTokenShopItemImageCore,
   buildAiTutorSystemPrompt,
   buildAiTutorMistakeDiagnosis,
   normalizeReadableMathText,
