@@ -97,7 +97,7 @@ const TOKEN_SHOP_ITEM_TYPES = new Set([
   "victoryEffect",
   "titleBadge",
 ]);
-const TOKEN_SHOP_RARITIES = new Set(["common", "rare", "epic", "legendary"]);
+const TOKEN_SHOP_RARITIES = new Set(["common", "rare", "epic", "platinum", "legendary"]);
 const TOKEN_SHOP_TARGET_SLOT_BY_TYPE = {
   avatarSkin: "avatarSkin",
   avatarFrame: "avatarFrame",

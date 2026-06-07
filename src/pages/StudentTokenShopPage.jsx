@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BadgeCheck, CheckCircle2, Coins, Gift, Loader2, ReceiptText, ShoppingBag, Sparkles, UserCircle } from 'lucide-react';
+import { BadgeCheck, CheckCircle2, Coins, Gift, Loader2, ReceiptText, ShoppingBag, Sparkles } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import {
   equipTokenShopItem,
@@ -92,6 +92,7 @@ export default function StudentTokenShopPage() {
   );
 
   const activeTitle = activeRewardItems.find((item) => item.itemType === 'titleBadge');
+  const activeAvatar = activeRewardItems.find((item) => item.itemType === 'avatarSkin');
   const activeFrame = activeRewardItems.find((item) => item.itemType === 'avatarFrame');
   const activeBanner = activeRewardItems.find((item) => item.itemType === 'profileBanner');
   const activePins = activeRewardItems.filter((item) => item.itemType === 'shopBadge');
@@ -164,10 +165,16 @@ export default function StudentTokenShopPage() {
                 const bought = purchaseIds.has(item.id);
                 const active = activeIds.has(item.id);
                 return (
-                  <article key={item.id} className="helix-card overflow-hidden">
-                    <div className="aspect-[16/10] bg-[var(--helix-surface-soft)]">
+                  <article
+                    key={item.id}
+                    className={`token-shop-card token-shop-rarity-${item.rarity || 'common'} token-shop-motion-${item.previewStyle?.motion || 'shine'} helix-card overflow-hidden`}
+                    style={{ '--token-avatar-accent': item.previewStyle?.accent || 'var(--helix-purple)' }}
+                  >
+                    <div className="token-shop-media aspect-[16/10] bg-[var(--helix-surface-soft)]">
+                      <span className="token-shop-sparkles" aria-hidden="true" />
+                      <span className="token-shop-shine" aria-hidden="true" />
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.title || ''} className="h-full w-full object-cover" />
+                        <img src={item.imageUrl} alt={item.title || ''} className="token-shop-avatar-image h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full items-center justify-center text-[var(--helix-purple)]/40">
                           <Gift size={52} />
@@ -224,13 +231,18 @@ export default function StudentTokenShopPage() {
                     <div>
                       <p className="text-xs font-black uppercase tracking-widest text-[var(--helix-muted)]">Mijn profiel</p>
                       <h2 className="mt-1 font-black text-[var(--helix-navy)]">{currentUser?.displayName || 'Leerling'}</h2>
-                      <p className="helix-muted mt-1 text-sm">{activeTitle?.title || 'Kies een titel in je shop'}</p>
+                      <p className="helix-muted mt-1 text-sm">{activeTitle?.title || activeAvatar?.title || 'Starter Avatar'}</p>
                     </div>
                     <div
-                      className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-4 bg-white shadow-[var(--helix-shadow-card)]"
-                      style={{ borderColor: activeFrame?.previewStyle?.accent || 'var(--helix-border)' }}
+                      className="token-profile-avatar flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 bg-white shadow-[var(--helix-shadow-card)]"
+                      style={{
+                        '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)',
+                        borderColor: activeFrame?.previewStyle?.accent || activeAvatar?.previewStyle?.accent || 'var(--helix-border)'
+                      }}
                     >
-                      <UserCircle size={46} className="text-[var(--helix-purple)]" />
+                      {activeAvatar?.imageUrl ? (
+                        <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
+                      ) : null}
                     </div>
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">

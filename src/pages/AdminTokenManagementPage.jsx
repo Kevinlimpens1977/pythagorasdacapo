@@ -150,7 +150,7 @@ export default function AdminTokenManagementPage() {
     setItemDraft({
       ...itemDraft,
       itemType,
-      targetSlot: TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType] || 'pin'
+      targetSlot: TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType] || 'avatarSkin'
     });
   };
 
@@ -168,7 +168,7 @@ export default function AdminTokenManagementPage() {
       await createOrUpdateTokenShopItem({
         ...itemDraft,
         itemId,
-        targetSlot: itemDraft.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemDraft.itemType] || 'pin',
+        targetSlot: itemDraft.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemDraft.itemType] || 'avatarSkin',
         imageUrl: image.downloadURL || '',
         imageStoragePath: image.storagePath || ''
       });
@@ -189,11 +189,7 @@ export default function AdminTokenManagementPage() {
     setError('');
     try {
       const results = await seedDefaultTokenShopCatalog();
-      setMessage(
-        results.length === 0
-          ? 'Er staat geen standaardcatalogus meer klaar. Upload handmatig je nieuwe avatars.'
-          : `${results.length} standaard shopitems zijn toegevoegd of bijgewerkt.`
-      );
+      setMessage(`${results.length} avatars zijn toegevoegd of bijgewerkt.`);
     } catch (err) {
       console.error('Standaardcatalogus laden mislukt:', err);
       setError(err.message || 'Standaardcatalogus laden is mislukt.');
@@ -251,11 +247,11 @@ export default function AdminTokenManagementPage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="font-black text-[var(--helix-navy)]">Avatarcatalogus</h2>
-              <p className="helix-muted mt-1 text-sm">De oude standaardbadges zijn leeggezet. Voeg hier straks handmatig je nieuwe avatars toe.</p>
+              <p className="helix-muted mt-1 text-sm">Vul de shop met avatars 2 t/m 10. Avatar 1 is de vaste starteravatar.</p>
             </div>
             <button type="button" onClick={handleSeedCatalog} disabled={seedingCatalog} className="btn-primary min-h-11 text-sm disabled:opacity-45">
               {seedingCatalog ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-              Standaardcatalogus aanvullen
+              Avatarcatalogus aanvullen
             </button>
           </div>
         </section>

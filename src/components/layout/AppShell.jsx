@@ -94,6 +94,7 @@ export default function AppShell() {
     ? getActiveRewardItems({ loadout: normalizedLoadout, items: rewardItems })
     : [];
   const activeFrame = activeRewards.find((item) => item.itemType === 'avatarFrame');
+  const activeAvatar = activeRewards.find((item) => item.itemType === 'avatarSkin');
   const activeTitle = activeRewards.find((item) => item.itemType === 'titleBadge');
   const activePins = activeRewards.filter((item) => item.itemType === 'shopBadge').slice(0, 3);
 
@@ -216,10 +217,17 @@ export default function AppShell() {
               title="Mijn profiel"
             >
               <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 bg-white"
-                style={{ borderColor: activeFrame?.previewStyle?.accent || 'transparent' }}
+                className="token-header-avatar flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 bg-white"
+                style={{
+                  '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)',
+                  borderColor: activeFrame?.previewStyle?.accent || activeAvatar?.previewStyle?.accent || 'transparent'
+                }}
               >
-                <User size={20} />
+                {activeAvatar?.imageUrl ? (
+                  <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
+                ) : (
+                  <User size={20} />
+                )}
               </span>
               <span className="hidden flex-col items-end lg:flex">
                 <span className="text-sm font-bold">{currentUser?.displayName || 'Gebruiker'}</span>
