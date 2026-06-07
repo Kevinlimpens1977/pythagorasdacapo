@@ -8,6 +8,8 @@ import { buildStudentProgressSummary } from '../lib/progressSummary';
 import { changeCurrentUserPassword } from '../services/studentPasswordService';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import HelixBrandBanner from '../components/common/HelixBrandBanner';
+import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
+import { getActiveRewardItems, normalizeLoadout } from '../lib/tokenShopRewards';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
   const barColor = tone === 'green' ? 'bg-[var(--helix-success)]' : 'helix-progress-fill';
@@ -31,10 +33,12 @@ const EmptyState = ({ icon: Icon, title, description }) => (
 );
 
 export default function StudentProfilePage() {
-  const { currentUser, userData, klasData, klasId: authKlasId } = useAuth();
+  const { currentUser, userData, klasData, klasId: authKlasId, isDevBypass } = useAuth();
   const [paragrafen, setParagrafen] = useState([]);
   const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
   const [voortgangMap, setVoortgangMap] = useState({});
+  const [studentLoadout, setStudentLoadout] = useState({ activePinIds: [] });
+  const [rewardItems, setRewardItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -124,10 +128,39 @@ export default function StudentProfilePage() {
     loadProfileData();
   }, [authKlasId, currentUser?.uid, klasData, userData]);
 
+  useEffect(() => {
+    if (!currentUser?.uid || isDevBypass) {
+      return undefined;
+    }
+
+    const unsubscribers = [
+      subscribeStudentTokenLoadout(
+        currentUser.uid,
+        setStudentLoadout,
+        (err) => console.warn('Profielavatar kon niet worden geladen:', err)
+      ),
+      subscribeActiveTokenShopItems(
+        setRewardItems,
+        (err) => console.warn('Token-shopcatalogus kon niet worden geladen voor profiel:', err)
+      )
+    ];
+
+    return () => unsubscribers.forEach((unsubscribe) => unsubscribe?.());
+  }, [currentUser?.uid, isDevBypass]);
+
   const summary = useMemo(
     () => buildStudentProgressSummary(paragrafen, hoofdstukkenMap, voortgangMap),
     [paragrafen, hoofdstukkenMap, voortgangMap]
   );
+  const normalizedLoadout = useMemo(
+    () => normalizeLoadout(studentLoadout),
+    [studentLoadout]
+  );
+  const activeRewardItems = useMemo(
+    () => getActiveRewardItems({ loadout: normalizedLoadout, items: rewardItems }),
+    [normalizedLoadout, rewardItems]
+  );
+  const activeAvatar = activeRewardItems.find((item) => item.itemType === 'avatarSkin');
 
   if (loading) {
     return (
@@ -178,12 +211,38 @@ export default function StudentProfilePage() {
       <section className="grid gap-5 lg:grid-cols-[1.1fr_1.9fr]">
         <div className="helix-card p-6">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-              <UserCircle size={38} />
+            <div
+              className="profile-avatar-badge group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-visible rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"
+              style={{ '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)' }}
+            >
+              <div className="token-profile-avatar flex h-16 w-16 overflow-hidden rounded-full border-2 bg-white">
+                {activeAvatar?.imageUrl ? (
+                  <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
+                ) : (
+                  <UserCircle size={38} />
+                )}
+              </div>
+              <div className="profile-avatar-popover pointer-events-none absolute left-0 top-[calc(100%+0.75rem)] z-30 w-56 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-3 opacity-0 shadow-[var(--helix-shadow-soft)] transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+                <div className="aspect-square overflow-hidden rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)]">
+                  {activeAvatar?.imageUrl ? (
+                    <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-contain" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[var(--helix-purple)]">
+                      <UserCircle size={72} />
+                    </div>
+                  )}
+                </div>
+                <p className="mt-2 text-center text-xs font-black uppercase tracking-widest text-[var(--helix-purple)]">
+                  {activeAvatar?.title || 'Starter Avatar'}
+                </p>
+              </div>
             </div>
-            <div>
+            <div className="min-w-0">
               <h2 className="text-xl font-black text-[var(--helix-navy)]">{displayName}</h2>
               <p className="text-sm font-semibold text-[var(--helix-purple)]">Leerling</p>
+              <span className="mt-2 inline-flex max-w-full items-center rounded-full border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-3 py-1 text-xs font-black text-[var(--helix-purple)] shadow-sm">
+                <span className="truncate">{activeAvatar?.title || 'Starter Avatar'}</span>
+              </span>
             </div>
           </div>
 

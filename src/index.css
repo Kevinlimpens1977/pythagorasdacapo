@@ -460,6 +460,20 @@ input[type=number] {
   animation: token-avatar-idle 5s ease-in-out infinite;
 }
 
+.profile-avatar-badge {
+  isolation: isolate;
+}
+
+.profile-avatar-popover {
+  transform: translateY(-0.25rem) scale(0.98);
+  transform-origin: top left;
+}
+
+.profile-avatar-badge:hover .profile-avatar-popover,
+.profile-avatar-badge:focus-within .profile-avatar-popover {
+  transform: translateY(0) scale(1);
+}
+
 @keyframes token-card-shine {
   0%, 42% {
     transform: translateX(-58%) rotate(8deg);
