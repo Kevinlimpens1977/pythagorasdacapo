@@ -8,7 +8,7 @@ import * as voortgangService from '../../services/voortgangService';
 import { calculateLessonProgress } from '../../lib/studentLessonProgress';
 import { getEffectiveContentBlocks } from '../../lib/assignmentUtils';
 import { getEffectiveKlasId } from '../../lib/classIdUtils';
-import helixLogo from '../../afbeeldingen/logo.png';
+import HelixBrandBanner from '../common/HelixBrandBanner';
 
 export default function TableOfContents() {
   const navigate = useNavigate();
@@ -250,14 +250,7 @@ function StudentShell({ children }) {
   return (
     <div className="mx-auto w-full max-w-6xl pad-content">
       <div className="helix-surface overflow-hidden">
-        <div className="relative overflow-hidden bg-[var(--helix-navy)] p-6 text-white sm:p-8">
-          <div className="helix-login-visual-bg absolute inset-0 opacity-80" />
-          <div className="relative">
-            <div className="inline-flex h-24 w-48 items-center justify-center overflow-hidden rounded-2xl bg-white/96 shadow-[0_18px_38px_rgba(11,19,43,0.22)]">
-              <img src={helixLogo} alt="HELIX" className="h-28 w-28 max-w-none scale-[1.5] object-contain" />
-            </div>
-          </div>
-        </div>
+        <HelixBrandBanner />
         {children}
       </div>
     </div>

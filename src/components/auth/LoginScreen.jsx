@@ -14,6 +14,7 @@ import { useAuth } from './AuthProvider';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Code2, KeyRound, Mail, ShieldCheck, LogIn, UserPlus } from 'lucide-react';
 import helixLogo from '../../afbeeldingen/logo.png';
+import HelixBrandBanner from '../common/HelixBrandBanner';
 import {
   ADMIN_EMAIL,
   getAdminPasswordResetErrorMessage,
@@ -207,32 +208,33 @@ export default function LoginScreen() {
   return (
     <div className="helix-page flex min-h-screen items-center justify-center p-4">
       <div className="grid w-full max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--helix-border)] bg-white/90 shadow-[var(--helix-shadow-soft)] lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="relative hidden min-h-[42rem] overflow-hidden bg-[var(--helix-navy)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <div className="helix-login-visual-bg absolute inset-0 opacity-90" />
-          <div className="relative">
-            <div className="inline-flex h-24 w-48 items-center justify-center overflow-hidden rounded-2xl bg-white/96 shadow-[0_18px_38px_rgba(11,19,43,0.22)]">
-              <img src={helixLogo} alt="HELIX" className="h-28 w-28 max-w-none scale-[1.5] object-contain" />
-            </div>
-
-            <div className="mt-16 max-w-xl">
-              <p className="helix-ai-chip bg-white/10 text-white">Slim leren, beter begrijpen</p>
-              <h2 className="mt-6 font-display text-5xl font-extrabold leading-tight tracking-tight">
-                Rustige lessen, persoonlijke hulp en duidelijke voortgang.
-              </h2>
-              <p className="mt-5 max-w-lg text-lg leading-8 text-white/72">
-                HELIX helpt leerlingen stap voor stap vooruit en geeft docenten een professionele werkplek voor lesmateriaal.
-              </p>
-            </div>
-          </div>
-
-          <div className="relative grid grid-cols-3 gap-3">
-            {['Persoonlijk', 'Slim', 'Betrouwbaar'].map((item) => (
-              <div key={item} className="rounded-2xl border border-white/10 bg-white/8 p-4 text-sm font-bold text-white/86">
-                {item}
+        <div className="hidden lg:block">
+          <HelixBrandBanner
+            variant="login"
+            className="border-0"
+            contentClassName="mt-14 flex flex-col gap-16"
+          >
+            <div>
+              <div className="max-w-xl">
+                <p className="helix-ai-chip">Slim leren, beter begrijpen</p>
+                <h2 className="mt-6 font-display text-5xl font-extrabold leading-tight tracking-tight text-[var(--helix-navy)]">
+                  Rustige lessen, persoonlijke hulp en duidelijke voortgang.
+                </h2>
+                <p className="mt-5 max-w-lg text-lg leading-8 text-[var(--helix-muted)]">
+                  HELIX helpt leerlingen stap voor stap vooruit en geeft docenten een professionele werkplek voor lesmateriaal.
+                </p>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {['Persoonlijk', 'Slim', 'Betrouwbaar'].map((item) => (
+                <div key={item} className="rounded-2xl border border-[var(--helix-border)] bg-white/80 p-4 text-sm font-bold text-[var(--helix-navy)] shadow-[0_10px_24px_rgba(11,19,43,0.05)]">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </HelixBrandBanner>
+        </div>
 
         <div className="w-full p-6 sm:p-8 lg:p-10">
           <div className="mb-8 text-center lg:hidden">

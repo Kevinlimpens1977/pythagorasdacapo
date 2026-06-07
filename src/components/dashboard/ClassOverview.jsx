@@ -33,6 +33,7 @@ import {
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
 import StudentAvatar from '../common/StudentAvatar';
+import HelixBrandBanner from '../common/HelixBrandBanner';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -535,36 +536,43 @@ export default function ClassOverview() {
         </button>
 
         <div className="helix-surface mb-8 overflow-hidden">
-          <div className="relative flex flex-col items-start justify-between gap-6 overflow-hidden bg-[var(--helix-navy)] pad-content text-white md:flex-row md:items-center">
-            <div className="helix-login-visual-bg absolute inset-0 opacity-70" />
-            <div className="relative flex items-center gap-6">
-              <StudentAvatar
-                student={selectedStudent}
-                size="xl"
-                shape="square"
-                fallback="initial"
-                fallbackClassName="bg-blue-500 text-white"
-              />
-              <div>
-                <h2 className="font-display text-4xl font-extrabold">{selectedStudent.displayName || "Naamloos"}</h2>
-                <p className="text-slate-400 text-lg">{selectedStudent.email}</p>
-                <p className="mt-2 text-sm font-bold text-white/70">
-                  Laatst actief: {getRelativeTime(selectedStudent.lastActive)}
-                </p>
+          <HelixBrandBanner
+            variant="compact"
+            className="border-0 border-b border-[var(--helix-border)] shadow-none"
+            logoClassName="hidden"
+          >
+            <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+              <div className="flex items-center gap-5">
+                <StudentAvatar
+                  student={selectedStudent}
+                  size="xl"
+                  shape="square"
+                  fallback="initial"
+                  fallbackClassName="bg-blue-500 text-white"
+                />
+                <div>
+                  <h2 className="font-display text-3xl font-extrabold text-[var(--helix-navy)] md:text-4xl">
+                    {selectedStudent.displayName || "Naamloos"}
+                  </h2>
+                  <p className="mt-1 text-lg font-semibold text-[var(--helix-muted)]">{selectedStudent.email}</p>
+                  <p className="mt-2 text-sm font-bold text-[var(--helix-purple)]">
+                    Laatst actief: {getRelativeTime(selectedStudent.lastActive)}
+                  </p>
+                </div>
+              </div>
+              <div className="grid w-full gap-3 md:w-auto md:grid-cols-3">
+                {selectedStudentMetricCards.map((card) => (
+                  <div key={card.key} className="min-w-40 rounded-2xl border border-[var(--helix-border)] bg-white/90 px-5 py-3 shadow-[0_10px_24px_rgba(11,19,43,0.05)]">
+                    <div className="mb-1 text-xs font-bold uppercase tracking-wider text-[var(--helix-muted)]">{card.label}</div>
+                    <div className={`text-xl font-black ${card.tone === 'warning' ? 'text-orange-600' : card.tone === 'quality' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                      {card.value}
+                    </div>
+                    <div className="mt-1 text-xs font-semibold text-[var(--helix-muted)]">{card.detail}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="relative grid w-full gap-3 md:w-auto md:grid-cols-3">
-              {selectedStudentMetricCards.map((card) => (
-                <div key={card.key} className="min-w-40 rounded-2xl border border-white/10 bg-white/10 px-5 py-3">
-                  <div className="mb-1 text-xs font-bold uppercase tracking-wider text-white/60">{card.label}</div>
-                  <div className={`text-xl font-black ${card.tone === 'warning' ? 'text-orange-200' : card.tone === 'quality' ? 'text-emerald-300' : 'text-blue-300'}`}>
-                    {card.value}
-                  </div>
-                  <div className="mt-1 text-xs font-semibold text-white/60">{card.detail}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          </HelixBrandBanner>
 
           <div className="pad-content">
             <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
@@ -797,10 +805,10 @@ export default function ClassOverview() {
   return (
     <div className="helix-page min-h-screen">
       <div className="helix-container">
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <HelixBrandBanner variant="compact" className="mb-8 rounded-[var(--helix-radius-xl)]">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--helix-navy)]">
               <Users className="text-[var(--helix-purple)]" /> Klas Dashboard
             </h1>
             <p className="mt-1 text-[var(--helix-muted)]">Real-time overzicht van je leerlingen</p>
@@ -809,7 +817,7 @@ export default function ClassOverview() {
             Nu actief: {activeCount}/{scopedStudents.length}
           </div>
         </div>
-      </div>
+      </HelixBrandBanner>
 
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end">

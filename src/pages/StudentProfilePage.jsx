@@ -7,6 +7,7 @@ import * as voortgangService from '../services/voortgangService';
 import { buildStudentProgressSummary } from '../lib/progressSummary';
 import { changeCurrentUserPassword } from '../services/studentPasswordService';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
+import HelixBrandBanner from '../components/common/HelixBrandBanner';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
   const barColor = tone === 'green' ? 'bg-[var(--helix-success)]' : 'helix-progress-fill';
@@ -200,27 +201,29 @@ export default function StudentProfilePage() {
           <StudentPasswordForm currentUser={currentUser} />
         </div>
 
-        <div className="rounded-[var(--helix-radius-xl)] border border-white/10 bg-[var(--helix-navy)] p-6 text-white shadow-[var(--helix-shadow-card)]">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-black uppercase tracking-widest text-orange-100">
-                Mijn voortgang
-              </p>
-              <h2 className="mt-2 text-3xl font-black">{summary.progressPercent}% afgerond</h2>
+        <HelixBrandBanner variant="compact" logoClassName="hidden" className="rounded-[var(--helix-radius-xl)] p-6">
+          <div>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-black uppercase tracking-widest text-[var(--helix-purple)]">
+                  Mijn voortgang
+                </p>
+                <h2 className="mt-2 text-3xl font-black text-[var(--helix-navy)]">{summary.progressPercent}% afgerond</h2>
+              </div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
+                <BarChart3 size={30} />
+              </div>
             </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-blue-100">
-              <BarChart3 size={30} />
-            </div>
-          </div>
 
-          <div className="mt-6">
-            <ProgressBar value={summary.progressPercent} tone="green" />
-            <div className="mt-3 flex items-center justify-between text-sm text-slate-300">
-              <span>{summary.completedQuestions} afgerond</span>
-              <span>{summary.totalQuestions} vragen totaal</span>
+            <div className="mt-6">
+              <ProgressBar value={summary.progressPercent} tone="green" />
+              <div className="mt-3 flex items-center justify-between text-sm font-semibold text-[var(--helix-muted)]">
+                <span>{summary.completedQuestions} afgerond</span>
+                <span>{summary.totalQuestions} vragen totaal</span>
+              </div>
             </div>
           </div>
-        </div>
+        </HelixBrandBanner>
       </section>
 
       <section className="mt-8">
