@@ -35,6 +35,7 @@ import {
   appendHelixContentImportToPresenterSession,
   getPublishedPresenterContentBlocks
 } from '../../lib/presenterContentImport';
+import { insertTextAtSelection } from '../../lib/presenterTextInsertion';
 import PresenterBoard from './PresenterBoard';
 import PresenterImportDialog from './PresenterImportDialog';
 import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
@@ -336,6 +337,8 @@ export default function PresenterShell() {
   const [fullscreenErrorVisible, setFullscreenErrorVisible] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [textToolStyle, setTextToolStyle] = useState(DEFAULT_TEXT_TOOL_STYLE);
+  const [activeTextCursor, setActiveTextCursor] = useState(null);
+  const [textCaretRequest, setTextCaretRequest] = useState(null);
   const fullscreenErrorTimerRef = useRef(null);
   const toolbarAutoCloseTimerRef = useRef(null);
 
@@ -677,11 +680,12 @@ export default function PresenterShell() {
   };
 
   const handleCreateTextObject = (initialText = '') => {
+    const text = typeof initialText === 'string' ? initialText : String(initialText ?? '');
     const object = createPresenterObject('text', {
       id: createObjectId(),
       x: 260,
       y: 220,
-      content: { text: initialText },
+      content: { text },
       textStyle: textToolStyle
     });
 
@@ -690,6 +694,7 @@ export default function PresenterShell() {
     );
     setActiveCategory('text');
     setPagePanelOpen(false);
+    return object.id;
   };
 
   const handleTextStyle = (updates) => {
@@ -711,24 +716,62 @@ export default function PresenterShell() {
   };
 
   const handleTextSymbol = (symbol) => {
+    const insertion = typeof symbol === 'string' ? symbol : String(symbol ?? '');
+    if (!insertion) return;
+
     if (!selectedTextObject?.id) {
-      handleCreateTextObject(symbol);
+      const objectId = handleCreateTextObject(insertion);
+      const selection = { start: insertion.length, end: insertion.length };
+      setActiveTextCursor({ objectId, selection });
+      setTextCaretRequest({ objectId, offset: insertion.length, requestId: Date.now() });
       return;
     }
 
+    const selection = activeTextCursor?.objectId === selectedTextObject.id
+      ? activeTextCursor.selection
+      : null;
+
     updateObjectOnActivePageWithHistory(selectedTextObject.id, (object) => {
       const currentText = typeof object?.content?.text === 'string' ? object.content.text : '';
-      const separator = currentText && !currentText.endsWith(' ') ? ' ' : '';
+      const result = insertTextAtSelection(currentText, insertion, selection);
 
+      if (result.text === currentText) return object;
       return {
         ...object,
         content: {
           ...(object.content || {}),
-          text: `${currentText}${separator}${symbol}`
+          text: result.text
         }
       };
     });
+
+    const result = insertTextAtSelection(
+      typeof selectedTextObject?.content?.text === 'string' ? selectedTextObject.content.text : '',
+      insertion,
+      selection
+    );
+    const nextSelection = { start: result.caretOffset, end: result.caretOffset };
+    setActiveTextCursor({ objectId: selectedTextObject.id, selection: nextSelection });
+    setTextCaretRequest({ objectId: selectedTextObject.id, offset: result.caretOffset, requestId: Date.now() });
   };
+
+  const handleTextCursorChange = useCallback((objectId, selection) => {
+    const start = Number.isFinite(selection?.start) ? selection.start : null;
+    const end = Number.isFinite(selection?.end) ? selection.end : null;
+    if (!objectId || start === null || end === null) return;
+
+    setActiveTextCursor((current) => {
+      if (
+        current?.objectId === objectId &&
+        current.selection?.start === start &&
+        current.selection?.end === end
+      ) {
+        return current;
+      }
+
+      return { objectId, selection: { start, end } };
+    });
+  }, []);
 
   const handleTextChange = useCallback((objectId, text) => {
     updateObjectOnActivePageWithHistory(objectId, (object) => {
@@ -1006,6 +1049,8 @@ export default function PresenterShell() {
         onDeleteObject={handleDeleteObject}
         onDeleteObjects={handleDeleteObjects}
         onTextChange={handleTextChange}
+        textCaretRequest={textCaretRequest}
+        onTextCursorChange={handleTextCursorChange}
         onMathToolChange={handleMathToolChange}
       />
       <PresenterPagePanel
