@@ -10,11 +10,12 @@ initializeApp();
 
 const openrouterApiKey = defineSecret("OPENROUTER_API_KEY");
 const REGION = "europe-west1";
+const ADMIN_EMAIL = "kevlimpens@gmail.com";
 
 const allowedImportRoles = new Set(["admin", "docent"]);
 const preservedStudentResetEmails = new Set([
   "vragen@scheikundeles.nl",
-  "kevlimpens@gmail.com",
+  ADMIN_EMAIL,
 ]);
 const BATCH_LIMIT = 450;
 const DEFAULT_STUDENT_PASSWORD = "Test123";
@@ -288,6 +289,14 @@ async function getRequiredDoc(ref, label) {
 
 function getServerTimestamp(now) {
   return typeof now === "function" ? now() : FieldValue.serverTimestamp();
+}
+
+function normalizeEmail(email = "") {
+  return String(email || "").trim().toLowerCase();
+}
+
+function isConfiguredAdminEmail(email = "") {
+  return normalizeEmail(email) === ADMIN_EMAIL;
 }
 
 function assertCanManageKlas(caller, klasId) {
@@ -1761,7 +1770,18 @@ async function getCallerDoc({ auth, db, label = "Caller" }) {
     throw new HttpsError("unauthenticated", "Log in om deze actie uit te voeren.");
   }
 
-  return getRequiredDoc(db.doc(`users/${auth.uid}`), label);
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), label);
+  if (isConfiguredAdminEmail(auth.token?.email || caller.data.email)) {
+    return {
+      ...caller,
+      data: {
+        ...caller.data,
+        role: "admin",
+      },
+    };
+  }
+
+  return caller;
 }
 
 async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {

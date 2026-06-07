@@ -10,8 +10,15 @@ service firebase.storage {
       return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
     }
 
+    function isAdminEmail() {
+      return signedIn() &&
+        request.auth.token.email == 'kevlimpens@gmail.com';
+    }
+
     function isAdmin() {
-      return signedIn() && userDoc().data.role == 'admin';
+      return signedIn() && (
+        userDoc().data.role == 'admin' || isAdminEmail()
+      );
     }
 
     // Bestaande crop/OCR uploads

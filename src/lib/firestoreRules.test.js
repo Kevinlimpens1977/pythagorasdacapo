@@ -65,6 +65,12 @@ test('firestore rules define published assignment helpers for public student con
   assert.match(rules, /blockId in studentKlasDoc\(\)\.data\.enabledContentBlocks\[paragraafId\]/);
 });
 
+test('firestore rules treat the configured admin email as administrator', () => {
+  assert.match(rules, /function isAdminEmail\(\)/);
+  assert.match(rules, /request\.auth\.token\.email == 'kevlimpens@gmail\.com'/);
+  assert.match(rules, /userDoc\(\)\.data\.role == 'admin' \|\| isAdminEmail\(\)/);
+});
+
 test('firestore rules expose token accounts to owner and admin but keep writes server-only', () => {
   const block = getRuleBlock('match /tokenAccounts/{studentUid}');
 

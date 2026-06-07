@@ -378,6 +378,21 @@ test("createOrUpdateTokenShopItem validates price and stores admin-managed catal
   });
 });
 
+test("createOrUpdateTokenShopItem accepts the configured admin email even before role sync", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "student", email: "kevlimpens@gmail.com" },
+  });
+
+  const result = await __test.createOrUpdateTokenShopItemCore({
+    auth: { uid: "admin-1", token: { email: "kevlimpens@gmail.com" } },
+    data: { itemId: "premium-skin", title: "Premium skin", price: 15 },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(result, { itemId: "premium-skin", saved: true });
+});
+
 test("uploadTokenShopItemImage stores image bytes server-side for admins only", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin" },
