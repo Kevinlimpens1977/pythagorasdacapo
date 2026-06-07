@@ -241,6 +241,40 @@ service cloud.firestore {
       allow read, create, update, delete: if isAdmin();
     }
 
+    // Tokensysteem. Saldo's en ledger muteren uitsluitend via Cloud Functions.
+    match /tokenAccounts/{studentUid} {
+      allow read: if isOwner(studentUid) || isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /tokenTransactions/{transactionId} {
+      allow read: if signedIn() && (
+        resource.data.studentUid == request.auth.uid ||
+        isAdmin()
+      );
+      allow create, update, delete: if false;
+    }
+
+    match /tokenPurchases/{purchaseId} {
+      allow read: if signedIn() && (
+        resource.data.studentUid == request.auth.uid ||
+        isAdmin()
+      );
+      allow create, update, delete: if false;
+    }
+
+    match /tokenAwardClaims/{claimId} {
+      allow read, create, update, delete: if false;
+    }
+
+    match /tokenShopItems/{itemId} {
+      allow read: if isAdmin() || (
+        signedIn() &&
+        resource.data.enabled == true
+      );
+      allow create, update, delete: if isAdmin();
+    }
+
     // Leerling-foutmeldingen.
     // Leerlingen mogen alleen eigen meldingen aanmaken en teruglezen voor rate limiting.
     // Moderatie, status en adminnotities blijven admin-only.

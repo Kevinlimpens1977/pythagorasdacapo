@@ -64,3 +64,27 @@ test('firestore rules define published assignment helpers for public student con
   assert.match(rules, /function isAssignedContentBlock\(paragraafId, blockId\)/);
   assert.match(rules, /blockId in studentKlasDoc\(\)\.data\.enabledContentBlocks\[paragraafId\]/);
 });
+
+test('firestore rules expose token accounts to owner and admin but keep writes server-only', () => {
+  const block = getRuleBlock('match /tokenAccounts/{studentUid}');
+
+  assert.match(block, /allow read: if isOwner\(studentUid\) \|\| isAdmin\(\)/);
+  assert.match(block, /allow create, update, delete: if false/);
+});
+
+test('firestore rules expose token transactions and purchases to owner and admin without client writes', () => {
+  const transactions = getRuleBlock('match /tokenTransactions/{transactionId}');
+  const purchases = getRuleBlock('match /tokenPurchases/{purchaseId}');
+
+  assert.match(transactions, /resource\.data\.studentUid == request\.auth\.uid/);
+  assert.match(transactions, /allow create, update, delete: if false/);
+  assert.match(purchases, /resource\.data\.studentUid == request\.auth\.uid/);
+  assert.match(purchases, /allow create, update, delete: if false/);
+});
+
+test('firestore rules let students read active shop items while catalog management stays admin-only', () => {
+  const block = getRuleBlock('match /tokenShopItems/{itemId}');
+
+  assert.match(block, /resource\.data\.enabled == true/);
+  assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
+});

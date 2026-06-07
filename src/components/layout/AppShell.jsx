@@ -6,6 +6,7 @@ import CmsResetButton from '../admin/CmsResetButton';
 import DeleteStudentsButton from '../admin/DeleteStudentsButton';
 import StudentBugReportButton from '../studentBugReports/StudentBugReportButton';
 import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
+import TokenBalancePill from '../tokens/TokenBalancePill';
 import { BarChart3, BellRing, BookOpen, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import { getOpenStudentBugReportCount } from '../../services/studentBugReportService';
@@ -159,6 +160,14 @@ export default function AppShell() {
             >
               Reset testmodus
             </button>
+          )}
+
+          {!isAdmin && (
+            <TokenBalancePill
+              studentUid={currentUser?.uid}
+              disabled={isDevBypass}
+              onOpenShop={() => navigate('/tokenshop')}
+            />
           )}
 
           {!isAdmin && <StudentBugReportButton />}

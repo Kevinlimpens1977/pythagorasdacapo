@@ -21,6 +21,8 @@ import AdminAiSettingsPage from './pages/AdminAiSettingsPage';
 import AdminMeldingenPage from './pages/AdminMeldingenPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminProjectKompasPage from './pages/AdminProjectKompasPage';
+import StudentTokenShopPage from './pages/StudentTokenShopPage';
+import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { user, isAdmin } = useAuth();
@@ -39,6 +41,7 @@ function AppRoutes() {
       <Route path="/" element={<PrivateRoute><AppShell /></PrivateRoute>}>
         <Route index element={<TableOfContents />} />
         <Route path="profiel" element={<StudentProfilePage />} />
+        <Route path="tokenshop" element={<StudentTokenShopPage />} />
         <Route path="chapter/:chapterId" element={<StudentLessonPage />} />
         <Route path="admin" element={
           <PrivateRoute requireAdmin={true}>
@@ -63,6 +66,11 @@ function AppRoutes() {
         <Route path="admin/leerlingen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminLeerlingenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/tokenbeheer" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminTokenManagementPage />
           </PrivateRoute>
         } />
         <Route path="admin/meldingen" element={

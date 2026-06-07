@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Bot, Bug, SettingsIcon } from 'lucide-react';
+import { ArrowRight, Bot, Bug, Coins, SettingsIcon } from 'lucide-react';
 
 const settingsSections = [
   {
@@ -17,6 +17,14 @@ const settingsSections = [
     path: '/admin/meldingen',
     icon: Bug,
     tone: 'text-red-600 bg-red-50'
+  },
+  {
+    title: 'Tokenbeheer',
+    description: 'Beheer tokenbalansen, correcties, shopitems, afbeeldingen en tokenprijzen.',
+    actionLabel: 'Open tokenbeheer',
+    path: '/admin/tokenbeheer',
+    icon: Coins,
+    tone: 'text-amber-700 bg-amber-50'
   }
 ];
 

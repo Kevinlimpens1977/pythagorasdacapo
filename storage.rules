@@ -6,6 +6,14 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    function userDoc() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return signedIn() && userDoc().data.role == 'admin';
+    }
+
     // Bestaande crop/OCR uploads
     match /pythagoras/question-crops/{allPaths=**} {
       allow read, write: if signedIn();
@@ -37,6 +45,13 @@ service firebase.storage {
     match /student-photos/{klasId}/{userId}/{allPaths=**} {
       allow read: if signedIn();
       allow write: if false;
+    }
+
+    // Token-shopafbeeldingen worden door admins beheerd en door ingelogde
+    // gebruikers gelezen in de shop en beheerschermen.
+    match /token-shop-items/{itemId}/{allPaths=**} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
     }
   }
 }

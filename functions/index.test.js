@@ -196,6 +196,182 @@ test("approveStudentPhotoImportCrop copies a matched crop and updates the studen
   assert.equal(db.store.docs["photoImports/import-1/crops/crop-1"].status, "approved");
 });
 
+test("awardTokensForActivity awards configured tokens once per source version", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "publicContentBlocks/block-1": {
+      status: "published",
+      content: { tokenConfig: { enabled: true, totalTokens: 12 } },
+      publishedVersion: "v2",
+    },
+  });
+
+  const first = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: {
+      sourceKind: "contentBlock",
+      sourceId: "block-1",
+      sourceVersion: "v2",
+      result: { completed: true, isCorrect: true },
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  const second = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: {
+      sourceKind: "contentBlock",
+      sourceId: "block-1",
+      sourceVersion: "v2",
+      result: { completed: true, isCorrect: true },
+    },
+    db,
+    now: () => "later",
+  });
+
+  assert.deepEqual(first, { awarded: true, amount: 12, balance: 12 });
+  assert.deepEqual(second, { awarded: false, amount: 0, balance: 12, reason: "already-awarded" });
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 12);
+  assert.equal(db.store.docs["tokenAwardClaims/student-1_contentBlock_block-1_v2"].amount, 12);
+  assert.equal(Object.keys(db.store.docs).filter((path) => path.startsWith("tokenTransactions/")).length, 1);
+});
+
+test("awardTokensForActivity caps game rewards by the server registry", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: {
+      sourceKind: "game",
+      sourceId: "dv-account-escape",
+      sourceVersion: "run-1",
+      tokens: 999,
+      result: { completed: true, passed: true, accuracy: 100 },
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(result, { awarded: true, amount: 10, balance: 10 });
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 10);
+});
+
+test("purchaseTokenShopItem atomically spends tokens and records purchase snapshot", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenAccounts/student-1": { balance: 20, earnedTotal: 20, spentTotal: 0, adjustedTotal: 0 },
+    "tokenShopItems/item-1": {
+      title: "Sticker",
+      description: "Glanzende sticker",
+      price: 7,
+      imageUrl: "https://example.test/sticker.png",
+      enabled: true,
+    },
+  });
+
+  const result = await __test.purchaseTokenShopItemCore({
+    auth: { uid: "student-1" },
+    data: { itemId: "item-1" },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.purchased, true);
+  assert.equal(result.price, 7);
+  assert.equal(result.balance, 13);
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 13);
+  assert.equal(db.store.docs[result.purchasePath].item.title, "Sticker");
+  assert.equal(db.store.docs[result.transactionPath].type, "spend");
+});
+
+test("adjustStudentTokens requires admin role and a reason", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin" },
+    "users/student-1": { role: "student" },
+    "tokenAccounts/student-1": { balance: 5, earnedTotal: 5, spentTotal: 0, adjustedTotal: 0 },
+  });
+
+  await assert.rejects(
+    () => __test.adjustStudentTokensCore({
+      auth: { uid: "student-1" },
+      data: { studentUid: "student-1", amount: 3, reason: "bonus" },
+      db,
+      now: () => "timestamp",
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+
+  await assert.rejects(
+    () => __test.adjustStudentTokensCore({
+      auth: { uid: "admin-1" },
+      data: { studentUid: "student-1", amount: 3, reason: "" },
+      db,
+      now: () => "timestamp",
+    }),
+    (error) => error instanceof HttpsError && error.code === "invalid-argument",
+  );
+
+  const result = await __test.adjustStudentTokensCore({
+    auth: { uid: "admin-1" },
+    data: { studentUid: "student-1", amount: 3, reason: "klassikale beloning" },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(result, { adjusted: true, amount: 3, balance: 8 });
+  assert.equal(db.store.docs["tokenAccounts/student-1"].adjustedTotal, 3);
+});
+
+test("createOrUpdateTokenShopItem validates price and stores admin-managed catalog data", async () => {
+  const db = createDb({
+    "users/admin-1": { role: "admin" },
+  });
+
+  await assert.rejects(
+    () => __test.createOrUpdateTokenShopItemCore({
+      auth: { uid: "admin-1" },
+      data: { title: "Sticker", price: -1 },
+      db,
+      now: () => "timestamp",
+    }),
+    (error) => error instanceof HttpsError && error.code === "invalid-argument",
+  );
+
+  const result = await __test.createOrUpdateTokenShopItemCore({
+    auth: { uid: "admin-1" },
+    data: {
+      itemId: "item-1",
+      title: "Sticker",
+      description: "Glanzende sticker",
+      price: 8,
+      imageUrl: "https://example.test/sticker.png",
+      imageStoragePath: "token-shop-items/item-1/cover.webp",
+      enabled: true,
+      sortOrder: 2,
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(result, { itemId: "item-1", saved: true });
+  assert.deepEqual(db.store.docs["tokenShopItems/item-1"], {
+    title: "Sticker",
+    description: "Glanzende sticker",
+    price: 8,
+    imageUrl: "https://example.test/sticker.png",
+    imageStoragePath: "token-shop-items/item-1/cover.webp",
+    enabled: true,
+    sortOrder: 2,
+    updatedAt: "timestamp",
+    updatedBy: "admin-1",
+    createdAt: "timestamp",
+    createdBy: "admin-1",
+  });
+});
+
 test("approveStudentPhotoImportCrop creates a student with photo for pending_new decisions", async () => {
   const db = createDb({
     "users/admin-1": { role: "admin" },

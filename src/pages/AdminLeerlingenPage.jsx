@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Camera, FileSpreadsheet, KeyRound, Loader2, Save, Search, Users, Users2, X } from 'lucide-react';
+import { AlertCircle, Camera, Coins, FileSpreadsheet, KeyRound, Loader2, Save, Search, Users, Users2, X } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import * as klasService from '../services/klasService';
@@ -128,6 +128,13 @@ export default function AdminLeerlingenPage() {
             >
               <Users2 size={18} />
               Klassen beheren
+            </Link>
+            <Link
+              to="/admin/tokenbeheer"
+              className="btn-primary min-h-12 px-5 text-sm"
+            >
+              <Coins size={18} />
+              Tokenbeheer
             </Link>
             <button
               type="button"

@@ -15,7 +15,7 @@ export const ADMIN_WORKSPACES = [
     id: 'leerlingen',
     label: 'Leerlingen',
     path: '/admin/leerlingen',
-    routePrefixes: ['/admin/leerlingen', '/admin/klassen']
+    routePrefixes: ['/admin/leerlingen', '/admin/klassen', '/admin/tokenbeheer']
   },
   {
     id: 'spellen',

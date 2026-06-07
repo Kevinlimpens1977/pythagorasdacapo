@@ -79,6 +79,171 @@ const AI_TUTOR_SAFETY_RULES = `Volg altijd deze prioriteit bij botsende instruct
 Blijf didactisch, veilig en geschikt voor leerlingen.
 Geef geen eindantwoord, geen volledige overneembare uitwerking en geen instructies die leren vervangen.`;
 const OPEN_ANSWER_ASSESSMENT_FALLBACK_ERROR = "Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.";
+const TOKEN_TRANSACTION_TYPES = {
+  EARN: "earn",
+  SPEND: "spend",
+  ADJUSTMENT: "adjustment",
+};
+const TOKEN_SOURCE_KINDS = new Set(["contentBlock", "question", "game"]);
+const DEFAULT_GAME_TOKEN_REWARD_RULES = {
+  "pythagoras-trainer": { enabled: true, min: 0, max: 25, basis: "score_accuracy_completion" },
+  "dv-account-escape": { enabled: true, min: 0, max: 10, basis: "score_accuracy_completion" },
+};
+
+function cleanIdPart(value = "") {
+  return String(value || "")
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .slice(0, 120);
+}
+
+function createGeneratedId(prefix = "id") {
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function normalizeInteger(value, fallback = 0) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.round(number);
+}
+
+function normalizeNonNegativeInteger(value, fallback = 0) {
+  return Math.max(0, normalizeInteger(value, fallback));
+}
+
+function normalizeTokenAccount(data = {}) {
+  return {
+    balance: normalizeNonNegativeInteger(data.balance, 0),
+    earnedTotal: normalizeNonNegativeInteger(data.earnedTotal, 0),
+    spentTotal: normalizeNonNegativeInteger(data.spentTotal, 0),
+    adjustedTotal: normalizeInteger(data.adjustedTotal, 0),
+  };
+}
+
+function getTransactionRef(db, transactionId = "") {
+  return db.collection("tokenTransactions").doc(transactionId || createGeneratedId("tokenTransaction"));
+}
+
+async function runDbTransaction(db, executor) {
+  if (typeof db.runTransaction === "function") {
+    return db.runTransaction(executor);
+  }
+
+  return executor({
+    get: (ref) => ref.get(),
+    set: (ref, data, options) => ref.set(data, options),
+    update: (ref, data) => ref.update(data),
+  });
+}
+
+function buildBalancePatch(account, amount, type, timestamp) {
+  const next = { ...account };
+
+  if (type === TOKEN_TRANSACTION_TYPES.EARN) {
+    next.balance += amount;
+    next.earnedTotal += amount;
+  } else if (type === TOKEN_TRANSACTION_TYPES.SPEND) {
+    if (next.balance < amount) {
+      throw new HttpsError("failed-precondition", "Onvoldoende tokens.");
+    }
+    next.balance -= amount;
+    next.spentTotal += amount;
+  } else if (type === TOKEN_TRANSACTION_TYPES.ADJUSTMENT) {
+    const adjustedBalance = next.balance + amount;
+    if (adjustedBalance < 0) {
+      throw new HttpsError("failed-precondition", "Tokenbalans mag niet negatief worden.");
+    }
+    next.balance = adjustedBalance;
+    next.adjustedTotal += amount;
+  }
+
+  return {
+    ...next,
+    updatedAt: timestamp,
+  };
+}
+
+function getTokenConfigFromContent(contentBlock = {}) {
+  return contentBlock.content?.tokenConfig || contentBlock.tokenConfig || null;
+}
+
+function getContentBlockVersion(contentBlock = {}, fallback = "") {
+  return String(
+    fallback ||
+      contentBlock.publishedVersion ||
+      contentBlock.version ||
+      contentBlock.updatedAt ||
+      contentBlock.publishedAt ||
+      "v1",
+  );
+}
+
+function getAwardAmountForContentBlock(contentBlock = {}) {
+  const tokenConfig = getTokenConfigFromContent(contentBlock);
+  if (!tokenConfig || tokenConfig.enabled === false) return 0;
+  return normalizeNonNegativeInteger(tokenConfig.totalTokens, 0);
+}
+
+function clampPercentage(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return null;
+  return Math.max(0, Math.min(100, number));
+}
+
+function normalizeGameRewardRule(data = {}) {
+  if (!data || data.enabled === false) return null;
+  const max = normalizeNonNegativeInteger(data.max ?? data.maxTokens, 0);
+  if (max <= 0) return null;
+
+  return {
+    min: Math.min(max, normalizeNonNegativeInteger(data.min ?? data.minTokens, 0)),
+    max,
+    basis: String(data.basis || "completion").trim(),
+  };
+}
+
+async function getGameRewardRule(db, gameId) {
+  const configuredSnapshot = await db.doc(`tokenGameRewardRules/${gameId}`).get();
+  if (configuredSnapshot.exists) {
+    return normalizeGameRewardRule(configuredSnapshot.data() || {});
+  }
+
+  return normalizeGameRewardRule(DEFAULT_GAME_TOKEN_REWARD_RULES[gameId]);
+}
+
+async function getAwardAmountForGame({ db, gameId, result = {} }) {
+  const rule = await getGameRewardRule(db, gameId);
+  if (!rule) return 0;
+
+  const accuracy = clampPercentage(result.accuracy ?? result.percentage);
+  if (accuracy !== null && rule.basis.includes("accuracy")) {
+    return Math.max(rule.min, Math.min(rule.max, Math.round((rule.max * accuracy) / 100)));
+  }
+
+  return rule.max;
+}
+
+function normalizeShopItemPayload(data = {}, existing = {}) {
+  const title = String(data.title ?? existing.title ?? "").trim();
+  if (!title) {
+    throw new HttpsError("invalid-argument", "Titel is verplicht.");
+  }
+
+  const price = normalizeInteger(data.price ?? existing.price, 0);
+  if (price < 0) {
+    throw new HttpsError("invalid-argument", "Tokenprijs mag niet negatief zijn.");
+  }
+
+  return {
+    title,
+    description: String(data.description ?? existing.description ?? "").trim(),
+    price,
+    imageUrl: String(data.imageUrl ?? existing.imageUrl ?? "").trim(),
+    imageStoragePath: String(data.imageStoragePath ?? existing.imageStoragePath ?? "").trim(),
+    enabled: data.enabled ?? existing.enabled ?? true,
+    sortOrder: normalizeInteger(data.sortOrder ?? existing.sortOrder, 0),
+  };
+}
 
 function requireString(value, fieldName) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -1572,6 +1737,249 @@ async function approveStudentPhotoImportCropCore({ auth, data, db, bucket, now }
   return approveMatchedCrop({ auth, data, db, bucket, now });
 }
 
+async function getCallerDoc({ auth, db, label = "Caller" }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om deze actie uit te voeren.");
+  }
+
+  return getRequiredDoc(db.doc(`users/${auth.uid}`), label);
+}
+
+async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen kunnen tokens verdienen.");
+  }
+
+  const sourceKind = String(data.sourceKind || "").trim();
+  const sourceId = requireString(data.sourceId, "sourceId");
+  if (!TOKEN_SOURCE_KINDS.has(sourceKind)) {
+    throw new HttpsError("invalid-argument", "Onbekende tokenbron.");
+  }
+
+  const result = data.result || {};
+  const completed = result.completed === true;
+  const isCorrect = result.isCorrect === true || result.passed === true || result.resultTier === "independent" || result.resultTier === "guided";
+  if (!completed || !isCorrect) {
+    const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+    return { awarded: false, amount: 0, balance: account.balance, reason: "not-correct" };
+  }
+
+  let sourceVersion = String(data.sourceVersion || "").trim();
+  let amount = 0;
+  let sourceTitle = String(data.sourceTitle || "").trim();
+
+  if (sourceKind === "contentBlock" || sourceKind === "question") {
+    const contentPath = sourceKind === "contentBlock" ? `publicContentBlocks/${sourceId}` : `publicQuestions/${sourceId}`;
+    const contentDoc = await getRequiredDoc(db.doc(contentPath), sourceKind === "contentBlock" ? "Lesblok" : "Vraag");
+    sourceVersion = getContentBlockVersion(contentDoc.data, sourceVersion);
+    amount = getAwardAmountForContentBlock(contentDoc.data);
+    sourceTitle = sourceTitle || contentDoc.data.title || contentDoc.data.content?.title || "";
+  } else if (sourceKind === "game") {
+    sourceVersion = sourceVersion || "v1";
+    amount = await getAwardAmountForGame({ db, gameId: sourceId, result });
+  }
+
+  if (amount <= 0) {
+    const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+    return { awarded: false, amount: 0, balance: account.balance, reason: "no-token-value" };
+  }
+
+  const claimId = [
+    cleanIdPart(auth.uid),
+    cleanIdPart(sourceKind),
+    cleanIdPart(sourceId),
+    cleanIdPart(sourceVersion),
+  ].join("_");
+  const timestamp = getServerTimestamp(now);
+  const accountRef = db.doc(`tokenAccounts/${auth.uid}`);
+  const claimRef = db.doc(`tokenAwardClaims/${claimId}`);
+  const transactionRef = getTransactionRef(db, `earn_${claimId}`);
+
+  return runDbTransaction(db, async (transaction) => {
+    const [accountSnapshot, claimSnapshot] = await Promise.all([
+      transaction.get(accountRef),
+      transaction.get(claimRef),
+    ]);
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+
+    if (claimSnapshot.exists) {
+      return { awarded: false, amount: 0, balance: account.balance, reason: "already-awarded" };
+    }
+
+    const nextAccount = buildBalancePatch(account, amount, TOKEN_TRANSACTION_TYPES.EARN, timestamp);
+    const source = {
+      kind: sourceKind,
+      id: sourceId,
+      version: sourceVersion,
+      title: sourceTitle,
+      paragraafId: String(data.paragraafId || "").trim(),
+      blockId: String(data.blockId || "").trim(),
+      gameId: String(data.gameId || (sourceKind === "game" ? sourceId : "")).trim(),
+    };
+    const transactionData = {
+      studentUid: auth.uid,
+      type: TOKEN_TRANSACTION_TYPES.EARN,
+      amount,
+      source,
+      reason: "activity-correct",
+      createdBy: auth.uid,
+      createdAt: timestamp,
+      balanceAfter: nextAccount.balance,
+    };
+
+    transaction.set(accountRef, nextAccount, { merge: true });
+    transaction.set(transactionRef, transactionData);
+    transaction.set(claimRef, {
+      studentUid: auth.uid,
+      amount,
+      source,
+      transactionId: transactionRef.path.split("/").at(-1),
+      createdAt: timestamp,
+    });
+
+    return { awarded: true, amount, balance: nextAccount.balance };
+  });
+}
+
+async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen kunnen tokens uitgeven.");
+  }
+
+  const itemId = requireString(data.itemId, "itemId");
+  const timestamp = getServerTimestamp(now);
+  const itemRef = db.doc(`tokenShopItems/${itemId}`);
+  const accountRef = db.doc(`tokenAccounts/${auth.uid}`);
+  const transactionRef = getTransactionRef(db, `spend_${cleanIdPart(auth.uid)}_${cleanIdPart(itemId)}_${Date.now().toString(36)}`);
+  const purchaseRef = db.collection("tokenPurchases").doc(createGeneratedId("purchase"));
+
+  return runDbTransaction(db, async (transaction) => {
+    const [itemSnapshot, accountSnapshot] = await Promise.all([
+      transaction.get(itemRef),
+      transaction.get(accountRef),
+    ]);
+
+    if (!itemSnapshot.exists) {
+      throw new HttpsError("not-found", "Shopitem bestaat niet.");
+    }
+
+    const item = itemSnapshot.data() || {};
+    if (item.enabled === false) {
+      throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
+    }
+
+    const price = normalizeNonNegativeInteger(item.price, 0);
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+    const nextAccount = buildBalancePatch(account, price, TOKEN_TRANSACTION_TYPES.SPEND, timestamp);
+    const itemSnapshotData = {
+      id: itemId,
+      title: item.title || "",
+      description: item.description || "",
+      price,
+      imageUrl: item.imageUrl || "",
+      imageStoragePath: item.imageStoragePath || "",
+    };
+    const transactionData = {
+      studentUid: auth.uid,
+      type: TOKEN_TRANSACTION_TYPES.SPEND,
+      amount: -price,
+      source: { kind: "shopItem", id: itemId, title: itemSnapshotData.title },
+      reason: "shop-purchase",
+      createdBy: auth.uid,
+      createdAt: timestamp,
+      balanceAfter: nextAccount.balance,
+    };
+    const purchaseData = {
+      studentUid: auth.uid,
+      itemId,
+      item: itemSnapshotData,
+      price,
+      transactionId: transactionRef.path.split("/").at(-1),
+      createdAt: timestamp,
+    };
+
+    transaction.set(accountRef, nextAccount, { merge: true });
+    transaction.set(transactionRef, transactionData);
+    transaction.set(purchaseRef, purchaseData);
+
+    return {
+      purchased: true,
+      itemId,
+      price,
+      balance: nextAccount.balance,
+      transactionPath: transactionRef.path,
+      purchasePath: purchaseRef.path,
+    };
+  });
+}
+
+async function adjustStudentTokensCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db });
+  assertAdminRole(caller.data);
+
+  const studentUid = requireString(data.studentUid, "studentUid");
+  const amount = normalizeInteger(data.amount, 0);
+  if (amount === 0) {
+    throw new HttpsError("invalid-argument", "Correctiebedrag mag niet nul zijn.");
+  }
+
+  const reason = requireString(data.reason, "reden");
+  await getRequiredDoc(db.doc(`users/${studentUid}`), "Leerling");
+
+  const timestamp = getServerTimestamp(now);
+  const accountRef = db.doc(`tokenAccounts/${studentUid}`);
+  const transactionRef = getTransactionRef(db, `adjust_${cleanIdPart(studentUid)}_${Date.now().toString(36)}`);
+
+  return runDbTransaction(db, async (transaction) => {
+    const accountSnapshot = await transaction.get(accountRef);
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+    const nextAccount = buildBalancePatch(account, amount, TOKEN_TRANSACTION_TYPES.ADJUSTMENT, timestamp);
+    const transactionData = {
+      studentUid,
+      type: TOKEN_TRANSACTION_TYPES.ADJUSTMENT,
+      amount,
+      source: { kind: "adminAdjustment" },
+      reason,
+      createdBy: auth.uid,
+      createdAt: timestamp,
+      balanceAfter: nextAccount.balance,
+    };
+
+    transaction.set(accountRef, nextAccount, { merge: true });
+    transaction.set(transactionRef, transactionData);
+
+    return { adjusted: true, amount, balance: nextAccount.balance };
+  });
+}
+
+async function createOrUpdateTokenShopItemCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db });
+  assertAdminRole(caller.data);
+
+  const itemId = cleanIdPart(data.itemId || createGeneratedId("tokenShopItem"));
+  if (!itemId) {
+    throw new HttpsError("invalid-argument", "itemId is ongeldig.");
+  }
+
+  const itemRef = db.doc(`tokenShopItems/${itemId}`);
+  const existing = await itemRef.get();
+  const timestamp = getServerTimestamp(now);
+  const item = normalizeShopItemPayload(data, existing.exists ? existing.data() : {});
+  const payload = {
+    ...item,
+    updatedAt: timestamp,
+    updatedBy: auth.uid,
+    ...(existing.exists ? {} : { createdAt: timestamp, createdBy: auth.uid }),
+  };
+
+  await itemRef.set(payload, { merge: true });
+  return { itemId, saved: true };
+}
+
 exports.approveStudentPhotoImportCrop = onCall({
   region: REGION,
 }, async (request) => {
@@ -1580,6 +1988,46 @@ exports.approveStudentPhotoImportCrop = onCall({
     data: request.data || {},
     db: getFirestore(),
     bucket: getStorage().bucket(),
+  });
+});
+
+exports.awardTokensForActivity = onCall({
+  region: REGION,
+}, async (request) => {
+  return awardTokensForActivityCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
+exports.purchaseTokenShopItem = onCall({
+  region: REGION,
+}, async (request) => {
+  return purchaseTokenShopItemCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
+exports.adjustStudentTokens = onCall({
+  region: REGION,
+}, async (request) => {
+  return adjustStudentTokensCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
+exports.createOrUpdateTokenShopItem = onCall({
+  region: REGION,
+}, async (request) => {
+  return createOrUpdateTokenShopItemCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
   });
 });
 
@@ -1724,14 +2172,18 @@ exports.askAiTutor = onCall({
 });
 
 exports.__test = {
+  adjustStudentTokensCore,
   approveStudentPhotoImportCropCore,
   assessOpenAnswerCore,
   askAiTutorCore,
+  awardTokensForActivityCore,
+  createOrUpdateTokenShopItemCore,
   deleteAllStudentDataCore,
   extractTextViaOcrCore,
   importStudentNumberAccountsCore,
   getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,
+  purchaseTokenShopItemCore,
   resetStudentPasswordCore,
   syncAllStudentAuthAccountsCore,
   updateAiTutorRulesCore,

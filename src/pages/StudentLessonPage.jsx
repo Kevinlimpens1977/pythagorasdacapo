@@ -24,6 +24,7 @@ import {
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
+import { awardTokensForActivity } from '../services/tokenService';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
 import {
   evaluateAssessmentAnswer,
@@ -87,6 +88,7 @@ import {
   updateMathToolValue
 } from '../lib/mathToolboxUtils';
 import { getLessonPreviewMode, shouldIncludeDraftBlocksForPreview } from '../lib/lessonPreviewMode';
+import { buildTokenAwardPayload } from '../lib/tokenAwardUtils';
 
 const blockIcons = {
   theory: BookOpen,
@@ -129,6 +131,7 @@ export default function StudentLessonPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
   const [showParagraphEnd, setShowParagraphEnd] = useState(false);
+  const [tokenAwardNotice, setTokenAwardNotice] = useState('');
   const skipNextAiTutorSaveRef = useRef(false);
   const previewMode = getLessonPreviewMode(searchParams.get('preview') || '');
   const includeDraftPreview = shouldIncludeDraftBlocksForPreview({ isAdmin, previewMode });
@@ -289,6 +292,25 @@ export default function StudentLessonPage() {
         ...extra
       }
     );
+
+    const tokenPayload = buildTokenAwardPayload({
+      block,
+      paragraafId,
+      completed,
+      extra
+    });
+
+    if (tokenPayload) {
+      try {
+        const award = await awardTokensForActivity(tokenPayload);
+        if (award?.awarded && Number(award.amount) > 0) {
+          setTokenAwardNotice(`+${award.amount} tokens verdiend`);
+          window.setTimeout(() => setTokenAwardNotice(''), 3600);
+        }
+      } catch (tokenError) {
+        console.warn('Tokens konden niet worden toegekend:', tokenError);
+      }
+    }
 
     const refreshed = await voortgangService.getVoortgangForParagraaf(currentUser.uid, paragraafId);
     setProgressRecords(refreshed);
@@ -549,6 +571,11 @@ export default function StudentLessonPage() {
               </div>
             </div>
           </div>
+          {tokenAwardNotice ? (
+            <div className="mt-4 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-black text-amber-800">
+              {tokenAwardNotice}
+            </div>
+          ) : null}
         </header>
 
         {isAdmin && (
