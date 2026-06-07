@@ -29,3 +29,38 @@ test('insertTextAtSelection appends when selection is missing', () => {
     { text: 'x≈', caretOffset: 2 }
   );
 });
+
+test('insertTextAtSelection replaces a reversed selected text range', () => {
+  assert.deepEqual(
+    insertTextAtSelection('abcdef', 'X', { start: 4, end: 2 }),
+    { text: 'abXef', caretOffset: 3 }
+  );
+});
+
+test('insertTextAtSelection appends when either offset is malformed', () => {
+  assert.deepEqual(
+    insertTextAtSelection('abcdef', 'X', { start: 'bad', end: 2 }),
+    { text: 'abcdefX', caretOffset: 7 }
+  );
+
+  assert.deepEqual(
+    insertTextAtSelection('abcdef', 'X', { start: 2, end: {} }),
+    { text: 'abcdefX', caretOffset: 7 }
+  );
+});
+
+test('insertTextAtSelection treats null, empty string, false, and objects as invalid offsets', () => {
+  for (const invalidOffset of [null, '', false, {}]) {
+    assert.deepEqual(
+      insertTextAtSelection('abc', 'X', { start: invalidOffset, end: 1 }),
+      { text: 'abcX', caretOffset: 4 }
+    );
+  }
+});
+
+test('insertTextAtSelection coerces non-string text and insertion values', () => {
+  assert.deepEqual(
+    insertTextAtSelection(12345, 0, { start: 2, end: 4 }),
+    { text: '1205', caretOffset: 3 }
+  );
+});
