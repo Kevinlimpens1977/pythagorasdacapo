@@ -47,7 +47,7 @@ export const STARTER_AVATAR_ITEM = {
   id: 'avatar-1',
   itemId: 'avatar-1',
   title: 'Starter Avatar',
-  description: 'Je eerste HELIX-avatar. Deze staat automatisch klaar.',
+  description: 'De eerste badge die automatisch voor iedere leerling klaarstaat.',
   price: 0,
   itemType: 'avatarSkin',
   rarity: 'common',
@@ -66,8 +66,8 @@ export const STARTER_AVATAR_ITEM = {
 export const DEFAULT_TOKEN_SHOP_ITEMS = [
   {
     itemId: 'avatar-2',
-    title: 'Bronzen Blink',
-    description: 'Een vriendelijke eerste upgrade voor je profiel.',
+    title: 'Bronzen Badge',
+    description: 'Een warme eerste upgrade voor leerlingen die op gang komen.',
     price: 50,
     itemType: 'avatarSkin',
     rarity: 'common',
@@ -77,8 +77,8 @@ export const DEFAULT_TOKEN_SHOP_ITEMS = [
   },
   {
     itemId: 'avatar-3',
-    title: 'Zilveren Sprong',
-    description: 'Net iets exclusiever, met een frisse zilveren glans.',
+    title: 'Zilveren Badge',
+    description: 'Een glanzende zilveren badge voor de volgende stap.',
     price: 90,
     itemType: 'avatarSkin',
     rarity: 'common',
@@ -88,8 +88,8 @@ export const DEFAULT_TOKEN_SHOP_ITEMS = [
   },
   {
     itemId: 'avatar-4',
-    title: 'Blauwe Bliksem',
-    description: 'Een energieke avatar voor leerlingen die lekker op gang zijn.',
+    title: 'Gouden Badge',
+    description: 'Een opvallende gouden badge voor leerlingen die goed sparen.',
     price: 150,
     itemType: 'avatarSkin',
     rarity: 'rare',
@@ -99,69 +99,69 @@ export const DEFAULT_TOKEN_SHOP_ITEMS = [
   },
   {
     itemId: 'avatar-5',
-    title: 'Groene Glans',
-    description: 'Een rustige upgrade met een heldere groeistijl.',
+    title: 'Ster Badge',
+    description: 'Een stralende badge met extra sterrenglans.',
     price: 230,
     itemType: 'avatarSkin',
     rarity: 'rare',
     sortOrder: 50,
     imageUrl: avatarImage(5),
-    previewStyle: { accent: '#16a34a', motion: 'leaf', sparkle: 'green' }
+    previewStyle: { accent: '#f6b72f', motion: 'star', sparkle: 'gold' }
   },
   {
     itemId: 'avatar-6',
-    title: 'Roze Ster',
-    description: 'Een opvallende avatar met zachte sterrenenergie.',
+    title: 'Master Badge',
+    description: 'Een groene meesterbadge voor leerlingen die stevig doorgroeien.',
     price: 330,
     itemType: 'avatarSkin',
     rarity: 'epic',
     sortOrder: 60,
     imageUrl: avatarImage(6),
-    previewStyle: { accent: '#e44f70', motion: 'star', sparkle: 'pink' }
+    previewStyle: { accent: '#0f8a4b', motion: 'leaf', sparkle: 'green' }
   },
   {
     itemId: 'avatar-7',
-    title: 'Kosmische Vonk',
-    description: 'Een diepe, sprankelende stijl voor echte spaarders.',
+    title: 'Legend Badge',
+    description: 'Een paarse legendebadge met veel sprankeling.',
     price: 460,
     itemType: 'avatarSkin',
-    rarity: 'epic',
+    rarity: 'legendary',
     sortOrder: 70,
     imageUrl: avatarImage(7),
     previewStyle: { accent: '#7c3aed', motion: 'orbit', sparkle: 'violet' }
   },
   {
     itemId: 'avatar-8',
-    title: 'Kristallen Kampioen',
-    description: 'Een glanzende avatar met premium uitstraling.',
+    title: 'Kosmos Badge',
+    description: 'Een kosmische badge met blauwe sterrenenergie.',
     price: 620,
     itemType: 'avatarSkin',
     rarity: 'platinum',
     sortOrder: 80,
     imageUrl: avatarImage(8),
-    previewStyle: { accent: '#b8c7ff', motion: 'crystal', sparkle: 'platinum' }
+    previewStyle: { accent: '#2563eb', motion: 'orbit', sparkle: 'blue' }
   },
   {
     itemId: 'avatar-9',
-    title: 'Platinum Piek',
-    description: 'Een zeldzame avatar met zilveren vonkjes.',
+    title: 'Diamant Badge',
+    description: 'Een zeldzame diamantbadge met heldere schittering.',
     price: 820,
     itemType: 'avatarSkin',
     rarity: 'platinum',
     sortOrder: 90,
     imageUrl: avatarImage(9),
-    previewStyle: { accent: '#d7e2f2', motion: 'platinum', sparkle: 'platinum' }
+    previewStyle: { accent: '#d7e2f2', motion: 'crystal', sparkle: 'platinum' }
   },
   {
     itemId: 'avatar-10',
-    title: 'Helix Legende',
-    description: 'De hoogste avatarupgrade voor leerlingen die lang sparen.',
+    title: 'Platinum Badge',
+    description: 'De hoogste badge met zilveren platinumglans.',
     price: 1100,
     itemType: 'avatarSkin',
-    rarity: 'legendary',
+    rarity: 'platinum',
     sortOrder: 100,
     imageUrl: avatarImage(10),
-    previewStyle: { accent: '#f3b83f', motion: 'legendary', sparkle: 'gold' }
+    previewStyle: { accent: '#c7d7f2', motion: 'platinum', sparkle: 'platinum' }
   }
 ];
 
