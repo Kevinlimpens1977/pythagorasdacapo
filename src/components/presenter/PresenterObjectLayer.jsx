@@ -147,7 +147,7 @@ const getInnerTextOffsetForDomPosition = (element, container, offset) => {
     clone.style.position = 'fixed';
     clone.style.left = '-10000px';
     clone.style.top = '0';
-    clone.style.visibility = 'hidden';
+    clone.style.opacity = '0';
     clone.style.pointerEvents = 'none';
 
     if (document.body) {
