@@ -1,9 +1,11 @@
 export const ROOT_SYMBOL = '√';
+export const SQUARED_SYMBOL = '²';
 
 export const formatCalculatorInput = (value = '') => (
   String(value || '')
     .replace(/sqrt\s*/giu, ROOT_SYMBOL)
     .replace(/wortel\s*/giu, ROOT_SYMBOL)
+    .replace(/\^2/gu, SQUARED_SYMBOL)
 );
 
 export const appendCalculatorInput = (current = '', value = '') => {

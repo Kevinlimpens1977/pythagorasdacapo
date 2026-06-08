@@ -7,6 +7,7 @@ test('evaluates common student calculator expressions', () => {
   assert.equal(evaluateCalculatorExpression('42:70x100'), 60);
   assert.equal(evaluateCalculatorExpression('sqrt(49)'), 7);
   assert.equal(evaluateCalculatorExpression('6^2'), 36);
+  assert.equal(evaluateCalculatorExpression('6²'), 36);
   assert.equal(evaluateCalculatorExpression('-(3+2)'), -5);
   assert.equal(evaluateCalculatorExpression('1,5 + 2,25'), 3.75);
 });

@@ -12,6 +12,11 @@ test('formatCalculatorInput renders root notation as a square root symbol', () =
   assert.equal(formatCalculatorInput('wortel 100'), '√100');
 });
 
+test('formatCalculatorInput renders squared notation as a superscript', () => {
+  assert.equal(formatCalculatorInput('AB^2='), 'AB²=');
+  assert.equal(formatCalculatorInput('6^2'), '6²');
+});
+
 test('appendCalculatorInput replaces empty and invalid display states', () => {
   assert.equal(appendCalculatorInput('0', '√'), '√');
   assert.equal(appendCalculatorInput('Ongeldig', '7'), '7');

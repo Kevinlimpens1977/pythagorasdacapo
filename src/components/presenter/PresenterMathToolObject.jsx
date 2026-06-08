@@ -14,7 +14,8 @@ import { evaluateCalculatorExpression } from '../../lib/calculatorEvaluator';
 import {
   appendCalculatorInput,
   normalizeCalculatorKeyboardValue,
-  ROOT_SYMBOL
+  ROOT_SYMBOL,
+  SQUARED_SYMBOL
 } from '../../lib/calculatorInputUtils';
 
 function ToolboxInput({ value, onChange, disabled, placeholder = '', ariaLabel }) {
@@ -301,7 +302,16 @@ function PythagorasCalculator({ disabled = false }) {
     { label: '+', value: '+' },
     { label: '(', value: '(' },
     { label: ')', value: ')' },
-    { label: 'x²', value: '^2', ariaLabel: 'Kwadraat' },
+    {
+      id: 'square',
+      label: (
+        <>
+          x<sup className="text-[0.7em] leading-none">2</sup>
+        </>
+      ),
+      value: SQUARED_SYMBOL,
+      ariaLabel: 'Kwadraat'
+    },
     { label: '⌫', action: backspace, ariaLabel: 'Wis laatste teken' }
   ];
 
@@ -325,7 +335,7 @@ function PythagorasCalculator({ disabled = false }) {
           <button
             className="rounded-lg border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-2 py-2 text-xs font-black text-[var(--helix-navy)] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={disabled}
-            key={button.label}
+            key={button.id || button.label}
             onClick={button.action || (() => appendValue(button.value))}
             aria-label={button.ariaLabel}
             type="button"
@@ -357,13 +367,15 @@ function PythagorasCalculator({ disabled = false }) {
 function PythagorasWorksheet({ tool, disabled, onChange }) {
   const workingTextRef = useRef(null);
   const change = (path, value) => onChange?.(updateMathToolValue(tool, path, value));
+  const workingText = (tool.workingText || '').replace(/\^2/gu, SQUARED_SYMBOL);
 
   const insertWorkingSymbol = (symbol) => {
     const textarea = workingTextRef.current;
-    const currentValue = tool.workingText || '';
+    const currentValue = workingText;
     const start = textarea?.selectionStart ?? currentValue.length;
     const end = textarea?.selectionEnd ?? currentValue.length;
-    const nextValue = `${currentValue.slice(0, start)}${symbol}${currentValue.slice(end)}`;
+    const nextValue = `${currentValue.slice(0, start)}${symbol}${currentValue.slice(end)}`
+      .replace(/\^2/gu, SQUARED_SYMBOL);
     change(['workingText'], nextValue);
 
     window.requestAnimationFrame(() => {
@@ -422,12 +434,12 @@ function PythagorasWorksheet({ tool, disabled, onChange }) {
             <div className="flex gap-2">
               <button
                 aria-label="Kwadraat invoegen"
-                className="rounded-lg border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1 text-sm font-black text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center rounded-lg border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 py-1 text-sm font-black text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={disabled}
-                onClick={() => insertWorkingSymbol('^2')}
+                onClick={() => insertWorkingSymbol(SQUARED_SYMBOL)}
                 type="button"
               >
-                x^2
+                x<sup className="text-[0.7em] leading-none">2</sup>
               </button>
               <button
                 aria-label="Wortel invoegen"
@@ -444,10 +456,10 @@ function PythagorasWorksheet({ tool, disabled, onChange }) {
             className="min-h-32 w-full resize-y rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-semibold leading-7 text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-70"
             disabled={disabled}
             id={`${tool.id}-presenter-working`}
-            onChange={(event) => change(['workingText'], event.target.value)}
+            onChange={(event) => change(['workingText'], event.target.value.replace(/\^2/gu, SQUARED_SYMBOL))}
             placeholder="Schrijf hier je berekening en uitwerking..."
             ref={workingTextRef}
-            value={tool.workingText || ''}
+            value={workingText}
           />
         </div>
       </div>
