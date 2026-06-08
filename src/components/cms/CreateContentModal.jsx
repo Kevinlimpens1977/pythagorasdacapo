@@ -8,6 +8,7 @@ import { X, Loader } from 'lucide-react';
 import * as cmsService from '../../services/cmsService';
 import { auth } from '../../services/firebase';
 import ColorEmojiPicker from './ColorEmojiPicker';
+import HelixBrandBanner from '../common/HelixBrandBanner';
 
 const showColorEmojiPicker = false;
 
@@ -114,15 +115,20 @@ export default function CreateContentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--helix-navy)]/45 p-4 backdrop-blur-sm">
       <div className="w-full max-w-md overflow-hidden rounded-[2rem] border border-[var(--helix-border)] bg-white shadow-2xl animate-in zoom-in-95 duration-300">
         {/* Header */}
-        <div className="helix-gradient flex items-center justify-between p-6 text-white">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-white/75">HELIX CMS</p>
-            <h2 className="mt-1 font-display text-xl font-extrabold">{getTitle()}</h2>
-          </div>
+        <div className="relative">
+          <HelixBrandBanner
+            variant="modal"
+            className="rounded-none border-x-0 border-t-0 shadow-none"
+            contentClassName="pr-12"
+          >
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">HELIX CMS</p>
+            <h2 className="mt-1 font-display text-xl font-extrabold leading-tight text-[var(--helix-navy)]">{getTitle()}</h2>
+          </HelixBrandBanner>
           <button
             onClick={onClose}
             disabled={loading}
-            className="rounded-2xl p-2 transition-colors hover:bg-white/20 disabled:opacity-50"
+            className="absolute right-4 top-4 rounded-2xl border border-[var(--helix-border)] bg-white/80 p-2 text-[var(--helix-navy)] shadow-sm transition hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)] disabled:opacity-50"
+            aria-label="Sluiten"
           >
             <X size={20} />
           </button>
