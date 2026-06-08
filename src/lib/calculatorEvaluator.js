@@ -6,6 +6,7 @@ const normalizeExpression = (expression = '') =>
     .replace(/,/g, '.')
     .replace(/[\u00d7x]/g, '*')
     .replace(/[:\u00f7]/g, '/')
+    .replace(/wortel/g, 'sqrt')
     .replace(/\u221a/g, 'sqrt');
 
 const tokenize = (expression = '') => {

@@ -689,6 +689,7 @@ export default function PresenterObjectLayer({
   selectedObjectId = null,
   selectedObjectIds = [],
   interactive = false,
+  mathInteractive = false,
   showObjects = true,
   showSelection = true,
   onInteract,
@@ -744,6 +745,8 @@ export default function PresenterObjectLayer({
       {renderedObjects.map((object, index) => {
         const markerId = `presenter-object-arrow-${layerId}-${createDomIdPart(object.id)}`;
         const isSelected = selectedIds.has(object.id);
+        const isMathObject = isPresenterMathToolObject(object);
+        const objectInteractive = interactive || (mathInteractive && isMathObject);
         const shape = object.type === 'text'
           ? (
               <PresenterTextObject
@@ -757,11 +760,11 @@ export default function PresenterObjectLayer({
                 onTextCursorChange={onTextCursorChange}
               />
             )
-          : isPresenterMathToolObject(object)
+          : isMathObject
             ? (
                 <PresenterMathObject
                   object={object}
-                  interactive={interactive}
+                  interactive={objectInteractive}
                   onInteract={onInteract}
                   onSelectObject={onSelectObject}
                   onMathToolChange={onMathToolChange}
@@ -791,7 +794,7 @@ export default function PresenterObjectLayer({
           <g
             key={object.id || `${object.type}-${index}`}
             onPointerDown={handlePointerDown}
-            style={{ pointerEvents: interactive ? 'auto' : 'none' }}
+            style={{ pointerEvents: objectInteractive ? 'auto' : 'none' }}
             transform={`translate(${x} ${y}) rotate(${rotation} ${centerX} ${centerY})`}
           >
             {showObjects ? renderHitTarget(object) : null}

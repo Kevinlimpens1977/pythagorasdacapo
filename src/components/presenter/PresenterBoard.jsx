@@ -320,6 +320,8 @@ export default function PresenterBoard({
     );
   }, [activeSelectedObjectIds, previewPage]);
 
+  const allowMathToolInteraction = tool?.id !== 'select';
+
   const getBoardPoint = (event) => {
     const boardElement = boardRef.current;
     if (!boardElement) return null;
@@ -576,6 +578,7 @@ export default function PresenterBoard({
           selectedObjectId={selectedObjectId}
           selectedObjectIds={activeSelectedObjectIds}
           interactive={tool?.id === 'select'}
+          mathInteractive={allowMathToolInteraction}
           showSelection={false}
           onInteract={onInteract}
           onObjectPointerDown={handleObjectPointerDown}

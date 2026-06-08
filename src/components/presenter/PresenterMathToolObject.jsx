@@ -11,6 +11,11 @@ import {
   updateMathToolValue
 } from '../../lib/mathToolboxUtils';
 import { evaluateCalculatorExpression } from '../../lib/calculatorEvaluator';
+import {
+  appendCalculatorInput,
+  normalizeCalculatorKeyboardValue,
+  ROOT_SYMBOL
+} from '../../lib/calculatorInputUtils';
 
 function ToolboxInput({ value, onChange, disabled, placeholder = '', ariaLabel }) {
   return (
@@ -224,8 +229,9 @@ function PythagorasCalculator({ disabled = false }) {
 
   const appendValue = (value) => {
     if (disabled) return;
-    setExpression((current) => `${current}${value}`);
-    setDisplay((current) => (current === '0' || current === 'Ongeldig' ? value : `${current}${value}`));
+    const nextValue = appendCalculatorInput(display, value);
+    setExpression(nextValue);
+    setDisplay(nextValue);
   };
 
   const reset = () => {
@@ -233,11 +239,42 @@ function PythagorasCalculator({ disabled = false }) {
     setDisplay('0');
   };
 
+  const backspace = () => {
+    if (disabled) return;
+    const nextValue = display === 'Ongeldig' ? '0' : display.slice(0, -1) || '0';
+    setExpression(nextValue === '0' ? '' : nextValue);
+    setDisplay(nextValue);
+  };
+
+  const handleDisplayChange = (event) => {
+    if (disabled) return;
+    const nextValue = normalizeCalculatorKeyboardValue(event.target.value);
+    setExpression(nextValue);
+    setDisplay(nextValue);
+  };
+
+  const handleDisplayFocus = (event) => {
+    if (display === '0' || display === 'Ongeldig') {
+      event.currentTarget.select();
+    }
+  };
+
+  const handleDisplayKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      calculate();
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      reset();
+    }
+  };
+
   const calculate = () => {
     if (disabled) return;
 
     try {
-      const result = evaluateCalculatorExpression(expression);
+      const result = evaluateCalculatorExpression(expression || display);
       setExpression(String(result));
       setDisplay(String(result));
     } catch {
@@ -245,24 +282,55 @@ function PythagorasCalculator({ disabled = false }) {
     }
   };
 
-  const buttons = ['7', '8', '9', ':', '4', '5', '6', 'x', '1', '2', '3', '-', '0', ',', 'sqrt(', '+'];
+  const buttons = [
+    { label: '7', value: '7' },
+    { label: '8', value: '8' },
+    { label: '9', value: '9' },
+    { label: ':', value: ':' },
+    { label: '4', value: '4' },
+    { label: '5', value: '5' },
+    { label: '6', value: '6' },
+    { label: 'x', value: 'x' },
+    { label: '1', value: '1' },
+    { label: '2', value: '2' },
+    { label: '3', value: '3' },
+    { label: '-', value: '-' },
+    { label: '0', value: '0' },
+    { label: ',', value: ',' },
+    { label: ROOT_SYMBOL, value: ROOT_SYMBOL, ariaLabel: 'Wortel' },
+    { label: '+', value: '+' },
+    { label: '(', value: '(' },
+    { label: ')', value: ')' },
+    { label: 'x²', value: '^2', ariaLabel: 'Kwadraat' },
+    { label: '⌫', action: backspace, ariaLabel: 'Wis laatste teken' }
+  ];
 
   return (
     <aside className="rounded-2xl border border-fuchsia-100 bg-white p-3">
       <p className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--helix-purple)]">Rekenmachine</p>
-      <div className="mb-2 rounded-xl bg-[var(--helix-navy)] px-3 py-2 text-right font-display text-xl font-black text-white">
-        {display}
-      </div>
+      <input
+        aria-label="Rekenmachine invoer"
+        className="mb-2 h-12 w-full rounded-xl bg-[var(--helix-navy)] px-3 py-2 text-right font-display text-xl font-black text-white outline-none ring-0 transition placeholder:text-white/55 focus:ring-2 focus:ring-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-70"
+        disabled={disabled}
+        inputMode="text"
+        onChange={handleDisplayChange}
+        onFocus={handleDisplayFocus}
+        onKeyDown={handleDisplayKeyDown}
+        spellCheck="false"
+        type="text"
+        value={display}
+      />
       <div className="grid grid-cols-4 gap-1.5">
         {buttons.map((button) => (
           <button
             className="rounded-lg border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-2 py-2 text-xs font-black text-[var(--helix-navy)] disabled:cursor-not-allowed disabled:opacity-60"
             disabled={disabled}
-            key={button}
-            onClick={() => appendValue(button)}
+            key={button.label}
+            onClick={button.action || (() => appendValue(button.value))}
+            aria-label={button.ariaLabel}
             type="button"
           >
-            {button}
+            {button.label}
           </button>
         ))}
         <button
