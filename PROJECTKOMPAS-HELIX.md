@@ -1,6 +1,6 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 7 juni 2026
+Laatst bijgewerkt: 13 juli 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
 
@@ -184,9 +184,22 @@ Huidig:
 
 - Game Registry bestaat.
 - `/admin/spellen` bestaat.
-- Pythagoras Trainer is het eerste prototype.
-- Resultaten blijven voorlopig lokaal.
+- Pythagoras Trainer en Account Escape zijn speelbare prototypes; ~29 registry-items zijn placeholders.
+- Het `game`-lesbloktype werkt end-to-end in de leerlingroute: voortgang gaat naar Firestore en tokens worden server-side toegekend via `awardTokensForActivity` (reward-rules in `tokenGameRewardRules`, defaults in `functions/index.js`).
 - Tokens worden niet client-side uitgegeven.
+
+### Tokensysteem en Tokenshop
+
+Gebouwd per 7 juni 2026, catalogus volledig gevuld per 13 juli 2026.
+
+- Uitgifte volledig server-side via Cloud Functions (regio `europe-west1`): `awardTokensForActivity`, `purchaseTokenShopItem`, `equipTokenShopItem`, `adjustStudentTokens`, `createOrUpdateTokenShopItem`, `uploadTokenShopItemImage`.
+- Firestore-collecties: `tokenAccounts`, `tokenTransactions` (grootboek), `tokenPurchases`, `tokenAwardClaims` (idempotentie), `studentTokenLoadouts`, `tokenShopItems`, `tokenGameRewardRules`. Alles client-side read-only; muteren kan alleen via functions.
+- Economie geijkt op circa 200 tokens per gewone les. Prijsladder: pins 60-700, titels 80-1500, avatars 100-2200, frames 150-900, banners 200-1000, victory-effects 400-950.
+- Catalogus (35 items) staat in `src/lib/tokenShopRewards.js` per categorie (`DEFAULT_AVATAR_ITEMS`, `DEFAULT_FRAME_ITEMS`, `DEFAULT_PIN_ITEMS`, `DEFAULT_BANNER_ITEMS`, `DEFAULT_TITLE_ITEMS`, `DEFAULT_VICTORY_EFFECT_ITEMS`). Artwork in `public/token-shop/` (glossy 3D badge-stijl).
+- Seeden kan via de adminknop in `/admin/tokenbeheer` of via `node scripts/seed-token-shop-catalog.mjs --apply` (Admin SDK, dry-run zonder vlag).
+- Leerlingweergave: actieve avatar/frame/titel/pins in de header (`AppShell`), banner/titel/frame/pins ook op `/profiel`, kopen en activeren op `/tokenshop`.
+- Victory-effects spelen bewust NIET na elke vraag: het volledige effect speelt bij paragraafafsluiting, een subtiele variant bij 5-goed-op-rij streak-mijlpalen. Logica in `src/lib/victoryEffects.js` (+tests), overlay in `src/components/tokens/VictoryEffectOverlay.jsx`, CSS in `src/index.css` (`victory-*`).
+- Admin item-editor ondersteunt accentkleur, kaartanimatie, pin-shortLabel en effect-keuze (`previewStyle`).
 
 ### Presenter
 

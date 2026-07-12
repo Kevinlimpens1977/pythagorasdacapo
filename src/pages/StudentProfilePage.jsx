@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
+import { AlertCircle, BadgeCheck, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
@@ -160,6 +160,11 @@ export default function StudentProfilePage() {
     [normalizedLoadout, rewardItems]
   );
   const activeAvatar = activeRewardItems.find((item) => item.itemType === 'avatarSkin');
+  const activeFrame = activeRewardItems.find((item) => item.itemType === 'avatarFrame');
+  const activeTitle = activeRewardItems.find((item) => item.itemType === 'titleBadge');
+  const activeBanner = activeRewardItems.find((item) => item.itemType === 'profileBanner');
+  const activePins = activeRewardItems.filter((item) => item.itemType === 'shopBadge').slice(0, 3);
+  const bannerAccent = activeBanner?.previewStyle?.accent || '';
 
   if (loading) {
     return (
@@ -209,13 +214,22 @@ export default function StudentProfilePage() {
 
       <section className="grid items-start gap-5 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.45fr)]">
         <aside className="grid gap-5">
-          <div className="helix-card p-6">
+          <div className="helix-card overflow-hidden p-0">
+            <div
+              className="p-6"
+              style={bannerAccent ? {
+                background: `linear-gradient(135deg, ${bannerAccent}2e 0%, ${bannerAccent}14 55%, transparent 100%)`
+              } : undefined}
+            >
             <div className="flex items-center gap-4">
               <div
                 className="profile-avatar-badge group relative flex h-16 w-16 shrink-0 items-center justify-center overflow-visible rounded-full bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"
                 style={{ '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)' }}
               >
-                <div className="token-profile-avatar flex h-16 w-16 overflow-hidden rounded-full border-2 bg-white">
+                <div
+                  className="token-profile-avatar flex h-16 w-16 overflow-hidden rounded-full border-2 bg-white"
+                  style={activeFrame?.previewStyle?.accent ? { borderColor: activeFrame.previewStyle.accent, borderWidth: '3px' } : undefined}
+                >
                   {activeAvatar?.imageUrl ? (
                     <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
                   ) : (
@@ -239,14 +253,36 @@ export default function StudentProfilePage() {
               </div>
               <div className="min-w-0">
                 <h2 className="text-xl font-black text-[var(--helix-navy)]">{displayName}</h2>
-                <p className="text-sm font-semibold text-[var(--helix-purple)]">Leerling</p>
+                <p
+                  className="text-sm font-black uppercase tracking-wide text-[var(--helix-purple)]"
+                  style={activeTitle?.previewStyle?.accent ? { color: activeTitle.previewStyle.accent } : undefined}
+                >
+                  {activeTitle?.title || 'Leerling'}
+                </p>
                 <span className="mt-2 inline-flex max-w-full items-center rounded-full border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-3 py-1 text-xs font-black text-[var(--helix-purple)] shadow-sm">
                   <span className="truncate">{activeAvatar?.title || 'Starter Avatar'}</span>
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 space-y-3 text-sm">
+            {activePins.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {activePins.map((pin) => (
+                  <span
+                    key={pin.id}
+                    className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-black text-white shadow-sm"
+                    style={{ background: pin.previewStyle?.accent || 'var(--helix-purple)' }}
+                  >
+                    <BadgeCheck size={14} />
+                    {pin.title}
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            </div>
+
+            <div className="px-6 pb-6">
+            <div className="mt-1 space-y-3 text-sm">
               <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-4 py-3">
                 <Mail size={18} className="text-slate-400" />
                 <span className="font-medium text-[var(--helix-navy)]">{email}</span>
@@ -255,6 +291,7 @@ export default function StudentProfilePage() {
                 <GraduationCap size={18} className="text-slate-400" />
                 <span className="font-medium text-[var(--helix-navy)]">{klasName}</span>
               </div>
+            </div>
             </div>
           </div>
 

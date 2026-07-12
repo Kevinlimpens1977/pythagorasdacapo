@@ -19,8 +19,12 @@ import {
   getRewardTypeLabel,
   TOKEN_SHOP_ITEM_TYPES,
   TOKEN_SHOP_RARITY_LABELS,
-  TOKEN_SHOP_TARGET_SLOT_BY_TYPE
+  TOKEN_SHOP_TARGET_SLOT_BY_TYPE,
+  VICTORY_EFFECT_KEYS,
+  VICTORY_EFFECT_LABELS
 } from '../lib/tokenShopRewards';
+
+const TOKEN_SHOP_MOTION_OPTIONS = ['shine', 'twinkle', 'pulse', 'star', 'leaf', 'orbit', 'crystal', 'platinum'];
 
 const emptyItem = {
   itemId: '',
@@ -34,7 +38,12 @@ const emptyItem = {
   imageStoragePath: '',
   enabled: true,
   repeatable: false,
-  sortOrder: 0
+  sortOrder: 0,
+  accent: '#7a3cff',
+  motion: 'shine',
+  shortLabel: '',
+  effect: 'confetti',
+  sparkle: ''
 };
 
 export default function AdminTokenManagementPage() {
@@ -129,6 +138,7 @@ export default function AdminTokenManagementPage() {
 
   const startEditItem = (item) => {
     const itemType = item.itemType || 'avatarSkin';
+    const previewStyle = item.previewStyle || {};
     setItemDraft({
       itemId: item.id,
       title: item.title || '',
@@ -141,9 +151,29 @@ export default function AdminTokenManagementPage() {
       targetSlot: item.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType] || 'avatarSkin',
       enabled: item.enabled !== false,
       repeatable: item.repeatable === true,
-      sortOrder: Number(item.sortOrder) || 0
+      sortOrder: Number(item.sortOrder) || 0,
+      accent: previewStyle.accent || '#7a3cff',
+      motion: previewStyle.motion || 'shine',
+      shortLabel: previewStyle.shortLabel || '',
+      effect: previewStyle.effect || 'confetti',
+      sparkle: previewStyle.sparkle || ''
     });
     setImageFile(null);
+  };
+
+  const buildPreviewStylePayload = (draft) => {
+    const previewStyle = {
+      accent: draft.accent || '#7a3cff',
+      motion: draft.motion || 'shine'
+    };
+    if (draft.sparkle) previewStyle.sparkle = draft.sparkle;
+    if (draft.itemType === 'shopBadge' && draft.shortLabel.trim()) {
+      previewStyle.shortLabel = draft.shortLabel.trim().toUpperCase().slice(0, 8);
+    }
+    if (draft.itemType === 'victoryEffect') {
+      previewStyle.effect = VICTORY_EFFECT_KEYS.includes(draft.effect) ? draft.effect : VICTORY_EFFECT_KEYS[0];
+    }
+    return previewStyle;
   };
 
   const updateItemType = (itemType) => {
@@ -165,12 +195,15 @@ export default function AdminTokenManagementPage() {
       if (imageFile) {
         image = await uploadTokenShopItemImage({ itemId, file: imageFile });
       }
+      const draftFields = { ...itemDraft };
+      ['accent', 'motion', 'shortLabel', 'effect', 'sparkle'].forEach((key) => delete draftFields[key]);
       await createOrUpdateTokenShopItem({
-        ...itemDraft,
+        ...draftFields,
         itemId,
         targetSlot: itemDraft.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemDraft.itemType] || 'avatarSkin',
         imageUrl: image.downloadURL || '',
-        imageStoragePath: image.storagePath || ''
+        imageStoragePath: image.storagePath || '',
+        previewStyle: buildPreviewStylePayload(itemDraft)
       });
       setItemDraft(emptyItem);
       setImageFile(null);
@@ -189,7 +222,7 @@ export default function AdminTokenManagementPage() {
     setError('');
     try {
       const results = await seedDefaultTokenShopCatalog();
-      setMessage(`${results.length} avatars zijn toegevoegd of bijgewerkt.`);
+      setMessage(`${results.length} shopitems zijn toegevoegd of bijgewerkt.`);
     } catch (err) {
       console.error('Standaardcatalogus laden mislukt:', err);
       setError(err.message || 'Standaardcatalogus laden is mislukt.');
@@ -246,12 +279,12 @@ export default function AdminTokenManagementPage() {
         <section className="mt-8 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white px-5 py-4 shadow-[var(--helix-shadow-card)]">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="font-black text-[var(--helix-navy)]">Avatarcatalogus</h2>
-              <p className="helix-muted mt-1 text-sm">Vul de shop met avatars 2 t/m 10. Avatar 1 is de vaste starteravatar.</p>
+              <h2 className="font-black text-[var(--helix-navy)]">Standaardcatalogus</h2>
+              <p className="helix-muted mt-1 text-sm">Vul de shop met de complete standaardcatalogus: avatars, frames, pins, banners, titels en victory-effects. Avatar 1 is de vaste starteravatar.</p>
             </div>
             <button type="button" onClick={handleSeedCatalog} disabled={seedingCatalog} className="btn-primary min-h-11 text-sm disabled:opacity-45">
               {seedingCatalog ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-              Avatarcatalogus aanvullen
+              Standaardcatalogus aanvullen
             </button>
           </div>
         </section>
@@ -368,6 +401,39 @@ export default function AdminTokenManagementPage() {
                   <input type="number" min="0" value={itemDraft.price} onChange={(event) => setItemDraft({ ...itemDraft, price: event.target.value })} className="input-standard" placeholder="Prijs" required />
                   <input type="number" value={itemDraft.sortOrder} onChange={(event) => setItemDraft({ ...itemDraft, sortOrder: event.target.value })} className="input-standard" placeholder="Sorteervolgorde" />
                 </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="flex items-center justify-between gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-bold text-[var(--helix-navy)]">
+                    <span>Accentkleur</span>
+                    <input
+                      type="color"
+                      value={itemDraft.accent}
+                      onChange={(event) => setItemDraft({ ...itemDraft, accent: event.target.value })}
+                      className="h-9 w-14 cursor-pointer rounded border border-[var(--helix-border)] bg-white"
+                      title="Kleur van de rand, pin of gloed zoals de leerling die ziet"
+                    />
+                  </label>
+                  <select value={itemDraft.motion} onChange={(event) => setItemDraft({ ...itemDraft, motion: event.target.value })} className="input-standard" title="Animatie van de shopkaart">
+                    {TOKEN_SHOP_MOTION_OPTIONS.map((motion) => (
+                      <option key={motion} value={motion}>Animatie: {motion}</option>
+                    ))}
+                  </select>
+                </div>
+                {itemDraft.itemType === 'shopBadge' ? (
+                  <input
+                    value={itemDraft.shortLabel}
+                    onChange={(event) => setItemDraft({ ...itemDraft, shortLabel: event.target.value })}
+                    className="input-standard"
+                    placeholder="Korte pin-tekst (max 8 tekens, bijv. STER)"
+                    maxLength={8}
+                  />
+                ) : null}
+                {itemDraft.itemType === 'victoryEffect' ? (
+                  <select value={itemDraft.effect} onChange={(event) => setItemDraft({ ...itemDraft, effect: event.target.value })} className="input-standard" title="Welke animatie speelt bij een paragraafafronding">
+                    {VICTORY_EFFECT_KEYS.map((effectKey) => (
+                      <option key={effectKey} value={effectKey}>Effect: {VICTORY_EFFECT_LABELS[effectKey] || effectKey}</option>
+                    ))}
+                  </select>
+                ) : null}
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-navy)]">
                     <input type="checkbox" checked={itemDraft.enabled} onChange={(event) => setItemDraft({ ...itemDraft, enabled: event.target.checked })} className="h-4 w-4 accent-[var(--helix-purple)]" />

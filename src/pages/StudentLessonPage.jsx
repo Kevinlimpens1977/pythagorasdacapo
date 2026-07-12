@@ -24,7 +24,18 @@ import {
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
-import { awardTokensForActivity } from '../services/tokenService';
+import {
+  awardTokensForActivity,
+  subscribeActiveTokenShopItems,
+  subscribeStudentTokenLoadout
+} from '../services/tokenService';
+import {
+  buildVictoryEffectPlayback,
+  createVictoryStreakState,
+  resolveActiveVictoryEffect,
+  updateVictoryStreak
+} from '../lib/victoryEffects';
+import VictoryEffectOverlay from '../components/tokens/VictoryEffectOverlay';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
 import {
   evaluateAssessmentAnswer,
@@ -120,7 +131,7 @@ export default function StudentLessonPage() {
   const { chapterId: paragraafId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { currentUser, userData, isAdmin, klasData, klasId: authKlasId } = useAuth();
+  const { currentUser, userData, isAdmin, klasData, klasId: authKlasId, isDevBypass } = useAuth();
   const { setContext: setStudentBugReportContext } = useStudentBugReportContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -132,9 +143,46 @@ export default function StudentLessonPage() {
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
   const [showParagraphEnd, setShowParagraphEnd] = useState(false);
   const [tokenAwardNotice, setTokenAwardNotice] = useState('');
+  const [victoryPlayback, setVictoryPlayback] = useState(null);
+  const [rewardLoadout, setRewardLoadout] = useState({ activePinIds: [] });
+  const [rewardItems, setRewardItems] = useState([]);
+  const victoryStreakRef = useRef(createVictoryStreakState());
+  const victoryDoneRef = useRef(null);
   const skipNextAiTutorSaveRef = useRef(false);
   const previewMode = getLessonPreviewMode(searchParams.get('preview') || '');
   const includeDraftPreview = shouldIncludeDraftBlocksForPreview({ isAdmin, previewMode });
+
+  useEffect(() => {
+    if (!currentUser?.uid || isAdmin || isDevBypass) {
+      return undefined;
+    }
+
+    const unsubscribers = [
+      subscribeStudentTokenLoadout(
+        currentUser.uid,
+        setRewardLoadout,
+        (subscribeError) => console.warn('Victory-effect loadout niet geladen:', subscribeError)
+      ),
+      subscribeActiveTokenShopItems(
+        setRewardItems,
+        (subscribeError) => console.warn('Shopcatalogus niet geladen voor victory-effect:', subscribeError)
+      )
+    ];
+
+    return () => unsubscribers.forEach((unsubscribe) => unsubscribe?.());
+  }, [currentUser?.uid, isAdmin, isDevBypass]);
+
+  const activeVictoryEffect = useMemo(
+    () => resolveActiveVictoryEffect({ loadout: rewardLoadout, items: rewardItems }),
+    [rewardLoadout, rewardItems]
+  );
+
+  const finishVictoryPlayback = () => {
+    setVictoryPlayback(null);
+    const resolvePending = victoryDoneRef.current;
+    victoryDoneRef.current = null;
+    resolvePending?.();
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -310,6 +358,20 @@ export default function StudentLessonPage() {
       } catch (tokenError) {
         console.warn('Tokens konden niet worden toegekend:', tokenError);
       }
+    }
+
+    const nextStreak = updateVictoryStreak(victoryStreakRef.current, {
+      blockType: block.type,
+      completed,
+      isCorrect: extra.isCorrect
+    });
+    victoryStreakRef.current = nextStreak;
+    if (nextStreak.milestone && activeVictoryEffect && !victoryPlayback) {
+      setVictoryPlayback(buildVictoryEffectPlayback({
+        effectItem: activeVictoryEffect,
+        trigger: 'streak',
+        streakCount: nextStreak.count
+      }));
     }
 
     const refreshed = await voortgangService.getVoortgangForParagraaf(currentUser.uid, paragraafId);
@@ -516,6 +578,7 @@ export default function StudentLessonPage() {
 
   return (
     <div className="helix-page min-h-full">
+      <VictoryEffectOverlay playback={victoryPlayback} onDone={finishVictoryPlayback} />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <header className="helix-surface p-5">
           <button
@@ -633,6 +696,17 @@ export default function StudentLessonPage() {
                 onFinish={async (payload) => {
                   if (payload) {
                     await saveParagraphEndProgress(paragraphEndActivity, payload);
+
+                    const playback = buildVictoryEffectPlayback({
+                      effectItem: activeVictoryEffect,
+                      trigger: 'paragraphEnd'
+                    });
+                    if (playback) {
+                      await new Promise((resolve) => {
+                        victoryDoneRef.current = resolve;
+                        setVictoryPlayback(playback);
+                      });
+                    }
                   }
                   navigate('/');
                 }}
