@@ -14,8 +14,21 @@ import {
   getActiveRewardItems,
   getRewardRarityLabel,
   getRewardTypeLabel,
-  normalizeLoadout
+  normalizeLoadout,
+  TOKEN_SHOP_ITEM_TYPES
 } from '../lib/tokenShopRewards';
+
+const SHOP_TAB_LABELS = {
+  all: 'Alles',
+  avatarSkin: 'Avatars',
+  avatarFrame: 'Frames',
+  shopBadge: 'Pins',
+  profileBanner: 'Banners',
+  victoryEffect: 'Effects',
+  titleBadge: 'Titels'
+};
+
+const SHOP_TABS = ['all', ...TOKEN_SHOP_ITEM_TYPES];
 
 const formatDate = (value) => {
   if (!value) return 'Zojuist';
@@ -35,6 +48,7 @@ export default function StudentTokenShopPage() {
   const [error, setError] = useState('');
   const [buyingId, setBuyingId] = useState('');
   const [equippingId, setEquippingId] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     if (!currentUser?.uid || isDevBypass) {
@@ -89,6 +103,19 @@ export default function StudentTokenShopPage() {
       .map((purchase) => itemsById.get(purchase.itemId) || { id: purchase.itemId, ...(purchase.item || purchase.itemSnapshot || {}) })
       .filter((item) => item?.id),
     [itemsById, purchases]
+  );
+
+  const itemCountByTab = useMemo(() => {
+    const counts = { all: items.length };
+    TOKEN_SHOP_ITEM_TYPES.forEach((itemType) => {
+      counts[itemType] = items.filter((item) => item.itemType === itemType).length;
+    });
+    return counts;
+  }, [items]);
+
+  const visibleItems = useMemo(
+    () => (activeTab === 'all' ? items : items.filter((item) => item.itemType === activeTab)),
+    [activeTab, items]
   );
 
   const activeTitle = activeRewardItems.find((item) => item.itemType === 'titleBadge');
@@ -153,13 +180,38 @@ export default function StudentTokenShopPage() {
         {error ? <div className="mt-5 rounded-[var(--helix-radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{error}</div> : null}
 
         <section className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div>
+            <nav className="custom-scrollbar mb-4 flex gap-1.5 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1.5" aria-label="Shopcategorieën">
+              {SHOP_TABS.map((tab) => {
+                const isActiveTab = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-black transition ${
+                      isActiveTab
+                        ? 'bg-white text-[var(--helix-purple)] shadow-[var(--helix-shadow-card)] ring-1 ring-[var(--helix-purple)]/35'
+                        : 'text-[var(--helix-muted)] hover:bg-white/70 hover:text-[var(--helix-navy)]'
+                    }`}
+                  >
+                    {SHOP_TAB_LABELS[tab]}
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${isActiveTab ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]' : 'bg-white/80 text-[var(--helix-muted)]'}`}>
+                      {itemCountByTab[tab] || 0}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
             <div className="grid gap-4 md:grid-cols-2">
-              {items.length === 0 ? (
+              {visibleItems.length === 0 ? (
                 <div className="helix-surface p-8 text-center md:col-span-2">
                   <Gift size={42} className="mx-auto text-[var(--helix-purple)]/35" />
-                  <p className="mt-3 font-black text-[var(--helix-navy)]">De shop wordt gevuld</p>
+                  <p className="mt-3 font-black text-[var(--helix-navy)]">
+                    {items.length === 0 ? 'De shop wordt gevuld' : `Nog geen ${SHOP_TAB_LABELS[activeTab]?.toLowerCase() || 'items'} in de shop`}
+                  </p>
                 </div>
-              ) : items.map((item) => {
+              ) : visibleItems.map((item) => {
                 const price = Math.max(0, Number(item.price) || 0);
                 const canBuy = Number(account.balance || 0) >= price;
                 const bought = purchaseIds.has(item.id);
@@ -222,6 +274,7 @@ export default function StudentTokenShopPage() {
                   </article>
                 );
               })}
+            </div>
             </div>
 
             <aside className="space-y-5">
