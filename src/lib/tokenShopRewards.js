@@ -394,14 +394,14 @@ export const DEFAULT_TITLE_ITEMS = [
     previewStyle: { accent: '#0ea5e9', motion: 'shine', sparkle: 'blue' }
   },
   {
-    itemId: 'titel-rekenheld',
-    title: 'Rekenheld',
-    description: 'Draag deze titel als bewijs dat sommen jou niet bang maken.',
+    itemId: 'titel-leerheld',
+    title: 'Leerheld',
+    description: 'Draag deze titel als bewijs dat geen enkel vak jou bang maakt.',
     price: 240,
     itemType: 'titleBadge',
     rarity: 'rare',
     sortOrder: 530,
-    imageUrl: shopImage('titel-rekenheld'),
+    imageUrl: shopImage('titel-leerheld'),
     previewStyle: { accent: '#10b981', motion: 'shine', sparkle: 'green' }
   },
   {
