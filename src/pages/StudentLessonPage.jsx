@@ -19,7 +19,8 @@ import {
   RotateCcw,
   Table2,
   Trash2,
-  Triangle
+  Triangle,
+  X
 } from 'lucide-react';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
@@ -54,7 +55,8 @@ import {
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
 import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
 import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
-import { shouldCollapseAiTutorOnMouseLeave } from '../lib/aiTutorPanelState';
+import { shouldCollapseAiTutorOnMouseLeave, shouldExpandAiTutorOnHover } from '../lib/aiTutorPanelState';
+import { getLessonBlockAccent, hasRenderableLessonHtml } from '../lib/lessonBlockPresentation';
 import {
   buildAnswerSignature,
   isAssessmentForAnswer,
@@ -114,6 +116,11 @@ const blockIcons = {
 };
 
 const htmlValue = (value = '') => ({ __html: value || '' });
+
+const deviceSupportsHover = () => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return true;
+  return window.matchMedia('(hover: hover)').matches;
+};
 
 const stripHtmlText = (value = '') =>
   String(value || '')
@@ -653,7 +660,7 @@ export default function StudentLessonPage() {
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <aside className="helix-card p-3 lg:sticky lg:top-24 lg:self-start">
             <p className="px-2 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-muted)]">Stappen</p>
-            <div className="space-y-2">
+            <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-2 lg:overflow-visible lg:pb-0">
               {blocks.map((block, index) => {
                 const Icon = blockIcons[block.type] || BookOpen;
                 const isActive = index === currentIndex;
@@ -663,7 +670,7 @@ export default function StudentLessonPage() {
                   <button
                     key={block.id}
                     onClick={() => goToStep(index)}
-                    className={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition ${
+                    className={`flex max-w-56 shrink-0 items-center gap-3 rounded-xl p-3 text-left transition lg:w-full lg:max-w-none ${
                       isActive
                         ? 'helix-gradient text-white shadow-lg shadow-fuchsia-500/10'
                         : 'text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)]'
@@ -2125,14 +2132,33 @@ function QuestionLearningBlock({
         </div>
       </div>
 
+      {allowAiHelp && !submitted && !showAiTutor && (
+        <button
+          type="button"
+          onClick={() => setShowAiTutor(true)}
+          className="fixed bottom-5 right-4 z-40 inline-flex items-center gap-2 rounded-full border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-3 text-sm font-black text-[var(--helix-purple)] shadow-xl transition hover:bg-white md:hidden"
+        >
+          <MessageCircle size={18} />
+          Digidocent
+        </button>
+      )}
+
       {allowAiHelp && !submitted && (
         <aside
           className={[
-            'fixed right-0 top-28 z-40 flex max-h-[calc(100vh-8rem)] w-[min(26rem,calc(100vw-1.25rem))] transition-transform duration-300 ease-out',
-            showAiTutor ? 'translate-x-0' : 'translate-x-[calc(100%-3.25rem)]'
+            'fixed z-40 transition-transform duration-300 ease-out',
+            'inset-x-0 bottom-0 flex max-h-[80dvh] flex-col',
+            showAiTutor ? 'translate-y-0' : 'translate-y-full',
+            'md:inset-x-auto md:bottom-auto md:right-0 md:top-28 md:max-h-[calc(100vh-8rem)] md:w-[min(26rem,calc(100vw-1.25rem))] md:translate-y-0 md:flex-row',
+            showAiTutor ? 'md:translate-x-0' : 'md:translate-x-[calc(100%-3.25rem)]'
           ].join(' ')}
-          onMouseEnter={() => setShowAiTutor(true)}
+          onMouseEnter={() => {
+            if (shouldExpandAiTutorOnHover({ supportsHover: deviceSupportsHover() })) {
+              setShowAiTutor(true);
+            }
+          }}
           onMouseLeave={() => {
+            if (!shouldExpandAiTutorOnHover({ supportsHover: deviceSupportsHover() })) return;
             if (shouldCollapseAiTutorOnMouseLeave({ draftInput: aiTutorDraftInput })) {
               setShowAiTutor(false);
             }
@@ -2141,7 +2167,7 @@ function QuestionLearningBlock({
           <button
             type="button"
             onClick={() => setShowAiTutor((current) => !current)}
-            className="flex h-56 w-14 shrink-0 items-center justify-center rounded-l-2xl border border-r-0 border-fuchsia-100 bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)] shadow-lg transition hover:bg-white"
+            className="hidden h-56 w-14 shrink-0 items-center justify-center rounded-l-2xl border border-r-0 border-fuchsia-100 bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)] shadow-lg transition hover:bg-white md:flex"
             title={showAiTutor ? 'Sluit Digidocent' : 'Open Digidocent'}
           >
             <span className="flex rotate-180 items-center gap-2 [writing-mode:vertical-rl]">
@@ -2150,17 +2176,25 @@ function QuestionLearningBlock({
             </span>
           </button>
 
-          <div className="min-w-0 flex-1 rounded-bl-3xl rounded-tl-3xl border border-fuchsia-100 bg-white p-3 shadow-2xl">
+          <div className="min-w-0 flex-1 overflow-y-auto rounded-t-3xl border border-fuchsia-100 bg-white p-3 shadow-2xl md:overflow-visible md:rounded-bl-3xl md:rounded-tr-none">
             <div className="mb-3 flex items-start gap-3 px-1">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
                 <MessageCircle size={19} />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Digidocent</h3>
                 <p className="mt-1 text-xs font-semibold leading-5 text-[var(--helix-muted)]">
                   Digidocent stelt denkvragen en geeft het antwoord niet letterlijk.
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setShowAiTutor(false)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)] md:hidden"
+                title="Sluit Digidocent"
+              >
+                <X size={18} />
+              </button>
             </div>
 
             {showAiTutor && (
@@ -2208,12 +2242,38 @@ function DefaultLearningBlock({ block, bodyHtml, linkedVraag }) {
     );
   }
 
+  const accent = getLessonBlockAccent(block.type);
+  const hasBodyContent = hasRenderableLessonHtml(bodyHtml);
+
+  if (!hasBodyContent && !imageUrl) {
+    return (
+      <div className="rounded-3xl border border-dashed border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-8 text-center">
+        <BookOpen className="mx-auto text-[var(--helix-muted)]" size={34} />
+        <p className="mt-3 font-black text-[var(--helix-navy)]">Nog geen inhoud</p>
+        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+          Je docent vult dit lesblok nog aan. Je kunt verder met de volgende stap.
+        </p>
+      </div>
+    );
+  }
+
+  const proseContent = (
+    <div
+      className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)] prose-img:rounded-2xl prose-img:border prose-img:border-[var(--helix-border)]"
+      dangerouslySetInnerHTML={htmlValue(bodyHtml)}
+    />
+  );
+
   return (
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <div
-        className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)] prose-img:rounded-2xl prose-img:border prose-img:border-[var(--helix-border)]"
-        dangerouslySetInnerHTML={htmlValue(bodyHtml || '<p>Nog geen inhoud ingevuld.</p>')}
-      />
+      {accent ? (
+        <div className={accent.className}>
+          <p className="helix-eyebrow">{accent.eyebrow}</p>
+          <div className="mt-4">{proseContent}</div>
+        </div>
+      ) : (
+        proseContent
+      )}
 
       {imageUrl && (
         <figure className="overflow-hidden rounded-3xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
@@ -2307,7 +2367,7 @@ function AssessmentLearningBlock({ block, bodyHtml }) {
         </p>
       </div>
 
-      {items.length > 0 && (
+      {items.length > 0 ? (
         <div className="space-y-3">
           {items.map((item, index) => (
             <AssessmentItemLearningCard
@@ -2317,6 +2377,16 @@ function AssessmentLearningBlock({ block, bodyHtml }) {
               isToets={isToets}
             />
           ))}
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-dashed border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-8 text-center">
+          <FileText className="mx-auto text-[var(--helix-muted)]" size={34} />
+          <p className="mt-3 font-black text-[var(--helix-navy)]">
+            {isToets ? 'Nog geen toetsvragen' : 'Nog geen quizvragen'}
+          </p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+            Je docent vult dit blok nog aan. Je kunt verder met de volgende stap.
+          </p>
         </div>
       )}
     </div>

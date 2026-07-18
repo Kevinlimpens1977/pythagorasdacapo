@@ -88,7 +88,7 @@ export default function AITutorChat({
   };
 
   return (
-    <div className="flex h-[500px] w-full flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-lg">
+    <div className="flex h-[min(500px,60dvh)] w-full flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-lg">
       <div className="flex items-center justify-between bg-[var(--helix-navy)] p-4 text-white">
         <div className="flex items-center gap-2">
           <Bot size={24} />

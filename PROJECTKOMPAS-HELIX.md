@@ -1076,13 +1076,21 @@ Focus:
 
 ### 4. Leerlingroute Afronden
 
-Nodig:
+Gebouwd per 18 juli 2026:
 
-- Verdere polish voor theorie, voorbeeld, vraag, quiz, toets, media, samenvatting, game en slidedeck.
-- Rustige empty states.
-- Mobiele layout.
-- Consistente fullscreen-ervaring.
-- Controleren dat leerlingroutes overal publieke snapshots gebruiken waar leerlingen lezen.
+- Codecheck bevestigde dat de leerlingroute overal publieke snapshots (`publicContentBlocks`/`publicQuestions`) gebruikt; private CMS-reads zitten strikt achter `isAdmin`.
+- Gedeeld fullscreen-mechanisme: `src/components/common/FullscreenSurface.jsx` + `src/lib/fullscreenSurfaceState.js` (overlay z-1200, native fullscreen-toggle, Escape-afhandeling; children blijven gemount zodat video's/games niet herstarten). Gebruikt door `MediaRenderer` en `GamePlayer`; `PdfSlideDeckPresenter` had dit patroon al en is de stijlreferentie.
+- Game-blok leerlingklaar: `GamePlayer` heeft `variant="student"` (default, rustige leerlingweergave met resultaatkaart) en `variant="admin"` (foundation-label, mode/resultHandling-badges, JSON-resultaat; gebruikt op `/admin/spellen`). Games kunnen fullscreen gespeeld worden.
+- Digidocent mobiel: het paneel is op mobiel een bottom-sheet met eigen sluitknop en een zwevende Digidocent-knop; hover-openen alleen op hover-apparaten (`shouldExpandAiTutorOnHover` in `aiTutorPanelState.js`); chathoogte is flexibel (`min(500px,60dvh)`).
+- Stappen-sidebar is op mobiel een horizontale scrollstrip in plaats van een lange lijst boven de les.
+- Empty states: leeg quiz/toets-blok en leeg theorie/voorbeeld/samenvatting-blok tonen een nette melding; placeholder-HTML is vervangen (`src/lib/lessonBlockPresentation.js`).
+- Voorbeeld en samenvatting hebben een eigen rustig visueel accent (`getLessonBlockAccent`).
+
+Nog open:
+
+- Browsermatige validatie van de leerlingroute met echte lesdata/login (dev-login kan geen Firestore lezen; alleen game/fullscreen is browsermatig geverifieerd).
+- Verhoudingstabel- en Pythagoras-werkbladen leunen op mobiel op horizontaal scrollen; bewust zo gelaten.
+- Echte toetsafname-flow blijft het aparte punt Toetsmodus V1.
 
 ### 5. CMS Lesblokstudio Verfijnen
 

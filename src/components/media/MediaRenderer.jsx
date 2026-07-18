@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ExternalLink, FileText, Link as LinkIcon, Maximize2, X } from 'lucide-react';
+import { ExternalLink, FileText, Link as LinkIcon, Maximize2 } from 'lucide-react';
+import FullscreenSurface from '../common/FullscreenSurface';
 import { MEDIA_KINDS, normalizeMediaContent, parseYouTubeUrl } from '../../lib/mediaUtils';
 
 const getYoutubeEmbedUrl = (url) => parseYouTubeUrl(url)?.embedUrl || '';
@@ -25,55 +26,40 @@ export default function MediaRenderer({ media = {}, title = 'Media', variant = '
 
   return (
     <figure className={isPresenter ? 'h-full w-full' : 'space-y-3'}>
-      <div className={`relative overflow-hidden rounded-3xl border border-[var(--helix-border)] bg-white shadow-[var(--helix-shadow-soft)] ${isPresenter ? 'flex h-full min-h-0 items-center justify-center' : ''}`}>
-        <MediaSurface mediaKind={mediaKind} mediaUrl={mediaUrl} title={title} altText={altText} presenter={isPresenter} />
-        {canOpen && (
-          <button
-            type="button"
-            onClick={() => setFullscreenOpen(true)}
-            className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/90 px-3 py-2 text-sm font-black text-[var(--helix-navy)] shadow-lg backdrop-blur transition hover:bg-white"
-          >
-            <Maximize2 size={16} />
-            Open groot
-          </button>
+      <FullscreenSurface
+        active={fullscreenOpen}
+        onActiveChange={setFullscreenOpen}
+        eyebrow="Media"
+        title={title}
+        externalUrl={mediaUrl}
+        inactiveClassName={`relative overflow-hidden rounded-3xl border border-[var(--helix-border)] bg-white shadow-[var(--helix-shadow-soft)] ${isPresenter ? 'flex h-full min-h-0 items-center justify-center' : ''}`}
+      >
+        {({ active }) => (
+          <>
+            <MediaSurface
+              mediaKind={mediaKind}
+              mediaUrl={mediaUrl}
+              title={title}
+              altText={altText}
+              presenter={isPresenter && !active}
+              fullscreen={active}
+            />
+            {canOpen && !active && (
+              <button
+                type="button"
+                onClick={() => setFullscreenOpen(true)}
+                className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-2xl border border-white/70 bg-white/90 px-3 py-2 text-sm font-black text-[var(--helix-navy)] shadow-lg backdrop-blur transition hover:bg-white"
+              >
+                <Maximize2 size={16} />
+                Open groot
+              </button>
+            )}
+          </>
         )}
-      </div>
+      </FullscreenSurface>
 
       {caption && !isPresenter && (
         <figcaption className="px-1 text-sm font-semibold leading-6 text-[var(--helix-muted)]">{caption}</figcaption>
-      )}
-
-      {fullscreenOpen && (
-        <div className="fixed inset-0 z-[1250] flex flex-col bg-slate-950 text-white">
-          <header className="flex items-center justify-between gap-4 border-b border-slate-800 px-5 py-4">
-            <div className="min-w-0">
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-300">Media</p>
-              <h2 className="truncate text-xl font-black">{title}</h2>
-            </div>
-            <div className="flex items-center gap-2">
-              <a
-                href={mediaUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="hidden items-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm font-black text-slate-100 transition hover:bg-slate-900 sm:inline-flex"
-              >
-                <ExternalLink size={16} />
-                Open apart
-              </a>
-              <button
-                type="button"
-                onClick={() => setFullscreenOpen(false)}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-700 px-4 py-2 text-sm font-black text-slate-100 transition hover:bg-slate-900"
-              >
-                <X size={17} />
-                Sluit
-              </button>
-            </div>
-          </header>
-          <main className="min-h-0 flex-1 p-4">
-            <MediaSurface mediaKind={mediaKind} mediaUrl={mediaUrl} title={title} altText={altText} fullscreen />
-          </main>
-        </div>
       )}
     </figure>
   );

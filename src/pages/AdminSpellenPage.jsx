@@ -116,6 +116,7 @@ export default function AdminSpellenPage() {
 
                 <GamePlayer
                   gameId={selectedGame.gameId}
+                  variant="admin"
                   context={{
                     mode: 'standalone',
                     resultHandling: GAME_RESULT_HANDLING.LOCAL_ONLY
