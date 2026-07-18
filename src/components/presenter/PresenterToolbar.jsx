@@ -170,6 +170,7 @@ export default function PresenterToolbar({
   onTextSymbol,
   selectedTextStyle,
   onInstrument,
+  activeInstrument = null,
   onOpenImport,
   onFullscreen,
   eraserSize = 'medium',
@@ -757,16 +758,26 @@ export default function PresenterToolbar({
           </div>
           <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
           <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {instrumentTypes.map((instrument) => (
-              <button
-                key={instrument.id}
-                type="button"
-                className={`${popoverButtonClass} border-[rgba(255,122,0,0.28)] bg-white/70 text-orange-700 hover:border-white hover:bg-white hover:text-[var(--helix-purple)]`}
-                onClick={() => runAction(() => onInstrument?.(instrument.id))}
-              >
-                {instrument.label}
-              </button>
-            ))}
+            {instrumentTypes.map((instrument) => {
+              const isActive = activeInstrument === instrument.id;
+
+              return (
+                <button
+                  key={instrument.id}
+                  type="button"
+                  className={`${popoverButtonClass} ${
+                    isActive
+                      ? activeButtonClass
+                      : 'border-[rgba(255,122,0,0.28)] bg-white/70 text-orange-700 hover:border-white hover:bg-white hover:text-[var(--helix-purple)]'
+                  }`}
+                  onClick={() => runAction(() => onInstrument?.(instrument.id))}
+                  aria-pressed={isActive}
+                  title={isActive ? `${instrument.label} sluiten` : `${instrument.label} op het bord leggen`}
+                >
+                  {instrument.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       ) : null}

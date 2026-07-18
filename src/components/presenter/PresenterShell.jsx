@@ -563,8 +563,10 @@ export default function PresenterShell() {
     setPagePanelOpen(false);
   };
 
+  // Instrumentknoppen togglen: nogmaals klikken op het actieve instrument
+  // sluit het weer (naast de sluitknop op het instrument zelf en Escape).
   const handleInstrument = (instrumentId) => {
-    setInstrument(createPresenterInstrument(instrumentId));
+    setInstrument((current) => (current?.id === instrumentId ? null : createPresenterInstrument(instrumentId)));
     setActiveCategory('pen');
     setPagePanelOpen(false);
   };
@@ -1279,6 +1281,7 @@ export default function PresenterShell() {
         onTextSymbol={handleTextSymbol}
         selectedTextStyle={selectedTextStyle}
         onInstrument={handleInstrument}
+        activeInstrument={instrument?.id || null}
         onOpenImport={openImportDialog}
         onFullscreen={handleFullscreen}
         eraserSize={eraserSize}

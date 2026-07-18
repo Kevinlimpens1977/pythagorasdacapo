@@ -336,8 +336,12 @@ function CompassOverlay({ instrument, scale = 1, gridSize = 96, penStyle, onChan
       </button>
 
       <div
-        className="absolute flex -translate-x-1/2 gap-2"
-        style={{ left: `${scaledCenter.x}px`, top: `${scaledCenter.y + radius * scale + 18}px`, pointerEvents: 'auto' }}
+        className="absolute flex gap-2"
+        style={{
+          left: `${scaledHinge.x + 26}px`,
+          top: `${Math.max(8, scaledHinge.y - 20)}px`,
+          pointerEvents: 'auto'
+        }}
       >
         <button
           type="button"
@@ -351,7 +355,7 @@ function CompassOverlay({ instrument, scale = 1, gridSize = 96, penStyle, onChan
         <button
           type="button"
           aria-label="Passer sluiten"
-          title="Passer sluiten"
+          title="Passer sluiten (of klik nogmaals op Passer in de werkbalk, of druk Esc)"
           className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-500 bg-white text-slate-700 shadow-md"
           onClick={onClose}
         >
