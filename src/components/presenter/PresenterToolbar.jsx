@@ -12,19 +12,24 @@ import {
   Grid3X3,
   Highlighter,
   Italic,
+  Lightbulb,
   Maximize2,
   MousePointer2,
+  MoveHorizontal,
   Palette,
   PenLine,
   Plus,
   Redo2,
   Shapes,
   Sigma,
+  Timer,
   Type,
   Trash2,
-  Undo2
+  Undo2,
+  Users
 } from 'lucide-react';
 import { PRESENTER_ERASER_SIZES } from '../../lib/presenterEraser';
+import { SPOTLIGHT_RADII } from '../../lib/presenterFocus';
 import { getPresenterObjectLabel } from '../../lib/presenterObjects';
 
 const objectTypes = [
@@ -54,6 +59,7 @@ const categories = [
   { id: 'eraser', label: 'Gum', icon: Eraser },
   { id: 'text', label: 'Tekst', icon: Type },
   { id: 'objects', label: 'Objecten', icon: Shapes },
+  { id: 'focus', label: 'Focus', icon: Lightbulb },
   { id: 'lesson', label: 'Lesstof', icon: FileText },
   { id: 'background', label: 'Achtergrond', icon: Grid3X3 },
   { id: 'pages', label: "Pagina's", icon: CheckSquare }
@@ -173,7 +179,19 @@ export default function PresenterToolbar({
   penMode = 'free',
   onPenMode,
   fingerDrawing = true,
-  onToggleFingerDrawing
+  onToggleFingerDrawing,
+  focusKind = null,
+  spotlightRadiusId = 'medium',
+  curtainDirection = 'top',
+  onFocusSelect,
+  onSpotlightRadius,
+  onCurtainDirection,
+  onTimer,
+  onStudentPicker,
+  boardTheme = 'light',
+  onToggleBoardTheme,
+  toolbarAlign = 'center',
+  onToolbarAlign
 }) {
   const [symbolsOpen, setSymbolsOpen] = useState(false);
 
@@ -424,6 +442,95 @@ export default function PresenterToolbar({
           </span>
         </div>
       ) : null}
+      {activeCategory === 'focus' ? (
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(64rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${focusKind === 'spotlight' ? activeButtonClass : idleButtonClass}`}
+            onClick={() => runAction(() => onFocusSelect?.('spotlight'))}
+            aria-pressed={focusKind === 'spotlight'}
+            title="Verduister alles behalve een sleepbare cirkel"
+          >
+            Spotlight
+          </button>
+          {focusKind === 'spotlight'
+            ? SPOTLIGHT_RADII.map((radius) => (
+                <button
+                  key={radius.id}
+                  type="button"
+                  className={`${popoverButtonClass} ${spotlightRadiusId === radius.id ? activeButtonClass : idleButtonClass}`}
+                  onClick={() => runAction(() => onSpotlightRadius?.(radius.id))}
+                  aria-pressed={spotlightRadiusId === radius.id}
+                >
+                  {radius.label}
+                </button>
+              ))
+            : null}
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${focusKind === 'curtain' ? activeButtonClass : idleButtonClass}`}
+            onClick={() => runAction(() => onFocusSelect?.('curtain'))}
+            aria-pressed={focusKind === 'curtain'}
+            title="Schuifbaar gordijn over het bord"
+          >
+            Gordijn
+          </button>
+          {focusKind === 'curtain' ? (
+            <>
+              <button
+                type="button"
+                className={`${popoverButtonClass} ${curtainDirection === 'top' ? activeButtonClass : idleButtonClass}`}
+                onClick={() => runAction(() => onCurtainDirection?.('top'))}
+                aria-pressed={curtainDirection === 'top'}
+              >
+                Boven
+              </button>
+              <button
+                type="button"
+                className={`${popoverButtonClass} ${curtainDirection === 'left' ? activeButtonClass : idleButtonClass}`}
+                onClick={() => runAction(() => onCurtainDirection?.('left'))}
+                aria-pressed={curtainDirection === 'left'}
+              >
+                Links
+              </button>
+            </>
+          ) : null}
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${focusKind === 'laser' ? activeButtonClass : idleButtonClass}`}
+            onClick={() => runAction(() => onFocusSelect?.('laser'))}
+            aria-pressed={focusKind === 'laser'}
+            title="Rode aanwijsstip met vervagend spoor"
+          >
+            Laser
+          </button>
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
+          <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>
+            <Timer className="inline" size={14} /> Timer
+          </span>
+          {[1, 2, 5].map((minutes) => (
+            <button
+              key={minutes}
+              type="button"
+              className={`${popoverButtonClass} ${idleButtonClass}`}
+              onClick={() => runAction(() => onTimer?.(minutes))}
+              title={`Timer van ${minutes} ${minutes === 1 ? 'minuut' : 'minuten'} starten`}
+            >
+              {minutes} min
+            </button>
+          ))}
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
+          <button
+            type="button"
+            className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
+            onClick={() => runAction(onStudentPicker)}
+            title="Kies een willekeurige leerling uit een klas"
+          >
+            <Users size={16} strokeWidth={2.4} />
+            Leerlingkiezer
+          </button>
+        </div>
+      ) : null}
       {activeCategory === 'background' ? (
         <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(42rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
           <button
@@ -464,10 +571,44 @@ export default function PresenterToolbar({
           </button>
           <button
             type="button"
+            className={`${popoverButtonClass} ${
+              backgroundKind === 'mm'
+                ? activeButtonClass
+                : idleButtonClass
+            }`}
+            onClick={() => handleBackground('mm')}
+            aria-pressed={backgroundKind === 'mm'}
+          >
+            Millimeter
+          </button>
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${
+              backgroundKind === 'axes'
+                ? activeButtonClass
+                : idleButtonClass
+            }`}
+            onClick={() => handleBackground('axes')}
+            aria-pressed={backgroundKind === 'axes'}
+          >
+            Assenstelsel
+          </button>
+          <button
+            type="button"
             className={`${popoverButtonClass} ${idleButtonClass}`}
             onClick={handleGridSizeToggle}
           >
             Ruitmaat {nextGridSize}
+          </button>
+          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
+          <button
+            type="button"
+            className={`${popoverButtonClass} ${boardTheme === 'dark' ? activeButtonClass : idleButtonClass}`}
+            onClick={() => runAction(onToggleBoardTheme)}
+            aria-pressed={boardTheme === 'dark'}
+            title="Donker bordvlak voor een verduisterd lokaal"
+          >
+            Donker bord
           </button>
         </div>
       ) : null}
@@ -629,7 +770,12 @@ export default function PresenterToolbar({
           </div>
         </div>
       ) : null}
-      <div className={`pointer-events-auto mx-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-1.5 overflow-visible p-2 ${panelClass}`} onPointerEnter={onOpen}>
+      <div
+        className={`pointer-events-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-1.5 overflow-visible p-2 ${panelClass} ${
+          toolbarAlign === 'left' ? 'mr-auto' : toolbarAlign === 'right' ? 'ml-auto' : 'mx-auto'
+        }`}
+        onPointerEnter={onOpen}
+      >
         <div className="flex shrink-0 flex-wrap items-center justify-center gap-1">
           <button
             type="button"
@@ -731,6 +877,19 @@ export default function PresenterToolbar({
         </div>
 
         <div className="flex shrink-0 items-center gap-1 min-[920px]:ml-auto">
+          <button
+            type="button"
+            className={iconButtonClass}
+            onClick={() => {
+              const next = toolbarAlign === 'center' ? 'left' : toolbarAlign === 'left' ? 'right' : 'center';
+              onToolbarAlign?.(next);
+              onAction?.();
+            }}
+            aria-label="Werkbalk uitlijnen (links, midden of rechts)"
+            title={`Werkbalk uitlijnen (nu: ${toolbarAlign === 'center' ? 'midden' : toolbarAlign === 'left' ? 'links' : 'rechts'})`}
+          >
+            <MoveHorizontal size={17} strokeWidth={2.4} />
+          </button>
           <button
             type="button"
             className={`${iconButtonClass} ${pinned ? activeButtonClass : ''}`}

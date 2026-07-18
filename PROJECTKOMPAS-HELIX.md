@@ -185,12 +185,14 @@ Werkplek voor educatieve browsergames.
 
 Huidig:
 
-- Game Registry bestaat.
-- `/admin/spellen` bestaat.
-- Pythagoras Trainer en Account Escape zijn speelbare prototypes; ~29 registry-items zijn placeholders.
-- Het `game`-lesbloktype werkt end-to-end in de leerlingroute: voortgang gaat naar Firestore en tokens worden server-side toegekend via `awardTokensForActivity` (reward-rules in `tokenGameRewardRules`, defaults in `functions/index.js`).
+- Game Registry is per 18 juli 2026 opnieuw opgebouwd: alle oude prototypes (Pythagoras Trainer, Account Escape) en ~29 placeholders zijn verwijderd voor een schone start.
+- Eerste echte spel: **Wachtwoord Detective** (`wachtwoord-detective`, `src/games/wachtwoordDetective/`) over veilige wachtwoorden voor VMBO kader-TL leerjaar 1. Vier zaken (2x meerkeuze, 2x fragmenten combineren, zaak 4 is bewust onkraakbaar met "Ik geef op"-leermoment) + debriefvragen + finale "bescherm je eigen account". maxScore 15, tokenregel max 100 (score_accuracy_completion), volledig light mode. Higgsfield-avatars in `public/games/wachtwoord-detective/` (emoji-fallback in component). End-to-end browsergetest 18 juli 2026 (14/15 → accuracy 93 → suggestie 93 tokens).
+- De infrastructuur staat er volledig: `/admin/spellen`, GamePlayer, GameComponentRenderer, `gameComponentKeys.js`, het `game`-lesbloktype en de CMS-selectie.
+- Het `game`-lesbloktype werkt end-to-end in de leerlingroute: voortgang gaat naar Firestore en tokens worden server-side toegekend via `awardTokensForActivity` (reward-rules in `tokenGameRewardRules`; `DEFAULT_GAME_TOKEN_REWARD_RULES` in `functions/index.js` is nu leeg).
 - Tokens worden niet client-side uitgegeven.
-- Tokenregels per spel zijn instelbaar op `/admin/spellen` (paneel "Tokenbeloning": actief, min, max, berekening). Opslaan schrijft direct naar `tokenGameRewardRules/{gameId}` (admin-only in `firestore.rules`); "Herstel standaard" verwijdert de eigen regel zodat de serverdefault weer geldt. Client-helpers en de spiegel van de serverdefaults staan in `src/lib/gameTokenRewardRules.js` + `src/services/tokenService.js`.
+- Tokenregels per spel zijn instelbaar op `/admin/spellen` (paneel "Spelinstellingen": tokens actief, min, max, berekening). Opslaan schrijft naar `tokenGameRewardRules/{gameId}`; "Herstel standaard" verwijdert de eigen regel. Client-helpers en de spiegel van de serverdefaults staan in `src/lib/gameTokenRewardRules.js` + `src/services/tokenService.js`.
+- Speellimiet per spel: zelfde paneel, "Aantal keer speelbaar" (1-5 of Onbeperkt), opgeslagen als `maxPlays` in hetzelfde `tokenGameRewardRules/{gameId}`-document (default in de registry via `game.maxPlays`, 0 = onbeperkt). Telling loopt per leerling per lesblok in de voortgang (`gamePlayCount`); handhaving client-side in `GameBlock` (leerling ziet resterende beurten en na de limiet een "uitgespeeld"-kaart, stap blijft afgerond). `tokenGameRewardRules` is nu leesbaar voor alle ingelogde gebruikers (schrijven admin-only) zodat de limiet live geldt. Bewust een zachte limiet in dezelfde vertrouwenslaag als voortgang; tokens blijven server-side 1x beveiligd.
+- Let op: lesblokken die nog naar verwijderde gameIds verwijzen (o.a. uit de DV-seed) tonen leerlingen "Game niet gevonden" totdat ze een nieuw spel krijgen of worden gedepubliceerd.
 - Er is een startgids voor nieuwe spellen: `STARTGIDS-NIEUW-SPEL.md` in de projectroot.
 
 ### Tokensysteem en Tokenshop
@@ -222,6 +224,16 @@ Status per 7 juni 2026:
 - De module is technisch geimplementeerd en gericht getest, maar de echte digibordervaring moet nog browsermatig en praktisch worden gevalideerd.
 
 Belangrijk: behandel Presenter niet meer als alleen een plan. Behandel het als een gebouwde V1a met open validatie en polish.
+
+Grote UX-uitbouw per 18 juli 2026 (zie `IMPLEMENTATIEPLAN-PRESENTER-UX.md`, werkpakketten A/B/C volledig opgeleverd; bewust ZONDER cloudsessies/export):
+
+- Gum met drie borstelgroottes (wist alleen strokes), rotatiehandvat met 15°-snap, custom kleurkiezer + recente kleuren, één paginanavigator, aria-labels/sneltoetsen, localStorage-recovery met autosave-indicator en bordnaam, importdialog met bevestigingsstap en blokselectie.
+- Tekenervaring: gladde inkt (quadratic curves + drukmodulatie), live preview op canvas met rAF, pen/vinger-scheiding met palm rejection en two-finger pan, meetkundepen (rechte lijn + gridsnap + Shift-hoeksnap), smart guides met uitlijnsnap, Ctrl+D dupliceren, voorgrond/achtergrond, history zonder structuredClone per streek.
+- Meetinstrumenten zijn echte bordobjecten: sleepbaar/roteerbaar, penstreken snappen op de tekenrand van liniaal/geodriehoek, gradenboog/geodriehoek tonen de hoek, passer heeft instelbare straal en plaatst cirkelobjecten; lijn/pijl kunnen hun lengte in ruitjes tonen (Meet-knop).
+- Klassikale regie: onthul/verberg-knop op geimporteerde vraagkaarten, grote timer (1/2/5 min), leerlingkiezer met klaskeuze en leerlingfoto's, spotlight/schermgordijn/laserpointer (Focus-categorie).
+- Bordmodus: fullscreen op de Presenter-sectie zelf (adminchrome weg, 100dvh), toolbar-uitlijning links/midden/rechts, donkere bordmodus (donkere inkt wordt automatisch licht), millimeter- en assenstelselachtergronden, zachte paginawissel-animatie.
+- Nieuwe libs (elk met tests): `presenterEraser`, `presenterInk`, `presenterInstruments`, `presenterAlignment`, `presenterFocus`; nieuwe componenten `PresenterFocusTools.jsx`, herbouwde `PresenterInstrumentOverlay.jsx`.
+- Nog praktijkvalidatie nodig op echte hardware: pen-druk, touch/palm rejection, CTOUCH-ervaring; importbevestiging en leerlingkiezer met echte login testen.
 
 ### Instellingen
 

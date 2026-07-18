@@ -190,8 +190,11 @@ function QuestionCard({ model }) {
     orderItems: getInitialOrderItems(model.orderItems)
   }));
   const [checked, setChecked] = useState(false);
+  // Klassikale regie: de controleknop en feedback blijven verborgen tot de
+  // docent ze onthult, zodat de klas eerst zelf kan nadenken.
+  const [revealed, setRevealed] = useState(false);
   const control = getQuestionControlState(model, answers);
-  const status = getQuestionFeedbackStatus(model, answers, checked);
+  const status = revealed ? getQuestionFeedbackStatus(model, answers, checked) : 'idle';
 
   const setAnswer = (field, value) => {
     setAnswers((current) => ({ ...current, [field]: value }));
@@ -235,27 +238,52 @@ function QuestionCard({ model }) {
             {status === 'correct' ? 'Goed gecontroleerd.' : status === 'incorrect' ? 'Kijk nog eens goed.' : ''}
           </p>
           <div className="flex items-center gap-3">
-            {checked ? (
+            {!revealed ? (
               <button
                 type="button"
-                className="inline-flex min-h-14 items-center rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 text-[18px] font-black text-slate-800"
-                onClick={resetAnswers}
+                className="inline-flex min-h-14 items-center gap-3 rounded-2xl border-2 border-slate-300 bg-white px-6 py-4 text-[18px] font-black text-slate-800"
+                onClick={() => setRevealed(true)}
                 data-presenter-interactive="true"
               >
-                Reset antwoord
+                Onthul controle
               </button>
-            ) : null}
-            {control.hasInput ? (
-              <button
-                type="button"
-                className="inline-flex min-h-14 items-center gap-3 rounded-2xl bg-slate-950 px-6 py-4 text-[18px] font-black text-slate-50"
-                onClick={() => setChecked(true)}
-                data-presenter-interactive="true"
-              >
-                <CheckCircle2 size={22} />
-                Controleer
-              </button>
-            ) : null}
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="inline-flex min-h-14 items-center rounded-2xl border-2 border-slate-200 bg-white px-4 py-4 text-[16px] font-black text-slate-500"
+                  onClick={() => {
+                    setRevealed(false);
+                    setChecked(false);
+                  }}
+                  data-presenter-interactive="true"
+                  title="Controle weer verbergen"
+                >
+                  Verberg
+                </button>
+                {checked ? (
+                  <button
+                    type="button"
+                    className="inline-flex min-h-14 items-center rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 text-[18px] font-black text-slate-800"
+                    onClick={resetAnswers}
+                    data-presenter-interactive="true"
+                  >
+                    Reset antwoord
+                  </button>
+                ) : null}
+                {control.hasInput ? (
+                  <button
+                    type="button"
+                    className="inline-flex min-h-14 items-center gap-3 rounded-2xl bg-slate-950 px-6 py-4 text-[18px] font-black text-slate-50"
+                    onClick={() => setChecked(true)}
+                    data-presenter-interactive="true"
+                  >
+                    <CheckCircle2 size={22} />
+                    Controleer
+                  </button>
+                ) : null}
+              </>
+            )}
           </div>
         </footer>
       </div>

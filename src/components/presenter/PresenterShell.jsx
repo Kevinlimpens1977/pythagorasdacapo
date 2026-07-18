@@ -31,6 +31,8 @@ import {
 } from '../../lib/presenterModel';
 import { DEFAULT_PRESENTER_ERASER_SIZE, getPresenterEraserRadius } from '../../lib/presenterEraser';
 import { createPresenterInstrument } from '../../lib/presenterInstruments';
+import { createCurtain, createLaser, createSpotlight } from '../../lib/presenterFocus';
+import { PresenterStudentPicker, PresenterTimerOverlay } from './PresenterFocusTools';
 import { createPresenterObject, updatePresenterMathToolObject } from '../../lib/presenterObjects';
 import {
   clearPresenterRecoveryState,
@@ -370,6 +372,13 @@ export default function PresenterShell() {
   const [penMode, setPenMode] = useState('free');
   const [fingerDrawing, setFingerDrawing] = useState(true);
   const [lastSavedAt, setLastSavedAt] = useState(null);
+  const [focusTool, setFocusTool] = useState(null);
+  const [timer, setTimer] = useState(null);
+  const [studentPickerOpen, setStudentPickerOpen] = useState(false);
+  const [boardTheme, setBoardTheme] = useState('light');
+  const [toolbarAlign, setToolbarAlign] = useState('center');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const shellRef = useRef(null);
   const fullscreenErrorTimerRef = useRef(null);
   const toolbarAutoCloseTimerRef = useRef(null);
   const eraseGestureHistoryRef = useRef(null);
@@ -564,6 +573,49 @@ export default function PresenterShell() {
     setInstrument((current) => (current ? { ...current, ...updates } : current));
   }, []);
 
+  const handleFocusSelect = (kind) => {
+    setFocusTool((current) => {
+      if (current?.kind === kind) return null;
+      if (kind === 'spotlight') return createSpotlight(current?.kind === 'spotlight' ? current.radiusId : undefined);
+      if (kind === 'curtain') return createCurtain();
+      if (kind === 'laser') return createLaser();
+      return null;
+    });
+  };
+
+  const handleFocusChange = useCallback((updates) => {
+    setFocusTool((current) => (current ? { ...current, ...updates } : current));
+  }, []);
+
+  const handleTimerStart = (minutes) => {
+    setTimer({ endsAt: Date.now() + minutes * 60000, minutes });
+  };
+
+  const handlePlaceCircle = useCallback(({ cx, cy, radius }) => {
+    if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(radius) || radius <= 0) return;
+
+    const object = createPresenterObject('ellipse', {
+      id: createObjectId(),
+      x: cx - radius,
+      y: cy - radius,
+      width: radius * 2,
+      height: radius * 2
+    });
+
+    updateActivePageWithHistory((currentSession) =>
+      addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
+    );
+  }, [updateActivePageWithHistory]);
+
+  const handleToggleObjectMeasure = useCallback((objectId) => {
+    if (!objectId) return;
+
+    updateObjectOnActivePageWithHistory(objectId, (object) => ({
+      ...object,
+      showMeasure: !object.showMeasure
+    }));
+  }, [updateObjectOnActivePageWithHistory]);
+
   const openImportDialog = () => {
     setImportDialogOpen(true);
     setActiveCategory('lesson');
@@ -603,7 +655,9 @@ export default function PresenterShell() {
   const handleFullscreen = useCallback(async () => {
     if (typeof document === 'undefined') return;
 
-    const element = document.documentElement;
+    // Echte bordmodus: fullscreen op de Presenter-sectie zelf, zodat de
+    // adminchrome volledig verdwijnt en het bord edge-to-edge staat.
+    const element = shellRef.current || document.documentElement;
     if (document.fullscreenElement) {
       await exitFullscreenSafely();
       return;
@@ -620,6 +674,15 @@ export default function PresenterShell() {
       showFullscreenError();
     }
   }, [exitFullscreenSafely, showFullscreenError]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const handleUndo = useCallback(() => {
     setSession((currentSession) => {
@@ -1049,6 +1112,8 @@ export default function PresenterShell() {
         setActiveCategory('select');
         setPagePanelOpen(false);
         setInstrument(null);
+        setFocusTool(null);
+        setStudentPickerOpen(false);
       }
     };
 
@@ -1082,7 +1147,12 @@ export default function PresenterShell() {
   }, []);
 
   return (
-    <section className="relative flex h-[calc(100dvh-5rem)] min-h-0 flex-col overflow-hidden bg-slate-200">
+    <section
+      ref={shellRef}
+      className={`relative flex min-h-0 flex-col overflow-hidden ${boardTheme === 'dark' ? 'bg-slate-950' : 'bg-slate-200'} ${
+        isFullscreen ? 'h-[100dvh]' : 'h-[calc(100dvh-5rem)]'
+      }`}
+    >
       {fullscreenErrorVisible ? (
         <div
           className="fixed right-4 top-4 z-50 max-w-sm rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-950 shadow-lg"
@@ -1094,7 +1164,7 @@ export default function PresenterShell() {
       {recoveredSession ? (
         <PresenterRecoveryPrompt onRestore={handleRestoreRecovery} onDiscard={handleDiscardRecovery} />
       ) : null}
-      <header className="presenter-chrome-surface flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
+      <header className={`presenter-chrome-surface flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 ${isFullscreen ? 'hidden' : ''}`}>
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--helix-purple)]">Presenter</p>
           <input
@@ -1142,7 +1212,14 @@ export default function PresenterShell() {
         instrument={instrument}
         onInstrumentChange={handleInstrumentChange}
         onInstrumentClose={() => setInstrument(null)}
+        focus={focusTool}
+        onFocusChange={handleFocusChange}
+        boardTheme={boardTheme}
+        onPlaceCircle={handlePlaceCircle}
+        onToggleObjectMeasure={handleToggleObjectMeasure}
       />
+      <PresenterTimerOverlay timer={timer} onStop={() => setTimer(null)} />
+      <PresenterStudentPicker open={studentPickerOpen} onClose={() => setStudentPickerOpen(false)} />
       <PresenterPagePanel
         pages={pages}
         activePageId={session.activePageId}
@@ -1205,6 +1282,18 @@ export default function PresenterShell() {
         onPenMode={setPenMode}
         fingerDrawing={fingerDrawing}
         onToggleFingerDrawing={() => setFingerDrawing((current) => !current)}
+        focusKind={focusTool?.kind || null}
+        spotlightRadiusId={focusTool?.kind === 'spotlight' ? focusTool.radiusId : 'medium'}
+        curtainDirection={focusTool?.kind === 'curtain' ? focusTool.direction : 'top'}
+        onFocusSelect={handleFocusSelect}
+        onSpotlightRadius={(radiusId) => handleFocusChange({ radiusId })}
+        onCurtainDirection={(direction) => handleFocusChange({ direction })}
+        onTimer={handleTimerStart}
+        onStudentPicker={() => setStudentPickerOpen(true)}
+        boardTheme={boardTheme}
+        onToggleBoardTheme={() => setBoardTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+        toolbarAlign={toolbarAlign}
+        onToolbarAlign={setToolbarAlign}
       />
     </section>
   );

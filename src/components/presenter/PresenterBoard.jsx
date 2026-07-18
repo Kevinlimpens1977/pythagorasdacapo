@@ -22,6 +22,7 @@ import {
 } from '../../lib/presenterModel';
 import { canRotatePresenterObject, isPresenterMathToolObject } from '../../lib/presenterObjects';
 import PresenterBackground from './PresenterBackground';
+import { PresenterFocusLayer } from './PresenterFocusTools';
 import PresenterInkLayer from './PresenterInkLayer';
 import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
 import PresenterObjectLayer from './PresenterObjectLayer';
@@ -178,7 +179,7 @@ function SelectionMarquee({ rect, scale }) {
   );
 }
 
-function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, showRotate = false, onDelete, onMovePointerDown, onResizePointerDown, onRotatePointerDown, onBringForward, onSendBackward }) {
+function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, showRotate = false, showMeasureToggle = false, measureActive = false, onDelete, onMovePointerDown, onResizePointerDown, onRotatePointerDown, onBringForward, onSendBackward, onToggleMeasure }) {
   const handleSize = 28;
   const scaledBounds = {
     x: bounds.x * scale,
@@ -302,6 +303,23 @@ function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false
         >
           Achtergrond
         </button>
+        {showMeasureToggle ? (
+          <button
+            aria-label="Meetlabel aan of uit"
+            title="Toon de lengte in ruitjes"
+            className={`rounded-md border-2 px-2 py-1 text-xs font-black shadow-sm ${
+              measureActive ? 'border-emerald-700 bg-emerald-600 text-white' : 'border-blue-700 bg-white text-blue-800'
+            }`}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onToggleMeasure?.();
+            }}
+            type="button"
+          >
+            Meet
+          </button>
+        ) : null}
       </div>
       <button
         aria-label="Selectie verwijderen"
@@ -347,7 +365,12 @@ export default function PresenterBoard({
   allowFingerDrawing = true,
   instrument = null,
   onInstrumentChange,
-  onInstrumentClose
+  onInstrumentClose,
+  focus = null,
+  onFocusChange,
+  boardTheme = 'light',
+  onPlaceCircle,
+  onToggleObjectMeasure
 }) {
   const surfaceRef = useRef(null);
   const boardRef = useRef(null);
@@ -860,6 +883,15 @@ export default function PresenterBoard({
     });
   };
 
+  const measurableSelectedObject = useMemo(() => {
+    if (activeSelectedObjectIds.length !== 1) return null;
+
+    const object = (Array.isArray(page?.objects) ? page.objects : []).find(
+      (candidate) => candidate?.id === activeSelectedObjectIds[0]
+    );
+    return object && (object.type === 'line' || object.type === 'arrow') ? object : null;
+  }, [activeSelectedObjectIds, page]);
+
   const rotatableSelectedObject = useMemo(() => {
     if (activeSelectedObjectIds.length !== 1) return null;
 
@@ -932,12 +964,17 @@ export default function PresenterBoard({
   return (
     <div
       ref={surfaceRef}
-      className="flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 px-4 pb-28 pt-5"
+      className={`flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 pb-28 pt-5 ${
+        boardTheme === 'dark' ? 'bg-slate-950' : 'bg-slate-200'
+      }`}
       style={{ touchAction }}
     >
       <div
+        key={page?.id || 'presenter-page'}
         ref={boardRef}
-        className="relative mx-auto shrink-0 overflow-hidden bg-slate-50 shadow-sm ring-1 ring-slate-300"
+        className={`presenter-page-enter relative mx-auto shrink-0 overflow-hidden shadow-sm ring-1 ${
+          boardTheme === 'dark' ? 'bg-slate-900 ring-slate-700' : 'bg-slate-50 ring-slate-300'
+        }`}
         onLostPointerCapture={(event) => {
           completeActiveStroke(event);
           completeSelectionInteraction(event);
@@ -967,7 +1004,7 @@ export default function PresenterBoard({
           touchAction: boardTouchAction
         }}
       >
-        <PresenterBackground background={page?.background} scale={board.scale} />
+        <PresenterBackground background={page?.background} scale={board.scale} theme={boardTheme} />
         <PresenterObjectLayer
           page={previewPage}
           selectedObjectId={selectedObjectId}
@@ -984,7 +1021,7 @@ export default function PresenterBoard({
           onTextCursorChange={onTextCursorChange}
           onMathToolChange={onMathToolChange}
         />
-        <PresenterInkLayer page={page} />
+        <PresenterInkLayer page={page} theme={boardTheme} />
         <canvas
           ref={canvasRef}
           aria-hidden="true"
@@ -1032,6 +1069,9 @@ export default function PresenterBoard({
             onRotatePointerDown={handleRotatePointerDown}
             onBringForward={() => onReorderObjects?.(activeSelectedObjectIds, 'front')}
             onSendBackward={() => onReorderObjects?.(activeSelectedObjectIds, 'back')}
+            showMeasureToggle={Boolean(measurableSelectedObject)}
+            measureActive={Boolean(measurableSelectedObject?.showMeasure)}
+            onToggleMeasure={() => onToggleObjectMeasure?.(measurableSelectedObject?.id)}
           />
         ) : null}
         {instrument ? (
@@ -1040,8 +1080,29 @@ export default function PresenterBoard({
             scale={board.scale}
             onChange={onInstrumentChange}
             onClose={onInstrumentClose}
+            onPlaceCircle={onPlaceCircle}
           />
         ) : null}
+        {(Array.isArray(previewPage?.objects) ? previewPage.objects : [])
+          .filter((object) => object?.showMeasure && (object.type === 'line' || object.type === 'arrow'))
+          .map((object) => {
+            const gridSize = page?.background?.gridSize || 96;
+            const length = Math.hypot(getNumber(object.width, 0), getNumber(object.height, 0));
+            const units = Math.round((length / gridSize) * 10) / 10;
+            const midX = (getNumber(object.x) + getNumber(object.width, 0) / 2) * board.scale;
+            const midY = (getNumber(object.y) + getNumber(object.height, 0) / 2) * board.scale;
+
+            return (
+              <span
+                key={`measure-${object.id}`}
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-[130%] rounded-md bg-slate-950/85 px-2 py-0.5 text-sm font-black text-white"
+                style={{ left: `${midX}px`, top: `${midY}px` }}
+              >
+                {String(units).replace('.', ',')} ruitjes
+              </span>
+            );
+          })}
+        <PresenterFocusLayer focus={focus} scale={board.scale} onFocusChange={onFocusChange} />
         {isEraserTool && eraserCursor ? (
           <div
             className="pointer-events-none absolute rounded-full border-2 border-slate-500/80 bg-white/40"

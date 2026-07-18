@@ -6,7 +6,17 @@ const DEFAULT_PAGE_HEIGHT = 1400;
 
 const isFinitePositiveNumber = (value) => Number.isFinite(value) && value > 0;
 
-const renderStroke = (stroke, opacity) => {
+// In de donkere bordmodus worden donkere inktkleuren automatisch licht,
+// zodat bestaand werk leesbaar blijft.
+const DARK_THEME_COLOR_MAP = {
+  '#111827': '#f1f5f9',
+  '#0b132b': '#f1f5f9'
+};
+
+const resolveStrokeColor = (color, theme) =>
+  (theme === 'dark' && DARK_THEME_COLOR_MAP[String(color || '').toLowerCase()]) || color;
+
+const renderStroke = (stroke, opacity, theme) => {
   const pathData = buildSmoothedStrokePath(Array.isArray(stroke?.points) ? stroke.points : []);
   if (!pathData) return null;
   const style = getPresenterStrokeStyle(stroke);
@@ -17,7 +27,7 @@ const renderStroke = (stroke, opacity) => {
       key={stroke.id || pathData}
       d={pathData}
       fill="none"
-      stroke={style.color}
+      stroke={resolveStrokeColor(style.color, theme)}
       strokeLinecap={style.lineCap}
       strokeLinejoin={style.lineJoin}
       strokeOpacity={opacity ?? style.opacity}
@@ -26,7 +36,7 @@ const renderStroke = (stroke, opacity) => {
   );
 };
 
-export default function PresenterInkLayer({ page }) {
+export default function PresenterInkLayer({ page, theme = 'light' }) {
   const width = isFinitePositiveNumber(page?.width) ? page.width : DEFAULT_PAGE_WIDTH;
   const height = isFinitePositiveNumber(page?.height) ? page.height : DEFAULT_PAGE_HEIGHT;
   const strokes = Array.isArray(page?.strokes) ? page.strokes : [];
@@ -42,7 +52,7 @@ export default function PresenterInkLayer({ page }) {
         preserveAspectRatio="none"
         viewBox={viewBox}
       >
-        {highlighterStrokes.map((stroke) => renderStroke(stroke, 0.36))}
+        {highlighterStrokes.map((stroke) => renderStroke(stroke, 0.36, theme))}
       </svg>
       <svg
         aria-hidden="true"
@@ -50,7 +60,7 @@ export default function PresenterInkLayer({ page }) {
         preserveAspectRatio="none"
         viewBox={viewBox}
       >
-        {penStrokes.map((stroke) => renderStroke(stroke, 1))}
+        {penStrokes.map((stroke) => renderStroke(stroke, 1, theme))}
       </svg>
     </>
   );

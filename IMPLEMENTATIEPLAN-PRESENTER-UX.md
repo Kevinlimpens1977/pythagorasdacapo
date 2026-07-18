@@ -30,11 +30,11 @@ Werkwijze: per werkpakket bouwen → unit-tests voor nieuwe lib-logica → geric
 
 ## Werkpakket C — Award-features (zonder cloud/export)
 
-- [ ] **C1 Klassikale vraagregie.** Op geïmporteerde vraagkaarten: presentatieknoppen "Antwoord verbergen/onthullen" (verbergt feedback/controle tot onthuld) en een timerknop (1/2/5 min countdown groot in beeld). Nieuw boordgereedschap "Leerlingkiezer": overlay die een willekeurige leerling uit een gekozen klas toont (naam + foto via bestaande `StudentAvatar`/klasservice; werkt alleen met echte admin-login, nette melding zonder data).
-- [ ] **C2 Focus-gereedschap.** Drie overlay-tools in een nieuwe toolbarcategorie "Focus": Spotlight (donkere overlay met sleepbaar cirkelgat, radius instelbaar), Schermgordijn (paneel dat vanaf boven/zijkant open schuift), Laserpointer (rode stip met vervagend spoor op canvas, geen permanente inkt). Alles client-side, per pagina uit te zetten.
-- [ ] **C3 Meetinstrumenten volwaardig (v2).** Passer: straal instelbaar door de beenpunt te slepen; plaatst cirkel- of boogobject op bevestiging. Meetlabels: lijn- en pijlobjecten kunnen optioneel hun lengte in ruitjes-eenheden tonen (toggle in selectie); geodriehoek toont hoek t.o.v. horizontaal.
-- [ ] **C4 Echte bordmodus.** In fullscreen verdwijnt de adminchrome volledig (bord edge-to-edge, `100dvh`); toolbar kan gedockt worden onder/links/rechts (voorkeur in sessie-state); linkshandig/rechtshandig spiegelt de knopvolgorde.
-- [ ] **C5 Sfeer & identiteit.** Donkere bordmodus (donker bordvlak, lichte inktkleuren automatisch aangepast), extra achtergronden: millimeterpapier en assenstelsel; subtiele paginawissel-animatie (fade/slide 150ms) en zachte inkt-start (geen harde dot).
+- [x] **C1 Klassikale vraagregie.** Op geïmporteerde vraagkaarten: presentatieknoppen "Antwoord verbergen/onthullen" (verbergt feedback/controle tot onthuld) en een timerknop (1/2/5 min countdown groot in beeld). Nieuw boordgereedschap "Leerlingkiezer": overlay die een willekeurige leerling uit een gekozen klas toont (naam + foto via bestaande `StudentAvatar`/klasservice; werkt alleen met echte admin-login, nette melding zonder data).
+- [x] **C2 Focus-gereedschap.** Drie overlay-tools in een nieuwe toolbarcategorie "Focus": Spotlight (donkere overlay met sleepbaar cirkelgat, radius instelbaar), Schermgordijn (paneel dat vanaf boven/zijkant open schuift), Laserpointer (rode stip met vervagend spoor op canvas, geen permanente inkt). Alles client-side, per pagina uit te zetten.
+- [x] **C3 Meetinstrumenten volwaardig (v2).** Passer: straal instelbaar door de beenpunt te slepen; plaatst cirkel- of boogobject op bevestiging. Meetlabels: lijn- en pijlobjecten kunnen optioneel hun lengte in ruitjes-eenheden tonen (toggle in selectie); geodriehoek toont hoek t.o.v. horizontaal.
+- [x] **C4 Echte bordmodus.** In fullscreen verdwijnt de adminchrome volledig (bord edge-to-edge, `100dvh`); toolbar kan gedockt worden onder/links/rechts (voorkeur in sessie-state); linkshandig/rechtshandig spiegelt de knopvolgorde.
+- [x] **C5 Sfeer & identiteit.** Donkere bordmodus (donker bordvlak, lichte inktkleuren automatisch aangepast), extra achtergronden: millimeterpapier en assenstelsel; subtiele paginawissel-animatie (fade/slide 150ms) en zachte inkt-start (geen harde dot).
 
 ## Testaanpak
 
@@ -46,3 +46,9 @@ Werkwijze: per werkpakket bouwen → unit-tests voor nieuwe lib-logica → geric
 ## Volgorde & commits
 
 A1→A7 (commit per 2-3 items), dan B1→B6, dan C1→C5. Elke commit bevat werkende, geteste toestand; push naar `codex/digitale-vaardigheden-seed`. Kompas bijwerken na afronding van elk werkpakket.
+
+## Opleveringsnotities (18 juli 2026)
+
+- Alle werkpakketten A, B en C zijn gebouwd, getest (unit + lint + build) en browsermatig geverifieerd met dev-adminlogin.
+- Bewuste afwijkingen: toolbar-dock links/rechts is uitgevoerd als horizontale uitlijning (links/midden/rechts) i.p.v. verticale zijbalken; spiegeling voor linkshandigen is daarmee vervallen. Twee-vinger-pan en palm rejection zijn gebouwd maar vereisen echte touch-hardware voor praktijkvalidatie.
+- Nog met echte login/hardware te valideren: importbevestiging (A7), leerlingkiezer met echte klassen (C1), vraagkaart-onthulknop op geimporteerde vragen (C1), pen-druk en touch-gedrag op een CTOUCH (B1/B2).

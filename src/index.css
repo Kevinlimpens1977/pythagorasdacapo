@@ -1101,3 +1101,19 @@ input[type=number] {
 .text-tertiary {
   color: rgba(91, 100, 120, 0.82);
 }
+
+/* Presenter: zachte paginawissel */
+@keyframes presenter-page-enter {
+  from {
+    opacity: 0.35;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.presenter-page-enter {
+  animation: presenter-page-enter 160ms ease-out;
+}

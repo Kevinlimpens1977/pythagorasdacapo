@@ -1,8 +1,9 @@
-import { useRef } from 'react';
-import { RotateCw, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Circle, RotateCw, X } from 'lucide-react';
 import { getPointerRotationDegrees, snapRotationDegrees } from '../../lib/presenterGeometry';
 import {
   getInstrumentAngleLabel,
+  getInstrumentCenter,
   PRESENTER_INSTRUMENT_DEFS
 } from '../../lib/presenterInstruments';
 
@@ -99,12 +100,54 @@ const instrumentVisuals = {
   protractor: ProtractorVisual
 };
 
-export default function PresenterInstrumentOverlay({ instrument, scale = 1, onChange, onClose }) {
+export default function PresenterInstrumentOverlay({ instrument, scale = 1, onChange, onClose, onPlaceCircle }) {
   const def = PRESENTER_INSTRUMENT_DEFS[instrument?.id];
   const Visual = instrumentVisuals[instrument?.id];
   const dragRef = useRef(null);
+  const [compassRadius, setCompassRadius] = useState(200);
+  const radiusDragRef = useRef(null);
 
   if (!instrument || !def || !Visual) return null;
+
+  const isCompass = instrument.id === 'compass';
+
+  const handleRadiusPointerDown = (event) => {
+    if (event.button !== 0) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+
+    const wrapper = event.currentTarget.closest('[data-presenter-instrument]');
+    const rect = wrapper?.getBoundingClientRect();
+    if (!rect) return;
+
+    radiusDragRef.current = {
+      pointerId: event.pointerId,
+      center: { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+    };
+  };
+
+  const handleRadiusPointerMove = (event) => {
+    const drag = radiusDragRef.current;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const distance = Math.hypot(event.clientX - drag.center.x, event.clientY - drag.center.y) / scale;
+    setCompassRadius(Math.max(60, Math.min(900, Math.round(distance))));
+  };
+
+  const handleRadiusPointerUp = (event) => {
+    if (radiusDragRef.current?.pointerId !== event.pointerId) return;
+    radiusDragRef.current = null;
+  };
+
+  const placeCircle = () => {
+    const center = getInstrumentCenter(instrument);
+    if (!center) return;
+    onPlaceCircle?.({ cx: center.x, cy: center.y, radius: compassRadius });
+  };
 
   const width = def.width * scale;
   const height = def.height * scale;
@@ -195,10 +238,48 @@ export default function PresenterInstrumentOverlay({ instrument, scale = 1, onCh
       >
         <Visual />
       </div>
-      {instrument.id === 'protractor' ? (
+      {instrument.id === 'protractor' || instrument.id === 'triangle' ? (
         <span className="pointer-events-none absolute left-1/2 top-[58%] -translate-x-1/2 rounded-md bg-slate-950/80 px-2 py-0.5 text-sm font-black text-white">
           {getInstrumentAngleLabel(instrument)}
         </span>
+      ) : null}
+      {isCompass ? (
+        <>
+          <span
+            className="pointer-events-none absolute rounded-full border-2 border-dashed border-blue-500/80"
+            style={{
+              height: `${compassRadius * 2 * scale}px`,
+              left: `${width / 2 - compassRadius * scale}px`,
+              top: `${height / 2 - compassRadius * scale}px`,
+              width: `${compassRadius * 2 * scale}px`
+            }}
+          />
+          <button
+            type="button"
+            aria-label="Passerstraal aanpassen"
+            title="Sleep om de straal aan te passen"
+            className="absolute flex h-9 w-9 cursor-ew-resize touch-none items-center justify-center rounded-full border-2 border-blue-700 bg-white text-blue-700 shadow-md"
+            style={{
+              left: `${width / 2 + compassRadius * scale - 18}px`,
+              top: `${height / 2 - 18}px`
+            }}
+            onPointerDown={handleRadiusPointerDown}
+            onPointerMove={handleRadiusPointerMove}
+            onPointerUp={handleRadiusPointerUp}
+            onPointerCancel={handleRadiusPointerUp}
+          >
+            <span className="block h-2.5 w-2.5 rounded-full bg-blue-600" />
+          </button>
+          <button
+            type="button"
+            className="absolute -bottom-4 left-1/2 flex -translate-x-1/2 translate-y-full items-center gap-2 rounded-xl border-2 border-blue-700 bg-white px-3 py-1.5 text-sm font-black text-blue-800 shadow-md"
+            onClick={placeCircle}
+            title={`Plaats een cirkel met straal ${compassRadius}`}
+          >
+            <Circle size={15} />
+            Plaats cirkel
+          </button>
+        </>
       ) : null}
       <button
         type="button"
