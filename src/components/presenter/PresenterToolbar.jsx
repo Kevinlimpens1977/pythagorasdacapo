@@ -7,12 +7,14 @@ import {
   AlignRight,
   Bold,
   CheckSquare,
+  Eraser,
   FileText,
   Grid3X3,
   Highlighter,
   Italic,
   Maximize2,
   MousePointer2,
+  Palette,
   PenLine,
   Plus,
   Redo2,
@@ -22,6 +24,7 @@ import {
   Trash2,
   Undo2
 } from 'lucide-react';
+import { PRESENTER_ERASER_SIZES } from '../../lib/presenterEraser';
 import { getPresenterObjectLabel } from '../../lib/presenterObjects';
 
 const objectTypes = [
@@ -48,6 +51,7 @@ const instrumentTypes = [
 const categories = [
   { id: 'pen', label: 'Pen', icon: PenLine },
   { id: 'highlighter', label: 'Markeerstift', icon: Highlighter },
+  { id: 'eraser', label: 'Gum', icon: Eraser },
   { id: 'text', label: 'Tekst', icon: Type },
   { id: 'objects', label: 'Objecten', icon: Shapes },
   { id: 'lesson', label: 'Lesstof', icon: FileText },
@@ -161,9 +165,48 @@ export default function PresenterToolbar({
   selectedTextStyle,
   onInstrument,
   onOpenImport,
-  onFullscreen
+  onFullscreen,
+  eraserSize = 'medium',
+  onEraserSize,
+  recentColors = [],
+  onCustomColor
 }) {
   const [symbolsOpen, setSymbolsOpen] = useState(false);
+
+  const renderCustomColorControls = (label, activeColor, applyColor) => (
+    <>
+      <label
+        className={`relative flex h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-lg border transition ${idleButtonClass}`}
+        title={`${label}: eigen kleur kiezen`}
+      >
+        <Palette size={17} strokeWidth={2.4} />
+        <input
+          type="color"
+          value={activeColor}
+          onChange={(event) => {
+            applyColor(event.target.value);
+            onCustomColor?.(event.target.value);
+          }}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          aria-label={`${label}: eigen kleur kiezen`}
+        />
+      </label>
+      {recentColors.map((color) => (
+        <button
+          key={`recent-${color}`}
+          type="button"
+          className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border transition ${
+            activeColor === color ? activeButtonClass : idleButtonClass
+          }`}
+          onClick={() => applyColor(color)}
+          aria-label={`${label}: recente kleur ${color}`}
+          title={`Recente kleur ${color}`}
+        >
+          <span className="block h-5 w-5 rounded-full ring-2 ring-white/80" style={{ backgroundColor: color }} />
+        </button>
+      ))}
+    </>
+  );
 
   const runAction = (action) => {
     action?.();
@@ -269,6 +312,9 @@ export default function PresenterToolbar({
                 </button>
               );
             })}
+            {renderCustomColorControls(drawingToolLabel, penColor, (color) =>
+              runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, color }))
+            )}
           </div>
           <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
           <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
@@ -305,6 +351,39 @@ export default function PresenterToolbar({
               );
             })}
           </div>
+        </div>
+      ) : null}
+      {activeCategory === 'eraser' ? (
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(42rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+          <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>Gumgrootte</span>
+          {PRESENTER_ERASER_SIZES.map((size) => {
+            const isActive = eraserSize === size.id;
+
+            return (
+              <button
+                key={size.id}
+                type="button"
+                className={`inline-flex min-h-[38px] min-w-20 shrink-0 items-center justify-center gap-2 rounded-lg border px-3 text-[13px] font-bold transition ${
+                  isActive ? activeButtonClass : idleButtonClass
+                }`}
+                onClick={() => runAction(() => onEraserSize?.(size.id))}
+                aria-label={`Gumgrootte ${size.label}`}
+                aria-pressed={isActive}
+              >
+                <span
+                  className="block rounded-full border-2 border-slate-500 bg-white"
+                  style={{
+                    height: `${Math.min(22, Math.max(8, size.radius / 2.8))}px`,
+                    width: `${Math.min(22, Math.max(8, size.radius / 2.8))}px`
+                  }}
+                />
+                <span>{size.label}</span>
+              </button>
+            );
+          })}
+          <span className="px-2 text-[12px] font-semibold text-[var(--helix-muted)]">
+            De gum wist alleen pen- en markeerstiftstreken; objecten verwijder je via selectie.
+          </span>
         </div>
       ) : null}
       {activeCategory === 'background' ? (
@@ -422,6 +501,7 @@ export default function PresenterToolbar({
                 </button>
               );
             })}
+            {renderCustomColorControls('Tekstkleur', activeTextStyle.color, (color) => handleTextStyle({ color }))}
           </div>
           <div className="flex flex-wrap items-center justify-center gap-1.5">
             {textSizes.map((size) => (
@@ -519,6 +599,7 @@ export default function PresenterToolbar({
             onClick={() => runAction(onPrev)}
             disabled={prevDisabled}
             aria-label="Vorige pagina"
+            title="Vorige pagina (←)"
           >
             <ArrowLeft size={17} strokeWidth={2.4} />
           </button>
@@ -529,6 +610,7 @@ export default function PresenterToolbar({
             onClick={() => runAction(onNext)}
             disabled={nextDisabled}
             aria-label="Volgende pagina"
+            title="Volgende pagina (→)"
           >
             <ArrowRight size={17} strokeWidth={2.4} />
           </button>
@@ -537,6 +619,7 @@ export default function PresenterToolbar({
             className={iconButtonClass}
             onClick={() => runAction(onAddPage)}
             aria-label="Nieuwe pagina"
+            title="Nieuwe pagina"
           >
             <Plus size={17} strokeWidth={2.4} />
           </button>
@@ -545,7 +628,7 @@ export default function PresenterToolbar({
         <div className={`mx-1 h-[34px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
 
         <div className="flex shrink-0 flex-wrap items-center justify-center gap-1">
-          <button type="button" className={iconButtonClass} onClick={() => runAction(onSelect)} aria-label="Selecteren">
+          <button type="button" className={iconButtonClass} onClick={() => runAction(onSelect)} aria-label="Selecteren" title="Selecteren (Esc)">
             <MousePointer2 size={17} strokeWidth={2.4} />
           </button>
           <button
@@ -554,6 +637,7 @@ export default function PresenterToolbar({
             onClick={canUndo ? () => runAction(onUndo) : undefined}
             disabled={!canUndo}
             aria-label="Ongedaan maken"
+            title="Ongedaan maken (Ctrl+Z)"
           >
             <Undo2 size={17} strokeWidth={2.4} />
           </button>
@@ -563,6 +647,7 @@ export default function PresenterToolbar({
             onClick={canRedo ? () => runAction(onRedo) : undefined}
             disabled={!canRedo}
             aria-label="Opnieuw"
+            title="Opnieuw (Ctrl+Y)"
           >
             <Redo2 size={17} strokeWidth={2.4} />
           </button>
@@ -597,6 +682,8 @@ export default function PresenterToolbar({
                 disabled={category.disabled}
                 onClick={() => handleCategory(category)}
                 aria-pressed={isActive}
+                aria-label={category.label}
+                title={category.label}
               >
                 <Icon size={17} strokeWidth={2.4} />
                 <span className="max-w-24 truncate max-lg:hidden">{category.label}</span>
@@ -615,7 +702,7 @@ export default function PresenterToolbar({
           >
             <CheckSquare size={17} strokeWidth={2.4} />
           </button>
-          <button type="button" className={iconButtonClass} onClick={onFullscreen} aria-label="Volledig scherm">
+          <button type="button" className={iconButtonClass} onClick={onFullscreen} aria-label="Volledig scherm" title="Volledig scherm">
             <Maximize2 size={17} strokeWidth={2.4} />
           </button>
         </div>

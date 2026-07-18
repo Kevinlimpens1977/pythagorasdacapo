@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getBoardScale, mapClientPointToBoard, snapPointToGrid } from '../../lib/presenterGeometry';
+import {
+  getBoardScale,
+  getPointerRotationDegrees,
+  mapClientPointToBoard,
+  snapPointToGrid,
+  snapRotationDegrees
+} from '../../lib/presenterGeometry';
+import { findStrokeIdsHitByEraser } from '../../lib/presenterEraser';
 import { getPresenterObjectIdsInRect, getPresenterSelectionBounds } from '../../lib/presenterModel';
-import { isPresenterMathToolObject } from '../../lib/presenterObjects';
+import { canRotatePresenterObject, isPresenterMathToolObject } from '../../lib/presenterObjects';
 import PresenterBackground from './PresenterBackground';
 import PresenterInkLayer from './PresenterInkLayer';
 import PresenterObjectLayer from './PresenterObjectLayer';
@@ -69,8 +76,26 @@ const getResizeBounds = (bounds, start, current, handle) => {
   };
 };
 
+const getRotationPreviewValue = (interaction) => {
+  const currentAngle = getPointerRotationDegrees(interaction.center, interaction.current);
+  return snapRotationDegrees(interaction.baseRotation + currentAngle - interaction.startAngle);
+};
+
 const transformObjectsForPreview = (page, interaction) => {
-  if (!interaction || !page || (interaction.type !== 'move' && interaction.type !== 'resize')) return page;
+  if (!interaction || !page) return page;
+
+  if (interaction.type === 'rotate') {
+    const rotation = getRotationPreviewValue(interaction);
+
+    return {
+      ...page,
+      objects: (Array.isArray(page.objects) ? page.objects : []).map((object) =>
+        object?.id === interaction.objectId ? { ...object, rotation } : object
+      )
+    };
+  }
+
+  if (interaction.type !== 'move' && interaction.type !== 'resize') return page;
 
   const selectedIds = new Set(normalizeIds(interaction.objectIds));
   if (selectedIds.size === 0) return page;
@@ -140,7 +165,7 @@ function SelectionMarquee({ rect, scale }) {
   );
 }
 
-function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, onDelete, onMovePointerDown, onResizePointerDown }) {
+function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, showRotate = false, onDelete, onMovePointerDown, onResizePointerDown, onRotatePointerDown }) {
   const handleSize = 28;
   const scaledBounds = {
     x: bounds.x * scale,
@@ -184,6 +209,35 @@ function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false
         >
           Verplaats
         </button>
+      ) : null}
+      {showRotate ? (
+        <>
+          <span
+            className="absolute w-[3px] rounded bg-blue-600"
+            style={{
+              height: '26px',
+              left: `${scaledBounds.x + scaledBounds.width / 2 - 1.5}px`,
+              top: `${scaledBounds.y - 26}px`
+            }}
+          />
+          <button
+            aria-label="Selectie roteren"
+            title="Roteren (snapt op 15°)"
+            className="pointer-events-auto absolute rounded-full border-[3px] border-blue-700 bg-white shadow-sm"
+            onPointerDown={onRotatePointerDown}
+            style={{
+              cursor: 'grab',
+              height: `${handleSize}px`,
+              left: `${scaledBounds.x + scaledBounds.width / 2 - handleSize / 2}px`,
+              top: `${scaledBounds.y - 26 - handleSize}px`,
+              touchAction: 'none',
+              width: `${handleSize}px`
+            }}
+            type="button"
+          >
+            <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600" />
+          </button>
+        </>
       ) : null}
       {handles.map(([handle, x, y, cursor]) => (
         <button
@@ -230,6 +284,8 @@ export default function PresenterBoard({
   selectedObjectIds = [],
   onInteract,
   onStrokeComplete,
+  onEraseStrokes,
+  onRotateObject,
   onSelectObject,
   onSelectObjects,
   onMoveObjects,
@@ -245,9 +301,18 @@ export default function PresenterBoard({
   const boardRef = useRef(null);
   const activeStrokeRef = useRef(null);
   const interactionRef = useRef(null);
+  const eraserGestureRef = useRef(null);
   const [measuredViewportWidth, setMeasuredViewportWidth] = useState(viewportWidth);
   const [previewStroke, setPreviewStroke] = useState(null);
   const [interaction, setInteraction] = useState(null);
+  const [eraserCursor, setEraserCursor] = useState(null);
+
+  const isEraserTool = tool?.id === 'eraser';
+  const eraserRadius = Number.isFinite(tool?.radius) && tool.radius > 0 ? tool.radius : 30;
+
+  useEffect(() => {
+    if (!isEraserTool) setEraserCursor(null);
+  }, [isEraserTool]);
 
   useEffect(() => {
     const surface = surfaceRef.current;
@@ -355,6 +420,13 @@ export default function PresenterBoard({
     onStrokeComplete?.(activeStroke.stroke);
   };
 
+  const completeEraserGesture = (event) => {
+    const gesture = eraserGestureRef.current;
+    if (!gesture || (event?.pointerId != null && event.pointerId !== gesture.pointerId)) return;
+
+    eraserGestureRef.current = null;
+  };
+
   const completeSelectionInteraction = (event) => {
     const activeInteraction = interactionRef.current;
     if (!activeInteraction || (event?.pointerId != null && event.pointerId !== activeInteraction.pointerId)) return;
@@ -365,6 +437,11 @@ export default function PresenterBoard({
       current: point
     };
     updateInteraction(null);
+
+    if (nextInteraction.type === 'rotate') {
+      onRotateObject?.(nextInteraction.objectId, getRotationPreviewValue(nextInteraction));
+      return;
+    }
 
     if (nextInteraction.type === 'marquee') {
       const rect = createRectFromPoints(nextInteraction.start, point);
@@ -395,8 +472,33 @@ export default function PresenterBoard({
     }
   };
 
+  const eraseAlongSegment = (from, to) => {
+    const hitIds = findStrokeIdsHitByEraser(page?.strokes, { from, to, radius: eraserRadius });
+    if (hitIds.length > 0) {
+      onEraseStrokes?.(hitIds, eraserGestureRef.current?.gestureId);
+    }
+  };
+
   const handlePointerDown = (event) => {
     onInteract?.();
+
+    if (isEraserTool) {
+      if (event.button !== 0) return;
+
+      const point = getBoardPoint(event);
+      if (!point) return;
+
+      event.preventDefault();
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      eraserGestureRef.current = {
+        pointerId: event.pointerId,
+        gestureId: `erase-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+        lastPoint: point
+      };
+      setEraserCursor(point);
+      eraseAlongSegment(point, point);
+      return;
+    }
 
     if (tool?.id === 'select') {
       if (event.button !== 0) return;
@@ -439,6 +541,21 @@ export default function PresenterBoard({
   };
 
   const handlePointerMove = (event) => {
+    if (isEraserTool) {
+      const point = getBoardPoint(event);
+      if (!point) return;
+
+      setEraserCursor(point);
+
+      const gesture = eraserGestureRef.current;
+      if (gesture && event.pointerId === gesture.pointerId) {
+        event.preventDefault();
+        eraseAlongSegment(gesture.lastPoint, point);
+        eraserGestureRef.current = { ...gesture, lastPoint: point };
+      }
+      return;
+    }
+
     const activeInteraction = interactionRef.current;
     if (activeInteraction && event.pointerId === activeInteraction.pointerId) {
       const point = getBoardPoint(event);
@@ -509,6 +626,41 @@ export default function PresenterBoard({
     });
   };
 
+  const rotatableSelectedObject = useMemo(() => {
+    if (activeSelectedObjectIds.length !== 1) return null;
+
+    const object = (Array.isArray(page?.objects) ? page.objects : []).find(
+      (candidate) => candidate?.id === activeSelectedObjectIds[0]
+    );
+    return object && canRotatePresenterObject(object) ? object : null;
+  }, [activeSelectedObjectIds, page]);
+
+  const handleRotatePointerDown = (event) => {
+    if (tool?.id !== 'select' || event.button !== 0 || !rotatableSelectedObject || !selectionBounds) return;
+
+    const point = getBoardPoint(event);
+    if (!point) return;
+
+    const center = {
+      x: selectionBounds.x + selectionBounds.width / 2,
+      y: selectionBounds.y + selectionBounds.height / 2
+    };
+
+    event.preventDefault();
+    event.stopPropagation();
+    boardRef.current?.setPointerCapture?.(event.pointerId);
+    updateInteraction({
+      type: 'rotate',
+      pointerId: event.pointerId,
+      objectId: rotatableSelectedObject.id,
+      center,
+      baseRotation: getNumber(rotatableSelectedObject.rotation),
+      startAngle: getPointerRotationDegrees(center, point),
+      start: point,
+      current: point
+    });
+  };
+
   const handleResizePointerDown = (event, handle) => {
     if (tool?.id !== 'select' || event.button !== 0 || !selectionBounds) return;
 
@@ -555,16 +707,22 @@ export default function PresenterBoard({
         onLostPointerCapture={(event) => {
           completeActiveStroke(event);
           completeSelectionInteraction(event);
+          completeEraserGesture(event);
         }}
         onPointerCancel={(event) => {
           completeActiveStroke(event);
           completeSelectionInteraction(event);
+          completeEraserGesture(event);
         }}
         onPointerDown={handlePointerDown}
+        onPointerLeave={() => {
+          if (isEraserTool && !eraserGestureRef.current) setEraserCursor(null);
+        }}
         onPointerMove={handlePointerMove}
         onPointerUp={(event) => {
           completeActiveStroke(event);
           completeSelectionInteraction(event);
+          completeEraserGesture(event);
         }}
         style={{
           width: `${board.scaledWidth}px`,
@@ -609,10 +767,23 @@ export default function PresenterBoard({
           <SelectionTransformBox
             bounds={selectionBounds}
             allowInteriorInteraction={selectedObjectAllowsInteriorInteraction}
+            showRotate={Boolean(rotatableSelectedObject)}
             scale={board.scale}
             onDelete={handleSelectionDelete}
             onMovePointerDown={handleSelectionPointerDown}
             onResizePointerDown={handleResizePointerDown}
+            onRotatePointerDown={handleRotatePointerDown}
+          />
+        ) : null}
+        {isEraserTool && eraserCursor ? (
+          <div
+            className="pointer-events-none absolute rounded-full border-2 border-slate-500/80 bg-white/40"
+            style={{
+              height: `${eraserRadius * 2 * board.scale}px`,
+              left: `${(eraserCursor.x - eraserRadius) * board.scale}px`,
+              top: `${(eraserCursor.y - eraserRadius) * board.scale}px`,
+              width: `${eraserRadius * 2 * board.scale}px`
+            }}
           />
         ) : null}
         <div className="pointer-events-none absolute left-4 top-4 rounded bg-slate-900/75 px-2.5 py-1 text-xs font-semibold text-slate-50">

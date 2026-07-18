@@ -591,3 +591,56 @@ test('createPresenterPage clones nested override values', () => {
   assert.deepEqual(page.objects, [{ id: 'object-1', type: 'rectangle', style: { color: '#111827' } }]);
   assert.deepEqual(page.source, { kind: 'imported-slide', ref: { deckId: 'deck-1' } });
 });
+
+test('removeStrokesFromPresenterPage verwijdert meerdere strokes in een keer', async () => {
+  const { removeStrokesFromPresenterPage } = await import('./presenterModel.js');
+  let session = createPresenterSession();
+  session = addStrokeToPresenterPage(session, session.activePageId, { id: 's1', points: [{ x: 0, y: 0 }] });
+  session = addStrokeToPresenterPage(session, session.activePageId, { id: 's2', points: [{ x: 1, y: 1 }] });
+  session = addStrokeToPresenterPage(session, session.activePageId, { id: 's3', points: [{ x: 2, y: 2 }] });
+
+  const next = removeStrokesFromPresenterPage(session, session.activePageId, ['s1', 's3']);
+  assert.deepEqual(getActivePresenterPage(next).strokes.map((s) => s.id), ['s2']);
+
+  const unchanged = removeStrokesFromPresenterPage(next, next.activePageId, ['bestaat-niet']);
+  assert.equal(unchanged, next);
+});
+
+test('rotatePresenterObjectOnPage normaliseert rotatie naar 0-360', async () => {
+  const { rotatePresenterObjectOnPage } = await import('./presenterModel.js');
+  let session = createPresenterSession();
+  session = addObjectToPresenterPage(session, session.activePageId, { id: 'obj-1', type: 'rectangle', x: 0, y: 0, width: 100, height: 80 });
+
+  const rotated = rotatePresenterObjectOnPage(session, session.activePageId, 'obj-1', 405);
+  assert.equal(getActivePresenterPage(rotated).objects[0].rotation, 45);
+
+  const negative = rotatePresenterObjectOnPage(rotated, rotated.activePageId, 'obj-1', -90);
+  assert.equal(getActivePresenterPage(negative).objects[0].rotation, 270);
+});
+
+test('addRecentPresenterColor houdt maximaal zes unieke kleuren bij, nieuwste eerst', async () => {
+  const { addRecentPresenterColor } = await import('./presenterModel.js');
+  let session = createPresenterSession();
+  ['#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777'].forEach((color) => {
+    session = addRecentPresenterColor(session, color);
+  });
+
+  assert.equal(session.recentColors.length, 6);
+  assert.equal(session.recentColors[0], '#777777');
+  assert.equal(session.recentColors.includes('#111111'), false);
+
+  const repeated = addRecentPresenterColor(session, '#333333');
+  assert.equal(repeated.recentColors[0], '#333333');
+  assert.equal(repeated.recentColors.length, 6);
+
+  assert.equal(addRecentPresenterColor(session, 'rood'), session);
+});
+
+test('renamePresenterSession begrenst de titel en markeert dirty', async () => {
+  const { renamePresenterSession } = await import('./presenterModel.js');
+  const session = createPresenterSession();
+  const renamed = renamePresenterSession(session, 'Les 3B wiskunde');
+  assert.equal(renamed.title, 'Les 3B wiskunde');
+  assert.equal(renamed.dirty, true);
+  assert.equal(renamePresenterSession(renamed, 'Les 3B wiskunde'), renamed);
+});

@@ -10,6 +10,7 @@ import {
   X
 } from 'lucide-react';
 import cmsService from '../../services/cmsService';
+import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils';
 import { getPublishedPresenterContentBlocks } from '../../lib/presenterContentImport';
 
 const sortByOrder = (items = []) =>
@@ -60,6 +61,8 @@ export default function PresenterImportDialog({
   const [paragrafen, setParagrafen] = useState([]);
   const [selectedHoofdstukId, setSelectedHoofdstukId] = useState('');
   const [selectedParagraafId, setSelectedParagraafId] = useState('');
+  const [importPreview, setImportPreview] = useState(null);
+  const [selectedBlockIds, setSelectedBlockIds] = useState([]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -131,7 +134,9 @@ export default function PresenterImportDialog({
 
   if (!open) return null;
 
-  const handleImport = async () => {
+  // Stap 1: blokken ophalen en eerst een overzicht tonen, zodat de docent weet
+  // hoeveel pagina's er bij komen en per blok kan kiezen.
+  const handlePrepareImport = async () => {
     if (!selectedParagraph) return;
 
     setImporting(true);
@@ -147,7 +152,7 @@ export default function PresenterImportDialog({
 
       const questionIds = [
         ...new Set(
-          contentBlocks
+          publishedBlocks
             .filter((block) => block.type === 'question' && block.linkedVraagId)
             .map((block) => block.linkedVraagId)
         )
@@ -155,25 +160,53 @@ export default function PresenterImportDialog({
       const linkedQuestions = await Promise.all(
         questionIds.map((questionId) => cmsService.getVraag(questionId).catch(() => null))
       );
-      const imported = onImport?.({
+
+      setImportPreview({
         paragraaf: selectedParagraph,
         hoofdstuk: selectedChapter,
-        contentBlocks,
+        blocks: publishedBlocks,
         linkedQuestions: linkedQuestions.filter(Boolean)
       });
-
-      if (imported === false) {
-        setError('Importeren is niet gelukt. Probeer het opnieuw.');
-        return;
-      }
-
-      onClose?.();
+      setSelectedBlockIds(publishedBlocks.map((block) => block.id));
     } catch (err) {
-      console.error('Error importing presenter content:', err);
-      setError('Importeren is niet gelukt. Probeer het opnieuw.');
+      console.error('Error loading presenter import preview:', err);
+      setError('De lesblokken konden niet worden geladen. Probeer het opnieuw.');
     } finally {
       setImporting(false);
     }
+  };
+
+  const toggleBlockSelection = (blockId) => {
+    setSelectedBlockIds((current) =>
+      current.includes(blockId) ? current.filter((id) => id !== blockId) : [...current, blockId]
+    );
+  };
+
+  const handleConfirmImport = () => {
+    if (!importPreview || selectedBlockIds.length === 0) return;
+
+    const chosenBlocks = importPreview.blocks.filter((block) => selectedBlockIds.includes(block.id));
+    const imported = onImport?.({
+      paragraaf: importPreview.paragraaf,
+      hoofdstuk: importPreview.hoofdstuk,
+      contentBlocks: chosenBlocks,
+      linkedQuestions: importPreview.linkedQuestions
+    });
+
+    if (imported === false) {
+      setError('Importeren is niet gelukt. Probeer het opnieuw.');
+      return;
+    }
+
+    setImportPreview(null);
+    setSelectedBlockIds([]);
+    onClose?.();
+  };
+
+  const handleBackToSelection = () => {
+    setImportPreview(null);
+    setSelectedBlockIds([]);
+    setError('');
   };
 
   return (
@@ -189,7 +222,7 @@ export default function PresenterImportDialog({
               Lesstof importeren
             </p>
             <h2 className="mt-1 truncate font-display text-2xl font-extrabold text-[var(--helix-navy)]">
-              Kies hoofdstuk en paragraaf
+              {importPreview ? 'Controleer de import' : 'Kies hoofdstuk en paragraaf'}
             </h2>
           </div>
           <button
@@ -210,6 +243,51 @@ export default function PresenterImportDialog({
           </div>
         ) : null}
 
+        {importPreview ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="border-b border-[#eadcff] bg-[#fbf7ff] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
+              Deze import maakt {selectedBlockIds.length} {selectedBlockIds.length === 1 ? 'pagina' : "pagina's"}
+              {' '}van {getParagraphLabel(importPreview.paragraaf)}. Vink blokken uit die je niet op het bord wilt.
+            </div>
+            <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4">
+              <div className="space-y-2">
+                {importPreview.blocks.map((block, index) => {
+                  const checked = selectedBlockIds.includes(block.id);
+
+                  return (
+                    <label
+                      key={block.id}
+                      className={[
+                        'flex w-full cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 text-left transition',
+                        checked
+                          ? 'border-[#d9c3ff] bg-[#f5edff] text-[var(--helix-navy)]'
+                          : 'border-[#f1edfb] bg-white text-[var(--helix-muted)] hover:border-[#eadcff]'
+                      ].join(' ')}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleBlockSelection(block.id)}
+                        className="h-4 w-4 shrink-0 accent-[var(--helix-purple)]"
+                      />
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-[var(--helix-purple)] ring-1 ring-[#eadcff]">
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-black">
+                          {block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'}
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--helix-muted)]">
+                          {CONTENT_BLOCK_LABELS[block.type] || block.type}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 overflow-hidden md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div className="flex min-h-0 flex-col border-r border-[#eadcff]">
             <div className="flex items-center gap-2 border-b border-[#eadcff] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
@@ -315,10 +393,18 @@ export default function PresenterImportDialog({
             </div>
           </div>
         </div>
+        )}
 
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eadcff] bg-white px-5 py-4">
           <div className="min-w-0 text-sm font-bold text-[var(--helix-muted)]">
-            {selectedParagraph ? (
+            {importPreview ? (
+              <span className="flex min-w-0 items-center gap-2">
+                <CheckCircle2 size={17} className="shrink-0 text-[var(--helix-purple)]" />
+                <span className="truncate">
+                  {selectedBlockIds.length} van {importPreview.blocks.length} blokken geselecteerd
+                </span>
+              </span>
+            ) : selectedParagraph ? (
               <span className="flex min-w-0 items-center gap-2">
                 <CheckCircle2 size={17} className="shrink-0 text-[var(--helix-purple)]" />
                 <span className="truncate">{getParagraphLabel(selectedParagraph)}</span>
@@ -331,20 +417,31 @@ export default function PresenterImportDialog({
             <button
               type="button"
               className="rounded-md border border-[#eadcff] bg-white px-4 py-2 text-sm font-black text-[var(--helix-navy)] transition hover:bg-[#fbf7ff]"
-              onClick={onClose}
+              onClick={importPreview ? handleBackToSelection : onClose}
               disabled={importing}
             >
-              Annuleren
+              {importPreview ? 'Terug' : 'Annuleren'}
             </button>
-            <button
-              type="button"
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5f2c84] disabled:cursor-not-allowed disabled:opacity-50"
-              onClick={handleImport}
-              disabled={!selectedParagraph || importing || loadingTree}
-            >
-              {importing ? <Loader2 className="animate-spin" size={17} /> : null}
-              Importeren
-            </button>
+            {importPreview ? (
+              <button
+                type="button"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5f2c84] disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={handleConfirmImport}
+                disabled={selectedBlockIds.length === 0}
+              >
+                Importeer {selectedBlockIds.length} {selectedBlockIds.length === 1 ? 'pagina' : "pagina's"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5f2c84] disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={handlePrepareImport}
+                disabled={!selectedParagraph || importing || loadingTree}
+              >
+                {importing ? <Loader2 className="animate-spin" size={17} /> : null}
+                Verder
+              </button>
+            )}
           </div>
         </footer>
       </section>

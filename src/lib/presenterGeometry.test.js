@@ -102,3 +102,21 @@ test('measureAngleDegrees returns the smaller positive angle when rays span over
 
   assert.equal(angle, 20);
 });
+
+test('getPointerRotationDegrees geeft 0 boven en draait met de klok mee', async () => {
+  const { getPointerRotationDegrees } = await import('./presenterGeometry.js');
+  const center = { x: 100, y: 100 };
+  assert.equal(getPointerRotationDegrees(center, { x: 100, y: 0 }), 0);
+  assert.equal(getPointerRotationDegrees(center, { x: 200, y: 100 }), 90);
+  assert.equal(getPointerRotationDegrees(center, { x: 100, y: 200 }), 180);
+  assert.equal(getPointerRotationDegrees(center, { x: 0, y: 100 }), 270);
+});
+
+test('snapRotationDegrees snapt zacht op veelvouden van 15 graden', async () => {
+  const { snapRotationDegrees } = await import('./presenterGeometry.js');
+  assert.equal(snapRotationDegrees(13), 15);
+  assert.equal(snapRotationDegrees(47), 45);
+  assert.equal(snapRotationDegrees(22), 22);
+  assert.equal(snapRotationDegrees(358), 0);
+  assert.equal(snapRotationDegrees(-13), 345);
+});

@@ -208,3 +208,41 @@ test('clearPresenterRecoveryState no-ops when removeItem throws', () => {
 test('clearPresenterRecoveryState no-ops when removeItem is missing', () => {
   assert.doesNotThrow(() => clearPresenterRecoveryState({}));
 });
+
+test('migratePresenterRecoveryState neemt legacy sessionStorage-state mee naar localStorage', async () => {
+  const { migratePresenterRecoveryState, loadPresenterRecoveryEntry } = await import('./presenterStorage.js');
+  const makeStorage = () => {
+    const data = new Map();
+    return {
+      getItem: (key) => (data.has(key) ? data.get(key) : null),
+      setItem: (key, value) => data.set(key, value),
+      removeItem: (key) => data.delete(key)
+    };
+  };
+
+  const primary = makeStorage();
+  const legacy = makeStorage();
+  const session = { version: 1, pages: [{ strokes: [{ id: 's1' }], objects: [] }], dirty: true };
+  savePresenterRecoveryState(legacy, session);
+
+  const migrated = migratePresenterRecoveryState({ primaryStorage: primary, legacyStorage: legacy });
+  assert.equal(migrated.session.pages.length, 1);
+  assert.ok(loadPresenterRecoveryEntry(primary));
+  assert.equal(legacy.getItem(PRESENTER_STORAGE_KEY), null);
+
+  const fromPrimary = migratePresenterRecoveryState({ primaryStorage: primary, legacyStorage: legacy });
+  assert.equal(fromPrimary.session.pages.length, 1);
+});
+
+test('loadPresenterRecoveryEntry geeft savedAt terug', async () => {
+  const { loadPresenterRecoveryEntry } = await import('./presenterStorage.js');
+  const data = new Map();
+  const storage = {
+    getItem: (key) => (data.has(key) ? data.get(key) : null),
+    setItem: (key, value) => data.set(key, value),
+    removeItem: (key) => data.delete(key)
+  };
+  savePresenterRecoveryState(storage, { version: 1, pages: [], dirty: true });
+  const entry = loadPresenterRecoveryEntry(storage);
+  assert.equal(typeof entry.savedAt, 'string');
+});

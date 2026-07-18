@@ -249,6 +249,8 @@ export const createPresenterSession = () => {
 
   return {
     version: 1,
+    title: '',
+    recentColors: [],
     activePageId: firstPage.id,
     pages: [firstPage],
     tool: {
@@ -396,6 +398,72 @@ export const removeStrokeFromPresenterPage = (session, pageId = session.activePa
     ...page,
     strokes: (Array.isArray(page?.strokes) ? page.strokes : []).filter((stroke) => stroke?.id !== strokeId)
   }));
+};
+
+export const removeStrokesFromPresenterPage = (session, pageId = session.activePageId, strokeIds) => {
+  const removedIds = new Set(normalizeIdList(strokeIds));
+  if (removedIds.size === 0) return session;
+
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  const page = pages.find((currentPage) => currentPage?.id === pageId);
+  const strokes = Array.isArray(page?.strokes) ? page.strokes : [];
+  if (!strokes.some((stroke) => removedIds.has(stroke?.id))) return session;
+
+  return updatePresenterPage(session, pageId, (currentPage) => ({
+    ...currentPage,
+    strokes: (Array.isArray(currentPage?.strokes) ? currentPage.strokes : []).filter(
+      (stroke) => !removedIds.has(stroke?.id)
+    )
+  }));
+};
+
+export const rotatePresenterObjectOnPage = (session, pageId = session.activePageId, objectId, rotation) => {
+  if (!objectId || !isFiniteNumber(rotation)) return session;
+
+  const normalizedRotation = ((rotation % 360) + 360) % 360;
+
+  return updatePresenterPage(session, pageId, (page) => {
+    const objects = Array.isArray(page?.objects) ? page.objects : [];
+    if (!objects.some((object) => object?.id === objectId)) return page;
+
+    return {
+      ...page,
+      objects: objects.map((object) =>
+        object?.id === objectId && getNumber(object.rotation) !== normalizedRotation
+          ? { ...object, rotation: normalizedRotation }
+          : object
+      )
+    };
+  });
+};
+
+const MAX_RECENT_COLORS = 6;
+const isHexColor = (value) => typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
+
+export const addRecentPresenterColor = (session, color) => {
+  if (!isHexColor(color)) return session;
+
+  const normalized = color.toLowerCase();
+  const current = (Array.isArray(session?.recentColors) ? session.recentColors : []).filter(isHexColor);
+  const next = [normalized, ...current.filter((entry) => entry.toLowerCase() !== normalized)].slice(0, MAX_RECENT_COLORS);
+
+  if (current.length === next.length && current.every((entry, index) => entry === next[index])) return session;
+
+  return {
+    ...session,
+    recentColors: next
+  };
+};
+
+export const renamePresenterSession = (session, title) => {
+  const nextTitle = typeof title === 'string' ? title.trimStart().slice(0, 80) : '';
+  if ((session?.title || '') === nextTitle) return session;
+
+  return {
+    ...session,
+    title: nextTitle,
+    dirty: true
+  };
 };
 
 export const addObjectToPresenterPage = (session, pageId = session.activePageId, object) => {

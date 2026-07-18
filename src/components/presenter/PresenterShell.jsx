@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import {
   createPresenterHistory,
   recordPresenterPageState,
@@ -9,6 +8,7 @@ import {
 import {
   addObjectToPresenterPage,
   addPresenterPage,
+  addRecentPresenterColor,
   addStrokeToPresenterPage,
   clearPresenterPageContent,
   createPresenterSession,
@@ -19,16 +19,20 @@ import {
   getActivePresenterPage,
   getPresenterPageIndex,
   movePresenterObjectsOnPage,
+  removeStrokesFromPresenterPage,
+  renamePresenterSession,
   resizePresenterObjectsOnPage,
+  rotatePresenterObjectOnPage,
   setActivePresenterPageAt,
   updatePresenterTool,
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
+import { DEFAULT_PRESENTER_ERASER_SIZE, getPresenterEraserRadius } from '../../lib/presenterEraser';
 import { createPresenterObject, updatePresenterMathToolObject } from '../../lib/presenterObjects';
 import {
   clearPresenterRecoveryState,
   hasRecoverablePresenterState,
-  loadPresenterRecoveryState,
+  migratePresenterRecoveryState,
   savePresenterRecoveryState
 } from '../../lib/presenterStorage';
 import {
@@ -59,6 +63,16 @@ const createObjectId = () => {
   }
 
   return `object-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+};
+
+const getBrowserLocalStorage = () => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 };
 
 const getBrowserSessionStorage = () => {
@@ -321,8 +335,19 @@ const redoPresenterSession = (history, currentSession) => {
 };
 
 const getInitialRecoveredSession = () => {
-  const restored = loadPresenterRecoveryState(getBrowserSessionStorage());
+  const restored = migratePresenterRecoveryState({
+    primaryStorage: getBrowserLocalStorage(),
+    legacyStorage: getBrowserSessionStorage()
+  })?.session || null;
   return hasRecoverablePresenterState(restored) ? restored : null;
+};
+
+const formatSavedAtLabel = (date) => {
+  try {
+    return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
 };
 
 export default function PresenterShell() {
@@ -339,8 +364,11 @@ export default function PresenterShell() {
   const [textToolStyle, setTextToolStyle] = useState(DEFAULT_TEXT_TOOL_STYLE);
   const [activeTextCursor, setActiveTextCursor] = useState(null);
   const [textCaretRequest, setTextCaretRequest] = useState(null);
+  const [eraserSize, setEraserSize] = useState(DEFAULT_PRESENTER_ERASER_SIZE);
+  const [lastSavedAt, setLastSavedAt] = useState(null);
   const fullscreenErrorTimerRef = useRef(null);
   const toolbarAutoCloseTimerRef = useRef(null);
+  const eraseGestureHistoryRef = useRef(null);
 
   const activePage = getActivePresenterPage(session);
   const pages = useMemo(() => session.pages || [], [session.pages]);
@@ -366,7 +394,9 @@ export default function PresenterShell() {
             ? 24
             : 6
       }
-    : { id: 'select' };
+    : activeCategory === 'eraser'
+      ? { id: 'eraser', radius: getPresenterEraserRadius(eraserSize) }
+      : { id: 'select' };
   const canUndo = hasAvailableUndo(history, session);
   const canRedo = hasAvailableRedo(history, session);
   const canClearPage = Boolean(
@@ -655,6 +685,41 @@ export default function PresenterShell() {
     );
   };
 
+  // Eén gumbeweging = één undo-stap: alleen bij het eerste raakmoment van een
+  // gesture wordt de paginastaat in de history vastgelegd.
+  const handleEraseStrokes = useCallback((strokeIds, gestureId) => {
+    if (!Array.isArray(strokeIds) || strokeIds.length === 0) return;
+
+    setSession((currentSession) => {
+      const page = getActivePresenterPage(currentSession);
+      if (!page) return currentSession;
+
+      const nextSession = removeStrokesFromPresenterPage(currentSession, currentSession.activePageId, strokeIds);
+      if (nextSession === currentSession) return currentSession;
+
+      if (eraseGestureHistoryRef.current !== gestureId || !gestureId) {
+        eraseGestureHistoryRef.current = gestureId || null;
+        setHistory((currentHistory) => recordPresenterPageAction(currentHistory, page.id, page));
+      }
+
+      return nextSession;
+    });
+  }, []);
+
+  const handleRotateObject = useCallback((objectId, rotation) => {
+    updateActivePageWithHistory((currentSession) =>
+      rotatePresenterObjectOnPage(currentSession, currentSession.activePageId, objectId, rotation)
+    );
+  }, [updateActivePageWithHistory]);
+
+  const handleCustomColor = useCallback((color) => {
+    setSession((currentSession) => addRecentPresenterColor(currentSession, color));
+  }, []);
+
+  const handleRenameSession = (title) => {
+    setSession((currentSession) => renamePresenterSession(currentSession, title));
+  };
+
   const handleBackground = (background) => {
     updateActivePageWithHistory((currentSession) =>
       updatePresenterPageBackground(currentSession, currentSession.activePageId, background)
@@ -851,6 +916,7 @@ export default function PresenterShell() {
   }, [updateActivePageWithHistory]);
 
   const handleDiscardRecovery = () => {
+    clearPresenterRecoveryState(getBrowserLocalStorage());
     clearPresenterRecoveryState(getBrowserSessionStorage());
     setRecoveredSession(null);
     setSession(createPresenterSession());
@@ -875,23 +941,12 @@ export default function PresenterShell() {
 
   useEffect(() => {
     if (recoveredSession) return;
+    if (!hasRecoverablePresenterState(session)) return;
 
-    savePresenterRecoveryState(getBrowserSessionStorage(), session);
+    savePresenterRecoveryState(getBrowserLocalStorage(), session);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- autosave-indicator hoort bij deze externe write
+    setLastSavedAt(new Date());
   }, [recoveredSession, session]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const handleBeforeUnload = (event) => {
-      if (!hasRecoverablePresenterState(session)) return;
-
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [session]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -1006,32 +1061,26 @@ export default function PresenterShell() {
         <PresenterRecoveryPrompt onRestore={handleRestoreRecovery} onDiscard={handleDiscardRecovery} />
       ) : null}
       <header className="presenter-chrome-surface flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--helix-purple)]">Presenter</p>
-          <h1 className="text-lg font-black leading-tight">Digibord Core</h1>
+          <input
+            type="text"
+            value={session.title || ''}
+            onChange={(event) => handleRenameSession(event.target.value)}
+            placeholder="Naamloos bord"
+            aria-label="Naam van dit bord"
+            className="w-64 max-w-full truncate rounded-md border border-transparent bg-transparent text-lg font-black leading-tight text-[var(--helix-navy)] outline-none transition placeholder:text-[var(--helix-muted)]/60 hover:border-white/80 hover:bg-white/60 focus:border-white focus:bg-white"
+          />
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <div className="flex items-center gap-1 rounded-md border border-white/70 bg-white/60 p-1 shadow-[0_8px_18px_rgba(122,60,255,0.08)]">
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-[var(--helix-muted)] transition hover:border-white hover:bg-white hover:text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-40"
-              onClick={() => activatePageAt(activeIndex - 1)}
-              disabled={activeIndex <= 0}
-              aria-label="Vorige pagina"
-            >
-              <ArrowLeft size={18} strokeWidth={2.4} />
-            </button>
-            <span className="min-w-24 px-2 text-center text-sm font-black text-[var(--helix-navy)]">{pageLabel}</span>
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded border border-transparent text-[var(--helix-muted)] transition hover:border-white hover:bg-white hover:text-[var(--helix-purple)] disabled:cursor-not-allowed disabled:opacity-40"
-              onClick={() => activatePageAt(activeIndex + 1)}
-              disabled={activeIndex >= pages.length - 1}
-              aria-label="Volgende pagina"
-            >
-              <ArrowRight size={18} strokeWidth={2.4} />
-            </button>
-          </div>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {lastSavedAt ? (
+            <span className="text-xs font-bold text-[var(--helix-muted)]" role="status">
+              Opgeslagen {formatSavedAtLabel(lastSavedAt)}
+            </span>
+          ) : null}
+          <span className="rounded-md border border-white/70 bg-white/60 px-3 py-1.5 text-sm font-black text-[var(--helix-navy)] shadow-[0_8px_18px_rgba(122,60,255,0.08)]">
+            {pageLabel}
+          </span>
         </div>
       </header>
 
@@ -1042,6 +1091,8 @@ export default function PresenterShell() {
         selectedObjectIds={session.selectedObjectIds}
         onInteract={closeToolbar}
         onStrokeComplete={handleStrokeComplete}
+        onEraseStrokes={handleEraseStrokes}
+        onRotateObject={handleRotateObject}
         onSelectObject={handleSelectObject}
         onSelectObjects={handleSelectObjects}
         onMoveObjects={handleMoveObjects}
@@ -1068,29 +1119,6 @@ export default function PresenterShell() {
         onClose={() => setImportDialogOpen(false)}
         onImport={handleImportContent}
       />
-      {pages.length > 1 ? (
-        <div className="pointer-events-auto absolute bottom-28 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-[#6f4a87] bg-[#2b1838] px-2 py-2 text-[#fbf7ff] shadow-xl">
-          <button
-            type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[#6f4a87] bg-[#3a224b] px-3 text-lg font-black transition hover:bg-[#472b5b] disabled:cursor-not-allowed disabled:opacity-40"
-            onClick={() => activatePageAt(activeIndex - 1)}
-            disabled={activeIndex <= 0}
-            aria-label="Vorige Presenter-pagina"
-          >
-            ←
-          </button>
-          <span className="min-w-28 px-2 text-center text-sm font-black">{pageLabel}</span>
-          <button
-            type="button"
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-[#6f4a87] bg-[#3a224b] px-3 text-lg font-black transition hover:bg-[#472b5b] disabled:cursor-not-allowed disabled:opacity-40"
-            onClick={() => activatePageAt(activeIndex + 1)}
-            disabled={activeIndex >= pages.length - 1}
-            aria-label="Volgende Presenter-pagina"
-          >
-            →
-          </button>
-        </div>
-      ) : null}
       <PresenterToolbar
         pageLabel={pageLabel}
         activeCategory={activeCategory}
@@ -1131,6 +1159,10 @@ export default function PresenterShell() {
         onInstrument={handleInstrument}
         onOpenImport={openImportDialog}
         onFullscreen={handleFullscreen}
+        eraserSize={eraserSize}
+        onEraserSize={setEraserSize}
+        recentColors={Array.isArray(session.recentColors) ? session.recentColors : []}
+        onCustomColor={handleCustomColor}
       />
     </section>
   );

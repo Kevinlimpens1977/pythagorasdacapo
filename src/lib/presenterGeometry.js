@@ -43,6 +43,29 @@ export const getGridLineStyle = ({ gridSize, scale }) => {
 export const measureDistance = (a, b) =>
   Math.hypot(b.x - a.x, b.y - a.y);
 
+// Hoek (0-360, met de klok mee, 0 = boven) van het middelpunt naar een punt.
+// Zo komt het rotatiehandvat boven het object overeen met rotatie 0.
+export const getPointerRotationDegrees = (center, point) => {
+  const degrees = (Math.atan2(point.x - center.x, center.y - point.y) * 180) / Math.PI;
+  return ((degrees % 360) + 360) % 360;
+};
+
+// Zachte snap op veelvouden van `step` graden binnen `threshold` graden, zodat
+// 0/15/30/... makkelijk exact te raken zijn zonder vrije rotatie te blokkeren.
+export const snapRotationDegrees = (degrees, { step = 15, threshold = 4 } = {}) => {
+  if (!Number.isFinite(degrees)) return 0;
+  const normalized = ((degrees % 360) + 360) % 360;
+  if (!isFinitePositiveNumber(step) || !isFinitePositiveNumber(threshold)) return normalized;
+
+  const nearest = Math.round(normalized / step) * step;
+  const distance = Math.abs(normalized - nearest);
+  if (distance <= threshold || Math.abs(distance - 360) <= threshold) {
+    return ((nearest % 360) + 360) % 360;
+  }
+
+  return normalized;
+};
+
 export const measureAngleDegrees = (origin, a, b) => {
   const angleA = Math.atan2(a.y - origin.y, a.x - origin.x);
   const angleB = Math.atan2(b.y - origin.y, b.x - origin.x);

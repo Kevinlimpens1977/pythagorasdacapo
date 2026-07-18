@@ -28,7 +28,7 @@ export const savePresenterRecoveryState = (storage, session) => {
   }
 };
 
-export const loadPresenterRecoveryState = (storage) => {
+export const loadPresenterRecoveryEntry = (storage) => {
   if (!storage || typeof storage.getItem !== 'function') return null;
 
   try {
@@ -36,10 +36,32 @@ export const loadPresenterRecoveryState = (storage) => {
     if (!saved) return null;
 
     const parsed = JSON.parse(saved);
-    return isValidRecoverySession(parsed?.session) ? parsed.session : null;
+    if (!isValidRecoverySession(parsed?.session)) return null;
+
+    return {
+      session: parsed.session,
+      savedAt: typeof parsed.savedAt === 'string' ? parsed.savedAt : null
+    };
   } catch {
     return null;
   }
+};
+
+export const loadPresenterRecoveryState = (storage) =>
+  loadPresenterRecoveryEntry(storage)?.session || null;
+
+// Borden horen een gesloten tab te overleven: localStorage is het hoofdkanaal.
+// Bestaande sessionStorage-recovery (oudere versie) wordt eenmalig meegenomen.
+export const migratePresenterRecoveryState = ({ primaryStorage, legacyStorage }) => {
+  const primaryEntry = loadPresenterRecoveryEntry(primaryStorage);
+  if (primaryEntry) return primaryEntry;
+
+  const legacyEntry = loadPresenterRecoveryEntry(legacyStorage);
+  if (!legacyEntry) return null;
+
+  savePresenterRecoveryState(primaryStorage, legacyEntry.session);
+  clearPresenterRecoveryState(legacyStorage);
+  return legacyEntry;
 };
 
 export const clearPresenterRecoveryState = (storage) => {
