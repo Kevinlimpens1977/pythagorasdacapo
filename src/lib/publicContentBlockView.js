@@ -1,4 +1,5 @@
 import { normalizeContentBlockSettings } from './contentBlockUtils.js';
+import { sanitizePublicExercise } from './exerciseBlockUtils.js';
 
 const cleanText = (value) => String(value || '').trim();
 
@@ -200,6 +201,13 @@ const sanitizeContent = (block = {}) => {
       gameTitle: content.gameTitle || '',
       settings: content.settings || {},
       crops: Array.isArray(content.crops) ? content.crops : []
+    };
+  }
+
+  if (block.type === 'question' && content.exercise) {
+    return {
+      ...base,
+      exercise: sanitizePublicExercise(content.exercise)
     };
   }
 

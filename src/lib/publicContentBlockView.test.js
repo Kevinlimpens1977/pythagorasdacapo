@@ -206,3 +206,36 @@ test('hasAssessmentItemAnswerKey detects private items', () => {
     publicSnapshotVersion: 1
   }), false);
 });
+
+test('buildPublicContentBlockSnapshot bewaart exercise-velden zonder antwoorden', () => {
+  const publicBlock = buildPublicContentBlockSnapshot({
+    id: 'block-1',
+    type: 'question',
+    content: {
+      html: '<p>Korte check</p>',
+      exercise: {
+        fields: [
+          { id: 'check-1', label: 'Waar bewaar je schoolwerk?', answer: 'modelantwoord' },
+          { label: '   ' }
+        ]
+      }
+    }
+  });
+
+  assert.deepEqual(publicBlock.content.exercise, {
+    fields: [{ id: 'check-1', label: 'Waar bewaar je schoolwerk?' }]
+  });
+  assert.equal(publicBlock.content.html, '<p>Korte check</p>');
+});
+
+test('buildPublicContentBlockSnapshot laat question zonder exercise ongewijzigd', () => {
+  const publicBlock = buildPublicContentBlockSnapshot({
+    id: 'block-2',
+    type: 'question',
+    linkedVraagId: 'vraag-1',
+    content: { html: '<p>Vraag</p>' }
+  });
+
+  assert.equal(publicBlock.content.exercise, undefined);
+  assert.equal(publicBlock.linkedVraagId, 'vraag-1');
+});

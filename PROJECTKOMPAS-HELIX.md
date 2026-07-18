@@ -190,6 +190,8 @@ Huidig:
 - Pythagoras Trainer en Account Escape zijn speelbare prototypes; ~29 registry-items zijn placeholders.
 - Het `game`-lesbloktype werkt end-to-end in de leerlingroute: voortgang gaat naar Firestore en tokens worden server-side toegekend via `awardTokensForActivity` (reward-rules in `tokenGameRewardRules`, defaults in `functions/index.js`).
 - Tokens worden niet client-side uitgegeven.
+- Tokenregels per spel zijn instelbaar op `/admin/spellen` (paneel "Tokenbeloning": actief, min, max, berekening). Opslaan schrijft direct naar `tokenGameRewardRules/{gameId}` (admin-only in `firestore.rules`); "Herstel standaard" verwijdert de eigen regel zodat de serverdefault weer geldt. Client-helpers en de spiegel van de serverdefaults staan in `src/lib/gameTokenRewardRules.js` + `src/services/tokenService.js`.
+- Er is een startgids voor nieuwe spellen: `STARTGIDS-NIEUW-SPEL.md` in de projectroot.
 
 ### Tokensysteem en Tokenshop
 
@@ -1086,11 +1088,21 @@ Gebouwd per 18 juli 2026:
 - Empty states: leeg quiz/toets-blok en leeg theorie/voorbeeld/samenvatting-blok tonen een nette melding; placeholder-HTML is vervangen (`src/lib/lessonBlockPresentation.js`).
 - Voorbeeld en samenvatting hebben een eigen rustig visueel accent (`getLessonBlockAccent`).
 
+Exercise-vraagblokken (blokker gevonden en opgelost 18 juli 2026):
+
+- De 60 geseede DV-vraagblokken hebben geen `linkedVraagId` maar dragen hun opgave als `content.exercise` (invulvelden). Voorheen toonde de leerlingroute daarvoor "Vraag niet gevonden" en liepen ALLE 30 DV-paragrafen vast rond stap 4-5.
+- Opgelost: `ExerciseLearningBlock` in `StudentLessonPage.jsx` rendert de invulvelden (genummerd, textarea per veld); inleveren kan pas als alle velden zijn ingevuld, telt het blok als afgerond (antwoorden naar `voortgang` als `lastAnswer.kind='exercise'`, `vraagType='exercise'`) en gaat automatisch door. Opnieuw inleveren mag.
+- Helpers en sanitizing in `src/lib/exerciseBlockUtils.js` (+tests); publieke snapshots nemen exercise-velden mee als alleen id+label (`publicContentBlockView.js`), eventuele docentantwoorden blijven privé.
+- Backfill gedraaid op 18 juli 2026 (`node scripts/backfill-public-content-snapshots.mjs --apply`, 276 blokken + 1 vraag) zodat bestaande snapshots de velden bevatten.
+- Digidocent zit bewust (nog) niet op exercise-blokken; alleen op gekoppelde vraag-documenten.
+- Browsermatig geverifieerd met echte data (admin Google-login, `paragraaf-dv-1-2`): volledige route stap 1-9 doorlopen incl. media-fullscreen, twee exercise-blokken, samenvatting-accent, quiz-nakijken en leerling-gameweergave (placeholder zonder dev-chrome).
+
 Nog open:
 
-- Browsermatige validatie van de leerlingroute met echte lesdata/login (dev-login kan geen Firestore lezen; alleen game/fullscreen is browsermatig geverifieerd).
 - Verhoudingstabel- en Pythagoras-werkbladen leunen op mobiel op horizontaal scrollen; bewust zo gelaten.
 - Echte toetsafname-flow blijft het aparte punt Toetsmodus V1.
+- Digidocent-bottom-sheet nog niet met echte data gezien (DV-content heeft geen gekoppelde vraag-documenten); mobiele weergave het beste even op een telefoon controleren.
+- Let op datakwaliteit: er bestaat nog maar 1 document in `vraag`; question-blokken met een oude `linkedVraagId` (zoals in `paragraaf-dv-1-1` niet meer voorkomend na exercise-route) tonen "Vraag niet gevonden".
 
 ### 5. CMS Lesblokstudio Verfijnen
 

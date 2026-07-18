@@ -58,6 +58,13 @@ import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
 import { shouldCollapseAiTutorOnMouseLeave, shouldExpandAiTutorOnHover } from '../lib/aiTutorPanelState';
 import { getLessonBlockAccent, hasRenderableLessonHtml } from '../lib/lessonBlockPresentation';
 import {
+  areExerciseAnswersComplete,
+  buildExerciseAnswerPayload,
+  buildInitialExerciseAnswers,
+  getExerciseFields,
+  hasExerciseFields
+} from '../lib/exerciseBlockUtils';
+import {
   buildAnswerSignature,
   isAssessmentForAnswer,
   sanitizeOpenAnswerAssessmentFeedback
@@ -834,6 +841,14 @@ function LessonBlockContent({
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
         ) : block.type === 'quiz' || block.type === 'toets' ? (
           <AssessmentLearningBlock block={block} bodyHtml={bodyHtml} />
+        ) : block.type === 'question' && !block.linkedVraagId && hasExerciseFields(block) ? (
+          <ExerciseLearningBlock
+            block={block}
+            bodyHtml={content.html || ''}
+            progressRecord={progressRecord}
+            onSaveProgress={onSaveProgress}
+            onAutoAdvance={onAutoAdvance}
+          />
         ) : block.type === 'question' ? (
           <QuestionLearningBlock
             key={block.id}
@@ -2618,6 +2633,83 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false, answer
       className="input-standard min-h-28 w-full resize-y leading-6"
       placeholder="Typ je antwoord"
     />
+  );
+}
+
+function ExerciseLearningBlock({ block, bodyHtml, progressRecord, onSaveProgress, onAutoAdvance }) {
+  const fields = useMemo(() => getExerciseFields(block), [block]);
+  const [answers, setAnswers] = useState(() => buildInitialExerciseAnswers(fields, progressRecord?.lastAnswer));
+  const [saving, setSaving] = useState(false);
+  const [submitted, setSubmitted] = useState(Boolean(progressRecord?.completed));
+  const isComplete = areExerciseAnswersComplete(fields, answers);
+
+  const handleSubmit = async () => {
+    if (!isComplete || saving) return;
+    setSaving(true);
+    try {
+      await onSaveProgress(true, {
+        isCorrect: true,
+        vraagType: 'exercise',
+        lastAnswer: buildExerciseAnswerPayload(fields, answers)
+      });
+      const isFirstSubmit = !submitted;
+      setSubmitted(true);
+      if (isFirstSubmit) {
+        onAutoAdvance?.(block.id);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {hasRenderableLessonHtml(bodyHtml) && (
+        <div
+          className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
+          dangerouslySetInnerHTML={htmlValue(bodyHtml)}
+        />
+      )}
+
+      <div className="space-y-3">
+        {fields.map((field, index) => (
+          <div key={field.id} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+            <label htmlFor={`${block.id}-${field.id}`} className="flex items-start gap-3">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)]">
+                {index + 1}
+              </span>
+              <span className="pt-1 text-base font-bold leading-6 text-[var(--helix-navy)]">{field.label}</span>
+            </label>
+            <textarea
+              id={`${block.id}-${field.id}`}
+              value={answers[field.id] || ''}
+              onChange={(event) => setAnswers((current) => ({ ...current, [field.id]: event.target.value }))}
+              disabled={saving}
+              className="input-standard mt-3 min-h-20 w-full resize-y leading-6"
+              placeholder="Typ je antwoord"
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--helix-border)] pt-4">
+        <p className="text-sm font-bold text-[var(--helix-muted)]">
+          {submitted
+            ? 'Ingeleverd · je docent kan je antwoorden bekijken'
+            : isComplete
+              ? 'Alle velden ingevuld'
+              : 'Vul alle velden in om in te leveren'}
+        </p>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!isComplete || saving}
+          className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {saving ? 'Opslaan...' : submitted ? 'Opnieuw inleveren' : 'Antwoorden inleveren'}
+        </button>
+      </div>
+    </div>
   );
 }
 
