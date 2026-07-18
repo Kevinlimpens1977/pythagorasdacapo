@@ -1,6 +1,6 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 13 juli 2026
+Laatst bijgewerkt: 18 juli 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
 
@@ -18,21 +18,24 @@ Als een nieuwe Codex-chat dit document leest, moet die vooral dit weten:
 - Adminnavigatie is nu in code: `Lesstof`, `Voortgang`, `Leerlingen`, `Spellen`, `Presenter`, `Instellingen`. `Meldingen` staat als route `/admin/meldingen` onder `Instellingen` met open-meldingenbadge; `Projectkompas` heeft een aparte adminknop en route `/admin/projectkompas`.
 - Recente Presenter-flow: naast V1a Core zijn tekstobjecten, een beperkt wiskundesymbolenpalet, verhoudingstabel/Pythagoras-bordtools, paginathumbnails en HELIX-lesstofimport als snapshotpagina's aanwezig. Gum/borstelgroottes zijn in de actuele codecheck nog niet als aparte toolbarflow zichtbaar.
 - Recente leerlingbeheer-flow: leerlingfoto-import ondersteunt klassenfoto upload/plakken, PDF-fotolijstimport op basis van tekstlaag, reviewrijen en definitieve goedkeuring via Callable Function `approveStudentPhotoImportCrop`.
-- Bekende ongerelateerde untracked items kunnen in gitstatus staan, bijvoorbeeld losse screenshots in `exports/`. Niet automatisch stagen of verwijderen.
+- Recente tokenshop-flow: de leerlingshop op `/tokenshop` heeft categorietabbladen (`Alles`, `Avatars`, `Frames`, `Pins`, `Banners`, `Effects`, `Titels`) met aantallen per tab; itemnamen zijn vakneutraal (bijv. `Leerheld` in plaats van `Rekenheld`).
+- Vercel-deployment is geconfigureerd (`vercel.json` met Vite/dist en SPA-rewrite, plus `.vercelignore`); Firebase blijft backend voor auth/Firestore/Storage/Functions.
+- Bekende ongerelateerde untracked items kunnen in gitstatus staan, bijvoorbeeld losse screenshots in `exports/`, bron-artwork in `badges/` en lokale `.firebase/`-cache. Niet automatisch stagen of verwijderen.
 - De gebruiker wil vaak eerst bevraagd worden bij grote productkeuzes, maar gaf voor de huidige Digidocent- en meldingenrichting expliciet akkoord.
 - Volledige lint kan bestaande repo-brede schuld raken. Gebruik gericht `npx eslint <aangepaste bestanden>`, gerichte `node --test ...` en `npm run build`.
 
 Recente commits die een nieuwe chat moet kennen:
 
+- `fe9b593 feat: verdeel tokenshop in categorietabbladen`
+- `c51e0ff feat: vervang rekenheld door vakneutrale leerheld-titel`
+- `3fa45e0 feat: vul tokenshop met frames, pins, banners, titels en victory-effects`
+- `eb2abf4 chore: configure vercel deployment`
+- `56613ec feat: use helix brand header in content modal`
+- `b09cc50 feat: add animated avatar token shop`
+- `28e7694 feat: integrate token ledger and shop`
 - `9570701 fix: expose cms navigation edit actions`
 - `07bed60 feat: sync uploaded slidedecks to cms blocks`
-- `11eafe5 fix: explain cms archive permission failures`
-- `1c8f71a feat: add publication overview for lesson blocks`
-- `801488c fix: use Dutch question status labels`
 - `cdbc25c feat: gate content blocks with source review flags`
-- `75f8503 fix: normalize duplicate question answer ids`
-- `f447659 feat: require closing check for paragraph readiness`
-- `780f797 fix: explain CMS write permission errors`
 
 ## Productvisie
 
@@ -198,6 +201,8 @@ Gebouwd per 7 juni 2026, catalogus volledig gevuld per 13 juli 2026.
 - Catalogus (35 items) staat in `src/lib/tokenShopRewards.js` per categorie (`DEFAULT_AVATAR_ITEMS`, `DEFAULT_FRAME_ITEMS`, `DEFAULT_PIN_ITEMS`, `DEFAULT_BANNER_ITEMS`, `DEFAULT_TITLE_ITEMS`, `DEFAULT_VICTORY_EFFECT_ITEMS`). Artwork in `public/token-shop/` (glossy 3D badge-stijl).
 - Seeden kan via de adminknop in `/admin/tokenbeheer` of via `node scripts/seed-token-shop-catalog.mjs --apply` (Admin SDK, dry-run zonder vlag).
 - Leerlingweergave: actieve avatar/frame/titel/pins in de header (`AppShell`), banner/titel/frame/pins ook op `/profiel`, kopen en activeren op `/tokenshop`.
+- `/tokenshop` heeft categorietabbladen (`Alles`, `Avatars`, `Frames`, `Pins`, `Banners`, `Effects`, `Titels`) met item-aantallen per tab; tabvolgorde volgt `TOKEN_SHOP_ITEM_TYPES` in `src/lib/tokenShopRewards.js` (UI in `src/pages/StudentTokenShopPage.jsx`).
+- Itemnamen zijn vakneutraal: de titel `Rekenheld` is vervangen door `Leerheld` (itemId `titel-leerheld`), zodat de shop niet wiskunde-specifiek voelt.
 - Victory-effects spelen bewust NIET na elke vraag: het volledige effect speelt bij paragraafafsluiting, een subtiele variant bij 5-goed-op-rij streak-mijlpalen. Logica in `src/lib/victoryEffects.js` (+tests), overlay in `src/components/tokens/VictoryEffectOverlay.jsx`, CSS in `src/index.css` (`victory-*`).
 - Admin item-editor ondersteunt accentkleur, kaartanimatie, pin-shortLabel en effect-keuze (`previewStyle`).
 
@@ -290,7 +295,7 @@ Huidige vraagtypes:
 
 Vraagtypes gebruiken een uitbreidbare registry in `src/lib/questionTypeRegistry.js`.
 
-Tokenvelden bestaan alvast als metadata per vraagtype, maar het tokensysteem zelf is nog niet gebouwd. Echte tokenuitgifte moet later server-side gebeuren.
+Tokenvelden bestaan als metadata per vraagtype. Het tokensysteem zelf is inmiddels gebouwd (zie sectie Tokensysteem en Tokenshop); echte tokenuitgifte gebeurt uitsluitend server-side via Cloud Functions.
 
 ### Quiz
 
@@ -636,10 +641,9 @@ Registry bevat onder andere:
 Veiligheidsregels:
 
 - Registry bevat alleen serialiseerbare metadata.
-- Resultaten blijven voorlopig lokaal.
 - Geen tokenwrites vanuit client.
 - `tokenRewardPotential` en `suggestedTokenReward` zijn alleen indicatief.
-- Echte tokenuitgifte gebeurt later server-side via Cloud Function/backendvalidatie.
+- Echte tokenuitgifte gebeurt server-side via `awardTokensForActivity` (reward-rules in `tokenGameRewardRules`); het `game`-lesbloktype schrijft voortgang naar Firestore.
 
 ## Firebase / Data
 
@@ -1170,7 +1174,8 @@ Nodig:
 ## Actuele Technische Aandachtspunten Voor Nieuwe Agent
 
 - Werk op branch `codex/digitale-vaardigheden-seed`, tenzij de gebruiker anders zegt.
-- Recente wijzigingen zijn gepusht naar GitHub op `codex/digitale-vaardigheden-seed`, maar zijn pas live op Firebase na deploy.
+- Recente wijzigingen zijn gepusht naar GitHub op `codex/digitale-vaardigheden-seed`, maar zijn pas live na deploy.
+- Hosting-deploy kan via Vercel (`vercel.json`: Vite-build naar `dist` met SPA-rewrite); Firebase blijft de backend (Auth, Firestore, Storage, Functions in `europe-west1`).
 - Er bestaat een herstelbare backupbranch: `backup/voor-lesstof-bouwen-verbeteringen-2026-06-06`; eerdere backup voor Digidocent: `backup/digidocent-before-learning-flow`.
 - Huidige gitstatus kan lokale untracked screenshots/prototypes bevatten, vooral in `exports/`. Niet automatisch stagen of verwijderen.
 - `README.md` is nog geen betrouwbare projectdocumentatie.
