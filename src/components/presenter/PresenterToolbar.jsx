@@ -169,7 +169,11 @@ export default function PresenterToolbar({
   eraserSize = 'medium',
   onEraserSize,
   recentColors = [],
-  onCustomColor
+  onCustomColor,
+  penMode = 'free',
+  onPenMode,
+  fingerDrawing = true,
+  onToggleFingerDrawing
 }) {
   const [symbolsOpen, setSymbolsOpen] = useState(false);
 
@@ -288,7 +292,41 @@ export default function PresenterToolbar({
         {pinned ? 'Werkbalk vast' : 'Werkbalk openen'}
       </button>
       {activeCategory === 'pen' || activeCategory === 'highlighter' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(56rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(64rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
+          {!isHighlighter ? (
+            <>
+              <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
+                <button
+                  type="button"
+                  className={`${popoverButtonClass} ${penMode === 'free' ? activeButtonClass : idleButtonClass}`}
+                  onClick={() => runAction(() => onPenMode?.('free'))}
+                  aria-pressed={penMode === 'free'}
+                  title="Vrij tekenen"
+                >
+                  Vrij
+                </button>
+                <button
+                  type="button"
+                  className={`${popoverButtonClass} ${penMode === 'line' ? activeButtonClass : idleButtonClass}`}
+                  onClick={() => runAction(() => onPenMode?.('line'))}
+                  aria-pressed={penMode === 'line'}
+                  title="Rechte lijn; snapt op ruitjes, Shift = hoeksnap"
+                >
+                  Rechte lijn
+                </button>
+                <button
+                  type="button"
+                  className={`${popoverButtonClass} ${fingerDrawing ? activeButtonClass : idleButtonClass}`}
+                  onClick={() => runAction(onToggleFingerDrawing)}
+                  aria-pressed={fingerDrawing}
+                  title="Uit: vinger pant/scrollt, alleen de pen tekent"
+                >
+                  Vinger tekent
+                </button>
+              </div>
+              <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
+            </>
+          ) : null}
           <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
             <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingColorLabel}</span>
             {drawingColors.map((color) => {

@@ -18,8 +18,10 @@ import {
   duplicatePresenterPage,
   getActivePresenterPage,
   getPresenterPageIndex,
+  duplicatePresenterObjectsOnPage,
   movePresenterObjectsOnPage,
   removeStrokesFromPresenterPage,
+  reorderPresenterObjectsOnPage,
   renamePresenterSession,
   resizePresenterObjectsOnPage,
   rotatePresenterObjectOnPage,
@@ -28,6 +30,7 @@ import {
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
 import { DEFAULT_PRESENTER_ERASER_SIZE, getPresenterEraserRadius } from '../../lib/presenterEraser';
+import { createPresenterInstrument } from '../../lib/presenterInstruments';
 import { createPresenterObject, updatePresenterMathToolObject } from '../../lib/presenterObjects';
 import {
   clearPresenterRecoveryState,
@@ -42,7 +45,6 @@ import {
 import { insertTextAtSelection } from '../../lib/presenterTextInsertion';
 import PresenterBoard from './PresenterBoard';
 import PresenterImportDialog from './PresenterImportDialog';
-import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
 import PresenterPagePanel from './PresenterPagePanel';
 import PresenterRecoveryPrompt from './PresenterRecoveryPrompt';
 import PresenterToolbar from './PresenterToolbar';
@@ -365,6 +367,8 @@ export default function PresenterShell() {
   const [activeTextCursor, setActiveTextCursor] = useState(null);
   const [textCaretRequest, setTextCaretRequest] = useState(null);
   const [eraserSize, setEraserSize] = useState(DEFAULT_PRESENTER_ERASER_SIZE);
+  const [penMode, setPenMode] = useState('free');
+  const [fingerDrawing, setFingerDrawing] = useState(true);
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const fullscreenErrorTimerRef = useRef(null);
   const toolbarAutoCloseTimerRef = useRef(null);
@@ -386,7 +390,7 @@ export default function PresenterShell() {
   const currentTool = activeCategory === 'pen' || activeCategory === 'highlighter'
     ? {
         id: activeCategory,
-        variant: activeCategory,
+        variant: activeCategory === 'pen' && penMode === 'line' ? 'geometry-pen' : activeCategory,
         color: activeDrawingTool.color || (activeCategory === 'highlighter' ? '#facc15' : '#111827'),
         width: Number.isFinite(activeDrawingTool.width) && activeDrawingTool.width > 0
           ? activeDrawingTool.width
@@ -551,10 +555,14 @@ export default function PresenterShell() {
   };
 
   const handleInstrument = (instrumentId) => {
-    setInstrument(instrumentId);
-    setActiveCategory('select');
+    setInstrument(createPresenterInstrument(instrumentId));
+    setActiveCategory('pen');
     setPagePanelOpen(false);
   };
+
+  const handleInstrumentChange = useCallback((updates) => {
+    setInstrument((current) => (current ? { ...current, ...updates } : current));
+  }, []);
 
   const openImportDialog = () => {
     setImportDialogOpen(true);
@@ -915,6 +923,25 @@ export default function PresenterShell() {
     );
   }, [updateActivePageWithHistory]);
 
+  const handleReorderObjects = useCallback((objectIds, direction) => {
+    updateActivePageWithHistory((currentSession) =>
+      reorderPresenterObjectsOnPage(currentSession, currentSession.activePageId, objectIds, direction)
+    );
+  }, [updateActivePageWithHistory]);
+
+  const handleDuplicateSelection = useCallback(() => {
+    updateActivePageWithHistory((currentSession) => {
+      const selectedIds = Array.isArray(currentSession.selectedObjectIds) && currentSession.selectedObjectIds.length > 0
+        ? currentSession.selectedObjectIds
+        : currentSession.selectedObjectId
+          ? [currentSession.selectedObjectId]
+          : [];
+      if (selectedIds.length === 0) return currentSession;
+
+      return duplicatePresenterObjectsOnPage(currentSession, currentSession.activePageId, selectedIds);
+    });
+  }, [updateActivePageWithHistory]);
+
   const handleDiscardRecovery = () => {
     clearPresenterRecoveryState(getBrowserLocalStorage());
     clearPresenterRecoveryState(getBrowserSessionStorage());
@@ -975,6 +1002,12 @@ export default function PresenterShell() {
         return;
       }
 
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
+        event.preventDefault();
+        handleDuplicateSelection();
+        return;
+      }
+
       if (event.key === 'Delete' || event.key === 'Backspace') {
         const selectedObjectIds =
           Array.isArray(session.selectedObjectIds) && session.selectedObjectIds.length > 0
@@ -1029,6 +1062,7 @@ export default function PresenterShell() {
     exitFullscreenSafely,
     handleDeleteObject,
     handleDeleteObjects,
+    handleDuplicateSelection,
     handleRedo,
     handleUndo,
     pages.length,
@@ -1099,10 +1133,15 @@ export default function PresenterShell() {
         onResizeObjects={handleResizeObjects}
         onDeleteObject={handleDeleteObject}
         onDeleteObjects={handleDeleteObjects}
+        onReorderObjects={handleReorderObjects}
         onTextChange={handleTextChange}
         textCaretRequest={textCaretRequest}
         onTextCursorChange={handleTextCursorChange}
         onMathToolChange={handleMathToolChange}
+        allowFingerDrawing={fingerDrawing}
+        instrument={instrument}
+        onInstrumentChange={handleInstrumentChange}
+        onInstrumentClose={() => setInstrument(null)}
       />
       <PresenterPagePanel
         pages={pages}
@@ -1113,7 +1152,6 @@ export default function PresenterShell() {
         onDuplicatePage={duplicatePage}
         onDeletePage={deletePage}
       />
-      <PresenterInstrumentOverlay instrument={instrument} onClose={() => setInstrument(null)} />
       <PresenterImportDialog
         open={importDialogOpen}
         onClose={() => setImportDialogOpen(false)}
@@ -1163,6 +1201,10 @@ export default function PresenterShell() {
         onEraserSize={setEraserSize}
         recentColors={Array.isArray(session.recentColors) ? session.recentColors : []}
         onCustomColor={handleCustomColor}
+        penMode={penMode}
+        onPenMode={setPenMode}
+        fingerDrawing={fingerDrawing}
+        onToggleFingerDrawing={() => setFingerDrawing((current) => !current)}
       />
     </section>
   );

@@ -7,10 +7,23 @@ import {
   snapRotationDegrees
 } from '../../lib/presenterGeometry';
 import { findStrokeIdsHitByEraser } from '../../lib/presenterEraser';
-import { getPresenterObjectIdsInRect, getPresenterSelectionBounds } from '../../lib/presenterModel';
+import { buildSmoothedStrokePath, constrainLineEnd, getStrokePressureWidth } from '../../lib/presenterInk';
+import {
+  getInstrumentEdgeLine,
+  isPointNearInstrumentEdge,
+  projectPointOntoEdge
+} from '../../lib/presenterInstruments';
+import { getAlignmentSnap } from '../../lib/presenterAlignment';
+import {
+  getPresenterObjectBounds,
+  getPresenterObjectIdsInRect,
+  getPresenterSelectionBounds,
+  getPresenterStrokeStyle
+} from '../../lib/presenterModel';
 import { canRotatePresenterObject, isPresenterMathToolObject } from '../../lib/presenterObjects';
 import PresenterBackground from './PresenterBackground';
 import PresenterInkLayer from './PresenterInkLayer';
+import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
 import PresenterObjectLayer from './PresenterObjectLayer';
 
 const DEFAULT_VIEWPORT_WIDTH = 1920;
@@ -165,7 +178,7 @@ function SelectionMarquee({ rect, scale }) {
   );
 }
 
-function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, showRotate = false, onDelete, onMovePointerDown, onResizePointerDown, onRotatePointerDown }) {
+function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, showRotate = false, onDelete, onMovePointerDown, onResizePointerDown, onRotatePointerDown, onBringForward, onSendBackward }) {
   const handleSize = 28;
   const scaledBounds = {
     x: bounds.x * scale,
@@ -256,6 +269,40 @@ function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false
           type="button"
         />
       ))}
+      <div
+        className="pointer-events-auto absolute flex gap-1"
+        style={{
+          left: `${scaledBounds.x}px`,
+          top: `${scaledBounds.y + scaledBounds.height + 10}px`
+        }}
+      >
+        <button
+          aria-label="Naar voren"
+          title="Naar voren"
+          className="rounded-md border-2 border-blue-700 bg-white px-2 py-1 text-xs font-black text-blue-800 shadow-sm"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onBringForward?.();
+          }}
+          type="button"
+        >
+          Voorgrond
+        </button>
+        <button
+          aria-label="Naar achteren"
+          title="Naar achteren"
+          className="rounded-md border-2 border-blue-700 bg-white px-2 py-1 text-xs font-black text-blue-800 shadow-sm"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onSendBackward?.();
+          }}
+          type="button"
+        >
+          Achtergrond
+        </button>
+      </div>
       <button
         aria-label="Selectie verwijderen"
         className="pointer-events-auto absolute rounded-full border-4 border-white bg-red-600 shadow-sm"
@@ -292,27 +339,31 @@ export default function PresenterBoard({
   onResizeObjects,
   onDeleteObject,
   onDeleteObjects,
+  onReorderObjects,
   onTextChange,
   textCaretRequest,
   onTextCursorChange,
-  onMathToolChange
+  onMathToolChange,
+  allowFingerDrawing = true,
+  instrument = null,
+  onInstrumentChange,
+  onInstrumentClose
 }) {
   const surfaceRef = useRef(null);
   const boardRef = useRef(null);
+  const canvasRef = useRef(null);
+  const previewFrameRef = useRef(0);
   const activeStrokeRef = useRef(null);
+  const touchPanRef = useRef(null);
   const interactionRef = useRef(null);
   const eraserGestureRef = useRef(null);
   const [measuredViewportWidth, setMeasuredViewportWidth] = useState(viewportWidth);
-  const [previewStroke, setPreviewStroke] = useState(null);
   const [interaction, setInteraction] = useState(null);
   const [eraserCursor, setEraserCursor] = useState(null);
 
   const isEraserTool = tool?.id === 'eraser';
   const eraserRadius = Number.isFinite(tool?.radius) && tool.radius > 0 ? tool.radius : 30;
 
-  useEffect(() => {
-    if (!isEraserTool) setEraserCursor(null);
-  }, [isEraserTool]);
 
   useEffect(() => {
     const surface = surfaceRef.current;
@@ -360,16 +411,88 @@ export default function PresenterBoard({
     return ids.length > 0 ? ids : normalizeIds(selectedObjectId);
   }, [selectedObjectId, selectedObjectIds]);
 
-  const previewPage = useMemo(() => transformObjectsForPreview(page, interaction), [interaction, page]);
+  // Smart guides: bij verslepen licht snappen op randen/middens van andere
+  // objecten, met hulplijnen in beeld.
+  const moveSnap = useMemo(() => {
+    if (interaction?.type !== 'move' || !page) return null;
 
-  const inkPage = useMemo(() => {
-    if (!previewStroke) return page;
+    const selectedIds = new Set(normalizeIds(interaction.objectIds));
+    const baseBounds = getPresenterSelectionBounds(page, interaction.objectIds);
+    if (!baseBounds) return null;
+
+    const rawDx = interaction.current.x - interaction.start.x;
+    const rawDy = interaction.current.y - interaction.start.y;
+    const movedBounds = {
+      ...baseBounds,
+      x: baseBounds.x + rawDx,
+      y: baseBounds.y + rawDy
+    };
+    const otherBounds = (Array.isArray(page.objects) ? page.objects : [])
+      .filter((object) => !selectedIds.has(object?.id))
+      .map(getPresenterObjectBounds)
+      .filter(Boolean);
+
+    return getAlignmentSnap(movedBounds, otherBounds);
+  }, [interaction, page]);
+
+  const snappedInteraction = useMemo(() => {
+    if (!interaction || interaction.type !== 'move' || !moveSnap || (moveSnap.dx === 0 && moveSnap.dy === 0)) {
+      return interaction;
+    }
 
     return {
-      ...page,
-      strokes: [...(Array.isArray(page?.strokes) ? page.strokes : []), previewStroke]
+      ...interaction,
+      current: {
+        x: interaction.current.x + moveSnap.dx,
+        y: interaction.current.y + moveSnap.dy
+      }
     };
-  }, [page, previewStroke]);
+  }, [interaction, moveSnap]);
+
+  const previewPage = useMemo(() => transformObjectsForPreview(page, snappedInteraction), [snappedInteraction, page]);
+
+  // Live inkt gaat naar een canvas-laag via requestAnimationFrame; React
+  // re-rendert dus niet per pointer-sample. Pas bij het loslaten wordt de
+  // stroke gecommit en rendert de SVG-inktlaag hem definitief.
+  const drawPreviewStroke = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    const active = activeStrokeRef.current;
+    if (!active) return;
+
+    const style = getPresenterStrokeStyle(active.stroke);
+    const pathData = buildSmoothedStrokePath(active.stroke.points);
+    if (!pathData) return;
+
+    const devicePixels = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+    context.setTransform(board.scale * devicePixels, 0, 0, board.scale * devicePixels, 0, 0);
+    context.lineCap = 'round';
+    context.lineJoin = 'round';
+    context.strokeStyle = style.color;
+    context.globalAlpha = style.opacity;
+    context.lineWidth = getStrokePressureWidth(active.stroke, style.width);
+    context.stroke(new Path2D(pathData));
+  };
+
+  const schedulePreviewDraw = () => {
+    if (previewFrameRef.current) return;
+
+    previewFrameRef.current = requestAnimationFrame(() => {
+      previewFrameRef.current = 0;
+      drawPreviewStroke();
+    });
+  };
+
+  useEffect(() => () => {
+    if (previewFrameRef.current) cancelAnimationFrame(previewFrameRef.current);
+  }, []);
 
   const selectionBounds = useMemo(
     () => getPresenterSelectionBounds(previewPage, activeSelectedObjectIds),
@@ -416,8 +539,47 @@ export default function PresenterBoard({
     if (!activeStroke || (event?.pointerId != null && event.pointerId !== activeStroke.pointerId)) return;
 
     activeStrokeRef.current = null;
-    setPreviewStroke(null);
+    schedulePreviewDraw();
     onStrokeComplete?.(activeStroke.stroke);
+  };
+
+  const cancelActiveStroke = () => {
+    activeStrokeRef.current = null;
+    schedulePreviewDraw();
+  };
+
+  const startTouchPan = (event) => {
+    const current = touchPanRef.current || { pointers: new Map() };
+    current.pointers.set(event.pointerId, event.clientY);
+    touchPanRef.current = current;
+  };
+
+  const applyTouchPan = (event) => {
+    const pan = touchPanRef.current;
+    if (!pan) return false;
+
+    if (!pan.pointers.has(event.pointerId)) {
+      if (event.pointerType === 'touch') {
+        pan.pointers.set(event.pointerId, event.clientY);
+        return true;
+      }
+      return false;
+    }
+
+    const previousY = pan.pointers.get(event.pointerId);
+    pan.pointers.set(event.pointerId, event.clientY);
+
+    const surface = surfaceRef.current;
+    if (surface) surface.scrollTop -= event.clientY - previousY;
+    return true;
+  };
+
+  const endTouchPan = (event) => {
+    const pan = touchPanRef.current;
+    if (!pan) return;
+
+    pan.pointers.delete(event.pointerId);
+    if (pan.pointers.size === 0) touchPanRef.current = null;
   };
 
   const completeEraserGesture = (event) => {
@@ -459,7 +621,21 @@ export default function PresenterBoard({
     const hasMoved = Math.abs(dx) > CLICK_TOLERANCE || Math.abs(dy) > CLICK_TOLERANCE;
 
     if (nextInteraction.type === 'move') {
-      if (hasMoved) onMoveObjects?.(nextInteraction.objectIds, { dx, dy });
+      if (!hasMoved) return;
+
+      const baseBounds = getPresenterSelectionBounds(page, nextInteraction.objectIds);
+      const selectedIds = new Set(normalizeIds(nextInteraction.objectIds));
+      const snap = baseBounds
+        ? getAlignmentSnap(
+            { ...baseBounds, x: baseBounds.x + dx, y: baseBounds.y + dy },
+            (Array.isArray(page?.objects) ? page.objects : [])
+              .filter((object) => !selectedIds.has(object?.id))
+              .map(getPresenterObjectBounds)
+              .filter(Boolean)
+          )
+        : { dx: 0, dy: 0 };
+
+      onMoveObjects?.(nextInteraction.objectIds, { dx: dx + snap.dx, dy: dy + snap.dy });
       return;
     }
 
@@ -519,25 +695,68 @@ export default function PresenterBoard({
 
     if (!onStrokeComplete || event.button !== 0) return;
 
+    const pointerType = event.pointerType || 'mouse';
+    const activeStroke = activeStrokeRef.current;
+
+    if (pointerType === 'touch') {
+      // Palm rejection: zolang een echte pen tekent, negeren we touch volledig.
+      if (activeStroke?.pointerType === 'pen') return;
+
+      // Tweede vinger tijdens tekenen: streek annuleren en overschakelen op pan.
+      if (activeStroke?.pointerType === 'touch') {
+        cancelActiveStroke();
+        startTouchPan(event);
+        return;
+      }
+
+      if (touchPanRef.current) {
+        startTouchPan(event);
+        return;
+      }
+
+      if (!allowFingerDrawing) {
+        startTouchPan(event);
+        return;
+      }
+    }
+
+    if (pointerType === 'pen' && activeStroke?.pointerType === 'touch') {
+      cancelActiveStroke();
+    }
+
     const point = getBoardPoint(event);
     if (!point) return;
 
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
 
+    const pressure = pointerType === 'pen' && Number.isFinite(event.pressure) && event.pressure > 0
+      ? Math.round(event.pressure * 100) / 100
+      : undefined;
+
+    // Start de streek op de tekenrand van een actief instrument (liniaal/
+    // geodriehoek) wanneer de pen daar dichtbij neerkomt: edge-snap.
+    const edgeLine = instrument && isPointNearInstrumentEdge(point, instrument)
+      ? getInstrumentEdgeLine(instrument)
+      : null;
+    const startPoint = edgeLine ? projectPointOntoEdge(point, edgeLine) : point;
+
     const stroke = {
       id: createStrokeId(),
       variant: tool?.variant || tool?.id || 'pen',
       color: tool?.color || '#111827',
       width: Number.isFinite(tool?.width) && tool.width > 0 ? tool.width : 5,
-      points: [point]
+      pointerType,
+      points: [pressure === undefined ? startPoint : { ...startPoint, p: pressure }]
     };
 
     activeStrokeRef.current = {
       pointerId: event.pointerId,
+      pointerType,
+      edgeLine,
       stroke
     };
-    setPreviewStroke(stroke);
+    schedulePreviewDraw();
   };
 
   const handlePointerMove = (event) => {
@@ -569,6 +788,11 @@ export default function PresenterBoard({
       return;
     }
 
+    if (applyTouchPan(event)) {
+      event.preventDefault();
+      return;
+    }
+
     const activeStroke = activeStrokeRef.current;
     if (!activeStroke || event.pointerId !== activeStroke.pointerId) return;
 
@@ -577,16 +801,26 @@ export default function PresenterBoard({
 
     event.preventDefault();
 
-    const nextStroke = {
-      ...activeStroke.stroke,
-      points: [...activeStroke.stroke.points, point]
-    };
+    const pressure = activeStroke.pointerType === 'pen' && Number.isFinite(event.pressure) && event.pressure > 0
+      ? Math.round(event.pressure * 100) / 100
+      : undefined;
+    const projectedPoint = activeStroke.edgeLine ? projectPointOntoEdge(point, activeStroke.edgeLine) : point;
+    const nextPoint = pressure === undefined ? projectedPoint : { ...projectedPoint, p: pressure };
+
+    const nextPoints = activeStroke.stroke.variant === 'geometry-pen'
+      ? [activeStroke.stroke.points[0], constrainLineEnd(activeStroke.stroke.points[0], nextPoint, { angleSnap: event.shiftKey })]
+      : activeStroke.edgeLine
+        ? [activeStroke.stroke.points[0], nextPoint]
+        : [...activeStroke.stroke.points, nextPoint];
 
     activeStrokeRef.current = {
       ...activeStroke,
-      stroke: nextStroke
+      stroke: {
+        ...activeStroke.stroke,
+        points: nextPoints
+      }
     };
-    setPreviewStroke(nextStroke);
+    schedulePreviewDraw();
   };
 
   const handleObjectPointerDown = (event, objectId) => {
@@ -708,11 +942,13 @@ export default function PresenterBoard({
           completeActiveStroke(event);
           completeSelectionInteraction(event);
           completeEraserGesture(event);
+          endTouchPan(event);
         }}
         onPointerCancel={(event) => {
           completeActiveStroke(event);
           completeSelectionInteraction(event);
           completeEraserGesture(event);
+          endTouchPan(event);
         }}
         onPointerDown={handlePointerDown}
         onPointerLeave={() => {
@@ -723,6 +959,7 @@ export default function PresenterBoard({
           completeActiveStroke(event);
           completeSelectionInteraction(event);
           completeEraserGesture(event);
+          endTouchPan(event);
         }}
         style={{
           width: `${board.scaledWidth}px`,
@@ -747,7 +984,14 @@ export default function PresenterBoard({
           onTextCursorChange={onTextCursorChange}
           onMathToolChange={onMathToolChange}
         />
-        <PresenterInkLayer page={inkPage} />
+        <PresenterInkLayer page={page} />
+        <canvas
+          ref={canvasRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          width={Math.max(1, Math.round(board.scaledWidth * ((typeof window !== 'undefined' && window.devicePixelRatio) || 1)))}
+          height={Math.max(1, Math.round(board.scaledHeight * ((typeof window !== 'undefined' && window.devicePixelRatio) || 1)))}
+        />
         <PresenterObjectLayer
           page={previewPage}
           selectedObjectId={selectedObjectId}
@@ -763,6 +1007,19 @@ export default function PresenterBoard({
         {interaction?.type === 'marquee' ? (
           <SelectionMarquee rect={createRectFromPoints(interaction.start, interaction.current)} scale={board.scale} />
         ) : null}
+        {interaction?.type === 'move' && moveSnap?.guides?.length
+          ? moveSnap.guides.map((guide) => (
+              <div
+                key={`${guide.axis}-${guide.position}`}
+                className="pointer-events-none absolute bg-fuchsia-500/70"
+                style={
+                  guide.axis === 'vertical'
+                    ? { left: `${guide.position * board.scale}px`, top: 0, bottom: 0, width: '2px' }
+                    : { top: `${guide.position * board.scale}px`, left: 0, right: 0, height: '2px' }
+                }
+              />
+            ))
+          : null}
         {selectionBounds ? (
           <SelectionTransformBox
             bounds={selectionBounds}
@@ -773,6 +1030,16 @@ export default function PresenterBoard({
             onMovePointerDown={handleSelectionPointerDown}
             onResizePointerDown={handleResizePointerDown}
             onRotatePointerDown={handleRotatePointerDown}
+            onBringForward={() => onReorderObjects?.(activeSelectedObjectIds, 'front')}
+            onSendBackward={() => onReorderObjects?.(activeSelectedObjectIds, 'back')}
+          />
+        ) : null}
+        {instrument ? (
+          <PresenterInstrumentOverlay
+            instrument={instrument}
+            scale={board.scale}
+            onChange={onInstrumentChange}
+            onClose={onInstrumentClose}
           />
         ) : null}
         {isEraserTool && eraserCursor ? (

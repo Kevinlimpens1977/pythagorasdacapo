@@ -1,6 +1,9 @@
 const MAX_HISTORY_ITEMS = 80;
 
-const clonePage = (page) => structuredClone(page);
+// Pagina's worden in het hele model immutabel bijgewerkt (spread/replace),
+// dus de history kan referenties bewaren in plaats van diepe klonen. Dat
+// scheelt een structuredClone per penstreek/gumbeweging.
+const clonePage = (page) => page;
 
 const getPageHistory = (history, pageId) =>
   history.byPageId[pageId] || { undo: [], redo: [] };

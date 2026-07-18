@@ -437,6 +437,67 @@ export const rotatePresenterObjectOnPage = (session, pageId = session.activePage
   });
 };
 
+export const duplicatePresenterObjectsOnPage = (
+  session,
+  pageId = session.activePageId,
+  objectIds,
+  offset = { dx: 24, dy: 24 }
+) => {
+  const sourceIds = normalizeIdList(objectIds);
+  if (sourceIds.length === 0) return session;
+
+  const pages = Array.isArray(session?.pages) ? session.pages : [];
+  const page = pages.find((currentPage) => currentPage?.id === pageId);
+  const objects = Array.isArray(page?.objects) ? page.objects : [];
+  const sources = objects.filter((object) => sourceIds.includes(object?.id));
+  if (sources.length === 0) return session;
+
+  const dx = getNumber(offset?.dx, 24);
+  const dy = getNumber(offset?.dy, 24);
+  const duplicates = sources.map((object) => ({
+    ...structuredClone(object),
+    id: createId('object'),
+    x: getNumber(object.x) + dx,
+    y: getNumber(object.y) + dy
+  }));
+
+  const nextSession = updatePresenterPage(session, pageId, (currentPage) => ({
+    ...currentPage,
+    objects: [...(Array.isArray(currentPage?.objects) ? currentPage.objects : []), ...duplicates]
+  }));
+
+  if (nextSession === session) return session;
+
+  const duplicateIds = duplicates.map((object) => object.id);
+  return {
+    ...nextSession,
+    selectedObjectId: duplicateIds[0] || null,
+    selectedObjectIds: duplicateIds
+  };
+};
+
+// Z-order: objecten renderen in array-volgorde; naar voren = naar het einde.
+export const reorderPresenterObjectsOnPage = (session, pageId = session.activePageId, objectIds, direction) => {
+  const movedIds = new Set(normalizeIdList(objectIds));
+  if (movedIds.size === 0 || (direction !== 'front' && direction !== 'back')) return session;
+
+  return updatePresenterPage(session, pageId, (page) => {
+    const objects = Array.isArray(page?.objects) ? page.objects : [];
+    if (!objects.some((object) => movedIds.has(object?.id))) return page;
+
+    const moved = objects.filter((object) => movedIds.has(object?.id));
+    const rest = objects.filter((object) => !movedIds.has(object?.id));
+    const nextObjects = direction === 'front' ? [...rest, ...moved] : [...moved, ...rest];
+
+    if (nextObjects.every((object, index) => object === objects[index])) return page;
+
+    return {
+      ...page,
+      objects: nextObjects
+    };
+  });
+};
+
 const MAX_RECENT_COLORS = 6;
 const isHexColor = (value) => typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
 

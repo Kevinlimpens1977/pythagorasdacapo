@@ -644,3 +644,34 @@ test('renamePresenterSession begrenst de titel en markeert dirty', async () => {
   assert.equal(renamed.dirty, true);
   assert.equal(renamePresenterSession(renamed, 'Les 3B wiskunde'), renamed);
 });
+
+test('duplicatePresenterObjectsOnPage kloont met offset en selecteert de kopieen', async () => {
+  const { duplicatePresenterObjectsOnPage } = await import('./presenterModel.js');
+  let session = createPresenterSession();
+  session = addObjectToPresenterPage(session, session.activePageId, { id: 'obj-a', type: 'rectangle', x: 100, y: 100, width: 50, height: 50 });
+
+  const next = duplicatePresenterObjectsOnPage(session, session.activePageId, ['obj-a']);
+  const page = getActivePresenterPage(next);
+  assert.equal(page.objects.length, 2);
+  const clone = page.objects[1];
+  assert.notEqual(clone.id, 'obj-a');
+  assert.equal(clone.x, 124);
+  assert.equal(clone.y, 124);
+  assert.deepEqual(next.selectedObjectIds, [clone.id]);
+});
+
+test('reorderPresenterObjectsOnPage verplaatst naar voren en naar achteren', async () => {
+  const { reorderPresenterObjectsOnPage } = await import('./presenterModel.js');
+  let session = createPresenterSession();
+  session = addObjectToPresenterPage(session, session.activePageId, { id: 'a', type: 'rectangle' });
+  session = addObjectToPresenterPage(session, session.activePageId, { id: 'b', type: 'rectangle' });
+  session = addObjectToPresenterPage(session, session.activePageId, { id: 'c', type: 'rectangle' });
+
+  const front = reorderPresenterObjectsOnPage(session, session.activePageId, ['a'], 'front');
+  assert.deepEqual(getActivePresenterPage(front).objects.map((o) => o.id), ['b', 'c', 'a']);
+
+  const back = reorderPresenterObjectsOnPage(front, front.activePageId, ['a'], 'back');
+  assert.deepEqual(getActivePresenterPage(back).objects.map((o) => o.id), ['a', 'b', 'c']);
+
+  assert.equal(reorderPresenterObjectsOnPage(back, back.activePageId, ['a'], 'zijwaarts'), back);
+});

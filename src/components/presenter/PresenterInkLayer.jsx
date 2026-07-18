@@ -1,30 +1,16 @@
 import { getPresenterStrokeStyle } from '../../lib/presenterModel';
+import { buildSmoothedStrokePath, getStrokePressureWidth } from '../../lib/presenterInk';
 
 const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
 
 const isFinitePositiveNumber = (value) => Number.isFinite(value) && value > 0;
 
-const getPathData = (points = []) => {
-  const validPoints = points.filter((point) => Number.isFinite(point?.x) && Number.isFinite(point?.y));
-  if (validPoints.length === 0) return '';
-
-  const [firstPoint, ...restPoints] = validPoints;
-  const commands = [`M ${firstPoint.x} ${firstPoint.y}`];
-
-  if (restPoints.length === 0) {
-    commands.push(`L ${firstPoint.x} ${firstPoint.y}`);
-  } else {
-    commands.push(...restPoints.map((point) => `L ${point.x} ${point.y}`));
-  }
-
-  return commands.join(' ');
-};
-
 const renderStroke = (stroke, opacity) => {
-  const pathData = getPathData(Array.isArray(stroke?.points) ? stroke.points : []);
+  const pathData = buildSmoothedStrokePath(Array.isArray(stroke?.points) ? stroke.points : []);
   if (!pathData) return null;
   const style = getPresenterStrokeStyle(stroke);
+  const baseWidth = isFinitePositiveNumber(style.width) ? style.width : 5;
 
   return (
     <path
@@ -35,7 +21,7 @@ const renderStroke = (stroke, opacity) => {
       strokeLinecap={style.lineCap}
       strokeLinejoin={style.lineJoin}
       strokeOpacity={opacity ?? style.opacity}
-      strokeWidth={isFinitePositiveNumber(style.width) ? style.width : 5}
+      strokeWidth={getStrokePressureWidth(stroke, baseWidth)}
     />
   );
 };
