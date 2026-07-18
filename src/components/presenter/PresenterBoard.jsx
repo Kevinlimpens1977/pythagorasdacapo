@@ -368,7 +368,8 @@ export default function PresenterBoard({
   focus = null,
   onFocusChange,
   boardTheme = 'light',
-  onPlaceCircle,
+  compassPenStyle,
+  onCompassStroke,
   onToggleObjectMeasure
 }) {
   const surfaceRef = useRef(null);
@@ -968,6 +969,7 @@ export default function PresenterBoard({
       <div
         key={page?.id || 'presenter-page'}
         ref={boardRef}
+        data-presenter-board="true"
         className={`presenter-page-enter relative mx-auto shrink-0 overflow-hidden shadow-sm ring-1 ${
           boardTheme === 'dark' ? 'bg-slate-900 ring-slate-700' : 'bg-slate-50 ring-slate-300'
         }`}
@@ -1074,9 +1076,11 @@ export default function PresenterBoard({
           <PresenterInstrumentOverlay
             instrument={instrument}
             scale={board.scale}
+            gridSize={page?.background?.gridSize || 96}
+            penStyle={compassPenStyle}
             onChange={onInstrumentChange}
             onClose={onInstrumentClose}
-            onPlaceCircle={onPlaceCircle}
+            onDrawStroke={onCompassStroke}
           />
         ) : null}
         {(Array.isArray(previewPage?.objects) ? previewPage.objects : [])

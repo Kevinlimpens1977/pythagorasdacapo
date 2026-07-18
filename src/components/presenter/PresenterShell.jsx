@@ -591,20 +591,27 @@ export default function PresenterShell() {
     setTimer({ endsAt: Date.now() + minutes * 60000, minutes });
   };
 
-  const handlePlaceCircle = useCallback(({ cx, cy, radius }) => {
-    if (!Number.isFinite(cx) || !Number.isFinite(cy) || !Number.isFinite(radius) || radius <= 0) return;
+  // De passer tekent met de actuele penstijl: bogen en cirkels worden gewone
+  // inkt-strokes, dus gumbaar met de precisiegum en undo-baar per boog.
+  const handleCompassStroke = useCallback((points) => {
+    if (!Array.isArray(points) || points.length < 2) return;
 
-    const object = createPresenterObject('ellipse', {
-      id: createObjectId(),
-      x: cx - radius,
-      y: cy - radius,
-      width: radius * 2,
-      height: radius * 2
+    // Het id staat buiten de updater zodat die puur blijft (StrictMode voert
+    // updaters dubbel uit).
+    const strokeId = createObjectId().replace('object-', 'stroke-');
+
+    updateActivePageWithHistory((currentSession) => {
+      const penStyle = currentSession.toolStyles?.pen || { color: '#111827', width: 6 };
+      const stroke = {
+        id: strokeId,
+        variant: 'pen',
+        color: penStyle.color || '#111827',
+        width: Number.isFinite(penStyle.width) && penStyle.width > 0 ? penStyle.width : 6,
+        points
+      };
+
+      return addStrokeToPresenterPage(currentSession, currentSession.activePageId, stroke);
     });
-
-    updateActivePageWithHistory((currentSession) =>
-      addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
-    );
   }, [updateActivePageWithHistory]);
 
   const handleToggleObjectMeasure = useCallback((objectId) => {
@@ -1214,7 +1221,8 @@ export default function PresenterShell() {
         focus={focusTool}
         onFocusChange={handleFocusChange}
         boardTheme={boardTheme}
-        onPlaceCircle={handlePlaceCircle}
+        compassPenStyle={penTool}
+        onCompassStroke={handleCompassStroke}
         onToggleObjectMeasure={handleToggleObjectMeasure}
       />
       <PresenterTimerOverlay timer={timer} onStop={() => setTimer(null)} />

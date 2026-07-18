@@ -21,7 +21,17 @@ export const createPresenterInstrument = (instrumentId, overrides = {}) => {
     id: instrumentId,
     x: isFiniteNumber(overrides.x) ? overrides.x : 520,
     y: isFiniteNumber(overrides.y) ? overrides.y : 420,
-    rotation: isFiniteNumber(overrides.rotation) ? overrides.rotation : 0
+    rotation: isFiniteNumber(overrides.rotation) ? overrides.rotation : 0,
+    // De passer is een tekenend instrument: naaldpunt (x,y als middelpunt),
+    // straal en potloodhoek in plaats van een rechthoekig kader.
+    ...(instrumentId === 'compass'
+      ? {
+          x: isFiniteNumber(overrides.x) ? overrides.x : 860,
+          y: isFiniteNumber(overrides.y) ? overrides.y : 620,
+          radius: isFiniteNumber(overrides.radius) ? overrides.radius : 200,
+          angle: isFiniteNumber(overrides.angle) ? overrides.angle : -35
+        }
+      : {})
   };
 };
 
