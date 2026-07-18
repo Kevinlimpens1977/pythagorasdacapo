@@ -79,3 +79,48 @@ test('enkelpuntsstrokes en ongeldige input zijn veilig', () => {
   assert.deepEqual(findStrokeIdsHitByEraser([dot], { from: null, to: null, radius: 14 }), []);
   assert.deepEqual(findStrokeIdsHitByEraser(null, { from: { x: 0, y: 0 }, to: { x: 0, y: 0 } }), []);
 });
+
+test('erasePartialStrokes wist alleen het geraakte stuk en splitst de streek', async () => {
+  const { erasePartialStrokes } = await import('./presenterEraser.js');
+  const lijn = { id: 'lijn-1', width: 6, color: '#111827', points: [{ x: 0, y: 100 }, { x: 400, y: 100 }] };
+
+  const result = erasePartialStrokes([lijn], { from: { x: 200, y: 100 }, to: { x: 200, y: 100 }, radius: 20 });
+  assert.equal(result.changed, true);
+  assert.equal(result.strokes.length, 2);
+
+  const [links, rechts] = result.strokes;
+  assert.equal(links.id, 'lijn-1');
+  assert.notEqual(rechts.id, 'lijn-1');
+  assert.equal(links.color, '#111827');
+  assert.equal(Math.max(...links.points.map((p) => p.x)) < 180, true);
+  assert.equal(Math.min(...rechts.points.map((p) => p.x)) > 220, true);
+});
+
+test('erasePartialStrokes verwijdert een streek volledig als alles geraakt is', async () => {
+  const { erasePartialStrokes } = await import('./presenterEraser.js');
+  const kort = { id: 'kort', width: 6, points: [{ x: 0, y: 0 }, { x: 20, y: 0 }] };
+
+  const result = erasePartialStrokes([kort], { from: { x: 10, y: 0 }, to: { x: 10, y: 0 }, radius: 60 });
+  assert.equal(result.changed, true);
+  assert.equal(result.strokes.length, 0);
+});
+
+test('erasePartialStrokes laat niet-geraakte strokes ongemoeid', async () => {
+  const { erasePartialStrokes } = await import('./presenterEraser.js');
+  const strokes = [{ id: 'ver-weg', width: 6, points: [{ x: 0, y: 500 }, { x: 100, y: 500 }] }];
+
+  const result = erasePartialStrokes(strokes, { from: { x: 50, y: 0 }, to: { x: 60, y: 0 }, radius: 20 });
+  assert.equal(result.changed, false);
+  assert.equal(result.strokes, strokes);
+});
+
+test('erasePartialStrokes interpoleert druk bij het verdichten', async () => {
+  const { erasePartialStrokes } = await import('./presenterEraser.js');
+  const drukLijn = { id: 'druk', width: 6, pointerType: 'pen', points: [{ x: 0, y: 0, p: 0.2 }, { x: 300, y: 0, p: 1 }] };
+
+  const result = erasePartialStrokes([drukLijn], { from: { x: 150, y: 0 }, to: { x: 150, y: 0 }, radius: 15 });
+  assert.equal(result.changed, true);
+  assert.equal(result.strokes.length, 2);
+  const alleP = result.strokes.flatMap((s) => s.points).map((p) => p.p);
+  assert.equal(alleP.every((p) => Number.isFinite(p) && p >= 0.2 && p <= 1), true);
+});

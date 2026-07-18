@@ -20,8 +20,8 @@ import {
   getPresenterPageIndex,
   duplicatePresenterObjectsOnPage,
   movePresenterObjectsOnPage,
-  removeStrokesFromPresenterPage,
   reorderPresenterObjectsOnPage,
+  replaceStrokesOnPresenterPage,
   renamePresenterSession,
   resizePresenterObjectsOnPage,
   rotatePresenterObjectOnPage,
@@ -29,7 +29,7 @@ import {
   updatePresenterTool,
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
-import { DEFAULT_PRESENTER_ERASER_SIZE, getPresenterEraserRadius } from '../../lib/presenterEraser';
+import { DEFAULT_PRESENTER_ERASER_SIZE, erasePartialStrokes, getPresenterEraserRadius } from '../../lib/presenterEraser';
 import { createPresenterInstrument } from '../../lib/presenterInstruments';
 import { createCurtain, createLaser, createSpotlight } from '../../lib/presenterFocus';
 import { PresenterStudentPicker, PresenterTimerOverlay } from './PresenterFocusTools';
@@ -756,24 +756,23 @@ export default function PresenterShell() {
     );
   };
 
-  // Eén gumbeweging = één undo-stap: alleen bij het eerste raakmoment van een
-  // gesture wordt de paginastaat in de history vastgelegd.
-  const handleEraseStrokes = useCallback((strokeIds, gestureId) => {
-    if (!Array.isArray(strokeIds) || strokeIds.length === 0) return;
-
+  // Precisie-gum: wist alleen het geraakte stuk van een streek (en splitst hem
+  // waar nodig). Eén gumbeweging = één undo-stap: alleen bij het eerste
+  // raakmoment van een gesture wordt de paginastaat vastgelegd.
+  const handleEraseBrush = useCallback((brush, gestureId) => {
     setSession((currentSession) => {
       const page = getActivePresenterPage(currentSession);
       if (!page) return currentSession;
 
-      const nextSession = removeStrokesFromPresenterPage(currentSession, currentSession.activePageId, strokeIds);
-      if (nextSession === currentSession) return currentSession;
+      const result = erasePartialStrokes(page.strokes, brush);
+      if (!result.changed) return currentSession;
 
       if (eraseGestureHistoryRef.current !== gestureId || !gestureId) {
         eraseGestureHistoryRef.current = gestureId || null;
         setHistory((currentHistory) => recordPresenterPageAction(currentHistory, page.id, page));
       }
 
-      return nextSession;
+      return replaceStrokesOnPresenterPage(currentSession, currentSession.activePageId, result.strokes);
     });
   }, []);
 
@@ -1195,7 +1194,7 @@ export default function PresenterShell() {
         selectedObjectIds={session.selectedObjectIds}
         onInteract={closeToolbar}
         onStrokeComplete={handleStrokeComplete}
-        onEraseStrokes={handleEraseStrokes}
+        onEraseBrush={handleEraseBrush}
         onRotateObject={handleRotateObject}
         onSelectObject={handleSelectObject}
         onSelectObjects={handleSelectObjects}

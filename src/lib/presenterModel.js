@@ -400,6 +400,15 @@ export const removeStrokeFromPresenterPage = (session, pageId = session.activePa
   }));
 };
 
+export const replaceStrokesOnPresenterPage = (session, pageId = session.activePageId, strokes) => {
+  if (!Array.isArray(strokes)) return session;
+
+  return updatePresenterPage(session, pageId, (page) => ({
+    ...page,
+    strokes
+  }));
+};
+
 export const removeStrokesFromPresenterPage = (session, pageId = session.activePageId, strokeIds) => {
   const removedIds = new Set(normalizeIdList(strokeIds));
   if (removedIds.size === 0) return session;

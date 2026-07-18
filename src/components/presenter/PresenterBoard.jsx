@@ -6,7 +6,6 @@ import {
   snapPointToGrid,
   snapRotationDegrees
 } from '../../lib/presenterGeometry';
-import { findStrokeIdsHitByEraser } from '../../lib/presenterEraser';
 import { buildSmoothedStrokePath, constrainLineEnd, getStrokePressureWidth } from '../../lib/presenterInk';
 import {
   getInstrumentEdgeLine,
@@ -349,7 +348,7 @@ export default function PresenterBoard({
   selectedObjectIds = [],
   onInteract,
   onStrokeComplete,
-  onEraseStrokes,
+  onEraseBrush,
   onRotateObject,
   onSelectObject,
   onSelectObjects,
@@ -672,10 +671,7 @@ export default function PresenterBoard({
   };
 
   const eraseAlongSegment = (from, to) => {
-    const hitIds = findStrokeIdsHitByEraser(page?.strokes, { from, to, radius: eraserRadius });
-    if (hitIds.length > 0) {
-      onEraseStrokes?.(hitIds, eraserGestureRef.current?.gestureId);
-    }
+    onEraseBrush?.({ from, to, radius: eraserRadius }, eraserGestureRef.current?.gestureId);
   };
 
   const handlePointerDown = (event) => {
