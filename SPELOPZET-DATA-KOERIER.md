@@ -71,7 +71,7 @@ in de component; het spel werkt volledig zonder deze bestanden.
 | Bestand | Gebruik | Prompt-kern |
 |---|---|---|
 | `stad.webp` | Speelscene-achtergrond (Ken Burns-achtige subtiele beweging) | pastel digital city street, side-scrolling backdrop, lavender/periwinkle, no text |
-| `koerier.png` | De koerier (transparante cutout via Higgsfield background remover) | cute robot courier on hovering delivery scooter, side view facing right |
+| `koerier.png` | De koerier (transparante cutout; felle variant van 2 aug 2026 — cobalt blauw robotje, oranje/gele scooter — omdat de pastelversie wegviel tegen de stad; cutout lokaal via PIL flood-fill toen de Higgsfield-remover niet reageerde; CSS geeft een witte halo) | cute robot courier on hovering delivery scooter, BRIGHT vivid saturated colors, side view facing right |
 | `trofee.webp` | Eindscherm bij gehaalde route | golden winged delivery parcel as trophy, pastel confetti |
 | `mascotte.webp` | Startscherm/routekaart | robot courier waving next to oversized pastel keyboard |
 

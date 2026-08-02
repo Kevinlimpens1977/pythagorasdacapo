@@ -694,7 +694,7 @@ function KoerierSprite() {
       src={`${ASSETS}/koerier.png`}
       alt=""
       draggable={false}
-      className="h-16 w-16 object-contain drop-shadow-md sm:h-20 sm:w-20"
+      className="koerier-sprite h-16 w-16 object-contain sm:h-20 sm:w-20"
       onError={() => setMislukt(true)}
     />
   );
@@ -1144,6 +1144,12 @@ function KoerierStijlen() {
       .koerier-spatie { border-bottom: 3px dotted rgba(99, 102, 241, 0.6); display: inline-block; min-width: 0.6em; }
       .koerier-spatie-ok { border-bottom: 3px dotted rgba(16, 185, 129, 0.5); display: inline-block; min-width: 0.6em; }
       .koerier-spoor { transition: width 0.25s ease-out; }
+      /* Witte halo + zachte schaduw zodat de koerier loskomt van de pastelstad. */
+      .koerier-sprite {
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.95))
+                drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.9))
+                drop-shadow(0 7px 7px rgba(67, 56, 202, 0.3));
+      }
       @media (prefers-reduced-motion: reduce) {
         .koerier-zweef, .koerier-boost, .koerier-trail, .koerier-confetti, .koerier-stad,
         .koerier-doeltoets, .koerier-caret, .koerier-fout, .koerier-combo,
