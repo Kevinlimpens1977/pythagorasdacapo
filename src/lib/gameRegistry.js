@@ -14,118 +14,147 @@ export const GAME_STATUSES = {
   ACTIVE: 'active'
 };
 
+// Leeg: het eerste echte spel wordt opgebouwd volgens STARTGIDS-NIEUW-SPEL.md.
+// Voorbeeldvorm van een registry-item:
+// {
+//   gameId: 'mijn-spel',
+//   title: 'Mijn Spel',
+//   description: 'Korte omschrijving voor docenten.',
+//   subject: 'Digitale vaardigheden',
+//   topic: 'Onderwerp',
+//   level: 'VMBO leerjaar 1',
+//   learningGoals: ['...'],
+//   skills: ['...'],
+//   estimatedMinutes: 5,
+//   route: '/admin/spellen/mijn-spel',
+//   componentKey: 'mijnSpel',
+//   cmsEmbeddable: true,
+//   supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+//   tokenRewardPotential: { min: 0, max: 10, basis: 'score_accuracy_completion' },
+//   maxPlays: 0, // 0 = onbeperkt; kennisspel bijv. 3, behendigheidsspel 0
+//   status: GAME_STATUSES.PROTOTYPE
+// }
 export const GAME_REGISTRY = [
   {
-    gameId: 'pythagoras-trainer',
-    title: 'Pythagoras Trainer',
-    description: 'Speelbare trainer rond rechthoekige driehoeken, score en nauwkeurigheid.',
-    subject: 'Wiskunde',
-    topic: 'Stelling van Pythagoras',
-    level: 'VMBO-GT jaar 1',
+    gameId: 'wachtwoord-detective',
+    title: 'Wachtwoord Detective',
+    description:
+      'Kraak als detective de wachtwoorden van vier personages via hun online profiel, en leer waarom een sterk wachtwoord niets over jou mag verklappen.',
+    subject: 'Digitale vaardigheden',
+    topic: 'Veilige wachtwoorden',
+    level: 'VMBO kader-TL leerjaar 1',
     learningGoals: [
-      'Herkennen wanneer de stelling van Pythagoras gebruikt kan worden',
-      'Ontbrekende rechthoekszijde berekenen',
-      'Antwoorden controleren op realistische uitkomst'
+      'Herkennen waarom persoonlijke informatie in wachtwoorden onveilig is',
+      'Zwakke en sterke wachtwoorden van elkaar onderscheiden',
+      'Zelf een sterke wachtwoordzin samenstellen'
     ],
-    skills: ['rekenen', 'ruimtelijk inzicht', 'formule toepassen'],
+    skills: ['veilig handelen', 'kritisch denken', 'accountveiligheid'],
     estimatedMinutes: 6,
-    route: '/admin/spellen/pythagoras-trainer',
-    componentKey: 'pythagorasTrainer',
+    route: '/admin/spellen/wachtwoord-detective',
+    componentKey: 'wachtwoordDetective',
     cmsEmbeddable: true,
     supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
-    tokenRewardPotential: {
-      min: 0,
-      max: 25,
-      basis: 'score_accuracy_completion'
-    },
+    tokenRewardPotential: { min: 0, max: 100, basis: 'score_accuracy_completion' },
+    // Default speellimiet (0 = onbeperkt). Kennisspel: na 3 keer kennen ze de antwoorden.
+    // Kan per spel overschreven worden op /admin/spellen.
+    maxPlays: 3,
     status: GAME_STATUSES.PROTOTYPE
   },
   {
-    gameId: 'dv-account-escape',
-    title: 'Account Escape',
-    description: 'Speelbare schoolstart-escape rond HELIX, OneDrive, Outlook, bestanden terugvinden en veilig uitloggen.',
+    gameId: 'social-media-zoektocht',
+    title: 'Social Media Zoektocht',
+    description:
+      'Zoek-en-vindspel in drie levels plus bonuslevel: speur als digitale detective apparaten, symbolen en gevaren op in een klaslokaal, influencerkamer, social media studio en op het grote mediafestival.',
     subject: 'Digitale vaardigheden',
-    topic: 'Schoolaccount en digitale schooltas',
-    level: 'VMBO leerjaar 1',
+    topic: 'Sociale media, privacy en veilig internet',
+    level: 'VMBO basis/kader/TL leerjaar 1-2',
     learningGoals: [
-      'HELIX herkennen als startplek voor de lesroute',
-      'Schoolwerk veilig en overzichtelijk in OneDrive plaatsen',
-      'Duidelijke bestandsnamen herkennen',
-      'Outlook gebruiken voor schoolmail zonder wachtwoorden te delen',
-      'Een gedeeld apparaat veilig afsluiten'
+      'Digitale apparaten en socialmedia-symbolen herkennen',
+      'Veilig omgaan met vergrendelen, locatie delen en verdachte berichten',
+      'Signalen van phishing en nepnieuws herkennen'
     ],
-    skills: ['navigeren', 'accountveiligheid', 'bestanden organiseren', 'veilig handelen'],
-    estimatedMinutes: 5,
-    route: '/admin/spellen/dv-account-escape',
-    componentKey: 'accountEscape',
+    skills: ['waarnemen', 'veilig handelen', 'mediawijsheid'],
+    estimatedMinutes: 12,
+    route: '/admin/spellen/social-media-zoektocht',
+    componentKey: 'socialMediaZoektocht',
     cmsEmbeddable: true,
     supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
-    tokenRewardPotential: { min: 0, max: 10, basis: 'score_accuracy_completion' },
+    tokenRewardPotential: { min: 0, max: 200, basis: 'score_accuracy_completion' },
+    maxPlays: 3,
     status: GAME_STATUSES.PROTOTYPE
   },
   {
-    gameId: 'dv-password-lab',
-    title: 'Password Lab',
-    description: 'Placeholder waarin leerlingen nepwachtwoorden rangschikken van zwak naar sterk.',
+    gameId: 'turbo-typen',
+    title: 'Turbo Typen',
+    description:
+      'Sneltypspel in vijf levels: digitale woorden razen naar de firewall en jij typt ze weg. Elk level worden de woorden langer en sneller.',
     subject: 'Digitale vaardigheden',
-    topic: 'Wachtwoorden',
-    level: 'VMBO leerjaar 1',
-    learningGoals: ['Sterke wachtwoordzinnen herkennen', 'Onveilige patronen vermijden', 'Accountregels toepassen'],
-    skills: ['veilig handelen', 'classificeren'],
-    estimatedMinutes: 5,
-    route: '/admin/spellen/dv-password-lab',
-    componentKey: 'placeholder',
+    topic: 'Sneltypen en digitale woordenschat',
+    level: 'VMBO basis/kader/TL leerjaar 1-2',
+    learningGoals: [
+      'Sneller en foutloos leren typen',
+      'Digitale kernbegrippen herkennen en spellen',
+      'Onder tijdsdruk nauwkeurig blijven werken'
+    ],
+    skills: ['typvaardigheid', 'concentratie', 'digitale woordenschat'],
+    estimatedMinutes: 8,
+    route: '/admin/spellen/turbo-typen',
+    componentKey: 'turboTypen',
     cmsEmbeddable: true,
     supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
-    tokenRewardPotential: { min: 0, max: 10, basis: 'accuracy_completion' },
-    status: GAME_STATUSES.PLANNED
+    tokenRewardPotential: { min: 0, max: 200, basis: 'score_accuracy_completion' },
+    // Onbeperkt oefenen mag: de tokenopbrengst halveert server-side per beurt (replayDecay).
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
   },
-  ...[
-    ['dv-hardware-hunt', 'Hardware Hunt', 'Koppel hardware, software, invoer en uitvoer aan de juiste functie.', 'Device, hardware en software'],
-    ['dv-bestandenrace', 'Bestandenrace', 'Kies per schoolvoorbeeld de beste map en bestandsnaam.', 'Bestanden organiseren'],
-    ['dv-phishing-detective', 'Phishing Detective', 'Klik verdachte plekken aan in fictieve berichten.', 'Phishing herkennen'],
-    ['dv-schoolstart-escape', 'Schoolstart Escape', 'Los vijf kamers op: account, OneDrive, Outlook, bestanden en phishing.', 'Checkpoint veilig starten'],
-    ['dv-opmaakdokter', 'Opmaakdokter', 'Verbeter veelvoorkomende opmaakfouten in een schooldocument.', 'Word-documenten'],
-    ['dv-plagiaatpolitie', 'Plagiaatpolitie', 'Beoordeel zinnen als eigen woorden, citaat of kopie zonder bron.', 'Bronnen en plagiaat'],
-    ['dv-dia-dokter', 'Dia Dokter', 'Kies verbeteringen voor drukke of onduidelijke dia’s.', 'PowerPoint'],
-    ['dv-pitchtimer', 'Pitchtimer', 'Oefen een korte uitleg zonder alles voor te lezen.', 'Presenteren'],
-    ['dv-deelrechten-duel', 'Deelrechten Duel', 'Kies per situatie de juiste deelrechten.', 'Samenwerken met OneDrive'],
-    ['dv-microsoft-maker-challenge', 'Microsoft Maker Challenge', 'Vind fouten in document, dia, mail en deelinstelling.', 'Checkpoint Microsoft tools'],
-    ['dv-privacy-thermometer', 'Privacy Thermometer', 'Sorteer privacy-scenario’s in groen, oranje of rood.', 'Privacy'],
-    ['dv-feed-sorteerspel', 'Feed Sorteerspel', 'Stuur een fictieve feed en zie hoe keuzes aanbevelingen veranderen.', 'Social media algoritmes'],
-    ['dv-bronbattle', 'Bronbattle', 'Rangschik bronnen op betrouwbaarheid en bewijs.', 'Bronnen beoordelen'],
-    ['dv-grenzenkompas', 'Grenzenkompas', 'Kies bij online scenario’s: oké, twijfel, niet oké of hulp nodig.', 'Cyberpesten en grenzen'],
-    ['dv-webshop-inspecteur', 'Webshop Inspecteur', 'Vind signalen in fictieve webshops en bepaal veilig, twijfel of niet kopen.', 'Online shoppen'],
-    ['dv-mediawijs-boss', 'Mediawijs Boss', 'Combineer privacy, broncheck, groepschat en kooplink in één boss-level.', 'Checkpoint mediawijsheid'],
-    ['dv-tabel-tetris', 'Tabel Tetris', 'Sleep gegevens naar de juiste Excel-kolommen.', 'Excel-tabellen'],
-    ['dv-formule-fixer', 'Formule Fixer', 'Repareer foute Excel-formules.', 'Excel-formules'],
-    ['dv-grafiek-judge', 'Grafiek Judge', 'Beoordeel grafieken op duidelijkheid en eerlijkheid.', 'Grafieken'],
-    ['dv-data-spoorzoeker', 'Data Spoorzoeker', 'Volg dataspuren door een gewone schooldag.', 'Data en privacy'],
-    ['dv-claim-checker', 'Claim Checker', 'Sorteer claims in sterk bewijs, twijfel of zwak bewijs.', 'Claims en data'],
-    ['dv-dashboard-dash', 'Dashboard Dash', 'Kies de beste visualisatie bij een onderzoeksvraag.', 'Data-dashboard'],
-    ['dv-prompt-duel', 'Prompt Duel', 'Kies en verbeter prompts voor een AI-chatbot.', 'AI en prompts'],
-    ['dv-echt-nep-of-twijfel', 'Echt, nep of twijfel?', 'Verzamel bewijschecks bij AI-beelden en deepfakes.', 'AI-beelden'],
-    ['dv-algoritme-estafette', 'Algoritme Estafette', 'Leg stappenkaarten in de juiste volgorde en test het algoritme.', 'Algoritmes'],
-    ['dv-debug-sprint', 'Debug Sprint', 'Vind fouten in mini-programma’s en verbeter de stap.', 'Programmeren en debuggen'],
-    ['dv-portfolio-quest', 'Portfolio Quest', 'Verzamel bewijsstukken voor badges en herstel ontbrekende onderdelen.', 'Portfolio'],
-    ['dv-certificaat-quest-finale', 'Certificaat Quest Finale', 'Beantwoord portfoliovragen en geef feedback tijdens de eindexpo.', 'Eindexpo']
-  ].map(([gameId, title, description, topic]) => ({
-    gameId,
-    title,
-    description: `Placeholder: ${description}`,
+  {
+    gameId: 'paco-pac-man',
+    title: 'PacoPacMan',
+    description:
+      'Doolhof-arcadespel in vier levels: eet datapunten, ontwijk de virussen en beantwoord powervragen over digitale vaardigheden om de virussen op te eten. Finale met teleports en de Virus-Koning.',
     subject: 'Digitale vaardigheden',
-    topic,
-    level: 'VMBO leerjaar 1',
-    learningGoals: ['Begrippen toepassen', 'Keuzes uitleggen', 'Lesstof actief herhalen'],
-    skills: ['digitale geletterdheid', 'kritisch denken', 'feedback verwerken'],
-    estimatedMinutes: 5,
-    route: `/admin/spellen/${gameId}`,
-    componentKey: 'placeholder',
+    topic: 'De hele leerlijn: basis ICT, Office, mediawijsheid en AI',
+    level: 'VMBO basis/kader/TL leerjaar 1-2',
+    learningGoals: [
+      'Kernbegrippen uit de hele cursus herhalen in spelvorm',
+      'Sterke wachtwoorden, phishing en nepnieuws herkennen',
+      'Slim omgaan met AI, algoritmes en schermtijd'
+    ],
+    skills: ['reactievermogen', 'kennis toepassen', 'digitale geletterdheid'],
+    estimatedMinutes: 15,
+    route: '/admin/spellen/paco-pac-man',
+    componentKey: 'pacoPacMan',
     cmsEmbeddable: true,
     supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
-    tokenRewardPotential: { min: 0, max: gameId.includes('checkpoint') || gameId.includes('boss') || gameId.includes('finale') ? 20 : 10, basis: 'completion' },
-    status: GAME_STATUSES.PLANNED
-  }))
+    tokenRewardPotential: { min: 0, max: 400, basis: 'score_accuracy_completion' },
+    // Onbeperkt oefenen; tokens vervallen per beurt via replayDecay (plafond 400).
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
+  },
+  {
+    gameId: 'data-koerier',
+    title: 'Data Koerier',
+    description:
+      'Leer blind typen met tien vingers: bezorg datapakketjes door foutloos te typen. Dertien routes van basisrij tot volledige zinnen, plus een snelheids-Toprit.',
+    subject: 'Digitale vaardigheden',
+    topic: 'Blind typen met tien vingers',
+    level: 'VMBO basis/kader/TL leerjaar 1-2',
+    learningGoals: [
+      'Blind typen met de juiste vinger per toets',
+      'Eerst nauwkeurig, daarna sneller leren typen',
+      'Digitale kernwoorden en zinnen foutloos typen'
+    ],
+    skills: ['typvaardigheid', 'vingerzetting', 'concentratie'],
+    estimatedMinutes: 5,
+    route: '/admin/spellen/data-koerier',
+    componentKey: 'dataKoerier',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 200, basis: 'score_accuracy_completion' },
+    // Onbeperkt oefenen mag: de tokenopbrengst halveert server-side per beurt (replayDecay).
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
+  }
 ];
 
 export const getGameById = (gameId) => {
@@ -151,7 +180,8 @@ export const createLocalGameResult = ({
   maxScore = 0,
   startedAt,
   completedAt,
-  attemptId
+  attemptId,
+  details = null
 }) => {
   const safeMaxScore = Number(maxScore) > 0 ? Number(maxScore) : 0;
   const safeScore = Math.max(0, Number(score) || 0);
@@ -172,7 +202,10 @@ export const createLocalGameResult = ({
     timeSpentSeconds,
     startedAt: startedDate.toISOString(),
     completedAt: completedDate.toISOString(),
-    suggestedTokenReward: calculateSuggestedTokenReward(game, accuracy)
+    suggestedTokenReward: calculateSuggestedTokenReward(game, accuracy),
+    // Optionele spel-specifieke details (bijv. per-level statistieken);
+    // reizen mee naar de voortgangsopslag, server negeert onbekende velden.
+    ...(details ? { details } : {})
   };
 };
 

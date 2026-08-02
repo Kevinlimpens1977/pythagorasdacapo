@@ -113,9 +113,17 @@ const TOKEN_SHOP_LOADOUT_FIELD_BY_TYPE = {
   victoryEffect: "activeVictoryEffectId",
   titleBadge: "activeTitleBadgeId",
 };
+// Leeg: tokenregels per spel worden beheerd via /admin/spellen (tokenGameRewardRules/{gameId}).
+// Voeg hier alleen een default toe als een spel zonder Firestore-regel toch tokens moet uitkeren;
+// houd SERVER_DEFAULT_GAME_REWARD_RULES in src/lib/gameTokenRewardRules.js dan gelijk.
 const DEFAULT_GAME_TOKEN_REWARD_RULES = {
-  "pythagoras-trainer": { enabled: true, min: 0, max: 25, basis: "score_accuracy_completion" },
-  "dv-account-escape": { enabled: true, min: 0, max: 10, basis: "score_accuracy_completion" },
+  "wachtwoord-detective": { enabled: true, min: 0, max: 100, basis: "score_accuracy_completion" },
+  "social-media-zoektocht": { enabled: true, min: 0, max: 200, basis: "score_accuracy_completion" },
+  // replayDecay: elke volgende beurt levert dit deel van de vorige opbrengst op,
+  // met `max` als totaalplafond per leerling. Zo blijft oefenen leuk zonder tokenfarmen.
+  "turbo-typen": { enabled: true, min: 0, max: 200, basis: "score_accuracy_completion", replayDecay: 0.5 },
+  "paco-pac-man": { enabled: true, min: 0, max: 400, basis: "score_accuracy_completion", replayDecay: 0.5 },
+  "data-koerier": { enabled: true, min: 0, max: 200, basis: "score_accuracy_completion", replayDecay: 0.5 },
 };
 
 function cleanIdPart(value = "") {
@@ -223,10 +231,13 @@ function normalizeGameRewardRule(data = {}) {
   const max = normalizeNonNegativeInteger(data.max ?? data.maxTokens, 0);
   if (max <= 0) return null;
 
+  const decay = Number(data.replayDecay);
+
   return {
     min: Math.min(max, normalizeNonNegativeInteger(data.min ?? data.minTokens, 0)),
     max,
     basis: String(data.basis || "completion").trim(),
+    replayDecay: Number.isFinite(decay) && decay > 0 && decay < 1 ? decay : null,
   };
 }
 
@@ -239,8 +250,7 @@ async function getGameRewardRule(db, gameId) {
   return normalizeGameRewardRule(DEFAULT_GAME_TOKEN_REWARD_RULES[gameId]);
 }
 
-async function getAwardAmountForGame({ db, gameId, result = {} }) {
-  const rule = await getGameRewardRule(db, gameId);
+function computeGameAwardAmount(rule, result = {}) {
   if (!rule) return 0;
 
   const accuracy = clampPercentage(result.accuracy ?? result.percentage);
@@ -1860,6 +1870,7 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
   let sourceVersion = String(data.sourceVersion || "").trim();
   let amount = 0;
   let sourceTitle = String(data.sourceTitle || "").trim();
+  let gameRule = null;
 
   if (sourceKind === "contentBlock" || sourceKind === "question") {
     const contentPath = sourceKind === "contentBlock" ? `publicContentBlocks/${sourceId}` : `publicQuestions/${sourceId}`;
@@ -1869,7 +1880,8 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     sourceTitle = sourceTitle || contentDoc.data.title || contentDoc.data.content?.title || "";
   } else if (sourceKind === "game") {
     sourceVersion = sourceVersion || "v1";
-    amount = await getAwardAmountForGame({ db, gameId: sourceId, result });
+    gameRule = await getGameRewardRule(db, sourceId);
+    amount = computeGameAwardAmount(gameRule, result);
   }
 
   if (amount <= 0) {
@@ -1889,6 +1901,16 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
   const claimRef = db.doc(`tokenAwardClaims/${claimId}`);
   const transactionRef = getTransactionRef(db, `earn_${claimId}`);
 
+  const source = {
+    kind: sourceKind,
+    id: sourceId,
+    version: sourceVersion,
+    title: sourceTitle,
+    paragraafId: String(data.paragraafId || "").trim(),
+    blockId: String(data.blockId || "").trim(),
+    gameId: String(data.gameId || (sourceKind === "game" ? sourceId : "")).trim(),
+  };
+
   return runDbTransaction(db, async (transaction) => {
     const [accountSnapshot, claimSnapshot] = await Promise.all([
       transaction.get(accountRef),
@@ -1897,19 +1919,48 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
 
     if (claimSnapshot.exists) {
-      return { awarded: false, amount: 0, balance: account.balance, reason: "already-awarded" };
+      const decay = gameRule?.replayDecay;
+      if (!decay) {
+        return { awarded: false, amount: 0, balance: account.balance, reason: "already-awarded" };
+      }
+
+      // Herhaalbeurt met verval: elke beurt levert decay^beurten van het basisbedrag op,
+      // tot het totaalplafond (rule.max) per leerling bereikt is.
+      const claim = claimSnapshot.data() || {};
+      const plays = Math.max(1, normalizeNonNegativeInteger(claim.plays, 1));
+      const totalAwarded = normalizeNonNegativeInteger(claim.totalAwarded ?? claim.amount, 0);
+      const vervallenBedrag = Math.round(amount * Math.pow(decay, plays));
+      const beschikbaar = Math.max(0, gameRule.max - totalAwarded);
+      const herhaalBedrag = Math.max(0, Math.min(vervallenBedrag, beschikbaar));
+
+      if (herhaalBedrag <= 0) {
+        return { awarded: false, amount: 0, balance: account.balance, reason: "replay-limit" };
+      }
+
+      const nextAccount = buildBalancePatch(account, herhaalBedrag, TOKEN_TRANSACTION_TYPES.EARN, timestamp);
+      const herhaalTransactionRef = getTransactionRef(db, `earn_${claimId}_p${plays + 1}`);
+
+      transaction.set(accountRef, nextAccount, { merge: true });
+      transaction.set(herhaalTransactionRef, {
+        studentUid: auth.uid,
+        type: TOKEN_TRANSACTION_TYPES.EARN,
+        amount: herhaalBedrag,
+        source,
+        reason: "activity-replay",
+        createdBy: auth.uid,
+        createdAt: timestamp,
+        balanceAfter: nextAccount.balance,
+      });
+      transaction.set(claimRef, {
+        plays: plays + 1,
+        totalAwarded: totalAwarded + herhaalBedrag,
+        updatedAt: timestamp,
+      }, { merge: true });
+
+      return { awarded: true, amount: herhaalBedrag, balance: nextAccount.balance };
     }
 
     const nextAccount = buildBalancePatch(account, amount, TOKEN_TRANSACTION_TYPES.EARN, timestamp);
-    const source = {
-      kind: sourceKind,
-      id: sourceId,
-      version: sourceVersion,
-      title: sourceTitle,
-      paragraafId: String(data.paragraafId || "").trim(),
-      blockId: String(data.blockId || "").trim(),
-      gameId: String(data.gameId || (sourceKind === "game" ? sourceId : "")).trim(),
-    };
     const transactionData = {
       studentUid: auth.uid,
       type: TOKEN_TRANSACTION_TYPES.EARN,
@@ -1926,6 +1977,8 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     transaction.set(claimRef, {
       studentUid: auth.uid,
       amount,
+      plays: 1,
+      totalAwarded: amount,
       source,
       transactionId: transactionRef.path.split("/").at(-1),
       createdAt: timestamp,

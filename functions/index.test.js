@@ -243,16 +243,17 @@ test("awardTokensForActivity awards configured tokens once per source version", 
   assert.equal(Object.keys(db.store.docs).filter((path) => path.startsWith("tokenTransactions/")).length, 1);
 });
 
-test("awardTokensForActivity caps game rewards by the server registry", async () => {
+test("awardTokensForActivity caps game rewards by the configured reward rule", async () => {
   const db = createDb({
     "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenGameRewardRules/demo-spel": { enabled: true, min: 0, max: 10, basis: "score_accuracy_completion" },
   });
 
   const result = await __test.awardTokensForActivityCore({
     auth: { uid: "student-1" },
     data: {
       sourceKind: "game",
-      sourceId: "dv-account-escape",
+      sourceId: "demo-spel",
       sourceVersion: "run-1",
       tokens: 999,
       result: { completed: true, passed: true, accuracy: 100 },
@@ -263,6 +264,89 @@ test("awardTokensForActivity caps game rewards by the server registry", async ()
 
   assert.deepEqual(result, { awarded: true, amount: 10, balance: 10 });
   assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 10);
+});
+
+test("awardTokensForActivity halves replay rewards and respects the total cap", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenGameRewardRules/turbo-demo": {
+      enabled: true, min: 0, max: 200, basis: "score_accuracy_completion", replayDecay: 0.5,
+    },
+  });
+
+  const speel = () => __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: {
+      sourceKind: "game",
+      sourceId: "turbo-demo",
+      sourceVersion: "blok-1",
+      result: { completed: true, passed: true, accuracy: 100 },
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  const eerste = await speel();
+  assert.deepEqual(eerste, { awarded: true, amount: 200, balance: 200 });
+
+  const tweede = await speel();
+  assert.deepEqual(tweede, { awarded: false, amount: 0, balance: 200, reason: "replay-limit" });
+});
+
+test("awardTokensForActivity replay decay pays out until the cap is reached", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenGameRewardRules/turbo-demo": {
+      enabled: true, min: 0, max: 200, basis: "score_accuracy_completion", replayDecay: 0.5,
+    },
+  });
+
+  const speel = (accuracy) => __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: {
+      sourceKind: "game",
+      sourceId: "turbo-demo",
+      sourceVersion: "blok-1",
+      result: { completed: true, passed: true, accuracy },
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  // Beurt 1: 50% accuracy -> 100 tokens.
+  assert.deepEqual(await speel(50), { awarded: true, amount: 100, balance: 100 });
+  // Beurt 2: helft van het basisbedrag (0.5 x 200) -> 100; totaal raakt het plafond van 200.
+  assert.deepEqual(await speel(100), { awarded: true, amount: 100, balance: 200 });
+  // Beurt 3: plafond bereikt.
+  const derde = await speel(100);
+  assert.equal(derde.awarded, false);
+  assert.equal(derde.reason, "replay-limit");
+
+  const claim = db.store.docs["tokenAwardClaims/student-1_game_turbo-demo_blok-1"];
+  assert.equal(claim.plays, 2);
+  assert.equal(claim.totalAwarded, 200);
+  const ledger = Object.keys(db.store.docs).filter((path) => path.startsWith("tokenTransactions/"));
+  assert.equal(ledger.length, 2, "elke uitbetaalde beurt krijgt een eigen grootboekregel");
+});
+
+test("awardTokensForActivity awards nothing for a game without reward rule", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: {
+      sourceKind: "game",
+      sourceId: "spel-zonder-regel",
+      sourceVersion: "run-1",
+      result: { completed: true, passed: true, accuracy: 100 },
+    },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(result, { awarded: false, amount: 0, balance: 0, reason: "no-token-value" });
 });
 
 test("purchaseTokenShopItem atomically spends tokens and records purchase snapshot", async () => {

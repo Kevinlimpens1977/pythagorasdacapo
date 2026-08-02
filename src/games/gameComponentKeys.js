@@ -1,6 +1,9 @@
 export const GAME_COMPONENT_KEYS = {
-  PYTHAGORAS_TRAINER: 'pythagorasTrainer',
-  ACCOUNT_ESCAPE: 'accountEscape'
+  WACHTWOORD_DETECTIVE: 'wachtwoordDetective',
+  SOCIAL_MEDIA_ZOEKTOCHT: 'socialMediaZoektocht',
+  TURBO_TYPEN: 'turboTypen',
+  PACO_PAC_MAN: 'pacoPacMan',
+  DATA_KOERIER: 'dataKoerier'
 };
 
 export const PLAYABLE_GAME_COMPONENT_KEYS = Object.values(GAME_COMPONENT_KEYS);

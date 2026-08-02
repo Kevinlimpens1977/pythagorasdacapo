@@ -9,9 +9,25 @@ import {
   isSerializableGameRegistryItem
 } from './gameRegistry.js';
 
-test('game registry contains serializable metadata only', () => {
-  assert.equal(GAME_REGISTRY.length > 0, true);
+const demoGame = {
+  gameId: 'demo-spel',
+  title: 'Demo Spel',
+  description: 'Testfixture.',
+  subject: 'Digitale vaardigheden',
+  topic: 'Demo',
+  level: 'VMBO leerjaar 1',
+  learningGoals: ['Doel 1'],
+  skills: ['vaardigheid'],
+  estimatedMinutes: 5,
+  route: '/admin/spellen/demo-spel',
+  componentKey: 'demoSpel',
+  cmsEmbeddable: true,
+  supportedModes: ['standalone', 'cmsBlock'],
+  tokenRewardPotential: { min: 0, max: 25, basis: 'score_accuracy_completion' },
+  status: 'prototype'
+};
 
+test('game registry bevat alleen serialiseerbare metadata', () => {
   for (const game of GAME_REGISTRY) {
     assert.equal(isSerializableGameRegistryItem(game), true);
     assert.equal(typeof game.componentKey, 'string');
@@ -23,17 +39,14 @@ test('game registry contains serializable metadata only', () => {
   }
 });
 
-test('cms embeddable game list only returns games that support cmsBlock mode', () => {
-  const games = getCmsEmbeddableGames();
-
-  assert.equal(games.length > 0, true);
-  assert.equal(games.every((game) => game.supportedModes.includes('cmsBlock')), true);
+test('lookup-helpers geven null of lege lijst bij onbekende of ontbrekende games', () => {
+  assert.equal(getGameById('bestaat-niet'), null);
+  assert.equal(getCmsEmbeddableGames().every((game) => game.supportedModes.includes('cmsBlock')), true);
 });
 
-test('createLocalGameResult produces the required V1 result contract without Firebase', () => {
-  const game = getGameById('pythagoras-trainer');
+test('createLocalGameResult levert het vaste resultaatcontract zonder Firebase', () => {
   const result = createLocalGameResult({
-    game,
+    game: demoGame,
     context: {
       mode: 'standalone',
       resultHandling: GAME_RESULT_HANDLING.LOCAL_ONLY
@@ -47,7 +60,7 @@ test('createLocalGameResult produces the required V1 result contract without Fir
 
   assert.deepEqual(result, {
     attemptId: 'attempt-test-1',
-    gameId: 'pythagoras-trainer',
+    gameId: 'demo-spel',
     studentId: undefined,
     lessonId: undefined,
     blockId: undefined,
@@ -61,25 +74,17 @@ test('createLocalGameResult produces the required V1 result contract without Fir
   });
 });
 
-test('Pythagoras Trainer can be selected as a CMS game block', () => {
-  const pythagorasTrainer = getGameById('pythagoras-trainer');
+test('createLocalGameResult klemt score en behandelt maxScore 0 veilig', () => {
+  const result = createLocalGameResult({
+    game: demoGame,
+    context: {},
+    score: -3,
+    maxScore: 0,
+    startedAt: '2026-05-19T10:00:00.000Z',
+    completedAt: '2026-05-19T10:00:10.000Z'
+  });
 
-  assert.equal(pythagorasTrainer.cmsEmbeddable, true);
-  assert.equal(pythagorasTrainer.supportedModes.includes('cmsBlock'), true);
-});
-
-test('GO 2B marks Pythagoras Trainer as the first playable prototype', () => {
-  const pythagorasTrainer = getGameById('pythagoras-trainer');
-
-  assert.equal(pythagorasTrainer.componentKey, 'pythagorasTrainer');
-  assert.equal(pythagorasTrainer.status, 'prototype');
-});
-
-test('Account Escape is available as a playable digitale vaardigheden prototype', () => {
-  const accountEscape = getGameById('dv-account-escape');
-
-  assert.equal(accountEscape.componentKey, 'accountEscape');
-  assert.equal(accountEscape.status, 'prototype');
-  assert.equal(accountEscape.cmsEmbeddable, true);
-  assert.equal(accountEscape.supportedModes.includes('cmsBlock'), true);
+  assert.equal(result.score, 0);
+  assert.equal(result.accuracy, 0);
+  assert.equal(result.suggestedTokenReward, 0);
 });

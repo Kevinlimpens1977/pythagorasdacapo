@@ -1,10 +1,13 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDocs,
   limit,
   onSnapshot,
   query,
+  serverTimestamp,
+  setDoc,
   where
 } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -140,6 +143,46 @@ export const fetchTokenAccounts = async () => {
 export const fetchTokenPurchases = async () => {
   const snapshot = await getDocs(collection(db, 'tokenPurchases'));
   return sortByNewest(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
+};
+
+export const subscribeGameTokenRewardRules = (onNext, onError) => (
+  onSnapshot(
+    collection(db, 'tokenGameRewardRules'),
+    (snapshot) => onNext?.(Object.fromEntries(snapshot.docs.map((item) => [item.id, { id: item.id, ...item.data() }]))),
+    onError
+  )
+);
+
+export const saveGameTokenRewardRule = async (gameId, rule) => {
+  const cleanGameId = String(gameId || '').trim();
+  if (!cleanGameId) {
+    throw new Error('gameId is verplicht.');
+  }
+
+  const max = Math.max(0, Math.round(Number(rule?.max) || 0));
+  const min = Math.max(0, Math.min(max, Math.round(Number(rule?.min) || 0)));
+  const rawMaxPlays = Math.round(Number(rule?.maxPlays));
+  const maxPlays = Number.isFinite(rawMaxPlays) && rawMaxPlays > 0 ? Math.min(5, rawMaxPlays) : 0;
+  const payload = {
+    enabled: rule?.enabled !== false,
+    min,
+    max,
+    basis: String(rule?.basis || 'completion').trim() || 'completion',
+    maxPlays,
+    updatedAt: serverTimestamp()
+  };
+
+  await setDoc(doc(db, 'tokenGameRewardRules', cleanGameId), payload, { merge: true });
+  return { gameId: cleanGameId, ...payload };
+};
+
+export const deleteGameTokenRewardRule = async (gameId) => {
+  const cleanGameId = String(gameId || '').trim();
+  if (!cleanGameId) {
+    throw new Error('gameId is verplicht.');
+  }
+
+  await deleteDoc(doc(db, 'tokenGameRewardRules', cleanGameId));
 };
 
 export const awardTokensForActivity = async (payload) => {

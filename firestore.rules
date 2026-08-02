@@ -287,6 +287,14 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Per-spel instellingen (tokenbeloning + speellimiet).
+    // Leerlingen mogen lezen zodat de speellimiet client-side kan worden gehandhaafd;
+    // muteren blijft admin-only.
+    match /tokenGameRewardRules/{gameId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
     // Leerling-foutmeldingen.
     // Leerlingen mogen alleen eigen meldingen aanmaken en teruglezen voor rate limiting.
     // Moderatie, status en adminnotities blijven admin-only.

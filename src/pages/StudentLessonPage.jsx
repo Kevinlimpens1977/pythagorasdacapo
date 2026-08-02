@@ -28,8 +28,10 @@ import * as voortgangService from '../services/voortgangService';
 import {
   awardTokensForActivity,
   subscribeActiveTokenShopItems,
+  subscribeGameTokenRewardRules,
   subscribeStudentTokenLoadout
 } from '../services/tokenService';
+import { getEffectiveMaxPlays, getPlayAccess } from '../lib/gameTokenRewardRules';
 import {
   buildVictoryEffectPlayback,
   createVictoryStreakState,
@@ -76,7 +78,7 @@ import MediaRenderer from '../components/media/MediaRenderer';
 import AITutorChat from '../components/slides/AITutorChat';
 import { useStudentBugReportContext } from '../components/studentBugReports/StudentBugReportContext';
 import { askAiTutorCall, assessOpenAnswerCall } from '../lib/api';
-import { GAME_RESULT_HANDLING } from '../lib/gameRegistry';
+import { GAME_RESULT_HANDLING, getGameById } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
 import { evaluateCalculatorExpression } from '../lib/calculatorEvaluator';
@@ -160,6 +162,7 @@ export default function StudentLessonPage() {
   const [victoryPlayback, setVictoryPlayback] = useState(null);
   const [rewardLoadout, setRewardLoadout] = useState({ activePinIds: [] });
   const [rewardItems, setRewardItems] = useState([]);
+  const [gameRewardRules, setGameRewardRules] = useState({});
   const victoryStreakRef = useRef(createVictoryStreakState());
   const victoryDoneRef = useRef(null);
   const skipNextAiTutorSaveRef = useRef(false);
@@ -180,6 +183,10 @@ export default function StudentLessonPage() {
       subscribeActiveTokenShopItems(
         setRewardItems,
         (subscribeError) => console.warn('Shopcatalogus niet geladen voor victory-effect:', subscribeError)
+      ),
+      subscribeGameTokenRewardRules(
+        setGameRewardRules,
+        (subscribeError) => console.warn('Spelinstellingen niet geladen:', subscribeError)
       )
     ];
 
@@ -743,8 +750,12 @@ export default function StudentLessonPage() {
                 onAiTutorMessagesChange={setAiTutorMessages}
                 onAiTutorDraftInputChange={setCurrentAiTutorDraftInput}
                 onOpenSlidedeck={setActiveSlidedeck}
+                gameRewardRules={gameRewardRules}
                 onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
-                onGameComplete={(result) => saveBlockProgress(currentBlock, true, { lastAnswer: result })}
+                onGameComplete={(result) => {
+                  const prevCount = Number(getBlockProgressRecord(currentBlock?.id)?.gamePlayCount) || 0;
+                  saveBlockProgress(currentBlock, true, { lastAnswer: result, gamePlayCount: prevCount + 1 });
+                }}
                 onAutoAdvance={advanceToNextStep}
               />
             )}
@@ -801,6 +812,7 @@ function LessonBlockContent({
   onAiTutorMessagesChange,
   onAiTutorDraftInputChange,
   onOpenSlidedeck,
+  gameRewardRules,
   onSaveProgress,
   onGameComplete,
   onAutoAdvance
@@ -836,7 +848,13 @@ function LessonBlockContent({
 
       <div className="mt-8">
         {block.type === 'game' ? (
-          <GameBlock block={block} onComplete={onGameComplete} />
+          <GameBlock
+            block={block}
+            gameRewardRules={gameRewardRules}
+            playCount={Number(progressRecord?.gamePlayCount) || 0}
+            lastResult={progressRecord?.lastAnswer || null}
+            onComplete={onGameComplete}
+          />
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
         ) : block.type === 'quiz' || block.type === 'toets' ? (
@@ -2713,7 +2731,7 @@ function ExerciseLearningBlock({ block, bodyHtml, progressRecord, onSaveProgress
   );
 }
 
-function GameBlock({ block, onComplete }) {
+function GameBlock({ block, gameRewardRules = {}, playCount = 0, lastResult = null, onComplete }) {
   const gameId = block.content?.gameId || '';
 
   if (!gameId) {
@@ -2725,6 +2743,10 @@ function GameBlock({ block, onComplete }) {
     );
   }
 
+  const registryDefaultMaxPlays = getGameById(gameId)?.maxPlays;
+  const maxPlays = getEffectiveMaxPlays(gameId, gameRewardRules, registryDefaultMaxPlays);
+  const access = getPlayAccess(maxPlays, playCount);
+
   return (
     <div className="space-y-5">
       {block.content?.html && (
@@ -2733,16 +2755,39 @@ function GameBlock({ block, onComplete }) {
           dangerouslySetInnerHTML={htmlValue(block.content.html)}
         />
       )}
-      <GamePlayer
-        gameId={gameId}
-        context={{
-          mode: 'cmsBlock',
-          resultHandling: GAME_RESULT_HANDLING.LOCAL_ONLY,
-          blockId: block.id,
-          lessonId: block.paragraafId
-        }}
-        onResult={onComplete}
-      />
+
+      {!access.unlimited && access.canPlay && (
+        <p className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-4 py-3 text-sm font-bold text-[var(--helix-muted)]">
+          Je mag dit spel nog {access.remaining} van de {access.limit} keer spelen.
+        </p>
+      )}
+
+      {access.canPlay ? (
+        <GamePlayer
+          gameId={gameId}
+          context={{
+            mode: 'cmsBlock',
+            resultHandling: GAME_RESULT_HANDLING.LOCAL_ONLY,
+            blockId: block.id,
+            lessonId: block.paragraafId
+          }}
+          onResult={onComplete}
+        />
+      ) : (
+        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-6 text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-2xl">🎯</span>
+          <h3 className="mt-4 text-xl font-black text-[var(--helix-navy)]">Je hebt dit spel uitgespeeld</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--helix-muted)]">
+            Je hebt {block.content?.gameTitle || 'dit spel'} {access.limit} keer gespeeld. Je tokens zijn al toegekend.
+            Je kunt gewoon verder met de volgende stap.
+          </p>
+          {lastResult?.maxScore > 0 && (
+            <p className="mt-3 text-sm font-black text-[var(--helix-navy)]">
+              Beste weergave: {lastResult.score} van {lastResult.maxScore} ({lastResult.accuracy}%)
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

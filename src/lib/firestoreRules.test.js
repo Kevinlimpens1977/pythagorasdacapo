@@ -101,3 +101,10 @@ test('firestore rules let students read active shop items while catalog manageme
   assert.match(block, /resource\.data\.enabled == true/);
   assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
 });
+
+test('firestore rules let students read game settings but keep writes admin-only', () => {
+  const block = getRuleBlock('match /tokenGameRewardRules/{gameId}');
+
+  assert.match(block, /allow read: if signedIn\(\)/);
+  assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
+});

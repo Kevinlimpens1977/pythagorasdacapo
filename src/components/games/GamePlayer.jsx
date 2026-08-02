@@ -64,14 +64,15 @@ export default function GamePlayer({
     onResult?.(result);
   };
 
-  const handleCompleteGame = ({ score, maxScore, startedAt: gameStartedAt, completedAt }) => {
+  const handleCompleteGame = ({ score, maxScore, startedAt: gameStartedAt, completedAt, details }) => {
     const result = createLocalGameResult({
       game,
       context: normalizedContext,
       score,
       maxScore,
       startedAt: gameStartedAt || startedAt || new Date().toISOString(),
-      completedAt: completedAt || new Date().toISOString()
+      completedAt: completedAt || new Date().toISOString(),
+      details
     });
 
     setLastResult(result);
