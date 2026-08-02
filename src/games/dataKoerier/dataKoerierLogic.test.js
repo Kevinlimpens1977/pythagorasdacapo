@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ACCURACY_BONUS_HOOG,
+  buildIntroStappen,
+  buildIntroVoorleesTekst,
+  introStapDuurMs,
   ACCURACY_BONUS_MIDDEN,
   berekenAccuracy,
   berekenAccuracyBonus,
@@ -300,6 +303,38 @@ test('details blijven compact en zonder ruwe aanslagen', () => {
   assert.deepEqual(details.zwaksteToetsen, ['r']);
   assert.equal(details.record, true);
   assert.equal(Object.prototype.hasOwnProperty.call(details, 'perToets'), false);
+});
+
+test('introstappen: thuisrij eerst, elke nieuwe toets een stap, tip als laatste', () => {
+  const route = { nummer: 2, titel: 'Test', tip: 'Doe rustig aan.', nieuweToetsen: ['a', 's', 'g'] };
+  const stappen = buildIntroStappen(route, vingerInstructie);
+  assert.equal(stappen[0].soort, 'thuisrij');
+  assert.deepEqual(stappen.slice(1, 4).map((s) => s.toets), ['a', 's', 'g']);
+  assert.match(stappen[1].tekst, /linkerpink/);
+  assert.equal(stappen.at(-1).soort, 'tip');
+  assert.equal(stappen.at(-1).tekst, 'Doe rustig aan.');
+});
+
+test('introstappen: route 7 krijgt een shift-stap met hoofdletter-doel', () => {
+  const route = { nummer: 7, titel: 'Hoofdletters', tip: 'Tip.', nieuweToetsen: [] };
+  const stappen = buildIntroStappen(route, vingerInstructie);
+  const shiftStap = stappen.find((s) => s.id === 'shift');
+  assert.ok(shiftStap);
+  assert.equal(shiftStap.toets, 'A');
+  assert.match(shiftStap.tekst, /pink van je andere hand/);
+});
+
+test('voorleestekst is de aaneenschakeling van de stappen', () => {
+  const route = { nummer: 1, titel: 'Start', tip: 'Tip.', nieuweToetsen: ['f'] };
+  const stappen = buildIntroStappen(route, vingerInstructie);
+  assert.equal(buildIntroVoorleesTekst(route, vingerInstructie), stappen.map((s) => s.tekst).join(' '));
+});
+
+test('introstapduur schaalt met tekstlengte binnen grenzen', () => {
+  assert.equal(introStapDuurMs({ tekst: 'kort' }), 3200);
+  assert.equal(introStapDuurMs({ tekst: 'x'.repeat(500) }), 9000);
+  const middel = introStapDuurMs({ tekst: 'x'.repeat(100) });
+  assert.ok(middel > 3200 && middel < 9000);
 });
 
 test('verbetertip kiest zwakste toets, dan accuracy, dan ritme', () => {

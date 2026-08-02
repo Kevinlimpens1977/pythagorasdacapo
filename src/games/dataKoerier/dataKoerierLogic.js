@@ -2,7 +2,7 @@
 // Score-ontwerp: nauwkeurigheid boven snelheid. Een teken dat in één keer goed
 // gaat levert meer op dan een teken na een fout; snelheid geeft alleen bonus
 // in de Toprit en nooit onder de accuracy-drempel.
-import { basisToetsVoor } from './dataKoerierToetsenbord.js';
+import { basisToetsVoor, TOETS_LABELS } from './dataKoerierToetsenbord.js';
 
 export const PUNTEN_EERSTE_KEER = 10;
 export const PUNTEN_NA_FOUT = 5;
@@ -337,23 +337,76 @@ export const buildDetails = ({ routeId, routeTitel, eindresultaat, isRecord }) =
   zwaksteToetsen: eindresultaat.zwaksteToetsen.map((item) => item.toets)
 });
 
-const TOETS_NAMEN = {
-  ' ': 'de spatiebalk',
-  ';': 'de puntkomma',
-  ',': 'de komma',
-  '.': 'de punt',
-  '/': 'de schuine streep',
-  '?': 'het vraagteken',
-  '!': 'het uitroepteken',
-  '@': 'het apenstaartje'
+export const toetsWeergaveNaam = (toets) => (
+  TOETS_LABELS[toets] || `de ${String(toets).toUpperCase()}`
+);
+
+// --- Instructiestappen (uitleg voor elke route) -----------------------------
+
+const THUISRIJ_TEKST = 'Leg je vingers op de thuisrij: linkerhand op A, S, D en F, rechterhand op J, K, L en de puntkomma. Je duimen zweven boven de spatiebalk. Voel de richeltjes op de F en de J: zo weet je zonder kijken waar je zit.';
+
+// Bouwt de uitlegstappen voor het introscherm van een route. Puur en
+// gegarandeerd correct: gebruikt dezelfde vingerkaart als het spel zelf.
+// vingerInstructieVoor = vingerInstructie uit dataKoerierToetsenbord.js.
+export const buildIntroStappen = (route, vingerInstructieVoor) => {
+  const stappen = [{
+    id: 'thuisrij',
+    soort: 'thuisrij',
+    titel: 'Handen klaar',
+    tekst: THUISRIJ_TEKST
+  }];
+
+  (route.nieuweToetsen || []).forEach((toets) => {
+    const instructie = vingerInstructieVoor ? vingerInstructieVoor(toets) : null;
+    const naam = toetsWeergaveNaam(toets);
+    stappen.push({
+      id: `toets-${toets}`,
+      soort: 'toets',
+      toets,
+      titel: naam.charAt(0).toUpperCase() + naam.slice(1),
+      tekst: instructie
+        ? `Typ ${instructie}. Veer daarna meteen terug naar de thuisrij.`
+        : `Typ ${naam} en veer terug naar de thuisrij.`
+    });
+  });
+
+  if (route.nummer === 7) {
+    stappen.push({
+      id: 'shift',
+      soort: 'toets',
+      toets: 'A',
+      titel: 'Shift: twee handen',
+      tekst: 'Hoofdletters maak je met twee handen. Houd Shift ingedrukt met de pink van je andere hand, en tik dan pas de letter. Voor een hoofdletter A: rechterpink op Shift, linkerpink op de A.'
+    });
+  }
+
+  stappen.push({
+    id: 'tip',
+    soort: 'tip',
+    titel: 'Klaar voor de start',
+    tekst: route.tip || 'Typ rustig en foutloos. Snelheid komt vanzelf.'
+  });
+
+  return stappen;
 };
+
+// De voorleestekst is exact de aaneenschakeling van de stappen, zodat
+// mp3-voiceover en browser-spraak altijd hetzelfde vertellen als het scherm.
+export const buildIntroVoorleesTekst = (route, vingerInstructieVoor) => (
+  buildIntroStappen(route, vingerInstructieVoor).map((stap) => stap.tekst).join(' ')
+);
+
+// Leesduur per stap: lang genoeg om mee te lezen, kort genoeg om vaart te houden.
+export const introStapDuurMs = (stap) => (
+  Math.max(3200, Math.min(9000, stap.tekst.length * 62))
+);
 
 // Eén concrete verbetertip op basis van het resultaat.
 export const bepaalVerbeterTip = (eindresultaat, vingerInstructieVoor) => {
   const zwakste = eindresultaat.zwaksteToetsen[0] || null;
   if (zwakste) {
     const instructie = vingerInstructieVoor ? vingerInstructieVoor(zwakste.toets) : null;
-    const toetsLabel = TOETS_NAMEN[zwakste.toets] || `de ${zwakste.toets.toUpperCase()}`;
+    const toetsLabel = toetsWeergaveNaam(zwakste.toets);
     return instructie
       ? `Let extra op ${toetsLabel}: ${instructie}. Kijk naar het scherm, niet naar je handen.`
       : `Let extra op ${toetsLabel}. Kijk naar het scherm, niet naar je handen.`;

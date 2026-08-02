@@ -40,6 +40,18 @@ export const TOETS_VINGER = {
 // Tekens die met Shift gemaakt worden -> basistoets waarop ze liggen.
 export const SHIFT_TEKENS = { '?': '/', '!': '1', '@': '2' };
 
+// Spreeknamen voor niet-lettertekens (voor hints, tips en voiceover).
+export const TOETS_LABELS = {
+  ' ': 'de spatiebalk',
+  ';': 'de puntkomma',
+  ',': 'de komma',
+  '.': 'de punt',
+  '/': 'de schuine streep',
+  '?': 'het vraagteken',
+  '!': 'het uitroepteken',
+  '@': 'het apenstaartje'
+};
+
 export const HOME_TOETSEN = ['a', 's', 'd', 'f', 'j', 'k', 'l', ';'];
 export const VOELRAND_TOETSEN = ['f', 'j'];
 
@@ -78,13 +90,13 @@ export const shiftHandVoor = (teken) => {
   return vinger.hand === HANDEN.LINKS ? HANDEN.RECHTS : HANDEN.LINKS;
 };
 
-// Korte vingerinstructie voor de hint-balk, bijv. "R met je linkerwijsvinger".
+// Korte vingerinstructie voor de hint-balk, bijv. "de R met je linkerwijsvinger".
 export const vingerInstructie = (teken) => {
   const vingerId = vingerVoor(teken);
   if (!vingerId) return null;
   const vinger = VINGERS[vingerId];
   const shiftHand = shiftHandVoor(teken);
-  const toetsLabel = teken === ' ' ? 'spatie' : String(teken);
+  const toetsLabel = TOETS_LABELS[teken] || `de ${String(teken).toUpperCase()}`;
   const basis = `${toetsLabel} met je ${vinger.label}`;
   if (!shiftHand) return basis;
   return `${basis}, Shift met je ${shiftHand === HANDEN.LINKS ? 'linker' : 'rechter'}pink`;

@@ -1,10 +1,14 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, Lock, Package, Timer, Volume2, VolumeX, X, Zap } from 'lucide-react';
 import { SERVER_DEFAULT_GAME_REWARD_RULES } from '../../lib/gameTokenRewardRules';
+import { startIntroSpraak } from './dataKoerierSpraak';
 import {
   berekenAccuracy,
   bepaalRouteStatussen,
   bepaalVerbeterTip,
+  buildIntroStappen,
+  buildIntroVoorleesTekst,
+  introStapDuurMs,
   bepaalZwaksteToetsen,
   buildDetails,
   buildEindresultaat,
@@ -46,7 +50,7 @@ import {
 } from './dataKoerierSounds';
 import { bewaarGeluidAan, leesGeluidAan, leesVoortgang, registreerResultaat } from './dataKoerierVoortgang';
 
-const FASEN = { START: 'start', SPELEN: 'spelen', KLAAR: 'klaar' };
+const FASEN = { START: 'start', INTRO: 'intro', SPELEN: 'spelen', KLAAR: 'klaar' };
 const ASSETS = '/games/data-koerier';
 const MAX_DRILLS_PER_SESSIE = 2;
 const MAX_AARZEL_MS = 4000;
@@ -185,9 +189,16 @@ export default function DataKoerierGame({ onStart, onComplete }) {
     setEind(null);
     setVerstrekenSec(0);
     setStartedAt(timestamp);
-    startTijdRef.current = Date.now();
+    startTijdRef.current = null;
     laatsteToetsRef.current = null;
     onStart?.(timestamp);
+    setFase(FASEN.INTRO);
+  };
+
+  // Van de uitleg naar het echte typen; de WPM-klok start pas hier.
+  const startRit = () => {
+    startTijdRef.current = Date.now();
+    laatsteToetsRef.current = null;
     setFase(FASEN.SPELEN);
   };
 
@@ -468,6 +479,15 @@ export default function DataKoerierGame({ onStart, onComplete }) {
           />
         )}
 
+        {fase === FASEN.INTRO && gekozenRoute && (
+          <IntroScherm
+            route={gekozenRoute}
+            geluidAan={geluidAan}
+            onStart={startRit}
+            onTerug={brekenAf}
+          />
+        )}
+
         {fase === FASEN.SPELEN && sessie && regel && (
           <div className="space-y-3">
             <KoerierScene
@@ -599,6 +619,107 @@ function RouteKaart({ routeStatussen, topritOpen, topritRecord, waarschuwToetsen
         Zet je vingers op de basisrij: linkerhand op A S D F, rechterhand op J K L ;
         — de randjes op F en J helpen je zonder kijken.
       </p>
+    </div>
+  );
+}
+
+function IntroScherm({ route, geluidAan, onStart, onTerug }) {
+  const stappen = useMemo(() => buildIntroStappen(route, vingerInstructie), [route]);
+  const [stapIndex, setStapIndex] = useState(0);
+  const stap = stappen[Math.min(stapIndex, stappen.length - 1)];
+  const isLaatste = stapIndex >= stappen.length - 1;
+
+  // Voiceover: eerst het (eventueel) gegenereerde mp3-bestand, anders de
+  // ingebouwde nl-NL browser-spraak. Stopt netjes bij weggaan of mute.
+  useEffect(() => {
+    if (!geluidAan) return undefined;
+    return startIntroSpraak({
+      audioUrl: `${ASSETS}/audio/${route.id}.wav`,
+      tekst: buildIntroVoorleesTekst(route, vingerInstructie)
+    });
+  }, [route, geluidAan]);
+
+  // Rustig automatisch doorbladeren; zelf klikken kan altijd.
+  useEffect(() => {
+    if (isLaatste) return undefined;
+    const timer = window.setTimeout(
+      () => setStapIndex((index) => Math.min(index + 1, stappen.length - 1)),
+      introStapDuurMs(stap)
+    );
+    return () => window.clearTimeout(timer);
+  }, [stapIndex, stap, isLaatste, stappen.length]);
+
+  return (
+    <div className="rounded-2xl bg-white/90 p-5 shadow-sm sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-black uppercase tracking-widest text-indigo-500">
+          {route.isToprit ? route.titel : `Route ${route.nummer}: ${route.titel}`} · zo doe je het
+        </p>
+        <p className="text-xs font-bold text-slate-400">
+          stap {Math.min(stapIndex + 1, stappen.length)} van {stappen.length}
+        </p>
+      </div>
+
+      <div key={stap.id} className="koerier-introstap mt-3 rounded-xl bg-indigo-50 px-5 py-4">
+        <p className="text-lg font-black text-indigo-900">{stap.titel}</p>
+        <p className="mt-1 text-sm font-bold leading-6 text-indigo-800">{stap.tekst}</p>
+      </div>
+
+      <div className="mt-3">
+        <ToetsenbordViz
+          verwachtTeken={stap.soort === 'toets' ? stap.toets : null}
+          thuisrij={stap.soort !== 'toets'}
+        />
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setStapIndex((index) => Math.max(0, index - 1))}
+            disabled={stapIndex === 0}
+            aria-label="Vorige stap"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 font-black text-slate-600 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            ◀
+          </button>
+          {stappen.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setStapIndex(index)}
+              aria-label={`Stap ${index + 1}: ${item.titel}`}
+              className={`h-2.5 rounded-full transition-all ${index === stapIndex ? 'w-6 bg-indigo-500' : 'w-2.5 bg-slate-200 hover:bg-slate-300'}`}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={() => setStapIndex((index) => Math.min(stappen.length - 1, index + 1))}
+            disabled={isLaatste}
+            aria-label="Volgende stap"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 font-black text-slate-600 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            ▶
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onTerug}
+            className="rounded-xl px-4 py-2.5 text-sm font-black text-slate-500 transition hover:bg-slate-100"
+          >
+            Routekaart
+          </button>
+          <button
+            type="button"
+            onClick={onStart}
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-indigo-700"
+          >
+            {isLaatste ? 'Start de rit 🚀' : 'Ik snap het — start de rit'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -775,7 +896,7 @@ function HintBalk({ verwachtTeken, hadFout, toonAltijd, accuracy, fouten, capsLo
   );
 }
 
-const ToetsenbordViz = memo(function ToetsenbordViz({ verwachtTeken }) {
+const ToetsenbordViz = memo(function ToetsenbordViz({ verwachtTeken, thuisrij = false }) {
   const doelToets = verwachtTeken ? basisToetsVoor(verwachtTeken) : null;
   const doelVinger = verwachtTeken ? vingerVoor(verwachtTeken) : null;
   const shiftHand = verwachtTeken ? shiftHandVoor(verwachtTeken) : null;
@@ -783,7 +904,7 @@ const ToetsenbordViz = memo(function ToetsenbordViz({ verwachtTeken }) {
   return (
     <div className="rounded-2xl bg-white/85 px-3 py-3 shadow-sm sm:px-5 sm:py-4" aria-hidden="true">
       <div className="flex items-start justify-center gap-3 sm:gap-5">
-        <HandViz kant="links" doelVinger={doelVinger} shiftActief={shiftHand === 'links'} />
+        <HandViz kant="links" doelVinger={doelVinger} shiftActief={shiftHand === 'links'} alle={thuisrij} />
 
         <div className="min-w-0 flex-1 space-y-1 sm:space-y-1.5">
           {TOETSENBORD_RIJEN.map((rij, rijIndex) => (
@@ -794,6 +915,7 @@ const ToetsenbordViz = memo(function ToetsenbordViz({ verwachtTeken }) {
                   key={toets}
                   toets={toets}
                   isDoel={toets === doelToets}
+                  isThuisrijNadruk={thuisrij && HOME_TOETSEN.includes(toets)}
                   isHome={HOME_TOETSEN.includes(toets)}
                   heeftVoelrand={VOELRAND_TOETSEN.includes(toets)}
                 />
@@ -814,24 +936,24 @@ const ToetsenbordViz = memo(function ToetsenbordViz({ verwachtTeken }) {
           </div>
         </div>
 
-        <HandViz kant="rechts" doelVinger={doelVinger} shiftActief={shiftHand === 'rechts'} />
+        <HandViz kant="rechts" doelVinger={doelVinger} shiftActief={shiftHand === 'rechts'} alle={thuisrij} />
       </div>
     </div>
   );
 });
 
-function Toets({ toets, isDoel, isHome, heeftVoelrand }) {
+function Toets({ toets, isDoel, isThuisrijNadruk = false, isHome, heeftVoelrand }) {
   const vingerId = TOETS_VINGER[toets];
   const kleur = vingerId ? VINGER_KLEUREN[VINGERS[vingerId].kleurIndex] : '#e2e8f0';
 
   return (
     <span
       className={`relative flex h-7 w-7 items-center justify-center rounded-lg border-b-2 font-mono text-xs font-black uppercase transition sm:h-8 sm:w-8 sm:text-sm ${
-        isDoel ? 'koerier-doeltoets z-10 text-slate-900' : 'text-slate-600'
+        isDoel ? 'koerier-doeltoets z-10 text-slate-900' : isThuisrijNadruk ? 'text-slate-900' : 'text-slate-600'
       }`}
       style={{
-        background: isDoel ? kleur : `${kleur}40`,
-        borderColor: isDoel ? kleur : '#e2e8f0'
+        background: isDoel || isThuisrijNadruk ? kleur : `${kleur}40`,
+        borderColor: isDoel || isThuisrijNadruk ? kleur : '#e2e8f0'
       }}
     >
       {toets}
@@ -856,17 +978,17 @@ function ShiftToets({ actief }) {
 }
 
 // Mini-hand: 5 vingers als staafjes, de actieve vinger licht op in de vingerkleur.
-function HandViz({ kant, doelVinger, shiftActief }) {
+function HandViz({ kant, doelVinger, shiftActief, alle = false }) {
   const vingerIds = kant === 'links'
     ? ['links-pink', 'links-ring', 'links-middel', 'links-wijs']
     : ['rechts-wijs', 'rechts-middel', 'rechts-ring', 'rechts-pink'];
-  const duimActief = doelVinger === 'duim';
+  const duimActief = alle || doelVinger === 'duim';
 
   return (
     <div className="hidden flex-col items-center gap-1 sm:flex">
       <svg width="64" height="72" viewBox="0 0 64 72" role="presentation">
         {vingerIds.map((vingerId, index) => {
-          const actief = doelVinger === vingerId || (shiftActief && vingerId.endsWith('pink'));
+          const actief = alle || doelVinger === vingerId || (shiftActief && vingerId.endsWith('pink'));
           const kleur = VINGER_KLEUREN[VINGERS[vingerId].kleurIndex];
           const hoogtes = kant === 'links' ? [26, 34, 38, 32] : [32, 38, 34, 26];
           const hoogte = hoogtes[index];
@@ -1144,6 +1266,11 @@ function KoerierStijlen() {
       .koerier-spatie { border-bottom: 3px dotted rgba(99, 102, 241, 0.6); display: inline-block; min-width: 0.6em; }
       .koerier-spatie-ok { border-bottom: 3px dotted rgba(16, 185, 129, 0.5); display: inline-block; min-width: 0.6em; }
       .koerier-spoor { transition: width 0.25s ease-out; }
+      @keyframes koerier-introstap-anim {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .koerier-introstap { animation: koerier-introstap-anim 0.35s ease-out both; }
       /* Witte halo + zachte schaduw zodat de koerier loskomt van de pastelstad. */
       .koerier-sprite {
         filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.95))
@@ -1153,7 +1280,7 @@ function KoerierStijlen() {
       @media (prefers-reduced-motion: reduce) {
         .koerier-zweef, .koerier-boost, .koerier-trail, .koerier-confetti, .koerier-stad,
         .koerier-doeltoets, .koerier-caret, .koerier-fout, .koerier-combo,
-        .koerier-eindscore, .koerier-record { animation: none !important; }
+        .koerier-eindscore, .koerier-record, .koerier-introstap { animation: none !important; }
         .koerier-foutflits { animation-duration: 0.01s !important; }
         .koerier-bezorgd, .koerier-bonus { animation-duration: 0.01s !important; animation-delay: 1s !important; }
         .koerier-boost { filter: none; }

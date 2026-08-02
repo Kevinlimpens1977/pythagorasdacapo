@@ -75,7 +75,27 @@ in de component; het spel werkt volledig zonder deze bestanden.
 | `trofee.webp` | Eindscherm bij gehaalde route | golden winged delivery parcel as trophy, pastel confetti |
 | `mascotte.webp` | Startscherm/routekaart | robot courier waving next to oversized pastel keyboard |
 
+### Route-introducties (uitleg + voiceover)
+
+Elke route opent met een skipbaar uitlegscherm ("zo doe je het"): stap voor stap de
+thuisrij, daarna elke nieuwe toets met de juiste vinger uitgelicht op het echte
+toetsenbord en de handjes (dus gegarandeerd correct — het is dezelfde vingerkaart als
+het spel), afgesloten met de routetip. Stappen bladeren automatisch door
+(`introStapDuurMs`) en zijn ook handmatig te bedienen; "Start de rit" of "overslaan"
+kan altijd. De WPM-klok start pas ná de intro.
+
+Voiceover (`dataKoerierSpraak.js`): speelt `public/games/data-koerier/audio/{routeId}.wav`
+(Higgsfield seed_audio, stem "Ines", mono 16 kHz); ontbreekt het bestand, dan leest de
+ingebouwde browser-spraak (nl-NL, standaard op Chromebooks) exact dezelfde tekst voor
+(`buildIntroVoorleesTekst` — één bron voor scherm én audio). Gegenereerd op 2 aug 2026:
+routes 1, 2, 3, 4 en 7 (de kernroutes voor handhouding). **Nog te genereren zodra er
+weer Higgsfield-tegoed is: routes 5, 6, 8-13 en de Toprit** (teksten komen uit
+`buildIntroVoorleesTekst`; tot die tijd browser-spraak).
+
 Later door Higgsfield te vervangen/verbeteren (niet blokkerend):
+
+- **Sfeervideo voor het startscherm** (Seedance, 10 s, koerier raast door de stad) —
+  poging op 2 aug 2026 strandde op "Out of credits"; prompt staat klaar in dit document.
 
 - Koerier-sprite met 2-3 animatieframes (wielen/hover-glow) voor echt rijgevoel.
 - Aparte achtergrondvarianten per routegroep (basisrij-wijk, cijferwijk, zinnen-snelweg).
