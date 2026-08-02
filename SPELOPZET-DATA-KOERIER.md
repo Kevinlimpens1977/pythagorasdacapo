@@ -24,6 +24,12 @@ tot het goed wordt getypt (niet-bestraffend, wel duidelijk: rood + onderstreping
 - **Vingerbegeleiding**: visueel toetsenbord met vingerkleuren, basisrij-markers,
   voelrandjes op F/J, Shift-indicatie per hand en twee mini-handjes waarvan de juiste
   vinger oplicht.
+- **Caps Lock-vangnet**: de linkerpink raakt bij het reiken naar de a makkelijk per
+  ongeluk Caps Lock. Het spel detecteert dit, toont een duidelijke waarschuwing en telt
+  hoofdletter-aanslagen door Caps Lock niet als fout.
+- **Uitgestelde resultaatmelding**: `onComplete` wordt pas gemeld bij "Naar de
+  routekaart", bij unmount of uiterlijk na 6 seconden (exact één keer), zodat de
+  GamePlayer-fullscreen niet sluit voordat de speler het eindscherm heeft gezien.
 
 ## Architectuur
 

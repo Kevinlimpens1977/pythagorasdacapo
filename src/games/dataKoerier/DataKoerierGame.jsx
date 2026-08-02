@@ -68,6 +68,7 @@ export default function DataKoerierGame({ onStart, onComplete }) {
   const [eind, setEind] = useState(null);
   const [startedAt, setStartedAt] = useState(null);
   const [toetsGezien, setToetsGezien] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
   const [verstrekenSec, setVerstrekenSec] = useState(0);
 
   const laatsteToetsRef = useRef(null);
@@ -79,10 +80,18 @@ export default function DataKoerierGame({ onStart, onComplete }) {
   const hotRef = useRef(null);
   const sessieMetaRef = useRef(null);
   const klaarRef = useRef(false);
+  const capsLockRef = useRef(false);
+  // Voltooiing wordt uitgesteld gemeld zodat de speler eerst het eindscherm
+  // ziet (GamePlayer sluit fullscreen zodra onComplete binnenkomt).
+  const pendingCompletionRef = useRef(null);
+  const voltooiTimerRef = useRef(null);
+  const flushRef = useRef(null);
 
-  // Openstaande afrondingstimer opruimen bij unmount.
+  // Bij unmount: timers opruimen en een nog niet gemelde voltooiing alsnog
+  // direct melden, zodat een resultaat nooit verloren gaat.
   useEffect(() => () => {
     if (afrondTimerRef.current) window.clearTimeout(afrondTimerRef.current);
+    flushRef.current?.();
   }, []);
 
   const routeStatussen = useMemo(
@@ -123,7 +132,25 @@ export default function DataKoerierGame({ onStart, onComplete }) {
     }
   }, [toetsGezien]);
 
+  // Meld een uitgestelde voltooiing precies één keer bij GamePlayer.
+  const flushVoltooiing = () => {
+    if (voltooiTimerRef.current) {
+      window.clearTimeout(voltooiTimerRef.current);
+      voltooiTimerRef.current = null;
+    }
+    const payload = pendingCompletionRef.current;
+    if (!payload) return;
+    pendingCompletionRef.current = null;
+    onComplete?.(payload);
+  };
+
+  // Altijd de nieuwste flush beschikbaar houden voor timers en unmount-cleanup.
+  useEffect(() => {
+    flushRef.current = flushVoltooiing;
+  });
+
   const startRoute = (route, isToprit = false) => {
+    flushVoltooiing();
     if (afrondTimerRef.current) {
       window.clearTimeout(afrondTimerRef.current);
       afrondTimerRef.current = null;
@@ -205,7 +232,9 @@ export default function DataKoerierGame({ onStart, onComplete }) {
       geluid(speelNietGehaald);
     }
 
-    onComplete?.({
+    // Niet direct melden: eerst het eindscherm laten zien. Flush gebeurt bij
+    // "Naar de routekaart", een nieuwe start, unmount of uiterlijk na 6 s.
+    pendingCompletionRef.current = {
       score: eindresultaat.score,
       maxScore: eindresultaat.maxScore,
       startedAt: startedAt || new Date().toISOString(),
@@ -216,7 +245,8 @@ export default function DataKoerierGame({ onStart, onComplete }) {
         eindresultaat,
         isRecord
       })
-    });
+    };
+    voltooiTimerRef.current = window.setTimeout(() => flushRef.current?.(), 6000);
   };
 
   // Toprit-timer in beeld.
@@ -288,6 +318,15 @@ export default function DataKoerierGame({ onStart, onComplete }) {
       if (event.metaKey || event.ctrlKey || event.altKey || event.isComposing) return;
       const doelwit = event.target;
       if (doelwit && (doelwit.tagName === 'INPUT' || doelwit.tagName === 'TEXTAREA' || doelwit.isContentEditable)) return;
+      // Caps Lock-vangnet: de linkerpink raakt bij het reiken naar de a al
+      // snel per ongeluk Caps Lock. Waarschuw duidelijk en tel die aanslagen
+      // niet als fout, anders lijkt het spel "kapot".
+      const caps = typeof event.getModifierState === 'function' && event.getModifierState('CapsLock');
+      if (caps !== capsLockRef.current) {
+        capsLockRef.current = caps;
+        setCapsLock(caps);
+      }
+
       if (!isTypbaarTeken(event.key)) return;
       event.preventDefault();
       setToetsGezien(true);
@@ -296,6 +335,15 @@ export default function DataKoerierGame({ onStart, onComplete }) {
       if (!regel) return;
       const verwacht = regel.tekst[hot.positie];
       if (!verwacht) return;
+      if (
+        caps
+        && /^[a-zA-Z]$/.test(event.key)
+        && event.key !== verwacht
+        && event.key.toLowerCase() === String(verwacht).toLowerCase()
+      ) {
+        // Zelfde letter, verkeerde kast door Caps Lock: negeren, niet straffen.
+        return;
+      }
       const nu = Date.now();
       const tijdMs = laatsteToetsRef.current
         ? Math.min(MAX_AARZEL_MS, nu - laatsteToetsRef.current)
@@ -446,6 +494,7 @@ export default function DataKoerierGame({ onStart, onComplete }) {
               toonAltijd={!gekozenRoute?.isToprit && (gekozenRoute?.nummer || 1) <= 6}
               accuracy={stats.aanslagen > 0 ? berekenAccuracy(stats) : 100}
               fouten={stats.fouten}
+              capsLock={capsLock}
             />
 
             <ToetsenbordViz verwachtTeken={verwachtTeken} />
@@ -456,7 +505,10 @@ export default function DataKoerierGame({ onStart, onComplete }) {
           <EindScherm
             route={gekozenRoute}
             eind={eind}
-            onTerug={() => setFase(FASEN.START)}
+            onTerug={() => {
+              flushVoltooiing();
+              setFase(FASEN.START);
+            }}
             routeStatussen={routeStatussen}
           />
         )}
@@ -688,9 +740,22 @@ function TypDoel({ regel, positie, hadFout, regelIndex, totaalRegels }) {
   );
 }
 
-function HintBalk({ verwachtTeken, hadFout, toonAltijd, accuracy, fouten }) {
+function HintBalk({ verwachtTeken, hadFout, toonAltijd, accuracy, fouten, capsLock }) {
   const instructie = verwachtTeken ? vingerInstructie(verwachtTeken) : null;
   const toonInstructie = instructie && (toonAltijd || hadFout);
+
+  if (capsLock) {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-2.5 shadow-sm">
+        <p className="text-sm font-black text-amber-800">
+          ⚠️ Caps Lock staat aan! Druk op de Caps Lock-toets (links, boven Shift) en typ dan verder.
+        </p>
+        <p className="text-xs font-bold text-amber-600">
+          Deze aanslagen tellen niet als fout.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/80 px-4 py-2.5 shadow-sm">
