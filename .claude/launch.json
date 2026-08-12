@@ -8,10 +8,10 @@
       "port": 5173
     },
     {
-      "name": "dvlingo-standalone",
+      "name": "dvlingo-bron",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8123", "--directory", "dvlingo_startbestanden"],
-      "port": 8123
+      "runtimeArgs": ["-m", "http.server", "8124", "--directory", "dvlingo_startbestanden"],
+      "port": 8124
     }
   ]
 }
