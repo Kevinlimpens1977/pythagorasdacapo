@@ -29,6 +29,10 @@ scripts
 sources
 tests
 
+# De standalone bron van DVLingo. Het spel dat leerlingen spelen staat in
+# public/games/dvlingo/ en gaat wel mee; deze bronmap hoeft niet naar Vercel.
+dvlingo_startbestanden
+
 *.md
 !PROJECTKOMPAS-HELIX.md
 !README.md
