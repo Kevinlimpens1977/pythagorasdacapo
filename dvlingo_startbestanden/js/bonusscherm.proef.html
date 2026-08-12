@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Proef — js/bonusscherm.js</title>
+
+<!-- Dezelfde bladen als index.html, in dezelfde volgorde. Alleen het
+     bonuswoordscherm wordt hier beproefd; de rest van het spel ontbreekt. -->
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/game.css">
+<link rel="stylesheet" href="../css/bonuswoord.css">
+
+<style>
+/* Alleen voor deze proefpagina; het spel zelf gebruikt hier niets van. */
+
+/* body is een kolom-flexbox uit css/base.css. Zonder deze regel drukt hij de
+   onderdelen samen zodra ze niet meer passen, en dan schuift het scherm over
+   zijn eigen inhoud heen. Liever scrollen. */
+body > *{flex:0 0 auto}
+
+.proef-balk{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:8px;width:min(100%,1120px);padding:10px 12px;
+  border-radius:16px;background:rgba(255,255,255,.72);
+  box-shadow:0 8px 20px rgba(24,50,96,.16);
+  font-size:14px;
+}
+.proef-balk strong{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#2f5fa8}
+.proef-balk button{
+  padding:7px 13px;border-radius:999px;background:#2f6fd0;color:#fff;
+  font-weight:800;font-size:13px;box-shadow:0 3px 0 #1d4c96;
+}
+.proef-balk button:hover{filter:brightness(1.08)}
+.proef-balk button.is-uit{background:#8fa8c8;box-shadow:0 3px 0 #6a83a4}
+.proef-balk input{
+  padding:6px 10px;border-radius:10px;border:2px solid #9fc0e4;background:#fff;
+  font-weight:700;text-transform:uppercase;width:13ch;
+}
+.proef-balk input[type=number]{width:7ch;text-transform:none}
+.proef-log{
+  width:min(100%,1120px);min-height:44px;padding:8px 12px;border-radius:12px;
+  background:rgba(14,38,80,.9);color:#eaf3ff;font-family:ui-monospace,Consolas,monospace;
+  font-size:12.5px;line-height:1.5;white-space:pre-wrap;
+}
+.proef-hulp{
+  width:min(100%,1120px);padding:8px 12px;border-radius:12px;
+  background:rgba(255,255,255,.6);font-size:13px;line-height:1.5;
+}
+.proef-hulp b{color:#22437e}
+.proef-hulp summary{cursor:pointer;font-weight:800;color:#22437e}
+.proef-hulp[open] summary{margin-bottom:5px}
+
+/* Op een telefoon hoort de proefbalk klein te blijven: het scherm zelf moet
+   de ruimte krijgen, anders proef je de proefpagina in plaats van het spel. */
+@media (max-width:620px){
+  .proef-balk{font-size:11px;gap:5px;padding:6px}
+  .proef-balk button{padding:5px 8px;font-size:11px}
+  .proef-balk input{padding:4px 6px;width:11ch}
+  .proef-balk input[type=number]{width:5ch}
+  .proef-hulp,.proef-log{font-size:11px;padding:6px 9px}
+  .proef-log{max-height:52px;overflow:hidden}
+}
+</style>
+</head>
+<body data-pagina="proef">
+
+<div class="proef-balk">
+  <strong>Stap</strong>
+  <button type="button" data-stap="1">1 — 3 letters vrij</button>
+  <button type="button" data-stap="2">2 — 6 letters vrij</button>
+  <button type="button" data-stap="3">3 — 8 letters vrij</button>
+  <strong>Woord</strong>
+  <input id="proef-woord" value="TOETSENBORD" maxlength="11" spellcheck="false">
+  <strong>Sec</strong>
+  <input id="proef-seconden" type="number" value="18" min="1" max="999">
+  <button type="button" id="proef-verder">Volgende kans</button>
+  <button type="button" id="proef-pauze">Pauze</button>
+  <button type="button" id="proef-willekeur" class="is-uit">Willekeurig woord</button>
+  <button type="button" id="proef-stop" class="is-uit">Stop</button>
+</div>
+
+<details class="proef-hulp" id="proef-hulp">
+  <summary>Zo bedien je het</summary>
+  <b>Typen:</b> letters vallen in de eerstvolgende open plek, Backspace neemt terug,
+  Enter bevestigt. &nbsp;<b>Klikken:</b> eerst een gele schijf, dan een leeg vakje;
+  een gevuld vakje aanklikken neemt de letter terug. &nbsp;<b>Slepen:</b> een schijf met
+  de muis of met een vinger naar een vakje trekken. &nbsp;<b>Zonder muis:</b> pijltjes
+  links en rechts lopen langs de schijven, pijltje omhoog springt naar de rij, spatie legt
+  de schijf in het actieve vakje.
+</details>
+
+<!-- Dezelfde opmaak als in index.html; js/bonusscherm.js vult hem. -->
+<section id="scherm-bonus" class="scherm" aria-label="Het bonuswoord">
+  <h2 class="titel">Het bonuswoord</h2>
+  <p class="ondertitel" id="bonus-uitleg">
+    Elf letters over digitale vaardigheden. Vul de open plekken aan.
+  </p>
+
+  <div class="bonus-rij" id="bonus-rij" role="group" aria-label="Het bonuswoord"></div>
+
+  <div class="bonus-voorraad" id="bonus-voorraad" role="group"
+       aria-label="Letters die nog geplaatst moeten worden"></div>
+
+  <div class="bonus-klok" id="bonus-klok">
+    <span class="bonus-klok-label">Tijd</span>
+    <span id="bonus-klok-getal">18</span>
+  </div>
+
+  <p class="bonus-melding" id="bonus-melding" role="status" aria-live="polite"></p>
+</section>
+
+<p class="proef-log" id="proef-log">Kies hierboven een stap.</p>
+
+<script src="bonuswoord.js"></script>
+<script src="audio.js"></script>
+<script src="bonusscherm.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var log = document.getElementById('proef-log');
+  var woordVak = document.getElementById('proef-woord');
+  var secVak = document.getElementById('proef-seconden');
+  var pauzeKnop = document.getElementById('proef-pauze');
+  var willekeurKnop = document.getElementById('proef-willekeur');
+  var willekeurig = false;
+  var gepauzeerd = false;
+  var stap = 1;
+
+  function schrijf(regel) {
+    log.textContent = regel + '\n' + log.textContent;
+  }
+
+  function tekenKnoppen() {
+    var knoppen = document.querySelectorAll('.proef-balk [data-stap]');
+    for (var i = 0; i < knoppen.length; i++) {
+      knoppen[i].classList.toggle('is-uit', Number(knoppen[i].getAttribute('data-stap')) !== stap);
+    }
+    willekeurKnop.classList.toggle('is-uit', !willekeurig);
+    pauzeKnop.textContent = gepauzeerd ? 'Verder' : 'Pauze';
+  }
+
+  /* verder = de volgende kans in hetzelfde spel: hetzelfde woord blijft staan
+     en er komen letters bij. Zonder verder begint er een nieuw potje. */
+  function begin(nummer, verder) {
+    stap = nummer;
+    gepauzeerd = false;
+    tekenKnoppen();
+
+    var opties = {
+      stap: nummer,
+      seconden: Number(secVak.value) || 18,
+      opnieuw: !verder,
+      opKlaar: function (uitslag) {
+        schrijf('opKlaar: geraden=' + uitslag.geraden +
+                '  woord=' + uitslag.woord + '  punten=' + uitslag.punten);
+      }
+    };
+    if (!willekeurig) {
+      var woord = String(woordVak.value || '').toUpperCase().replace(/[^A-Z]/g, '');
+      if (woord.length !== 11) {
+        schrijf('Een bonuswoord is precies elf letters; "' + woord + '" is er ' +
+                woord.length + '. Nu een willekeurig woord.');
+      } else {
+        opties.woord = woord;
+      }
+    }
+    DVL.Bonusscherm.start(opties);
+    schrijf('start({ stap: ' + nummer + ', seconden: ' + opties.seconden + ' })  woord=' +
+            DVL.Bonusscherm.staat().woord +
+            '  venster=' + window.innerWidth + 'x' + window.innerHeight);
+  }
+
+  document.querySelector('.proef-balk').addEventListener('click', function (e) {
+    var knop = e.target.closest ? e.target.closest('button') : null;
+    if (!knop) return;
+    if (knop.hasAttribute('data-stap')) { begin(Number(knop.getAttribute('data-stap'))); return; }
+    if (knop === pauzeKnop) {
+      gepauzeerd = !gepauzeerd;
+      if (gepauzeerd) DVL.Bonusscherm.pauzeer(); else DVL.Bonusscherm.hervat();
+      tekenKnoppen();
+      return;
+    }
+    if (knop.id === 'proef-verder') { begin(Math.min(stap + 1, 3), true); return; }
+    if (knop === willekeurKnop) { willekeurig = !willekeurig; tekenKnoppen(); return; }
+    if (knop.id === 'proef-stop') { DVL.Bonusscherm.stop(); schrijf('stop()'); return; }
+  });
+
+  /* De knoppen in de balk mogen geen toetsen van het scherm inpikken. */
+  document.querySelector('.proef-balk').addEventListener('keydown', function (e) {
+    e.stopPropagation();
+  });
+
+  /* Met ?stap=3&woord=BEELDSCHERM&sec=18 opent de pagina meteen in die stand;
+     handig voor schermafdrukken en voor een tweede blik zonder klikken. */
+  function uitAdres(naam) {
+    var vondst = new RegExp('[?&]' + naam + '=([^&]*)').exec(window.location.search);
+    return vondst ? decodeURIComponent(vondst[1]) : '';
+  }
+
+  /* Op een breed scherm staat de bediening open, op een telefoon ingeklapt. */
+  document.getElementById('proef-hulp').open = window.innerWidth > 620;
+
+  var beginStap = Number(uitAdres('stap')) || 1;
+  if (uitAdres('woord')) woordVak.value = uitAdres('woord').toUpperCase();
+  if (uitAdres('sec')) secVak.value = uitAdres('sec');
+
+  tekenKnoppen();
+  begin(beginStap > 3 || beginStap < 1 ? 1 : beginStap);
+})();
+</script>
+</body>
+</html>

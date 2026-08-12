@@ -1,0 +1,932 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/ballenfase.css
+
+   Het scherm van de ballenfase (#scherm-ballen): links de bestaande
+   ballenmachine uit css/finale.css (trommel, goot, uitvak), rechts de
+   lingokaart van 5 bij 5. Daaronder de teller met het aantal trekkingen dat
+   nog te gaan is, drie stippen voor de groene ballen en een meldingsregel.
+
+   Contract (SPEC, "DOM-contract van de nieuwe schermen"):
+
+     #scherm-ballen
+       .bal-machine            de bestaande trommel, goot en uitvak
+       .bal-kaart              25 x .bal-vak[data-getal]
+         .bal-vak              standen: is-open is-weg is-nieuw
+                                        is-kiesbaar is-lingo
+       .bal-teller             trekkingen te gaan
+       .bal-groen              3 x .bal-groen-stip
+       .bal-melding            met aria-live
+
+   Staan .bal-machine en .bal-kaart in een eigen wikkel (.bal-veld), dan
+   draagt die wikkel de tweekolomsopmaak; staan ze los in het scherm, dan
+   doet het scherm het zelf. Beide werken.
+
+   Vereist css/base.css (variabelen) en css/finale.css (de machine).
+   Geen imports, geen externe bronnen: werkt vanaf schijf.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Maten van het scherm
+   -------------------------------------------------------------------------- */
+
+#scherm-ballen{
+  /* De kaart bepaalt de hoogte van het veld, net als in de finale. Daarom
+     loopt hij mee met de vensterhoogte: op een laag laptopvenster wordt hij
+     kleiner in plaats van dat de meldingsregel onder de vouw verdwijnt.
+
+     Alleen een deel van de vensterhoogte is niet genoeg: boven en onder de
+     kaart staat een vaste hoeveelheid meubilair (titel, teller, stippen,
+     knop, meldingsregel van twee regels, de marges van het scherm en de
+     onderbalk van de pagina). --bal-rest is bij benadering die hoogte; de
+     derde term in de min() zorgt dat de kaart precies zoveel inlevert als
+     nodig is om de hele fase in beeld te houden. Op 1280x800 kwam de
+     meldingsregel er anders 56px onderuit. */
+  --bal-rest:470px;
+  --bal-kaart-b:min(430px,46vh,calc(100vh - var(--bal-rest)));
+  --bal-machine-b:clamp(190px,20vw,252px);
+  --bal-voeg:5px;
+  --bal-kaartrand:5px;
+}
+
+/* --------------------------------------------------------------------------
+   2. Indeling — machine links, kaart rechts, de rest eronder
+   -------------------------------------------------------------------------- */
+
+#scherm-ballen.is-actief{
+  display:grid;
+  grid-template-columns:var(--bal-machine-b) minmax(0,var(--bal-kaart-b));
+  justify-content:center;
+  align-content:center;
+  align-items:stretch;
+  gap:clamp(9px,1.6vw,18px) clamp(14px,2.4vw,26px);
+  padding:clamp(12px,min(2.4vw,3vh),26px);
+}
+
+/* Alles wat geen machine of kaart is loopt over de volle breedte en staat
+   gecentreerd: titel, teller, stippen, knoppen, melding. */
+#scherm-ballen.is-actief > *{
+  grid-column:1 / -1;
+  justify-self:center;
+  max-width:100%;
+}
+
+#scherm-ballen.is-actief > .bal-machine{
+  grid-column:1;
+  justify-self:stretch;
+}
+
+#scherm-ballen.is-actief > .bal-kaart{
+  grid-column:2;
+  justify-self:stretch;
+  align-self:center;
+}
+
+/* Variant met wikkel: dan is het scherm één kolom en verdeelt de wikkel. */
+#scherm-ballen.is-actief:has(> .bal-veld){
+  grid-template-columns:minmax(0,1fr);
+}
+
+/* Overal een terugval achter de var(): de maten staan op #scherm-ballen, maar
+   de kaart en de wikkel moeten ook los werken — in een proefpagina, in een
+   testbestand, of straks in een scherm dat anders heet. */
+.bal-veld{
+  display:grid;
+  grid-template-columns:
+    var(--bal-machine-b,clamp(190px,20vw,252px))
+    minmax(0,var(--bal-kaart-b,min(430px,46vh)));
+  justify-content:center;
+  align-items:stretch;
+  gap:clamp(14px,2.4vw,26px);
+  width:100%;
+}
+.bal-veld > .bal-kaart{align-self:center}
+
+/* De kast staat op stretch en werd daardoor zo hoog als zijn eigen inhoud,
+   ook wanneer de kaart al ingeleverd had. Dan bepaalde de kast de hoogte van
+   de rij en gleed de meldingsregel alsnog onder de vouw. De kast mag nooit
+   hoger worden dan de kaart; hij is er van binnen op gebouwd om mee te geven
+   (`.bal-machine > .finale-machine{flex:1 1 auto;min-height:0}`). */
+.bal-machine{max-height:var(--bal-kaart-b,none)}
+
+/* Een knoppenrij (bijvoorbeeld "Trek een bal") blijft binnen de perken. */
+#scherm-ballen .knop{max-width:min(100%,340px)}
+
+/* --------------------------------------------------------------------------
+   3. De machine — aansluiting op css/finale.css
+
+   De kast, de goot en het uitvak komen ongewijzigd uit css/finale.css. Die
+   module hangt haar kleuren aan variabelen op `.finale`, en dat element is
+   hier niet vanzelfsprekend aanwezig. Daarom zetten we dezelfde variabelen
+   op `.bal-machine`: de kast klopt dan met én zonder `.finale` eromheen.
+
+   De regels voor de ballen staan hieronder woordelijk zoals in finale.css,
+   alleen een niveau anders gebonden (`.bal-machine ...` in plaats van
+   `.finale ...`). Ze zeggen exact hetzelfde, dus de volgorde waarin de twee
+   stijlbladen binnenkomen maakt niets uit.
+   -------------------------------------------------------------------------- */
+
+.bal-machine{
+  --finale-marine:#2b4a8b;
+  --finale-marine-diep:#21449a;
+  --finale-tegel-boven:#3f95e2;
+  --finale-tegel-onder:#2d6cc2;
+  --finale-rood-boven:#f2564c;
+  --finale-rood-onder:#d0261c;
+  --finale-geel:#ffd23a;
+  --finale-groen:#3fbf6a;
+  --finale-blauw:#2f7fe0;
+  --finale-tekst:#2f5fa8;
+  --finale-bal:48px;
+
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:0;
+}
+
+/* Hangt de machine in een eigen kastelement, dan rekt dat mee met de kaart. */
+.bal-machine > .finale-machine{flex:1 1 auto;min-height:0}
+
+.bal-machine .finale-bal{
+  display:grid;
+  place-items:center;
+  width:var(--finale-bal);
+  height:var(--finale-bal);
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 33% 27%, rgba(255,255,255,.85), rgba(255,255,255,0) 44%),
+    radial-gradient(circle at 50% 55%, var(--bal-licht,#9fc4e8), var(--bal-donker,#4f7cae) 78%);
+  box-shadow:
+    inset 0 -7px 12px rgba(0,0,0,.3),
+    0 5px 10px rgba(23,55,105,.35);
+  text-shadow:none;
+  animation:none;
+}
+.bal-machine .finale-bal[hidden]{display:none}
+
+.bal-machine .finale-bal--rood {--bal-licht:#ff8b83;--bal-donker:#c8241c}
+.bal-machine .finale-bal--blauw{--bal-licht:#7fbaf4;--bal-donker:#1c57ac}
+.bal-machine .finale-bal--geel {--bal-licht:#ffe28f;--bal-donker:#d99e00}
+.bal-machine .finale-bal--groen{--bal-licht:#8ce0a8;--bal-donker:#1a8f4b}
+.bal-machine .finale-bal--leeg {--bal-licht:#dceaf6;--bal-donker:#a9c2d8}
+
+.bal-machine .finale-rolbal.is-rolt{
+  animation:finale-rollen 1s cubic-bezier(.36,.05,.3,1) forwards;
+}
+.bal-machine .finale-laatste{
+  --finale-bal:46px;
+  position:relative;
+  z-index:1;
+}
+.bal-machine .finale-laatste.is-nieuw{
+  animation:finale-plof .42s cubic-bezier(.2,1.4,.4,1);
+}
+
+/* Het opschrift van de tellerruit in de kast leest hier als "ballen in de
+   trommel"; de trekkingen staan in .bal-teller onder de kaart.
+
+   Met white-space:nowrap werd dat opschrift breder dan de ruit waar het in
+   hoort te staan. Het liep er dan aan beide kanten uit, waardoor het getal
+   erboven scheef leek te staan ten opzichte van de tekst eronder.
+
+   Daarna mocht het overal afbreken, en toen stond er "IN DE TROMM EL": een
+   woord dat middenin knapt leest als een fout. Het breekt nu alleen nog op
+   spaties, en de ruit is breed genoeg gemaakt voor het langste woord. */
+.bal-machine .finale-teller{
+  width:100%;
+  padding-inline:2px;
+  justify-items:center;
+}
+.bal-machine .finale-teller-getal{
+  display:block;
+  width:100%;
+  text-align:center;
+}
+.bal-machine .finale-teller-label{
+  display:block;
+  width:100%;
+  white-space:normal;      /* breken mag */
+  overflow-wrap:normal;    /* maar alleen op een spatie, nooit middenin */
+  word-break:normal;
+  hyphens:none;
+  text-align:center;
+  line-height:1.15;
+  letter-spacing:.04em;    /* smal genoeg dat TROMMEL op één regel past */
+}
+
+/* --------------------------------------------------------------------------
+   4. De lingokaart — hetzelfde bord als in het spel, maar dan met getallen
+   -------------------------------------------------------------------------- */
+
+.bal-kaart{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:var(--bal-voeg,5px);
+  width:100%;
+  max-width:var(--bal-kaart-b,min(430px,46vh));
+  margin-inline:auto;
+  padding:var(--bal-voeg,5px);
+  background:linear-gradient(180deg,#31538f 0%,#254271 100%);
+  border:var(--bal-kaartrand,5px) solid var(--marine);
+  border-radius:var(--r-vak);
+  box-shadow:
+    0 16px 34px rgba(16,40,82,.34),
+    inset 0 0 0 2px rgba(255,255,255,.10),
+    inset 0 2px 6px rgba(0,0,0,.25);
+}
+
+/* --------------------------------------------------------------------------
+   5. De vakjes
+
+   Een open vakje is een tegel van het bord: hetzelfde blauwe verloop,
+   dezelfde ronding, dezelfde harde onderrand. Het glansbaantje zit in de
+   achtergrond zelf en niet in een pseudo-element, want ::before en ::after
+   hebben hier ander werk (het getal uit data-getal en de streep).
+   -------------------------------------------------------------------------- */
+
+.bal-vak{
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  place-items:center;
+  aspect-ratio:1;
+  min-width:0;
+  border:0;
+  border-radius:var(--r-tegel);
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.30) 0%,
+      rgba(255,255,255,.07) 33%,
+      rgba(255,255,255,0) 35%),
+    var(--verloop-tegel);
+  box-shadow:
+    inset 0 -3px 0 rgba(8,28,64,.28),
+    inset 0 1px 0 rgba(255,255,255,.32),
+    0 1px 2px rgba(10,28,60,.28);
+  color:var(--wit);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:clamp(13px,3.2vw,25px);
+  line-height:1;
+  letter-spacing:0;
+  text-transform:none;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 3px rgba(10,30,68,.45);
+  user-select:none;
+  -webkit-user-select:none;
+  animation:none;
+  transition:
+    background .22s ease-out,
+    box-shadow .22s ease-out,
+    color .22s ease-out,
+    filter .22s ease-out,
+    opacity .22s ease-out,
+    translate .14s ease-out,
+    scale .14s ease-out;
+}
+
+/* Staat het getal alleen in data-getal, dan schrijft de kaart het zelf. */
+.bal-vak:empty::before{content:attr(data-getal)}
+
+/* -- open ---------------------------------------------------------------- */
+
+.bal-vak.is-open{
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.32) 0%,
+      rgba(255,255,255,.08) 33%,
+      rgba(255,255,255,0) 35%),
+    linear-gradient(180deg,#5cabee 0%,#3e8bd8 52%,#3273c6 100%);
+}
+
+/* -- doorgestreept ------------------------------------------------------- */
+
+/* Uit, en dat is van een meter afstand te zien: het vakje zakt weg in het
+   bord en krijgt een rode streep. De streep is smal en het getal groot en
+   vet, dus het nummer blijft gewoon te lezen — precies zoals op een
+   papieren kaart die je met een stift afstreept. */
+.bal-vak.is-weg{
+  background:linear-gradient(180deg,#27466f 0%,#1a3157 100%);
+  box-shadow:
+    inset 0 4px 8px rgba(0,0,0,.52),
+    inset 0 -1px 0 rgba(255,255,255,.10);
+  color:var(--wit);
+  text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 6px rgba(0,0,0,.5);
+}
+
+/* De streep loopt áchter het getal langs (z-index -1 binnen het vakje, net
+   als het beoordelingsvlak van een tegel in css/game.css). Zo is van een
+   meter afstand te zien dat het vakje uit is, en blijft het nummer toch
+   gewoon te lezen — dat laatste is de eis. */
+.bal-vak.is-weg::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:6%;
+  right:6%;
+  top:50%;
+  height:clamp(3px,11%,6px);
+  border-radius:99px;
+  background:linear-gradient(180deg,#ff7a6d 0%,var(--rood) 55%,#b8241c 100%);
+  box-shadow:
+    0 0 0 1.5px rgba(255,255,255,.5),
+    0 1px 3px rgba(0,0,0,.45);
+  translate:0 -50%;
+  rotate:-19deg;
+  pointer-events:none;
+}
+
+/* -- net getrokken ------------------------------------------------------- */
+
+/* De ring is een outline en geen box-shadow: zo blijft de verzonken schaduw
+   van een doorgestreept vakje eronder gewoon staan. */
+/* De ring is wit met een gele gloed eromheen: geel alleen zou wegvallen op
+   de gouden vakjes van een volle LINGO-lijn, en juist daar staat het net
+   getrokken nummer vaak. */
+.bal-vak.is-nieuw{
+  z-index:2;
+  outline:3px solid var(--wit);
+  outline-offset:2px;
+  filter:
+    drop-shadow(0 0 9px rgba(255,210,58,1))
+    drop-shadow(0 0 3px rgba(24,50,96,.8));
+  animation:dvl-bal-stempel .5s cubic-bezier(.2,1.5,.4,1);
+}
+
+@keyframes dvl-bal-stempel{
+  0%  {scale:1}
+  30% {scale:1.18;rotate:-3deg}
+  100%{scale:1;rotate:0deg}
+}
+
+/* -- aanwijsbaar bij de vraagbal ----------------------------------------- */
+
+/* Bij de `?`-bal kiest de speler zelf een open vakje. Die vakjes lichten op,
+   krijgen een kloppende gele rand en gaan omhoog onder de muis; de rest van
+   de kaart dooft juist, zodat er geen twijfel is waar het om gaat. */
+.bal-vak.is-kiesbaar{
+  cursor:pointer;
+  z-index:1;
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,.40) 0%,
+      rgba(255,255,255,.10) 33%,
+      rgba(255,255,255,0) 35%),
+    linear-gradient(180deg,#6fbaf4 0%,#4a9ae6 52%,#3a80d2 100%);
+  box-shadow:
+    inset 0 -3px 0 rgba(8,28,64,.28),
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 4px 10px rgba(10,28,60,.34);
+  /* De rand ligt binnen het vakje: met vijf kiesbare vakjes naast elkaar en
+     maar 5px voeg ertussen zouden randen aan de buitenkant tegen elkaar aan
+     lopen tot één geel vlak. */
+  outline:3px solid var(--geel);
+  outline-offset:-3px;
+  animation:dvl-bal-wenkt 1.25s ease-in-out infinite;
+}
+
+@keyframes dvl-bal-wenkt{
+  0%,100%{outline-color:rgba(255,210,58,.62)}
+  50%    {outline-color:rgba(255,210,58,1)}
+}
+
+@media (hover:hover){
+  .bal-vak.is-kiesbaar:hover{
+    translate:0 -3px;
+    scale:1.06;
+    filter:brightness(1.06) drop-shadow(0 0 12px rgba(255,210,58,.8));
+  }
+}
+.bal-vak.is-kiesbaar:active{translate:0 1px;scale:1}
+
+/* Zolang er gekozen wordt, treedt de rest van de kaart een stap terug. Dat
+   gaat met helderheid en niet met dekking: doorzichtige vakjes zakken weg in
+   het donkere bord en dan lijkt er een gat in de kaart te zitten. */
+.bal-kaart:has(.is-kiesbaar) .bal-vak:not(.is-kiesbaar){
+  filter:brightness(.66) saturate(.6);
+}
+
+/* -- volle LINGO-lijn ---------------------------------------------------- */
+
+/* Let op: css/game.css heeft een kale `.is-lingo` voor de grote rode
+   LINGO-kreet. Die zou hier de getallen opblazen, dus zetten we alles wat
+   die regel aanraakt uitdrukkelijk terug. */
+.bal-vak.is-lingo{
+  z-index:1;
+  color:#4a3400;
+  font-family:var(--lt-zwaar);
+  font-size:clamp(13px,3.2vw,25px);
+  letter-spacing:0;
+  text-transform:none;
+  text-shadow:0 1px 0 rgba(255,255,255,.65);
+  background:linear-gradient(180deg,#ffe082 0%,#f0a900 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.75),
+    inset 0 -3px 0 rgba(150,95,0,.38),
+    0 0 14px rgba(255,210,58,.75);
+  animation:dvl-bal-gloed 1.15s ease-in-out infinite alternate;
+}
+
+/* Op goud is fel rood te licht; op de winnende lijn wordt de streep dieper
+   rood en krijgt hij een witte kier, zodat hij van het goud loskomt. */
+.bal-vak.is-lingo::after{
+  background:linear-gradient(180deg,#c9231b 0%,var(--rood-diep) 100%);
+  box-shadow:
+    0 0 0 1.5px rgba(255,255,255,.8),
+    0 1px 3px rgba(90,50,0,.45);
+}
+
+@keyframes dvl-bal-gloed{
+  from{box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.75),
+    inset 0 -3px 0 rgba(150,95,0,.38),
+    0 0 4px rgba(255,210,58,.4)}
+  to  {box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.95),
+    inset 0 -3px 0 rgba(150,95,0,.38),
+    0 0 20px rgba(255,210,58,1)}
+}
+
+/* -- toetsenbord --------------------------------------------------------- */
+
+/* De kaart moet ook met tab en pijltjes te doen zijn. Op donkerblauw is een
+   enkele donkere ring niet te zien, dus komt er een witte halo omheen. */
+.bal-vak:focus-visible{
+  outline:3px solid var(--wit);
+  outline-offset:2px;
+  box-shadow:
+    0 0 0 6px rgba(14,47,95,.85),
+    inset 0 -3px 0 rgba(8,28,64,.28);
+  z-index:3;
+}
+
+/* --------------------------------------------------------------------------
+   6. De teller: trekkingen die nog te gaan zijn
+   -------------------------------------------------------------------------- */
+
+.bal-teller{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.6em;
+  margin:0;
+  min-height:46px;
+  padding:.26em 1.15em;
+  border-radius:var(--r-pil);
+  background:linear-gradient(180deg,#3b86d8 0%,#2a6ac0 100%);
+  color:var(--wit);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:clamp(11px,1.4vw,14px);
+  line-height:1.15;
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 3px rgba(0,0,0,.28);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.38),
+    inset 0 -4px 0 rgba(0,0,0,.18),
+    0 7px 16px rgba(24,50,96,.24);
+}
+
+/* Het getal mag er echt uitspringen, ongeacht hoe het is opgeschreven. */
+.bal-teller strong,
+.bal-teller b,
+.bal-teller .bal-teller-getal,
+.bal-teller-getal{
+  font-size:1.95em;
+  line-height:.9;
+  letter-spacing:.01em;
+  font-weight:900;
+}
+
+/* Laatste trekking: even zo dringend als de tijdbalk in het spel. */
+.bal-teller.is-laatste,
+.bal-teller[data-aantal="1"]{
+  background:linear-gradient(180deg,#ff7a6d 0%,var(--rood) 52%,#b8241c 100%);
+}
+.bal-teller.is-leeg,
+.bal-teller[data-aantal="0"]{
+  background:linear-gradient(180deg,#7f93b4 0%,#5d7396 100%);
+}
+
+/* --------------------------------------------------------------------------
+   7. De drie groene stippen
+   -------------------------------------------------------------------------- */
+
+.bal-groen{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  margin:0;
+  padding:7px 15px;
+  border-radius:var(--r-pil);
+  background:rgba(255,255,255,.88);
+  color:var(--paneel-tekst);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  box-shadow:
+    0 6px 14px rgba(24,50,96,.18),
+    inset 0 0 0 2px rgba(43,74,139,.10);
+}
+
+.bal-groen-stip{
+  flex:none;
+  display:block;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  /* Leeg = een lege houder in het paneel, niet een grijze bal. */
+  background:radial-gradient(circle at 36% 30%,#e7eef4 0%,#cbd9e6 60%,#a9bccf 100%);
+  box-shadow:
+    inset 0 3px 5px rgba(23,55,105,.45),
+    inset 0 -1px 0 rgba(255,255,255,.65);
+  transition:background .28s ease-out, box-shadow .28s ease-out;
+}
+
+/* Welk woord de opmaak ook kiest voor "deze is binnen": ze werken alle. */
+.bal-groen-stip.is-aan,
+.bal-groen-stip.is-vol,
+.bal-groen-stip.is-gevuld,
+.bal-groen-stip.is-verdiend,
+.bal-groen-stip[data-aan="1"],
+.bal-groen-stip[aria-checked="true"]{
+  background:radial-gradient(circle at 34% 28%,#8bf0c1 0%,var(--groen) 58%,#177a4f 100%);
+  box-shadow:
+    inset 0 -3px 5px rgba(0,0,0,.28),
+    inset 0 3px 5px rgba(255,255,255,.5),
+    0 0 10px rgba(62,201,138,.7);
+  animation:dvl-bal-stempel .42s cubic-bezier(.2,1.5,.4,1);
+}
+
+/* Alle drie binnen: de hele pil viert mee. */
+.bal-groen.is-vol,
+.bal-groen[data-aantal="3"]{
+  color:var(--groen-diep);
+  box-shadow:
+    0 6px 14px rgba(24,50,96,.18),
+    inset 0 0 0 2px var(--groen),
+    0 0 16px rgba(62,201,138,.6);
+}
+
+/* --------------------------------------------------------------------------
+   8. De meldingsregel
+   -------------------------------------------------------------------------- */
+
+.bal-melding{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:min(100%,540px);
+  min-height:46px;
+  margin:0;
+  padding:9px 20px;
+  border-radius:var(--r-pil);
+  background:rgba(20,44,86,.95);
+  color:var(--wit);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:clamp(12px,1.5vw,16px);
+  line-height:1.25;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  text-align:center;
+  text-wrap:balance;
+  box-shadow:0 10px 22px rgba(12,30,62,.34);
+  transition:opacity .2s ease-out, background .25s ease-out, color .25s ease-out;
+}
+
+/* Leeg blijft de regel staan — anders springt het hele scherm bij elke
+   melding een stukje op en neer. */
+.bal-melding:empty{opacity:0}
+
+.bal-melding.is-goed{background:linear-gradient(180deg,#45d79c,#1c8055)}
+.bal-melding.is-fout,
+.bal-melding.is-rood{background:linear-gradient(180deg,#f0483e,#bf2119)}
+.bal-melding.is-hint{background:linear-gradient(180deg,#ffd23a,#e0a000);color:#4a3200}
+
+/* Ook hier de kale `.is-lingo` uit css/game.css netjes terugzetten. */
+.bal-melding.is-lingo{
+  font-family:var(--lt-zwaar);
+  font-size:clamp(14px,2vw,21px);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#4a3400;
+  background:linear-gradient(180deg,#ffe082,#f0a900);
+  text-shadow:0 1px 0 rgba(255,255,255,.6);
+  animation:dvl-bal-melding-lingo 1s ease-in-out infinite;
+}
+@keyframes dvl-bal-melding-lingo{
+  0%,100%{scale:1}
+  50%    {scale:1.035}
+}
+
+/* --------------------------------------------------------------------------
+   9. Smalle schermen — de machine gaat boven de kaart staan
+
+   Onder 760px legt css/finale.css de kast al plat (trommel links, goot en
+   uitvak rechts). Precies daar zetten wij de twee kolommen onder elkaar, dan
+   sluiten de twee omslagpunten op elkaar aan.
+   -------------------------------------------------------------------------- */
+
+@media (max-width:760px){
+  /* De voetbalk draagt alleen de titel en de link naar Woordenbeheer. Tijdens
+     een lopende fase is dat niets waard en zijn die 43px (balk plus tussen-
+     ruimte) juist precies wat de kaart tekortkomt. Het spelscherm doet in
+     css/game.css hetzelfde. */
+  body:has(#scherm-ballen.is-actief) > .onderbalk{display:none}
+
+  /* Staand scherm: machine en kaart staan onder elkaar, dus het meubilair
+     boven de kaart is een stuk hoger.
+
+     --bal-rest is alles wat er naast de kaart nog in de hoogte gaat zitten:
+     de paginamarge (2 x 8px), de witte kaderrand (2 x 6px), de binnenmarge
+     van het scherm (2 x 12px), de titel (~24px), de kast (132px), de regel
+     met teller en groene stippen (~42px), de knop (~48px), de meldingsregel
+     van twee regels (~62px) en vier tussenruimtes van 9px.
+
+     De max() eronder is een vangnet: op een laag liggend venster werd
+     100svh - 404px negatief, en dan viel de hele min() weg en kromp de kaart
+     tot een postzegel van een paar pixels. Onder de 140px zakt hij nooit;
+     wat er liggend echt moet gebeuren staat verderop in deel 9b. */
+  #scherm-ballen{
+    --bal-rest:404px;
+    --bal-kaart-b:min(430px,100%,max(140px,calc(100vh  - var(--bal-rest))));
+    --bal-kaart-b:min(430px,100%,max(140px,calc(100svh - var(--bal-rest))));
+  }
+
+  #scherm-ballen.is-actief{
+    grid-template-columns:minmax(0,1fr);
+    gap:clamp(9px,2.4vw,16px);
+  }
+
+  /* De teller en de groene stippen delen één regel. Los onder elkaar kosten
+     ze samen ruim 80px; naast elkaar de helft, en die winst gaat rechtstreeks
+     naar de kaart. Ze staan tegen elkaar aan in het midden. */
+  #scherm-ballen.is-actief:has(> .bal-veld){
+    grid-template-columns:repeat(2,minmax(0,auto));
+    justify-content:center;
+  }
+  #scherm-ballen.is-actief > .bal-teller{grid-column:1;justify-self:end}
+  #scherm-ballen.is-actief > .bal-groen{grid-column:2;justify-self:start}
+  /* De maat komt uit --bal-kaart-b en niet uit een los getal: anders trekt de
+     kaart zich hier niets van de vensterhoogte aan en valt de meldingsregel op
+     een staand scherm alsnog onder de vouw. */
+  #scherm-ballen.is-actief > .bal-machine,
+  #scherm-ballen.is-actief > .bal-kaart{
+    grid-column:1;
+    justify-self:center;
+    width:100%;
+    max-width:var(--bal-kaart-b,430px);
+  }
+
+  .bal-veld{
+    grid-template-columns:minmax(0,1fr);
+    justify-items:center;
+    gap:10px;
+  }
+  .bal-veld > .bal-kaart{width:100%;max-width:var(--bal-kaart-b,430px)}
+
+  /* De kast mag breder zijn dan de kaart. Hij ligt hier plat en de naamplaat
+     houdt rechts ruimte vrij voor het zijpaneel; even breed als een kaart van
+     164px bleef er van "BALLENTROMMEL" niet meer over dan een B. Breedte is
+     staand het enige wat er wél is, dus die krijgt hij. */
+  #scherm-ballen.is-actief > .bal-machine,
+  .bal-veld > .bal-machine{width:100%;max-width:min(100%,380px)}
+
+  /* Boven elkaar telt de kast dubbel op in de hoogte, dus hij levert hier zelf
+     ook in. Een vaste maat en geen var(): in --bal-kaart-b zit een percentage,
+     en een max-height met een percentage erin telt bij het opmeten van de
+     rasterrij niet mee — de rij bleef dan even hoog als de kast van zichzelf
+     is.
+
+     Alleen afknijpen met max-height knipt de trommel eraf. De kast krijgt
+     daarom hieronder ook echt kleinere onderdelen mee, zodat 132px zijn
+     eigen maat is en niet een kader waar hij uit puilt. */
+  .bal-machine{max-height:142px}
+
+  /* De kast op telefoonmaat. css/finale.css bouwt hem uit variabelen op;
+     die zetten we hier een slag kleiner. De trommel houdt zijn vorm, alleen
+     de maat gaat omlaag.
+
+     Alle onderdelen gaan samen omlaag, en niet alleen de max-height van de
+     kast: alleen afknijpen laat de rijen van de kast over elkaar heen
+     schuiven, en dan loopt de goot dwars door de naamplaat. De som hieronder
+     komt uit op ongeveer 132px, dus de kast past uit zichzelf binnen zijn
+     maximum. `min-height` van de nis is geen variabele; die ene regel wordt
+     daarom overschreven, anders houdt een lege nis van 84px de kast hoog. */
+  .bal-machine .finale-machine{
+    --finale-bal:30px;
+    --goot-in:6px;
+    --goot-uit:14px;
+    --goot-h:32px;
+    --bak-b:58px;
+    --bak-h:38px;
+    --bak-rand:6px;
+    --kast-pad:7px;
+  }
+  .bal-machine .finale-kast{gap:5px}
+  .bal-machine .finale-kastlijf{min-height:52px;gap:6px}
+  .bal-machine .finale-nis{padding:5px}
+  .bal-machine .finale-bol{width:clamp(44px,14vw,64px)}
+  /* Alleen de hoogte van de naamplaat gaat omlaag. De binnenmarge rechts
+     blijft van css/finale.css: daar staat het platte zijpaneel met de teller
+     overheen, en zonder die ruimte loopt "BALLENTROMMEL" eronderdoor. */
+  .bal-machine .finale-kastplaat{padding-block:2px 3px}
+  .bal-machine .finale-kastplaat-tekst{font-size:9px;letter-spacing:.1em}
+
+  .bal-vak{font-size:clamp(13px,4.2vw,22px)}
+  .bal-melding{min-height:38px;padding:7px 12px;font-size:clamp(11px,3.2vw,14px)}
+  .bal-teller{min-height:42px}
+  #scherm-ballen .knop{min-height:46px}
+  #scherm-ballen > .titel,#scherm-ballen > h2{font-size:clamp(15px,4.4vw,20px)}
+}
+
+/* Hoge telefoon (375x812 en groter): daar is hoogte genoeg, dus de kast hoeft
+   niet in te leveren en staat er weer op zijn eigen maat, precies zoals
+   css/finale.css hem onder 760px bedoelt. De kaart betaalt dat terug in
+   --bal-rest, zodat de som blijft kloppen. */
+@media (max-width:760px) and (min-height:700px){
+  #scherm-ballen{--bal-rest:462px}
+  /* 190px en niet 170px: op zijn eigen maat is de kast ongeveer 187px hoog,
+     en bij 170px schoven de rijen over elkaar heen — dan liep de goot dwars
+     door "BALLENTROMMEL". Liever de kaart twintig pixels kleiner. */
+  .bal-machine{max-height:190px}
+  .bal-machine .finale-machine{
+    --finale-bal:44px;
+    --goot-in:8px;
+    --goot-uit:20px;
+    --goot-h:48px;
+    --bak-b:76px;
+    --bak-h:58px;
+    --bak-rand:8px;
+    --kast-pad:10px;
+  }
+  .bal-machine .finale-kast{gap:8px}
+  .bal-machine .finale-kastlijf{min-height:84px;gap:8px}
+  .bal-machine .finale-nis{padding:8px}
+  .bal-machine .finale-bol{width:clamp(84px,26vw,104px)}
+  .bal-machine .finale-kastplaat{padding-block:4px 5px}
+  .bal-machine .finale-kastplaat-tekst{font-size:10px;letter-spacing:.12em}
+}
+
+@media (max-width:380px){
+  #scherm-ballen{--bal-voeg:4px;--bal-kaartrand:4px}
+  .bal-groen{gap:7px;padding:5px 10px;font-size:10px;letter-spacing:.08em}
+  .bal-groen-stip{width:15px;height:15px}
+  .bal-teller{min-height:38px;padding:.22em .8em;letter-spacing:.08em}
+  .bal-melding{min-height:36px;padding:6px 10px;letter-spacing:.05em}
+  #scherm-ballen .knop{min-height:44px;font-size:14px}
+}
+
+/* Lage vensters: de kaart levert als eerste in, zodat de meldingsregel en de
+   knop eronder gewoon in beeld blijven staan. */
+@media (min-width:761px) and (max-height:760px){
+  #scherm-ballen{
+    --bal-rest:382px;
+    --bal-kaart-b:min(430px,42vh,calc(100vh - var(--bal-rest)));
+    --bal-machine-b:clamp(180px,17vw,214px);
+  }
+  #scherm-ballen.is-actief{gap:8px 16px;padding:10px}
+  .bal-teller{min-height:40px}
+  .bal-melding{min-height:40px;padding:7px 16px}
+}
+
+/* --------------------------------------------------------------------------
+   9b. Telefoon liggend — kast en kaart links, de bediening rechts ernaast
+
+   Op een liggende telefoon (812x375, 740x360) is breedte er genoeg en hoogte
+   niet. Alles onder elkaar zetten kost hier vijf keer hoogte; naast elkaar
+   kost het één keer. Links staan de kast en de kaart naast elkaar, rechts een
+   smalle kolom met de titel, de teller, de groene stippen en de trekknop.
+
+   De meldingsregel ligt onderaan over de volle breedte, en niet in die smalle
+   kolom. Hij is het enige onderdeel waarvan de hoogte met de tekst meegroeit:
+   in een kolom van 190px werd "Groene bal: 1 van de 3. Dit kost je geen
+   trekking." vier regels hoog en dan bepaalde die zin de hoogte van het hele
+   scherm. Over de volle breedte is het er één.
+
+   De kaart rekent haar maat terug uit de vensterhoogte, net als het bord in
+   css/game.css, met dezelfde drempel van 480px hoog.
+   -------------------------------------------------------------------------- */
+
+@media (orientation:landscape) and (max-height:480px) and (max-width:1024px){
+
+  body:has(#scherm-ballen.is-actief) > .onderbalk{display:none}
+
+  #scherm-ballen{
+    /* Buiten de kaart: paginamarge (2 x 6px), witte kaderrand (2 x 8px),
+       binnenmarge van het scherm (2 x 8px), de meldingsregel (34px) met zijn
+       tussenruimte (6px) en wat speling. */
+    --bal-rest:110px;
+    --bal-kaart-b:min(430px,max(150px,calc(100vh  - var(--bal-rest))));
+    --bal-kaart-b:min(430px,max(150px,calc(100svh - var(--bal-rest))));
+    --bal-machine-b:clamp(150px,24vw,204px);
+    --bal-voeg:4px;
+    --bal-kaartrand:4px;
+  }
+
+  #scherm-ballen.is-actief,
+  #scherm-ballen.is-actief:has(> .bal-veld){
+    /* De rechterkolom loopt mee met de breedte: op 740px blijft er dan links
+       genoeg over voor de platte kast naast de kaart. */
+    grid-template-columns:minmax(0,1fr) minmax(140px,clamp(140px,26vw,214px));
+    grid-template-rows:auto auto auto auto auto;
+    align-content:center;
+    justify-content:center;
+    gap:6px 12px;
+    padding:8px 10px;
+  }
+
+  /* Links het veld, over de vier regels van de bediening heen. */
+  #scherm-ballen.is-actief > .bal-veld{
+    grid-column:1;
+    grid-row:1 / 5;
+    align-self:center;
+    justify-self:center;
+    width:100%;
+  }
+  /* Rechts de bediening, van boven naar beneden. */
+  #scherm-ballen.is-actief > :is(.titel,h2){grid-column:2;grid-row:1;justify-self:center}
+  #scherm-ballen.is-actief > .bal-teller   {grid-column:2;grid-row:2;justify-self:center}
+  #scherm-ballen.is-actief > .bal-groen    {grid-column:2;grid-row:3;justify-self:center}
+  #scherm-ballen.is-actief > .knop         {grid-column:2;grid-row:4;justify-self:stretch}
+  /* En onderaan, over de hele breedte, de meldingsregel. */
+  #scherm-ballen.is-actief > .bal-melding  {grid-column:1 / -1;grid-row:5;justify-self:center}
+
+  /* Kast en kaart naast elkaar. Boven 760px staat de kast rechtop, daaronder
+     legt css/finale.css hem plat; in beide standen past hij in deze kolom. */
+  .bal-veld{
+    grid-template-columns:var(--bal-machine-b) minmax(0,var(--bal-kaart-b));
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+  }
+  .bal-veld > .bal-machine{width:100%;max-width:var(--bal-machine-b)}
+  .bal-veld > .bal-kaart{width:100%;max-width:var(--bal-kaart-b,430px)}
+  .bal-machine{max-height:var(--bal-kaart-b,none)}
+
+  @media (max-width:760px){
+    /* De platte kast is breder dan de rechtopstaande, dus die kolom groeit
+       mee. Hoger dan de kaart wordt hij niet; hij is 135px en de kaart hier
+       ruim 200px.
+
+       Hij moet ook breed genoeg blijven voor de naamplaat: die houdt rechts
+       106px vrij voor het zijpaneel, en met minder dan ongeveer 245px staat
+       er "BALLENTRO…".
+
+       Let op: hier stond halverwege dit blok een tweede afsluitteken van een
+       commentaar. Een commentaar eindigt bij het eerste ervan, dus de rest van
+       de tekst viel erbuiten, at de CSS-parser die op als selector en verdween
+       de regel hieronder spoorloos. Het netwerklog meldde gewoon 200 en de
+       kast bleef stiekem op zijn smalle maat staan. Schrijf zo'n teken hier
+       dus nooit uit, ook niet tussen aanhalingstekens. */
+    #scherm-ballen{--bal-machine-b:clamp(200px,34vw,258px)}
+  }
+
+  #scherm-ballen > .titel,#scherm-ballen > h2{font-size:clamp(14px,2.2vw,19px)}
+  .bal-vak{font-size:clamp(12px,1.9vw,20px)}
+  .bal-teller{min-height:36px;font-size:11px;letter-spacing:.09em;padding:.2em .7em}
+  .bal-groen{gap:7px;padding:5px 10px;font-size:10px;letter-spacing:.08em}
+  .bal-groen-stip{width:15px;height:15px}
+  #scherm-ballen .knop{min-height:42px;font-size:14px;max-width:100%}
+  .bal-melding{
+    width:100%;
+    min-height:34px;
+    padding:6px 10px;
+    font-size:clamp(10px,1.5vw,13px);
+    letter-spacing:.05em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. Rustige weergave
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce){
+  .bal-vak,
+  .bal-vak::after,
+  .bal-groen-stip,
+  .bal-melding{
+    animation:none!important;
+    transition-duration:.001ms!important;
+  }
+  /* Zonder beweging moeten de standen zelf het verschil maken: het net
+     getrokken vakje en de kiesbare vakjes houden hun rand, alleen het
+     kloppen ervan vervalt. */
+  .bal-vak.is-kiesbaar{outline-color:var(--geel)}
+  .bal-vak.is-nieuw{outline-color:var(--wit)}
+  .bal-vak.is-lingo{
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.95),
+      inset 0 -3px 0 rgba(150,95,0,.38),
+      0 0 16px rgba(255,210,58,.9);
+  }
+  .bal-vak.is-kiesbaar:hover{translate:0;scale:1}
+}

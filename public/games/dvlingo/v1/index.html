@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#9fd6f2">
+<meta name="description" content="Nederlands Lingo-spel over digitale vaardigheden.">
+<title>Digitale Vaardigheden Lingo</title>
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/startscherm.css">
+<!-- De ballenmachine: trommel, goot, uitvak, de rollende bal en de LINGO-vlag.
+     js/ballenfase.js bouwt die machine met de `finale-`klassen uit dit blad, dus
+     dit bestand hoort vóór css/ballenfase.css geladen te worden. -->
+<link rel="stylesheet" href="css/finale.css">
+<!-- Sfeerlaag met de beelden uit assets/. Hoort als laatste en valt netjes
+     terug op het CSS-verloop wanneer een beeld ontbreekt. -->
+<link rel="stylesheet" href="css/beeld.css">
+<!-- De zwevende iconen achter het speelveld; vervangt de slinger uit
+     css/game.css, dus dit bestand moet daarna geladen worden. -->
+<link rel="stylesheet" href="css/sfeer.css">
+<!-- De rand van het speelveld als tijdmeter tijdens het spelen. -->
+<link rel="stylesheet" href="css/tijdrand.css">
+<!-- De twee nieuwe schermen: ballen trekken en het bonuswoord. -->
+<link rel="stylesheet" href="css/ballenfase.css">
+<link rel="stylesheet" href="css/bonuswoord.css">
+<!-- De knop naar Woordenbeheer, en het slotscherm op die pagina. -->
+<link rel="stylesheet" href="css/woordenbeheer.css">
+</head>
+<body data-pagina="spel">
+
+<!-- De zwevende tekens achter het speelveld. Puur sfeer, dus onzichtbaar voor
+     schermlezers en niet aan te klikken. -->
+<div class="sfeer" aria-hidden="true"></div>
+
+<main>
+
+  <!-- ==================================================== MENU ============ -->
+  <section id="scherm-menu" class="scherm is-actief" aria-label="Hoofdmenu">
+
+    <div class="menu-iconen">
+      <!-- De achtergrondmuziek staat standaard uit; js/audio.js zet deze
+           stand meteen goed zodra een eerdere keuze bewaard was. -->
+      <button id="knop-muziek" class="icoonknop" type="button" data-dvl-muziek
+              aria-pressed="false" aria-label="Muziek aan of uit">
+        <span class="icoon icoon-muziek" aria-hidden="true"></span>
+      </button>
+      <button id="knop-geluid" class="icoonknop" type="button" data-dvl-geluid
+              aria-pressed="true" aria-label="Geluid aan of uit">
+        <span class="icoon icoon-geluid" aria-hidden="true"></span>
+      </button>
+      <button id="knop-uitleg" class="icoonknop icoon-uitleg" type="button"
+              aria-label="Uitleg en spelregels"></button>
+    </div>
+
+    <h1 class="visueel-verborgen">Digitale Vaardigheden Lingo</h1>
+    <figure class="start-merk">
+      <img src="assets/dvlingo-merk.png"
+           alt="Digitale Vaardigheden Lingo: een lachende jongen achter een laptop, omringd door tekens voor wifi, chatten, internet en de muisaanwijzer.">
+    </figure>
+
+    <div class="welkom">
+      Welkom!
+      <span class="regel">Kies een spel</span>
+    </div>
+
+    <div class="keuzes">
+      <!-- HELIX: in het leerplatform speelt de leerling altijd alleen; tokens
+           worden per leerling toegekend. De tweespelersknop staat daarom niet
+           in deze versie. -->
+      <button class="knop knop--blauw knop--groot knop--breed" type="button"
+              data-actie="kies-spelers" data-spelers="1">
+        Spelen
+        <span class="icoon icoon-chevron-rechts" aria-hidden="true"></span>
+        <span class="regel">Start het spel</span>
+      </button>
+    </div>
+
+    <p id="menu-bron" class="kop-klein midden"></p>
+  </section>
+
+  <!-- Er is geen levelkeuzescherm meer: wie een spelvorm kiest gaat meteen naar
+       het startscherm van level 1 en speelt door tot de eindstand. -->
+
+  <!-- ============================================ STARTSCHERM ============ -->
+  <!-- js/startscherm.js vult dit scherm per level; niet zelf invullen. -->
+  <section id="scherm-start" class="scherm" aria-label="Start van het level"></section>
+
+  <!-- ==================================================== SPEL ============ -->
+  <section id="scherm-spel" class="scherm" aria-label="Het spel">
+
+    <button id="terug" type="button" aria-label="Terug naar het menu"></button>
+    <button id="pauze" type="button" aria-pressed="false" aria-label="Pauzeer het spel"></button>
+
+    <div id="bord" class="bord" data-lengte="5" role="grid" aria-label="Lingobord"></div>
+
+    <div class="paneel">
+      <p id="ronde">Ronde 1</p>
+      <p id="beurt" class="ronde-label" hidden>Beurt: speler 1</p>
+
+      <div class="scorevak">
+        <span class="label">Score</span>
+        <span id="score">0</span>
+      </div>
+
+      <button id="hints" type="button" data-aantal="3"
+              aria-label="Gebruik een hint en onthul één letter">
+        <span id="hint-aantal">3</span>
+      </button>
+
+      <!-- Balk en cijfer horen bij elkaar: het cijfer ligt in de pil, niet
+           los eronder. De wikkel draagt de plaatsing, de balk zelf mag
+           daardoor vrij pulseren zonder het cijfer mee te trekken. -->
+      <div class="tijdvak">
+        <div id="tijdbalk" role="progressbar" aria-label="Resterende tijd"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+          <span class="vulling"></span>
+        </div>
+        <p id="tijd-getal" class="tijd-getal">1:15</p>
+      </div>
+
+      <div class="invoerrij">
+        <div id="invoer" role="textbox" aria-readonly="true" aria-label="Jouw woord"></div>
+        <button id="bevestig" type="button" aria-label="Bevestig het woord"></button>
+      </div>
+    </div>
+
+    <div id="toetsenbord" role="group" aria-label="Schermtoetsenbord">
+      <div class="toetsenrij">
+        <button class="toets" type="button" data-letter="Q">Q</button>
+        <button class="toets" type="button" data-letter="W">W</button>
+        <button class="toets" type="button" data-letter="E">E</button>
+        <button class="toets" type="button" data-letter="R">R</button>
+        <button class="toets" type="button" data-letter="T">T</button>
+        <button class="toets" type="button" data-letter="Y">Y</button>
+        <button class="toets" type="button" data-letter="U">U</button>
+        <button class="toets" type="button" data-letter="I">I</button>
+        <button class="toets" type="button" data-letter="O">O</button>
+        <button class="toets" type="button" data-letter="P">P</button>
+      </div>
+      <div class="toetsenrij">
+        <button class="toets" type="button" data-letter="A">A</button>
+        <button class="toets" type="button" data-letter="S">S</button>
+        <button class="toets" type="button" data-letter="D">D</button>
+        <button class="toets" type="button" data-letter="F">F</button>
+        <button class="toets" type="button" data-letter="G">G</button>
+        <button class="toets" type="button" data-letter="H">H</button>
+        <button class="toets" type="button" data-letter="J">J</button>
+        <button class="toets" type="button" data-letter="K">K</button>
+        <button class="toets" type="button" data-letter="L">L</button>
+      </div>
+      <div class="toetsenrij">
+        <button class="toets toets--enter" type="button" data-actie="enter">Enter</button>
+        <button class="toets" type="button" data-letter="Z">Z</button>
+        <button class="toets" type="button" data-letter="X">X</button>
+        <button class="toets" type="button" data-letter="C">C</button>
+        <button class="toets" type="button" data-letter="V">V</button>
+        <button class="toets" type="button" data-letter="B">B</button>
+        <button class="toets" type="button" data-letter="N">N</button>
+        <button class="toets" type="button" data-letter="M">M</button>
+        <button class="toets toets--wis" type="button" data-actie="wis">Wis</button>
+      </div>
+    </div>
+
+    <!-- Onderbalk van het speelveld, zoals bij de referentie: spelicoon en
+         titel links, ronde knoppen rechts. Staat alleen op desktop, waar het
+         schermtoetsenbord wegvalt en de bediening via het fysieke toetsenbord
+         en de bevestigknop loopt. -->
+    <div class="spel-onderbalk">
+      <span class="spel-onderbalk-icoon" aria-hidden="true"></span>
+      <span class="spel-onderbalk-titel">Digitale Vaardigheden Lingo</span>
+      <div class="spel-onderbalk-knoppen">
+        <button class="icoonknop" type="button" data-dvl-muziek
+                aria-pressed="false" aria-label="Muziek aan of uit">
+          <span class="icoon icoon-muziek" aria-hidden="true"></span>
+        </button>
+        <button class="icoonknop" type="button" data-dvl-geluid
+                aria-pressed="true" aria-label="Geluid aan of uit">
+          <span class="icoon icoon-geluid" aria-hidden="true"></span>
+        </button>
+        <button class="icoonknop icoon-uitleg" type="button" data-actie="uitleg"
+                aria-label="Uitleg en spelregels"></button>
+      </div>
+    </div>
+
+    <p id="melding" role="status" aria-live="polite"></p>
+
+    <!-- Het woord met zijn uitleg, na elk geraden of gemist woord. -->
+    <div id="woordkaart" class="overlay" hidden role="dialog" aria-modal="true"
+         aria-labelledby="woordkaart-kop">
+      <p class="titel" id="woordkaart-kop">Goed geraden!</p>
+      <div class="kaart midden">
+        <p class="ondertitel geen-marge" id="woordkaart-woord"></p>
+        <p class="uitleg" id="woordkaart-uitleg"></p>
+      </div>
+      <p class="titel" id="woordkaart-punten"></p>
+      <button class="knop knop--groen knop--breed" type="button" data-actie="volgende">
+        Verder
+      </button>
+    </div>
+
+    <!-- Pauze -->
+    <div id="pauzescherm" class="overlay" hidden role="dialog" aria-modal="true"
+         aria-labelledby="pauze-kop">
+      <p class="titel" id="pauze-kop">Gepauzeerd</p>
+      <div class="kaart midden">
+        <p class="uitleg geen-marge">De klok staat stil tot je verder speelt.</p>
+      </div>
+      <button class="knop knop--groen knop--breed" type="button" data-actie="hervat">
+        Verder spelen
+      </button>
+      <button class="knop knop--wit knop--klein" type="button" data-actie="menu">
+        Stoppen en terug naar het menu
+      </button>
+    </div>
+  </section>
+
+  <!-- ================================================ BALLENFASE ========= -->
+  <!-- js/ballenfase.js vult de kaart en de machine; niet zelf invullen. -->
+  <section id="scherm-ballen" class="scherm" aria-label="Ballen trekken">
+    <h2 class="titel">Ballen trekken</h2>
+
+    <div class="bal-veld">
+      <div class="bal-machine" id="bal-machine"></div>
+
+      <div class="bal-kaart" id="bal-kaart" role="grid" aria-label="Lingokaart"></div>
+
+      <div class="bal-teller">
+        Ballen te gaan
+        <span class="bal-teller-getal" id="bal-teller">0</span>
+      </div>
+
+      <div class="bal-groen" id="bal-groen" aria-label="Verzamelde groene ballen">
+        <span class="bal-groen-stip"></span>
+        <span class="bal-groen-stip"></span>
+        <span class="bal-groen-stip"></span>
+      </div>
+
+      <p class="bal-melding" id="bal-melding" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- ================================================= BONUSWOORD ======== -->
+  <!-- js/bonusscherm.js vult de vakjes en de voorraad; niet zelf invullen. -->
+  <section id="scherm-bonus" class="scherm" aria-label="Het bonuswoord">
+    <h2 class="titel">Het bonuswoord</h2>
+    <p class="ondertitel" id="bonus-uitleg">
+      Elf letters over digitale vaardigheden. Vul de open plekken aan.
+    </p>
+
+    <div class="bonus-rij" id="bonus-rij" role="group" aria-label="Het bonuswoord"></div>
+
+    <div class="bonus-voorraad" id="bonus-voorraad" role="group"
+         aria-label="Letters die nog geplaatst moeten worden"></div>
+
+    <div class="bonus-klok" id="bonus-klok">
+      <span class="bonus-klok-label">Tijd</span>
+      <span id="bonus-klok-getal">18</span>
+    </div>
+
+    <p class="bonus-melding" id="bonus-melding" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- ================================================== UITSLAG =========== -->
+  <section id="scherm-uitslag" class="scherm" aria-label="Uitslag">
+    <h2 class="titel">Uitslag</h2>
+    <div id="uitslag-inhoud"></div>
+    <div class="keuzes">
+      <button class="knop knop--blauw knop--breed" type="button" data-actie="opnieuw">
+        Nog een keer
+      </button>
+      <button class="knop knop--geel knop--breed" type="button" data-actie="menu">
+        Terug naar het menu
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="onderbalk">
+  <span class="titel">Digitale Vaardigheden Lingo</span>
+  <!-- HELIX: Woordenbeheer zit in het platform zelf, op /admin/spellen. -->
+  <span class="rechts"></span>
+</footer>
+
+<!-- Spelregels, buiten de schermen zodat ze overal open kunnen. -->
+<div id="uitlegscherm" class="overlay" hidden role="dialog" aria-modal="true"
+     aria-labelledby="uitleg-kop">
+  <p class="titel" id="uitleg-kop">Zo werkt het</p>
+  <div class="kaart">
+    <ul class="uitleg">
+      <li>Raad het woord in vijf pogingen. De eerste letter staat al voor je klaar.</li>
+      <li>Rood vak: goede letter op de goede plek.</li>
+      <li>Gele cirkel: die letter zit in het woord, maar op een andere plek.</li>
+      <li>Blauw: die letter komt niet voor.</li>
+      <li>Goede letters blijven staan in de volgende rij.</li>
+      <li>Een woord dat niet in de lijst staat kost geen poging, maar de klok loopt door.</li>
+      <li>Typ op de computer met je toetsenbord: letters, Backspace en Enter. Escape pauzeert.</li>
+    </ul>
+  </div>
+  <button class="knop knop--groen knop--breed" type="button" data-actie="sluit-uitleg">
+    Sluiten
+  </button>
+</div>
+
+<noscript>
+  <p class="kaart midden">Dit spel heeft JavaScript nodig. Zet JavaScript aan en laad de
+  pagina opnieuw.</p>
+</noscript>
+
+<script src="js/woorden.js"></script>
+<!-- Vult het woordenboek aan tot alle Nederlandse woorden van 5 t/m 7 letters,
+     zodat de speler net als bij de echte Lingo met elk bestaand woord mag gokken. -->
+<script src="js/woordenboek.js"></script>
+<script src="js/core.js"></script>
+<script src="js/opslag.js"></script>
+<script src="js/audio.js"></script>
+<!-- De nieuwe opzet: kaartlogica en bonuswoordlogica (geen DOM), en de twee
+     schermen die erop draaien. Voor js/game.js laden, want die roept ze aan. -->
+<script src="js/lingokaart.js"></script>
+<script src="js/bonuswoord.js"></script>
+<script src="js/ballenfase.js"></script>
+<script src="js/bonusscherm.js"></script>
+<script src="js/startscherm.js"></script>
+<!-- Laat de rand van het speelveld meelopen met de klok. Raakt de spellogica
+     niet aan: deze regel weghalen zet de ring uit. -->
+<script src="js/tijdrand.js"></script>
+<!-- HELIX: js/dev.js (het knopje dat het doelwoord toont) hoort niet in de
+     leerlingversie en wordt hier niet geladen. -->
+<script src="js/game.js"></script>
+<!-- HELIX: de brug naar het leerplatform. Leest alleen mee via het DOM-contract
+     en DVL.Game.staat(); raakt de spellogica niet aan. -->
+<script src="js/helix-brug.js"></script>
+</body>
+</html>

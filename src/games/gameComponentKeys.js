@@ -3,7 +3,8 @@ export const GAME_COMPONENT_KEYS = {
   SOCIAL_MEDIA_ZOEKTOCHT: 'socialMediaZoektocht',
   TURBO_TYPEN: 'turboTypen',
   PACO_PAC_MAN: 'pacoPacMan',
-  DATA_KOERIER: 'dataKoerier'
+  DATA_KOERIER: 'dataKoerier',
+  DVLINGO: 'dvlingo'
 };
 
 export const PLAYABLE_GAME_COMPONENT_KEYS = Object.values(GAME_COMPONENT_KEYS);

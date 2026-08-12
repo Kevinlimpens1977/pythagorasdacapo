@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proef — de ballenfase (js/ballenfase.js)</title>
+
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/game.css">
+<link rel="stylesheet" href="../css/finale.css">
+<link rel="stylesheet" href="../css/ballenfase.css">
+
+<style>
+/* Alleen voor deze proefpagina: het regiepaneel eromheen. Niets hiervan
+   hoort bij het spel. */
+.proef-regie{
+  width:min(1150px,100%);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:14px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.92);
+  box-shadow:0 10px 24px rgba(24,50,96,.2);
+  font-size:14px;
+}
+.proef-rij{display:flex;flex-wrap:wrap;align-items:end;gap:10px}
+.proef-kop{
+  font-family:var(--lt-zwaar);
+  font-size:12px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--paneel-tekst);
+  width:100%;
+}
+.proef-veld{display:flex;flex-direction:column;gap:3px}
+.proef-veld span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#4a6f9e}
+.proef-veld input,.proef-veld select{
+  min-height:34px;padding:2px 8px;border:2px solid #b9d2e9;border-radius:9px;background:#fff;
+}
+.proef-vink{display:flex;align-items:center;gap:6px;min-height:34px}
+.proef-knop{
+  min-height:34px;padding:0 14px;border-radius:9px;
+  background:linear-gradient(180deg,#57a6ee,#2f7ccd);color:#fff;
+  font-family:var(--lt-zwaar);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  box-shadow:0 3px 0 #1d5697;
+}
+.proef-knop:disabled{opacity:.45;box-shadow:none}
+.proef-knop--start{background:linear-gradient(180deg,#4ad08d,#22a061);box-shadow:0 3px 0 #167a48}
+.proef-knop--rood{background:linear-gradient(180deg,#f4645a,#d0261c);box-shadow:0 3px 0 #99160f}
+.proef-knop--geel{background:linear-gradient(180deg,#ffd85e,#e5a900);box-shadow:0 3px 0 #a87d00;color:#4a3200}
+.proef-knop--groen{background:linear-gradient(180deg,#5fdca0,#22a061);box-shadow:0 3px 0 #167a48}
+.proef-log{
+  margin:0;max-height:150px;overflow:auto;
+  font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.5;
+  color:#22456f;white-space:pre-wrap;
+}
+</style>
+</head>
+<body data-pagina="proef">
+
+<div class="proef-regie">
+  <p class="proef-kop">Ballenfase los starten</p>
+
+  <div class="proef-rij">
+    <label class="proef-veld"><span>Zaad</span>
+      <input id="p-zaad" type="number" value="42" style="width:90px"></label>
+    <label class="proef-veld"><span>Trekkingen</span>
+      <input id="p-trekkingen" type="number" min="0" max="12" value="5" style="width:90px"></label>
+    <label class="proef-veld"><span>Tempo</span>
+      <select id="p-tempo">
+        <option value="1">gewoon</option>
+        <option value="0.35">snel</option>
+        <option value="2">traag</option>
+        <option value="5">stap voor stap (voor schermafdrukken)</option>
+      </select></label>
+    <label class="proef-veld"><span>Kaart</span>
+      <select id="p-scenario">
+        <option value="gewoon">verse kaart</option>
+        <option value="lingo">LINGO klaargelegd (één vakje open)</option>
+      </select></label>
+    <label class="proef-vink"><input id="p-eerste" type="checkbox" checked>
+      uitgebreide introductie (na level 1)</label>
+    <label class="proef-vink"><input id="p-geenintro" type="checkbox">
+      introductie overslaan</label>
+    <button class="proef-knop proef-knop--start" id="p-start" type="button">Start de fase</button>
+    <button class="proef-knop" id="p-stop" type="button">Stop</button>
+  </div>
+
+  <p class="proef-kop">Regie — bepaal welke bal er als volgende uit de trommel komt</p>
+  <div class="proef-rij">
+    <button class="proef-knop" id="p-nummer" type="button">Nummerbal</button>
+    <button class="proef-knop proef-knop--geel" id="p-vraag" type="button">Vraagbal</button>
+    <button class="proef-knop proef-knop--groen" id="p-groen" type="button">Groene bal</button>
+    <button class="proef-knop proef-knop--rood" id="p-rood" type="button">Rode bal</button>
+    <button class="proef-knop" id="p-winnend" type="button">Winnende bal (LINGO)</button>
+    <button class="proef-knop" id="p-toeval" type="button">Gewoon een bal (toeval)</button>
+  </div>
+
+  <pre class="proef-log" id="p-log">Nog niets gestart.</pre>
+</div>
+
+<!-- Woordelijk de opmaak van #scherm-ballen uit index.html. -->
+<main>
+  <section id="scherm-ballen" class="scherm is-actief" aria-label="Ballen trekken">
+    <h2 class="titel">Ballen trekken</h2>
+
+    <div class="bal-veld">
+      <div class="bal-machine" id="bal-machine"></div>
+
+      <div class="bal-kaart" id="bal-kaart" role="grid" aria-label="Lingokaart"></div>
+
+      <div class="bal-teller">
+        Ballen te gaan
+        <span class="bal-teller-getal" id="bal-teller">0</span>
+      </div>
+
+      <div class="bal-groen" id="bal-groen" aria-label="Verzamelde groene ballen">
+        <span class="bal-groen-stip"></span>
+        <span class="bal-groen-stip"></span>
+        <span class="bal-groen-stip"></span>
+      </div>
+
+      <p class="bal-melding" id="bal-melding" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+
+<script src="audio.js"></script>
+<script src="lingokaart.js"></script>
+<script src="ballenfase.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var doc = document;
+  function el(id) { return doc.getElementById(id); }
+
+  var sessie = null;
+  var basisToeval = null;
+  var winnendVak = -1;
+  var regels = [];
+
+  /* De toevalsbron die de fase gebruikt. Staat er een dwangwaarde klaar, dan
+     krijgt de eerstvolgende trekking precies de bal die wij willen; daarna
+     loopt alles weer op het zaad. DVL.Kaart.trek doet exact één aanroep om
+     een bal uit de bak te kiezen, dus dit is genoeg om te sturen. */
+  var dwang = null;
+  function toeval() {
+    if (dwang !== null) { var waarde = dwang; dwang = null; return waarde; }
+    return basisToeval();
+  }
+
+  function log(tekst) {
+    regels.unshift(tekst);
+    if (regels.length > 40) regels.pop();
+    el('p-log').textContent = regels.join('\n');
+  }
+
+  /* ------------------------------------------------------------------
+     Een LINGO klaarleggen: kies een lijn, streep alles op die lijn door
+     op één vakje na, en haal die nummers uit de bak. Levert het vakje op
+     dat nog open staat.
+     ------------------------------------------------------------------ */
+  function legLingoKlaar(sessie) {
+    var kaart = sessie.kaart;
+    for (var l = 0; l < DVL.Kaart.LIJNEN.length; l++) {
+      var vakjes = DVL.Kaart.LIJNEN[l].vakjes;
+      var open = [];
+      for (var v = 0; v < vakjes.length; v++) {
+        if (!kaart.doorgestreept[vakjes[v]]) open.push(vakjes[v]);
+      }
+      if (open.length < 2) continue;
+
+      var gezet = open.slice(0, open.length - 1);
+      for (var g = 0; g < gezet.length; g++) kaart.doorgestreept[gezet[g]] = true;
+
+      if (DVL.Kaart.heeftLingo(kaart.doorgestreept)) {
+        for (var t = 0; t < gezet.length; t++) kaart.doorgestreept[gezet[t]] = false;
+        continue;
+      }
+
+      /* De bak is gevuld met de toen nog open nummers; die van de zojuist
+         doorgestreepte vakjes horen er niet meer in. */
+      for (var b = kaart.ballen.length - 1; b >= 0; b--) {
+        if (kaart.ballen[b].soort !== DVL.Kaart.BAL_NUMMER) continue;
+        for (var k = 0; k < gezet.length; k++) {
+          if (kaart.ballen[b].getal === kaart.getallen[gezet[k]]) {
+            kaart.ballen.splice(b, 1);
+            break;
+          }
+        }
+      }
+      return open[open.length - 1];
+    }
+    return -1;
+  }
+
+  /* ------------------------------------------------------------------
+     Starten en stoppen
+     ------------------------------------------------------------------ */
+  function starten() {
+    var zaad = parseInt(el('p-zaad').value, 10) || 0;
+    var trekkingen = parseInt(el('p-trekkingen').value, 10);
+    if (isNaN(trekkingen)) trekkingen = 5;
+
+    dwang = null;
+    basisToeval = DVL.Kaart.maakWillekeur(zaad);
+    sessie = DVL.Kaart.nieuweSessie({ zaad: zaad });
+    winnendVak = -1;
+
+    if (el('p-scenario').value === 'lingo') {
+      winnendVak = legLingoKlaar(sessie);
+      log('LINGO klaargelegd: vakje ' + winnendVak +
+          ' (nummer ' + sessie.kaart.getallen[winnendVak] + ') maakt de lijn vol.');
+    }
+    if (el('p-geenintro').checked) sessie.kaart.introGetoond = true;
+
+    DVL.Ballenfase.start({
+      sessie: sessie,
+      trekkingen: trekkingen,
+      eersteKeer: el('p-eerste').checked,
+      rng: toeval,
+      tempo: parseFloat(el('p-tempo').value) || 1,
+      scherm: el('scherm-ballen'),
+      opKlaar: function (uitslag) {
+        log('opKlaar: ' + JSON.stringify(uitslag));
+      }
+    });
+
+    log('Gestart — zaad ' + zaad + ', ' + trekkingen + ' trekkingen, ' +
+        (el('p-eerste').checked ? 'met' : 'zonder') + ' uitgebreide introductie.');
+  }
+
+  /* ------------------------------------------------------------------
+     Regie: de volgende bal aanwijzen en meteen trekken
+     ------------------------------------------------------------------ */
+  function zetVolgende(kiezer, naam) {
+    if (!sessie) { log('Start eerst een fase.'); return; }
+    var staat = DVL.Ballenfase.staat();
+    if (!staat) { log('Er loopt geen fase.'); return; }
+    if (staat.afgelopen) { log('De fase is al voorbij.'); return; }
+    if (staat.intro || staat.bezig || staat.kiest) {
+      log('Wacht even: er is nog iets aan de gang.');
+      return;
+    }
+
+    var ballen = sessie.kaart.ballen;
+    var plek = -1;
+    for (var i = 0; i < ballen.length; i++) {
+      if (kiezer(ballen[i])) { plek = i; break; }
+    }
+    if (plek === -1) { log('Geen ' + naam + ' meer in de trommel.'); return; }
+
+    dwang = (plek + 0.5) / ballen.length;
+    log('Volgende bal: ' + naam + '.');
+    DVL.Ballenfase.trek();
+  }
+
+  function opSoort(soort) {
+    return function (bal) { return bal.soort === soort; };
+  }
+
+  el('p-start').addEventListener('click', starten);
+  el('p-stop').addEventListener('click', function () {
+    DVL.Ballenfase.stop();
+    log('Gestopt.');
+  });
+
+  el('p-nummer').addEventListener('click', function () {
+    zetVolgende(opSoort(DVL.Kaart.BAL_NUMMER), 'een nummerbal');
+  });
+  el('p-vraag').addEventListener('click', function () {
+    zetVolgende(opSoort(DVL.Kaart.BAL_VRAAG), 'de vraagbal');
+  });
+  el('p-groen').addEventListener('click', function () {
+    zetVolgende(opSoort(DVL.Kaart.BAL_GROEN), 'een groene bal');
+  });
+  el('p-rood').addEventListener('click', function () {
+    zetVolgende(opSoort(DVL.Kaart.BAL_ROOD), 'een rode bal');
+  });
+  el('p-winnend').addEventListener('click', function () {
+    if (winnendVak < 0) { log('Er is geen LINGO klaargelegd.'); return; }
+    var getal = sessie.kaart.getallen[winnendVak];
+    zetVolgende(function (bal) {
+      return bal.soort === DVL.Kaart.BAL_NUMMER && bal.getal === getal;
+    }, 'nummer ' + getal + ', de winnende bal');
+  });
+  el('p-toeval').addEventListener('click', function () {
+    if (!DVL.Ballenfase.staat()) { log('Er loopt geen fase.'); return; }
+    DVL.Ballenfase.trek();
+  });
+
+  /* ------------------------------------------------------------------
+     Vaste taferelen voor schermafdrukken
+
+     Met ?tafereel=intro|trekking|vraag|lingo|rood zet de pagina zichzelf
+     klaar en houdt hij het beeld daarna stil. Zo is elke afdruk met één
+     adres opnieuw te maken, ook door een browser zonder muis.
+
+     "Stilhouden" gebeurt door de klok stil te zetten (window.setTimeout
+     wordt een lege huls) en, bij LINGO, de vlag op zijn hoogtepunt vast te
+     zetten. Alles wat je op de afdruk ziet is echt door de fase gezet;
+     alleen het verstrijken van de tijd is gepauzeerd.
+     ------------------------------------------------------------------ */
+
+  var echteTimeout = window.setTimeout.bind(window);
+
+  var TAFERELEN = {
+    intro:    { eerste: true,  slaOver: false, tempo: 5, bal: null,
+                tot: 'Je krijgt acht' },
+    trekking: { eerste: false, slaOver: true,  tempo: 1, bal: 'nummer',
+                tot: 'Nummer' },
+    vraag:    { eerste: false, slaOver: true,  tempo: 1, bal: 'vraag',
+                tot: 'Vraagbal! Kies een vakje' },
+    lingo:    { eerste: false, slaOver: true,  tempo: 1, bal: 'winnend',
+                kaart: 'lingo', tot: 'LINGO!' },
+    rood:     { eerste: false, slaOver: true,  tempo: 1, bal: 'rood',
+                tot: 'Rode bal' },
+    /* De hele keten in één keer: uitgebreide introductie, dan LINGO, dan de
+       korte introductie van de nieuwe kaart. */
+    nieuwekaart: { eerste: true, slaOver: false, tempo: 1, bal: 'winnend',
+                   kaart: 'lingo', tot: 'Acht nummers gaan er alvast door' }
+    };
+
+  function bevries(naam) {
+    /* Eerst alles wat al klaarstaat afzeggen — een wachtende timer loopt
+       gewoon door als je alleen setTimeout vervangt — en daarna de klok
+       dichtzetten, zodat het beeld blijft staan zoals het staat. */
+    var laatste = window.setTimeout(function () {}, 0);
+    for (var i = 0; i <= laatste; i++) window.clearTimeout(i);
+    window.setTimeout = function () { return 0; };
+    if (naam === 'lingo') {
+      var vlag = doc.querySelector('.finale-vlag');
+      if (vlag) { vlag.classList.remove('is-op'); vlag.style.opacity = '1'; }
+    }
+    doc.title = 'Tafereel: ' + naam;
+    doc.body.setAttribute('data-tafereel-klaar', naam);
+    log('Tafereel "' + naam + '" staat stil.');
+  }
+
+  function wachtOp(test, doen, pogingen) {
+    var over = pogingen || 400;
+    (function kijk() {
+      if (test()) { doen(); return; }
+      if (--over <= 0) { log('Tafereel gaf het op.'); return; }
+      echteTimeout(kijk, 50);
+    })();
+  }
+
+  function speelTafereel(naam) {
+    var t = TAFERELEN[naam];
+    if (!t) return;
+
+    el('p-eerste').checked = t.eerste;
+    el('p-geenintro').checked = t.slaOver;
+    el('p-tempo').value = String(t.tempo);
+    if (t.kaart) el('p-scenario').value = t.kaart;
+    doc.querySelector('.proef-regie').style.display = 'none';
+    starten();
+
+    var melding = el('bal-melding');
+    function bereikt() { return melding.textContent.indexOf(t.tot) === 0; }
+
+    if (!t.bal) { wachtOp(bereikt, function () { bevries(naam); }); return; }
+
+    wachtOp(function () { return !el('bal-trek').disabled; }, function () {
+      el('p-' + t.bal).click();
+      wachtOp(bereikt, function () { bevries(naam); });
+    });
+  }
+
+  var tafereel = (location.search.match(/tafereel=([a-z]+)/) || [])[1];
+  if (tafereel) echteTimeout(function () { speelTafereel(tafereel); }, 60);
+
+  log('Klaar om te starten.');
+})();
+</script>
+</body>
+</html>

@@ -6,7 +6,9 @@ export const SERVER_DEFAULT_GAME_REWARD_RULES = {
   // replayDecay: herhaalbeurten leveren server-side steeds de helft op, totaal max 200.
   'turbo-typen': { enabled: true, min: 0, max: 200, basis: 'score_accuracy_completion', replayDecay: 0.5 },
   'paco-pac-man': { enabled: true, min: 0, max: 400, basis: 'score_accuracy_completion', replayDecay: 0.5 },
-  'data-koerier': { enabled: true, min: 0, max: 200, basis: 'score_accuracy_completion', replayDecay: 0.5 }
+  'data-koerier': { enabled: true, min: 0, max: 200, basis: 'score_accuracy_completion', replayDecay: 0.5 },
+  // Streefscore 6.000 spelpunten = 100% (zie src/games/dvlingo/dvlingoScore.js).
+  dvlingo: { enabled: true, min: 0, max: 400, basis: 'score_accuracy_completion', replayDecay: 0.5 }
 };
 
 export const GAME_REWARD_BASES = [

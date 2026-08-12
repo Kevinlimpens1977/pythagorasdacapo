@@ -295,6 +295,13 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Spelinstellingen die de docent klaarzet, zoals de woordenlijst van
+    // DVLingo. Leerlingen lezen ze mee bij het starten van het spel.
+    match /gameInstellingen/{gameId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
     // Leerling-foutmeldingen.
     // Leerlingen mogen alleen eigen meldingen aanmaken en teruglezen voor rate limiting.
     // Moderatie, status en adminnotities blijven admin-only.

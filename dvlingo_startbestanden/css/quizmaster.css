@@ -1,0 +1,1259 @@
+/* ==========================================================================
+   Quizmasterpaneel — Digitale Vaardigheden Lingo
+   Werkscherm. Zelfde kleurentaal als het spel, maar rustiger: minder verloop,
+   meer wit, kleinere tegels. Alle kleuren komen uit css/base.css wanneer die
+   variabelen bestaan; anders vallen ze terug op de waarden uit SPEC.md.
+   ========================================================================== */
+
+/* js/quizmaster.js meet de echte hoogte van de vaste balk en zet die hier neer;
+   alles wat naar boven moet scrollen houdt er rekening mee. */
+:root { --qm-balk-hoogte: 0px; }
+html { scroll-padding-top: calc(var(--qm-balk-hoogte) + 14px); }
+
+.qm-pagina {
+  /* ---- kleuren: eerst die van css/base.css, dan een eigen terugval ---- */
+  --qm-marine:        var(--marine, #2b4a8b);
+  --qm-marine-diep:   var(--marine-diep, #21449a);
+  --qm-blauw:         var(--blauw, #3f95e2);
+  --qm-blauw-diep:    var(--blauw-donker, #2d6cc2);
+  --qm-blauw-zacht:   var(--blauw-bleek, #c9dff1);
+  --qm-rood:          var(--rood, #e8382f);
+  --qm-geel:          var(--geel, #ffd23a);
+  --qm-groen:         var(--groen, #3ec98a);
+  --qm-lucht-boven:   var(--lucht-boven, #d6f0fc);
+  --qm-lucht-onder:   var(--lucht-midden, #b6e1f7);
+
+  --qm-wit:           var(--wit, #ffffff);
+  --qm-papier:        #f7fbfe;
+  --qm-lijn:          #d8e6f2;
+  --qm-lijn-zacht:    #e9f2f9;
+  --qm-inkt:          var(--tekst, #22406f);
+
+  /* Bewust NIET var(--tekst-zacht): #5b7fae haalde op wit maar 4,14:1 en op de
+     lichtblauwe vlakken nog minder. #4a6b96 haalt 5,50:1 op wit, 4,92:1 op
+     #eef4fa en 4,68:1 op de lichtblauwe kop — overal boven de 4,5:1 die SPEC
+     ("contrast voldoende") voor kleine tekst vraagt. */
+  --qm-inkt-zacht:    #4a6b96;
+
+  /* Wit op #3f95e2 is 3,26:1; deze donkerdere verloopstop haalt 5,22:1 boven
+     en 6,97:1 onder, met dezelfde vorm en dezelfde blauwe familie. */
+  --qm-knopverloop:       linear-gradient(#2d6cc2, #2159a4);
+  --qm-knopverloop-hover: linear-gradient(#3273c6, #2662ae);
+  /* #e8382f haalt op wit 4,13:1; deze tint 5,64:1. */
+  --qm-rood-tekst:    #c02a22;
+
+  /* ---- maten ---- */
+  --qm-radius:        16px;
+  --qm-radius-klein:  10px;
+  --qm-raak:          44px;   /* kleinste raakvlak op aanraakschermen */
+  --qm-schaduw:       0 2px 4px rgba(31, 53, 96, .06), 0 10px 26px rgba(31, 53, 96, .09);
+  --qm-schaduw-hoog:  0 8px 14px rgba(31, 53, 96, .12), 0 26px 50px rgba(31, 53, 96, .22);
+  --qm-ring:          0 0 0 3px #fff, 0 0 0 6px var(--qm-blauw);
+
+  /* css/base.css zet body op een gecentreerde flexkolom voor het spel;
+     dit werkscherm is een gewone, doorlopende pagina. */
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  /* css/base.css zet `html,body{height:100%}`. Daardoor blijft de body-doos
+     één schermhoogte, en een `position: sticky` kind is aan die doos vastgezet
+     — na 812px scrollen liet de balk dus los. Met een meegroeiende hoogte
+     blijft hij plakken over de hele lijst. */
+  height: auto;
+  min-height: 100%;
+  padding: 0 0 4rem;
+  gap: 0;
+  color: var(--qm-inkt);
+  font-family: var(--lt-basis, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif);
+  font-size: 16px;
+  line-height: 1.5;
+  background:
+    radial-gradient(1100px 520px at 50% -180px, rgba(255, 255, 255, .95), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(var(--qm-lucht-boven), var(--qm-lucht-onder) 340px, var(--qm-papier) 340px);
+  -webkit-text-size-adjust: 100%;
+}
+
+.qm-pagina *,
+.qm-pagina *::before,
+.qm-pagina *::after { box-sizing: border-box; }
+
+.qm-iconen { position: absolute; width: 0; height: 0; overflow: hidden; }
+.qm-icoon { width: 1.15em; height: 1.15em; fill: currentColor; flex: none; }
+
+.qm-pagina :focus-visible {
+  outline: none;
+  box-shadow: var(--qm-ring);
+  border-radius: var(--qm-radius-klein);
+}
+
+/* ==========================================================================
+   Kop
+   ========================================================================== */
+
+.qm-kop {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 1.25rem;
+}
+
+/* Het beeldmerk uit SPEC. Dit is een werkscherm, dus het beeld blijft klein:
+   72px hoog op desktop, 48px op de telefoon. Breedte volgt uit 900x675. */
+.qm-merk {
+  display: block;
+  flex: none;
+  text-decoration: none;
+  padding: 2px;
+  border-radius: 14px;
+  transition: transform .18s ease;
+}
+.qm-merk:hover { transform: translateY(-2px); }
+
+.qm-merkbeeld {
+  display: block;
+  height: 72px;
+  width: auto;
+  max-width: 100%;
+  filter: drop-shadow(0 3px 5px rgba(31, 53, 96, .22));
+}
+
+.qm-koptekst { flex: 1 1 16rem; min-width: 0; }
+.qm-koptekst h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2rem);
+  font-weight: 900;
+  letter-spacing: .5px;
+  color: var(--qm-marine);
+}
+.qm-onderkop { margin: .15rem 0 0; color: var(--qm-inkt-zacht); font-size: .95rem; }
+
+.qm-kopacties { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+
+.qm-actiefchip {
+  margin: 0;
+  padding: .45rem .85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .75);
+  border: 1px solid var(--qm-lijn);
+  color: var(--qm-marine);
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Knoppen
+   ========================================================================== */
+
+.qm-knop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .6rem 1.05rem;
+  border: 1px solid var(--qm-lijn);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--qm-marine);
+  font: inherit;
+  font-weight: 700;
+  font-size: .92rem;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(31, 53, 96, .08);
+  transition: transform .12s ease, box-shadow .18s ease, background-color .18s ease, color .18s ease;
+}
+.qm-knop:hover { background: #f2f8fd; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(31, 53, 96, .14); }
+.qm-knop:active { transform: translateY(1px); box-shadow: none; }
+.qm-knop[disabled] { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.qm-knop--hoofd {
+  border-color: transparent;
+  color: #fff;
+  background: var(--qm-knopverloop);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .12), 0 6px 14px rgba(45, 108, 194, .35);
+}
+.qm-knop--hoofd:hover { background: var(--qm-knopverloop-hover); color: #fff; }
+
+.qm-knop--gevaar { color: var(--qm-rood-tekst); border-color: #f6d2cf; }
+.qm-knop--gevaar:hover { background: #fdf1f0; color: var(--qm-rood-tekst); }
+
+
+/* Nog niet klaar om te versturen: gedempt, maar wel aanklikbaar. */
+.qm-knop--onaf { filter: saturate(.35) brightness(1.06); box-shadow: none; }
+
+/* ==========================================================================
+   Vaste besturingsbalk
+   Alles waarmee je stuurt — welke lijst het spel speelt, zoeken, gereedschap —
+   staat hier en blijft in beeld, ook boven aan rij 143.
+   ========================================================================== */
+
+.qm-balk {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(255, 255, 255, .92);
+  border-bottom: 1px solid var(--qm-lijn);
+  transition: box-shadow .2s ease, background-color .2s ease;
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .qm-balk { background: rgba(255, 255, 255, .8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+}
+/* De schaduw komt er pas bij zodra hij echt vastgeplakt zit; het randje staat
+   er altijd, zodat de balk ook zonder javascript als balk leest. */
+.qm-balk.is-vast { box-shadow: 0 6px 16px rgba(31, 53, 96, .10); }
+
+.qm-balk-binnen {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: .6rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.qm-balk .qm-segment { flex: 0 1 22rem; min-width: 12rem; }
+
+.qm-zoekdoos {
+  position: relative;
+  flex: 1 1 12rem;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.qm-zoekicoon {
+  position: absolute;
+  left: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--qm-inkt-zacht);
+  pointer-events: none;
+}
+/* base.css richt zich op input[type="search"]; daarom hier een tikje
+   specifieker, anders wint de padding van daar. */
+.qm-pagina .qm-zoek {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0 2.5rem;
+  border: 2px solid var(--qm-lijn);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--qm-inkt);
+  font: inherit;
+  font-size: .95rem;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.qm-zoek::placeholder { color: var(--qm-inkt-zacht); opacity: 1; }
+.qm-zoek::-webkit-search-cancel-button { display: none; }
+.qm-pagina .qm-zoek:focus { outline: none; border-color: var(--qm-blauw); box-shadow: 0 0 0 4px rgba(63, 149, 226, .18); }
+
+.qm-zoekwis {
+  position: absolute;
+  right: .3rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #eef4fa;
+  color: var(--qm-inkt-zacht);
+  cursor: pointer;
+}
+.qm-zoekwis:hover { background: #dfeaf5; color: var(--qm-marine); }
+.qm-zoekwis[hidden] { display: none; }
+
+.qm-balkteller {
+  margin: 0;
+  flex: none;
+  font-size: .8rem;
+  font-weight: 800;
+  color: var(--qm-inkt-zacht);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.qm-menudoos { position: relative; flex: none; }
+.qm-knop--gereedschap { padding-inline: .85rem; }
+.qm-knop--gereedschap .qm-chevron { width: .95rem; height: .95rem; transition: transform .18s ease; }
+.qm-knop--gereedschap[aria-expanded="true"] { background: #eaf2fb; border-color: var(--qm-blauw); }
+.qm-knop--gereedschap[aria-expanded="true"] .qm-chevron { transform: rotate(180deg); }
+
+.qm-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + .55rem);
+  right: 0;
+  width: min(21rem, calc(100vw - 1.5rem));
+  padding: .4rem;
+  display: grid;
+  gap: 2px;
+  border: 1px solid var(--qm-lijn);
+  border-radius: var(--qm-radius);
+  background: #fff;
+  box-shadow: var(--qm-schaduw-hoog);
+  animation: qm-menu-in .16s ease both;
+}
+.qm-menu[hidden] { display: none; }
+@keyframes qm-menu-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.qm-menu-item {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: .5rem .7rem;
+  border: 0;
+  border-radius: var(--qm-radius-klein);
+  background: transparent;
+  color: var(--qm-marine);
+  font: inherit;
+  font-weight: 700;
+  font-size: .92rem;
+  text-align: left;
+  cursor: pointer;
+}
+.qm-menu-item:hover { background: #eef5fb; }
+.qm-menu-item[hidden] { display: none; }
+.qm-menu-item .qm-icoon { color: var(--qm-inkt-zacht); }
+.qm-menu-item--gevaar { color: var(--qm-rood-tekst); border-top: 1px solid var(--qm-lijn-zacht); border-radius: 0 0 var(--qm-radius-klein) var(--qm-radius-klein); margin-top: .25rem; padding-top: .65rem; }
+.qm-menu-item--gevaar:hover { background: #fdf1f0; }
+.qm-menu-item--gevaar .qm-icoon { color: currentColor; }
+
+.qm-schakelaar--menu {
+  margin: .3rem 0 0;
+  padding: .65rem .7rem;
+  border-top: 1px solid var(--qm-lijn-zacht);
+  border-radius: 0;
+}
+.qm-schakelaar--menu:hover { background: #f6fafd; }
+
+.qm-menu-voet { margin: .4rem .7rem .35rem; }
+
+/* ==========================================================================
+   Werkblad
+   ========================================================================== */
+
+/* De zijkolom staat in quizmaster.html vóór de lijst, zodat hij op smalle
+   schermen bovenaan komt. Met vaste vakken staat hij op het bureaublad tóch
+   rechts van de lijst, precies zoals hiervoor. */
+.qm-werkblad {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21rem;
+  grid-template-areas: "lijst zij";
+  gap: 1.25rem;
+  align-items: start;
+}
+.qm-paneel--lijst { grid-area: lijst; }
+.qm-zijkolom { grid-area: zij; }
+
+.qm-paneel {
+  background: var(--qm-wit);
+  border: 1px solid var(--qm-lijn);
+  border-radius: var(--qm-radius);
+  box-shadow: var(--qm-schaduw);
+  padding: 1.25rem;
+}
+.qm-paneel + .qm-paneel { margin-top: 1.25rem; }
+
+.qm-zijkolom { position: sticky; top: calc(var(--qm-balk-hoogte) + 1.25rem); }
+
+/* ---- spelkaart: de knop die de zijkolom op smalle schermen open- en
+   dichtklapt. Op het bureaublad bestaat hij niet en staat alles gewoon
+   open; de regels die hem tonen staan in de media-queries hieronder. ---- */
+.qm-zij-knop { display: none; }
+
+.qm-paneelkop { margin-bottom: 1rem; }
+.qm-paneelkop h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--qm-marine);
+}
+.qm-paneeluitleg { margin: .2rem 0 0; color: var(--qm-inkt-zacht); font-size: .88rem; }
+
+.qm-kleinekop {
+  margin: 0 0 .85rem;
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--qm-inkt-zacht);
+}
+.qm-kleinekop--sub { margin-top: 1.1rem; padding-top: .85rem; border-top: 1px solid var(--qm-lijn-zacht); }
+
+/* ==========================================================================
+   Toevoegformulier
+   ========================================================================== */
+
+/* De strook die het formulier op smalle schermen open- en dichtklapt. Op het
+   bureaublad is er ruimte zat en staat het formulier gewoon open, dus daar
+   bestaat deze knop niet. De regels die hem tonen staan in de media-query. */
+.qm-invoerknop { display: none; }
+
+.qm-toevoegen {
+  display: grid;
+  grid-template-columns: minmax(9rem, 15rem) minmax(0, 1fr) auto;
+  gap: .6rem .75rem;
+  padding: .95rem;
+  border-radius: var(--qm-radius-klein);
+  background: linear-gradient(#f4f9fd, #eef6fc);
+  border: 1px solid var(--qm-lijn-zacht);
+}
+
+.qm-veld { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.qm-veld label {
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .9px;
+  text-transform: uppercase;
+  color: var(--qm-inkt-zacht);
+}
+.qm-optioneel { font-weight: 600; text-transform: none; letter-spacing: 0; }
+
+.qm-toevoegen input[type="text"],
+.qm-rij-bewerk input[type="text"] {
+  width: 100%;
+  padding: .6rem .8rem;
+  border: 2px solid var(--qm-lijn);
+  border-radius: var(--qm-radius-klein);
+  background: #fff;
+  color: var(--qm-inkt);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+#qm-invoer-woord,
+.qm-rij-bewerk input[name="woord"] {
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+.qm-toevoegen input:focus,
+.qm-rij-bewerk input:focus { outline: none; border-color: var(--qm-blauw); box-shadow: 0 0 0 4px rgba(63, 149, 226, .18); }
+
+.qm-toevoegen input[aria-invalid="true"] { border-color: var(--qm-rood); box-shadow: 0 0 0 4px rgba(232, 56, 47, .14); }
+
+.qm-knop--toevoeg { align-self: end; height: 2.85rem; padding-inline: 1.4rem; }
+
+.qm-invoervoet {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  min-height: 1.6rem;
+}
+.qm-hint { margin: 0; font-size: .82rem; color: var(--qm-inkt-zacht); }
+.qm-hint.is-fout { color: var(--qm-rood-tekst); font-weight: 700; }
+.qm-hint.is-goed { color: #1d7a44; font-weight: 700; }
+
+/* ==========================================================================
+   Melding
+   ========================================================================== */
+
+/* Blijft plakken onder de vaste balk: anders staat "Ongedaan maken" na het
+   wissen van rij 137 dertig schermen hoger dan waar je kijkt. */
+.qm-melding {
+  position: sticky;
+  top: calc(var(--qm-balk-hoogte) + .5rem);
+  z-index: 20;
+  margin: .85rem 0 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--qm-radius-klein);
+  font-size: .9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  overflow: hidden;
+  transition: padding .18s ease, background-color .18s ease;
+}
+.qm-melding:empty { display: none; }
+.qm-melding.is-zichtbaar { padding: .6rem .85rem; box-shadow: 0 6px 16px rgba(31, 53, 96, .14); }
+.qm-melding--info   { background: #eaf4fd; color: var(--qm-marine); border: 1px solid #cfe4f7; }
+.qm-melding--goed   { background: #eaf8ef; color: #1d7a44; border: 1px solid #c8ebd6; }
+.qm-melding--fout   { background: #fdeeed; color: #b32b23; border: 1px solid #f6d2cf; }
+.qm-melding .qm-knop { padding: .3rem .8rem; font-size: .82rem; margin-left: auto; }
+
+/* ==========================================================================
+   Woordenlijst
+   ========================================================================== */
+
+.qm-woorden { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .55rem; }
+.qm-woorden:empty { margin: 0; }
+
+/* De standaardlijst is alleen om naar te kijken: js/quizmaster.js hangt deze
+   klasse er dan aan. Zonder eigen regel zag hij er precies zo uit als een
+   lijst die je wél kunt aanpassen. */
+/* Geen opacity: dat trekt ook de tekst omlaag in contrast. Het stippellijntje
+   en het papierkleurige vlak zeggen genoeg. */
+.qm-woorden--alleenlezen .qm-rij {
+  background: var(--qm-papier);
+  border-style: dashed;
+}
+.qm-woorden--alleenlezen .qm-greep { cursor: default; color: #b7cadd; }
+
+/* Terwijl er gezocht wordt klopt de zichtbare volgorde niet met de echte
+   volgorde, dus is verslepen en verschuiven uitgezet. */
+.qm-woorden--gefilterd .qm-greep { cursor: not-allowed; color: #b7cadd; }
+
+.qm-rij {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .5rem .8rem;
+  padding: .6rem .7rem;
+  scroll-margin-top: calc(var(--qm-balk-hoogte) + 14px);
+  border: 1px solid var(--qm-lijn);
+  border-left: 4px solid var(--qm-blauw);
+  border-radius: var(--qm-radius-klein);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(31, 53, 96, .05);
+  transition: box-shadow .16s ease, border-color .16s ease, background-color .16s ease;
+}
+.qm-rij:hover { box-shadow: 0 4px 14px rgba(31, 53, 96, .12); }
+.qm-rij--dubbel { border-left-color: var(--qm-rood); background: #fffaf9; }
+.qm-rij--nieuw { animation: qm-binnen .45s ease both; }
+@keyframes qm-binnen {
+  from { opacity: 0; transform: translateY(-6px) scale(.99); }
+  to   { opacity: 1; transform: none; }
+}
+
+.qm-rij--sleept {
+  box-shadow: var(--qm-schaduw-hoog);
+  border-color: var(--qm-blauw);
+  transform: scale(1.01);
+  cursor: grabbing;
+  position: relative;
+  z-index: 3;
+}
+.qm-rij--spook { opacity: .4; }
+
+.qm-greep {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #6d8db0;
+  cursor: grab;
+  touch-action: none;
+}
+.qm-greep:hover { background: #f0f6fb; color: var(--qm-blauw-diep); }
+.qm-greep .qm-icoon { width: 1.3rem; height: 1.3rem; }
+
+.qm-nummer {
+  min-width: 1.6rem;
+  text-align: right;
+  color: var(--qm-inkt-zacht);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: .85rem;
+}
+
+.qm-inhoud { min-width: 0; display: flex; flex-direction: column; gap: .25rem; }
+
+.qm-woordregel { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+.qm-woordtekst {
+  font-weight: 900;
+  font-size: 1.02rem;
+  letter-spacing: 2.5px;
+  color: var(--qm-marine);
+}
+/* Was .68rem (10,9px) in #5b7fae op #eef4fa = 3,72:1. Nu 12px in het marine
+   van de kop = 7,66:1 op datzelfde vlak. */
+.qm-label {
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  padding: .18rem .55rem;
+  border-radius: 999px;
+  background: #eef4fa;
+  color: var(--qm-marine);
+}
+.qm-label--dubbel { background: #fdeeed; color: #a8261e; }   /* 6,32:1 */
+.qm-label--buiten { background: #fff6dc; color: #7a5700; }   /* 6,12:1 */
+
+.qm-uitleg { margin: 0; font-size: .85rem; color: var(--qm-inkt-zacht); overflow-wrap: anywhere; }
+.qm-uitleg--leeg { font-style: italic; }
+
+/* Treffer van het zoekveld. */
+.qm-tref {
+  background: #ffe89a;
+  color: var(--qm-marine);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+/* ---- miniatuur van de tegelrij ---- */
+
+.qm-mini { display: flex; gap: 3px; padding: 2px 0; }
+
+.qm-minitegel {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  /* Donkerder dan de tegels in het spel: hier staat witte 11px-tekst op, en
+     die haalde op #3f95e2 maar 3,26:1. Nu 5,22:1 boven en 7,21:1 onder. */
+  background: linear-gradient(#2d6cc2, #22579f);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45);
+  display: grid;
+  place-items: center;
+}
+.qm-miniletter {
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(.7);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.qm-ministip {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .95);
+  transition: opacity .18s ease;
+}
+.qm-minitegel--gegeven .qm-miniletter { opacity: 1; transform: none; }
+.qm-minitegel--gegeven .qm-ministip { opacity: 0; }
+
+.qm-rij:hover .qm-miniletter,
+.qm-rij:focus-within .qm-miniletter,
+.qm-voorbeeld .qm-miniletter { opacity: 1; transform: none; }
+.qm-rij:hover .qm-ministip,
+.qm-rij:focus-within .qm-ministip,
+.qm-voorbeeld .qm-ministip { opacity: 0; }
+
+.qm-voorbeeld { display: flex; align-items: center; gap: .5rem; min-height: 20px; }
+
+/* ---- rijknoppen ---- */
+
+.qm-acties { display: flex; align-items: center; gap: .3rem; }
+
+/* De prullenbak is de enige knop in de rij die je niet met dezelfde beweging
+   terugdraait; die staat dus apart, met een streepje ertussen. */
+.qm-rijknop--wis { position: relative; margin-left: 14px; }
+.qm-rijknop--wis::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: var(--qm-lijn);
+}
+
+.qm-rijknop {
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--qm-inkt-zacht);
+  cursor: pointer;
+  transition: background-color .14s ease, color .14s ease, transform .14s ease;
+}
+.qm-rijknop:hover { background: #eef5fb; color: var(--qm-marine); transform: translateY(-1px); }
+.qm-rijknop[disabled] { opacity: .3; cursor: default; transform: none; background: transparent; }
+.qm-rijknop--test:hover { background: #e7f6ec; color: #1d7a44; }
+.qm-rijknop--wis:hover { background: #fdeeed; color: var(--qm-rood); }
+.qm-rijknop .qm-icoon { width: 1.15rem; height: 1.15rem; }
+
+/* De klapknop hoort bij de compacte rij op smalle schermen; op het
+   bureaublad staat alles al open en bestaat hij niet. */
+.qm-rijknop--klap { display: none; }
+.qm-rijknop--klap .qm-icoon { transition: transform .18s ease; }
+
+/* ---- inline bewerken ---- */
+
+.qm-rij--bewerkt { border-left-color: var(--qm-geel); background: #fffdf5; }
+.qm-rij-bewerk {
+  grid-column: 3 / -1;
+  display: grid;
+  grid-template-columns: minmax(7rem, 12rem) minmax(0, 1fr);
+  gap: .5rem .6rem;
+  align-items: end;
+}
+.qm-rij-bewerk .qm-bewerkknoppen { grid-column: 1 / -1; display: flex; gap: .5rem; }
+.qm-rij-bewerk .qm-hint { grid-column: 1 / -1; }
+
+/* ==========================================================================
+   Zoeken zonder treffers
+   ========================================================================== */
+
+.qm-geenhit {
+  margin: 1rem 0 0;
+  padding: 1.4rem 1rem;
+  text-align: center;
+  border: 2px dashed #cbdff0;
+  border-radius: var(--qm-radius);
+  background: var(--qm-papier);
+  color: var(--qm-inkt-zacht);
+  font-size: .92rem;
+}
+.qm-geenhit[hidden] { display: none; }
+.qm-geenhit strong { color: var(--qm-marine); }
+.qm-geenhit .qm-knop { margin-top: .7rem; }
+
+.qm-zoeknoot {
+  margin: 1rem 0 -.2rem;
+  padding: .55rem .8rem;
+  border-radius: var(--qm-radius-klein);
+  border: 1px solid #cfe4f7;
+  background: #eaf4fd;
+  color: var(--qm-marine);
+  font-size: .82rem;
+}
+.qm-zoeknoot[hidden] { display: none; }
+
+/* ==========================================================================
+   Lege staat
+   ========================================================================== */
+
+.qm-leeg {
+  margin-top: 1rem;
+  padding: 2rem 1.5rem 2.25rem;
+  text-align: center;
+  border: 2px dashed #cbdff0;
+  border-radius: var(--qm-radius);
+  background: linear-gradient(#fbfdff, #f2f8fd);
+}
+.qm-leeg h3 { margin: .9rem 0 .4rem; font-size: 1.15rem; color: var(--qm-marine); }
+.qm-leeg p { margin: 0 auto .6rem; max-width: 46ch; color: var(--qm-inkt-zacht); font-size: .92rem; }
+.qm-leeg-stappen { font-weight: 600; }
+.qm-leeg-knoppen { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; margin-top: 1.1rem; }
+
+.qm-leeg-tegels { display: flex; gap: 6px; justify-content: center; }
+.qm-leeg-tegels span {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  background: linear-gradient(var(--qm-blauw), var(--qm-blauw-diep));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .4);
+  display: grid;
+  place-items: center;
+  animation: qm-wip 2.4s ease-in-out infinite;
+}
+.qm-leeg-tegels span::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .95);
+}
+.qm-leeg-tegels span:nth-child(2) { animation-delay: .12s; }
+.qm-leeg-tegels span:nth-child(3) { animation-delay: .24s; }
+.qm-leeg-tegels span:nth-child(4) { animation-delay: .36s; }
+.qm-leeg-tegels span:nth-child(5) { animation-delay: .48s; }
+@keyframes qm-wip {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* ==========================================================================
+   Bronschakelaar en schud-schakelaar
+   ========================================================================== */
+
+.qm-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #eef4fa;
+  border: 1px solid var(--qm-lijn-zacht);
+}
+.qm-segmentdeel { position: relative; }
+.qm-segmentdeel input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.qm-segmentdeel span {
+  display: block;
+  padding: .5rem .4rem;
+  border-radius: 999px;
+  text-align: center;
+  font-size: .85rem;
+  font-weight: 800;
+  color: var(--qm-inkt-zacht);
+  transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.qm-segmentdeel input:hover + span { background: rgba(255, 255, 255, .7); }
+.qm-segmentdeel input:checked + span {
+  background: var(--qm-knopverloop);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(45, 108, 194, .35);
+}
+.qm-segmentdeel input:focus-visible + span { box-shadow: var(--qm-ring); }
+.qm-segment--klein .qm-segmentdeel span { font-size: .8rem; padding: .4rem; }
+
+.qm-bronuitleg {
+  margin: .7rem 0 0;
+  font-size: .85rem;
+  color: var(--qm-inkt-zacht);
+  min-height: 2.4rem;
+}
+
+.qm-schakelaar {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  margin-top: .85rem;
+  padding-top: .85rem;
+  border-top: 1px solid var(--qm-lijn-zacht);
+  cursor: pointer;
+}
+.qm-schakelaar input { position: absolute; opacity: 0; width: 0; height: 0; }
+.qm-schuif {
+  flex: none;
+  width: 44px;
+  height: 25px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: #cddced;
+  position: relative;
+  transition: background-color .2s ease;
+}
+.qm-schuif::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+  transition: transform .2s cubic-bezier(.34, 1.56, .64, 1);
+}
+.qm-schakelaar input:checked + .qm-schuif { background: var(--qm-knopverloop); }
+.qm-schakelaar input:checked + .qm-schuif::after { transform: translateX(19px); }
+.qm-schakelaar input:focus-visible + .qm-schuif { box-shadow: var(--qm-ring); }
+.qm-schakeltekst strong { display: block; font-size: .92rem; color: var(--qm-inkt); }
+.qm-schakeltekst small { display: block; font-size: .8rem; color: var(--qm-inkt-zacht); line-height: 1.35; }
+
+/* ==========================================================================
+   Tellers per woordlengte
+   ========================================================================== */
+
+.qm-tellers { display: grid; gap: .35rem; }
+
+.qm-teller {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: .5rem;
+  font-size: .82rem;
+}
+.qm-teller-naam { font-weight: 800; color: var(--qm-inkt-zacht); }
+.qm-teller-spoor { height: 9px; border-radius: 999px; background: #eef4fa; overflow: hidden; }
+.qm-teller-vulling {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--qm-blauw-diep), #2159a4);
+  transition: width .35s cubic-bezier(.22, 1, .36, 1);
+}
+.qm-teller--buiten .qm-teller-vulling { background: linear-gradient(90deg, #ffd97a, #e9a500); }
+.qm-teller-getal { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--qm-marine); }
+.qm-teller--totaal { border-top: 1px solid var(--qm-lijn-zacht); margin-top: .3rem; padding-top: .45rem; }
+.qm-teller--totaal .qm-teller-naam { color: var(--qm-marine); }
+
+.qm-voetnoot { margin: .85rem 0 0; font-size: .78rem; line-height: 1.4; color: var(--qm-inkt-zacht); }
+
+
+/* ==========================================================================
+   Vensters
+   ========================================================================== */
+
+.qm-venster {
+  width: min(38rem, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid var(--qm-lijn);
+  border-radius: var(--qm-radius);
+  box-shadow: var(--qm-schaduw-hoog);
+  color: var(--qm-inkt);
+  background: #fff;
+}
+.qm-venster::backdrop { background: rgba(24, 48, 88, .45); backdrop-filter: blur(2px); }
+.qm-venster[open] { animation: qm-venster-in .22s ease both; }
+@keyframes qm-venster-in {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.qm-vensterform { display: grid; gap: .8rem; padding: 1.25rem; }
+.qm-vensterkop { display: flex; align-items: center; gap: 1rem; }
+.qm-vensterkop h2 { margin: 0; font-size: 1.15rem; color: var(--qm-marine); }
+.qm-sluit {
+  margin-left: auto;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f6fb;
+  color: var(--qm-inkt-zacht);
+  cursor: pointer;
+}
+.qm-sluit:hover { background: #e3eef8; color: var(--qm-marine); }
+.qm-vensteruitleg { margin: 0; font-size: .88rem; color: var(--qm-inkt-zacht); }
+
+.qm-tekstvak {
+  width: 100%;
+  padding: .75rem .85rem;
+  border: 2px solid var(--qm-lijn);
+  border-radius: var(--qm-radius-klein);
+  font-family: "Consolas", "SFMono-Regular", "Menlo", monospace;
+  font-size: .88rem;
+  line-height: 1.55;
+  color: var(--qm-inkt);
+  background: #fbfdff;
+  resize: vertical;
+}
+.qm-tekstvak:focus { outline: none; border-color: var(--qm-blauw); box-shadow: 0 0 0 4px rgba(63, 149, 226, .18); }
+.qm-tekstvak--uitvoer { background: #f4f8fc; }
+
+.qm-plakverslag { font-size: .85rem; color: var(--qm-inkt-zacht); min-height: 1.2rem; }
+.qm-plakverslag strong { color: var(--qm-marine); }
+.qm-plakverslag ul { margin: .35rem 0 0; padding-left: 1.1rem; list-style: disc; }
+.qm-plakverslag li.is-fout { color: #b32b23; }
+
+.qm-vensterknoppen { display: flex; gap: .5rem; justify-content: flex-end; flex-wrap: wrap; }
+
+/* ==========================================================================
+   Smallere schermen
+   ========================================================================== */
+
+@media (max-width: 62rem) {
+  /* Eén kolom, en dan staat de zijkolom bovenáán: wie op een telefoon deze
+     pagina opent, ziet eerst wat er straks gespeeld wordt en pas daarna de
+     honderdveertig rijen. */
+  .qm-werkblad {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "zij"
+      "lijst";
+  }
+  .qm-zijkolom { position: static; }
+  .qm-zij-inhoud .qm-paneel:first-child { margin-top: 0; }
+
+  /* Dichtgeklapt is het één kaartje van ~90px met de drie levelcijfers erin;
+     de volledige uitleg is één tik weg. Zo kost het bovenaan zetten geen
+     halve telefoonlengte scrollen. */
+  .qm-zij-knop {
+    display: grid;
+    gap: .55rem;
+    width: 100%;
+    margin: 0;
+    padding: .7rem .85rem;
+    text-align: left;
+    border: 1px solid var(--qm-lijn);
+    border-radius: var(--qm-radius);
+    background: var(--qm-wit);
+    box-shadow: var(--qm-schaduw);
+    color: var(--qm-inkt);
+    font: inherit;
+    cursor: pointer;
+  }
+  .qm-zij-knop:hover { background: #f7fbfe; }
+
+  .qm-zij-kop { display: flex; align-items: center; gap: .5rem; }
+  .qm-zij-titel {
+    flex: 1 1 auto;
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--qm-inkt-zacht);
+  }
+  .qm-zij-meer { font-size: .78rem; font-weight: 800; color: var(--qm-marine); }
+  .qm-zij-knop .qm-chevron {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--qm-marine);
+    transition: transform .18s ease;
+  }
+  .qm-zij-chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .qm-zij-chips:empty { display: none; }
+
+  .qm-zijkolom:not(.is-open) .qm-zij-inhoud { display: none; }
+  /* Twee keer dezelfde kop onder elkaar (op de knop én in het paneel) leest
+     als een fout; de knop draagt hem hier. */
+  .qm-zij-dubbeltitel { display: none; }
+  .qm-zijkolom.is-open .qm-zij-knop { margin-bottom: 1rem; }
+  .qm-zijkolom.is-open .qm-zij-knop .qm-chevron { transform: rotate(180deg); }
+  .qm-zijkolom.is-open .qm-zij-meer { display: none; }
+}
+
+/* De levelcijfers in de dichtgeklapte spelkaart. */
+.qm-levelchip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .3rem;
+  padding: .22rem .6rem;
+  border-radius: 999px;
+  background: #eef4fa;
+  color: var(--qm-marine);
+  font-size: .78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.qm-levelchip b { font-weight: 900; font-variant-numeric: tabular-nums; }
+.qm-levelchip--terugval { background: #fff6dc; color: #7a5700; }
+
+@media (max-width: 44rem) {
+  .qm-kop { padding: 1.1rem 1rem .9rem; gap: .7rem; }
+  .qm-werkblad { padding: 0 1rem; }
+  .qm-kopacties { width: 100%; gap: .5rem; }
+  .qm-koptekst h1 { font-size: 1.35rem; }
+  .qm-merkbeeld { height: 44px; }
+
+  /* ---- kop op één regel + één knop -----------------------------------
+     De kop kostte 228px voordat er ook maar iets van de lijst begon. Twee
+     dingen daarin staan op de telefoon dubbel: de onderkop herhaalt wat de
+     titel al zegt, en de chip ("Het spel speelt: eigen lijst · 143 woorden")
+     staat woord voor woord ook in de vaste balk eronder — de bronschakelaar
+     zegt welke lijst, de teller zegt hoeveel. Ze verdwijnen dus alleen
+     visueel; de chip blijft als aria-live-gebied bestaan, zodat een
+     schermlezer de omschakeling gewoon hoort. ------------------------- */
+  .qm-onderkop { display: none; }
+  /* Basis 0 in plaats van 16rem: dan past de titel gegarandeerd naast het
+     beeldmerk in plaats van op een eigen regel eronder. */
+  .qm-koptekst { flex: 1 1 0; }
+  .qm-actiefchip {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ---- toevoegformulier dichtgeklapt ---------------------------------
+     Zie de toelichting bij .qm-invoerknop in quizmaster.html. ---------- */
+  .qm-invoerknop {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    width: 100%;
+    min-height: var(--qm-raak);
+    padding: .5rem .8rem;
+    border: 1px dashed #cbdff0;
+    border-radius: var(--qm-radius-klein);
+    background: linear-gradient(#f4f9fd, #eef6fc);
+    color: var(--qm-marine);
+    font: inherit;
+    font-weight: 800;
+    font-size: .92rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .qm-invoerknop:hover { background: linear-gradient(#eef6fc, #e6f1fa); }
+  .qm-invoerknop .qm-chevron {
+    margin-left: auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    transition: transform .18s ease;
+  }
+  .qm-paneel--lijst:not(.is-invoer-open) .qm-toevoegen { display: none; }
+  .qm-paneel--lijst.is-invoer-open .qm-invoerknop { margin-bottom: .55rem; border-style: solid; }
+  .qm-paneel--lijst.is-invoer-open .qm-invoerknop .qm-chevron { transform: rotate(180deg); }
+
+  .qm-toevoegen { grid-template-columns: minmax(0, 1fr); }
+  .qm-knop--toevoeg { width: 100%; }
+  .qm-rij-bewerk { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr); }
+
+  /* ---- compacte rij --------------------------------------------------
+     Een lijst hoort scanbaar te zijn. Op de telefoon is een rij daarom één
+     strook: greep, nummer, het woord met zijn lengte, één regel uitleg, en
+     een klapknop. Het gereedschap (verschuiven, testen, wijzigen, wissen)
+     zit erachter en komt tevoorschijn zodra je de rij openklapt — precies
+     wat een quizmaster doet: eerst de lijst langslopen, dan één rij pakken.
+     Niets wordt kleiner dan 44px: de hoogte van de strook wordt juist
+     bepaald door de 44px-greep. -------------------------------------- */
+  .qm-rij {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 .4rem;
+    padding: .3rem .4rem .3rem .25rem;
+  }
+  /* Krappere naad tussen de rijen: de rand links en het witte vlak scheiden
+     ze al. Over 143 rijen scheelt dat ruim 300px scrollen. */
+  .qm-woorden { gap: .35rem; }
+  /* Op 375px is elke pixel er één: met 1,25rem paneelrand paste "BESTAND" +
+     "7 letters" net niet op één regel en werd de rij 80 in plaats van 56px.
+     Het label blijft wel op 12px staan — dat is een leesbaarheidskeuze die
+     hierboven met contrastcijfers is vastgelegd. */
+  .qm-paneel { padding: .85rem; }
+  .qm-nummer { min-width: 1.1rem; font-size: .78rem; }
+  .qm-inhoud { gap: .1rem; }
+  .qm-woordregel { gap: .35rem; }
+  .qm-woordtekst { font-size: .95rem; letter-spacing: 1.3px; }
+  .qm-label { padding: .12rem .4rem; letter-spacing: .3px; }
+
+  /* De pillen staan hier vóór de uitleg in plaats van naast het woord. Zo
+     houdt het woord zijn eigen regel — ook ZOEKMACHINE met "buiten de
+     rondes" erbij — en blijft elke rij één strook hoog; met de pillen
+     ernaast werd zo'n rij 81px in plaats van 56px. De pillen zelf blijven
+     in de bron staan voor schermlezers. */
+  .qm-label--lengte,
+  .qm-label--dubbel,
+  .qm-label--buiten {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .qm-uitleg[data-lengte]::before {
+    content: attr(data-lengte) " letters · ";
+    font-style: normal;
+    font-weight: 800;
+    color: var(--qm-marine);
+  }
+  /* Dezelfde waarschuwingen, dezelfde kleuren, maar op de regel eronder.
+     De gekleurde rand links van de rij blijft het eerste signaal. */
+  .qm-rij--buiten .qm-uitleg[data-lengte]::before {
+    content: attr(data-lengte) " letters · buiten de rondes · ";
+    color: #7a5700;
+  }
+  .qm-rij--dubbel .qm-uitleg[data-lengte]::before {
+    content: attr(data-lengte) " letters · dubbel · ";
+    color: #a8261e;
+  }
+  .qm-rij--dubbel.qm-rij--buiten .qm-uitleg[data-lengte]::before {
+    content: attr(data-lengte) " letters · dubbel · buiten de rondes · ";
+    color: #a8261e;
+  }
+  .qm-rij--buiten { border-left-color: #e9a500; }
+  .qm-uitleg {
+    font-size: .8rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+  }
+  .qm-rij .qm-mini { display: none; }
+  .qm-acties { display: none; }
+  .qm-rijknop--klap { display: grid; }
+
+  .qm-rij--open { background: #fbfdff; }
+  .qm-rij--open .qm-mini { display: flex; }
+  .qm-rij--open .qm-uitleg { -webkit-line-clamp: unset; overflow: visible; }
+  .qm-rij--open .qm-rijknop--klap .qm-icoon { transform: rotate(180deg); }
+  .qm-rij--open .qm-acties {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    margin-top: .3rem;
+    padding-top: .35rem;
+    border-top: 1px solid var(--qm-lijn-zacht);
+  }
+
+  /* Bewerken vult de rij helemaal; de klapknop hoort daar niet bij. */
+  .qm-rij--bewerkt .qm-rijknop--klap { display: none; }
+
+  /* De balk wordt twee regels: schakelaar en gereedschap boven, zoeken eronder.
+     Samen ~104px, zodat er van 812px genoeg overblijft voor de lijst zelf. */
+  .qm-balk-binnen {
+    padding: .5rem 1rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "bron   menu"
+      "zoek   teller";
+    gap: .5rem;
+  }
+  .qm-balk .qm-segment { grid-area: bron; flex: initial; min-width: 0; }
+  .qm-zoekdoos { grid-area: zoek; }
+  .qm-balkteller { grid-area: teller; align-self: center; }
+  .qm-menudoos { grid-area: menu; }
+  .qm-knop--gereedschap .qm-knoptekst { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .qm-knop--gereedschap { padding-inline: .7rem; }
+  .qm-menu { width: min(21rem, calc(100vw - 2rem)); }
+}
+
+/* ==========================================================================
+   Aanraakschermen: niets kleiner dan 44x44, en de onomkeerbare prullenbak
+   los van de rest.
+   ========================================================================== */
+
+@media (max-width: 44rem), (pointer: coarse) {
+  .qm-rijknop { width: var(--qm-raak); height: var(--qm-raak); border-radius: 12px; }
+  .qm-rijknop .qm-icoon { width: 1.35rem; height: 1.35rem; }
+  .qm-acties { gap: .5rem; }
+
+  /* Op aanraakschermen 24px lucht in plaats van 14px. */
+  .qm-rijknop--wis { margin-left: 24px; }
+  .qm-rijknop--wis::before { left: -12px; top: 8px; bottom: 8px; }
+
+  .qm-greep { width: var(--qm-raak); height: var(--qm-raak); }
+  .qm-knop { min-height: var(--qm-raak); }
+  .qm-knop--gereedschap { min-width: var(--qm-raak); }
+  /* De pil blijft 36px hoog, maar de radioknop eronder rekt over de 4px
+     binnenrand van de segmentbalk heen: samen 44px om aan te tikken. */
+  .qm-segment { padding: 4px; }
+  .qm-segmentdeel span { min-height: 36px; display: flex; align-items: center; justify-content: center; }
+  .qm-segmentdeel input { inset: -4px 0; }
+
+  .qm-pagina .qm-zoek { height: var(--qm-raak); }
+  .qm-zoekwis { width: var(--qm-raak); height: var(--qm-raak); right: 0; background: transparent; }
+  .qm-zoekwis:hover { background: #eef4fa; }
+  .qm-menu-item { min-height: var(--qm-raak); }
+  .qm-schakelaar--menu { min-height: var(--qm-raak); align-items: center; }
+  .qm-sluit { width: var(--qm-raak); height: var(--qm-raak); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qm-pagina *, .qm-pagina *::before, .qm-pagina *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+@media print {
+  .qm-kopacties, .qm-toevoegen, .qm-acties, .qm-zijkolom, .qm-greep, .qm-balk { display: none !important; }
+  .qm-pagina { background: #fff; }
+}

@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Meting</title>
+<style>
+  html,body{margin:0;background:#111;color:#eee;font:12px/1.35 ui-monospace,monospace}
+  #balk{padding:4px 8px}
+  #doos{background:#000;display:inline-block;line-height:0;outline:1px solid #0f0}
+  iframe{border:0;display:block}
+  #uit{padding:4px 8px;white-space:pre;font-size:11px}
+</style>
+</head>
+<body>
+<div id="balk">meting — wacht…</div>
+<div id="doos"><iframe id="f" src="about:blank"></iframe></div>
+<div id="uit"></div>
+
+<script>
+/* Meetbank: laadt index.html in een iframe van precies de gevraagde maat,
+   speelt een echt potje (woord uitspelen, ballenfase, bonuswoord, uitslag) en
+   meet op elk scherm de verticale overloop. Rapporteert per maat naar
+   /rapport. Draait in een echt zichtbaar Chrome-venster.
+   Tijdelijk bestand; hoort na de meting weer weg. */
+(function(){
+  var f = document.getElementById('f');
+  var balk = document.getElementById('balk');
+  var uit = document.getElementById('uit');
+
+  function log(t){ uit.textContent += t + '\n'; }
+  function post(o){
+    try{ fetch('/rapport', {method:'POST', body:JSON.stringify(o)}); }catch(e){}
+  }
+  function slaap(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  async function tot(test, maxMs, stap){
+    var t0 = Date.now();
+    while (Date.now() - t0 < (maxMs || 15000)){
+      try{ if (test()) return true; }catch(e){}
+      await slaap(stap || 80);
+    }
+    return false;
+  }
+  function D(){ return f.contentDocument; }
+  function W(){ return f.contentWindow; }
+  function actief(){
+    var e = D().querySelector('.scherm.is-actief');
+    return e ? e.id : '';
+  }
+
+  async function laad(w, h){
+    balk.textContent = w + 'x' + h + ' laden…';
+    f.style.width = w + 'px';
+    f.style.height = h + 'px';
+    await slaap(150);
+    await new Promise(function(res){
+      f.onload = res;
+      f.src = 'index.html?meet=' + Date.now();
+    });
+    var d = D();
+    try{ f.contentWindow.localStorage.clear(); }catch(e){}
+    var s = d.createElement('style');
+    /* Overlay-schuifbalken, net als op een telefoon. */
+    s.textContent = 'html{scrollbar-width:none}html::-webkit-scrollbar{display:none}';
+    d.head.appendChild(s);
+    await tot(function(){ return W().DVL && W().DVL.Game; }, 8000);
+    await slaap(300);
+    return d;
+  }
+
+  /* Klopt het dat er echt vers geladen is? De opmaakbladen moeten binnen zijn
+     en een bekende regel moet aanwezig zijn. */
+  function bladen(){
+    var d = D(), uit = [];
+    [].slice.call(d.styleSheets).forEach(function(s){
+      var n = 0;
+      try{ n = s.cssRules.length; }catch(e){ n = -1; }
+      uit.push((s.href||'').split('/').pop() + ':' + n);
+    });
+    return uit.join(' ');
+  }
+
+  function over(){
+    return D().documentElement.scrollHeight - W().innerHeight;
+  }
+  function overBreed(){
+    return D().documentElement.scrollWidth - W().innerWidth;
+  }
+
+  /* Wie steekt eruit? Het diepste zichtbare element onderin, met zijn pad. */
+  function diepste(){
+    var d = D(), w = W(), beste = null, bh = w.innerHeight + 0.5;
+    var alles = d.querySelectorAll('body *');
+    for (var i=0;i<alles.length;i++){
+      var e = alles[i];
+      var st = w.getComputedStyle(e);
+      if (st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0') continue;
+      if (st.position === 'fixed') continue;
+      var r = e.getBoundingClientRect();
+      if (!r.height && !r.width) continue;
+      if (r.bottom > bh && (!beste || r.bottom > beste.b)){
+        beste = { b: Math.round(r.bottom), wat: pad(e) };
+      }
+    }
+    return beste;
+  }
+  function pad(e){
+    var s = e.tagName.toLowerCase();
+    if (e.id) s += '#' + e.id;
+    if (e.className && typeof e.className === 'string') s += '.' + e.className.trim().split(/\s+/).join('.');
+    return s;
+  }
+
+  /* Alles wat de speler nodig heeft moet binnen het venster staan. */
+  function binnen(kiezers){
+    var d = D(), w = W(), buiten = [];
+    kiezers.forEach(function(k){
+      var e = d.querySelector(k);
+      if (!e){ buiten.push(k + ':ontbreekt'); return; }
+      var st = w.getComputedStyle(e);
+      if (st.display === 'none' || st.visibility === 'hidden') return;
+      var r = e.getBoundingClientRect();
+      if (!(r.width || r.height)) return;
+      if (!(r.top >= -0.5 && r.bottom <= w.innerHeight + 0.5 &&
+            r.left >= -0.5 && r.right <= w.innerWidth + 0.5)){
+        buiten.push(k + ':' + Math.round(r.top) + '/' + Math.round(r.bottom) +
+                    ' x ' + Math.round(r.left) + '/' + Math.round(r.right));
+      }
+    });
+    return buiten;
+  }
+
+  var SPEL = ['#bord','.paneel','#tijdbalk','#invoer','#bevestig','#toetsenbord',
+              '.toets--enter','#hints','#ronde'];
+  var BALLEN = ['.bal-machine','.bal-kaart','.bal-teller','.bal-groen','#bal-trek','.bal-melding'];
+  var BONUS = ['.bonus-rij','.bonus-voorraad','.bonus-klok','.bonus-melding'];
+
+  function ringBinnen(){
+    var d = D(), w = W();
+    var ring = d.querySelector('.tijdring');
+    if (!ring) return null;
+    var r = ring.getBoundingClientRect();
+    return r.top >= -0.5 && r.bottom <= w.innerHeight + 0.5 &&
+           r.left >= -0.5 && r.right <= w.innerWidth + 0.5;
+  }
+
+  function anderWoord(doel){
+    var boek = W().DVL.WOORDENBOEK || [];
+    for (var i=0;i<boek.length;i++){
+      var k = boek[i];
+      if (k.length === doel.length && k[0] === doel[0] && k !== doel) return k;
+    }
+    return null;
+  }
+
+  function typ(woord){
+    var d = D(), w = W();
+    var invoer = w.DVL.Game.staat().zicht.invoer || [];
+    for (var i=0;i<woord.length;i++){
+      if (invoer[i]) continue;
+      var t = d.querySelector('.toets[data-letter="' + woord[i] + '"]');
+      if (t) t.click();
+    }
+  }
+  async function enter(){
+    D().querySelector('.toets--enter').click();
+    await slaap(200);
+  }
+  async function sluitWoordkaart(){
+    var kaart = D().getElementById('woordkaart');
+    await tot(function(){ return !kaart.hidden; }, 9000);
+    var v = D().querySelector('#woordkaart [data-actie="volgende"]');
+    if (v) v.click();
+    await tot(function(){ return kaart.hidden; }, 4000);
+    await slaap(250);
+  }
+
+  /* ------------------------------------------------------------ één maat */
+
+  async function meetEenMaat(w, h){
+    var r = { maat: w + 'x' + h, t0: Date.now() };
+
+    await laad(w, h);
+    r.bladen = bladen();
+    r.menu = over(); r.menuBreed = overBreed();
+    if (r.menu > 0) r.menuDiep = diepste();
+
+    /* startscherm van level 1 */
+    D().querySelector('#scherm-menu [data-actie="kies-spelers"][data-spelers="1"]').click();
+    await tot(function(){ return actief() === 'scherm-start'; }, 9000);
+    await slaap(500);
+    r.start = over();
+    if (r.start > 0) r.startDiep = diepste();
+
+    /* spel: één echt gespeeld woord */
+    D().querySelector('#scherm-start .start-knop').click();
+    await tot(function(){ return actief() === 'scherm-spel'; }, 9000);
+    await slaap(500);
+    var doel = W().DVL.Game.staat().kern.doel;
+    var gok = anderWoord(doel);
+    r.gok = gok;
+    typ(gok);
+    await slaap(150);
+    await enter();
+    /* wachten tot het omdraaien klaar is */
+    await tot(function(){ return !D().querySelector('.tegel.draait'); }, 6000);
+    await slaap(400);
+    r.spel = over(); r.spelBreed = overBreed();
+    r.spelBuiten = binnen(SPEL);
+    r.ring = ringBinnen();
+    r.klok = D().getElementById('scherm-spel').getAttribute('data-tijd') || '';
+    if (r.spel > 0) r.spelDiep = diepste();
+
+    /* level 1 uitspelen */
+    var ronde = 0;
+    while (actief() === 'scherm-spel' && ronde < 10){
+      ronde++;
+      var st = W().DVL.Game.staat();
+      if (!st.kern || st.kern.klaar){ await slaap(300); continue; }
+      typ(st.kern.doel);
+      await slaap(120);
+      await enter();
+      await sluitWoordkaart();
+    }
+
+    /* ballenfase */
+    if (!await tot(function(){ return actief() === 'scherm-ballen'; }, 20000)){
+      r.fout = 'ballenfase niet bereikt, scherm=' + actief();
+      post(r); return r;
+    }
+    await tot(function(){
+      var k = D().getElementById('bal-trek');
+      return k && !k.disabled;
+    }, 30000);
+    await slaap(300);
+    r.ballen = over(); r.ballenBreed = overBreed();
+    r.ballenBuiten = binnen(BALLEN);
+    if (r.ballen > 0) r.ballenDiep = diepste();
+
+    /* echt ballen trekken tot de fase klaar is */
+    for (var p = 0; p < 14 && actief() === 'scherm-ballen'; p++){
+      var k = D().getElementById('bal-trek');
+      if (!k) break;
+      if (!k.disabled){
+        k.click();
+        await tot(function(){
+          var kk = D().getElementById('bal-trek');
+          var kz = D().querySelector('.bal-vak.is-kiesbaar');
+          return kz || (kk && !kk.disabled) || actief() !== 'scherm-ballen';
+        }, 9000);
+      } else {
+        await slaap(400);
+      }
+      var kz = D().querySelector('.bal-vak.is-kiesbaar');
+      if (kz){ kz.click(); await slaap(900); }
+      if (p === 0){
+        r.ballenNaBal = over();
+        r.ballenNaBalBuiten = binnen(BALLEN);
+        if (r.ballenNaBal > 0) r.ballenNaBalDiep = diepste();
+        r.balMelding = (D().getElementById('bal-melding')||{}).textContent || '';
+      }
+    }
+
+    /* bonuswoord */
+    if (!await tot(function(){ return actief() === 'scherm-bonus'; }, 25000)){
+      r.fout2 = 'bonus niet bereikt, scherm=' + actief();
+      post(r); return r;
+    }
+    await tot(function(){ return D().querySelectorAll('.bonus-vak').length === 11; }, 6000);
+    await slaap(600);
+    r.bonus = over(); r.bonusBreed = overBreed();
+    r.bonusBuiten = binnen(BONUS);
+    if (r.bonus > 0) r.bonusDiep = diepste();
+    r.bonusRijen = (function(){
+      var vakken = [].slice.call(D().querySelectorAll('.bonus-vak'));
+      var tops = {};
+      vakken.forEach(function(v){ tops[Math.round(v.getBoundingClientRect().top)] = 1; });
+      return Object.keys(tops).length;
+    })();
+    /* echt een letter plaatsen: eerst een schijf, dan het eerste open vak */
+    var schijf = D().querySelector('.bonus-schijf');
+    if (schijf){
+      schijf.click();
+      await slaap(400);
+      var leeg = D().querySelector('.bonus-vak.is-leeg');
+      if (leeg){ leeg.click(); await slaap(500); }
+      r.bonusNaZet = over();
+      r.bonusNaZetBuiten = binnen(BONUS);
+      if (r.bonusNaZet > 0) r.bonusNaZetDiep = diepste();
+    }
+
+    /* de kans laten aflopen: het spel gaat vanzelf door naar level 2 */
+    await tot(function(){ return actief() !== 'scherm-bonus'; }, 30000);
+    r.naBonus = actief();
+
+    /* uitslag: level 2 starten, één zet, dan via pauze afronden */
+    if (actief() === 'scherm-start'){
+      await slaap(400);
+      var sk = D().querySelector('#scherm-start .start-knop');
+      if (sk) sk.click();
+      await tot(function(){ return actief() === 'scherm-spel'; }, 9000);
+      await slaap(500);
+    }
+    if (actief() === 'scherm-spel'){
+      D().getElementById('pauze').click();
+      await slaap(600);
+      var stop = D().querySelector('#pauzescherm [data-actie="afronden"]') ||
+                 D().querySelector('#pauzescherm [data-actie="menu"]');
+      if (stop) stop.click();
+      await tot(function(){ return actief() === 'scherm-uitslag' || actief() === 'scherm-menu'; }, 12000);
+      await slaap(700);
+      r.uitslagScherm = actief();
+      r.uitslag = over(); r.uitslagBreed = overBreed();
+      if (r.uitslag > 0) r.uitslagDiep = diepste();
+    }
+
+    r.duur = Math.round((Date.now() - r.t0)/1000);
+    post(r);
+    return r;
+  }
+
+  /* ------------------------------------------------- kijken zonder meten
+
+     window.naar(breedte, hoogte, 'ballen'|'bonus'|'spel'|'start') speelt tot
+     dat scherm en blijft daar staan, zodat er rustig gekeken en gemeten kan
+     worden. */
+  window.naar = async function(w, h, doel){
+    doel = doel || 'ballen';
+    balk.textContent = 'naar ' + doel + ' op ' + w + 'x' + h;
+    await laad(w, h);
+    if (doel === 'menu') return actief();
+    D().querySelector('#scherm-menu [data-actie="kies-spelers"][data-spelers="1"]').click();
+    await tot(function(){ return actief() === 'scherm-start'; }, 9000);
+    await slaap(400);
+    if (doel === 'start') return actief();
+    D().querySelector('#scherm-start .start-knop').click();
+    await tot(function(){ return actief() === 'scherm-spel'; }, 9000);
+    await slaap(500);
+    if (doel === 'spel'){
+      var doelw = W().DVL.Game.staat().kern.doel;
+      typ(anderWoord(doelw));
+      await slaap(150);
+      await enter();
+      await tot(function(){ return !D().querySelector('.tegel.draait'); }, 6000);
+      await slaap(400);
+      return actief();
+    }
+    var ronde = 0;
+    while (actief() === 'scherm-spel' && ronde < 10){
+      ronde++;
+      var st = W().DVL.Game.staat();
+      if (!st.kern || st.kern.klaar){ await slaap(300); continue; }
+      typ(st.kern.doel);
+      await slaap(120);
+      await enter();
+      await sluitWoordkaart();
+    }
+    await tot(function(){ return actief() === 'scherm-ballen'; }, 20000);
+    await tot(function(){
+      var k = D().getElementById('bal-trek');
+      return k && !k.disabled;
+    }, 30000);
+    await slaap(300);
+    if (doel === 'ballen') return actief();
+    /* door naar het bonuswoord */
+    for (var p = 0; p < 14 && actief() === 'scherm-ballen'; p++){
+      var k = D().getElementById('bal-trek');
+      if (!k) break;
+      if (!k.disabled){
+        k.click();
+        await tot(function(){
+          var kk = D().getElementById('bal-trek');
+          var kz = D().querySelector('.bal-vak.is-kiesbaar');
+          return kz || (kk && !kk.disabled) || actief() !== 'scherm-ballen';
+        }, 9000);
+      } else await slaap(400);
+      var kz2 = D().querySelector('.bal-vak.is-kiesbaar');
+      if (kz2){ kz2.click(); await slaap(900); }
+    }
+    await tot(function(){ return actief() === 'scherm-bonus'; }, 25000);
+    await slaap(600);
+    return actief();
+  };
+
+  /* De directe kinderen van een scherm, met hun maat en plek. */
+  window.kinderen = function(sel){
+    var d = D(), w = W(), e = d.querySelector(sel), uit = [];
+    if (!e) return 'ontbreekt';
+    var r0 = e.getBoundingClientRect();
+    uit.push('ZELF ' + pad(e) + ' ' + Math.round(r0.left)+','+Math.round(r0.top)+
+             ' ' + Math.round(r0.width)+'x'+Math.round(r0.height));
+    [].slice.call(e.children).forEach(function(k){
+      var r = k.getBoundingClientRect(), c = w.getComputedStyle(k);
+      uit.push(pad(k) + ' ' + Math.round(r.left)+','+Math.round(r.top)+
+               ' ' + Math.round(r.width)+'x'+Math.round(r.height) + ' [' + c.display + ']');
+    });
+    return uit;
+  };
+
+  /* Meteen opmeten wat er nu staat. */
+  window.nu = function(kiezers){
+    var d = D(), w = W(), uit = { over: over(), overBreed: overBreed(),
+                                  venster: w.innerWidth + 'x' + w.innerHeight,
+                                  scherm: actief(), diepste: diepste() };
+    (kiezers||[]).forEach(function(k){
+      var e = d.querySelector(k);
+      if (!e){ uit[k] = 'ontbreekt'; return; }
+      var r = e.getBoundingClientRect();
+      uit[k] = Math.round(r.left)+','+Math.round(r.top)+' '+Math.round(r.width)+'x'+Math.round(r.height);
+    });
+    return uit;
+  };
+
+  var MATEN = [
+    [1280,800],[1366,650],[1280,600],[375,812],
+    [360,640],[320,568],[812,375],[740,360]
+  ];
+
+  window.loop = async function(maten){
+    var lijst = maten || MATEN;
+    post({ start: true, tijd: Date.now(), zichtbaar: document.visibilityState });
+    for (var i=0;i<lijst.length;i++){
+      var w = lijst[i][0], h = lijst[i][1];
+      balk.textContent = 'meten ' + w + 'x' + h + '  (' + (i+1) + '/' + lijst.length + ')';
+      var r;
+      try { r = await meetEenMaat(w, h); }
+      catch(e){ r = { maat: w+'x'+h, fout: String(e && e.stack || e) }; post(r); }
+      log(JSON.stringify(r));
+    }
+    post({ klaar: true });
+    balk.textContent = 'klaar';
+  };
+
+  function begin(){
+    if (document.visibilityState !== 'visible'){
+      document.addEventListener('visibilitychange', begin, { once:true });
+      return;
+    }
+    var q = new URLSearchParams(location.search);
+    if (q.has('stil')){ balk.textContent = 'stil — wacht op opdracht'; return; }
+    var p = q.get('maten');
+    var lijst = p ? p.split(',').map(function(m){
+      var d = m.split('x'); return [parseInt(d[0],10), parseInt(d[1],10)];
+    }) : null;
+    setTimeout(function(){ window.loop(lijst); }, 400);
+  }
+  begin();
+})();
+</script>
+</body>
+</html>

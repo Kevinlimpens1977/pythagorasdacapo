@@ -1,0 +1,301 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/woordenbeheer.css
+
+   Twee dingen die bij elkaar horen: de knop die naar Woordenbeheer leidt, en
+   het slotscherm dat om het wachtwoord vraagt voordat die pagina opengaat.
+
+   De knop staat in dezelfde dikke 3D-stijl als het LEVEL-lint op de
+   startschermen, maar in groen, zodat hij zich onderscheidt van de blauwe
+   knoppen van het spel zelf: dit is beheer, geen spel.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. De knop naar Woordenbeheer
+   -------------------------------------------------------------------------- */
+
+.knop-woordenbeheer{
+  --wb-diep:var(--groen-diep,#1c8055);
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5em;
+  padding:.52em 1.25em .58em;
+  border:0;
+  border-radius:var(--r-pil,999px);
+  background:linear-gradient(180deg,#63e2a8 0%,#3ec98a 48%,#25a06c 100%);
+  color:#fff;
+  font-family:var(--lt-zwaar);
+  font-size:clamp(13px,1.5vw,16px);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  text-decoration:none;
+  white-space:nowrap;
+  cursor:pointer;
+  box-shadow:
+    0 4px 0 var(--wb-diep),
+    0 9px 16px rgba(20,50,90,.26),
+    inset 0 2px 0 rgba(255,255,255,.42);
+  text-shadow:0 1px 0 rgba(0,0,0,.18),0 2px 0 var(--wb-diep);
+  transition:transform 90ms ease,box-shadow 90ms ease,filter 140ms ease;
+}
+
+/* Het icoontje is een masker, dus het neemt de kleur van de knop over. */
+.knop-woordenbeheer::before{
+  content:"";
+  width:1.15em;
+  height:1.15em;
+  flex:0 0 auto;
+  background:currentColor;
+  -webkit-mask:url("../assets/icoon-woordenbeheer.svg") center/contain no-repeat;
+          mask:url("../assets/icoon-woordenbeheer.svg") center/contain no-repeat;
+}
+
+.knop-woordenbeheer:hover{ filter:brightness(1.06); }
+
+/* De knop zakt echt in: de donkere onderrand verdwijnt eronder vandaan. */
+.knop-woordenbeheer:active{
+  transform:translateY(4px);
+  box-shadow:
+    0 0 0 var(--wb-diep),
+    0 3px 6px rgba(20,50,90,.24),
+    inset 0 2px 0 rgba(255,255,255,.3);
+}
+
+.knop-woordenbeheer:focus-visible{
+  outline:3px solid var(--focus,#0e2f5f);
+  outline-offset:3px;
+}
+
+/* In de onderbalk mag hij kleiner: daar staat hij naast de titel. */
+.onderbalk .knop-woordenbeheer{
+  font-size:clamp(11px,1.2vw,13px);
+  padding:.42em 1em .48em;
+}
+
+/* Op het menu en het uitslagscherm staat de knop al binnen het speelveld. De
+   onderbalk herhaalde hem dan pal eronder: twee identieke groene knoppen in
+   één oogopslag, wat leest als een vergissing. Op die twee schermen doet de
+   knop in het speelveld het werk; op de overige schermen springt de knop in de
+   onderbalk in. */
+body:has(#scherm-menu.is-actief) .onderbalk .knop-woordenbeheer,
+body:has(#scherm-uitslag.is-actief) .onderbalk .knop-woordenbeheer{
+  display:none;
+}
+
+/* --------------------------------------------------------------------------
+   2. Het slot op de pagina Woordenbeheer
+   -------------------------------------------------------------------------- */
+
+/* Zolang de pagina op slot staat is de inhoud er niet. Dat staat in de opmaak
+   zelf (<html class="is-vergrendeld">) en niet in JavaScript, want anders zou
+   de lijst even zichtbaar zijn voordat het slot ervoor schuift — en zonder
+   JavaScript helemaal. */
+html.is-vergrendeld body > *:not(.slot){
+  display:none !important;
+}
+
+html.is-vergrendeld,
+html.is-vergrendeld body{
+  height:100%;
+  overflow:hidden;
+}
+
+.slot{
+  position:fixed;
+  inset:0;
+  z-index:9000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:
+    radial-gradient(120% 80% at 50% 12%,rgba(255,255,255,.85) 0%,rgba(255,255,255,0) 58%),
+    linear-gradient(180deg,var(--lucht-boven,#d6f0fc) 0%,var(--lucht-midden,#b6e1f7) 52%,var(--lucht-onder,#8bcbee) 100%);
+  animation:slot-op 260ms ease both;
+}
+
+.slot.is-open{
+  animation:slot-af 300ms ease forwards;
+  pointer-events:none;
+}
+
+.slot-doos{
+  width:min(100%,460px);
+  padding:clamp(18px,3vh,30px) clamp(18px,3vw,32px) clamp(20px,3vh,30px);
+  text-align:center;
+  /* Bijna wit op wit maakte de kenmerkende witte ring om de kaart onzichtbaar
+     en liet de witte kop wegvallen. Dezelfde lichte tint als de schermen van
+     het spel zet beide weer terug. */
+  background:rgba(255,255,255,.34);
+  backdrop-filter:blur(2px);
+  border:var(--witte-rand,8px) solid var(--wit,#fff);
+  border-radius:var(--r-kaart,28px);
+  box-shadow:0 20px 44px rgba(24,50,96,.26),0 2px 0 rgba(255,255,255,.9) inset;
+  animation:slot-doos-op 380ms cubic-bezier(.2,1.3,.4,1) both;
+}
+
+.slot-merk{
+  display:block;
+  width:min(100%,240px);
+  height:auto;
+  margin:0 auto clamp(6px,1.4vh,14px);
+  filter:drop-shadow(0 8px 14px rgba(23,58,102,.26));
+}
+
+.slot-kop{
+  margin:0 0 .3em;
+  font-family:var(--lt-zwaar);
+  font-size:clamp(22px,3.4vw,30px);
+  letter-spacing:.03em;
+  color:var(--wit,#fff);
+  text-shadow:
+    -2px -2px 0 var(--groen-diep,#1c8055),  2px -2px 0 var(--groen-diep,#1c8055),
+    -2px  2px 0 var(--groen-diep,#1c8055),  2px  2px 0 var(--groen-diep,#1c8055),
+     0 4px 0 var(--groen-diep,#1c8055),
+     0 9px 14px rgba(20,50,90,.3);
+}
+
+.slot-uitleg{
+  margin:0 0 clamp(12px,2vh,18px);
+  font-family:var(--lt-basis);
+  font-size:clamp(13px,1.8vw,15px);
+  line-height:1.5;
+  color:var(--tekst,#22406f);
+}
+
+.slot-form{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:stretch;
+}
+
+.slot-label{
+  font-family:var(--lt-basis);
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:.03em;
+  color:var(--paneel-tekst,#2f5fa8);
+  text-align:left;
+}
+
+.slot-invoer{
+  width:100%;
+  padding:.7em .9em;
+  border:2px solid rgba(47,95,168,.35);
+  border-radius:var(--r-vak,14px);
+  background:#fff;
+  font-family:var(--lt-basis);
+  font-size:17px;
+  color:var(--tekst,#22406f);
+  letter-spacing:.12em;
+}
+
+.slot-invoer:focus{
+  outline:3px solid var(--focus,#0e2f5f);
+  outline-offset:2px;
+  border-color:var(--blauw,#3f95e2);
+}
+
+/* Dezelfde taal als elke andere knop in het spel: hoofdletters, letterafstand
+   en een icoontje. Zonder dat viel hij als enige uit de toon. */
+.slot-knop{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5em;
+  padding:.62em 1.4em .68em;
+  border:0;
+  border-radius:var(--r-pil,999px);
+  background:linear-gradient(180deg,#63e2a8 0%,#3ec98a 48%,#25a06c 100%);
+  color:#fff;
+  font-family:var(--lt-zwaar);
+  font-size:clamp(16px,2.2vw,20px);
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:
+    0 5px 0 var(--groen-diep,#1c8055),
+    0 10px 18px rgba(20,50,90,.26),
+    inset 0 2px 0 rgba(255,255,255,.4);
+  text-shadow:0 2px 0 rgba(0,0,0,.18);
+  transition:transform 90ms ease,box-shadow 90ms ease,filter 140ms ease;
+}
+
+/* Een openspringend slot: de beugel staat omhoog en opzij. */
+.slot-knop::before{
+  content:"";
+  width:1.05em;
+  height:1.05em;
+  flex:0 0 auto;
+  background:currentColor;
+  -webkit-mask:url("../assets/icoon-slot-open.svg") center/contain no-repeat;
+          mask:url("../assets/icoon-slot-open.svg") center/contain no-repeat;
+}
+
+.slot-knop:hover{ filter:brightness(1.06); }
+
+.slot-knop:active{
+  transform:translateY(5px);
+  box-shadow:0 0 0 var(--groen-diep,#1c8055),0 3px 6px rgba(20,50,90,.24);
+}
+
+.slot-knop:focus-visible{
+  outline:3px solid var(--focus,#0e2f5f);
+  outline-offset:3px;
+}
+
+/* De melding houdt zijn hoogte vast, zodat de kaart niet opspringt zodra er
+   iets in komt te staan. */
+.slot-melding{
+  min-height:1.4em;
+  margin:10px 0 0;
+  font-family:var(--lt-basis);
+  font-weight:700;
+  font-size:14px;
+  color:var(--rood-diep,#9d1a13);
+}
+
+.slot-terug{
+  margin:clamp(10px,2vh,16px) 0 0;
+  font-family:var(--lt-basis);
+  font-size:13px;
+}
+
+.slot-terug a{ color:var(--paneel-tekst,#2f5fa8); }
+
+/* --------------------------------------------------------------------------
+   3. Beweging
+   -------------------------------------------------------------------------- */
+
+@keyframes slot-op{
+  from{ opacity:0 } to{ opacity:1 }
+}
+
+@keyframes slot-af{
+  from{ opacity:1 } to{ opacity:0 }
+}
+
+@keyframes slot-doos-op{
+  from{ opacity:0; transform:translateY(20px) scale(.94) }
+  to  { opacity:1; transform:none }
+}
+
+/* Fout wachtwoord: kort en hard schudden, net als een rij op het bord. */
+.slot.is-mis .slot-doos{
+  animation:slot-schud 380ms cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes slot-schud{
+  10%,90%{ transform:translateX(-8px) }
+  20%,80%{ transform:translateX(9px) }
+  30%,50%,70%{ transform:translateX(-11px) }
+  40%,60%{ transform:translateX(11px) }
+  100%{ transform:none }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .slot,.slot-doos,.slot.is-mis .slot-doos{ animation:none }
+  .knop-woordenbeheer,.slot-knop{ transition:none }
+}

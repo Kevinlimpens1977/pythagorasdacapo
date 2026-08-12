@@ -1,0 +1,610 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/bonuswoord.css
+
+   Het bonuswoordscherm (#scherm-bonus): elf vakjes op een rij, daaronder de
+   nog te plaatsen letters als losse gele schijven, een klok die afloopt en
+   een meldingsregel.
+
+   Contract (SPEC, "DOM-contract van de nieuwe schermen"):
+
+     #scherm-bonus
+       .bonus-rij              11 x .bonus-vak
+         .bonus-vak            standen: is-vrij is-leeg is-gevuld
+       .bonus-voorraad
+         .bonus-schijf[data-letter]
+       .bonus-klok
+       .bonus-melding
+
+   De vakjes dragen precies de tegelstijl van het bord uit css/game.css: een
+   vrijgegeven letter is de rode tegel van `.tegel.is-goed`, een open plek de
+   lege blauwe tegel. De schijven zijn de gele cirkel van `.tegel.is-aanwezig`,
+   losgemaakt van de tegel en op tafel gelegd.
+
+   Vereist css/base.css (variabelen). Geen imports, geen externe bronnen.
+   ========================================================================== */
+
+/* Voor het aflopen van de klok. Een geregistreerde eigenschap kan animeren;
+   een gewone custom property niet. Hij heet met opzet niet `--rest`: die
+   naam is in css/game.css al van de tijdbalk, en registreren zou daar de
+   overerving veranderen. */
+@property --klok-rest{
+  syntax:"<number>";
+  inherits:true;
+  initial-value:1;
+}
+
+/* --------------------------------------------------------------------------
+   1. Maten van het scherm
+
+   Elf tegels naast elkaar is veel. De vakjes krijgen daarom een breedte in
+   procenten van de rij, met een bovengrens in pixels: op een digibord staan
+   ze op hun mooiste maat, en op een smal scherm krimpen ze mee tot het punt
+   waarop de rij in twee stukken breekt (deel 6).
+   -------------------------------------------------------------------------- */
+
+#scherm-bonus{
+  --bonus-voeg:clamp(4px,.7vw,9px);
+  --bonus-max:86px;                     /* grootste tegel */
+  --bonus-aantal:11;                    /* tegels per regel */
+  --bonus-letter:clamp(18px,3.1vw,40px);
+  --bonus-schijf:clamp(44px,5.5vw,72px);
+  --bonus-schijfletter:clamp(22px,2.8vw,36px);
+}
+
+#scherm-bonus.is-actief{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(10px,min(2vw,2.2vh),22px);
+  padding:clamp(12px,min(2.4vw,3vh),26px);
+}
+
+#scherm-bonus .knop{max-width:min(100%,340px)}
+
+/* --------------------------------------------------------------------------
+   2. De rij van elf
+
+   Een flexrij en geen raster: breekt de rij, dan staan de overgebleven
+   letters vanzelf gecentreerd onder de eerste regel in plaats van tegen de
+   linkerkant aan.
+   -------------------------------------------------------------------------- */
+
+.bonus-rij{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:flex-start;
+  /* Overal een terugval achter de var(): de maten staan op #scherm-bonus,
+     maar rij, voorraad en klok moeten ook los werken — in een proefpagina,
+     in een testbestand, of in een scherm dat anders heet. */
+  gap:var(--bonus-voeg,clamp(4px,.7vw,9px));
+  width:100%;
+  max-width:100%;
+  margin:0;
+  padding:clamp(7px,1vw,12px);
+  border-radius:20px;
+  background:rgba(255,255,255,.34);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.55),
+    0 10px 24px rgba(24,50,96,.14);
+}
+
+/* --------------------------------------------------------------------------
+   3. De vakjes
+   -------------------------------------------------------------------------- */
+
+.bonus-vak{
+  position:relative;
+  isolation:isolate;
+  /* min() met een percentage: zolang er ruimte is staat de tegel op zijn
+     volle maat, daarna verdeelt hij netjes wat er is. */
+  flex:0 0 min(
+    var(--bonus-max,86px),
+    calc(
+      (100% - (var(--bonus-aantal,11) - 1) * var(--bonus-voeg,clamp(4px,.7vw,9px)))
+      / var(--bonus-aantal,11)
+    )
+  );
+  aspect-ratio:1;
+  min-width:0;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:var(--r-tegel);
+  background:var(--verloop-tegel);
+  box-shadow:
+    inset 0 -3px 0 rgba(8,28,64,.28),
+    inset 0 1px 0 rgba(255,255,255,.32),
+    0 1px 2px rgba(10,28,60,.28);
+  color:var(--wit);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:var(--bonus-letter,clamp(18px,3.1vw,40px));
+  line-height:1;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  text-align:center;
+  text-shadow:0 2px 3px rgba(10,30,68,.45);
+  user-select:none;
+  -webkit-user-select:none;
+  transition:
+    background .2s ease-out,
+    box-shadow .2s ease-out,
+    outline-color .2s ease-out,
+    translate .14s ease-out,
+    scale .14s ease-out;
+}
+
+/* Glansbaantje over de bovenkant, zoals op de tegels van het bord. */
+.bonus-vak::before{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  left:3%;right:3%;top:3%;
+  height:38%;
+  border-radius:calc(var(--r-tegel) - 2px) calc(var(--r-tegel) - 2px) 22% 22% /
+                calc(var(--r-tegel) - 2px) calc(var(--r-tegel) - 2px) 14% 14%;
+  background:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.03) 100%);
+  pointer-events:none;
+}
+
+/* Staat de letter alleen in data-letter, dan schrijft het vak hem zelf. */
+.bonus-vak:empty::after{content:attr(data-letter)}
+
+/* -- vrijgegeven letter: de rode tegel van een goede letter -------------- */
+
+.bonus-vak.is-vrij{
+  background:
+    radial-gradient(122% 62% at 50% -10%,rgba(255,255,255,.42) 0%,rgba(255,255,255,0) 64%),
+    var(--verloop-goed);
+  box-shadow:
+    inset 0 -3px 0 rgba(88,10,5,.34),
+    inset 0 1px 0 rgba(255,255,255,.34),
+    0 1px 2px rgba(10,28,60,.28);
+  text-shadow:0 2px 3px rgba(88,10,5,.5);
+  cursor:default;
+}
+.bonus-vak.is-vrij::before{
+  background:linear-gradient(180deg,rgba(255,255,255,.30) 0%,rgba(255,255,255,.02) 100%);
+}
+
+/* -- open plek: de lege blauwe tegel ------------------------------------- */
+
+.bonus-vak.is-leeg{
+  background:var(--verloop-tegel);
+  box-shadow:
+    inset 0 -3px 0 rgba(8,28,64,.28),
+    inset 0 1px 0 rgba(255,255,255,.32),
+    inset 0 4px 9px rgba(8,28,64,.22),
+    0 1px 2px rgba(10,28,60,.28);
+}
+
+/* -- zelf geplaatste letter ---------------------------------------------- */
+
+/* Blauw als de rest van de rij, maar met een gouden randje: dat is de letter
+   die van de gele schijf hiernaast kwam, en je kunt hem er ook weer afhalen. */
+.bonus-vak.is-gevuld{
+  cursor:pointer;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0) 40%),
+    linear-gradient(180deg,#5cabee 0%,#3e8bd8 52%,#3273c6 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,210,58,.85),
+    inset 0 -3px 0 rgba(8,28,64,.28),
+    inset 0 1px 0 rgba(255,255,255,.32),
+    0 2px 5px rgba(10,28,60,.3);
+  animation:dvl-bonus-plof .3s cubic-bezier(.2,1.5,.4,1);
+}
+@media (hover:hover){
+  .bonus-vak.is-gevuld:hover{translate:0 -2px;scale:1.04}
+}
+.bonus-vak.is-gevuld:active{translate:0 1px;scale:1}
+
+@keyframes dvl-bonus-plof{
+  0%  {scale:.6;opacity:.2}
+  60% {scale:1.12;opacity:1}
+  100%{scale:1;opacity:1}
+}
+
+/* -- de plek waar de cursor of een gesleepte schijf naartoe gaat ---------- */
+
+.bonus-vak.is-actief,
+.bonus-vak.is-doel{
+  outline:3px solid var(--geel);
+  outline-offset:-3px;
+  animation:dvl-bonus-cursor 1.15s ease-in-out infinite;
+}
+@keyframes dvl-bonus-cursor{
+  0%,100%{outline-color:rgba(255,210,58,.72)}
+  50%    {outline-color:rgba(255,210,58,1)}
+}
+
+/* De schijf zweeft er nu boven: het vak maakt zich breed. */
+.bonus-vak.is-over{
+  outline:3px solid var(--geel);
+  outline-offset:2px;
+  scale:1.07;
+  animation:none;
+  box-shadow:
+    inset 0 -3px 0 rgba(8,28,64,.28),
+    inset 0 1px 0 rgba(255,255,255,.32),
+    0 0 16px rgba(255,210,58,.9);
+}
+
+.bonus-vak:focus-visible{
+  outline:3px solid var(--wit);
+  outline-offset:3px;
+  box-shadow:0 0 0 6px rgba(14,47,95,.85);
+  z-index:2;
+}
+
+/* --------------------------------------------------------------------------
+   4. De voorraad losse letters
+
+   Gele schijven met een witte letter: dezelfde cirkel als op een tegel met
+   een letter die wél voorkomt maar op de verkeerde plek staat, maar dan als
+   los fiche op tafel — met dikte eronder en een schaduw, zodat je ziet dat
+   je hem kunt oppakken.
+   -------------------------------------------------------------------------- */
+
+.bonus-voorraad{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(8px,1.2vw,15px);
+  /* De lade is zo breed als er schijven liggen, niet zo breed als het
+     scherm: een half lege plank onder het woord oogt als een fout. */
+  width:auto;
+  max-width:100%;
+  min-height:calc(var(--bonus-schijf,clamp(44px,5.5vw,72px)) + 14px);
+  margin:0;
+  padding:clamp(6px,.9vw,11px) clamp(8px,1.4vw,18px);
+  border-radius:var(--r-pil);
+  background:rgba(255,255,255,.22);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.4);
+}
+
+.bonus-schijf{
+  position:relative;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  width:var(--bonus-schijf,clamp(44px,5.5vw,72px));
+  height:var(--bonus-schijf,clamp(44px,5.5vw,72px));
+  border:0;
+  border-radius:50%;
+  background:var(--verloop-geel);
+  color:var(--wit);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:var(--bonus-schijfletter,clamp(22px,2.8vw,36px));
+  line-height:1;
+  text-transform:uppercase;
+  text-align:center;
+  text-shadow:0 2px 3px rgba(120,70,0,.55);
+  box-shadow:
+    inset 0 -5px 9px rgba(148,88,0,.34),
+    inset 0 4px 7px rgba(255,255,255,.55),
+    0 5px 0 var(--geel-diep),
+    0 9px 16px rgba(24,50,96,.3);
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:
+    translate .14s ease-out,
+    scale .14s ease-out,
+    box-shadow .14s ease-out,
+    filter .18s ease-out,
+    opacity .2s ease-out;
+}
+
+/* Staat de letter alleen in data-letter, dan schrijft de schijf hem zelf. */
+.bonus-schijf:empty::after{content:attr(data-letter)}
+
+/* Losjes neergelegd in plaats van in het gelid: elke schijf ligt een graadje
+   anders. Klein detail, maar het maakt er een handvol fiches van. */
+.bonus-schijf:nth-child(3n+1){rotate:-4deg}
+.bonus-schijf:nth-child(3n+2){rotate:3deg}
+.bonus-schijf:nth-child(4n+3){rotate:-2deg}
+
+@media (hover:hover){
+  .bonus-schijf:hover{
+    translate:0 -4px;
+    scale:1.06;
+    box-shadow:
+      inset 0 -5px 9px rgba(148,88,0,.34),
+      inset 0 4px 7px rgba(255,255,255,.6),
+      0 7px 0 var(--geel-diep),
+      0 14px 20px rgba(24,50,96,.34);
+  }
+}
+
+.bonus-schijf:active,
+.bonus-schijf.is-opgepakt,
+.bonus-schijf.is-gesleept{
+  cursor:grabbing;
+  translate:0 -7px;
+  scale:1.1;
+  filter:brightness(1.05);
+  box-shadow:
+    inset 0 -5px 9px rgba(148,88,0,.34),
+    inset 0 4px 7px rgba(255,255,255,.6),
+    0 3px 0 var(--geel-diep),
+    0 18px 24px rgba(24,50,96,.38);
+}
+
+/* Geplaatst: de schijf blijft op zijn plek liggen als lege afdruk, zodat de
+   rij niet bij elke letter verspringt. */
+.bonus-schijf.is-gebruikt,
+.bonus-schijf[disabled],
+.bonus-schijf[aria-disabled="true"]{
+  cursor:default;
+  pointer-events:none;
+  color:transparent;
+  text-shadow:none;
+  scale:.82;
+  opacity:.45;
+  background:rgba(255,255,255,.35);
+  box-shadow:inset 0 2px 5px rgba(24,50,96,.3),inset 0 0 0 2px rgba(255,255,255,.45);
+}
+
+.bonus-schijf:focus-visible{
+  outline:3px solid var(--focus);
+  outline-offset:4px;
+  box-shadow:
+    0 0 0 8px rgba(255,255,255,.75),
+    inset 0 -5px 9px rgba(148,88,0,.34),
+    inset 0 4px 7px rgba(255,255,255,.55),
+    0 5px 0 var(--geel-diep),
+    0 9px 16px rgba(24,50,96,.3);
+}
+
+/* --------------------------------------------------------------------------
+   5. De klok en de melding
+   -------------------------------------------------------------------------- */
+
+/* Een wijzerplaat die leegloopt. Het spel zet `--klok-rest` van 1 naar 0, of
+   het zet eenmalig de klasse `is-loopt` en dan loopt de plaat zelf leeg in
+   `--klok-duur` (standaard de 18 seconden uit de SPEC). */
+.bonus-klok{
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  place-items:center;
+  width:clamp(66px,7.6vw,98px);
+  height:clamp(66px,7.6vw,98px);
+  margin:0;
+  border-radius:50%;
+  color:var(--paneel-tekst);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:clamp(20px,2.5vw,30px);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+  filter:drop-shadow(0 8px 16px rgba(24,50,96,.28));
+}
+
+/* De ring die leegloopt. */
+.bonus-klok::before{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  inset:0;
+  border-radius:50%;
+  background:conic-gradient(from -90deg,
+    var(--klok-kleur,#e8382f) calc(var(--klok-rest,1) * 360deg),
+    rgba(255,255,255,.6) 0);
+  box-shadow:
+    0 0 0 3px var(--wit),
+    inset 0 0 0 2px rgba(255,255,255,.45);
+}
+
+/* De witte plaat waar het getal op staat. */
+.bonus-klok::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:17%;
+  border-radius:50%;
+  background:linear-gradient(180deg,#ffffff 0%,#e8f2fb 100%);
+  box-shadow:inset 0 2px 5px rgba(24,50,96,.22);
+}
+
+.bonus-klok.is-loopt{
+  animation:dvl-bonus-klok var(--klok-duur,18s) linear forwards;
+}
+@keyframes dvl-bonus-klok{
+  from{--klok-rest:1}
+  to  {--klok-rest:0}
+}
+
+/* De laatste seconden. De puls zit op de plaat en niet op de klok zelf,
+   anders zou hij het leeglopen hierboven overschrijven. */
+.bonus-klok.is-kritiek{color:var(--rood-diep)}
+.bonus-klok.is-kritiek::after{
+  animation:dvl-bonus-klok-puls .62s ease-in-out infinite;
+}
+@keyframes dvl-bonus-klok-puls{
+  0%,100%{inset:17%;background:linear-gradient(180deg,#ffffff,#e8f2fb)}
+  50%    {inset:21%;background:linear-gradient(180deg,#fff2f1,#ffd9d5)}
+}
+
+/* Een los onderschrift of getal binnen de klok. */
+.bonus-klok .bonus-klok-label,
+.bonus-klok small{
+  display:block;
+  font-size:10px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  opacity:.75;
+}
+
+.bonus-melding{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:min(100%,540px);
+  min-height:46px;
+  margin:0;
+  padding:9px 20px;
+  border-radius:var(--r-pil);
+  background:rgba(20,44,86,.95);
+  color:var(--wit);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:clamp(12px,1.5vw,16px);
+  line-height:1.25;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  text-align:center;
+  text-wrap:balance;
+  box-shadow:0 10px 22px rgba(12,30,62,.34);
+  transition:opacity .2s ease-out, background .25s ease-out, color .25s ease-out;
+}
+.bonus-melding:empty{opacity:0}
+
+.bonus-melding.is-goed{background:linear-gradient(180deg,#45d79c,#1c8055)}
+.bonus-melding.is-fout{background:linear-gradient(180deg,#f0483e,#bf2119)}
+.bonus-melding.is-hint{background:linear-gradient(180deg,#ffd23a,#e0a000);color:#4a3200}
+
+/* --------------------------------------------------------------------------
+   6. Smalle schermen — de rij breekt in twee stukken
+
+   Onder 620px worden elf tegels naast elkaar te klein om te lezen. Dan gaan
+   er zes op een regel: de flexrij breekt vanzelf en de overige vijf staan
+   gecentreerd eronder.
+   -------------------------------------------------------------------------- */
+
+@media (max-width:620px){
+  /* Ook hier valt de voetbalk weg zolang de kans loopt: het spelscherm en de
+     ballenfase doen dat al, en anders springt de balk tussen twee fases in
+     en uit beeld. Dat scheelt bovendien ruimte onder de klok. */
+  body:has(#scherm-bonus.is-actief) > .onderbalk{display:none}
+
+  #scherm-bonus{
+    --bonus-aantal:6;
+    --bonus-max:62px;
+    --bonus-voeg:5px;
+    --bonus-letter:clamp(20px,6.2vw,34px);
+    /* Bewust flink: zo liggen er op een telefoon vier schijven op een regel
+       in plaats van zeven met een eenzame achtste eronder, en is elke schijf
+       ook met een duim te pakken. */
+    --bonus-schijf:clamp(52px,16.4vw,66px);
+    --bonus-schijfletter:clamp(24px,7.4vw,34px);
+  }
+  .bonus-rij{padding:7px;border-radius:16px}
+  .bonus-voorraad{padding:7px 10px;gap:8px}
+  .bonus-melding{min-height:40px;padding:8px 14px}
+}
+
+/* De schijven blijven hier bewust op hun maat uit het blok hierboven: ze
+   zijn het enige wat de speler moet aanraken, en kleiner dan dit wordt dat
+   priegelen. Alleen de tegels en de tussenruimtes leveren in. */
+@media (max-width:380px){
+  #scherm-bonus{
+    --bonus-voeg:4px;
+    --bonus-max:54px;
+  }
+  .bonus-rij{padding:5px;gap:4px}
+  .bonus-voorraad{gap:6px;padding:6px 8px}
+}
+
+/* Lage vensters: alles een maat kleiner, zodat de klok en de melding onder
+   de voorraad in beeld blijven. */
+@media (min-width:621px) and (max-height:760px){
+  #scherm-bonus{
+    --bonus-max:64px;
+    --bonus-schijf:clamp(38px,4vw,52px);
+    --bonus-schijfletter:clamp(19px,2.1vw,27px);
+  }
+  #scherm-bonus.is-actief{gap:10px;padding:10px}
+  .bonus-klok{width:clamp(58px,6.4vw,78px);height:clamp(58px,6.4vw,78px);font-size:clamp(18px,2.1vw,25px)}
+  .bonus-melding{min-height:40px;padding:7px 16px}
+}
+
+/* --------------------------------------------------------------------------
+   6b. Telefoon liggend — alles een slag kleiner en de voetbalk eraf
+
+   Op 812x375 en 740x360 passen de elf vakjes prima naast elkaar; het is de
+   hoogte die tekortkomt. De titel, de uitlegregel, de klok en de melding
+   leveren daarom in, en de voetbalk van de pagina valt tijdens deze fase weg —
+   het spelscherm doet in css/game.css hetzelfde.
+
+   Dezelfde drempel als bij het spel en de ballenfase: liggend en lager dan
+   480px, en niet breder dan 1024px (dan gaat het om een breed maar laag
+   bureaubladvenster en is er hoogte zat).
+   -------------------------------------------------------------------------- */
+
+@media (orientation:landscape) and (max-height:480px) and (max-width:1024px){
+
+  body:has(#scherm-bonus.is-actief) > .onderbalk{display:none}
+
+  #scherm-bonus{
+    --bonus-max:52px;
+    --bonus-voeg:4px;
+    --bonus-letter:clamp(16px,2.6vw,28px);
+    --bonus-schijf:clamp(38px,5.6vw,50px);
+    --bonus-schijfletter:clamp(18px,2.6vw,25px);
+  }
+  #scherm-bonus.is-actief{gap:6px;padding:8px 12px}
+  #scherm-bonus > .titel,#scherm-bonus > h2{font-size:clamp(14px,2.2vw,19px)}
+  #scherm-bonus > .ondertitel{
+    margin:0;
+    font-size:clamp(11px,1.5vw,13px);
+    line-height:1.25;
+  }
+  .bonus-rij{padding:6px;border-radius:14px}
+  .bonus-voorraad{padding:6px 10px;gap:7px}
+  /* De klok houdt een opschrift én een getal binnen één cirkel. Onder de 50px
+     schoven die twee over elkaar heen; het opschrift levert daarom letters in
+     en de cirkel zakt niet verder dan 50px. */
+  .bonus-klok{
+    width:clamp(50px,7vw,64px);
+    height:clamp(50px,7vw,64px);
+    font-size:clamp(17px,2vw,22px);
+  }
+  .bonus-klok .bonus-klok-label,
+  .bonus-klok small{font-size:8px;letter-spacing:.1em}
+  .bonus-melding{
+    min-height:34px;
+    padding:6px 12px;
+    font-size:clamp(10px,1.5vw,13px);
+    letter-spacing:.05em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Rustige weergave
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce){
+  .bonus-vak,
+  .bonus-vak::before,
+  .bonus-vak::after,
+  .bonus-schijf,
+  .bonus-klok,
+  .bonus-klok::before,
+  .bonus-klok::after,
+  .bonus-melding{
+    animation:none!important;
+    transition-duration:.001ms!important;
+  }
+  /* De standen blijven zichtbaar, alleen het bewegen ervan vervalt. */
+  .bonus-vak.is-actief,
+  .bonus-vak.is-doel{outline-color:var(--geel)}
+  .bonus-schijf:hover{translate:0;scale:1}
+  .bonus-vak.is-gevuld:hover{translate:0;scale:1}
+  /* Zonder de aflopende ring blijft de klok een leesbare wijzerplaat: het
+     getal erin telt af, en dat is hier de hele boodschap. */
+  .bonus-klok.is-loopt{--klok-rest:1}
+  .bonus-klok.is-kritiek::before{
+    background:conic-gradient(from -90deg,
+      var(--rood) calc(var(--klok-rest,1) * 360deg),
+      rgba(255,255,255,.6) 0);
+  }
+}

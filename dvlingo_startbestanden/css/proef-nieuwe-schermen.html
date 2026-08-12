@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proef — ballenfase en bonuswoord</title>
+
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="finale.css">
+<link rel="stylesheet" href="ballenfase.css">
+<link rel="stylesheet" href="bonuswoord.css">
+
+<style>
+/* Alleen voor deze proefpagina: de tabbladen en het randwerk eromheen.
+   Niets hiervan hoort bij het spel zelf. */
+.proef{
+  width:min(1150px,100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+.proef-tabs{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 8px 20px rgba(24,50,96,.18);
+}
+.proef-tabs a{
+  display:inline-flex;
+  align-items:center;
+  min-height:36px;
+  padding:0 16px;
+  border-radius:999px;
+  background:#e8f2fb;
+  color:var(--paneel-tekst);
+  font-family:var(--lt-zwaar);
+  font-size:12px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  text-decoration:none;
+  cursor:pointer;
+}
+
+/* De tabbladen lopen via de fragmentnaam in het adres (#ballen, #bonus,
+   #standen). Puur CSS, en zo is elk tabblad rechtstreeks op te vragen —
+   handig om er een schermafdruk van te maken. */
+.proef-blok{display:none;width:100%}
+.proef-blok:target{display:block}
+body:not(:has(.proef-blok:target)) .proef-blok--ballen{display:block}
+
+body:has(#ballen:target)  .proef-tabs a[href="#ballen"],
+body:has(#bonus:target)   .proef-tabs a[href="#bonus"],
+body:has(#standen:target) .proef-tabs a[href="#standen"],
+body:not(:has(.proef-blok:target)) .proef-tabs a[href="#ballen"]{
+  background:linear-gradient(180deg,#57a6ee,#2f7ccd);
+  color:#fff;
+}
+
+/* Losse standen naast elkaar op de derde tab. */
+.proef-strook{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  justify-content:center;
+  gap:18px;
+}
+.proef-monster{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  width:112px;
+}
+.proef-monster .bal-vak,
+.proef-monster .bonus-vak{width:74px;flex:none}
+.proef-naam{
+  font-family:var(--lt-zwaar);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--paneel-tekst);
+  text-align:center;
+}
+.proef-plaat{
+  width:100%;
+  padding:16px;
+  border-radius:22px;
+  background:rgba(255,255,255,.5);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.7);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+}
+.proef-kop{
+  font-family:var(--lt-zwaar);
+  font-size:13px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--paneel-tekst);
+}
+</style>
+</head>
+<body>
+
+<div class="proef">
+
+  <nav class="proef-tabs">
+    <a href="#ballen">Ballenfase</a>
+    <a href="#bonus">Bonuswoord</a>
+    <a href="#standen">Losse standen</a>
+  </nav>
+
+  <!-- ==================================================================
+       BALLENFASE
+       ================================================================== -->
+  <div class="proef-blok proef-blok--ballen" id="ballen">
+   <div class="speelveld">
+    <section id="scherm-ballen" class="scherm is-actief">
+
+      <h2 class="titel">Trek je ballen</h2>
+
+      <!-- De bestaande machine uit css/finale.css: trommel, goot en uitvak. -->
+      <div class="bal-machine">
+        <div class="finale-machine is-draait">
+          <div class="finale-kast">
+
+            <div class="finale-kastplaat" aria-hidden="true">
+              <span class="finale-kastplaat-tekst">Ballentrommel</span>
+              <span class="finale-kastplaat-schroef"></span>
+            </div>
+
+            <div class="finale-kastlijf">
+              <div class="finale-nis" aria-hidden="true">
+                <div class="finale-bol">
+                  <span class="finale-bol-glans"></span>
+                  <span class="finale-bolletje finale-bolletje--0" style="--x:18%;--y:52%;--vertraging:.2s"></span>
+                  <span class="finale-bolletje finale-bolletje--1" style="--x:44%;--y:31%;--vertraging:1.1s"></span>
+                  <span class="finale-bolletje finale-bolletje--2" style="--x:66%;--y:58%;--vertraging:.6s"></span>
+                  <span class="finale-bolletje finale-bolletje--3" style="--x:30%;--y:72%;--vertraging:1.8s"></span>
+                  <span class="finale-bolletje finale-bolletje--1" style="--x:57%;--y:78%;--vertraging:2.3s"></span>
+                  <span class="finale-bolletje finale-bolletje--0" style="--x:72%;--y:26%;--vertraging:1.5s"></span>
+                  <span class="finale-bolletje finale-bolletje--2" style="--x:12%;--y:30%;--vertraging:.9s"></span>
+                  <span class="finale-bolletje finale-bolletje--3" style="--x:50%;--y:48%;--vertraging:2.6s"></span>
+                </div>
+                <span class="finale-nis-beugel"></span>
+              </div>
+              <div class="finale-zijpaneel" aria-hidden="true">
+                <span class="finale-lampje"></span>
+                <div class="finale-teller">
+                  <span class="finale-teller-getal">21</span>
+                  <span class="finale-teller-label">bal</span>
+                </div>
+                <span class="finale-rooster"></span>
+              </div>
+            </div>
+
+            <div class="finale-goot" aria-hidden="true">
+              <span class="finale-goot-mond"></span>
+              <span class="finale-goot-baan"></span>
+              <span class="finale-goot-lijst"></span>
+              <span class="finale-goot-uit"></span>
+            </div>
+
+            <div class="finale-bodem" aria-hidden="true">
+              <span class="finale-bodem-plaat">Uitvak</span>
+              <div class="finale-uitvak">
+                <span class="finale-uitvak-kuil"></span>
+                <div class="finale-bal finale-bal--blauw finale-laatste">
+                  <span class="finale-bal-schijf"><span class="finale-bal-getal">2</span></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- De lingokaart: 25 vakjes met de getallen. -->
+      <div class="bal-kaart" role="grid" aria-label="Lingokaart">
+        <div class="bal-vak is-weg"  data-getal="4">4</div>
+        <div class="bal-vak is-open" data-getal="17">17</div>
+        <div class="bal-vak is-open" data-getal="23">23</div>
+        <div class="bal-vak is-open" data-getal="31">31</div>
+        <div class="bal-vak is-open" data-getal="48">48</div>
+
+        <div class="bal-vak is-open" data-getal="12">12</div>
+        <div class="bal-vak is-open" data-getal="7">7</div>
+        <div class="bal-vak is-weg"  data-getal="55">55</div>
+        <div class="bal-vak is-open" data-getal="62">62</div>
+        <div class="bal-vak is-open" data-getal="26">26</div>
+
+        <div class="bal-vak is-weg is-lingo" data-getal="39">39</div>
+        <div class="bal-vak is-weg is-lingo" data-getal="68">68</div>
+        <div class="bal-vak is-weg is-lingo" data-getal="15">15</div>
+        <div class="bal-vak is-weg is-lingo" data-getal="44">44</div>
+        <div class="bal-vak is-weg is-lingo is-nieuw" data-getal="2">2</div>
+
+        <div class="bal-vak is-open" data-getal="51">51</div>
+        <div class="bal-vak is-weg"  data-getal="29">29</div>
+        <div class="bal-vak is-open" data-getal="9">9</div>
+        <div class="bal-vak is-open" data-getal="60">60</div>
+        <div class="bal-vak is-open" data-getal="35">35</div>
+
+        <div class="bal-vak is-open" data-getal="21">21</div>
+        <div class="bal-vak is-weg"  data-getal="58">58</div>
+        <div class="bal-vak is-open" data-getal="41">41</div>
+        <div class="bal-vak is-weg"  data-getal="6">6</div>
+        <div class="bal-vak is-open" data-getal="66">66</div>
+      </div>
+
+      <p class="bal-teller">Nog <strong>3</strong> trekkingen</p>
+
+      <p class="bal-groen">Groen
+        <span class="bal-groen-stip is-aan"></span>
+        <span class="bal-groen-stip is-aan"></span>
+        <span class="bal-groen-stip"></span>
+      </p>
+
+      <p class="bal-melding is-lingo" aria-live="polite">Lingo! Vijf op een rij</p>
+
+    </section>
+   </div>
+  </div>
+
+  <!-- ==================================================================
+       BONUSWOORD
+       ================================================================== -->
+  <div class="proef-blok proef-blok--bonus" id="bonus">
+   <div class="speelveld">
+    <section id="scherm-bonus" class="scherm is-actief">
+
+      <h2 class="titel">Het bonuswoord</h2>
+
+      <div class="bonus-rij" aria-label="Bonuswoord van elf letters">
+        <div class="bonus-vak is-gevuld" data-letter="T">T</div>
+        <div class="bonus-vak is-vrij"   data-letter="O">O</div>
+        <div class="bonus-vak is-leeg"   data-plek="3"></div>
+        <div class="bonus-vak is-leeg is-actief" data-plek="4"></div>
+        <div class="bonus-vak is-leeg"   data-plek="5"></div>
+        <div class="bonus-vak is-vrij"   data-letter="E">E</div>
+        <div class="bonus-vak is-leeg"   data-plek="7"></div>
+        <div class="bonus-vak is-leeg"   data-plek="8"></div>
+        <div class="bonus-vak is-leeg"   data-plek="9"></div>
+        <div class="bonus-vak is-vrij"   data-letter="R">R</div>
+        <div class="bonus-vak is-leeg"   data-plek="11"></div>
+      </div>
+
+      <div class="bonus-voorraad" aria-label="Nog te plaatsen letters">
+        <button type="button" class="bonus-schijf" data-letter="E">E</button>
+        <button type="button" class="bonus-schijf" data-letter="N">N</button>
+        <button type="button" class="bonus-schijf" data-letter="D">D</button>
+        <button type="button" class="bonus-schijf" data-letter="S">S</button>
+        <button type="button" class="bonus-schijf" data-letter="B">B</button>
+        <button type="button" class="bonus-schijf" data-letter="T">T</button>
+        <button type="button" class="bonus-schijf" data-letter="O">O</button>
+        <button type="button" class="bonus-schijf is-gebruikt" data-letter="T">T</button>
+      </div>
+
+      <p class="bonus-klok" style="--klok-rest:.61" aria-label="Nog 11 seconden">11</p>
+
+      <p class="bonus-melding" aria-live="polite">Sleep de letters naar de lege vakjes</p>
+
+    </section>
+   </div>
+  </div>
+
+  <!-- ==================================================================
+       LOSSE STANDEN
+       ================================================================== -->
+  <div class="proef-blok proef-blok--standen" id="standen">
+   <div class="speelveld">
+    <section class="scherm is-actief" style="gap:18px">
+
+      <p class="proef-kop">Vakjes van de lingokaart</p>
+      <div class="proef-strook">
+        <div class="proef-monster"><div class="bal-vak is-open" data-getal="17">17</div><span class="proef-naam">is-open</span></div>
+        <div class="proef-monster"><div class="bal-vak is-weg" data-getal="34">34</div><span class="proef-naam">is-weg</span></div>
+        <div class="proef-monster"><div class="bal-vak is-weg is-nieuw" data-getal="34">34</div><span class="proef-naam">is-weg is-nieuw</span></div>
+        <div class="proef-monster"><div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="52">52</div><span class="proef-naam">is-kiesbaar</span></div>
+        <div class="proef-monster"><div class="bal-vak is-weg is-lingo" data-getal="8">8</div><span class="proef-naam">is-weg is-lingo</span></div>
+        <div class="proef-monster"><div class="bal-vak is-open" data-getal="70"></div><span class="proef-naam">leeg vak, getal uit data-getal</span></div>
+      </div>
+
+      <p class="proef-kop">De kaart bij de vraagbal</p>
+      <div class="proef-plaat">
+        <div class="bal-kaart" style="max-width:380px">
+          <div class="bal-vak is-weg"  data-getal="4">4</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="17">17</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="23">23</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="31">31</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="48">48</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="12">12</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="7">7</div>
+          <div class="bal-vak is-weg"  data-getal="55">55</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="62">62</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="26">26</div>
+          <div class="bal-vak is-weg"  data-getal="39">39</div>
+          <div class="bal-vak is-weg"  data-getal="68">68</div>
+          <div class="bal-vak is-weg"  data-getal="15">15</div>
+          <div class="bal-vak is-weg"  data-getal="44">44</div>
+          <div class="bal-vak is-weg"  data-getal="2">2</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="51">51</div>
+          <div class="bal-vak is-weg"  data-getal="29">29</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="9">9</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="60">60</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="35">35</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="21">21</div>
+          <div class="bal-vak is-weg"  data-getal="58">58</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="41">41</div>
+          <div class="bal-vak is-weg"  data-getal="6">6</div>
+          <div class="bal-vak is-open is-kiesbaar" role="button" tabindex="0" data-getal="66">66</div>
+        </div>
+        <p class="bal-melding is-hint">Kies zelf een vakje</p>
+      </div>
+
+      <p class="proef-kop">Tellers, stippen en meldingen</p>
+      <div class="proef-strook">
+        <p class="bal-teller">Nog <strong>5</strong> trekkingen</p>
+        <p class="bal-teller is-laatste">Nog <strong>1</strong> trekking</p>
+        <p class="bal-groen">Groen
+          <span class="bal-groen-stip"></span>
+          <span class="bal-groen-stip"></span>
+          <span class="bal-groen-stip"></span>
+        </p>
+        <p class="bal-groen is-vol">Groen
+          <span class="bal-groen-stip is-aan"></span>
+          <span class="bal-groen-stip is-aan"></span>
+          <span class="bal-groen-stip is-aan"></span>
+        </p>
+      </div>
+      <div class="proef-strook" style="gap:10px">
+        <p class="bal-melding" style="width:auto">Rode bal — de fase stopt</p>
+        <p class="bal-melding is-goed" style="width:auto">Groene bal erbij</p>
+        <p class="bal-melding is-fout" style="width:auto">Dat nummer stond al door</p>
+      </div>
+
+      <p class="proef-kop">Bonusvakjes, schijven en klok</p>
+      <div class="proef-strook">
+        <div class="proef-monster"><div class="bonus-vak is-vrij" data-letter="O">O</div><span class="proef-naam">is-vrij</span></div>
+        <div class="proef-monster"><div class="bonus-vak is-leeg"></div><span class="proef-naam">is-leeg</span></div>
+        <div class="proef-monster"><div class="bonus-vak is-gevuld" data-letter="T">T</div><span class="proef-naam">is-gevuld</span></div>
+        <div class="proef-monster"><div class="bonus-vak is-leeg is-actief"></div><span class="proef-naam">is-actief</span></div>
+        <div class="proef-monster"><div class="bonus-vak is-leeg is-over"></div><span class="proef-naam">is-over</span></div>
+        <div class="proef-monster"><div class="bonus-vak is-leeg" data-letter="D"></div><span class="proef-naam">letter uit data-letter</span></div>
+      </div>
+      <div class="proef-strook">
+        <div class="proef-monster">
+          <div class="bonus-voorraad" style="width:auto;min-height:0">
+            <button type="button" class="bonus-schijf" data-letter="W">W</button>
+          </div>
+          <span class="proef-naam">schijf</span>
+        </div>
+        <div class="proef-monster">
+          <div class="bonus-voorraad" style="width:auto;min-height:0">
+            <button type="button" class="bonus-schijf is-opgepakt" data-letter="W">W</button>
+          </div>
+          <span class="proef-naam">is-opgepakt</span>
+        </div>
+        <div class="proef-monster">
+          <div class="bonus-voorraad" style="width:auto;min-height:0">
+            <button type="button" class="bonus-schijf is-gebruikt" data-letter="W">W</button>
+          </div>
+          <span class="proef-naam">is-gebruikt</span>
+        </div>
+        <div class="proef-monster"><p class="bonus-klok" style="--klok-rest:1">18</p><span class="proef-naam">vol</span></div>
+        <div class="proef-monster"><p class="bonus-klok" style="--klok-rest:.4">7</p><span class="proef-naam">halverwege</span></div>
+        <div class="proef-monster"><p class="bonus-klok is-kritiek" style="--klok-rest:.11">2</p><span class="proef-naam">is-kritiek</span></div>
+        <div class="proef-monster"><p class="bonus-klok is-loopt">18</p><span class="proef-naam">is-loopt (18 s)</span></div>
+      </div>
+
+    </section>
+   </div>
+  </div>
+
+</div>
+
+</body>
+</html>

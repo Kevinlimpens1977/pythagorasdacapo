@@ -1,0 +1,119 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/sfeer.css
+
+   De zwevende iconen áchter het speelveld. Dit verving de sierrand die eerst
+   rondom het kader liep: die was te aanwezig en stond stil. Nu drijven dezelfde
+   tekens door de lucht achter het spel langs.
+
+   Drie lagen over hetzelfde vlak (assets/zweef.svg), elk met een andere maat,
+   snelheid en richting. Dat geeft diepte: de kleine tekens ver weg schuiven
+   traag, de grote dichtbij sneller en de andere kant op, zodat ze langs elkaar
+   bewegen in plaats van als één behang mee te schuiven.
+
+   Dit bestand wordt ná css/game.css geladen en zet de oude slinger uit.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. De lagen
+   -------------------------------------------------------------------------- */
+
+.sfeer{
+  position:fixed;
+  inset:0;
+  z-index:-1;              /* achter het speelveld, vóór de achtergrondfoto */
+  pointer-events:none;
+  overflow:hidden;
+
+  /* Het speelveld is halfdoorzichtig, dus zonder masker staan de tekens binnen
+     het kader even sterk als erbuiten en lopen ze dwars door de kop en het
+     scorevak. css/base.css houdt om dezelfde reden het midden van zijn eigen
+     bellenlaag vrij. Dit masker dimt het midden zonder het helemaal leeg te
+     maken, zodat er achter het kader nog beweging is zonder gedoe. */
+  --sfeer-masker:radial-gradient(125% 100% at 50% 48%,
+    rgba(0,0,0,.10) 0 34%,
+    rgba(0,0,0,.45) 60%,
+    rgba(0,0,0,1) 92%);
+  -webkit-mask-image:var(--sfeer-masker);
+          mask-image:var(--sfeer-masker);
+
+  /* De verste laag: klein, bleek en traag. */
+  --tegel:300px;
+  background:url("../assets/zweef.svg") 0 0 / var(--tegel) var(--tegel) repeat;
+  opacity:.30;
+  animation:sfeer-heen 76s linear infinite;
+}
+
+/* De middelste laag. */
+.sfeer::before{
+  content:"";
+  position:absolute;
+  inset:-10%;
+  --tegel:460px;
+  background:url("../assets/zweef.svg") 0 0 / var(--tegel) var(--tegel) repeat;
+  opacity:.55;
+  animation:sfeer-terug 58s linear infinite;
+}
+
+/* De laag die het dichtst bij lijkt: groot en iets duidelijker. */
+.sfeer::after{
+  content:"";
+  position:absolute;
+  inset:-14%;
+  --tegel:680px;
+  background:url("../assets/zweef.svg") 0 0 / var(--tegel) var(--tegel) repeat;
+  opacity:.42;
+  animation:sfeer-heen 42s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   2. De beweging
+   -------------------------------------------------------------------------- */
+
+/* De verschuiving is precies één vlak, zodat het rondje naadloos sluit. Dat
+   staat als variabele in de laag zelf en niet als vast getal in de keyframe:
+   verandert de maat van het vlak op een klein scherm, dan verschuift het
+   evenveel mee. Met vaste getallen sprong het patroon aan het eind van elke
+   lus, omdat de verschuiving dan geen heel vlak meer was. */
+@keyframes sfeer-heen{
+  from{ background-position:0 0 }
+  to  { background-position:var(--tegel) calc(-1 * var(--tegel)) }
+}
+@keyframes sfeer-terug{
+  from{ background-position:0 0 }
+  to  { background-position:calc(-1 * var(--tegel)) calc(-1 * var(--tegel)) }
+}
+
+/* --------------------------------------------------------------------------
+   3. De oude sierrand uit
+   -------------------------------------------------------------------------- */
+
+/* Hier hing eerst de slinger met lampjes, en daarna de iconenband. Allebei weg;
+   de tekens zweven nu achter het kader. Het extra body-gewicht verslaat de
+   regel in css/game.css die de slinger tekent. */
+body #scherm-menu::before{
+  content:none;
+}
+
+.slinger{ display:none !important; }
+
+/* --------------------------------------------------------------------------
+   4. Kleine schermen
+   -------------------------------------------------------------------------- */
+
+/* Op een telefoon is er weinig lucht naast het kader, dus daar mogen de tekens
+   kleiner en bleker: ze horen sfeer te zijn, geen behang. */
+@media (max-width:620px){
+  .sfeer{ --tegel:210px; opacity:.24 }
+  .sfeer::before{ --tegel:300px; opacity:.40 }
+  .sfeer::after{ --tegel:430px; opacity:.32 }
+}
+
+/* --------------------------------------------------------------------------
+   5. Rust
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion:reduce){
+  .sfeer,
+  .sfeer::before,
+  .sfeer::after{ animation:none }
+}

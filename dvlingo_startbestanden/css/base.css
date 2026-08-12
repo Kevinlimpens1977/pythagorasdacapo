@@ -1,0 +1,804 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/base.css
+   Kleurvariabelen, reset, achtergrondlucht, typografie, knoppen, iconen.
+   Alles werkt vanaf schijf: geen imports, geen webfonts, geen externe bronnen.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Variabelen
+   -------------------------------------------------------------------------- */
+
+:root{
+  /* Lucht en sfeer */
+  --lucht-boven:#d6f0fc;
+  --lucht-midden:#b6e1f7;
+  --lucht-onder:#8bcbee;
+  --schijnsel:rgba(255,255,255,.80);
+  --bal-kern:rgba(255,255,255,.94);
+  --bal-rand:rgba(255,255,255,.16);
+
+  /* Basiskleuren */
+  --wit:#ffffff;
+  --marine:#2b4a8b;          /* bordkader en voegen */
+  --marine-diep:#21449a;     /* spoor van de tijdbalk */
+  --marine-donker:#183260;
+  --paneel-tekst:#2f5fa8;
+  --tekst:#22406f;
+  --tekst-zacht:#5b7fae;
+
+  --blauw:#3f95e2;
+  --blauw-donker:#2d6cc2;
+  --blauw-diep:#1f549e;
+  --blauw-licht:#cfe2f4;
+  --blauw-bleek:#c9dff1;
+
+  --rood:#e8382f;
+  --rood-licht:#ff6f61;
+  --rood-diep:#9d1a13;
+
+  --geel:#ffd23a;
+  --geel-licht:#ffe98a;
+  --geel-donker:#f0a81f;
+  --geel-diep:#b57405;
+
+  --groen:#3ec98a;
+  --groen-diep:#1c8055;
+
+  --focus:#0e2f5f;
+  --focus-halo:rgba(255,255,255,.92);
+
+  /* Tegelverlopen */
+  --tegel-boven:#3f95e2;
+  --tegel-onder:#2d6cc2;
+  --verloop-tegel:linear-gradient(180deg,var(--tegel-boven) 0%,#3585d6 52%,var(--tegel-onder) 100%);
+  --verloop-goed:linear-gradient(180deg,#f4544a 0%,#e8382f 52%,#c9231b 100%);
+  --verloop-geel:radial-gradient(circle at 36% 28%,var(--geel-licht) 0%,var(--geel) 46%,var(--geel-donker) 100%);
+  --verloop-blauw:linear-gradient(180deg,#57a6ee 0%,var(--blauw) 46%,var(--blauw-donker) 100%);
+  --verloop-rood:linear-gradient(180deg,#ff6f61 0%,var(--rood) 48%,#c9231b 100%);
+  --verloop-groen:linear-gradient(180deg,#63e2a8 0%,var(--groen) 48%,#25a06c 100%);
+  --verloop-wit:linear-gradient(180deg,#ffffff 0%,#eaf4fd 100%);
+
+  /* Maten */
+  --r-pil:999px;
+  --r-kaart:28px;
+  --r-vak:14px;
+  /* De referentie heeft ~6px op een tegel van ~90px. Onze tegel is ~99px,
+     dus 6px zit er nog een tikje scherper in. Ronder gaat het lijken op een
+     app-icoon in plaats van op een Lingovakje. */
+  --r-tegel:6px;
+  --voeg:4px;
+  --witte-rand:8px;
+  --kader-max:1150px;
+  --knop-diepte:6px;
+
+  /* Tijden */
+  --draai-duur:560ms;
+  --draai-stap:105ms;
+  --schud-duur:380ms;
+  --veer:cubic-bezier(.34,1.56,.64,1);
+
+  /* Lettertypen uit de systeemstack */
+  --lt-zwaar:"Arial Black","Segoe UI Black","Helvetica Neue Black","Arial Bold",
+             "Franklin Gothic Heavy",Impact,system-ui,sans-serif;
+  --lt-basis:"Segoe UI","Helvetica Neue",system-ui,-apple-system,Arial,sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset
+   -------------------------------------------------------------------------- */
+
+*,*::before,*::after{box-sizing:border-box}
+
+html,body{height:100%}
+
+html{
+  background:
+    linear-gradient(180deg,
+      var(--lucht-boven) 0%,
+      var(--lucht-midden) 46%,
+      var(--lucht-onder) 100%) fixed;
+  -webkit-text-size-adjust:100%;
+}
+
+body{
+  margin:0;
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  /* Gewoon `center` duwt inhoud die hoger is dan het venster boven de
+     bovenrand uit; dat deel is dan niet meer te bereiken, ook niet met
+     scrollen. `safe center` centreert alleen zolang het past en begint
+     daarna netjes bovenaan. De regel erboven blijft staan als terugval
+     voor browsers die het sleutelwoord nog niet kennen. */
+  justify-content:center;
+  justify-content:safe center;
+  gap:14px;
+  padding:12px;
+  font-family:var(--lt-basis);
+  font-size:16px;
+  line-height:1.45;
+  color:var(--tekst);
+  overflow-x:hidden;
+}
+
+h1,h2,h3,h4,p,figure,blockquote,dl,dd{margin:0}
+ul,ol{margin:0;padding:0;list-style:none}
+img,svg{max-width:100%;display:block}
+table{border-collapse:collapse}
+
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer;color:inherit;
+       -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:disabled{cursor:not-allowed}
+
+/* --------------------------------------------------------------------------
+   3. Achtergrond: radiaal schijnsel en zwevende ballen (puur CSS)
+   -------------------------------------------------------------------------- */
+
+/* Zacht schijnsel achter het speelveld. */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse 74% 58% at 50% 40%,
+      var(--schijnsel) 0%,
+      rgba(255,255,255,.34) 42%,
+      rgba(255,255,255,0) 74%),
+    radial-gradient(ellipse 120% 40% at 50% 108%,
+      rgba(43,74,139,.16) 0%,
+      rgba(43,74,139,0) 70%);
+}
+
+/* Zwevende doorschijnende ballen. Vijf verticaal herhalende banen die elk
+   precies één baanhoogte opschuiven, zodat de lus naadloos rondloopt.
+
+   Ze zijn bewust klein en zwak: het zijn achtergrondbellen, geen tweede
+   onderwerp. Het masker haalt ze bovendien weg in het midden van het beeld,
+   precies waar het speelveld staat, zodat er nooit een bel achter het bord
+   parkeert. Ze blijven daarmee echt achter het speelveld hangen. */
+body::after{
+  content:"";
+  position:fixed;
+  inset:-8% -4%;
+  z-index:-1;
+  pointer-events:none;
+  background-repeat:repeat-y;
+  background-image:
+    radial-gradient(circle 27px at 50% 20%,
+      var(--bal-kern) 0%, rgba(255,255,255,.40) 52%, rgba(255,255,255,.11) 80%, rgba(255,255,255,0) 82%),
+    radial-gradient(circle 16px at 50% 62%,
+      var(--bal-kern) 0%, rgba(255,255,255,.36) 54%, rgba(255,255,255,.09) 82%, rgba(255,255,255,0) 84%),
+    radial-gradient(circle 36px at 50% 34%,
+      rgba(255,255,255,.72) 0%, rgba(255,255,255,.28) 50%, rgba(255,255,255,.08) 80%, rgba(255,255,255,0) 82%),
+    radial-gradient(circle 12px at 50% 74%,
+      var(--bal-kern) 0%, rgba(255,255,255,.38) 56%, rgba(255,255,255,.10) 84%, rgba(255,255,255,0) 86%),
+    radial-gradient(circle 21px at 50% 46%,
+      rgba(255,255,255,.78) 0%, rgba(255,255,255,.30) 52%, rgba(255,255,255,.09) 82%, rgba(255,255,255,0) 84%);
+  background-size:
+    190px 760px,
+    120px 560px,
+    250px 920px,
+     96px 640px,
+    160px 840px;
+  background-position:6% 0, 26% 0, 53% 0, 76% 0, 91% 0;
+  animation:dvl-zweef 128s linear infinite;
+  opacity:.55;
+  -webkit-mask-image:radial-gradient(ellipse 60% 54% at 50% 46%,
+    rgba(0,0,0,0) 0%, rgba(0,0,0,.34) 62%, rgba(0,0,0,1) 100%);
+  mask-image:radial-gradient(ellipse 60% 54% at 50% 46%,
+    rgba(0,0,0,0) 0%, rgba(0,0,0,.34) 62%, rgba(0,0,0,1) 100%);
+}
+
+@keyframes dvl-zweef{
+  from{background-position:6% 0,      26% 0,      53% 0,      76% 0,      91% 0}
+  to  {background-position:6% -760px, 26% -560px, 53% -920px, 76% -640px, 91% -840px}
+}
+
+/* css/beeld.css legt assets/achtergrond.jpg over de lucht. Dat beeld is één
+   grote bellenfoto: op volle sterkte zijn die bellen groter dan het bord en
+   trekken ze meer aandacht dan het spel. De foto blijft, maar als zachte
+   sfeer, en het midden — waar het speelveld staat — houden we vrij, zodat er
+   nooit een bel achter het bord hangt. De selector staat bewust op
+   `html body` en niet op `body`: beeld.css wordt later ingeladen, dus alleen
+   met meer gewicht wint deze regel. */
+html body::before{
+  opacity:.30;
+  -webkit-mask-image:radial-gradient(ellipse 58% 52% at 50% 46%,
+    rgba(0,0,0,0) 0%, rgba(0,0,0,.30) 64%, rgba(0,0,0,1) 100%);
+  mask-image:radial-gradient(ellipse 58% 52% at 50% 46%,
+    rgba(0,0,0,0) 0%, rgba(0,0,0,.30) 64%, rgba(0,0,0,1) 100%);
+}
+@media (max-width:700px),(orientation:portrait){
+  html body::before{opacity:.22}
+}
+
+/* Als de opmaak zelf een luchtlaag of ballen meebrengt, laat de CSS-versie los. */
+body:has(.ballen)::after,
+body:has(.lucht)::after{content:none}
+
+/* Losse ballen uit de opmaak krijgen dezelfde look. */
+.bal-zwevend,.ballen > *{
+  position:absolute;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle at 34% 30%,
+    rgba(255,255,255,.95) 0%, rgba(255,255,255,.42) 52%, rgba(255,255,255,.10) 88%);
+  animation:dvl-dobber 14s ease-in-out infinite;
+}
+.ballen{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+@keyframes dvl-dobber{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%    {transform:translateY(-26px) scale(1.04)}
+}
+
+/* --------------------------------------------------------------------------
+   4. Speelveldkader en schermen
+   -------------------------------------------------------------------------- */
+
+/* Het hele speelveld zit in een afgeronde container met dikke witte rand. */
+.speelveld,.schil,.kader,.omhulsel,#app,#speelveld{
+  position:relative;
+  width:min(var(--kader-max),calc(100vw - 20px));
+  background:rgba(255,255,255,.26);
+  border:var(--witte-rand) solid var(--wit);
+  border-radius:var(--r-kaart);
+  box-shadow:
+    0 20px 44px rgba(24,50,96,.26),
+    0 2px 0 rgba(255,255,255,.9) inset;
+  overflow:hidden;
+}
+
+.scherm{
+  position:relative;
+  display:none;
+  width:min(var(--kader-max),calc(100vw - 20px));
+  /* De binnenmarge volgde alleen de breedte. Op een laptopvenster van
+     1366x650 is breedte juist wat er genoeg is en hoogte wat ontbreekt, dus
+     telt de hoogte nu mee: min(2.4vw,3vh) laat de marge meekrimpen zodra het
+     venster laag wordt, zonder dat een breed venster er smaller uitziet. */
+  padding:clamp(12px,min(2.4vw,3vh),26px);
+  background:rgba(255,255,255,.26);
+  border:var(--witte-rand) solid var(--wit);
+  border-radius:var(--r-kaart);
+  box-shadow:
+    0 20px 44px rgba(24,50,96,.26),
+    0 2px 0 rgba(255,255,255,.9) inset;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(9px,min(2vw,1.9vh),22px);
+  overflow:hidden;
+}
+
+/* Zit het scherm al in een kader, dan draagt het kader de rand. */
+:is(.speelveld,.schil,.kader,.omhulsel,#app,#speelveld) .scherm{
+  width:100%;
+  border:0;
+  border-radius:0;
+  background:none;
+  box-shadow:none;
+}
+
+.scherm.is-actief{display:flex}
+
+/* Zachte binnenkomst van een scherm. */
+.scherm.is-actief{animation:dvl-scherm-in .32s ease-out}
+@keyframes dvl-scherm-in{
+  from{opacity:0;transform:translateY(10px) scale(.99)}
+  to  {opacity:1;transform:none}
+}
+
+/* Het spelscherm komt binnen zonder doorschijnendheid. Een fade zet het hele
+   scherm even op halve dekking, en dan is ook het ondoorzichtige bord even
+   half doorzichtig: precies het moment waarop de achtergrondbellen dwars door
+   het bord heen schenen. Alleen schuiven, dus. */
+#scherm-spel.is-actief{animation-name:dvl-scherm-in-vast}
+@keyframes dvl-scherm-in-vast{
+  from{transform:translateY(10px) scale(.995)}
+  to  {transform:none}
+}
+
+/* --------------------------------------------------------------------------
+   5. Typografie
+   -------------------------------------------------------------------------- */
+
+.titel,h1,h2{
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--paneel-tekst);
+  line-height:1.08;
+}
+h1,.titel{font-size:clamp(22px,3.4vw,34px)}
+h2{font-size:clamp(17px,2.4vw,23px)}
+
+.kop-klein,.label{
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  font-size:13px;
+  color:var(--paneel-tekst);
+}
+
+.zacht{color:var(--tekst-zacht)}
+.midden{text-align:center}
+
+/* Alleen voor schermlezers. */
+.visueel-verborgen{
+  position:absolute!important;
+  width:1px;height:1px;
+  margin:-1px;padding:0;border:0;
+  clip-path:inset(50%);
+  overflow:hidden;white-space:nowrap;
+}
+
+.is-verborgen,[hidden]{display:none!important}
+
+/* --------------------------------------------------------------------------
+   6. Knoppen — echte indrukbeweging met donkere onderrand die verdwijnt
+   -------------------------------------------------------------------------- */
+
+.knop{
+  --knop-boven:#57a6ee;
+  --knop-onder:#2f7ccd;
+  --knop-diep:#1c528f;
+  --knop-tekst:var(--wit);
+
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.7em;
+  min-height:56px;
+  padding:.72em 1.5em;
+  border-radius:var(--r-pil);
+  background:linear-gradient(180deg,var(--knop-boven) 0%,var(--knop-onder) 100%);
+  color:var(--knop-tekst);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  font-size:clamp(15px,1.7vw,20px);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  line-height:1.2;
+  text-align:center;
+  text-decoration:none;
+  text-shadow:0 2px 0 rgba(0,0,0,.22);
+  box-shadow:
+    0 var(--knop-diepte) 0 var(--knop-diep),
+    0 calc(var(--knop-diepte) + 6px) 14px rgba(24,50,96,.30),
+    inset 0 2px 0 rgba(255,255,255,.42),
+    inset 0 -2px 0 rgba(0,0,0,.14);
+  translate:0 0;
+  transition:translate .11s ease-out, box-shadow .11s ease-out,
+             filter .18s ease-out, background-color .18s ease-out;
+}
+
+.knop:hover{filter:brightness(1.06) saturate(1.05)}
+
+.knop:active,
+.knop.is-ingedrukt{
+  translate:0 var(--knop-diepte);
+  box-shadow:
+    0 0 0 var(--knop-diep),
+    0 2px 5px rgba(24,50,96,.30),
+    inset 0 2px 0 rgba(255,255,255,.30),
+    inset 0 -2px 0 rgba(0,0,0,.14);
+}
+
+.knop:disabled,.knop[aria-disabled="true"]{
+  filter:grayscale(.5) brightness(.94);
+  opacity:.62;
+  translate:0 0;
+}
+
+/* Kleurvarianten */
+.knop--blauw,[data-niveau="makkelijk"],.knop--primair{
+  --knop-boven:#57a6ee;--knop-onder:#2f7ccd;--knop-diep:#1c528f;
+}
+.knop--geel,[data-niveau="moeilijk"]{
+  --knop-boven:#ffe07a;--knop-onder:#f5b81c;--knop-diep:#c07f04;
+  --knop-tekst:#5a3c00;
+  text-shadow:0 2px 0 rgba(255,255,255,.42);
+}
+.knop--rood,[data-niveau="expert"]{
+  --knop-boven:#ff7264;--knop-onder:#df2f26;--knop-diep:#a01b14;
+}
+.knop--groen{
+  --knop-boven:#69e0ac;--knop-onder:#2eae76;--knop-diep:#177a4f;
+}
+.knop--wit,.knop--stil{
+  --knop-boven:#ffffff;--knop-onder:#dcebf9;--knop-diep:#a9c6e2;
+  --knop-tekst:var(--paneel-tekst);
+  text-shadow:none;
+}
+.knop--marine{
+  --knop-boven:#3c63a8;--knop-onder:#27477f;--knop-diep:#16294c;
+}
+
+/* Maten */
+.knop--breed{width:min(460px,100%)}
+.knop--klein{min-height:42px;padding:.5em 1.1em;font-size:14px;--knop-diepte:4px}
+.knop--groot{min-height:66px;font-size:clamp(17px,2.1vw,23px)}
+
+/* Tweede regel onder het opschrift, zoals bij de moeilijkheidsknoppen. */
+.knop{flex-wrap:wrap}
+.knop .regel,.knop small,.knop .sub,.knop .onderregel{
+  display:block;
+  width:100%;
+  margin-top:.18em;
+  font-size:.62em;
+  letter-spacing:.1em;
+  opacity:.9;
+  font-weight:900;
+}
+
+/* Chevron rechts: los van de tekstregels, dus altijd netjes verticaal midden. */
+.knop--chevron{padding-right:2.6em}
+.knop--chevron::after{
+  content:"";
+  position:absolute;
+  right:1.25em;
+  top:50%;
+  width:.5em;height:.5em;
+  border-right:.19em solid currentColor;
+  border-top:.19em solid currentColor;
+  translate:0 -60%;
+  rotate:45deg;
+  opacity:.92;
+  transition:translate .16s ease-out;
+}
+.knop--chevron:hover::after{translate:.22em -60%}
+
+/* Ronde icoonknoppen (terug, pauze, geluid, muziek, uitleg). */
+.rondknop,.icoonknop{
+  --knop-boven:#ffffff;
+  --knop-onder:#dbeaf8;
+  --knop-diep:#a4c2e0;
+  position:relative;
+  display:inline-grid;
+  place-items:center;
+  width:46px;height:46px;
+  border-radius:50%;
+  background:linear-gradient(180deg,var(--knop-boven),var(--knop-onder));
+  color:var(--paneel-tekst);
+  box-shadow:
+    0 4px 0 var(--knop-diep),
+    0 8px 14px rgba(24,50,96,.24),
+    inset 0 2px 0 rgba(255,255,255,.85);
+  translate:0 0;
+  transition:translate .11s ease-out, box-shadow .11s ease-out, filter .18s ease-out;
+}
+.rondknop:hover,.icoonknop:hover{filter:brightness(1.04)}
+.rondknop:active,.icoonknop:active{
+  translate:0 4px;
+  box-shadow:0 0 0 var(--knop-diep),0 2px 4px rgba(24,50,96,.26),
+             inset 0 2px 0 rgba(255,255,255,.7);
+}
+.rondknop--klein,.icoonknop--klein{width:38px;height:38px}
+.rondknop--groot{width:62px;height:62px}
+.rondknop--blauw{
+  --knop-boven:#57a6ee;--knop-onder:#2f7ccd;--knop-diep:#1c528f;color:var(--wit);
+}
+
+/* --------------------------------------------------------------------------
+   7. Iconen, met CSS getekend (geen bestanden, geen SVG-afhankelijkheid)
+   -------------------------------------------------------------------------- */
+
+.icoon{display:inline-block;position:relative}
+
+/* Chevron / pijl terug */
+.icoon-terug,.icoon-chevron-links{
+  width:14px;height:14px;
+  border-left:4px solid currentColor;
+  border-bottom:4px solid currentColor;
+  border-radius:2px;
+  rotate:45deg;
+  translate:2px 0;
+}
+.icoon-chevron-rechts{
+  width:14px;height:14px;
+  border-right:4px solid currentColor;
+  border-top:4px solid currentColor;
+  border-radius:2px;
+  rotate:45deg;
+  translate:-2px 0;
+}
+
+/* Pauze: twee balkjes */
+.icoon-pauze{
+  width:14px;height:17px;
+  background:
+    linear-gradient(currentColor,currentColor) 0 0/4.5px 100% no-repeat,
+    linear-gradient(currentColor,currentColor) 100% 0/4.5px 100% no-repeat;
+  border-radius:1px;
+}
+
+/* Vinkje */
+.icoon-vinkje{
+  width:22px;height:12px;
+  border-left:5px solid currentColor;
+  border-bottom:5px solid currentColor;
+  border-radius:2px;
+  rotate:-45deg;
+  translate:0 -2px;
+}
+
+/* Kruis */
+.icoon-kruis{
+  width:16px;height:16px;
+  background:
+    linear-gradient(currentColor,currentColor) 50% 50%/100% 4px no-repeat,
+    linear-gradient(currentColor,currentColor) 50% 50%/4px 100% no-repeat;
+  rotate:45deg;
+}
+
+/* Luidspreker */
+.icoon-geluid{
+  width:18px;height:14px;
+  background:linear-gradient(currentColor,currentColor) 0 50%/7px 8px no-repeat;
+}
+.icoon-geluid::after{
+  content:"";position:absolute;left:5px;top:50%;translate:0 -50%;
+  border:7px solid transparent;border-left-width:0;border-right:9px solid currentColor;
+}
+
+/* Muzieknoot */
+.icoon-muziek{
+  width:16px;height:17px;
+  background:linear-gradient(currentColor,currentColor) 100% 0/3.5px 13px no-repeat;
+}
+.icoon-muziek::after{
+  content:"";position:absolute;right:3px;bottom:0;
+  width:9px;height:7px;border-radius:50%;background:currentColor;
+}
+
+/* Vraagteken voor uitleg */
+.icoon-uitleg::before{
+  content:"?";
+  font-family:var(--lt-zwaar);
+  font-size:20px;
+  line-height:1;
+}
+
+/* --------------------------------------------------------------------------
+   8. Kaarten en vlakken
+   -------------------------------------------------------------------------- */
+
+.kaart,.vlak{
+  background:var(--verloop-wit);
+  border-radius:var(--r-vak);
+  padding:clamp(12px,1.6vw,18px);
+  box-shadow:0 6px 16px rgba(24,50,96,.16),inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.vak-blauw{
+  background:linear-gradient(180deg,#3b86d8 0%,#2a6ac0 100%);
+  color:var(--wit);
+  border-radius:var(--r-vak);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),
+             inset 0 -3px 0 rgba(0,0,0,.16),
+             0 6px 14px rgba(24,50,96,.22);
+}
+
+/* Wit tekstblok met puntje, zoals het welkomsblok in het menu. */
+.tekstblok,.welkom{
+  position:relative;
+  background:var(--wit);
+  border-radius:18px;
+  padding:clamp(9px,1.4vh,16px) 22px;
+  color:var(--paneel-tekst);
+  font-family:var(--lt-zwaar);
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  line-height:1.25;
+  text-align:center;
+  box-shadow:0 8px 20px rgba(24,50,96,.20);
+}
+.tekstblok::after,.welkom::after{
+  content:"";
+  position:absolute;
+  left:-12px;bottom:16px;
+  width:0;height:0;
+  border:11px solid transparent;
+  border-right-color:var(--wit);
+  border-left-width:0;
+}
+
+/* --------------------------------------------------------------------------
+   9. Formulierelementen
+   -------------------------------------------------------------------------- */
+
+input[type="text"],input[type="search"],input[type="number"],textarea,select{
+  width:100%;
+  padding:.7em .9em;
+  border:2px solid #b9d4ec;
+  border-radius:12px;
+  background:var(--wit);
+  color:var(--tekst);
+  transition:border-color .16s ease-out, box-shadow .16s ease-out;
+}
+input:focus,textarea:focus,select:focus{outline:none}
+input:focus-visible,textarea:focus-visible,select:focus-visible{
+  border-color:var(--blauw);
+  box-shadow:0 0 0 4px rgba(63,149,226,.28);
+}
+
+/* --------------------------------------------------------------------------
+   10. Focus — altijd zichtbaar voor toetsenbordbediening
+   -------------------------------------------------------------------------- */
+
+:focus{outline:none}
+
+/* Alleen de ring zetten, nooit de vorm van het element zelf. Hier stond
+   border-radius:inherit; dat gaf elk gefocust element de radius van zijn
+   ouder, waardoor bijvoorbeeld de groene VERDER-knop in #woordkaart (radius 0)
+   tijdens focus een scherphoekige rechthoek werd in plaats van een pil.
+   Een outline volgt in alle huidige browsers vanzelf de eigen border-radius
+   van het element, dus overnemen was ook nooit nodig. */
+:focus-visible{
+  outline:3px solid var(--focus);
+  outline-offset:3px;
+}
+
+.knop:focus-visible,
+.rondknop:focus-visible,
+.icoonknop:focus-visible{
+  outline:3px solid var(--focus);
+  outline-offset:4px;
+}
+
+/* Voor donkere vlakken een lichte focusring. */
+.op-donker:focus-visible{outline-color:var(--focus-halo)}
+
+/* Spring-naar-inhoud link. */
+.overslaan{
+  position:absolute;
+  left:8px;top:-60px;
+  z-index:99;
+  padding:10px 16px;
+  background:var(--wit);
+  color:var(--paneel-tekst);
+  border-radius:10px;
+  font-weight:700;
+  transition:top .18s ease-out;
+}
+.overslaan:focus{top:8px}
+
+/* --------------------------------------------------------------------------
+   11. Onderbalk
+   -------------------------------------------------------------------------- */
+
+.onderbalk{
+  width:min(var(--kader-max),calc(100vw - 20px));
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 16px;
+  background:rgba(255,255,255,.92);
+  border-radius:var(--r-pil);
+  box-shadow:0 8px 20px rgba(24,50,96,.18);
+}
+.onderbalk .titel{font-size:16px;letter-spacing:.1em}
+.onderbalk .rechts{margin-left:auto;display:flex;gap:10px}
+
+/* --------------------------------------------------------------------------
+   12. Kleine hulpklassen
+   -------------------------------------------------------------------------- */
+
+.rij-horizontaal{display:flex;align-items:center;gap:10px}
+.kolom{display:flex;flex-direction:column;gap:10px}
+.vul{flex:1 1 auto}
+.geen-marge{margin:0}
+
+/* --------------------------------------------------------------------------
+   13. Beperkte beweging
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important;
+  }
+  body::after{animation:none}
+  .knop,.rondknop,.icoonknop{transition:none}
+}
+
+/* --------------------------------------------------------------------------
+   14. Kleine schermen
+   -------------------------------------------------------------------------- */
+
+@media (max-width:620px){
+  body{padding:8px;gap:10px}
+  :root{--witte-rand:6px;--r-kaart:22px}
+  .scherm{padding:12px}
+  .knop{min-height:52px;letter-spacing:.06em}
+  .onderbalk{padding:8px 12px}
+}
+
+@media (max-width:380px){
+  :root{--witte-rand:5px;--r-kaart:18px;--knop-diepte:5px}
+  body{padding:6px}
+  .scherm{padding:10px;gap:10px}
+  .knop{min-height:48px;font-size:14px;padding:.6em 1em}
+  .tekstblok,.welkom{padding:12px 14px;font-size:14px}
+}
+
+/* --------------------------------------------------------------------------
+   15. Lage vensters — de paginarand zelf levert eerst in
+
+   Buiten het scherm gaan er sowieso al 12px rand boven, 14px tussenruimte en
+   een voetbalk van 43px af: samen 69px die geen enkel scherm kan gebruiken.
+   Op een laptop van 1366x650 is dat meer dan een tiende van de hoogte. Op
+   liggende vensters die laag zijn knijpt de pagina daarom eerst zichzelf,
+   voordat de schermen zelf iets hoeven op te geven. Staande schermen (mobiel)
+   raken we niet aan: daar is hoogte juist wat er genoeg is.
+   -------------------------------------------------------------------------- */
+
+@media (orientation:landscape) and (max-height:780px){
+  body{padding:8px 12px;gap:10px}
+  .onderbalk{padding:6px 16px}
+  .onderbalk .titel{font-size:15px}
+}
+
+/* --------------------------------------------------------------------------
+   15b. De voetbalk op één regel
+
+   De voetbalk is even breed als het speelveld: min(--kader-max,100vw - 20px).
+   Op een smalle telefoon is dat 300px, en daar passen de titel en de groene
+   knop niet naast elkaar. De titel viel dan om naar twee regels en de knop
+   stak er rechts uit: de balk werd 67px hoog in plaats van 34px en de pagina
+   werd 38px breder dan het venster. Dat kostte precies de ruimte die de
+   ballenfase en het bonuswoord tekortkwamen.
+
+   Hieronder krimpen beide zodat ze naast elkaar blijven staan. De titel mag
+   afgekapt worden — hij staat ook al boven in de tab en op het beeldmerk —
+   en de knop levert alleen letterhoogte in, geen aanraakvlak.
+
+   De knopregel heeft drie klassen nodig: css/woordenbeheer.css komt ná dit
+   blad binnen en zet daar zelf `.onderbalk .knop-woordenbeheer`. Met evenveel
+   gewicht zou die het laatste woord houden.
+   -------------------------------------------------------------------------- */
+
+@media (max-width:380px){
+  .onderbalk{padding:6px 10px;gap:8px}
+  .onderbalk .titel{
+    min-width:0;
+    font-size:11px;
+    letter-spacing:.05em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .onderbalk .rechts .knop-woordenbeheer{
+    font-size:10px;
+    padding:.42em .8em .48em;
+    letter-spacing:.04em;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   15c. Liggend en laag — de pagina knijpt zichzelf verder
+
+   Een telefoon op zijn kant (812x375, 740x360) heeft breedte genoeg en hoogte
+   niet. Alles wat buiten de schermen staat levert hier nog een keer in: de
+   paginamarge, de tussenruimte en de voetbalk. Samen scheelt dat ruim dertig
+   pixels, en die gaan rechtstreeks naar het scherm zelf.
+   -------------------------------------------------------------------------- */
+
+@media (orientation:landscape) and (max-height:480px){
+  body{padding:6px 10px;gap:6px}
+  .scherm{padding:10px 12px}
+  .onderbalk{padding:4px 12px}
+  .onderbalk .titel{font-size:12px;letter-spacing:.06em}
+  .onderbalk .rechts .knop-woordenbeheer{font-size:11px;padding:.36em .9em .42em}
+}

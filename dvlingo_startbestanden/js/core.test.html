@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testpagina spellogica - Digitale Vaardigheden Lingo</title>
+<style>
+  :root {
+    --lucht-boven: #c3e6f8;
+    --lucht-onder: #9fd6f2;
+    --marine: #2b4a8b;
+    --blauw: #2f5fa8;
+    --groen: #1e9e5a;
+    --rood: #e8382f;
+    --wit: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: "Segoe UI", Tahoma, Verdana, sans-serif;
+    color: #21365e;
+    background: linear-gradient(180deg, var(--lucht-boven) 0%, var(--lucht-onder) 100%);
+    padding: 24px 16px 64px;
+  }
+  .blad {
+    max-width: 880px;
+    margin: 0 auto;
+    background: var(--wit);
+    border-radius: 28px;
+    border: 8px solid var(--wit);
+    box-shadow: 0 18px 40px rgba(20, 50, 100, .25);
+    overflow: hidden;
+  }
+  header {
+    padding: 22px 26px 18px;
+    background: linear-gradient(180deg, #3f95e2, #2d6cc2);
+    color: var(--wit);
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  header p { margin: 0; opacity: .9; font-size: 14px; }
+  #samenvatting {
+    padding: 18px 26px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--wit);
+    background: #7b8ba5;
+  }
+  #samenvatting.is-goed { background: var(--groen); }
+  #samenvatting.is-fout { background: var(--rood); }
+  #samenvatting small {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0;
+    opacity: .95;
+    margin-top: 4px;
+  }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 11px 26px;
+    border-bottom: 1px solid #e6eef8;
+    font-size: 15px;
+  }
+  li:nth-child(even) { background: #f7fbff; }
+  .merk {
+    flex: 0 0 auto;
+    min-width: 74px;
+    text-align: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--wit);
+    background: var(--groen);
+  }
+  li.is-fout .merk { background: var(--rood); }
+  .naam { flex: 1 1 auto; }
+  .reden {
+    display: block;
+    margin-top: 5px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px;
+    color: #8c2018;
+    background: #ffeceb;
+    border-left: 3px solid var(--rood);
+    padding: 7px 10px;
+    border-radius: 0 6px 6px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  footer {
+    padding: 16px 26px 20px;
+    font-size: 13px;
+    color: #5b7fae;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: linear-gradient(180deg, #16294a, #0f1c33); color: #dbe7f7; }
+    .blad { background: #1b2f52; border-color: #1b2f52; }
+    li { border-bottom-color: #26406b; }
+    li:nth-child(even) { background: #203a63; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blad">
+  <header>
+    <h1>Testpagina spellogica</h1>
+    <p>Controleert js/core.js, js/woorden.js en js/opslag.js. Groen is goed, rood is fout.</p>
+  </header>
+  <div id="samenvatting" role="status" aria-live="polite">Bezig met testen...</div>
+  <ol id="uitslag"></ol>
+  <footer>
+    Deze pagina schrijft tijdelijk in localStorage en zet daarna netjes terug wat er stond,
+    zodat de lijst van de quizmaster onaangeroerd blijft.
+  </footer>
+</div>
+
+<script src="woorden.js"></script>
+<script src="woordenboek.js"></script>
+<script src="core.js"></script>
+<script src="opslag.js"></script>
+<!-- startscherm.js bouwt pas iets zodra toon() wordt aangeroepen; laden is
+     dus veilig en levert hier de leveltabel en de voetregel op. -->
+<script src="startscherm.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ==============================================================
+   * Piepklein testraam
+   * ============================================================== */
+  var gevallen = [];
+  function test(naam, uitvoeren) { gevallen.push({ naam: naam, uitvoeren: uitvoeren }); }
+
+  function toon(waarde) {
+    try { return JSON.stringify(waarde); } catch (f) { return String(waarde); }
+  }
+  function gelijk(gekregen, verwacht, bericht) {
+    if (toon(gekregen) !== toon(verwacht)) {
+      throw new Error((bericht || "niet gelijk") +
+        "\n  verwacht: " + toon(verwacht) +
+        "\n  gekregen: " + toon(gekregen));
+    }
+  }
+  function waar(voorwaarde, bericht) {
+    if (!voorwaarde) throw new Error(bericht || "verwachtte waar, kreeg onwaar");
+  }
+
+  var Core = window.DVL && window.DVL.Core;
+  var Opslag = window.DVL && window.DVL.Opslag;
+
+  /* Hulpje: een spel met een vaste, bekende lijst. */
+  function proefspel(extra) {
+    var opties = {
+      woorden: [
+        { woord: "KABEL", uitleg: "Een snoer." },
+        { woord: "SCHERM", uitleg: "Het beeldvlak." },
+        { woord: "BESTAND", uitleg: "Gegevens met een naam." }
+      ],
+      eigenLijst: true,
+      schud: false,
+      zaad: 42
+    };
+    if (extra) {
+      for (var s in extra) {
+        if (Object.prototype.hasOwnProperty.call(extra, s)) opties[s] = extra[s];
+      }
+    }
+    return Core.nieuwSpel(opties);
+  }
+
+  /* Losse staat om scoor() puur te testen. */
+  function scoreStaat(over) {
+    var s = {
+      status: "gewonnen", lengte: 5, rij: 1, maxPogingen: 5,
+      hintsGebruikt: 0, tijdPerWoord: 60000
+    };
+    if (over) {
+      for (var k in over) {
+        if (Object.prototype.hasOwnProperty.call(over, k)) s[k] = over[k];
+      }
+    }
+    return s;
+  }
+
+  /* ==============================================================
+   * 1 t/m 4: de basis staat er
+   * ============================================================== */
+
+  test("1. DVL.Core, DVL.Opslag en de woordenlijsten zijn geladen", function () {
+    waar(Core, "DVL.Core ontbreekt");
+    waar(Opslag, "DVL.Opslag ontbreekt");
+    waar(window.DVL.STANDAARDWOORDEN && window.DVL.STANDAARDWOORDEN.length, "STANDAARDWOORDEN ontbreekt");
+    waar(window.DVL.WOORDENBOEK && window.DVL.WOORDENBOEK.length, "WOORDENBOEK ontbreekt");
+  });
+
+  test("2. STANDAARDWOORDEN: minstens 120 woorden van 5, 6 of 7 letters met uitleg", function () {
+    var lijst = window.DVL.STANDAARDWOORDEN;
+    waar(lijst.length >= 120, "te weinig woorden: " + lijst.length);
+    var perLengte = { 5: 0, 6: 0, 7: 0 };
+    var gezien = {};
+    for (var i = 0; i < lijst.length; i++) {
+      var w = lijst[i].woord;
+      waar(/^[A-Z]+$/.test(w), "alleen hoofdletters A-Z toegestaan: " + w);
+      waar(w.length >= 5 && w.length <= 7, "lengte moet 5, 6 of 7 zijn: " + w);
+      waar(typeof lijst[i].uitleg === "string" && lijst[i].uitleg.length > 10, "uitleg ontbreekt bij " + w);
+      waar(!gezien[w], "dubbel woord in de lijst: " + w);
+      gezien[w] = true;
+      perLengte[w.length]++;
+    }
+    waar(perLengte[5] > 0 && perLengte[6] > 0 && perLengte[7] > 0,
+      "de drie lengtes moeten alle drie voorkomen: " + toon(perLengte));
+  });
+
+  test("3. WOORDENBOEK: minstens 600 woorden van 5 t/m 7 letters", function () {
+    var wb = window.DVL.WOORDENBOEK;
+    waar(wb.length >= 600, "te klein woordenboek: " + wb.length);
+    for (var i = 0; i < wb.length; i++) {
+      waar(/^[A-Z]{5,7}$/.test(wb[i]), "ongeldig woordenboekwoord: " + wb[i]);
+    }
+  });
+
+  test("4. Alle te raden woorden zitten ook in het woordenboek", function () {
+    var lijst = window.DVL.STANDAARDWOORDEN;
+    var mis = [];
+    for (var i = 0; i < lijst.length; i++) {
+      if (!window.DVL.kentWoord(lijst[i].woord)) mis.push(lijst[i].woord);
+    }
+    gelijk(mis, [], "deze speelwoorden ontbreken in het woordenboek");
+  });
+
+  /* ==============================================================
+   * 5 t/m 12: beoordelen, met nadruk op dubbele letters
+   * ============================================================== */
+
+  test("5. beoordeel: alles op de goede plek", function () {
+    gelijk(Core.beoordeel("KABEL", "KABEL"), ["goed", "goed", "goed", "goed", "goed"]);
+  });
+
+  test("6. beoordeel: geen enkele letter komt voor", function () {
+    gelijk(Core.beoordeel("PROXY", "BEELD"), ["fout", "fout", "fout", "fout", "fout"]);
+  });
+
+  test("7. beoordeel: gemengd goed, aanwezig en fout", function () {
+    /* KOPIE tegen KOKEN: K en O goed, de E van KOPIE zit elders in KOKEN */
+    gelijk(Core.beoordeel("KOKEN", "KOPIE"), ["goed", "goed", "fout", "aanwezig", "fout"]);
+  });
+
+  test("8. dubbele letter in de poging, maar het doelwoord heeft er maar een", function () {
+    /* BEELD tegen KAMER: de eerste E wordt geel, de tweede blijft fout */
+    gelijk(Core.beoordeel("BEELD", "KAMER"), ["fout", "aanwezig", "fout", "fout", "fout"]);
+  });
+
+  test("9. dubbele letter: de goede plek gaat voor de gele", function () {
+    /* PAPPEN tegen MAPPEN: alleen de eerste P is te veel */
+    gelijk(Core.beoordeel("PAPPEN", "MAPPEN"),
+      ["fout", "goed", "goed", "goed", "goed", "goed"]);
+  });
+
+  test("10. dubbele letter over zeven posities (KLIKKEN tegen PLAKKEN)", function () {
+    gelijk(Core.beoordeel("KLIKKEN", "PLAKKEN"),
+      ["fout", "goed", "fout", "goed", "goed", "goed", "goed"]);
+  });
+
+  test("11. de gele voorraad wordt van links naar rechts verdeeld", function () {
+    /* LEZEN tegen BEELD: een E staat goed, van de tweede E in het doel
+       kan er nog precies een geel worden. */
+    gelijk(Core.beoordeel("LEZEN", "BEELD"),
+      ["aanwezig", "goed", "fout", "aanwezig", "fout"]);
+  });
+
+  test("12. beoordeel is hoofdletterongevoelig en negeert rommel", function () {
+    gelijk(Core.beoordeel("k a b e l", "kabel"), ["goed", "goed", "goed", "goed", "goed"]);
+    gelijk(Core.normaliseer("Back-Up!"), "BACKUP");
+  });
+
+  /* ==============================================================
+   * 13 t/m 25: spelstaat, pogingen en voorvullen
+   * ============================================================== */
+
+  test("13. nieuwSpel: eerste letter staat voor, de rest is nog onbekend", function () {
+    var staat = proefspel();
+    gelijk(staat.doel, "KABEL");
+    gelijk(Core.voorvulling(staat), ["K", null, null, null, null]);
+    gelijk(staat.ronde, 1);
+    gelijk(staat.rij, 0);
+    gelijk(staat.status, "bezig");
+  });
+
+  test("14. nieuwSpel op de standaardlijst loopt op in lengte: 5, 6, 7, 5, 6, 7", function () {
+    var staat = Core.nieuwSpel({ zaad: 7 });
+    var lengtes = [];
+    for (var i = 0; i < staat.woorden.length; i++) lengtes.push(staat.woorden[i].woord.length);
+    gelijk(lengtes, [5, 6, 7, 5, 6, 7], "verkeerde rondevolgorde");
+  });
+
+  test("15. nieuwSpel: makkelijk speelt alleen woorden van vijf letters", function () {
+    var staat = Core.nieuwSpel({ moeilijkheid: "makkelijk", zaad: 3 });
+    for (var i = 0; i < staat.woorden.length; i++) {
+      gelijk(staat.woorden[i].woord.length, 5, "woord met verkeerde lengte in makkelijk");
+    }
+  });
+
+  test("16. doeZet: een woord buiten het woordenboek kost geen poging", function () {
+    var staat = proefspel();
+    var uit = Core.doeZet(staat, "QQQQQ");
+    gelijk(uit.geldig, false);
+    gelijk(uit.reden, "onbekend");
+    gelijk(staat.rij, 0, "de rij mag niet opschuiven");
+    gelijk(staat.pogingen.length, 0);
+    gelijk(staat.ongeldigePogingen, 1);
+  });
+
+  test("17. doeZet: een poging met de verkeerde lengte wordt geweigerd", function () {
+    var staat = proefspel();
+    var uit = Core.doeZet(staat, "KABELS");
+    gelijk(uit.geldig, false);
+    gelijk(uit.reden, "lengte");
+    gelijk(staat.rij, 0);
+  });
+
+  test("18. doeZet: goede letters worden voorgevuld in de volgende rij", function () {
+    var staat = proefspel();
+    var uit = Core.doeZet(staat, "KAMER");
+    gelijk(uit.geldig, true);
+    gelijk(uit.resultaat, ["goed", "goed", "fout", "goed", "fout"]);
+    gelijk(staat.rij, 1);
+    gelijk(Core.voorvulling(staat), ["K", "A", null, "E", null]);
+    gelijk(Core.pogingenOver(staat), 4);
+  });
+
+  test("19. doeZet: een goede letter blijft staan, ook na een mindere poging", function () {
+    var staat = proefspel();
+    Core.doeZet(staat, "KAMER");
+    Core.doeZet(staat, "KOPIE");
+    gelijk(staat.bekend[0], "K");
+    gelijk(staat.bekend[1], "A", "de eerder geraden A mag niet verdwijnen");
+    gelijk(staat.bekend[3], "E");
+  });
+
+  test("20. doeZet: het woord raden wint de ronde", function () {
+    var staat = proefspel();
+    var uit = Core.doeZet(staat, "KABEL");
+    gelijk(uit.gewonnen, true);
+    gelijk(staat.status, "gewonnen");
+    gelijk(staat.geraden, 1);
+    gelijk(staat.ballen, 1);
+    gelijk(staat.opgelost[0].woord, "KABEL");
+  });
+
+  test("21. doeZet: na vijf mislukte pogingen is het woord mislukt", function () {
+    var staat = proefspel();
+    var pogingen = ["KAMER", "TAFEL", "MOLEN", "ROBOT", "VIDEO"];
+    for (var i = 0; i < pogingen.length; i++) {
+      var uit = Core.doeZet(staat, pogingen[i]);
+      waar(uit.geldig, "poging " + pogingen[i] + " zou geldig moeten zijn");
+    }
+    gelijk(staat.status, "mislukt");
+    gelijk(staat.mislukReden, "pogingen");
+    gelijk(staat.gemist, 1);
+    var na = Core.doeZet(staat, "KABEL");
+    gelijk(na.reden, "niet-bezig", "na afloop mag er niets meer gespeeld worden");
+  });
+
+  test("22. tijdOp: de tijd is op, dus het woord is mislukt", function () {
+    var staat = proefspel();
+    Core.tijdOp(staat);
+    gelijk(staat.status, "mislukt");
+    gelijk(staat.mislukReden, "tijd");
+    gelijk(Core.controleerPoging(staat, "KABEL").reden, "niet-bezig");
+  });
+
+  test("23. volgendWoord: nieuwe ronde, schone rijen, eerste letter weer voor", function () {
+    var staat = proefspel();
+    Core.doeZet(staat, "KABEL");
+    Core.volgendWoord(staat);
+    gelijk(staat.ronde, 2);
+    gelijk(staat.doel, "SCHERM");
+    gelijk(staat.lengte, 6);
+    gelijk(staat.rij, 0);
+    gelijk(staat.pogingen.length, 0);
+    gelijk(Core.voorvulling(staat), ["S", null, null, null, null, null]);
+    gelijk(staat.status, "bezig");
+  });
+
+  test("24. volgendWoord: na het laatste woord is het spel afgelopen", function () {
+    var staat = proefspel();
+    Core.volgendWoord(staat);
+    Core.volgendWoord(staat);
+    Core.volgendWoord(staat);
+    gelijk(staat.afgelopen, true);
+    gelijk(staat.status, "klaar");
+  });
+
+  test("25. een eigen lijst van de quizmaster wordt precies zo afgespeeld", function () {
+    var staat = Core.nieuwSpel({
+      woorden: [{ woord: "phishing" }, { woord: "MUIS" }, { woord: "BACKUP" }],
+      eigenLijst: true
+    });
+    var woorden = [];
+    for (var i = 0; i < staat.woorden.length; i++) woorden.push(staat.woorden[i].woord);
+    gelijk(woorden, ["PHISHING", "MUIS", "BACKUP"], "volgorde en lengtes moeten intact blijven");
+  });
+
+  test("26. een quizmasterwoord van acht letters blijft gewoon te raden", function () {
+    /* Ons woordenboek gaat tot zeven letters. Zonder uitzondering zou
+       zelfs het goede antwoord als onbekend woord geweigerd worden. */
+    var staat = Core.nieuwSpel({
+      woorden: [{ woord: "PHISHING", uitleg: "Vissen naar je gegevens." }, { woord: "DOWNLOAD" }],
+      eigenLijst: true
+    });
+    gelijk(staat.lengte, 8);
+    var mis = Core.doeZet(staat, "ZONNEBAD");
+    gelijk(mis.geldig, true, "bij een lengte die het woordenboek niet kent laten we alles toe");
+    gelijk(staat.rij, 1);
+    var uit = Core.doeZet(staat, "PHISHING");
+    gelijk(uit.geldig, true);
+    gelijk(uit.gewonnen, true);
+    gelijk(staat.uitleg, "Vissen naar je gegevens.");
+  });
+
+  test("27. een eigen woordenboek wordt gerespecteerd, het doelwoord altijd", function () {
+    var staat = Core.nieuwSpel({
+      woorden: [{ woord: "ZZZZZ" }],
+      eigenLijst: true,
+      woordenboek: ["KABEL", "KAMER"]
+    });
+    gelijk(Core.controleerPoging(staat, "KAPOT").reden, "onbekend");
+    gelijk(Core.controleerPoging(staat, "KAMER").geldig, true);
+    gelijk(Core.doeZet(staat, "ZZZZZ").gewonnen, true, "het doelwoord is altijd geldig");
+  });
+
+  /* ==============================================================
+   * 29 t/m 32: hints
+   * ============================================================== */
+
+  test("28. de tijd per woord staat standaard op 60 seconden, en blijft instelbaar", function () {
+    /* De nieuwe opzet geeft elk woord 60 seconden, ongeacht de lengte; zie
+       ook test 64. Een eigen tijd blijft mogelijk, want de quizmaster
+       speelt zijn testwoord met een eigen staat. */
+    gelijk(Core.TIJD_PER_WOORD, 60000, "de kern hoort 60 seconden per woord te kennen");
+    var staat = proefspel();
+    gelijk(staat.tijdPerWoord, 60000, "vijf letters krijgt zestig seconden");
+    Core.volgendWoord(staat);
+    gelijk(staat.tijdPerWoord, 60000, "zes letters krijgt precies evenveel");
+    var vast = proefspel({ tijdPerWoord: 30000 });
+    gelijk(vast.tijdPerWoord, 30000, "een eigen tijd blijft gewoon werken");
+  });
+
+  test("29. gebruikHint: onthult een letter en verbruikt een hint", function () {
+    var staat = proefspel();
+    var uit = Core.gebruikHint(staat);
+    gelijk(uit.gelukt, true);
+    gelijk(uit.positie, 1);
+    gelijk(uit.letter, "A");
+    gelijk(staat.bekend[1], "A");
+    gelijk(staat.hints, 2);
+    gelijk(staat.hintsGebruikt, 1);
+  });
+
+  test("30. gebruikHint: met een eigen kiezer bepaalt het spel de positie", function () {
+    var staat = proefspel();
+    var uit = Core.gebruikHint(staat, function (open) { return open[open.length - 1]; });
+    gelijk(uit.positie, 4);
+    gelijk(uit.letter, "L");
+  });
+
+  test("31. gebruikHint: de laatste onbekende letter wordt niet weggegeven", function () {
+    var staat = proefspel({ hints: 9 });
+    Core.gebruikHint(staat);
+    Core.gebruikHint(staat);
+    Core.gebruikHint(staat);
+    gelijk(Core.voorvulling(staat), ["K", "A", "B", "E", null]);
+    var uit = Core.gebruikHint(staat);
+    gelijk(uit.gelukt, false);
+    gelijk(uit.reden, "laatste-letter");
+  });
+
+  test("32. gebruikHint: zonder hints in voorraad gebeurt er niets", function () {
+    var staat = proefspel({ hints: 0 });
+    var uit = Core.gebruikHint(staat);
+    gelijk(uit.gelukt, false);
+    gelijk(uit.reden, "geen-hints");
+    gelijk(Core.voorvulling(staat), ["K", null, null, null, null]);
+  });
+
+  /* ==============================================================
+   * 33 t/m 37: score
+   * ============================================================== */
+
+  test("33. scoor: minder pogingen levert meer punten op", function () {
+    var snel = Core.scoor(scoreStaat({ rij: 1 }), 30000);
+    var traag = Core.scoor(scoreStaat({ rij: 4 }), 30000);
+    waar(snel > traag, "een woord in een poging moet meer opleveren (" + snel + " tegen " + traag + ")");
+  });
+
+  test("34. scoor: meer resterende tijd levert meer punten op", function () {
+    var veel = Core.scoor(scoreStaat({}), 55000);
+    var weinig = Core.scoor(scoreStaat({}), 5000);
+    waar(veel > weinig, "meer tijd over moet meer opleveren (" + veel + " tegen " + weinig + ")");
+  });
+
+  test("35. scoor: een ingezette hint kost punten, maar nooit alles", function () {
+    var zonder = Core.scoor(scoreStaat({}), 30000);
+    var met = Core.scoor(scoreStaat({ hintsGebruikt: 2 }), 30000);
+    waar(met < zonder, "hints moeten punten kosten");
+    waar(met >= 10, "een opgelost woord blijft minstens tien punten waard");
+  });
+
+  test("36. scoor: een niet opgelost woord levert niets op, rare tijd wordt begrensd", function () {
+    gelijk(Core.scoor(scoreStaat({ status: "bezig" }), 30000), 0);
+    gelijk(Core.scoor(scoreStaat({ status: "mislukt" }), 60000), 0);
+    gelijk(Core.scoor(scoreStaat({}), 999999), Core.scoor(scoreStaat({}), 60000));
+    gelijk(Core.scoor(scoreStaat({}), -500), Core.scoor(scoreStaat({}), 0));
+  });
+
+  test("37. verwerkScore telt de punten op bij de spelscore", function () {
+    var staat = proefspel();
+    Core.doeZet(staat, "KABEL");
+    var punten = Core.verwerkScore(staat, 60000);
+    gelijk(punten, 1100, "vijf letters, een poging, volle tijdbalk");
+    gelijk(staat.score, 1100);
+    gelijk(staat.rondeScores.length, 1);
+  });
+
+  /* ==============================================================
+   * 38 t/m 41: bord, toetsenbord en willekeur
+   * ============================================================== */
+
+  test("38. bordModel geeft vijf rijen van de juiste lengte", function () {
+    var staat = proefspel();
+    Core.doeZet(staat, "KAMER");
+    var bord = Core.bordModel(staat, "KO");
+    gelijk(bord.length, 5);
+    gelijk(bord[0].length, 5);
+    gelijk(bord[0][0], { letter: "K", staat: "goed" });
+    gelijk(bord[1][0], { letter: "K", staat: "open" }, "de getypte letters staan in de actieve rij");
+    gelijk(bord[1][1], { letter: "O", staat: "open" });
+    gelijk(bord[1][3], { letter: "E", staat: "open" }, "onaangeroerde posities tonen de bekende letter");
+    gelijk(bord[1][2], { letter: "", staat: "leeg" });
+    gelijk(bord[4][0], { letter: "", staat: "leeg" });
+  });
+
+  test("39. toetsenbordStand: goed wint van aanwezig, aanwezig wint van fout", function () {
+    var staat = proefspel();
+    Core.doeZet(staat, "KOPIE");
+    var stand = Core.toetsenbordStand(staat);
+    gelijk(stand.K, "goed");
+    gelijk(stand.E, "aanwezig");
+    gelijk(stand.O, "fout");
+    Core.doeZet(staat, "KAMER");
+    stand = Core.toetsenbordStand(staat);
+    gelijk(stand.E, "goed", "een letter die later goed staat mag niet terugvallen");
+  });
+
+  test("40. schud met hetzelfde zaad geeft altijd dezelfde volgorde", function () {
+    var bron = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    var a = Core.schud(bron, Core.maakWillekeur(1234));
+    var b = Core.schud(bron, Core.maakWillekeur(1234));
+    gelijk(a, b, "vastgezet toeval moet herhaalbaar zijn");
+    gelijk(bron, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "de bronlijst mag niet veranderen");
+    waar(toon(a) !== toon(Core.schud(bron, Core.maakWillekeur(9999))), "ander zaad, andere volgorde");
+  });
+
+  test("41. finale: bingokaart van 25 vakjes en LINGO bij een volle rij", function () {
+    var kaart = Core.maakBingokaart(Core.maakWillekeur(5));
+    gelijk(kaart.length, 25);
+    waar(!Core.heeftLingo(kaart), "een verse kaart heeft nog geen lingo");
+    for (var i = 0; i < kaart.length; i++) {
+      if (kaart[i].rij === 0) kaart[i].aangekruist = true;
+    }
+    waar(Core.heeftLingo(kaart), "een volle rij is lingo");
+  });
+
+  /* ==============================================================
+   * 42 t/m 46: de opslaglaag
+   * ============================================================== */
+
+  test("42. Opslag.keurWoord: alleen letters, drie tot en met negen tekens", function () {
+    gelijk(Opslag.keurWoord("phishing"), { geldig: true, woord: "PHISHING", reden: "" });
+    gelijk(Opslag.keurWoord("back-up").woord, "BACKUP", "streepjes vallen weg");
+    gelijk(Opslag.keurWoord("ab").reden, "kort");
+    gelijk(Opslag.keurWoord("wachtwoorden").reden, "lang");
+    gelijk(Opslag.keurWoord("w4chtwoord").reden, "tekens");
+    gelijk(Opslag.keurWoord("   ").reden, "leeg");
+  });
+
+  test("43. Opslag: bewaren en laden, met hoofdletters en zonder dubbelen", function () {
+    var uit = Opslag.bewaarLijst({
+      gebruikEigenLijst: true,
+      schud: false,
+      woorden: [
+        { woord: "back-up", uitleg: "Een reservekopie." },
+        { woord: "BACKUP", uitleg: "Nog een keer." },
+        { woord: "muis", uitleg: "Het aanwijsapparaat." },
+        { woord: "n0nsens" }
+      ]
+    });
+    waar(uit.gelukt || Opslag.beschikbaar() === false, "bewaren mislukte: " + uit.reden);
+    var terug = Opslag.laadLijst();
+    gelijk(terug.gebruikEigenLijst, true);
+    gelijk(terug.woorden.length, 2, "dubbel en ongeldig horen eruit");
+    gelijk(terug.woorden[0], { woord: "BACKUP", uitleg: "Een reservekopie." });
+    gelijk(terug.woorden[1].woord, "MUIS");
+  });
+
+  test("44. Opslag.actieveWoorden volgt de schakelaar van de quizmaster", function () {
+    Opslag.bewaarLijst({ gebruikEigenLijst: true, schud: false, woorden: [{ woord: "PHISHING" }] });
+    gelijk(Opslag.actieveWoorden().length, 1);
+    gelijk(Opslag.actieveWoorden()[0].woord, "PHISHING");
+    gelijk(Opslag.gebruiktEigenLijst(), true);
+
+    Opslag.bewaarLijst({ gebruikEigenLijst: false, schud: false, woorden: [{ woord: "PHISHING" }] });
+    gelijk(Opslag.gebruiktEigenLijst(), false);
+    gelijk(Opslag.actieveWoorden().length, window.DVL.STANDAARDWOORDEN.length,
+      "uit betekent terug naar de standaardlijst");
+  });
+
+  test("45. Opslag.luister wordt gewaarschuwd zodra de lijst verandert", function () {
+    var gezien = [];
+    var stop = Opslag.luister(function (lijst, bron) { gezien.push({ aantal: lijst.woorden.length, bron: bron }); });
+    Opslag.bewaarLijst({ gebruikEigenLijst: true, schud: true, woorden: [{ woord: "COOKIE" }, { woord: "SERVER" }] });
+    stop();
+    Opslag.bewaarLijst({ gebruikEigenLijst: true, schud: false, woorden: [{ woord: "COOKIE" }] });
+    gelijk(gezien.length, 1, "na afmelden mag er niets meer binnenkomen");
+    gelijk(gezien[0], { aantal: 2, bron: "dit-tabblad" });
+  });
+
+  test("46. Opslag: onleesbare of lege inhoud levert een nette lege lijst op", function () {
+    Opslag.wisLijst();
+    gelijk(Opslag.laadLijst().woorden, []);
+    gelijk(Opslag.laadLijst().gebruikEigenLijst, false);
+    if (Opslag.beschikbaar()) {
+      window.localStorage.setItem(Opslag.SLEUTEL, "{dit is geen json");
+      var lijst = Opslag.laadLijst();
+      gelijk(lijst.woorden, [], "kapotte json mag het spel niet slopen");
+      gelijk(lijst.gebruikEigenLijst, false);
+      Opslag.wisLijst();
+    }
+    gelijk(Opslag.actieveWoorden().length, window.DVL.STANDAARDWOORDEN.length);
+  });
+
+  /* ==============================================================
+   * 47 t/m 54: de volgorde van de quizmaster komt echt in het spel
+   * ============================================================== */
+
+  /* De lijst waarmee de criticus de fout aantoonde. */
+  var CRITICUS = [
+    { woord: "ZEBRA" }, { woord: "KROKUS" }, { woord: "DOLFIJN" },
+    { woord: "MOKKA" }, { woord: "BANAAN" }
+  ];
+
+  function woordenVan(staat) {
+    var uit = [];
+    for (var i = 0; i < staat.woorden.length; i++) uit.push(staat.woorden[i].woord);
+    return uit;
+  }
+
+  test("47. eigen lijst, schudden uit: elke start geeft precies dezelfde volgorde", function () {
+    var eerste = null;
+    for (var keer = 0; keer < 3; keer++) {
+      var staat = Core.nieuwSpel({
+        woorden: CRITICUS, eigenLijst: true, schud: false, moeilijkheid: "makkelijk"
+      });
+      var woorden = woordenVan(staat);
+      gelijk(woorden, ["ZEBRA", "MOKKA"], "level 1 speelt de vijfletterwoorden in lijstvolgorde");
+      gelijk(staat.doel, "ZEBRA", "ronde 1 moet het eerste woord van de quizmaster zijn");
+      if (eerste === null) eerste = woorden;
+      gelijk(woorden, eerste, "start " + (keer + 1) + " week af van de eerste start");
+    }
+  });
+
+  test("48. eigen lijst: alleen de woordlengtes van het gekozen level blijven over", function () {
+    var makkelijk = Core.nieuwSpel({ woorden: CRITICUS, eigenLijst: true, moeilijkheid: "makkelijk" });
+    gelijk(woordenVan(makkelijk), ["ZEBRA", "MOKKA"]);
+    var moeilijk = Core.nieuwSpel({ woorden: CRITICUS, eigenLijst: true, moeilijkheid: "moeilijk" });
+    gelijk(woordenVan(moeilijk), ["ZEBRA", "KROKUS", "MOKKA", "BANAAN"]);
+    var expert = Core.nieuwSpel({ woorden: CRITICUS, eigenLijst: true, moeilijkheid: "expert" });
+    gelijk(woordenVan(expert), ["ZEBRA", "KROKUS", "DOLFIJN", "MOKKA", "BANAAN"],
+      "filteren is geen herschikken");
+  });
+
+  test("49. eigen lijst: een woord achteraan de lijst dringt niet voor in ronde 1", function () {
+    /* PROXY stond bij de criticus op plek negen en begon toch ronde 1. */
+    var negen = [
+      { woord: "KABEL" }, { woord: "MODEM" }, { woord: "VIRUS" }, { woord: "KAART" },
+      { woord: "MEDIA" }, { woord: "ROBOT" }, { woord: "PIXEL" }, { woord: "LADER" },
+      { woord: "PROXY" }
+    ];
+    var staat = Core.nieuwSpel({
+      woorden: negen, eigenLijst: true, schud: false,
+      moeilijkheid: "makkelijk", aantalWoorden: 6
+    });
+    gelijk(staat.doel, "KABEL", "ronde 1 hoort het eerste woord van de lijst te zijn");
+    gelijk(woordenVan(staat), ["KABEL", "MODEM", "VIRUS", "KAART", "MEDIA", "ROBOT"]);
+    waar(woordenVan(staat).indexOf("PROXY") === -1, "PROXY staat op plek negen en valt buiten zes rondes");
+  });
+
+  test("50. eigen lijst: met schudden aan mag er wel geschud worden", function () {
+    var a = woordenVan(Core.nieuwSpel({
+      woorden: CRITICUS, eigenLijst: true, schud: true, moeilijkheid: "expert", zaad: 11
+    }));
+    var b = woordenVan(Core.nieuwSpel({
+      woorden: CRITICUS, eigenLijst: true, schud: true, moeilijkheid: "expert", zaad: 11
+    }));
+    gelijk(a, b, "hetzelfde zaad hoort dezelfde volgorde te geven");
+    gelijk(a.slice().sort(), ["BANAAN", "DOLFIJN", "KROKUS", "MOKKA", "ZEBRA"],
+      "schudden mag geen woorden kwijtraken of verzinnen");
+    var anders = false;
+    for (var zaad = 1; zaad <= 60 && !anders; zaad++) {
+      var woorden = woordenVan(Core.nieuwSpel({
+        woorden: CRITICUS, eigenLijst: true, schud: true, moeilijkheid: "expert", zaad: zaad
+      }));
+      if (toon(woorden) !== toon(["ZEBRA", "KROKUS", "DOLFIJN", "MOKKA", "BANAAN"])) anders = true;
+    }
+    waar(anders, "met schudden aan hoort de volgorde te kunnen veranderen");
+  });
+
+  test("51. eigen lijst: past geen enkel woord bij het level, dan spelen we de hele lijst", function () {
+    var staat = Core.nieuwSpel({
+      woorden: [{ woord: "DOLFIJN" }, { woord: "PHISHING" }, { woord: "DOWNLOAD" }],
+      eigenLijst: true, schud: false, moeilijkheid: "makkelijk"
+    });
+    gelijk(woordenVan(staat), ["DOLFIJN", "PHISHING", "DOWNLOAD"], "liever de hele lijst dan een leeg spel");
+    gelijk(staat.status, "bezig");
+    gelijk(staat.doel, "DOLFIJN");
+  });
+
+  test("52. zonder gekozen level wordt een eigen lijst niet op lengte gefilterd", function () {
+    var staat = Core.nieuwSpel({
+      woorden: [{ woord: "MUIS" }, { woord: "KABEL" }, { woord: "PHISHING" }],
+      eigenLijst: true
+    });
+    gelijk(woordenVan(staat), ["MUIS", "KABEL", "PHISHING"],
+      "geen level gekozen betekent: alles afspelen zoals het er staat");
+  });
+
+  test("53. standaardlijst: altijd door elkaar, ook zonder schudknop", function () {
+    /* De schudknop van de quizmaster gaat alleen over zijn eigen lijst. De
+       standaardlijst is een voorraad zonder betekenisvolle volgorde en hoort
+       altijd te wisselen, anders krijgen twee leerlingen naast elkaar
+       dezelfde woorden in dezelfde volgorde. */
+    var potjes = [];
+    for (var i = 0; i < 6; i++) {
+      potjes.push(toon(woordenVan(Core.nieuwSpel({ moeilijkheid: "makkelijk", schud: false }))));
+    }
+    var uniek = potjes.filter(function (p, n) { return potjes.indexOf(p) === n; });
+    waar(uniek.length > 1, "zes starts horen niet allemaal hetzelfde potje te geven");
+    waar(potjes[0].length > 0, "de standaardlijst hoort woorden op te leveren");
+
+    /* Met een vast zaad blijft het wel herhaalbaar, anders is er niets meer
+       te testen aan de rest van de kern. */
+    var x = woordenVan(Core.nieuwSpel({ moeilijkheid: "makkelijk", zaad: 99 }));
+    var y = woordenVan(Core.nieuwSpel({ moeilijkheid: "makkelijk", zaad: 99 }));
+    gelijk(x, y, "hetzelfde zaad hoort hetzelfde potje te geven");
+  });
+
+  test("54. standaardlijst: met schudden aan wisselt de volgorde, de lengtes lopen door", function () {
+    var a = woordenVan(Core.nieuwSpel({ schud: true, zaad: 7 }));
+    var b = woordenVan(Core.nieuwSpel({ schud: true, zaad: 7 }));
+    gelijk(a, b, "hetzelfde zaad hoort dezelfde volgorde te geven");
+    var c = woordenVan(Core.nieuwSpel({ schud: true, zaad: 4242 }));
+    waar(toon(a) !== toon(c), "een ander zaad hoort een ander potje te geven");
+    var lengtes = [];
+    for (var i = 0; i < a.length; i++) lengtes.push(a[i].length);
+    gelijk(lengtes, [5, 6, 7, 5, 6, 7], "schudden mag de oplopende rondevolgorde niet breken");
+  });
+
+  /* ==============================================================
+   * 55 t/m 61: een eigen lijst wordt helemaal afgespeeld
+   *
+   * De lijst van veertien woorden waarmee de criticus aantoonde dat het
+   * spel na drie, vier of vijf woorden stopte. De volgorde is bekend en
+   * ligt vast; de lengtes lopen door elkaar en er zitten twee woorden bij
+   * die buiten alle levels vallen (MUIS en PHISHING).
+   * ============================================================== */
+
+  var VEERTIEN = [
+    { woord: "ZEBRA" },    /*  1 - 5 */
+    { woord: "KROKUS" },   /*  2 - 6 */
+    { woord: "DOLFIJN" },  /*  3 - 7 */
+    { woord: "MOKKA" },    /*  4 - 5 */
+    { woord: "BANAAN" },   /*  5 - 6 */
+    { woord: "MUIS" },     /*  6 - 4, buiten alle levels */
+    { woord: "PANDA" },    /*  7 - 5 */
+    { woord: "KAMEEL" },   /*  8 - 6 */
+    { woord: "GITAAR" },   /*  9 - 6 */
+    { woord: "PHISHING" }, /* 10 - 8, buiten alle levels */
+    { woord: "VIOLET" },   /* 11 - 6 */
+    { woord: "KANARIE" },  /* 12 - 7 */
+    { woord: "TOMAAT" },   /* 13 - 6 */
+    { woord: "WAFEL" }     /* 14 - 5 */
+  ];
+
+  var LEVEL1 = ["ZEBRA", "MOKKA", "PANDA", "WAFEL"];
+  var LEVEL2 = ["ZEBRA", "KROKUS", "MOKKA", "BANAAN", "PANDA", "KAMEEL", "GITAAR",
+                "VIOLET", "TOMAAT", "WAFEL"];
+  var LEVEL3 = ["ZEBRA", "KROKUS", "DOLFIJN", "MOKKA", "BANAAN", "PANDA", "KAMEEL",
+                "GITAAR", "VIOLET", "KANARIE", "TOMAAT", "WAFEL"];
+
+  /* Zoals game.js het spel opzet bij een eigen lijst: geen dak op het
+     aantal woorden, want het aantal rondes volgt de lijst. */
+  function eigenSpel(niveau) {
+    return Core.nieuwSpel({
+      woorden: VEERTIEN, eigenLijst: true, schud: false,
+      moeilijkheid: niveau, aantalWoorden: 0
+    });
+  }
+
+  test("55. eigen lijst van 14 woorden: elk level speelt de hele lijst af, alleen op lengte gefilterd", function () {
+    gelijk(woordenVan(eigenSpel("makkelijk")), LEVEL1, "level 1 hoort alle vijfletterwoorden te spelen");
+    gelijk(woordenVan(eigenSpel("moeilijk")), LEVEL2, "level 2 hoort alle woorden van 5 en 6 letters te spelen");
+    gelijk(woordenVan(eigenSpel("expert")), LEVEL3, "level 3 hoort alles van 5 t/m 7 letters te spelen");
+  });
+
+  test("56. eigen lijst: het aantal rondes volgt de lijst, niet het level (3, 4, 5)", function () {
+    gelijk(eigenSpel("makkelijk").totaal, 4, "level 1 hoort geen drie rondes meer te zijn");
+    gelijk(eigenSpel("moeilijk").totaal, 10, "level 2 hoort geen vier rondes meer te zijn");
+    gelijk(eigenSpel("expert").totaal, 12, "level 3 hoort geen vijf rondes meer te zijn");
+  });
+
+  test("57. eigen lijst: de woorden voorbij plek vijf komen echt aan de beurt", function () {
+    /* PANDA staat op plek 7, TOMAAT op 13 en WAFEL op 14; met het oude dak
+       van 3, 4 of 5 rondes kwam daar niets van langs. */
+    var niveaus = ["makkelijk", "moeilijk", "expert"];
+    for (var i = 0; i < niveaus.length; i++) {
+      var woorden = woordenVan(eigenSpel(niveaus[i]));
+      waar(woorden.indexOf("PANDA") !== -1, "PANDA (plek 7) hoort in " + niveaus[i] + " langs te komen");
+      waar(woorden.indexOf("WAFEL") !== -1, "WAFEL (plek 14) hoort in " + niveaus[i] + " langs te komen");
+      waar(woorden[woorden.length - 1] === "WAFEL", "het laatste woord van de lijst hoort ook het laatste woord van het potje te zijn");
+    }
+    /* En doorspelen tot het laatste woord moet ook echt kunnen. */
+    var staat = eigenSpel("makkelijk");
+    for (var stap = 0; stap < LEVEL1.length - 1; stap++) Core.volgendWoord(staat);
+    gelijk(staat.doel, "WAFEL", "na vier keer doorschakelen hoort het laatste woord aan de beurt te zijn");
+    gelijk(staat.ronde, 4);
+    Core.volgendWoord(staat);
+    waar(staat.afgelopen, "daarna hoort het spel afgelopen te zijn");
+  });
+
+  test("58. een woord dat te kort of te lang is komt in geen enkel level aan de beurt", function () {
+    var niveaus = ["makkelijk", "moeilijk", "expert"];
+    for (var i = 0; i < niveaus.length; i++) {
+      var woorden = woordenVan(eigenSpel(niveaus[i]));
+      waar(woorden.indexOf("MUIS") === -1, "MUIS (4 letters) hoort buiten " + niveaus[i] + " te vallen");
+      waar(woorden.indexOf("PHISHING") === -1, "PHISHING (8 letters) hoort buiten " + niveaus[i] + " te vallen");
+    }
+  });
+
+  test("59. telRondes telt precies wat bouwAfspeellijst oplevert", function () {
+    var levels = [
+      { lengtes: [5], verwacht: 4 },
+      { lengtes: [5, 6], verwacht: 10 },
+      { lengtes: [5, 6, 7], verwacht: 12 }
+    ];
+    for (var i = 0; i < levels.length; i++) {
+      var opties = {
+        woorden: VEERTIEN, eigenLijst: true, schud: false,
+        lengtes: levels[i].lengtes, aantalWoorden: 0
+      };
+      gelijk(Core.telRondes(VEERTIEN, opties), levels[i].verwacht,
+        "telRondes wijkt af bij lengtes " + toon(levels[i].lengtes));
+      gelijk(Core.telRondes(VEERTIEN, opties), Core.bouwAfspeellijst(VEERTIEN, opties).length,
+        "telRondes en bouwAfspeellijst horen het altijd eens te zijn");
+    }
+    /* Ook met schudden aan blijft het aantal kloppen. */
+    gelijk(Core.telRondes(VEERTIEN, {
+      eigenLijst: true, schud: true, zaad: 3, lengtes: [5, 6], aantalWoorden: 0
+    }), 10, "schudden mag het aantal rondes niet veranderen");
+  });
+
+  test("60. een dak op het aantal woorden werkt nog, maar de levels gebruiken het niet meer", function () {
+    /* Het dak zelf blijft bestaan: de beheerpagina rekent er nog mee.
+       Een level kent het niet meer, want dat loopt tot een aantal goede
+       woorden en heeft dus een ruime lijst nodig (test 65 en 69). */
+    var levels = [
+      { lengtes: [5], dak: 3 },
+      { lengtes: [5, 6], dak: 4 },
+      { lengtes: [5, 6, 7], dak: 5 }
+    ];
+    for (var i = 0; i < levels.length; i++) {
+      var aantal = Core.telRondes(window.DVL.STANDAARDWOORDEN, {
+        eigenLijst: false, schud: false,
+        lengtes: levels[i].lengtes, aantalWoorden: levels[i].dak
+      });
+      gelijk(aantal, levels[i].dak,
+        "met een dak van " + levels[i].dak + " horen er ook " + levels[i].dak + " woorden te komen");
+    }
+    waar(Core.nieuwLevel(1, {}).totaal > 5,
+      "een level hoort veel meer woorden klaar te zetten dan het oude dak van drie");
+  });
+
+  test("61. startscherm: de voetregel toont het echte aantal rondes, of anders dat van het level", function () {
+    var S = window.DVL.Startscherm;
+    waar(S && typeof S.voetregel === 'function', "DVL.Startscherm.voetregel ontbreekt");
+    gelijk(S.LEVELS[1].rondes, 3);
+    gelijk(S.LEVELS[2].rondes, 4);
+    gelijk(S.LEVELS[3].rondes, 5);
+    /* Zonder opgegeven aantal blijft het bestaande gedrag staan. */
+    gelijk(S.voetregel(S.LEVELS[1]), "3 rondes · 5 pogingen per woord");
+    gelijk(S.voetregel(S.LEVELS[3], 0), "5 rondes · 5 pogingen per woord", "nul telt niet als aantal");
+    gelijk(S.voetregel(S.LEVELS[2], null), "4 rondes · 5 pogingen per woord");
+    /* Met het echte aantal van de eigen lijst van veertien woorden. */
+    gelijk(S.voetregel(S.LEVELS[1], 4), "4 rondes · 5 pogingen per woord");
+    gelijk(S.voetregel(S.LEVELS[2], 10), "10 rondes · 5 pogingen per woord");
+    gelijk(S.voetregel(S.LEVELS[3], 12), "12 rondes · 5 pogingen per woord");
+    gelijk(S.voetregel(S.LEVELS[1], 1), "1 ronde · 5 pogingen per woord", "één ronde is enkelvoud");
+  });
+
+  /* ==============================================================
+   * 62 t/m 70: de nieuwe spelopzet
+   *   een level loopt tot een aantal goede woorden, elk woord krijgt
+   *   zestig seconden, en de ballen volgen uit de gemiste woorden
+   * ============================================================== */
+
+  /* Speelt het woord waar de staat nu op staat goed of mis, en schakelt
+     door. Geeft terug of het level daarna nog loopt. */
+  function raadGoed(staat) {
+    Core.doeZet(staat, staat.doel);
+    Core.volgendWoord(staat);
+  }
+  function laatVerlopen(staat) {
+    Core.tijdOp(staat);
+    Core.volgendWoord(staat);
+  }
+  /* Een woord van de goede lengte dat zeker níét het doelwoord is. Woorden
+     uit de afspeellijst zijn altijd geldig, dus zo'n poging telt echt mee. */
+  function foutePoging(staat) {
+    for (var i = 0; i < staat.woorden.length; i++) {
+      var w = staat.woorden[i].woord;
+      if (w.length === staat.lengte && w !== staat.doel) return w;
+    }
+    return null;
+  }
+
+  test("62. de leveltabel: spelen tot 4, 3 en 2 goede woorden, met 4, 5 en 5 ballen", function () {
+    waar(Core.LEVELS, "DVL.Core.LEVELS ontbreekt");
+    gelijk(Core.levelInfo(1).nodig, 4);
+    gelijk(Core.levelInfo(2).nodig, 3);
+    gelijk(Core.levelInfo(3).nodig, 2);
+    gelijk(Core.levelInfo(1).maxBallen, 4);
+    gelijk(Core.levelInfo(2).maxBallen, 5);
+    gelijk(Core.levelInfo(3).maxBallen, 5);
+    gelijk(Core.levelInfo(1).lengtes, [5]);
+    gelijk(Core.levelInfo(2).lengtes, [5, 6]);
+    gelijk(Core.levelInfo(3).lengtes, [5, 6, 7]);
+    gelijk(Core.levelInfo(9).nodig, 4, "onzin wordt level 1");
+    gelijk(Core.levelInfo("2").nodig, 3, "een tekstje mag ook");
+  });
+
+  test("63. verdiendeBallen: maximum min gemist, met een ondergrens van 1", function () {
+    gelijk(Core.verdiendeBallen(1, 0), 4, "level 1 zonder missers geeft vier ballen");
+    gelijk(Core.verdiendeBallen(1, 1), 3);
+    gelijk(Core.verdiendeBallen(1, 3), 1);
+    gelijk(Core.verdiendeBallen(1, 4), 1, "nooit minder dan één bal");
+    gelijk(Core.verdiendeBallen(1, 40), 1, "ook niet na heel veel missers");
+    gelijk(Core.verdiendeBallen(2, 0), 5, "level 2 zonder missers geeft vijf ballen");
+    gelijk(Core.verdiendeBallen(2, 2), 3);
+    gelijk(Core.verdiendeBallen(3, 0), 5);
+    gelijk(Core.verdiendeBallen(3, 5), 1);
+  });
+
+  test("64. elk woord krijgt 60 seconden, ongeacht de lengte", function () {
+    for (var level = 1; level <= 3; level++) {
+      var staat = Core.nieuwLevel(level, { zaad: 11 });
+      var gezien = {};
+      for (var stap = 0; stap < 12 && !staat.afgelopen; stap++) {
+        gelijk(staat.tijdPerWoord, 60000,
+          "level " + level + ", woord " + staat.doel + " hoort 60 seconden te krijgen");
+        gezien[staat.lengte] = true;
+        laatVerlopen(staat);
+      }
+      if (level === 3) {
+        waar(gezien[5] && gezien[6] && gezien[7],
+          "level 3 hoort woorden van 5, 6 en 7 letters te laten zien: " + toon(gezien));
+      }
+    }
+  });
+
+  test("65. een level eindigt pas bij het juiste aantal goede woorden", function () {
+    var staat = Core.nieuwLevel(1, { zaad: 4 });
+    gelijk(staat.nodig, 4);
+    gelijk(staat.level, 1);
+
+    /* Drie goede woorden is nog niet genoeg. */
+    raadGoed(staat);
+    raadGoed(staat);
+    raadGoed(staat);
+    gelijk(staat.geraden, 3);
+    gelijk(staat.levelKlaar, false, "na drie goede woorden hoort level 1 nog te lopen");
+    waar(!staat.afgelopen, "het level hoort na drie goede woorden nog niet afgelopen te zijn");
+    gelijk(staat.status, "bezig");
+
+    /* Het vierde goede woord sluit het level af. */
+    Core.doeZet(staat, staat.doel);
+    gelijk(staat.geraden, 4);
+    gelijk(staat.levelKlaar, true, "bij vier goede woorden hoort het level klaar te zijn");
+    Core.volgendWoord(staat);
+    waar(staat.afgelopen, "daarna hoort het level echt afgelopen te zijn");
+    gelijk(staat.status, "klaar");
+  });
+
+  test("66. gemiste woorden tellen als gemist en het level speelt gewoon door", function () {
+    var staat = Core.nieuwLevel(2, { zaad: 8 });
+    gelijk(staat.nodig, 3);
+
+    /* Tijd op, vijf pogingen op: allebei gemist, allebei geen einde. */
+    laatVerlopen(staat);
+    gelijk(staat.gemist, 1);
+    gelijk(staat.status, "bezig", "na een verlopen woord hoort het volgende woord klaar te staan");
+
+    var fout = foutePoging(staat);
+    waar(fout, "er hoort een ander woord van dezelfde lengte in de lijst te staan");
+    for (var poging = 0; poging < 5; poging++) Core.doeZet(staat, fout);
+    gelijk(staat.status, "mislukt", "vijf foute pogingen horen het woord te laten mislukken");
+    gelijk(staat.mislukReden, "pogingen");
+    gelijk(staat.gemist, 2, "een woord waarvan de pogingen op zijn telt als gemist");
+    waar(!staat.afgelopen, "missers horen het level niet te beëindigen");
+
+    Core.volgendWoord(staat);
+    gelijk(staat.status, "bezig");
+    raadGoed(staat);
+    raadGoed(staat);
+    waar(!staat.afgelopen, "twee goede woorden zijn nog niet genoeg voor level 2");
+    Core.doeZet(staat, staat.doel);
+    gelijk(staat.levelKlaar, true, "het derde goede woord sluit level 2 af");
+    gelijk(Core.verdiendeBallen(2, staat.gemist), Math.max(1, 5 - staat.gemist),
+      "de ballen volgen uit het aantal gemiste woorden");
+  });
+
+  test("67. een level houdt woorden over, ook als de speler er veel mist", function () {
+    var staat = Core.nieuwLevel(1, { zaad: 6 });
+    waar(staat.totaal >= 4 + Core.RESERVEWOORDEN,
+      "een level hoort ruim woorden klaar te zetten, kreeg er " + staat.totaal);
+    for (var i = 0; i < 12; i++) laatVerlopen(staat);
+    gelijk(staat.gemist, 12);
+    waar(!staat.afgelopen, "twaalf missers horen het level niet te beëindigen");
+    gelijk(staat.status, "bezig");
+    gelijk(Core.verdiendeBallen(1, staat.gemist), 1, "wie veel mist houdt één bal over");
+  });
+
+  test("68. vulAan: een korte eigen lijst wordt stil aangevuld met de standaardlijst", function () {
+    var eigen = [{ woord: "KABEL", uitleg: "Een snoer." }, { woord: "MUIZE" }];
+    var opties = {
+      eigenLijst: true, schud: false, zaad: 2, lengtes: [5], aantalWoorden: 0,
+      minimumWoorden: 8, aanvulling: window.DVL.STANDAARDWOORDEN
+    };
+    var lijst = Core.bouwAfspeellijst(eigen, opties);
+    gelijk(lijst.length, 8, "de lijst hoort tot het minimum aangevuld te worden");
+    gelijk(lijst[0].woord, "KABEL", "de eigen woorden blijven vooraan staan");
+    gelijk(lijst[1].woord, "MUIZE");
+    var gezien = {};
+    for (var i = 0; i < lijst.length; i++) {
+      gelijk(lijst[i].woord.length, 5, "de aanvulling hoort alleen woorden van dit level te bevatten");
+      waar(!gezien[lijst[i].woord], "geen dubbele woorden: " + lijst[i].woord);
+      gezien[lijst[i].woord] = true;
+    }
+    /* Zonder minimum of zonder aanvulling verandert er niets. */
+    gelijk(Core.bouwAfspeellijst(eigen, {
+      eigenLijst: true, lengtes: [5], aantalWoorden: 0
+    }).length, 2, "zonder minimum blijft de lijst zoals hij is");
+    gelijk(Core.bouwAfspeellijst(eigen, {
+      eigenLijst: true, lengtes: [5], aantalWoorden: 0, minimumWoorden: 8, aanvulling: []
+    }).length, 2, "zonder aanvulling valt er niets aan te vullen");
+  });
+
+  test("69. een eigen lijst van twee woorden is genoeg om level 1 uit te spelen", function () {
+    var staat = Core.nieuwLevel(1, {
+      woorden: [{ woord: "KABEL", uitleg: "Een snoer." }, { woord: "MODEM" }],
+      eigenLijst: true, schud: false, zaad: 9
+    });
+    gelijk(staat.woorden[0].woord, "KABEL", "de quizmaster gaat voor");
+    gelijk(staat.woorden[1].woord, "MODEM");
+    waar(staat.totaal >= 4, "er hoort stil aangevuld te worden, kreeg " + staat.totaal + " woorden");
+    /* Twee missers en dan vier keer goed moet gewoon kunnen. */
+    laatVerlopen(staat);
+    laatVerlopen(staat);
+    for (var i = 0; i < 4; i++) {
+      gelijk(staat.status, "bezig", "er hoort nog een woord klaar te staan");
+      Core.doeZet(staat, staat.doel);
+      if (i < 3) Core.volgendWoord(staat);
+    }
+    gelijk(staat.geraden, 4);
+    gelijk(staat.levelKlaar, true);
+    gelijk(Core.verdiendeBallen(1, staat.gemist), 2, "vier maximaal min twee gemist is twee ballen");
+  });
+
+  test("70. zonder doel blijft de oude werking staan: de lijst is het einde", function () {
+    /* De testmodus van de quizmaster speelt één woord zonder level. */
+    var staat = Core.nieuwSpel({
+      woorden: [{ woord: "KABEL", uitleg: "" }], eigenLijst: true, aantalWoorden: 1
+    });
+    gelijk(staat.nodig, 0);
+    gelijk(staat.levelKlaar, false);
+    Core.doeZet(staat, "KABEL");
+    gelijk(staat.levelKlaar, false, "zonder doel hoort levelKlaar uit te blijven");
+    Core.volgendWoord(staat);
+    waar(staat.afgelopen, "na het laatste woord is het spel gewoon afgelopen");
+  });
+
+  /* ==============================================================
+   * Uitvoeren, met de echte opslag netjes terugzetten
+   * ============================================================== */
+
+  function bewaarOmgeving() {
+    var bewaard = {};
+    var sleutels = ["dvl.lijst.v1", "dvl.testwoord.v1"];
+    for (var i = 0; i < sleutels.length; i++) {
+      try { bewaard[sleutels[i]] = window.localStorage.getItem(sleutels[i]); }
+      catch (fout) { bewaard[sleutels[i]] = null; }
+    }
+    return bewaard;
+  }
+
+  function herstelOmgeving(bewaard) {
+    for (var sleutel in bewaard) {
+      if (!Object.prototype.hasOwnProperty.call(bewaard, sleutel)) continue;
+      try {
+        if (bewaard[sleutel] === null) window.localStorage.removeItem(sleutel);
+        else window.localStorage.setItem(sleutel, bewaard[sleutel]);
+      } catch (fout) { /* niets aan te doen */ }
+    }
+  }
+
+  var eerder = bewaarOmgeving();
+  var lijstElement = document.getElementById("uitslag");
+  var samenvatting = document.getElementById("samenvatting");
+  var goed = 0;
+  var fout = 0;
+
+  for (var i = 0; i < gevallen.length; i++) {
+    var geval = gevallen[i];
+    var probleem = null;
+    try {
+      geval.uitvoeren();
+    } catch (f) {
+      probleem = (f && f.message) ? f.message : String(f);
+    }
+
+    var regel = document.createElement("li");
+    var merk = document.createElement("span");
+    merk.className = "merk";
+    var naam = document.createElement("span");
+    naam.className = "naam";
+    naam.textContent = geval.naam;
+
+    if (probleem === null) {
+      goed++;
+      merk.textContent = "GOED";
+    } else {
+      fout++;
+      regel.className = "is-fout";
+      merk.textContent = "FOUT";
+      var reden = document.createElement("span");
+      reden.className = "reden";
+      reden.textContent = probleem;
+      naam.appendChild(reden);
+    }
+    regel.appendChild(merk);
+    regel.appendChild(naam);
+    lijstElement.appendChild(regel);
+  }
+
+  herstelOmgeving(eerder);
+
+  samenvatting.className = fout === 0 ? "is-goed" : "is-fout";
+  samenvatting.textContent = fout === 0
+    ? "ALLES GESLAAGD - " + goed + " van de " + gevallen.length + " tests"
+    : fout + " VAN DE " + gevallen.length + " TESTS MISLUKT";
+  var extra = document.createElement("small");
+  extra.textContent = window.DVL.STANDAARDWOORDEN.length + " speelwoorden, " +
+    window.DVL.WOORDENBOEK.length + " woorden in het woordenboek, " +
+    "localStorage " + (Opslag.beschikbaar() ? "beschikbaar" : "geblokkeerd (valt terug op geheugen)") + ".";
+  samenvatting.appendChild(extra);
+})();
+</script>
+
+</body>
+</html>

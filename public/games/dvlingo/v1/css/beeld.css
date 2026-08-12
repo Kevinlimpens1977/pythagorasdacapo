@@ -1,0 +1,163 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — beeld.css
+   Optionele sfeerlaag: gegenereerde beelden uit assets/, met het CSS-verloop
+   eruit de terugvaloptie.
+
+   Koppel dit bestand ALS LAATSTE, na base.css en game.css:
+       <link rel="stylesheet" href="css/beeld.css">
+
+   Werkt vanaf schijf (file://). Geen externe requests, geen build-stap.
+
+   Opbouw van de achtergrond, van onder naar boven:
+     1. <html>      draagt het verloop + het radiale schijnsel  -> ALTIJD zichtbaar
+     2. body::before draagt assets/achtergrond.jpg               -> valt weg als het
+                                                                    bestand ontbreekt
+     3. de pagina-inhoud
+   Ontbreekt of laadt achtergrond.jpg niet, dan blijft laag 1 gewoon staan en
+   ziet de pagina er nog steeds goed uit.
+   ========================================================================== */
+
+:root {
+  /* Lucht — zelfde waarden als de referentie in SPEC.md */
+  --dvl-lucht-boven: #c3e6f8;
+  --dvl-lucht-onder: #9fd6f2;
+  --dvl-schijnsel: rgba(255, 255, 255, 0.85);
+
+  /* Paden zijn relatief aan dit CSS-bestand, dus vanuit css/ omhoog */
+  --dvl-beeld-achtergrond: url("../assets/achtergrond.jpg");
+  --dvl-beeld-merk: url("../assets/merk.png");
+
+  /* Hoe sterk het beeld over het verloop ligt. Lager = rustiger. */
+  --dvl-beeld-dekking: 0.92;
+}
+
+/* --------------------------------------------------------------------------
+   Laag 1 — het verloop. Dit is de terugvaloptie en staat er altijd.
+   -------------------------------------------------------------------------- */
+
+html {
+  background-color: var(--dvl-lucht-onder);
+  background-image:
+    radial-gradient(
+      ellipse 70% 55% at 50% 42%,
+      var(--dvl-schijnsel) 0%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    linear-gradient(
+      to bottom,
+      var(--dvl-lucht-boven) 0%,
+      var(--dvl-lucht-onder) 100%
+    );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+/* --------------------------------------------------------------------------
+   Laag 2 — het gegenereerde beeld, als losse laag erboven.
+   body zelf blijft doorzichtig, anders zou hij laag 2 afdekken.
+   -------------------------------------------------------------------------- */
+
+body {
+  background-color: transparent;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+
+  background-image: var(--dvl-beeld-achtergrond);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  opacity: var(--dvl-beeld-dekking);
+  pointer-events: none;
+}
+
+/* Staand mobiel: het beeld is liggend, dus iets ruimer uitsnijden en wat
+   zachter laten meespelen zodat het bord leesbaar blijft. */
+@media (max-width: 700px), (orientation: portrait) {
+  body::before {
+    background-position: 50% 35%;
+    opacity: 0.75;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Het beeldmerk. Zet de klasse op een leeg element met een eigen afmeting,
+   bijvoorbeeld:  <span class="dvl-merk" role="img" aria-label="Digitale
+   Vaardigheden Lingo"></span>
+   Het beeld bevat bewust geen letters; de tekst zetten we zelf ernaast.
+   -------------------------------------------------------------------------- */
+
+.dvl-merk {
+  display: inline-block;
+  width: 7.5rem;
+  aspect-ratio: 1 / 1;
+
+  background-image: var(--dvl-beeld-merk);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  /* Ontbreekt merk.png, dan is dit element simpelweg leeg en schuift er
+     niets uit elkaar. */
+  flex: none;
+}
+
+.dvl-merk--klein {
+  width: 3rem;
+}
+
+.dvl-merk--groot {
+  width: 12rem;
+}
+
+/* --------------------------------------------------------------------------
+   Optionele, zeer trage drift van de ballen. Bewust opt-in: zet de klasse
+   dvl-lucht--beweegt op <body> als je hem wilt.
+   -------------------------------------------------------------------------- */
+
+@keyframes dvl-lucht-drift {
+  from {
+    transform: scale(1.06) translate3d(-0.8%, -0.4%, 0);
+  }
+  to {
+    transform: scale(1.06) translate3d(0.8%, 0.4%, 0);
+  }
+}
+
+body.dvl-lucht--beweegt::before {
+  will-change: transform;
+  animation: dvl-lucht-drift 48s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.dvl-lucht--beweegt::before {
+    animation: none;
+    will-change: auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Afdrukken en zeer hoog contrast: alleen de vlakke kleur, geen fotobeeld.
+   -------------------------------------------------------------------------- */
+
+@media print {
+  html {
+    background: #ffffff;
+  }
+  body::before {
+    display: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  body::before {
+    opacity: 0.35;
+  }
+}

@@ -1,0 +1,200 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/tijdrand.css
+
+   De buitenrand van het speelveld als tijdmeter, tijdens het spelen van een
+   woord. De lijn ligt op de witte rand van het kader, dus aan de buitenkant,
+   en wordt vanaf de bovenkant met de klok mee opgesnoept.
+
+   Kleur volgt de resterende tijd: vol is groen, halverwege oranje, het laatste
+   stuk rood. Wat overblijft is dus altijd de kleur van hoeveel tijd er nog is.
+   Het laatste restje knippert.
+
+   De lijn wordt door js/tijdrand.js als SVG-pad neergezet en niet als conisch
+   verloop. Een conisch verloop draait om het middelpunt en loopt daardoor bij
+   een breed kader ongelijk leeg: de lange zijden gaan snel, de hoeken blijven
+   achter. Een omtreklijn met stroke-dasharray krimpt overal even snel.
+
+   De waarden komen uit het spel zelf. js/game.js zet --rest (1 tot 0) en
+   data-staat op #tijdbalk; js/tijdrand.js spiegelt die naar #scherm-spel,
+   zodat er aan de spellogica niets veranderd hoefde te worden.
+   ========================================================================== */
+
+#scherm-spel{
+  /* De lijn moet op een digibord van een paar meter net zo goed te zien zijn
+     als op een telefoon in de hand. Daarom schaalt de dikte mee met het
+     scherm, en telt de hoogte mee: op een laag, breed venster zou alleen vw
+     een onnodig dikke lijn geven.
+
+     Wat het oplevert: 6px op een telefoon (375 breed), 8px op een kleine
+     laptop, 11px op 1280x800, 15px op 1920x1080 en de bovengrens van 16px op
+     alles daarboven, dus ook op een digibord.
+
+     De bovengrens van 16px is geen smaak maar een maat: de lijn groeit vanaf
+     de buitenrand naar binnen over de witte rand (5 tot 8px) en de binnenmarge
+     van het scherm (12 tot 26px) heen. Bij 16px blijft er dus altijd ruimte
+     over voordat er inhoud onder komt. Naar buiten groeit hij niet, zodat er
+     nooit een schuifbalk van kan komen. */
+  --tijdrand-dikte:clamp(6px,min(.85vw,1.5vh),16px);
+
+  /* Hoe ver de lijn buiten het kader steekt. Genoeg om het lichte randje van
+     het kader eronder te bedekken, weinig genoeg om nooit een schuifbalk te
+     veroorzaken: het speelveld houdt aan beide kanten minstens tien pixels
+     lucht. */
+  --tijdrand-uit:2px;
+
+  --tijdrand-groen:#3ec98a;
+  --tijdrand-oranje:#ff9a1f;
+  --tijdrand-rood:#e8382f;
+
+  /* Twee overgangen achter elkaar. Van vol tot 45% loopt groen naar oranje,
+     daaronder oranje naar rood. Zo is de kleur altijd af te lezen als
+     "hoeveel tijd heb ik nog", zonder harde sprong. */
+  /* Groen houdt het langer vol: oranje is pas rond 30% resterend bereikt in
+     plaats van rond 45%. Daarvoor las de lijn bij 60% al als goud, en dat
+     voelt te vroeg alarmerend. */
+  --tijd-a:clamp(0%,calc((1 - var(--rest,1)) / .7 * 100%),100%);
+  --tijd-b:clamp(0%,calc((.3 - var(--rest,1)) / .3 * 100%),100%);
+
+  /* Mengen in oklab en niet in srgb: groen naar oranje loopt in srgb dwars
+     door een vuile kaki heen, terwijl oklab netjes langs geelgroen gaat. */
+  --tijdrand-tussen:color-mix(in oklab,var(--tijdrand-oranje) var(--tijd-a),var(--tijdrand-groen));
+  --tijdrand-kleur:color-mix(in oklab,var(--tijdrand-rood) var(--tijd-b),var(--tijdrand-tussen));
+}
+
+/* De lijn ligt op de witte rand van het kader en dus buiten het speelveld.
+   Daarvoor moet het scherm even niet meer afknippen; zonder dit verdween de
+   lijn achter de rand, precies waar hij zichtbaar hoort te zijn. */
+#scherm-spel.is-actief{
+  overflow:visible;
+}
+
+.tijdring{
+  position:absolute;
+  /* Naar buiten over de witte rand heen, zodat de lijn de buitenomtrek volgt
+     en niet ergens binnen het speelveld hangt. De extra millimeter eroverheen
+     voorkomt dat er langs de buitenkant een dun lichtrandje van het kader
+     blijft staan; precies gelijk leggen laat door het gladstrijken van de
+     randen altijd een haartje over. */
+  inset:calc(-1 * (var(--witte-rand,8px) + var(--tijdrand-uit)));
+  /* Een SVG is een vervangen element: met width:auto pakt hij zijn eigen
+     standaardmaat van 300x150 in plaats van zich naar de inset te rekken.
+     Vandaar expliciet. 100% is hier de binnenmaat van het scherm, dus de
+     witte rand komt er aan beide kanten bij. */
+  width:calc(100% + 2 * (var(--witte-rand,8px) + var(--tijdrand-uit)));
+  height:calc(100% + 2 * (var(--witte-rand,8px) + var(--tijdrand-uit)));
+  /* css/base.css zet svg{max-width:100%}. Dat knipte de berekende breedte
+     hierboven terug naar de binnenmaat, waardoor de lijn links wél op de witte
+     rand lag en rechts zestien pixels naar binnen stond: hetzelfde kader met
+     twee verschillende diktes. De hoogte had zo'n plafond niet en klopte
+     daardoor toevallig wel. */
+  max-width:none;
+  max-height:none;
+  overflow:visible;      /* de lijn ligt half op de rand, niet erbinnen */
+  pointer-events:none;
+  z-index:4;
+  transition:opacity 220ms ease;
+}
+
+/* Het spoor moet zwaar genoeg zijn om iets om vast te houden te geven als er
+   nog maar een stukje kleur over is. Op .28 zweefde het laatste stokje los in
+   het beeld. */
+.tijdring-spoor{
+  fill:none;
+  stroke:rgba(28,58,132,.5);
+  stroke-width:var(--tijdrand-dikte);
+  stroke-linecap:round;
+}
+
+.tijdring-rest{
+  fill:none;
+  stroke:var(--tijdrand-kleur);
+  stroke-width:var(--tijdrand-dikte);
+  stroke-linecap:round;
+  /* De lengte van het pad is op 100 gezet, dus de streeplengte is recht-
+     streeks het percentage dat nog over is. */
+  stroke-dasharray:var(--tijdring-lengte,100) 100;
+
+  /* Zonder deze verschuiving zit het zichtbare stuk vast aan het begin van het
+     pad en loopt het vrije uiteinde achteruit: dan wordt er tégen de klok in
+     opgesnoept. Met de verschuiving ligt het overgebleven stuk juist tegen het
+     einde aan, dus verdwijnt de lijn vanaf het midden van de bovenkant mét de
+     klok mee — zoals hij ook getekend is. */
+  stroke-dashoffset:calc(var(--tijdring-lengte,100) - 100);
+  filter:drop-shadow(0 0 4px rgba(255,255,255,.55));
+}
+
+/* Zolang er geen woord loopt hoort er geen lijn te staan: geen tijd, geen
+   spanning. js/tijdrand.js zet data-tijd zodra de klok echt loopt. */
+#scherm-spel:not([data-tijd="loopt"]) .tijdring{
+  opacity:0;
+}
+
+/* --------------------------------------------------------------------------
+   Het laatste restje knippert
+   -------------------------------------------------------------------------- */
+
+/* Een hartslag, geen storing. Een harde sprong naar .15 liet de lijn bijna de
+   helft van de tijd verdwijnen; dat leest als een fout in het beeld in plaats
+   van als spanning. Nu een vloeiende klop die altijd zichtbaar blijft. */
+#scherm-spel[data-staat="kritiek"] .tijdring-rest{
+  animation:tijdrand-knipper 620ms ease-in-out infinite;
+}
+
+@keyframes tijdrand-knipper{
+  0%,100%{ opacity:1;   filter:drop-shadow(0 0 4px rgba(255,255,255,.55)) }
+  50%    { opacity:.55; filter:drop-shadow(0 0 9px rgba(232,56,47,.9)) }
+}
+
+/* --------------------------------------------------------------------------
+   De pil in het paneel loopt mee
+   -------------------------------------------------------------------------- */
+
+/* De pil was rood bij volle tijd, zoals de referentie het doet. Naast een
+   groene buitenlijn wringt dat: twee meters die hetzelfde vertellen in twee
+   talen. Ze volgen nu dezelfde overgang groen → oranje → rood.
+
+   De berekening staat hier nog een keer omdat --rest op #tijdbalk zelf staat
+   en niet op #scherm-spel; de formule is identiek aan die hierboven. De
+   selectors zijn precies zo zwaar als die in css/game.css en staan later, dus
+   ze winnen zonder !important. */
+#tijdbalk{
+  /* Groen houdt het langer vol: oranje is pas rond 30% resterend bereikt in
+     plaats van rond 45%. Daarvoor las de lijn bij 60% al als goud, en dat
+     voelt te vroeg alarmerend. */
+  --tijd-a:clamp(0%,calc((1 - var(--rest,1)) / .7 * 100%),100%);
+  --tijd-b:clamp(0%,calc((.3 - var(--rest,1)) / .3 * 100%),100%);
+  --pil-tussen:color-mix(in srgb,#ff9a1f var(--tijd-a),#3ec98a);
+  --pil-kern:color-mix(in srgb,#e8382f var(--tijd-b),var(--pil-tussen));
+}
+
+/* Boven- en onderkant van de pil blijven lichter en donkerder dan de kern, dus
+   het bolle verloop blijft staan; alleen de kleur eronder verandert mee. */
+#tijdbalk.is-veel .vulling,#tijdbalk[data-staat="veel"] .vulling,
+#tijdbalk.is-half .vulling,#tijdbalk[data-staat="half"] .vulling,
+#tijdbalk.is-laag .vulling,#tijdbalk[data-staat="laag"] .vulling,
+#tijdbalk[style*="--rest"] .vulling{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--pil-kern) 76%,#fff) 0%,
+    var(--pil-kern) 52%,
+    color-mix(in srgb,var(--pil-kern) 72%,#000) 100%);
+}
+
+/* De laatste seconden zijn altijd fel rood, ongeacht de menging. */
+#tijdbalk.is-kritiek .vulling,#tijdbalk[data-staat="kritiek"] .vulling{
+  background:linear-gradient(180deg,#ff8478 0%,#e8382f 52%,#a81c15 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Terugval en rust
+   -------------------------------------------------------------------------- */
+
+/* Kent de browser color-mix niet, dan blijft de kleur onbepaald; dan liever
+   gewoon rood dan niets. */
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+  #scherm-spel{ --tijdrand-kleur:#e8382f }
+}
+
+@media (prefers-reduced-motion:reduce){
+  #scherm-spel[data-staat="kritiek"] .tijdring-rest{ animation:none }
+  .tijdring{ transition:none }
+}

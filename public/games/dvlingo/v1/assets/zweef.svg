@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480">
+<!--
+  Digitale Vaardigheden Lingo — assets/zweef.svg
+
+  De zwevende iconen áchter het speelveld. Dit verving de sierrand rondom het
+  kader: die was te aanwezig en stond stil. Hier drijven dezelfde tekens door
+  de lucht, achter het spel langs, in drie lagen met verschillende snelheden.
+
+  Het vlak van 480x480 wordt herhaald, dus geen enkel icoon raakt de rand;
+  anders zou je de naad zien. De plaatsing is met opzet onregelmatig, zodat de
+  herhaling niet als een rasterpatroon leest.
+
+  De kleuren staan hier zacht; css/sfeer.css dimt de hele laag nog verder.
+-->
+
+<defs>
+  <g id="z-wifi" stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M-16-6a23 23 0 0 1 32 0"/>
+    <path d="M-9 2a13 13 0 0 1 18 0"/>
+    <circle cx="0" cy="10" r="3" stroke="none"/>
+  </g>
+  <g id="z-muis" fill="none" stroke-width="5">
+    <rect x="-11" y="-16" width="22" height="32" rx="11"/>
+    <path d="M0-10v7" stroke-linecap="round"/>
+  </g>
+  <g id="z-map" stroke="none">
+    <path d="M-17-12h11l4 5h19a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3h-34a3 3 0 0 1-3-3v-21a3 3 0 0 1 3-3z"/>
+  </g>
+  <g id="z-cursor" stroke="none">
+    <path d="M-9-16 12 2 3 3l5 11-5 2-5-11-7 6z"/>
+  </g>
+  <g id="z-slot">
+    <path d="M-9-4v-6a9 9 0 0 1 18 0v6" fill="none" stroke-width="5"/>
+    <rect x="-13" y="-4" width="26" height="20" rx="4" stroke="none"/>
+  </g>
+  <g id="z-wolk" stroke="none">
+    <path d="M-14 10a9 9 0 0 1 1-18 12 12 0 0 1 23-3 9 9 0 0 1 2 21z"/>
+  </g>
+  <g id="z-toetsenbord">
+    <rect x="-18" y="-11" width="36" height="23" rx="4" fill="none" stroke-width="4"/>
+    <g stroke="none">
+      <rect x="-13" y="-6" width="5" height="5" rx="1"/>
+      <rect x="-4" y="-6" width="5" height="5" rx="1"/>
+      <rect x="5" y="-6" width="5" height="5" rx="1"/>
+      <rect x="-9" y="3" width="18" height="4" rx="2"/>
+    </g>
+  </g>
+  <g id="z-zoek" fill="none" stroke-width="5" stroke-linecap="round">
+    <circle cx="-3" cy="-3" r="11"/>
+    <path d="M6 6l10 10"/>
+  </g>
+  <g id="z-at" fill="none" stroke-width="4.5" stroke-linecap="round">
+    <circle cx="0" cy="0" r="7"/>
+    <path d="M7 0v4a5 5 0 0 0 9 0v-4A16 16 0 1 0 8 14"/>
+  </g>
+  <g id="z-chat" stroke="none">
+    <path d="M-16-12h32a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3h-18l-9 8v-8h-5a3 3 0 0 1-3-3v-15a3 3 0 0 1 3-3z"/>
+  </g>
+</defs>
+
+<!-- Tien tekens, met opzet ongelijk verdeeld. Een eerdere versie legde ze in
+     drie horizontale banden, en dan zie je bij het herhalen meteen het raster.
+     Nu staan de hoogtes door elkaar en verschilt de maat per teken. Alles
+     blijft ruim binnen de randen, anders zou je de naad zien. -->
+<g opacity=".62">
+  <g transform="translate(86,104) rotate(-12) scale(1.5)"  fill="#3f95e2" stroke="#3f95e2"><use href="#z-wifi"/></g>
+  <g transform="translate(214,62) rotate(8) scale(1.15)"   fill="#e8382f" stroke="#e8382f"><use href="#z-muis"/></g>
+  <g transform="translate(352,128) rotate(-7) scale(1.3)"  fill="#ffd23a" stroke="#ffd23a"><use href="#z-map"/></g>
+  <g transform="translate(424,246) rotate(13) scale(1.1)"  fill="#3ec98a" stroke="#3ec98a"><use href="#z-cursor"/></g>
+  <g transform="translate(128,248) rotate(-14) scale(1.35)" fill="#e8382f" stroke="#e8382f"><use href="#z-chat"/></g>
+  <g transform="translate(272,196) rotate(6) scale(1.05)"  fill="#3f95e2" stroke="#3f95e2"><use href="#z-slot"/></g>
+  <g transform="translate(66,366) rotate(-9) scale(1.45)"  fill="#3f95e2" stroke="#3f95e2"><use href="#z-wolk"/></g>
+  <g transform="translate(198,418) rotate(11) scale(1.2)"  fill="#ffd23a" stroke="#ffd23a"><use href="#z-zoek"/></g>
+  <g transform="translate(330,336) rotate(-5) scale(1.25)" fill="#3ec98a" stroke="#3ec98a"><use href="#z-toetsenbord"/></g>
+  <g transform="translate(424,424) rotate(10) scale(1.35)" fill="#e8382f" stroke="#e8382f"><use href="#z-at"/></g>
+</g>
+</svg>

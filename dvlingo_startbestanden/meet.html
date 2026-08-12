@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Meetbank</title>
+<style>
+  body{margin:0;font:13px/1.4 system-ui;background:#222;color:#eee}
+  #balk{padding:6px 10px;font-family:ui-monospace,monospace}
+  #doos{background:#000;display:inline-block;line-height:0;outline:2px solid #0f0}
+  iframe{border:0;display:block}
+</style>
+</head>
+<body>
+<div id="balk">meetbank</div>
+<div id="doos"><iframe id="f" src="about:blank"></iframe></div>
+
+<script>
+/* Meetbank: laadt index.html in een iframe van exact de gevraagde maat,
+   speelt echt een woord, en meet de overloop. Tijdelijk bestand. */
+(function(){
+  var f = document.getElementById('f');
+  var balk = document.getElementById('balk');
+
+  /* Wachten zonder de timers van de pagina zelf. Chrome knijpt die in een
+     tabblad dat niet vooraan staat af tot ééntje per minuut; dan duurt een
+     meting van vier seconden vijf minuten. Een Worker heeft daar geen last
+     van, dus die houdt de klok bij en tikt terug. */
+  var werker = new Worker(URL.createObjectURL(new Blob([
+    'onmessage=function(e){setTimeout(function(){postMessage(e.data.id)},e.data.ms)}'
+  ], { type: 'text/javascript' })));
+  var wachtenden = Object.create(null);
+  var wachtnr = 1;
+  werker.onmessage = function(e){
+    var f = wachtenden[e.data];
+    if (f){ delete wachtenden[e.data]; f(); }
+  };
+  function tik(ms, doe){
+    var id = wachtnr++;
+    wachtenden[id] = doe;
+    werker.postMessage({ id: id, ms: ms || 0 });
+    return id;
+  }
+  function slaap(ms){
+    return new Promise(function(res){ tik(ms, res); });
+  }
+
+  function wachtFrame(n){
+    n = n || 2;
+    return new Promise(function(res){
+      function stap(){ if(--n <= 0) res(); else requestAnimationFrame(stap); }
+      requestAnimationFrame(stap);
+    });
+  }
+
+  async function laad(w, h){
+    f.style.width = w + 'px';
+    f.style.height = h + 'px';
+    balk.textContent = w + 'x' + h + ' laden...';
+    /* Eerst het venster laten bezinken. Meteen na een draai van liggend naar
+       staand laadde het volgende blad nog met de oude mediaregels. */
+    await slaap(250);
+    await new Promise(function(res){
+      f.onload = res;
+      f.src = 'index.html?meet=' + Date.now();
+    });
+    var d = f.contentDocument;
+    /* De opmaakbladen opnieuw halen, anders meet je de versie uit de cache. */
+    var stempel = Date.now();
+    var linken = [].slice.call(d.querySelectorAll('link[rel="stylesheet"]'));
+    /* Het verse blad komt er direct achter te staan en pas als het binnen is
+       gaat het oude weg. Wie de href van het oude blad omzet, heeft even
+       helemaal geen opmaak — en precies in dat gaatje werd er gemeten. */
+    var nieuw = linken.map(function(l){
+      var n = d.createElement('link');
+      n.rel = 'stylesheet';
+      n.href = l.getAttribute('href').split('?')[0] + '?v=' + stempel;
+      l.parentNode.insertBefore(n, l.nextSibling);
+      return n;
+    });
+    await Promise.race([
+      Promise.all(nieuw.map(function(n){
+        return new Promise(function(res){
+          n.addEventListener('load', res, { once:true });
+          n.addEventListener('error', res, { once:true });
+        });
+      })),
+      slaap(5000)
+    ]);
+    linken.forEach(function(l){ if (l.parentNode) l.parentNode.removeChild(l); });
+    if (window.zonderNieuw) haalNieuweRegelsWeg(d);
+    await slaap(200);
+    /* Klassieke schuifbalken in een iframe zouden de breedte anders maken dan
+       op een telefoon; die hebben overlay-balken. Dus wegzetten. */
+    var s = d.createElement('style');
+    s.textContent = 'html{scrollbar-width:none}html::-webkit-scrollbar{display:none}';
+    d.head.appendChild(s);
+    ontknijp(f.contentWindow);
+    await slaap(500);
+    return d;
+  }
+
+  /* Zelfde verhaal binnen het spel: in een tabblad op de achtergrond staat
+     requestAnimationFrame helemaal stil en worden timers afgeknepen, dus de
+     klok liep niet en de tegels draaiden niet. Beide worden hier vervangen
+     door een variant op berichten, die wel gewoon doorloopt. Alleen de
+     aandrijving verandert; aan het spel zelf niets. */
+  function ontknijp(win){
+    var af = Object.create(null);
+
+    function plan(ms, doe){
+      var id = tik(ms, function(){
+        if (af[id]) { delete af[id]; return; }
+        try { doe(); } catch(e){ /* een kapotte taak stopt de klok niet */ }
+      });
+      return id;
+    }
+
+    win.setTimeout = function(fn, ms){
+      var rest = [].slice.call(arguments, 2);
+      return plan(ms, function(){ fn.apply(null, rest); });
+    };
+    win.clearTimeout = function(id){ af[id] = true; };
+
+    win.requestAnimationFrame = function(fn){
+      return plan(16, function(){ fn(win.performance.now()); });
+    };
+    win.cancelAnimationFrame = function(id){ af[id] = true; };
+  }
+
+  /* Voor een eerlijke vergelijking: de twee nieuwe mediablokken uit game.css
+     er weer uit halen, zodat te zien is wat er van de oude opmaak komt en wat
+     van de nieuwe. */
+  function haalNieuweRegelsWeg(d){
+    var bladen = [].slice.call(d.styleSheets);
+    for (var b = 0; b < bladen.length; b++){
+      var s = bladen[b];
+      if (!s.href || s.href.indexOf('game.css') < 0) continue;
+      for (var i = s.cssRules.length - 1; i >= 0; i--){
+        var r = s.cssRules[i];
+        var c = r.conditionText || r.media && r.media.mediaText || '';
+        if (/portrait\).*max-width: ?620px/.test(c) ||
+            /max-height: ?620px.*max-width: ?899px/.test(c)){
+          s.deleteRule(i);
+        }
+      }
+    }
+  }
+
+  function meting(naam){
+    var w = f.contentWindow, d = f.contentDocument;
+    return {
+      wat: naam,
+      breed: w.innerWidth,
+      hoog: w.innerHeight,
+      over: d.documentElement.scrollHeight - w.innerHeight,
+      overBreed: d.documentElement.scrollWidth - w.innerWidth
+    };
+  }
+
+  function klik(kiezer){
+    var d = f.contentDocument;
+    var e = d.querySelector(kiezer);
+    if(!e) throw new Error('niet gevonden: ' + kiezer);
+    e.click();
+    return e;
+  }
+
+  /* Een geldig woord van dezelfde lengte dat met dezelfde letter begint als
+     het doel, maar niet het doel is. Zo blijft de klok lopen en staat er een
+     echt beoordeelde rij op het bord. */
+  function anderWoord(doel){
+    var w = f.contentWindow;
+    var boek = w.DVL.WOORDENBOEK || [];
+    for(var i=0;i<boek.length;i++){
+      var kand = boek[i];
+      if(kand.length === doel.length && kand[0] === doel[0] && kand !== doel) return kand;
+    }
+    return null;
+  }
+
+  /* Het spel zet bekende letters zelf al klaar en slaat die posities over.
+     Alleen de open plekken worden dus ingetikt, anders schuift alles op. */
+  function typ(woord){
+    var d = f.contentDocument, win = f.contentWindow;
+    var invoer = win.DVL.Game.staat().zicht.invoer || [];
+    for(var i=0;i<woord.length;i++){
+      if(invoer[i]) continue;
+      var t = d.querySelector('.toets[data-letter="' + woord[i] + '"]');
+      if(t) t.click();
+    }
+  }
+
+  async function naarSpel(w, h){
+    await laad(w, h);
+    klik('#scherm-menu [data-actie="kies-spelers"][data-spelers="1"]');
+    await slaap(600);
+    /* startscherm van level 1: de grote STARTknop */
+    var d = f.contentDocument;
+    var sk = d.querySelector('#scherm-start .start-knop') ||
+             d.querySelector('#scherm-start button');
+    if(sk) sk.click();
+    await slaap(700);
+  }
+
+  /* ------------------------------------------------------------ metingen */
+
+  window.meetMenu = async function(w,h){
+    await laad(w,h);
+    return meting('menu');
+  };
+
+  /* Er is geen levelkeuzescherm meer: een spelvorm kiezen leidt meteen naar
+     het startscherm van level 1. */
+  window.meetStart = async function(w,h){
+    await laad(w,h);
+    klik('#scherm-menu [data-actie="kies-spelers"][data-spelers="1"]');
+    await slaap(700);
+    return meting('startscherm');
+  };
+
+  /* Speelt echt een woord: een geldige gok die niet het doel is, dus het bord
+     toont een beoordeelde rij, de klok loopt en de tijdrand staat. */
+  window.meetSpel = async function(w,h){
+    await naarSpel(w,h);
+    var win = f.contentWindow;
+    var st = win.DVL.Game.staat();
+    var doel = st.kern.doel;
+    var gok = anderWoord(doel);
+    typ(gok);
+    await slaap(200);
+    f.contentDocument.querySelector('.toets--enter').click();
+    await slaap(1800);   /* draaien is 560ms + 4 * 105ms verspringing */
+    meting('spel');      /* eerste meting weggooien: laat alles bezinken */
+    await slaap(500);
+    var m = meting('spel');
+    m.doel = doel; m.gok = gok;
+    m.speelbaar = zichtbaarheid();
+    return m;
+  };
+
+  /* Alles wat de speler nodig heeft moet binnen het venster staan. */
+  function zichtbaarheid(){
+    var d = f.contentDocument, win = f.contentWindow;
+    var uit = {};
+    var scherm = d.getElementById('scherm-spel');
+    uit._tijd = scherm.getAttribute('data-tijd') || 'stil';
+    var ring = d.querySelector('.tijdring');
+    if (ring){
+      var rr = ring.getBoundingClientRect();
+      var dik = parseFloat(win.getComputedStyle(d.querySelector('.tijdring-rest')).strokeWidth) || 0;
+      uit._ring = {
+        t: Math.round(rr.top), b: Math.round(rr.bottom),
+        l: Math.round(rr.left), r: Math.round(rr.right),
+        dikte: dik,
+        zichtbaar: win.getComputedStyle(ring).opacity,
+        /* js/tijdrand.js legt het pad een halve lijndikte naar binnen, dus de
+           buitenkant van de lijn valt precies samen met de rand van de SVG. */
+        binnen: rr.top >= -0.5 && rr.bottom <= win.innerHeight + 0.5 &&
+                rr.left >= -0.5 && rr.right <= win.innerWidth + 0.5
+      };
+    }
+    ['#bord','.paneel','#tijdbalk','#invoer','#bevestig','#toetsenbord',
+     '.toets--enter','#hints','#ronde'].forEach(function(k){
+      var e = d.querySelector(k);
+      if(!e){ uit[k] = 'ontbreekt'; return; }
+      var st = win.getComputedStyle(e);
+      if(st.display === 'none'){ uit[k] = 'display:none'; return; }
+      var r = e.getBoundingClientRect();
+      uit[k] = {
+        t: Math.round(r.top), b: Math.round(r.bottom),
+        l: Math.round(r.left), r: Math.round(r.right),
+        binnen: r.top >= -0.5 && r.bottom <= win.innerHeight + 0.5 &&
+                r.left >= -0.5 && r.right <= win.innerWidth + 0.5
+      };
+    });
+    uit._venster = { w: win.innerWidth, h: win.innerHeight };
+    return uit;
+  }
+  window.zichtbaarheid = zichtbaarheid;
+
+  /* De uitslag: één woord goed raden, dan via de pauzeknop stoppen en
+     afronden. Dat komt nu rechtstreeks op de eindstand uit; er zit geen
+     los finalescherm meer tussen. */
+  window.meetUitslag = async function(w,h){
+    await naarSpel(w,h);
+    var win = f.contentWindow;
+    var d = f.contentDocument;
+    var st = win.DVL.Game.staat();
+    typ(st.kern.doel);
+    await slaap(200);
+    d.querySelector('.toets--enter').click();
+    await slaap(2400);
+    var v = d.querySelector('#woordkaart [data-actie="volgende"]');
+    if(v) v.click();
+    await slaap(900);
+    d.getElementById('pauze').click();
+    await slaap(600);
+    var stop = d.querySelector('#pauzescherm [data-actie="afronden"]');
+    if(stop) stop.click();
+    await slaap(1600);
+    var m = meting('uitslag');
+    m.actief = d.querySelector('.scherm.is-actief').id;
+    m.scherm = m.actief;
+    return m;
+  };
+
+  window.meetAlles = async function(w,h){
+    var uit = {};
+    uit.menu = (await window.meetMenu(w,h)).over;
+    uit.start = (await window.meetStart(w,h)).over;
+
+    var s = await window.meetSpel(w,h);
+    uit.spel = s.over;
+    uit.breed = s.overBreed;
+    uit.ring = s.speelbaar._ring ? s.speelbaar._ring.binnen : null;
+    uit.klok = s.speelbaar._tijd;
+    uit.buiten = Object.keys(s.speelbaar).filter(function(k){
+      return k[0] !== '_' && s.speelbaar[k].binnen !== true;
+    });
+
+    var u = await window.meetUitslag(w,h);
+    uit.uitslag = u.over;
+    uit.schermen = u.scherm;
+    return uit;
+  };
+})();
+</script>
+</body>
+</html>

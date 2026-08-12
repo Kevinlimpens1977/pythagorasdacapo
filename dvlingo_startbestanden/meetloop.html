@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Meetloop</title>
+<style>
+  html,body{margin:0;background:#111;color:#eee;font:12px/1.35 ui-monospace,monospace}
+  #balk{padding:4px 8px}
+  #doos{background:#000;display:inline-block;line-height:0;outline:1px solid #0f0}
+  iframe{border:0;display:block}
+  #uit{padding:4px 8px;white-space:pre;font-size:11px}
+</style>
+</head>
+<body>
+<div id="balk">meetloop — wacht…</div>
+<div id="doos"><iframe id="f" src="about:blank"></iframe></div>
+<div id="uit"></div>
+
+<script>
+/* Meetloop: laadt index.html in een iframe van exact de gevraagde maat, speelt
+   een echt potje, meet de overloop op elk scherm en stuurt de uitkomst naar de
+   server (POST /rapport). Draait in een echt, zichtbaar Chrome-venster met een
+   eigen profiel, zodat de klok loopt en er echt gecomposit wordt.
+   Tijdelijk bestand; hoort na de meting weer weg. */
+(function(){
+  var f = document.getElementById('f');
+  var balk = document.getElementById('balk');
+  var uit = document.getElementById('uit');
+
+  function log(t){ uit.textContent += t + '\n'; }
+  function post(o){
+    try{
+      navigator.sendBeacon('/rapport', new Blob([JSON.stringify(o)], {type:'text/plain'}));
+    }catch(e){
+      fetch('/rapport', {method:'POST', body:JSON.stringify(o)});
+    }
+  }
+
+  function slaap(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  /* Wacht tot een voorwaarde klopt, of geef op. */
+  async function tot(test, maxMs, stap){
+    var t0 = Date.now();
+    while (Date.now() - t0 < (maxMs || 15000)){
+      try{ if (test()) return true; }catch(e){}
+      await slaap(stap || 100);
+    }
+    return false;
+  }
+
+  function D(){ return f.contentDocument; }
+  function W(){ return f.contentWindow; }
+  function actief(){
+    var e = D().querySelector('.scherm.is-actief');
+    return e ? e.id : '';
+  }
+
+  async function laad(w, h){
+    balk.textContent = w + 'x' + h + ' laden…';
+    try{ localStorage.clear(); }catch(e){}
+    f.style.width = w + 'px';
+    f.style.height = h + 'px';
+    await slaap(200);
+    await new Promise(function(res){
+      f.onload = res;
+      f.src = 'index.html?meet=' + Date.now();
+    });
+    var d = D();
+    var s = d.createElement('style');
+    /* Overlay-schuifbalken, net als op een telefoon: klassieke balken zouden de
+       breedte anders maken dan in het echt. */
+    s.textContent = 'html{scrollbar-width:none}html::-webkit-scrollbar{display:none}';
+    d.head.appendChild(s);
+    await slaap(400);
+    return d;
+  }
+
+  function meting(naam){
+    var w = W(), d = D();
+    return {
+      wat: naam,
+      over: d.documentElement.scrollHeight - w.innerHeight,
+      overBreed: d.documentElement.scrollWidth - w.innerWidth
+    };
+  }
+
+  /* Alles wat de speler nodig heeft moet binnen het venster staan. */
+  function binnen(kiezers){
+    var d = D(), w = W(), buiten = [];
+    kiezers.forEach(function(k){
+      var e = d.querySelector(k);
+      if (!e){ buiten.push(k + ':ontbreekt'); return; }
+      var st = w.getComputedStyle(e);
+      if (st.display === 'none' || st.visibility === 'hidden') return;
+      var r = e.getBoundingClientRect();
+      if (!(r.width || r.height)) return;
+      if (!(r.top >= -0.5 && r.bottom <= w.innerHeight + 0.5 &&
+            r.left >= -0.5 && r.right <= w.innerWidth + 0.5)){
+        buiten.push(k + ':' + Math.round(r.top) + '/' + Math.round(r.bottom) +
+                    ' x ' + Math.round(r.left) + '/' + Math.round(r.right));
+      }
+    });
+    return buiten;
+  }
+
+  var SPEL = ['#bord','.paneel','#tijdbalk','#invoer','#bevestig','#toetsenbord',
+              '.toets--enter','#hints','#ronde'];
+  var BALLEN = ['.bal-machine','.bal-kaart','.bal-teller','.bal-groen','#bal-trek'];
+  var BONUS = ['.bonus-rij','.bonus-voorraad','.bonus-klok'];
+
+  function ringBinnen(){
+    var d = D(), w = W();
+    var ring = d.querySelector('.tijdring');
+    if (!ring) return null;
+    var r = ring.getBoundingClientRect();
+    return r.top >= -0.5 && r.bottom <= w.innerHeight + 0.5 &&
+           r.left >= -0.5 && r.right <= w.innerWidth + 0.5;
+  }
+
+  /* --------------------------------------------------------- spel spelen */
+
+  function anderWoord(doel){
+    var boek = W().DVL.WOORDENBOEK || [];
+    for (var i=0;i<boek.length;i++){
+      var k = boek[i];
+      if (k.length === doel.length && k[0] === doel[0] && k !== doel) return k;
+    }
+    return null;
+  }
+
+  /* Het spel zet bekende letters zelf klaar; alleen de open plekken tikken. */
+  function typ(woord){
+    var d = D(), w = W();
+    var invoer = w.DVL.Game.staat().zicht.invoer || [];
+    for (var i=0;i<woord.length;i++){
+      if (invoer[i]) continue;
+      var t = d.querySelector('.toets[data-letter="' + woord[i] + '"]');
+      if (t) t.click();
+    }
+  }
+
+  async function enter(){
+    D().querySelector('.toets--enter').click();
+    await slaap(300);
+  }
+
+  async function sluitWoordkaart(){
+    var kaart = D().getElementById('woordkaart');
+    await tot(function(){ return !kaart.hidden; }, 8000);
+    var v = D().querySelector('#woordkaart [data-actie="volgende"]');
+    if (v) v.click();
+    await slaap(700);
+  }
+
+  async function naarSpel(w, h){
+    await laad(w, h);
+    D().querySelector('#scherm-menu [data-actie="kies-spelers"][data-spelers="1"]').click();
+    await tot(function(){ return actief() === 'scherm-start'; }, 8000);
+    await slaap(500);
+    var sk = D().querySelector('#scherm-start .start-knop') ||
+             D().querySelector('#scherm-start button');
+    if (sk) sk.click();
+    await tot(function(){ return actief() === 'scherm-spel'; }, 8000);
+    await slaap(700);
+  }
+
+  /* ------------------------------------------------------------ metingen */
+
+  async function meetEenMaat(w, h){
+    var r = { maat: w + 'x' + h };
+
+    /* menu */
+    await laad(w, h);
+    r.menu = meting('menu').over;
+    r.menuBreed = meting('menu').overBreed;
+
+    /* startscherm */
+    D().querySelector('#scherm-menu [data-actie="kies-spelers"][data-spelers="1"]').click();
+    await tot(function(){ return actief() === 'scherm-start'; }, 8000);
+    await slaap(600);
+    r.start = meting('start').over;
+
+    /* spel: één echt gespeeld woord (geldige gok, niet het doel) */
+    var sk = D().querySelector('#scherm-start .start-knop');
+    sk.click();
+    await tot(function(){ return actief() === 'scherm-spel'; }, 8000);
+    await slaap(700);
+    var doel = W().DVL.Game.staat().kern.doel;
+    var gok = anderWoord(doel);
+    typ(gok);
+    await slaap(200);
+    await enter();
+    await slaap(1800);
+    r.spel = meting('spel').over;
+    r.spelBreed = meting('spel').overBreed;
+    r.spelBuiten = binnen(SPEL);
+    r.ring = ringBinnen();
+    r.gok = gok;
+
+    /* level 1 uitspelen: vier woorden goed */
+    var ronde = 0;
+    while (actief() === 'scherm-spel' && ronde < 12){
+      ronde++;
+      var st = W().DVL.Game.staat();
+      if (!st.kern || st.kern.klaar) { await slaap(400); continue; }
+      typ(st.kern.doel);
+      await slaap(150);
+      await enter();
+      await slaap(1600);
+      await sluitWoordkaart();
+      await slaap(400);
+    }
+
+    /* ballenfase */
+    var ok = await tot(function(){ return actief() === 'scherm-ballen'; }, 20000);
+    if (!ok){ r.fout = 'ballenfase niet bereikt, scherm=' + actief(); post(r); return r; }
+    /* de introductie afwachten: de trekknop gaat pas daarna aan */
+    await tot(function(){
+      var k = D().getElementById('bal-trek');
+      return k && !k.disabled;
+    }, 25000);
+    await slaap(300);
+    r.ballen = meting('ballen').over;
+    r.ballenBreed = meting('ballen').overBreed;
+    r.ballenBuiten = binnen(BALLEN);
+
+    /* echt een bal trekken */
+    D().getElementById('bal-trek').click();
+    await slaap(2200);
+    /* de vraagbal vraagt om een keuze */
+    var kies = D().querySelector('.bal-vak.is-kiesbaar');
+    if (kies){ kies.click(); await slaap(1200); }
+    r.ballenNaBal = meting('ballen-na-bal').over;
+    r.ballenNaBalBuiten = binnen(BALLEN);
+    r.balMelding = (D().getElementById('bal-melding')||{}).textContent || '';
+
+    /* de rest van de trekkingen afwerken tot de fase klaar is */
+    for (var p = 0; p < 12 && actief() === 'scherm-ballen'; p++){
+      var k = D().getElementById('bal-trek');
+      if (!k){ break; }
+      if (!k.disabled) k.click();
+      await slaap(1400);
+      var kz = D().querySelector('.bal-vak.is-kiesbaar');
+      if (kz){ kz.click(); await slaap(1200); }
+    }
+
+    /* bonuswoord */
+    var okb = await tot(function(){ return actief() === 'scherm-bonus'; }, 20000);
+    if (!okb){ r.fout2 = 'bonus niet bereikt, scherm=' + actief(); post(r); return r; }
+    await slaap(800);
+    r.bonus = meting('bonus').over;
+    r.bonusBreed = meting('bonus').overBreed;
+    r.bonusBuiten = binnen(BONUS);
+    r.bonusRijen = (function(){
+      /* elf vakjes op één rij past niet op 360px; hoeveel regels worden het? */
+      var vakken = [].slice.call(D().querySelectorAll('.bonus-vak'));
+      var tops = {};
+      vakken.forEach(function(v){ tops[Math.round(v.getBoundingClientRect().top)] = 1; });
+      return Object.keys(tops).length;
+    })();
+
+    post(r);
+    return r;
+  }
+
+  /* De uitslag apart: één woord goed, dan via de pauzeknop afronden. */
+  async function meetUitslag(w, h){
+    await naarSpel(w, h);
+    var st = W().DVL.Game.staat();
+    typ(st.kern.doel);
+    await slaap(200);
+    await enter();
+    await slaap(1900);
+    await sluitWoordkaart();
+    D().getElementById('pauze').click();
+    await slaap(600);
+    var stop = D().querySelector('#pauzescherm [data-actie="afronden"]');
+    if (stop) stop.click();
+    await tot(function(){ return actief() === 'scherm-uitslag'; }, 12000);
+    await slaap(700);
+    return { maat: w + 'x' + h, uitslag: meting('uitslag').over,
+             uitslagBreed: meting('uitslag').overBreed, scherm: actief() };
+  }
+
+  var MATEN = [
+    [1280,800],[1366,650],[1280,600],[375,812],
+    [360,640],[320,568],[812,375],[740,360]
+  ];
+
+  window.loop = async function(maten){
+    var lijst = maten || MATEN;
+    post({ start: true, tijd: Date.now(), zichtbaar: document.visibilityState,
+           focus: document.hasFocus() });
+    for (var i=0;i<lijst.length;i++){
+      var w = lijst[i][0], h = lijst[i][1];
+      balk.textContent = 'meten ' + w + 'x' + h + '  (' + (i+1) + '/' + lijst.length + ')';
+      var r;
+      try { r = await meetEenMaat(w, h); }
+      catch(e){ r = { maat: w+'x'+h, fout: String(e && e.message || e) }; post(r); }
+      try {
+        var u = await meetUitslag(w, h);
+        r.uitslag = u.uitslag; r.uitslagBreed = u.uitslagBreed; r.uitslagScherm = u.scherm;
+      } catch(e){ r.uitslagFout = String(e && e.message || e); }
+      post(r);
+      log(JSON.stringify(r));
+    }
+    post({ klaar: true });
+    balk.textContent = 'klaar';
+  };
+
+  /* zichzelf starten zodra het venster echt zichtbaar en scherp is */
+  function begin(){
+    if (document.visibilityState !== 'visible'){
+      document.addEventListener('visibilitychange', begin, { once:true });
+      return;
+    }
+    var p = new URLSearchParams(location.search).get('maten');
+    var lijst = p ? p.split(',').map(function(m){
+      var d = m.split('x'); return [parseInt(d[0],10), parseInt(d[1],10)];
+    }) : null;
+    setTimeout(function(){ window.loop(lijst); }, 600);
+  }
+  begin();
+})();
+</script>
+</body>
+</html>

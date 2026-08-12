@@ -1,0 +1,307 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/startscherm.css
+   Het startscherm dat voor elk level verschijnt: het beeldmerk met daarover
+   een 3D-lint met LEVEL 1, 2 of 3, en daaronder de teksten van dat level.
+
+   Het lint ligt als HTML-laag over de tekening heen in plaats van erin
+   gebakken, zodat de tekst altijd goed gespeld is en per level meekleurt.
+
+   Dit bestand is zelfstandig: het leunt alleen op de variabelen uit
+   css/base.css en raakt geen enkele klasse van het spel aan.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Levelkleuren — gezet via data-level op het scherm zelf
+   -------------------------------------------------------------------------- */
+
+#scherm-start{
+  /* De lettergrootte van het lint staat hier, omdat de hoogte van het lint
+     eruit volgt en de tekening daar ruimte voor moet vrijhouden.
+     1.06 regelhoogte + .66em voering + 10px rand = 1.72 keer de letter.
+
+     De hoogte telt mee (4.4vh) omdat het lint onder de tekening hangt en de
+     tekening er ruimte voor vrijhoudt: op een laag venster kost een groot
+     lint dus dubbel. De ondergrens van 19px is die van het mobiele scherm en
+     verandert daar niets, want 4.6vw wint op een smal venster altijd. */
+  --lint-lettergrootte:clamp(19px,min(4.6vw,4.4vh),38px);
+  --lint-hoogte:calc(var(--lint-lettergrootte) * 1.72 + 10px);
+
+  --lint:var(--blauw);
+  --lint-diep:var(--blauw-diep);
+  --lint-verloop:var(--verloop-blauw);
+  --lint-tail:var(--blauw-diep);
+  --accent-tekst:var(--blauw-diep);
+}
+
+#scherm-start[data-level="2"]{
+  --lint:var(--geel);
+  --lint-diep:var(--geel-diep);
+  --lint-verloop:linear-gradient(180deg,var(--geel-licht) 0%,var(--geel) 46%,var(--geel-donker) 100%);
+  --lint-tail:var(--geel-diep);
+  --accent-tekst:#8a5602;
+}
+
+#scherm-start[data-level="3"]{
+  --lint:var(--rood);
+  --lint-diep:var(--rood-diep);
+  --lint-verloop:var(--verloop-rood);
+  --lint-tail:var(--rood-diep);
+  --accent-tekst:#9d1a13;
+}
+
+/* --------------------------------------------------------------------------
+   2. Opbouw
+   -------------------------------------------------------------------------- */
+
+.start-doos{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(4px,1.1vh,14px);
+  width:100%;
+  max-width:760px;
+  margin:0 auto;
+  padding:clamp(4px,1.2vh,20px) 16px;
+  text-align:center;
+}
+
+/* --------------------------------------------------------------------------
+   3. Het beeldmerk met het lint
+   -------------------------------------------------------------------------- */
+
+.start-merk{
+  position:relative;
+  display:block;
+  /* De tekening is 4:3, dus de hoogte is driekwart van de breedte. Alleen
+     56vh was niet genoeg: de rest van het scherm (lint, naam, uitleg, START
+     en de voetregel) heeft een bijna vaste hoogte, dus wat het beeld op een
+     laag venster te veel neemt gaat er onderaan af. De vaste aftrek maakt de
+     helling steiler dan een kaal percentage: op een hoog venster blijft het
+     beeld even groot (vanaf ~1150px hoogte weer de volle 560px), en op een
+     laag venster krimpt het snel. 58vh-110 geeft 354px breed (266px hoog) op
+     800px hoogte en 238px breed (179px hoog) op 600px hoogte, waar 56vh daar
+     nog 448px en 336px van maakte.
+
+     Het lint blijft hierbij ongemoeid: dat hangt met top:100% aan de
+     ónderkant van de tekening en niet op een percentage van het beeld, dus
+     het schuift gewoon mee omlaag en dekt nooit het woordmerk af. */
+  width:min(100%,560px,calc(58vh - 110px));
+  /* Het lint hangt bijna helemaal onder de tekening, dus die overhang moet
+     hier vrijgehouden worden, anders botst het tegen .start-naam. */
+  margin-bottom:calc(var(--lint-hoogte) * .86 + clamp(10px,1.6vh,20px));
+  animation:start-merk-in 620ms var(--veer) both;
+}
+
+.start-merk img{
+  display:block;
+  width:100%;
+  height:auto;
+  /* De tekening is uitgeknipt; deze schaduw zet hem los van de lucht. */
+  filter:drop-shadow(0 10px 18px rgba(23,58,102,.30));
+}
+
+.start-lint{
+  position:absolute;
+  left:50%;
+  /* Het lint hoort ónder het woordmerk te liggen, niet eroverheen. Vandaar
+     de bovenrand op de onderkant van de tekening, en een tikje omhoog zodat
+     het net de slagschaduw raakt. Verankeren op de eigen hoogte in plaats
+     van op een percentage van het beeld houdt dat kloppend bij elke
+     lettergrootte. */
+  top:100%;
+  transform:translate(-50%,-8%) rotate(-1.6deg);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:.30em 1.15em .36em;
+  border:5px solid var(--wit);
+  border-radius:16px;
+  background:var(--lint-verloop);
+  box-shadow:
+    0 7px 0 var(--lint-diep),
+    0 16px 24px rgba(20,50,90,.34),
+    inset 0 3px 0 rgba(255,255,255,.48),
+    inset 0 -4px 0 rgba(0,0,0,.14);
+  animation:start-lint-in 520ms var(--veer) 220ms both;
+  white-space:nowrap;
+}
+
+/* De omgeslagen uiteinden van het lint. */
+.start-lint::before,
+.start-lint::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  width:.85em;
+  height:1.05em;
+  transform:translateY(-50%);
+  background:var(--lint-tail);
+  border-radius:4px;
+  z-index:-1;
+}
+.start-lint::before{
+  left:-.62em;
+  clip-path:polygon(0 0,100% 22%,100% 78%,0 100%,26% 50%);
+}
+.start-lint::after{
+  right:-.62em;
+  clip-path:polygon(100% 0,0 22%,0 78%,100% 100%,74% 50%);
+}
+
+.start-lint-tekst{
+  font-family:var(--lt-zwaar);
+  font-size:var(--lint-lettergrootte);
+  line-height:1.06;
+  letter-spacing:.07em;
+  color:var(--wit);
+  text-shadow:
+    0 2px 0 rgba(0,0,0,.22),
+    0 4px 0 var(--lint-diep),
+    0 7px 12px rgba(0,0,0,.26);
+}
+
+/* --------------------------------------------------------------------------
+   4. Teksten van het level
+   -------------------------------------------------------------------------- */
+
+.start-naam{
+  margin:0;
+  font-family:var(--lt-zwaar);
+  font-size:clamp(30px,min(7vw,6.6vh),56px);
+  line-height:1.02;
+  letter-spacing:.04em;
+  color:var(--wit);
+  /* Wit op een lichte lucht valt weg, dus eerst een gesloten donkere rand in
+     acht richtingen en pas daarna de opstaande rand eronder. */
+  text-shadow:
+    -2px -2px 0 var(--lint-diep),  2px -2px 0 var(--lint-diep),
+    -2px  2px 0 var(--lint-diep),  2px  2px 0 var(--lint-diep),
+     0   -2px 0 var(--lint-diep),  0    2px 0 var(--lint-diep),
+    -2px  0   0 var(--lint-diep),  2px  0   0 var(--lint-diep),
+     0 5px 0 var(--lint-diep),
+     0 8px 0 rgba(0,0,0,.16),
+     0 13px 18px rgba(20,50,90,.34);
+  animation:start-op 520ms var(--veer) 300ms both;
+}
+
+.start-regel{
+  margin:0;
+  font-family:var(--lt-basis);
+  font-weight:800;
+  font-size:clamp(15px,min(2.6vw,2.5vh),21px);
+  letter-spacing:.02em;
+  color:var(--accent-tekst);
+  animation:start-op 520ms var(--veer) 360ms both;
+}
+
+.start-uitleg{
+  margin:0;
+  /* In em gerekend krimpt de regelbreedte mee met de letter, en dan valt de
+     uitleg op een laag venster juist om naar twee regels: precies het
+     tegendeel van wat we willen. 38em geeft de langste uitleg (level 1)
+     ruimte om op één regel te blijven. */
+  max-width:min(38em,100%);
+  font-family:var(--lt-basis);
+  font-size:clamp(14px,min(2.2vw,2.1vh),17px);
+  line-height:1.5;
+  color:var(--tekst);
+  animation:start-op 520ms var(--veer) 420ms both;
+}
+
+/* --------------------------------------------------------------------------
+   5. Startknop en voetregel
+   -------------------------------------------------------------------------- */
+
+.start-knop{
+  margin-top:clamp(6px,1.4vh,18px);
+  padding:.62em 2.4em .70em;
+  border:0;
+  border-radius:var(--r-pil);
+  background:var(--lint-verloop);
+  color:var(--wit);
+  font-family:var(--lt-zwaar);
+  font-size:clamp(20px,min(3.4vw,3.6vh),30px);
+  letter-spacing:.10em;
+  cursor:pointer;
+  box-shadow:
+    0 var(--knop-diepte) 0 var(--lint-diep),
+    0 12px 20px rgba(20,50,90,.30),
+    inset 0 2px 0 rgba(255,255,255,.42);
+  text-shadow:0 2px 0 rgba(0,0,0,.20),0 4px 0 var(--lint-diep);
+  transition:transform 90ms ease,box-shadow 90ms ease,filter 140ms ease;
+  animation:start-op 520ms var(--veer) 480ms both;
+}
+
+.start-knop:hover{ filter:brightness(1.06); }
+
+/* De knop zakt echt in: de donkere onderrand verdwijnt eronder vandaan. */
+.start-knop:active{
+  transform:translateY(var(--knop-diepte));
+  box-shadow:
+    0 0 0 var(--lint-diep),
+    0 4px 8px rgba(20,50,90,.26),
+    inset 0 2px 0 rgba(255,255,255,.30);
+}
+
+.start-knop:focus-visible{
+  outline:4px solid var(--focus);
+  outline-offset:4px;
+  box-shadow:0 0 0 9px var(--focus-halo),0 var(--knop-diepte) 0 var(--lint-diep);
+}
+
+.start-voet{
+  margin:0;
+  font-family:var(--lt-basis);
+  font-size:clamp(12px,1.8vw,14px);
+  font-weight:700;
+  letter-spacing:.03em;
+  color:var(--tekst-zacht);
+  animation:start-op 520ms var(--veer) 540ms both;
+}
+
+/* --------------------------------------------------------------------------
+   6. Beweging
+   -------------------------------------------------------------------------- */
+
+@keyframes start-merk-in{
+  from{ opacity:0; transform:translateY(-14px) scale(.94); }
+  to  { opacity:1; transform:none; }
+}
+
+@keyframes start-lint-in{
+  from{ opacity:0; transform:translate(-50%,-8%) rotate(-1.6deg) scale(.62); }
+  to  { opacity:1; transform:translate(-50%,-8%) rotate(-1.6deg) scale(1); }
+}
+
+@keyframes start-op{
+  from{ opacity:0; transform:translateY(14px); }
+  to  { opacity:1; transform:none; }
+}
+
+/* --------------------------------------------------------------------------
+   7. Kleine schermen
+   -------------------------------------------------------------------------- */
+
+@media (max-width:520px){
+  .start-merk{ width:min(100%,380px); }
+  .start-lint{ border-width:4px; }
+  .start-doos{ gap:8px; padding-top:4px; }
+  .start-uitleg{ max-width:30em; }
+}
+
+/* Staand op zeer lage schermen: het beeld mag krimpen, de knop nooit. */
+@media (max-height:620px) and (orientation:portrait){
+  .start-merk{ width:min(78%,320px); }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .start-merk,
+  .start-lint,
+  .start-naam,
+  .start-regel,
+  .start-uitleg,
+  .start-knop,
+  .start-voet{ animation:none; }
+  .start-knop{ transition:none; }
+}

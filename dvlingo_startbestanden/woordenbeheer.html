@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<!-- De klasse is-vergrendeld staat hier en niet in JavaScript: zo is de lijst
+     nooit even zichtbaar voordat het slot ervoor schuift, en blijft de pagina
+     ook dicht als JavaScript uit staat. js/toegang.js haalt hem eraf. -->
+<html lang="nl" class="is-vergrendeld">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Woordenbeheer — Digitale Vaardigheden Lingo</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/quizmaster.css">
+<!-- Dezelfde sfeerlaag als het spel; zonder dit blad was de achtergrond hier
+     een kaal verloop zonder de zwevende bellen die overal elders staan. -->
+<link rel="stylesheet" href="css/beeld.css">
+<link rel="stylesheet" href="css/woordenbeheer.css">
+</head>
+<body class="qm-pagina">
+
+<!-- Iconenvoorraad: onzichtbaar, wordt met <use> aangeroepen -->
+<svg class="qm-iconen" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="qm-i-omhoog" viewBox="0 0 24 24"><path d="M12 5l7 7-1.6 1.6L13 9.2V19h-2V9.2L6.6 13.6 5 12z"/></symbol>
+  <symbol id="qm-i-omlaag" viewBox="0 0 24 24"><path d="M12 19l-7-7 1.6-1.6L11 14.8V5h2v9.8l4.4-4.4L19 12z"/></symbol>
+  <symbol id="qm-i-greep" viewBox="0 0 24 24"><path d="M9 5h2.2v2.2H9zm3.8 0H15v2.2h-2.2zM9 10.9h2.2v2.2H9zm3.8 0H15v2.2h-2.2zM9 16.8h2.2V19H9zm3.8 0H15V19h-2.2z"/></symbol>
+  <symbol id="qm-i-speel" viewBox="0 0 24 24"><path d="M8 4.8l11 7.2-11 7.2z"/></symbol>
+  <symbol id="qm-i-potlood" viewBox="0 0 24 24"><path d="M4 16.6L15.1 5.5l3.4 3.4L7.4 20H4zM16.5 4.1l1.4-1.4a1.2 1.2 0 011.7 0l1.7 1.7a1.2 1.2 0 010 1.7l-1.4 1.4z"/></symbol>
+  <symbol id="qm-i-prullenbak" viewBox="0 0 24 24"><path d="M9 3h6l1 1.6h4V7H4V4.6h4zM5.6 8.6h12.8l-.9 12A1.5 1.5 0 0116 22H8a1.5 1.5 0 01-1.5-1.4zM9.6 11v8h1.8v-8zm3 0v8h1.8v-8z"/></symbol>
+  <symbol id="qm-i-plakken" viewBox="0 0 24 24"><path d="M9 2h6a1 1 0 011 1v1h2.5A1.5 1.5 0 0120 5.5v15A1.5 1.5 0 0118.5 22h-13A1.5 1.5 0 014 20.5v-15A1.5 1.5 0 015.5 4H8V3a1 1 0 011-1zm.8 2.2v1.2h4.4V4.2zM7 9.4h10v1.8H7zm0 3.8h10V15H7zm0 3.8h6.6v1.8H7z"/></symbol>
+  <symbol id="qm-i-export" viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.3-3.3 1.5 1.5L12 16.2 6.2 10.4l1.5-1.5L11 12.2zM4 18h16v3H4z"/></symbol>
+  <symbol id="qm-i-kopie" viewBox="0 0 24 24"><path d="M8 2h9.5A2.5 2.5 0 0120 4.5V16h-2.3V4.3H8zM4.5 6h9A2.5 2.5 0 0116 8.5v11A2.5 2.5 0 0113.5 22h-9A2.5 2.5 0 012 19.5v-11A2.5 2.5 0 014.5 6z"/></symbol>
+  <symbol id="qm-i-kruis" viewBox="0 0 24 24"><path d="M18.3 7.1L13.4 12l4.9 4.9-1.4 1.4L12 13.4l-4.9 4.9-1.4-1.4 4.9-4.9-4.9-4.9 1.4-1.4 4.9 4.9 4.9-4.9z"/></symbol>
+  <symbol id="qm-i-bezem" viewBox="0 0 24 24"><path d="M14.8 2.3l2.9 2.9-4.6 4.6 1.4 1.4-1.4 1.4-5.6-5.6L9 5.6l1.4 1.4zM7.6 9.9l6.5 6.5-1 1a4 4 0 01-3.3 1.1l-3.2-.4-1.7 3.3-1.6-1.6 3.3-1.7-.4-3.2a4 4 0 011.1-3.3z"/></symbol>
+  <symbol id="qm-i-zoek" viewBox="0 0 24 24"><path d="M10.5 3a7.5 7.5 0 015.92 12.11l4.24 4.24-1.41 1.41-4.24-4.24A7.5 7.5 0 1110.5 3zm0 2a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/></symbol>
+  <symbol id="qm-i-gereedschap" viewBox="0 0 24 24"><path d="M3 5.2h4.1v1.7H3zm9.9 0H21v1.7h-8.1zM3 11.2h10.1v1.7H3zm15.9 0H21v1.7h-2.1zM3 17.2h4.1v1.7H3zm9.9 0H21v1.7h-8.1z"/><circle cx="10" cy="6.05" r="2.35"/><circle cx="16" cy="12.05" r="2.35"/><circle cx="10" cy="18.05" r="2.35"/></symbol>
+  <symbol id="qm-i-chevron" viewBox="0 0 24 24"><path d="M12 15.4L5.6 9 7 7.6l5 5 5-5L18.4 9z"/></symbol>
+  <symbol id="qm-i-plus" viewBox="0 0 24 24"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></symbol>
+</svg>
+
+<header class="qm-kop">
+  <a class="qm-merk" href="index.html" title="Terug naar het spel">
+    <img class="qm-merkbeeld" src="assets/dvlingo-merk.png" width="900" height="675" decoding="async"
+         alt="Beeldmerk van het spel: een lachende tekenfilmjongen met bruin haar in een groene hoodie achter een grijze laptop, met daaronder in dikke 3D-letters het woordmerk Digitale Vaardigheden Lingo — Digitale in groen, vaardigheden in rood, Lingo in blauw, geel, groen en rood.">
+  </a>
+  <div class="qm-koptekst">
+    <h1>Woordenbeheer</h1>
+    <p class="qm-onderkop">Digitale Vaardigheden Lingo — jij bepaalt welke woorden er geraden worden.</p>
+  </div>
+  <div class="qm-kopacties">
+    <p class="qm-actiefchip" id="qm-actiefchip" aria-live="polite">De lijst wordt geladen…</p>
+    <a class="qm-knop qm-knop--hoofd" href="index.html" target="_blank" rel="noopener">
+      <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-speel"></use></svg>
+      Spel openen
+    </a>
+  </div>
+</header>
+
+<!-- Vaste besturingsbalk: blijft in beeld terwijl je door de lijst scrolt, zodat de
+     bronschakelaar, het zoekveld en het gereedschap nooit onder de data verdwijnen. -->
+<div class="qm-balk" id="qm-balk">
+  <div class="qm-balk-binnen">
+
+    <div class="qm-segment" role="radiogroup" aria-label="Bron van de woorden">
+      <label class="qm-segmentdeel">
+        <input type="radio" name="qm-bron" value="eigen" id="qm-bron-eigen">
+        <span>Eigen lijst</span>
+      </label>
+      <label class="qm-segmentdeel">
+        <input type="radio" name="qm-bron" value="standaard" id="qm-bron-standaard">
+        <span>Standaardlijst</span>
+      </label>
+    </div>
+
+    <div class="qm-zoekdoos">
+      <svg class="qm-icoon qm-zoekicoon" aria-hidden="true"><use href="#qm-i-zoek"></use></svg>
+      <input class="qm-zoek" type="search" id="qm-zoek" name="zoek" autocomplete="off" spellcheck="false"
+             placeholder="Zoek woord of uitleg" aria-label="Zoek in de woordenlijst" aria-describedby="qm-balkteller">
+      <button class="qm-zoekwis" type="button" id="qm-zoekwis" aria-label="Zoekveld leegmaken" hidden>
+        <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-kruis"></use></svg>
+      </button>
+    </div>
+
+    <p class="qm-balkteller" id="qm-balkteller" role="status" aria-live="polite"></p>
+
+    <div class="qm-menudoos">
+      <button class="qm-knop qm-knop--gereedschap" type="button" id="qm-gereedschapknop"
+              aria-haspopup="true" aria-expanded="false" aria-controls="qm-gereedschapmenu">
+        <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-gereedschap"></use></svg>
+        <span class="qm-knoptekst">Gereedschap</span>
+        <svg class="qm-icoon qm-chevron" aria-hidden="true"><use href="#qm-i-chevron"></use></svg>
+      </button>
+
+      <div class="qm-menu" id="qm-gereedschapmenu" hidden>
+        <button class="qm-menu-item" type="button" data-actie="naar-invoer">
+          <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-plus"></use></svg> Woord toevoegen
+        </button>
+        <button class="qm-menu-item" type="button" data-actie="plakken-openen">
+          <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-plakken"></use></svg> Bulk plakken
+        </button>
+        <button class="qm-menu-item" type="button" data-actie="export-openen">
+          <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-export"></use></svg> Exporteren
+        </button>
+        <button class="qm-menu-item" type="button" data-actie="standaard-overnemen">
+          <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-kopie"></use></svg> Standaardlijst overnemen
+        </button>
+        <button class="qm-menu-item" type="button" data-actie="dubbelen-opruimen" id="qm-knop-dubbelen" hidden>
+          <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-bezem"></use></svg> Dubbelen opruimen
+        </button>
+
+        <label class="qm-schakelaar qm-schakelaar--menu">
+          <input type="checkbox" id="qm-schud">
+          <span class="qm-schuif" aria-hidden="true"></span>
+          <span class="qm-schakeltekst">
+            <strong>Woorden schudden</strong>
+            <small>Elke ronde een andere volgorde in plaats van de volgorde in de lijst.</small>
+          </span>
+        </label>
+
+        <button class="qm-menu-item qm-menu-item--gevaar" type="button" data-actie="alles-wissen">
+          <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-prullenbak"></use></svg> Hele lijst wissen
+        </button>
+        <p class="qm-voetnoot qm-menu-voet">Elke wijziging wordt meteen bewaard. Een spel dat al openstaat, pikt hem vanzelf op.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="qm-werkblad">
+
+  <!-- Deze kolom staat in de bron vóór de lijst en op het bureaublad tóch
+       rechts: .qm-werkblad plaatst beide met grid-template-areas. Zo staat
+       "wat speelt het spel?" op de telefoon bovenaan in plaats van onder
+       honderdveertig rijen, zonder dat het bureaublad verandert. -->
+  <aside class="qm-zijkolom" id="qm-zijkolom">
+
+    <!-- Alleen op smalle schermen zichtbaar: de spelkaart. Dichtgeklapt zie je
+         meteen de drie levelcijfers; één tik geeft de hele uitleg. Op het
+         bureaublad staat deze knop op display:none en staat alles gewoon open. -->
+    <button class="qm-zij-knop" type="button" id="qm-zij-knop"
+            aria-expanded="false" aria-controls="qm-zij-inhoud">
+      <span class="qm-zij-kop">
+        <span class="qm-zij-titel">Wat speelt het spel?</span>
+        <span class="qm-zij-meer" aria-hidden="true">Meer</span>
+        <svg class="qm-icoon qm-chevron" aria-hidden="true"><use href="#qm-i-chevron"></use></svg>
+      </span>
+      <span class="qm-zij-chips" id="qm-zij-chips"></span>
+    </button>
+
+    <div class="qm-zij-inhoud" id="qm-zij-inhoud">
+
+      <section class="qm-paneel" aria-labelledby="qm-titel-bron">
+        <!-- Op smalle schermen staat deze titel al op de knop erboven; dan
+             wordt hij hier verborgen. Hij blijft wel in de bron staan, want
+             hij is de naam van deze sectie voor schermlezers. -->
+        <h2 id="qm-titel-bron" class="qm-kleinekop qm-zij-dubbeltitel">Wat speelt het spel?</h2>
+        <p class="qm-bronuitleg" id="qm-bronuitleg"></p>
+
+        <h3 class="qm-kleinekop qm-kleinekop--sub" id="qm-titel-levels">Per level</h3>
+        <div class="qm-tellers" id="qm-levels"></div>
+        <p class="qm-voetnoot" id="qm-leveluitleg"></p>
+        <p class="qm-voetnoot" id="qm-buiten"></p>
+      </section>
+
+      <section class="qm-paneel" aria-labelledby="qm-titel-tellers">
+        <h2 id="qm-titel-tellers" class="qm-kleinekop">Woorden per lengte</h2>
+        <div class="qm-tellers" id="qm-tellers"></div>
+        <p class="qm-voetnoot">Het spel speelt rondes van 5, 6 en 7 letters. Kortere of langere woorden mogen, maar vallen buiten die rondes.</p>
+      </section>
+
+    </div>
+  </aside>
+
+  <section class="qm-paneel qm-paneel--lijst" aria-labelledby="qm-titel-lijst">
+    <div class="qm-paneelkop">
+      <h2 id="qm-titel-lijst">Woordenlijst</h2>
+      <p class="qm-paneeluitleg" id="qm-lijstuitleg">Je eigen lijst. Sleep aan de greep of gebruik de pijlen om de volgorde te bepalen.</p>
+    </div>
+
+    <!-- Op de telefoon zit het toevoegformulier achter deze strook. Een
+         quizmaster met een telefoon in de hand loopt vooral de lijst langs;
+         open kostte het formulier 322px boven de eerste rij, waardoor er op
+         het openingsscherm geen enkel woord stond. Eén tik zet het open, en
+         "Woord toevoegen" in het gereedschapsmenu doet dat ook. Op het
+         bureaublad bestaat deze knop niet en staat het formulier gewoon open. -->
+    <button class="qm-invoerknop" type="button" id="qm-invoerknop"
+            aria-expanded="false" aria-controls="qm-toevoegformulier">
+      <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-plus"></use></svg>
+      <span class="qm-invoerknop-tekst">Woord toevoegen</span>
+      <svg class="qm-icoon qm-chevron" aria-hidden="true"><use href="#qm-i-chevron"></use></svg>
+    </button>
+
+    <form class="qm-toevoegen" id="qm-toevoegformulier" autocomplete="off">
+      <div class="qm-veld qm-veld--woord">
+        <label for="qm-invoer-woord">Nieuw woord</label>
+        <input type="text" id="qm-invoer-woord" name="woord" maxlength="9" spellcheck="false"
+               placeholder="PHISHING" aria-describedby="qm-invoerhint">
+      </div>
+      <div class="qm-veld qm-veld--uitleg">
+        <label for="qm-invoer-uitleg">Uitleg <span class="qm-optioneel">(optioneel — verschijnt na het raden)</span></label>
+        <input type="text" id="qm-invoer-uitleg" name="uitleg" maxlength="160" spellcheck="true"
+               placeholder="Bijvoorbeeld: nepbericht dat naar je gegevens vist.">
+      </div>
+      <button class="qm-knop qm-knop--hoofd qm-knop--toevoeg" type="submit" id="qm-knop-toevoegen">Toevoegen</button>
+      <div class="qm-invoervoet">
+        <p class="qm-hint" id="qm-invoerhint">Alleen letters, 3 tot 9 tekens. Hoofdletters gaan vanzelf; spaties en streepjes vervallen.</p>
+        <div class="qm-voorbeeld" id="qm-voorbeeld" aria-hidden="true"></div>
+      </div>
+    </form>
+
+    <p class="qm-melding" id="qm-melding" role="status" aria-live="polite"></p>
+
+    <p class="qm-zoeknoot" id="qm-zoeknoot" hidden>
+      Je ziet nu alleen de treffers; de nummers blijven de echte plek in de lijst.
+      Zet het zoekveld leeg om de volgorde weer te kunnen slepen of verschuiven.
+    </p>
+
+    <ol class="qm-woorden" id="qm-woorden"></ol>
+
+    <p class="qm-geenhit" id="qm-geenhit" hidden></p>
+
+    <div class="qm-leeg" id="qm-leeg" hidden>
+      <div class="qm-leeg-tegels" aria-hidden="true"></div>
+      <h3>Nog geen eigen woorden</h3>
+      <p>
+        Op deze pagina zet jij als quizmaster klaar wat de spelers moeten raden. Elk woord dat je
+        hier toevoegt komt in het spel als een rij tegels; de eerste letter krijgen de spelers
+        cadeau. De uitleg die je erbij zet, verschijnt zodra het woord geraden is.
+      </p>
+      <p class="qm-leeg-stappen">
+        Typ hierboven een woord, plak een hele lijst in één keer, of begin met de kant-en-klare
+        lijst over digitale vaardigheden.
+      </p>
+      <div class="qm-leeg-knoppen">
+        <button class="qm-knop qm-knop--hoofd" type="button" data-actie="standaard-overnemen">Standaardlijst overnemen</button>
+        <button class="qm-knop" type="button" data-actie="plakken-openen">Lijst plakken</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Venster: bulk plakken -->
+<dialog class="qm-venster" id="qm-venster-plakken" aria-labelledby="qm-plakken-titel">
+  <form method="dialog" class="qm-vensterform">
+    <div class="qm-vensterkop">
+      <h2 id="qm-plakken-titel">Lijst plakken</h2>
+      <button class="qm-sluit" type="submit" value="annuleren" aria-label="Venster sluiten">
+        <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-kruis"></use></svg>
+      </button>
+    </div>
+    <p class="qm-vensteruitleg">
+      Eén woord per regel. Een uitleg mag erachter, gescheiden door een streepje, dubbele punt,
+      puntkomma of tab. Geëxporteerde JSON mag je hier ook rechtstreeks in plakken.
+    </p>
+    <textarea id="qm-plaktekst" class="qm-tekstvak" rows="10" spellcheck="false"
+      placeholder="WACHTWOORD - minstens twaalf tekens&#10;PHISHING : nepbericht dat om je gegevens vist&#10;BACKUP"></textarea>
+    <div class="qm-plakverslag" id="qm-plakverslag" aria-live="polite"></div>
+    <div class="qm-vensterknoppen">
+      <button class="qm-knop" type="submit" value="annuleren">Annuleren</button>
+      <button class="qm-knop" type="button" data-actie="plakken-vervangen">Lijst vervangen</button>
+      <button class="qm-knop qm-knop--hoofd" type="button" data-actie="plakken-toevoegen">Toevoegen aan lijst</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Venster: exporteren -->
+<dialog class="qm-venster" id="qm-venster-export" aria-labelledby="qm-export-titel">
+  <form method="dialog" class="qm-vensterform">
+    <div class="qm-vensterkop">
+      <h2 id="qm-export-titel">Lijst exporteren</h2>
+      <button class="qm-sluit" type="submit" value="sluiten" aria-label="Venster sluiten">
+        <svg class="qm-icoon" aria-hidden="true"><use href="#qm-i-kruis"></use></svg>
+      </button>
+    </div>
+    <div class="qm-segment qm-segment--klein" role="radiogroup" aria-label="Uitvoerformaat">
+      <label class="qm-segmentdeel">
+        <input type="radio" name="qm-exportsoort" value="tekst" checked>
+        <span>Tekst</span>
+      </label>
+      <label class="qm-segmentdeel">
+        <input type="radio" name="qm-exportsoort" value="json">
+        <span>JSON</span>
+      </label>
+    </div>
+    <textarea id="qm-exporttekst" class="qm-tekstvak qm-tekstvak--uitvoer" rows="10" readonly spellcheck="false"></textarea>
+    <div class="qm-vensterknoppen">
+      <button class="qm-knop" type="submit" value="sluiten">Sluiten</button>
+      <button class="qm-knop" type="button" data-actie="export-kopieren">Kopiëren</button>
+      <button class="qm-knop qm-knop--hoofd" type="button" data-actie="export-bewaren">Bestand opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- js/core.js en js/startscherm.js staan hier alleen om deze pagina te laten
+     rekenen met exact dezelfde regels en levels als het spel: core.js is puur
+     (geen DOM) en startscherm.js bouwt pas iets zodra je toon() aanroept. Zo
+     kan het overzicht "wat speelt elk level" nooit iets anders beweren dan er
+     straks gespeeld wordt. -->
+<!-- Het slot: haalt is-vergrendeld eraf zodra het wachtwoord klopt. -->
+<script src="js/toegang.js"></script>
+<script src="js/woorden.js"></script>
+<script src="js/core.js"></script>
+<script src="js/startscherm.js"></script>
+<script src="js/opslag.js"></script>
+<script src="js/quizmaster.js"></script>
+</body>
+</html>

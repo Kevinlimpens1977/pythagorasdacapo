@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="10">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voortgang — Digitale Vaardigheden Lingo</title>
+<style>
+  :root{--bg:#0d1b2f;--kaart:#14263f;--rand:#22405f;--tekst:#e8f2fb;--zacht:#8fb3d0;
+        --blauw:#3f95e2;--rood:#e8382f;--geel:#ffd23a;--groen:#3ec98a}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px;background:var(--bg);color:var(--tekst);
+       font:16px/1.55 "Segoe UI",system-ui,sans-serif}
+  h1{margin:0 0 4px;font-size:26px;letter-spacing:.4px}
+  .sub{color:var(--zacht);margin:0 0 28px;font-size:14px}
+  .fase{background:var(--kaart);border:1px solid var(--rand);border-radius:14px;
+        padding:16px 18px;margin-bottom:14px}
+  .fase h2{margin:0 0 10px;font-size:15px;text-transform:uppercase;letter-spacing:1.4px;
+           color:var(--zacht);font-weight:700}
+  ul{margin:0;padding:0;list-style:none}
+  li{display:flex;gap:10px;align-items:flex-start;padding:5px 0;font-size:15px}
+  .bol{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:7px}
+  .klaar .bol{background:var(--groen)} .bezig .bol{background:var(--geel);
+    box-shadow:0 0 0 0 rgba(255,210,58,.7);animation:puls 1.6s infinite}
+  .wacht .bol{background:#38536f}
+  .klaar{color:var(--tekst)} .bezig{color:var(--geel);font-weight:600} .wacht{color:var(--zacht)}
+  @keyframes puls{70%{box-shadow:0 0 0 10px rgba(255,210,58,0)}100%{box-shadow:0 0 0 0 rgba(255,210,58,0)}}
+  .noot{color:var(--zacht);font-size:13px;margin-top:6px;padding-left:19px}
+  footer{color:var(--zacht);font-size:13px;margin-top:24px}
+  a{color:var(--blauw)}
+</style>
+</head>
+<body>
+<h1>Digitale Vaardigheden Lingo</h1>
+<p class="sub">Gauntlet loop tegen de lat: <a href="https://spele.nl/spel/lingo/">spele.nl/spel/lingo</a>. Deze pagina ververst zichzelf elke 10 seconden.</p>
+
+<div class="fase">
+  <h2>Fundering</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>Werkmap en bouwcontract (SPEC.md) vastgelegd</li>
+    <li class="klaar"><span class="bol"></span>Referentie uitgeschreven uit de screenshot van de quizmaster</li>
+    <li class="klaar"><span class="bol"></span>Referentie live gespeeld op spele.nl — menu, moeilijkheidskeuze en bord vastgelegd</li>
+    <li class="klaar"><span class="bol"></span>Beoordelingskleuren bevestigd: goede plek = rood vak, aanwezig = gouden cirkel, fout = blauw</li>
+  </ul>
+</div>
+
+<div class="fase">
+  <h2>Bouwen</h2>
+  <ul>
+    <li class="bezig"><span class="bol"></span>Woordenlijst en spellogica</li>
+    <li class="bezig"><span class="bol"></span>Visuele laag: bord, tegels, animaties</li>
+    <li class="bezig"><span class="bol"></span>Spelpagina en besturing</li>
+    <li class="bezig"><span class="bol"></span>Quizmasterpagina</li>
+    <li class="bezig"><span class="bol"></span>Geluid en finale met bingokaart</li>
+    <li class="bezig"><span class="bol"></span>Sfeerbeeld via higgsfield</li>
+  </ul>
+  <p class="noot">Zes bouwers werken tegelijk, elk op eigen bestanden, volgens SPEC.md.</p>
+</div>
+
+<div class="fase">
+  <h2>Beeldmerk en startschermen</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>Aangeleverde tekening opgenomen als assets/dvlingo-merk.png</li>
+    <li class="klaar"><span class="bol"></span>Witte achtergrond eruit geknipt, staat nu vrij op de blauwe lucht</li>
+    <li class="klaar"><span class="bol"></span>Teksten voor level 1, 2 en 3 vastgelegd in SPEC.md</li>
+    <li class="klaar"><span class="bol"></span>Startscherm gebouwd in css/startscherm.css en js/startscherm.js</li>
+    <li class="klaar"><span class="bol"></span>LEVEL 1, 2 en 3 als 3D-lint over de tekening, in blauw, goudgeel en rood</li>
+    <li class="klaar"><span class="bol"></span>Alle drie de levels bekeken op desktop en op 375 breed</li>
+    <li class="klaar"><span class="bol"></span>Contrast van de leveltitel op de lichte lucht hersteld</li>
+    <li class="wacht"><span class="bol"></span>Inhaken in index.html en game.js — wacht tot de bouwers die loslaten</li>
+  </ul>
+  <p class="noot">Het lint ligt als HTML-laag over het beeld in plaats van erin gebakken: altijd goed gespeld en per level een andere kleur.</p>
+</div>
+
+<div class="fase">
+  <h2>Gauntlet ronde 1 — 2 van 3 critici koos voor ons</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>Integratie: speelt echt. Potje level 3 uitgespeeld, eindscore 5950. Logicatests 46 van 46 groen, geen consolefouten.</li>
+    <li class="klaar"><span class="bol"></span>Criticus spelgevoel koos <b>ons</b> — echte versprongen flip van 150ms per tegel, mediaan 17ms per frame; de referentie toont geen flip, negeert Enter en Backspace, en meldt niets bij een ongeldig woord.</li>
+    <li class="klaar"><span class="bol"></span>Criticus quizmaster koos <b>ons</b>, maar krap.</li>
+    <li class="klaar"><span class="bol"></span>Criticus beeld koos <b>de referentie</b>: het Wordle-toetsenbord vrat een kwart van het speelveld op desktop.</li>
+    <li class="klaar"><span class="bol"></span>Hersteld: op desktop is dat toetsenbord weg en staat er een witte onderbalk met spelicoon en titel, zoals bij de lat. Bord groeide van 477 naar 513px.</li>
+  </ul>
+</div>
+
+<div class="fase">
+  <h2>Gauntlet ronde 2 — opnieuw 2 van 3 voor ons</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>Volgorde van de quizmaster hersteld en bewezen: vijf starts achter elkaar gaven exact dezelfde volgorde, met schudden aan wisselde het weer. Logicatests 54 van 54 groen.</li>
+    <li class="klaar"><span class="bol"></span>Tijdbalk is een dikke pil van 26 tot 32px op marineblauw spoor met rode vulling. Groen is overal weg.</li>
+    <li class="klaar"><span class="bol"></span>Tegelhoeken naar 6px, en de koepelvormige glans die het app-icoongevoel gaf is vlak gemaakt.</li>
+    <li class="klaar"><span class="bol"></span>Achtergrondbellen 2,3 keer kleiner en achter het bord; de schermwissel vervaagt het bord niet meer.</li>
+    <li class="klaar"><span class="bol"></span>Levelkeuze heeft nu de slinger en het beeldmerk van het menu.</li>
+    <li class="klaar"><span class="bol"></span>Criticus beeld koos <b>ons</b>, criticus quizmaster koos <b>ons</b>.</li>
+    <li class="klaar"><span class="bol"></span>Criticus spelgevoel koos <b>de referentie</b>: de omdraai-animatie werd halverwege afgekapt omdat JS en CSS elkaar tegenspraken. Hersteld — JS leest de tijden nu uit de CSS, gemeten marge per tegel +21 tot +28ms, nooit negatief.</li>
+  </ul>
+</div>
+
+<div class="fase">
+  <h2>Gauntlet ronde 3 — 3 van 3 critici koos voor ons</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>Het LEVEL-lint sneed de onderkant van het woord Lingo af. Hersteld: overlap terug van ~40% van de letters naar 4px op een beeld van 299px, en dat is de transparante rand.</li>
+    <li class="klaar"><span class="bol"></span>De eigen lijst wordt nu helemaal gespeeld. Lijst van 14: level 1 speelt er 4, level 2 tien, level 3 twaalf — en het startscherm en de beheerpagina noemen dat echte aantal.</li>
+    <li class="klaar"><span class="bol"></span>Omdraai-animatie nagemeten door de criticus: elke tegel maakt de volle draai, ook kolom 7, en de kleur slaat om op het keerpunt met een afwijking van hoogstens 5ms.</li>
+    <li class="klaar"><span class="bol"></span>Logicatests: 61 van de 61 groen. Zelf nagekeken.</li>
+  </ul>
+  <p class="noot">De uitstapvoorwaarde van de loop is gehaald. Eerlijk erbij: de referentie kwam deze ronde bij geen enkele criticus voorbij SPEEL NU, dus er is geoordeeld tegen de referentie zoals die in SPEC.md staat — opgesteld door hem eerder wél te spelen en te fotograferen.</p>
+</div>
+
+<div class="fase">
+  <h2>Woordenbeheer en de sierrand</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>De tekstlink onderaan is een groene 3D-knop geworden met een eigen icoon, in dezelfde stijl als het LEVEL-lint. Drie plekken, allemaal omgezet.</li>
+    <li class="klaar"><span class="bol"></span>De pagina heet nu Woordenbeheer; het woord Quizmaster staat nergens meer op het spelscherm.</li>
+    <li class="klaar"><span class="bol"></span>De slinger met lampjes is vervangen door een rand van afgeronde tegeltjes met wifi, muis, map, cursor, slot, wolk, toetsenbord, scherm, zoeken, apenstaartje, usb en chat — rondom alle vier de zijden.</li>
+    <li class="bezig"><span class="bol"></span>Slot met wachtwoord: gebouwd, wacht op inhaken zodra de lopende ronde de beheerpagina loslaat.</li>
+  </ul>
+  <p class="noot">De rand is een negenvlak-SVG als border-image, dus de hoeken blijven staan en de tussenstukken herhalen zich zonder naden of uitgerekte iconen.</p>
+</div>
+
+<div class="fase">
+  <h2>Woordenboek — gokken met elk Nederlands woord</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>Het keuringswoordenboek was 724 woorden. Wie MOEDER of ZWERM intikte kreeg onterecht "staat niet in de lijst".</li>
+    <li class="klaar"><span class="bol"></span>Nu 35.938 woorden van 5 t/m 7 letters uit de open woordenlijst van OpenTaal, zonder eigennamen, accenten weggehaald. Bestand van 236 kB, verder niets: geen netwerk tijdens het spelen.</li>
+    <li class="klaar"><span class="bol"></span>QWERT en AAAAA worden nog steeds afgekeurd, en het doelwoord van de quizmaster blijft altijd geldig, ook als het woordenboek het niet kent.</li>
+    <li class="klaar"><span class="bol"></span>Tests blijven 61 van de 61 groen.</li>
+  </ul>
+</div>
+
+<div class="fase">
+  <h2>Poetsronde — vijf van de zes dicht, door een tegenlezer nagemeten</h2>
+  <ul>
+    <li class="klaar"><span class="bol"></span>Overlays komen nu op: de woordkaart veert van 0,86 naar 1,011 en zakt terug, de waas loopt in 240ms op, sluiten gaat in 170ms. De focus springt pas naar de knop als de kaart er staat.</li>
+    <li class="klaar"><span class="bol"></span>Focusregel hersteld: de VERDER-knop houdt 999px in plaats van 0px. Tien knoppen bleken vervormd, alle 26 focusbare elementen houden hun ring.</li>
+    <li class="klaar"><span class="bol"></span>De finale heeft een echte ballentrommel gekregen: naamplaat, nis met luchtrooster, goot met voorlijst waar de bal half achter verdwijnt, uitvak. "Naar de uitslag" past nu op 1280x800 én 1366x650.</li>
+    <li class="klaar"><span class="bol"></span>Contrast van het lengtelabel van 3,72:1 naar 7,72:1; alle zes rijknoppen 44px op aanraakschermen.</li>
+    <li class="klaar"><span class="bol"></span>Jouw beeldmerk staat in de kop van de quizmasterpagina.</li>
+    <li class="bezig"><span class="bol"></span><b>Half:</b> de plakbalk op de quizmasterpagina werkt, maar de pagina is op mobiel 30.081px lang en de informatie over wat het spel speelt staat 36 schermen naar beneden.</li>
+  </ul>
+</div>
+
+<div class="fase">
+  <h2>Wat de tegenlezer er zelf bij vond</h2>
+  <ul>
+    <li class="bezig"><span class="bol"></span><b>Op 1366x650 valt de STARTknop onder de vouw</b> — hij eindigt op 652 bij een venster van 650. Menu, levelkeuze en startscherm passen op geen van beide laptopmaten.</li>
+    <li class="klaar"><span class="bol"></span>Dezelfde focusfout stond opnieuw in css/finale.css te wachten op het eerste element dat geen 12px rand heeft. Weggehaald.</li>
+  </ul>
+  <p class="noot">Niets gesloopt: potje van menu tot uitslag speelt uit, tests groen, console schoon op alle pagina's.</p>
+</div>
+
+<footer>Status wordt bijgewerkt terwijl het werk loopt.</footer>
+</body>
+</html>

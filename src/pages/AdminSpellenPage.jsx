@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Clock, Coins, Gamepad2, Goal, Layers3, Repeat, RotateCcw, Save, Sparkles } from 'lucide-react';
+import DvlingoWoordenPanel from '../components/games/DvlingoWoordenPanel';
 import GamePlayer from '../components/games/GamePlayer';
 import {
   GAME_REGISTRY,
@@ -176,6 +177,8 @@ export default function AdminSpellenPage() {
                   rewardRules={rewardRules}
                   rulesError={rewardRulesError}
                 />
+
+                {selectedGame.gameId === 'dvlingo' && <DvlingoWoordenPanel key="dvlingo-woorden" />}
 
                 <GamePlayer
                   gameId={selectedGame.gameId}

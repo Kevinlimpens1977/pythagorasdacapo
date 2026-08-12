@@ -1,0 +1,759 @@
+/* ==========================================================================
+   Digitale Vaardigheden Lingo — css/finale.css
+   De ballenmachine: trommel, goot, uitvak, de rollende bal en de LINGO-vlag.
+   Alle klassen beginnen met `finale-`, zodat dit bestand nooit in de weg zit
+   van base.css, game.css of quizmaster.css.
+
+   Dit was de opmaak van de oude bingofinale. Die finale is vervallen; de
+   ballenfase heeft haar rol overgenomen en bouwt de machine bewust met
+   dezelfde `finale-`klassen. Wat alleen bij de oude finale hoorde (de wrapper
+   `.finale`, de kop, de bingokaart, het bedieningspaneel en het slotpaneel)
+   is weg. Wat hier staat wordt gebruikt door js/ballenfase.js en door
+   css/proef-nieuwe-schermen.html, en krijgt zijn kleuren en zijn balmaat van
+   `.bal-machine` in css/ballenfase.css — dat blad hoort dus ná dit blad
+   geladen te worden.
+
+   Inhoud
+     1. De ballenmachine: kast, nis, trommel, zijpaneel, goot, uitvak
+     2. De ballen: schijf, getal, de rollende bal, de bal in het bakje
+     3. De LINGO-vlag
+     4. Lage vensters
+     5. Smalle schermen (de kast gaat liggen)
+     6. Rustige weergave (prefers-reduced-motion)
+   ========================================================================== */
+
+/* ==========================================================================
+   1. De ballenmachine: één kast met trommel, goot en uitvak
+
+   Alles hieronder hoort bij dezelfde behuizing. De maten hangen aan een paar
+   variabelen op `.finale-machine`, zodat de instroom van de bal (`--goot-in`),
+   de uitloop (`--goot-uit`) en het uitvak altijd op elkaar staan — ook als een
+   mediaquery de machine kleiner maakt. De rolanimatie in deel 2 rekent met
+   diezelfde variabelen.
+
+   De taal van de kast is die van het bord in css/game.css: marineblauw
+   verloop van #31538f naar #254271, een 5px marine rand, een lichte binnenlijn
+   en dezelfde slagschaduw. Zo staat er links een machine en geen lege doos.
+   ========================================================================== */
+
+.finale-machine {
+  --goot-in: 10px;            /* waar de bal de goot in valt */
+  --goot-uit: 30px;           /* hoe ver de uitloop van de rechterkant zit */
+  --goot-h: 58px;             /* hoogte van de goot */
+  --bak-b: 96px;              /* buitenmaat van het uitvak */
+  --bak-h: 74px;
+  --bak-rand: 9px;            /* speling rechts van het uitvak */
+  --kast-pad: 10px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* -- de behuizing -------------------------------------------------------- */
+
+.finale-kast {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: var(--kast-pad);
+  border: 5px solid var(--finale-marine);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #31538f 0%, #254271 100%);
+  box-shadow:
+    0 16px 34px rgba(16, 40, 82, 0.34),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.10),
+    inset 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Naamplaat: hetzelfde witte plaatje met harde onderrand als de ronde
+   knoppen in het spel. */
+.finale-kastplaat {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 6px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #dbeaf8 100%);
+  box-shadow:
+    0 3px 0 #a4c2e0,
+    0 5px 10px rgba(16, 40, 82, 0.26),
+    inset 0 2px 0 rgba(255, 255, 255, 0.9);
+}
+
+.finale-kastplaat-tekst {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--finale-tekst);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Een schroefje rechts op de plaat — klein detail, maar het maakt er
+   een gemonteerd onderdeel van in plaats van een gedrukte tekst. */
+.finale-kastplaat-schroef {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #cfe0f0, #8fa9c4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 2px rgba(23, 55, 105, 0.5);
+}
+
+/* -- trommelnis met zijpaneel -------------------------------------------- */
+
+.finale-kastlijf {
+  position: relative;
+  z-index: 1;                 /* boven de mond van de goot */
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px;
+  gap: 8px;
+  min-height: 84px;
+}
+
+/* De nis is de binnenkant van de kast: donker, met de trommel op de bodem
+   en linksonder de uitloop naar de goot. */
+.finale-nis {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 8px;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 62%),
+    repeating-linear-gradient(180deg,
+      rgba(0, 0, 0, 0.17) 0 2px,
+      rgba(255, 255, 255, 0.05) 2px 9px),
+    linear-gradient(180deg, #1b3768 0%, #24427c 58%, #2d4d8c 100%);
+  box-shadow:
+    inset 0 7px 14px rgba(0, 0, 0, 0.45),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* Luchtrooster bovenin, zodat de nis ook boven de trommel machine blijft. */
+.finale-nis::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  top: 8px;
+  height: 15px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(90deg,
+    rgba(0, 0, 0, 0.42) 0 4px,
+    rgba(255, 255, 255, 0.13) 4px 9px);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3), inset 0 -2px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* De uitloop in de bodem van de nis: een gat met een randje, precies boven de
+   instroom van de goot. */
+.finale-nis::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--goot-in) + 1px);
+  bottom: 0;
+  width: calc(var(--finale-bal) - 2px);
+  height: 16px;
+  border-radius: 4px 4px 0 0;
+  /* Zelfde ronding als de mond eronder: samen vormen ze één doorlopende pijp
+     van de trommel naar de goot, in plaats van twee losse donkere blokjes. */
+  background: linear-gradient(90deg,
+    #16305f 0%, #3a5f9e 20%, #6a94d6 46%, #33558f 72%, #16305f 100%);
+  box-shadow:
+    inset 0 6px 8px rgba(0, 0, 0, 0.55),
+    0 -2px 5px rgba(0, 0, 0, 0.4);
+}
+
+/* De glazen trommel. Hij staat op de bodem van de nis, zodat de bal er van
+   onderaf uit rolt in plaats van uit het niets te vallen. */
+.finale-bol {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  /* De trommel vult de nis: breed als het kan, maar nooit hoger dan de nis.
+     `aspect-ratio` geeft die hoogtegrens door aan de breedte, zodat het een
+     cirkel blijft in plaats van een ei. */
+  width: min(100%, 230px);
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.15) 45%),
+    radial-gradient(circle at 50% 60%, rgba(150, 205, 240, 0.55), rgba(58, 120, 190, 0.45));
+  border: 5px solid #ffffff;
+  box-shadow:
+    inset 0 -12px 24px rgba(23, 55, 105, 0.35),
+    0 10px 22px rgba(23, 55, 105, 0.3),
+    0 0 0 3px rgba(13, 31, 69, 0.45);
+}
+
+/* De beugel waarmee de trommel in de kast hangt. */
+.finale-nis-beugel {
+  position: absolute;
+  z-index: 0;
+  left: 6px;
+  right: 6px;
+  bottom: 12px;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #6f8fbe 0%, #2e4c86 55%, #16305f 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.finale-bol-glans {
+  position: absolute;
+  left: 16%;
+  top: 9%;
+  width: 40%;
+  height: 26%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.finale-bolletje {
+  position: absolute;
+  left: var(--x, 50%);
+  top: var(--y, 50%);
+  width: 17%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: finale-zweven 3.6s ease-in-out infinite;
+  animation-delay: var(--vertraging, 0s);
+}
+
+.finale-bolletje--0 { background: radial-gradient(circle at 34% 30%, #ff9d95, #cf2a20 78%); }
+.finale-bolletje--1 { background: radial-gradient(circle at 34% 30%, #8ec3f5, #1f5fb8 78%); }
+.finale-bolletje--2 { background: radial-gradient(circle at 34% 30%, #ffe694, #dfa500 78%); }
+.finale-bolletje--3 { background: radial-gradient(circle at 34% 30%, #96e2ae, #1f9a52 78%); }
+
+@keyframes finale-zweven {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  35%      { transform: translate(6px, -9px) rotate(70deg); }
+  70%      { transform: translate(-5px, 5px) rotate(150deg); }
+}
+
+/* Terwijl er een bal onderweg is draait de trommel op volle toeren. */
+.finale-machine.is-draait .finale-bolletje {
+  animation-duration: 0.75s;
+}
+
+/* -- zijpaneel met tellerruit -------------------------------------------- */
+
+.finale-zijpaneel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 5px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #2f5093 0%, #1d3a72 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -3px 7px rgba(0, 0, 0, 0.35),
+    0 2px 5px rgba(0, 0, 0, 0.22);
+}
+
+.finale-lampje {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #ffada4, #8d2018 74%);
+  box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(13, 31, 69, 0.55);
+}
+
+.finale-machine.is-draait .finale-lampje {
+  background: radial-gradient(circle at 34% 30%, #fff3c0, #ff3b2c 72%);
+  box-shadow:
+    0 0 12px rgba(255, 82, 60, 0.95),
+    inset 0 -2px 3px rgba(140, 12, 0, 0.4),
+    0 0 0 2px rgba(13, 31, 69, 0.55);
+  animation: finale-knipper 0.42s steps(1, end) infinite;
+}
+
+@keyframes finale-knipper {
+  0%, 49%   { filter: none; }
+  50%, 100% { filter: brightness(0.55) saturate(0.8); }
+}
+
+/* De ruit met het aantal ballen dat nog te trekken is. */
+.finale-teller {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: 3px 2px 4px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #0c1d43 0%, #14295a 100%);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.7),
+    0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.finale-teller-getal {
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--finale-geel);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 9px rgba(255, 210, 58, 0.65);
+}
+
+.finale-teller-label {
+  margin-top: 1px;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7fa6de;
+}
+
+/* Het rooster rekt mee: wat er aan hoogte overblijft wordt luchtrooster,
+   geen leegte. */
+.finale-rooster {
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-height: 12px;
+  border-radius: 5px;
+  background: repeating-linear-gradient(180deg,
+    rgba(0, 0, 0, 0.36) 0 3px,
+    rgba(255, 255, 255, 0.10) 3px 7px);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* -- de goot ------------------------------------------------------------- */
+
+/* Een echte buis: donkere holte, een baan waarop de bal loopt, een lijst aan
+   de voorkant waar de bal half achter verdwijnt, en een open eind. */
+.finale-goot {
+  position: relative;
+  z-index: 0;
+  flex: none;
+  height: var(--goot-h);
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.055) 0 2px,
+      rgba(255, 255, 255, 0) 2px 13px),
+    linear-gradient(180deg, #12285c 0%, #1d3a76 40%, #2f4f92 74%, #43689f 100%);
+  box-shadow:
+    inset 0 8px 13px rgba(0, 0, 0, 0.6),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.14),
+    0 6px 14px rgba(16, 40, 82, 0.35);
+  overflow: visible;
+}
+
+/* De mond die de nis met de goot verbindt. Ligt achter het kastlijf, zodat
+   alleen het stukje tussen nis en goot te zien is. */
+.finale-goot-mond {
+  position: absolute;
+  z-index: 0;
+  left: calc(var(--goot-in) + 1px);
+  bottom: calc(100% - 12px);
+  width: calc(var(--finale-bal) - 2px);
+  height: 26px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(90deg,
+    #16305f 0%, #3a5f9e 20%, #6a94d6 46%, #33558f 72%, #16305f 100%);
+  box-shadow: inset 0 -7px 11px rgba(0, 0, 0, 0.42), 0 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* De baan onderin de buis. */
+.finale-goot-baan {
+  position: absolute;
+  z-index: 1;
+  left: 7px;
+  right: 7px;
+  bottom: 6px;
+  height: 13px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* De voorlijst. Hij stopt vlak voor de uitloop: daar rolt de bal er
+   vóórlangs naar buiten en valt in het uitvak. */
+.finale-goot-lijst {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  bottom: 0;
+  width: calc(100% - var(--goot-uit) - var(--finale-bal) - 6px);
+  height: 15px;
+  border-radius: 12px 4px 4px 12px;
+  background: linear-gradient(180deg, #5c81b8 0%, #2f4f92 45%, #16305f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 -3px 7px rgba(0, 0, 0, 0.4);
+}
+
+/* Het open eind waar de bal uit de goot valt. */
+.finale-goot-uit {
+  position: absolute;
+  z-index: 1;
+  right: calc(var(--goot-uit) - 5px);
+  bottom: -1px;
+  width: calc(var(--finale-bal) + 10px);
+  height: 18px;
+  border-radius: 9px 9px 12px 12px;
+  background: linear-gradient(180deg, #0a1938 0%, #0d2048 100%);
+  box-shadow: inset 0 3px 7px rgba(0, 0, 0, 0.75), 0 2px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* -- de onderbak met het uitvak ------------------------------------------ */
+
+/* De hele voet van de kast, met het uitvak rechts onder de uitloop. Zo is er
+   ook onder de goot behuizing in plaats van lucht. */
+.finale-bodem {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 7px var(--bak-rand) 8px 10px;
+  border-radius: 10px 10px 14px 14px;
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(255, 255, 255, 0.055) 0 2px,
+      rgba(0, 0, 0, 0.13) 2px 11px),
+    linear-gradient(180deg, #1d3a72 0%, #162c58 62%, #101f40 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.13),
+    inset 0 -5px 9px rgba(0, 0, 0, 0.4);
+}
+
+.finale-bodem-plaat {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 4px 7px 5px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #ffffff 0%, #dbeaf8 100%);
+  color: var(--finale-tekst);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 0 #a4c2e0, inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Het bakje waar de bal in landt: recht onder het eind van de goot. De
+   marge rekent de uitloop en de halve bal terug, zodat de bal midden in het
+   bakje valt. */
+.finale-uitvak {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--bak-b);
+  height: var(--bak-h);
+  margin-right: calc(var(--goot-uit) + var(--finale-bal) / 2 - var(--bak-b) / 2 - var(--bak-rand));
+  border-radius: 8px 8px 22px 22px;
+  background: linear-gradient(180deg, #ffffff 0%, #dcecf9 55%, #b6d0e9 100%);
+  border: 4px solid #ffffff;
+  box-shadow:
+    inset 0 10px 16px rgba(23, 55, 105, 0.26),
+    0 8px 16px rgba(23, 55, 105, 0.32);
+}
+
+/* De kuil in het bakje: laat zien waar de bal hoort te landen, ook als er
+   nog geen bal ligt. */
+.finale-uitvak-kuil {
+  position: absolute;
+  z-index: 0;
+  width: 62%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 34%,
+    rgba(23, 55, 105, 0.16) 0%, rgba(23, 55, 105, 0.04) 74%, rgba(23, 55, 105, 0) 100%);
+  box-shadow: inset 0 2px 5px rgba(23, 55, 105, 0.3);
+}
+
+/* ==========================================================================
+   2. De ballen
+   ========================================================================== */
+
+/* De vorm en de kleuren van de bal zelf stonden hier onder `.finale ...`, om
+   de kalere `.finale-bal` uit css/game.css te verslaan. Die wrapper is er niet
+   meer; css/ballenfase.css heeft dezelfde regels woordelijk staan onder
+   `.bal-machine`, waar de machine nu in hangt. De schijf, het getal en de
+   rolstand hieronder gelden wél overal en blijven dus hier. */
+
+.finale-bal-schijf {
+  display: grid;
+  place-items: center;
+  width: 64%;
+  height: 64%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ffffff 0%, #eef5fb 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+
+.finale-bal-getal {
+  font-size: calc(var(--finale-bal) * 0.42);
+  font-weight: 900;
+  line-height: 1;
+  color: #1f3f7a;
+  letter-spacing: -0.02em;
+}
+
+/* De rollende bal. De begin- en eindstand komen uit dezelfde variabelen als
+   de goot en het uitvak, zodat hij bij elke maat op de goede plek instroomt
+   en precies boven het bakje uit de buis valt. */
+.finale-machine {
+  --rol-top: calc((var(--goot-h) - var(--finale-bal)) / 2);
+  --rol-uit: calc(100% - var(--finale-bal) - var(--goot-uit));
+}
+
+.finale-rolbal {
+  position: absolute;
+  left: var(--goot-in);
+  top: var(--rol-top);
+  z-index: 2;
+  opacity: 0;
+}
+
+/* De rolstand zelf (`.is-rolt`) wordt aangezet in css/ballenfase.css; de
+   beweging hieronder is waar die regel naar verwijst. */
+@keyframes finale-rollen {
+  0%   { left: var(--goot-in); top: calc(var(--rol-top) - 58px); opacity: 0; transform: rotate(0deg) scale(0.7); }
+  12%  { left: var(--goot-in); top: var(--rol-top); opacity: 1; transform: rotate(50deg) scale(1); }
+  68%  { left: var(--rol-uit); top: var(--rol-top); opacity: 1; transform: rotate(660deg); }
+  78%  { left: var(--rol-uit); top: calc(var(--rol-top) - 13px); opacity: 1; transform: rotate(730deg); }
+  90%  { left: var(--rol-uit); top: var(--rol-top); opacity: 1; transform: rotate(790deg); }
+  100% { left: var(--rol-uit); top: calc(var(--rol-top) + 46px); opacity: 0; transform: rotate(830deg) scale(0.85); }
+}
+
+/* De bal die in het bakje ligt (`.finale-laatste`) en zijn plof bij een nieuwe
+   bal worden in css/ballenfase.css gezet; de beweging staat hier. */
+@keyframes finale-plof {
+  0%   { transform: translateY(-26px) scale(0.7); opacity: 0; }
+  55%  { transform: translateY(3px) scale(1.08); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ==========================================================================
+   3. De LINGO-vlag
+   ========================================================================== */
+
+.finale-vlag {
+  position: absolute;
+  left: 50%;
+  top: 32%;
+  z-index: 7;   /* boven het spel, maar onder het slotpaneel (8) */
+  transform: translate(-50%, -50%) scale(0.6);
+  padding: 12px 34px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffe082 0%, #e8a400 100%);
+  border: 5px solid #ffffff;
+  color: #7a2a10;
+  font-size: clamp(30px, 8vw, 58px);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-shadow: 0 3px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 14px 30px rgba(23, 55, 105, 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.finale-vlag[hidden] { display: none; }
+
+.finale-vlag.is-op {
+  animation: finale-vlag-op 1.8s cubic-bezier(0.2, 1.3, 0.35, 1) forwards;
+}
+
+@keyframes finale-vlag-op {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(-8deg); }
+  18%  { opacity: 1; transform: translate(-50%, -50%) scale(1.12) rotate(3deg); }
+  30%  { transform: translate(-50%, -50%) scale(1) rotate(-2deg); }
+  75%  { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.06) rotate(0deg); }
+}
+
+/* ==========================================================================
+   4. Lage vensters — de kast gaat een maat kleiner mee. Alle onderdelen
+      hangen aan dezelfde variabelen, dus de bal blijft in de goot lopen en
+      komt boven het bakje uit.
+   ========================================================================== */
+
+/* Ook een staande tablet valt hieronder: dan is dezelfde krappe maatvoering
+   nodig. */
+@media (min-width: 761px) and (max-height: 900px),
+       (min-width: 761px) and (max-width: 939px) {
+  .finale-machine {
+    --finale-bal: 48px;
+    --goot-uit: 26px;
+    --goot-h: 52px;
+    --bak-b: 90px;
+    --bak-h: 66px;
+  }
+  .finale-kast      { gap: 8px; }
+  .finale-kastplaat { padding: 4px 9px 5px; }
+  .finale-kastlijf  { grid-template-columns: minmax(0, 1fr) 46px; gap: 6px; min-height: 74px; }
+  .finale-bodem     { padding: 6px var(--bak-rand) 7px 9px; }
+  .finale-teller-getal { font-size: 18px; }
+}
+
+/* Is er breedte over, dan mag de kast breder worden zodat de trommel de nis
+   echt vult in plaats van als knikker in een hoge kast te hangen. */
+@media (min-width: 940px) {
+  .finale-machine   { --bak-b: 96px; --bak-h: 70px; }
+  .finale-kastlijf  { grid-template-columns: minmax(0, 1fr) 50px; gap: 7px; }
+}
+
+/* Nog lager (een 1366x650-laptop): weer een maat kleiner. */
+@media (min-width: 761px) and (max-height: 760px) {
+  .finale-machine {
+    --finale-bal: 44px;
+    --goot-in: 8px;
+    --goot-uit: 24px;
+    --goot-h: 48px;
+    --bak-b: 80px;
+    --bak-h: 60px;
+    --kast-pad: 8px;
+  }
+  .finale-kast      { gap: 7px; border-radius: 16px; border-width: 4px; }
+  .finale-kastplaat { padding: 3px 8px 4px; }
+  .finale-kastplaat-tekst { font-size: 9px; letter-spacing: 0.12em; }
+  .finale-kastlijf  { grid-template-columns: minmax(0, 1fr) 46px; gap: 6px; min-height: 64px; }
+  .finale-nis       { padding: 6px; }
+  .finale-nis::before { display: none; }
+  .finale-teller-getal { font-size: 17px; }
+  .finale-bodem     { padding: 5px var(--bak-rand) 6px 8px; }
+}
+
+@media (min-width: 940px) and (max-height: 760px) {
+  .finale-kastlijf { grid-template-columns: minmax(0, 1fr) 44px; }
+}
+
+/* ==========================================================================
+   5. Smalle schermen (mobiel, staand) — de kast gaat liggen: trommel links,
+      goot en uitvak rechts. De bal rolt dan zijwaarts de goot in.
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  .finale-machine {
+    --finale-bal: 44px;
+    --goot-in: 8px;
+    --goot-uit: 20px;
+    --goot-h: 48px;
+    --bak-b: 76px;
+    --bak-h: 58px;
+    --bak-rand: 8px;
+  }
+
+  .finale-kast {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "plaat plaat"
+      "lijf  goot"
+      "lijf  bodem";
+    gap: 8px 10px;
+  }
+
+  .finale-kastplaat { grid-area: plaat; padding-right: 106px; }
+  /* `static`, zodat het zijpaneel hieronder zich naar de kast richt en niet
+     naar de trommelkolom. */
+  .finale-kastlijf  { grid-area: lijf; grid-template-columns: minmax(0, 1fr); position: static; }
+  .finale-nis       { align-items: center; z-index: 1; }
+  .finale-goot      { grid-area: goot; align-self: end; }
+  .finale-bodem     { grid-area: bodem; }
+
+  /* Liggend is de breedte kostbaar: het zijpaneel wordt een plat ruitje dat
+     op de naamplaat meelift, zodat de goot een echte lengte houdt. */
+  .finale-zijpaneel {
+    position: absolute;
+    z-index: 2;
+    right: 10px;
+    top: 9px;
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+    gap: 7px;
+    padding: 3px 8px;
+    border-radius: 8px;
+  }
+  .finale-teller       { flex-direction: row; align-items: center; gap: 5px; width: auto; padding: 2px 7px; }
+  .finale-teller-getal { font-size: 16px; }
+  .finale-teller-label { margin-top: 0; }
+  .finale-rooster      { display: none; }
+  .finale-bodem-plaat  { display: none; }
+
+  /* In een auto-kolom moet de trommel een echte breedte krijgen, anders
+     krimpt een breedte in procenten tot niets. */
+  .finale-bol { width: clamp(84px, 26vw, 104px); max-height: none; }
+  .finale-nis::before { display: none; }
+
+  /* De uitloop zit nu in de rechterwand van de nis, op balhoogte. */
+  .finale-nis::after {
+    left: auto;
+    right: 0;
+    bottom: auto;
+    top: 50%;
+    width: 13px;
+    height: var(--finale-bal);
+    margin-top: calc(var(--finale-bal) / -2);
+    border-radius: 7px 0 0 7px;
+  }
+
+  /* En de mond ligt in de kier tussen nis en goot. */
+  .finale-goot-mond {
+    left: -13px;
+    bottom: auto;
+    top: 50%;
+    width: 22px;
+    height: calc(var(--finale-bal) + 6px);
+    margin-top: calc((var(--finale-bal) + 6px) / -2);
+    border-radius: 4px 0 0 4px;
+    background: linear-gradient(180deg,
+      #16305f 0%, #2c4b86 32%, #4a72bd 52%, #24406f 76%, #14295a 100%);
+    box-shadow: inset -6px 0 10px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Liggende invoer: de bal schuift van links de goot in in plaats van er
+     van bovenaf in te vallen. js/ballenfase.js zet deze naam op de rollende
+     bal zodra de kast plat ligt, dus de beweging hoort binnen dezelfde
+     mediaquery te blijven staan. */
+  @keyframes finale-rollen-liggend {
+    0%   { left: calc(var(--goot-in) - 40px); top: var(--rol-top); opacity: 0; transform: rotate(0deg) scale(0.8); }
+    12%  { left: var(--goot-in); top: var(--rol-top); opacity: 1; transform: rotate(120deg) scale(1); }
+    68%  { left: var(--rol-uit); top: var(--rol-top); opacity: 1; transform: rotate(660deg); }
+    78%  { left: var(--rol-uit); top: calc(var(--rol-top) - 11px); opacity: 1; transform: rotate(730deg); }
+    90%  { left: var(--rol-uit); top: var(--rol-top); opacity: 1; transform: rotate(790deg); }
+    100% { left: var(--rol-uit); top: calc(var(--rol-top) + 40px); opacity: 0; transform: rotate(830deg) scale(0.85); }
+  }
+
+}
+
+/* ==========================================================================
+   6. Rustige weergave — wie beweging liever mist, krijgt hetzelfde spel
+       zonder de rollende bal en de zwevende balletjes.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .finale-rolbal { opacity: 0; }
+  .finale-vlag.is-op { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: none; }
+  .finale-bolletje { animation: none; }
+}

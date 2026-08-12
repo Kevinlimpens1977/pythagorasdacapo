@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Startschermen — Digitale Vaardigheden Lingo</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/startscherm.css">
+<style>
+  /* Alleen voor deze voorbeeldpagina: een knoppenbalk om de levels te wisselen. */
+  .kiezer{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:10;
+          display:flex;gap:8px;background:rgba(255,255,255,.72);padding:6px;
+          border-radius:999px;box-shadow:0 6px 18px rgba(20,50,90,.22)}
+  .kiezer button{border:0;cursor:pointer;padding:8px 18px;border-radius:999px;
+          font:700 14px/1 "Segoe UI",system-ui,sans-serif;color:#22406f;background:#fff}
+  .kiezer button[aria-pressed="true"]{background:#3f95e2;color:#fff}
+  #scherm-start{min-height:100vh;display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+
+<nav class="kiezer">
+  <button type="button" data-level="1" aria-pressed="true">Level 1</button>
+  <button type="button" data-level="2" aria-pressed="false">Level 2</button>
+  <button type="button" data-level="3" aria-pressed="false">Level 3</button>
+</nav>
+
+<section class="scherm is-actief" id="scherm-start"></section>
+
+<script src="js/startscherm.js"></script>
+<script>
+  var knoppen = document.querySelectorAll('.kiezer button');
+
+  function kies(nummer) {
+    for (var i = 0; i < knoppen.length; i++) {
+      knoppen[i].setAttribute('aria-pressed', knoppen[i].dataset.level === String(nummer));
+    }
+    DVL.Startscherm.toon(nummer, function (level) {
+      console.log('START gedrukt op level ' + level);
+    });
+  }
+
+  for (var i = 0; i < knoppen.length; i++) {
+    knoppen[i].addEventListener('click', function () { kies(this.dataset.level); });
+  }
+
+  kies(1);
+</script>
+</body>
+</html>

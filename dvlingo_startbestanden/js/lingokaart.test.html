@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testpagina lingokaart - Digitale Vaardigheden Lingo</title>
+<style>
+  :root {
+    --lucht-boven: #c3e6f8;
+    --lucht-onder: #9fd6f2;
+    --marine: #2b4a8b;
+    --blauw: #2f5fa8;
+    --groen: #1e9e5a;
+    --rood: #e8382f;
+    --wit: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: "Segoe UI", Tahoma, Verdana, sans-serif;
+    color: #21365e;
+    background: linear-gradient(180deg, var(--lucht-boven) 0%, var(--lucht-onder) 100%);
+    padding: 24px 16px 64px;
+  }
+  .blad {
+    max-width: 880px;
+    margin: 0 auto;
+    background: var(--wit);
+    border-radius: 28px;
+    border: 8px solid var(--wit);
+    box-shadow: 0 18px 40px rgba(20, 50, 100, .25);
+    overflow: hidden;
+  }
+  header {
+    padding: 22px 26px 18px;
+    background: linear-gradient(180deg, #3f95e2, #2d6cc2);
+    color: var(--wit);
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  header p { margin: 0; opacity: .9; font-size: 14px; }
+  #samenvatting {
+    padding: 18px 26px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--wit);
+    background: #7b8ba5;
+  }
+  #samenvatting.is-goed { background: var(--groen); }
+  #samenvatting.is-fout { background: var(--rood); }
+  #samenvatting small {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0;
+    opacity: .95;
+    margin-top: 4px;
+  }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 11px 26px;
+    border-bottom: 1px solid #e6eef8;
+    font-size: 15px;
+  }
+  li:nth-child(even) { background: #f7fbff; }
+  .merk {
+    flex: 0 0 auto;
+    min-width: 74px;
+    text-align: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--wit);
+    background: var(--groen);
+  }
+  li.is-fout .merk { background: var(--rood); }
+  .naam { flex: 1 1 auto; }
+  .reden {
+    display: block;
+    margin-top: 5px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12.5px;
+    color: #8c2018;
+    background: #ffeceb;
+    border-left: 3px solid var(--rood);
+    padding: 7px 10px;
+    border-radius: 0 6px 6px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  footer {
+    padding: 16px 26px 20px;
+    font-size: 13px;
+    color: #5b7fae;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: linear-gradient(180deg, #16294a, #0f1c33); color: #dbe7f7; }
+    .blad { background: #1b2f52; border-color: #1b2f52; }
+    li { border-bottom-color: #26406b; }
+    li:nth-child(even) { background: #203a63; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blad">
+  <header>
+    <h1>Testpagina lingokaart</h1>
+    <p>Controleert js/lingokaart.js: de kaart, de ballenbak en de LINGO-controle. Groen is goed, rood is fout.</p>
+  </header>
+  <div id="samenvatting" role="status" aria-live="polite">Bezig met testen...</div>
+  <ol id="uitslag"></ol>
+  <footer>
+    Deze pagina raakt niets aan buiten zichzelf: js/lingokaart.js is pure logica zonder DOM,
+    zonder timers en zonder opslag. Alle willekeur loopt via een vastgezet zaad, dus elke
+    uitslag is herhaalbaar.
+  </footer>
+</div>
+
+<script src="core.js"></script>
+<script src="lingokaart.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ==============================================================
+   * Piepklein testraam (gelijk aan js/core.test.html)
+   * ============================================================== */
+  var gevallen = [];
+  function test(naam, uitvoeren) { gevallen.push({ naam: naam, uitvoeren: uitvoeren }); }
+
+  function toon(waarde) {
+    try { return JSON.stringify(waarde); } catch (f) { return String(waarde); }
+  }
+  function gelijk(gekregen, verwacht, bericht) {
+    if (toon(gekregen) !== toon(verwacht)) {
+      throw new Error((bericht || "niet gelijk") +
+        "\n  verwacht: " + toon(verwacht) +
+        "\n  gekregen: " + toon(gekregen));
+    }
+  }
+  function waar(voorwaarde, bericht) {
+    if (!voorwaarde) throw new Error(bericht || "verwachtte waar, kreeg onwaar");
+  }
+
+  var Kaart = window.DVL && window.DVL.Kaart;
+
+  /* ==============================================================
+   * Hulpjes
+   * ============================================================== */
+
+  /* Een sessie met een vastgezet zaad, dus altijd dezelfde kaart. */
+  function proefsessie(zaad) {
+    return Kaart.nieuweSessie({ zaad: typeof zaad === "number" ? zaad : 7 });
+  }
+
+  /* Een toevalsbron die altijd nul geeft: trek() pakt dan altijd de
+     eerste bal uit de bak, zodat we precies kunnen sturen wat er komt. */
+  function eerste() { return 0; }
+
+  /* Legt een bak neer met precies deze ballen, in deze volgorde. */
+  function zetBak(sessie, ballen) {
+    sessie.kaart.ballen = ballen.slice();
+    return sessie;
+  }
+
+  function nummerbal(getal) { return { soort: "nummer", getal: getal }; }
+  function vraagbal() { return { soort: "vraag", getal: 0 }; }
+  function groenebal() { return { soort: "groen", getal: 0 }; }
+  function rodebal() { return { soort: "rood", getal: 0 }; }
+
+  /* Veegt de kaart schoon: niets meer doorgestreept. */
+  function veeg(sessie) {
+    for (var i = 0; i < 25; i++) sessie.kaart.doorgestreept[i] = false;
+    sessie.kaart.startvakjes = [];
+    return sessie;
+  }
+
+  /* Streept alle vakjes van een lijn door, behalve de laatste, en geeft
+     het vakje terug dat nog open staat. */
+  function bijnaLijn(sessie, vakjes) {
+    veeg(sessie);
+    for (var i = 0; i < vakjes.length - 1; i++) sessie.kaart.doorgestreept[vakjes[i]] = true;
+    return vakjes[vakjes.length - 1];
+  }
+
+  /* Telt hoeveel ballen van een soort er in een bak liggen. */
+  function tel(sessie, soort) { return Kaart.telSoort(sessie, soort); }
+
+  /* ==============================================================
+   * 1 t/m 4: de kaart bestaat uit de goede getallen
+   * ============================================================== */
+
+  test("1. DVL.Kaart is geladen en heeft de verwachte onderdelen", function () {
+    waar(Kaart, "DVL.Kaart ontbreekt");
+    var nodig = ["nieuweSessie", "nieuweKaart", "startFase", "trek", "kiesVak",
+                 "vindLingo", "heeftLingo", "maakKaart", "maakBak", "openVakjes"];
+    for (var i = 0; i < nodig.length; i++) {
+      waar(typeof Kaart[nodig[i]] === "function", "DVL.Kaart." + nodig[i] + " ontbreekt");
+    }
+    gelijk(Kaart.AANTAL_VAKJES, 25, "een kaart hoort 25 vakjes te hebben");
+    gelijk(Kaart.AANTAL_STARTVAKJES, 8, "er horen 8 startvakjes te zijn");
+  });
+
+  test("2. Elke kaart heeft 25 unieke getallen", function () {
+    for (var zaad = 1; zaad <= 60; zaad++) {
+      var sessie = proefsessie(zaad);
+      var getallen = sessie.kaart.getallen;
+      gelijk(getallen.length, 25, "zaad " + zaad + ": verkeerd aantal getallen");
+      var gezien = {};
+      for (var i = 0; i < getallen.length; i++) {
+        waar(!gezien[getallen[i]], "zaad " + zaad + ": getal " + getallen[i] + " staat er dubbel op");
+        gezien[getallen[i]] = true;
+      }
+    }
+  });
+
+  test("3. Alle getallen liggen tussen 1 en 70", function () {
+    for (var zaad = 1; zaad <= 60; zaad++) {
+      var getallen = proefsessie(zaad).kaart.getallen;
+      for (var i = 0; i < getallen.length; i++) {
+        var g = getallen[i];
+        waar(typeof g === "number" && g === Math.floor(g), "zaad " + zaad + ": geen heel getal: " + g);
+        waar(g >= 1 && g <= 70, "zaad " + zaad + ": getal buiten 1 t/m 70: " + g);
+      }
+    }
+  });
+
+  test("4. De getallen zijn goed verdeeld: elke groep 3, en vier groepen 4", function () {
+    for (var zaad = 1; zaad <= 60; zaad++) {
+      var getallen = proefsessie(zaad).kaart.getallen;
+      var perGroep = [0, 0, 0, 0, 0, 0, 0];
+      for (var i = 0; i < getallen.length; i++) {
+        var groep = Kaart.groepVan(getallen[i]);
+        waar(groep >= 0, "zaad " + zaad + ": getal " + getallen[i] + " hoort bij geen enkele groep");
+        perGroep[groep]++;
+      }
+      var vieren = 0;
+      for (var g = 0; g < 7; g++) {
+        waar(perGroep[g] >= 3, "zaad " + zaad + ": groep " + g + " heeft er maar " + perGroep[g]);
+        waar(perGroep[g] <= 4, "zaad " + zaad + ": groep " + g + " heeft er " + perGroep[g]);
+        if (perGroep[g] === 4) vieren++;
+      }
+      gelijk(vieren, 4, "zaad " + zaad + ": er horen precies vier groepen met een vierde getal te zijn");
+    }
+  });
+
+  /* ==============================================================
+   * 5 en 6: de acht startvakjes
+   * ============================================================== */
+
+  test("5. Er staan bij een nieuwe kaart precies 8 vakjes doorgestreept", function () {
+    for (var zaad = 1; zaad <= 60; zaad++) {
+      var sessie = proefsessie(zaad);
+      gelijk(sessie.kaart.startvakjes.length, 8, "zaad " + zaad + ": verkeerd aantal startvakjes");
+      gelijk(Kaart.telDoorgestreept(sessie), 8, "zaad " + zaad + ": verkeerd aantal doorgestreepte vakjes");
+      var gezien = {};
+      for (var i = 0; i < sessie.kaart.startvakjes.length; i++) {
+        var v = sessie.kaart.startvakjes[i];
+        waar(v >= 0 && v < 25, "zaad " + zaad + ": startvakje buiten de kaart: " + v);
+        waar(!gezien[v], "zaad " + zaad + ": startvakje " + v + " staat er dubbel in");
+        gezien[v] = true;
+        waar(sessie.kaart.doorgestreept[v], "zaad " + zaad + ": startvakje " + v + " staat niet doorgestreept");
+      }
+      gelijk(Kaart.openVakjes(sessie).length, 17, "zaad " + zaad + ": er horen 17 open vakjes te zijn");
+    }
+  });
+
+  test("6. De startvakjes vormen nooit al een LINGO", function () {
+    for (var zaad = 1; zaad <= 400; zaad++) {
+      var sessie = proefsessie(zaad);
+      var lijn = Kaart.vindLingo(sessie.kaart.doorgestreept);
+      waar(lijn === null, "zaad " + zaad + ": de startvakjes vormen al een LINGO: " + toon(lijn));
+    }
+  });
+
+  /* ==============================================================
+   * 7 t/m 9: de ballenbak
+   * ============================================================== */
+
+  test("7. De bak bevat precies 17 nummerballen", function () {
+    for (var zaad = 1; zaad <= 60; zaad++) {
+      var sessie = proefsessie(zaad);
+      gelijk(tel(sessie, "nummer"), 17, "zaad " + zaad + ": verkeerd aantal nummerballen");
+    }
+  });
+
+  test("8. De nummerballen komen exact overeen met de nog open nummers", function () {
+    for (var zaad = 1; zaad <= 60; zaad++) {
+      var sessie = proefsessie(zaad);
+      var uitBak = [];
+      for (var i = 0; i < sessie.kaart.ballen.length; i++) {
+        if (sessie.kaart.ballen[i].soort === "nummer") uitBak.push(sessie.kaart.ballen[i].getal);
+      }
+      var open = Kaart.openNummers(sessie.kaart);
+      uitBak.sort(function (a, b) { return a - b; });
+      open.sort(function (a, b) { return a - b; });
+      gelijk(uitBak, open, "zaad " + zaad + ": de nummerballen horen bij de open vakjes");
+    }
+  });
+
+  test("9. De bak heeft ook een vraagbal, drie rode ballen en drie groene ballen", function () {
+    var sessie = proefsessie(3);
+    gelijk(tel(sessie, "vraag"), 1, "er hoort precies een vraagbal in de bak te liggen");
+    gelijk(tel(sessie, "rood"), 3, "er horen drie rode ballen in de bak te liggen");
+    gelijk(tel(sessie, "groen"), 3, "er horen drie groene ballen in de bak te liggen");
+    gelijk(sessie.kaart.ballen.length, 24, "17 nummers, 1 vraag, 3 rood en 3 groen is 24 ballen");
+  });
+
+  /* ==============================================================
+   * 10 en 11: de nummerbal
+   * ============================================================== */
+
+  test("10. Een nummerbal streept het juiste vakje door en kost een trekking", function () {
+    var sessie = proefsessie(11);
+    Kaart.startFase(sessie, 4);
+    var open = Kaart.openVakjes(sessie);
+    var vak = open[0];
+    var getal = sessie.kaart.getallen[vak];
+    zetBak(sessie, [nummerbal(getal)]);
+
+    var uit = Kaart.trek(sessie, eerste);
+    gelijk(uit.soort, "nummer", "er hoort een nummerbal getrokken te zijn");
+    gelijk(uit.getal, getal, "het getal van de bal klopt niet");
+    gelijk(uit.vak, vak, "het verkeerde vakje werd gemarkeerd");
+    waar(uit.geraakt, "het vakje had doorgestreept moeten worden");
+    waar(sessie.kaart.doorgestreept[vak], "het vakje staat niet doorgestreept");
+    waar(uit.kostteTrekking, "een nummerbal hoort een trekking te kosten");
+    gelijk(sessie.trekkingenOver, 3, "er hoort een trekking af te gaan");
+    gelijk(Kaart.telDoorgestreept(sessie), 9, "er hoort er precies een bij te zijn gekomen");
+  });
+
+  test("11. Een al doorgestreept nummer levert niets op, maar kost wel een trekking", function () {
+    var sessie = proefsessie(11);
+    Kaart.startFase(sessie, 4);
+    var vak = sessie.kaart.startvakjes[0];
+    var getal = sessie.kaart.getallen[vak];
+    zetBak(sessie, [nummerbal(getal)]);
+
+    var uit = Kaart.trek(sessie, eerste);
+    gelijk(uit.soort, "nummer", "er hoort een nummerbal getrokken te zijn");
+    waar(!uit.geraakt, "een al doorgestreept vakje mag niets opleveren");
+    waar(uit.alDoorgestreept, "het vakje stond al doorgestreept");
+    waar(uit.kostteTrekking, "de trekking hoort wel gebruikt te zijn");
+    gelijk(sessie.trekkingenOver, 3, "er hoort een trekking af te gaan");
+    gelijk(Kaart.telDoorgestreept(sessie), 8, "er mag niets bij zijn gekomen");
+  });
+
+  /* ==============================================================
+   * 12 t/m 14: groen en rood
+   * ============================================================== */
+
+  test("12. Een groene bal vermindert het aantal trekkingen niet", function () {
+    var sessie = proefsessie(5);
+    Kaart.startFase(sessie, 4);
+    zetBak(sessie, [groenebal(), groenebal()]);
+
+    var uit = Kaart.trek(sessie, eerste);
+    gelijk(uit.soort, "groen", "er hoort een groene bal getrokken te zijn");
+    waar(!uit.kostteTrekking, "groen mag geen trekking kosten");
+    gelijk(sessie.trekkingenOver, 4, "het aantal trekkingen hoort gelijk te blijven");
+    gelijk(sessie.groenVerzameld, 1, "de groene teller hoort op een te staan");
+    waar(!uit.groenBonus, "bij een groene bal valt de bonus nog niet");
+
+    Kaart.trek(sessie, eerste);
+    gelijk(sessie.trekkingenOver, 4, "ook de tweede groene bal kost geen trekking");
+    gelijk(sessie.groenVerzameld, 2, "de groene teller hoort op twee te staan");
+  });
+
+  test("13. Bij drie groene ballen valt de bonus, en maar een keer", function () {
+    var sessie = proefsessie(5);
+    Kaart.startFase(sessie, 4);
+    zetBak(sessie, [groenebal(), groenebal(), groenebal(), groenebal()]);
+
+    var bonussen = 0;
+    for (var i = 0; i < 4; i++) {
+      if (Kaart.trek(sessie, eerste).groenBonus) bonussen++;
+    }
+    gelijk(sessie.groenVerzameld, 4, "elke groene bal hoort de teller op te hogen");
+    gelijk(bonussen, 1, "de groene bonus mag maar een keer worden uitgekeerd");
+    waar(sessie.groenBonusUitgekeerd, "de bonus hoort als uitgekeerd genoteerd te staan");
+    gelijk(sessie.trekkingenOver, 4, "geen enkele groene bal kost een trekking");
+  });
+
+  test("14. Een rode bal beeindigt de ballenfase onmiddellijk", function () {
+    var sessie = proefsessie(5);
+    Kaart.startFase(sessie, 4);
+    zetBak(sessie, [rodebal(), nummerbal(sessie.kaart.getallen[Kaart.openVakjes(sessie)[0]])]);
+
+    var uit = Kaart.trek(sessie, eerste);
+    gelijk(uit.soort, "rood", "er hoort een rode bal getrokken te zijn");
+    waar(uit.gestopt, "de fase hoort gestopt te zijn");
+    waar(sessie.faseGestopt, "de sessie hoort de fase als gestopt te noteren");
+    gelijk(sessie.trekkingenOver, 0, "de rest van de trekkingen vervalt");
+    waar(!Kaart.faseLoopt(sessie), "de fase hoort niet meer te lopen");
+
+    var daarna = Kaart.trek(sessie, eerste);
+    waar(!daarna.ok, "na rood mag er niets meer getrokken worden");
+    gelijk(Kaart.telDoorgestreept(sessie), 8, "na rood mag er niets meer worden doorgestreept");
+  });
+
+  /* ==============================================================
+   * 15 en 16: de vraagbal
+   * ============================================================== */
+
+  test("15. De vraagbal laat de speler alleen een nog open vakje kiezen", function () {
+    var sessie = proefsessie(13);
+    Kaart.startFase(sessie, 3);
+    zetBak(sessie, [vraagbal()]);
+
+    var uit = Kaart.trek(sessie, eerste);
+    gelijk(uit.soort, "vraag", "er hoort een vraagbal getrokken te zijn");
+    waar(uit.kiezen, "de speler hoort te mogen kiezen");
+    waar(uit.kostteTrekking, "de vraagbal hoort een trekking te kosten");
+    gelijk(sessie.trekkingenOver, 2, "er hoort een trekking af te gaan");
+    waar(sessie.keuzeOpen, "de keuze hoort open te staan");
+
+    /* Een dichtgestreept vakje wordt geweigerd. */
+    var dicht = sessie.kaart.startvakjes[0];
+    var mis = Kaart.kiesVak(sessie, dicht);
+    waar(!mis.ok, "een al doorgestreept vakje mag niet gekozen worden");
+    waar(mis.alDoorgestreept, "de reden hoort te zijn dat het vakje al dicht is");
+    waar(sessie.keuzeOpen, "de keuze hoort daarna nog open te staan");
+
+    /* En zolang de keuze openstaat wordt er niet verder getrokken. */
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[Kaart.openVakjes(sessie)[0]])]);
+    var tussendoor = Kaart.trek(sessie, eerste);
+    waar(!tussendoor.ok, "er mag niet getrokken worden zolang de speler moet kiezen");
+    gelijk(sessie.kaart.ballen.length, 1, "er mag geen bal uit de bak verdwijnen");
+
+    /* Een open vakje mag wel. */
+    var open = Kaart.openVakjes(sessie)[0];
+    var goed = Kaart.kiesVak(sessie, open);
+    waar(goed.ok, "een open vakje hoort gekozen te mogen worden");
+    waar(goed.geraakt, "het gekozen vakje hoort doorgestreept te worden");
+    waar(sessie.kaart.doorgestreept[open], "het gekozen vakje staat niet doorgestreept");
+    waar(!sessie.keuzeOpen, "de keuze hoort daarna gesloten te zijn");
+    gelijk(sessie.trekkingenOver, 2, "kiezen kost geen extra trekking");
+  });
+
+  test("16. Na een vraagbal blijft de echte bal van dat nummer in de bak", function () {
+    var sessie = proefsessie(13);
+    Kaart.startFase(sessie, 3);
+    var open = Kaart.openVakjes(sessie)[0];
+    var getal = sessie.kaart.getallen[open];
+    /* De volle bak, met de vraagbal vooraan zodat we hem zeker trekken. */
+    var bak = [vraagbal()];
+    var nummers = Kaart.openNummers(sessie.kaart);
+    for (var i = 0; i < nummers.length; i++) bak.push(nummerbal(nummers[i]));
+    zetBak(sessie, bak);
+
+    Kaart.trek(sessie, eerste);
+    Kaart.kiesVak(sessie, open);
+
+    var nogInBak = false;
+    for (var j = 0; j < sessie.kaart.ballen.length; j++) {
+      var bal = sessie.kaart.ballen[j];
+      if (bal.soort === "nummer" && bal.getal === getal) nogInBak = true;
+    }
+    waar(nogInBak, "de echte bal van het gekozen nummer hoort in de bak te blijven");
+    gelijk(tel(sessie, "nummer"), 17, "er mag geen nummerbal uit de bak verdwenen zijn");
+  });
+
+  /* ==============================================================
+   * 17 t/m 21: LINGO herkennen
+   * ============================================================== */
+
+  test("17. LINGO wordt horizontaal gevonden", function () {
+    var sessie = proefsessie(21);
+    Kaart.startFase(sessie, 5);
+    var lijn = [10, 11, 12, 13, 14]; /* de derde rij */
+    var laatste = bijnaLijn(sessie, lijn);
+    waar(!Kaart.heeftLingo(sessie.kaart.doorgestreept), "vier op een rij is nog geen LINGO");
+
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[laatste])]);
+    var uit = Kaart.trek(sessie, eerste);
+    waar(uit.lingo, "de vijfde markering hoort LINGO op te leveren");
+    gelijk(uit.lijn.soort, "rij", "het hoort een rij te zijn");
+    gelijk(uit.lijn.index, 2, "het hoort de derde rij te zijn");
+    gelijk(uit.lijn.vakjes, lijn, "de gevonden lijn klopt niet");
+    gelijk(sessie.lingos, 1, "het aantal LINGO's hoort op een te staan");
+  });
+
+  test("18. LINGO wordt verticaal gevonden", function () {
+    var sessie = proefsessie(22);
+    Kaart.startFase(sessie, 5);
+    var lijn = [1, 6, 11, 16, 21]; /* de tweede kolom */
+    var laatste = bijnaLijn(sessie, lijn);
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[laatste])]);
+
+    var uit = Kaart.trek(sessie, eerste);
+    waar(uit.lingo, "de vijfde markering hoort LINGO op te leveren");
+    gelijk(uit.lijn.soort, "kolom", "het hoort een kolom te zijn");
+    gelijk(uit.lijn.index, 1, "het hoort de tweede kolom te zijn");
+    gelijk(uit.lijn.vakjes, lijn, "de gevonden lijn klopt niet");
+  });
+
+  test("19. LINGO wordt gevonden over de diagonaal van linksboven naar rechtsonder", function () {
+    var sessie = proefsessie(23);
+    Kaart.startFase(sessie, 5);
+    var lijn = [0, 6, 12, 18, 24];
+    var laatste = bijnaLijn(sessie, lijn);
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[laatste])]);
+
+    var uit = Kaart.trek(sessie, eerste);
+    waar(uit.lingo, "de vijfde markering hoort LINGO op te leveren");
+    gelijk(uit.lijn.soort, "diagonaal", "het hoort een diagonaal te zijn");
+    gelijk(uit.lijn.vakjes, lijn, "de gevonden lijn klopt niet");
+  });
+
+  test("20. LINGO wordt gevonden over de diagonaal van rechtsboven naar linksonder", function () {
+    var sessie = proefsessie(24);
+    Kaart.startFase(sessie, 5);
+    var lijn = [4, 8, 12, 16, 20];
+    var laatste = bijnaLijn(sessie, lijn);
+    /* Nu via de vraagbal, zodat ook die weg tot LINGO leidt. */
+    zetBak(sessie, [vraagbal()]);
+    Kaart.trek(sessie, eerste);
+    var uit = Kaart.kiesVak(sessie, laatste);
+
+    waar(uit.lingo, "ook een zelf gekozen vakje hoort LINGO op te leveren");
+    gelijk(uit.lijn.soort, "diagonaal", "het hoort een diagonaal te zijn");
+    gelijk(uit.lijn.vakjes, lijn, "de gevonden lijn klopt niet");
+  });
+
+  test("21. Vier op een rij of een schuine reeks die geen diagonaal is, is geen LINGO", function () {
+    waar(!Kaart.heeftLingo([0, 1, 2, 3]), "vier op een rij is geen LINGO");
+    waar(!Kaart.heeftLingo([0, 1, 2, 3, 5]), "vier plus een los vakje is geen LINGO");
+    waar(!Kaart.heeftLingo([1, 7, 13, 19, 5]), "een verschoven schuine reeks is geen LINGO");
+    waar(Kaart.heeftLingo([5, 6, 7, 8, 9]), "de tweede rij hoort wel LINGO te zijn");
+    waar(Kaart.heeftLingo([2, 7, 12, 17, 22]), "de derde kolom hoort wel LINGO te zijn");
+  });
+
+  /* ==============================================================
+   * 22 t/m 26: wat blijft en wat wordt vervangen
+   * ============================================================== */
+
+  test("22. De kaart blijft dezelfde tussen de levels", function () {
+    var sessie = proefsessie(31);
+    var getallen = sessie.kaart.getallen.slice();
+    var start = sessie.kaart.startvakjes.slice();
+
+    /* Ballenfase na level 1: een paar trekkingen, daarna is de fase op. */
+    Kaart.startFase(sessie, 2);
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[Kaart.openVakjes(sessie)[0]]), groenebal()]);
+    Kaart.trek(sessie, eerste);
+    Kaart.trek(sessie, eerste);
+    gelijk(sessie.trekkingenOver, 1, "alleen de nummerbal kost een trekking");
+
+    /* Level 2 begint: nieuwe fase, dezelfde kaart. */
+    Kaart.startFase(sessie, 5);
+    gelijk(sessie.kaart.getallen, getallen, "de getallen horen hetzelfde te blijven");
+    gelijk(sessie.kaart.startvakjes, start, "de startvakjes horen hetzelfde te blijven");
+    gelijk(sessie.lingos, 0, "zonder LINGO blijft de teller op nul");
+  });
+
+  test("23. Na LINGO komt er een volledig nieuwe kaart", function () {
+    var sessie = proefsessie(32);
+    var oudeGetallen = sessie.kaart.getallen.slice();
+    Kaart.startFase(sessie, 5);
+    var lijn = [15, 16, 17, 18, 19];
+    var laatste = bijnaLijn(sessie, lijn);
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[laatste])]);
+    waar(Kaart.trek(sessie, eerste).lingo, "er hoort LINGO te vallen");
+
+    Kaart.nieuweKaart(sessie, Kaart.maakWillekeur(99));
+    waar(toon(sessie.kaart.getallen) !== toon(oudeGetallen), "er horen nieuwe getallen te komen");
+    gelijk(sessie.kaart.getallen.length, 25, "ook de nieuwe kaart heeft 25 getallen");
+    gelijk(sessie.kaart.startvakjes.length, 8, "ook de nieuwe kaart heeft 8 startvakjes");
+    gelijk(Kaart.telDoorgestreept(sessie), 8, "op de nieuwe kaart staan alleen de startvakjes door");
+    waar(!Kaart.heeftLingo(sessie.kaart.doorgestreept), "de nieuwe startvakjes vormen geen LINGO");
+    gelijk(tel(sessie, "nummer"), 17, "de nieuwe bak heeft 17 nummerballen");
+    gelijk(tel(sessie, "vraag"), 1, "de nieuwe bak heeft een vraagbal");
+    gelijk(tel(sessie, "rood"), 3, "de nieuwe bak heeft drie rode ballen");
+    gelijk(sessie.lingos, 1, "het aantal LINGO's blijft staan");
+  });
+
+  test("24. Doorgestreepte vakjes blijven bestaan zolang de kaart blijft", function () {
+    var sessie = proefsessie(33);
+    Kaart.startFase(sessie, 2);
+    var vak = Kaart.openVakjes(sessie)[0];
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[vak])]);
+    Kaart.trek(sessie, eerste);
+    gelijk(Kaart.telDoorgestreept(sessie), 9, "er hoort er een bij te zijn gekomen");
+
+    /* Een nieuw level begint; de markeringen horen te blijven staan. */
+    Kaart.startFase(sessie, 5);
+    waar(sessie.kaart.doorgestreept[vak], "het vakje hoort doorgestreept te blijven");
+    gelijk(Kaart.telDoorgestreept(sessie), 9, "er mag niets zijn teruggezet");
+  });
+
+  test("25. De groene voortgang blijft staan als er een nieuwe kaart komt", function () {
+    var sessie = proefsessie(34);
+    Kaart.startFase(sessie, 5);
+    zetBak(sessie, [groenebal(), groenebal()]);
+    Kaart.trek(sessie, eerste);
+    Kaart.trek(sessie, eerste);
+    gelijk(sessie.groenVerzameld, 2, "de groene teller hoort op twee te staan");
+
+    Kaart.nieuweKaart(sessie, Kaart.maakWillekeur(77));
+    gelijk(sessie.groenVerzameld, 2, "de groene teller hoort niet gewist te worden");
+    gelijk(tel(sessie, "groen"), 1, "er hoort nog een groene bal in de nieuwe bak te liggen");
+
+    /* En met de bonus al uitgekeerd blijft dat ook zo. */
+    zetBak(sessie, [groenebal()]);
+    waar(Kaart.trek(sessie, eerste).groenBonus, "de derde groene bal keert de bonus uit");
+    Kaart.nieuweKaart(sessie, Kaart.maakWillekeur(78));
+    waar(sessie.groenBonusUitgekeerd, "de uitgekeerde bonus hoort te blijven staan");
+    gelijk(sessie.groenVerzameld, 3, "de groene teller hoort op drie te staan");
+    gelijk(tel(sessie, "groen"), 0, "er horen geen groene ballen meer in de bak te liggen");
+  });
+
+  test("26. Resterende trekkingen lopen door op de nieuwe kaart", function () {
+    var sessie = proefsessie(35);
+    Kaart.startFase(sessie, 5);
+    var lijn = [0, 5, 10, 15, 20];
+    var laatste = bijnaLijn(sessie, lijn);
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[laatste])]);
+    waar(Kaart.trek(sessie, eerste).lingo, "er hoort LINGO te vallen");
+    gelijk(sessie.trekkingenOver, 4, "er hoort een trekking af te zijn gegaan");
+
+    Kaart.nieuweKaart(sessie, Kaart.maakWillekeur(101));
+    gelijk(sessie.trekkingenOver, 4, "de resterende trekkingen horen door te lopen");
+    waar(!sessie.faseGestopt, "de fase hoort nog te lopen");
+    waar(Kaart.faseLoopt(sessie), "er kan gewoon verder getrokken worden");
+
+    var vak = Kaart.openVakjes(sessie)[0];
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[vak])]);
+    var uit = Kaart.trek(sessie, eerste);
+    waar(uit.geraakt, "op de nieuwe kaart kan gewoon verder gestreept worden");
+    gelijk(sessie.trekkingenOver, 3, "en dat kost weer een trekking");
+  });
+
+  /* ==============================================================
+   * 27 t/m 30: randjes en netheid
+   * ============================================================== */
+
+  test("27. Zonder trekkingen over wordt er niets meer getrokken", function () {
+    var sessie = proefsessie(41);
+    Kaart.startFase(sessie, 1);
+    zetBak(sessie, [nummerbal(sessie.kaart.getallen[Kaart.openVakjes(sessie)[0]]),
+                    nummerbal(sessie.kaart.getallen[Kaart.openVakjes(sessie)[1]])]);
+    waar(Kaart.trek(sessie, eerste).ok, "de eerste trekking hoort te lukken");
+    gelijk(sessie.trekkingenOver, 0, "daarna is de fase op");
+    var uit = Kaart.trek(sessie, eerste);
+    waar(!uit.ok, "zonder trekkingen mag er niets meer gebeuren");
+    gelijk(sessie.kaart.ballen.length, 1, "er mag geen bal uit de bak verdwijnen");
+    waar(!Kaart.faseLoopt(sessie), "de fase hoort niet meer te lopen");
+  });
+
+  test("28. Een lege bak levert geen trekking op", function () {
+    var sessie = proefsessie(42);
+    Kaart.startFase(sessie, 3);
+    zetBak(sessie, []);
+    var uit = Kaart.trek(sessie, eerste);
+    waar(!uit.ok, "uit een lege bak valt niets te trekken");
+    gelijk(sessie.trekkingenOver, 3, "en het kost ook geen trekking");
+  });
+
+  test("29. Hetzelfde zaad geeft dezelfde kaart, een ander zaad een andere", function () {
+    var een = Kaart.nieuweSessie({ zaad: 1234 });
+    var twee = Kaart.nieuweSessie({ zaad: 1234 });
+    var drie = Kaart.nieuweSessie({ zaad: 4321 });
+    gelijk(een.kaart.getallen, twee.kaart.getallen, "hetzelfde zaad hoort dezelfde getallen te geven");
+    gelijk(een.kaart.startvakjes, twee.kaart.startvakjes, "hetzelfde zaad hoort dezelfde startvakjes te geven");
+    waar(toon(een.kaart.getallen) !== toon(drie.kaart.getallen), "een ander zaad hoort een andere kaart te geven");
+  });
+
+  test("30. Een sessie is platte data en overleeft bewaren en terugzetten", function () {
+    var sessie = proefsessie(43);
+    Kaart.startFase(sessie, 4);
+    zetBak(sessie, [groenebal(), nummerbal(sessie.kaart.getallen[Kaart.openVakjes(sessie)[0]])]);
+    Kaart.trek(sessie, eerste);
+    Kaart.trek(sessie, eerste);
+
+    var heen = JSON.stringify(sessie);
+    var terug = JSON.parse(heen);
+    gelijk(terug, sessie, "een sessie hoort na JSON heen en terug hetzelfde te zijn");
+    gelijk(Kaart.kaartModel(terug).length, 25, "het kaartmodel hoort 25 vakjes te tellen");
+    var model = Kaart.kaartModel(terug);
+    gelijk(model[7].rij, 1, "vakje 7 ligt op rij 1");
+    gelijk(model[7].kolom, 2, "vakje 7 ligt in kolom 2");
+  });
+
+  /* ==============================================================
+   * Uitvoeren
+   * ============================================================== */
+
+  var lijstElement = document.getElementById("uitslag");
+  var samenvatting = document.getElementById("samenvatting");
+  var goed = 0;
+  var fout = 0;
+
+  for (var i = 0; i < gevallen.length; i++) {
+    var geval = gevallen[i];
+    var probleem = null;
+    try {
+      geval.uitvoeren();
+    } catch (f) {
+      probleem = (f && f.message) ? f.message : String(f);
+    }
+
+    var regel = document.createElement("li");
+    var merk = document.createElement("span");
+    merk.className = "merk";
+    var naam = document.createElement("span");
+    naam.className = "naam";
+    naam.textContent = geval.naam;
+
+    if (probleem === null) {
+      goed++;
+      merk.textContent = "GOED";
+    } else {
+      fout++;
+      regel.className = "is-fout";
+      merk.textContent = "FOUT";
+      var reden = document.createElement("span");
+      reden.className = "reden";
+      reden.textContent = probleem;
+      naam.appendChild(reden);
+    }
+    regel.appendChild(merk);
+    regel.appendChild(naam);
+    lijstElement.appendChild(regel);
+  }
+
+  samenvatting.className = fout === 0 ? "is-goed" : "is-fout";
+  samenvatting.textContent = fout === 0
+    ? "ALLES GESLAAGD - " + goed + " van de " + gevallen.length + " tests"
+    : fout + " VAN DE " + gevallen.length + " TESTS MISLUKT";
+  var extra = document.createElement("small");
+  extra.textContent = "DVL.Kaart " + (Kaart ? Kaart.VERSIE : "?") +
+    ", 25 vakjes, 8 startvakjes, 17 nummerballen, 1 vraagbal, 3 rode en 3 groene ballen.";
+  samenvatting.appendChild(extra);
+})();
+</script>
+
+</body>
+</html>

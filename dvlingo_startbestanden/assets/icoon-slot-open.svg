@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+<!--
+  Digitale Vaardigheden Lingo — assets/icoon-slot-open.svg
+
+  Het icoontje op de knop Openen: een slot met de beugel omhoog en opzij, dus
+  open. Het wordt als masker gebruikt, dus alleen de vorm telt.
+-->
+<g fill="#000">
+  <!-- De beugel, opengeklapt naar links -->
+  <path d="M15 20h-5.6v-6.2a8.6 8.6 0 0 1 17.2 0h-5.6a3 3 0 0 0-6 0z"/>
+  <!-- Het huis met het sleutelgat -->
+  <path d="M17.5 20h19a4 4 0 0 1 4 4v15a4 4 0 0 1-4 4h-19a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4zm9.5 7.5a3.4 3.4 0 0 0-1.7 6.34V37h3.4v-3.16A3.4 3.4 0 0 0 27 27.5z"/>
+</g>
+</svg>

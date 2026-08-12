@@ -154,6 +154,30 @@ export const GAME_REGISTRY = [
     // Onbeperkt oefenen mag: de tokenopbrengst halveert server-side per beurt (replayDecay).
     maxPlays: 0,
     status: GAME_STATUSES.PROTOTYPE
+  },
+  {
+    gameId: 'dvlingo',
+    title: 'DVLingo',
+    description:
+      'Digitale Vaardigheden Lingo: raad woorden over veilig en slim online zijn in drie levels, met na elk level de ballenfase en een bonuswoord van elf letters.',
+    subject: 'Digitale vaardigheden',
+    topic: 'Digitale woordenschat: veiligheid, internet en apparaten',
+    level: 'VMBO basis/kader/TL leerjaar 1-2',
+    learningGoals: [
+      'Kernbegrippen over digitale veiligheid herkennen en spellen',
+      'Woorden ontleden op letters en posities onder tijdsdruk',
+      'Doorzetten en slim gokken bij onvolledige informatie'
+    ],
+    skills: ['digitale woordenschat', 'logisch redeneren', 'spelling'],
+    estimatedMinutes: 20,
+    route: '/admin/spellen/dvlingo',
+    componentKey: 'dvlingo',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 400, basis: 'score_accuracy_completion' },
+    // Onbeperkt spelen; de opbrengst halveert server-side per beurt (replayDecay).
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
   }
 ];
 
