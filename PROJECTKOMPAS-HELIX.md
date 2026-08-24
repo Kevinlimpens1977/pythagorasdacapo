@@ -27,7 +27,27 @@ Let op:
 - **Firebase Storage is niet opgeruimd.** De geuploade afbeeldingen, video's, PDF's en crops van de verwijderde lesblokken staan er nog. Ze kosten opslag maar zitten niets in de weg.
 - De back-ups staan in `exports/reset-backups/` en bevatten leerlingnamen en e-mailadressen. Die map staat in `.gitignore` en hoort daar te blijven.
 - `scripts/inventaris-leeromgeving.mjs` is een alleen-lezen telling van alle collecties; handig om te controleren wat er staat.
-- De in-app knop `Reset CMS` (`src/components/admin/CmsResetButton.jsx`) is **niet compleet**: die laat `publicContentBlocks`, `publicQuestions`, `badges`, `certificates` en `voortgang` staan, waardoor leerlingen na een reset de oude lesstof blijven zien. Gebruik voorlopig het script, of repareer `CMS_RESET_COLLECTIONS` in `src/lib/cmsResetConfig.js`.
+- De in-app knop `Reset CMS` (`src/components/admin/CmsResetButton.jsx`) is op 24 augustus 2026 gerepareerd; zie het kopje hieronder.
+
+## De Knop Reset CMS
+
+`Reset CMS` staat in de adminheader (`AppShell`, alleen admin, alleen vanaf xl-breedte) en maakt de lesstof leeg zonder dat je een script hoeft te draaien.
+
+Wat die knop doet:
+
+- Wist de collecties uit `CMS_RESET_COLLECTIONS` (`src/lib/cmsResetConfig.js`): `publicContentBlocks`, `publicQuestions`, `contentBlocks`, `slidedeckPackages`, `vraag`, `paragraaf`, `hoofdstuk`, `niveau`, `leerjaar`, `vak`, `vakken`, plus de `questionMetadata`-subcollecties.
+- **De twee publieke snapshots staan bewust vooraan in die lijst.** Breekt de reset halverwege af, dan is "leerlingen zien niets meer terwijl de CMS nog gevuld is" een veilige tussenstand; andersom zouden leerlingen de oude lesstof blijven zien terwijl de docent denkt dat alles weg is. Tot 24 augustus 2026 ontbraken deze twee collecties volledig, waardoor een reset de leerlingervaring niet opruimde.
+- Maakt lesstof-toewijzingen in `klassen` leeg (`enabledParagrafen`, `enabledChapters`, `enabledContentBlocks`, `studentOverrides`) en haalt oude lesstatusvelden van leerlingdocumenten af.
+- Leerlingvoortgang gaat er alleen uit als de docent het vinkje "Ook de leerlingvoortgang wissen" aanzet. `CMS_RESET_PROGRESS_COLLECTIONS` staat daarom bewust los van `CMS_RESET_COLLECTIONS`; een test bewaakt dat leerlingdata nooit in de gewone wislijst belandt.
+- Elke stap wordt apart afgevangen. Een collectie die op de rules stukloopt maakt de rest van de reset niet kapot; het resultaatpaneel toont per collectie wat er is verwijderd en wat er misging.
+
+Wat die knop bewust NIET kan, en waarom:
+
+- `badges` en `certificates` hebben **geen enkele Firestore-rule** en zijn daarmee voor elke client onbereikbaar, ook voor een admin. Alleen een Admin SDK-script (`scripts/reset-leeromgeving.mjs`) komt erbij. De seed-import maakt ze wel aan. Wil je die ooit client-side beheren, dan moeten er eerst rules voor komen.
+- `adminCropSources` blijft staan: dat is je gescande bronmateriaal, dat je juist nodig hebt om opnieuw op te bouwen. Ook die collectie heeft overigens geen rule.
+- Firebase Storage wordt niet opgeruimd.
+
+Het dialoogvenster benoemt dit alles expliciet via `CMS_RESET_UNTOUCHED`, zodat de tekst niet meer belooft dan de knop waarmaakt.
 
 ## Nieuwe Chat Startcontext
 

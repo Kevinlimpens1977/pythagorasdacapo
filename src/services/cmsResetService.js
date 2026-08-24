@@ -8,25 +8,61 @@ import {
   where,
   writeBatch
 } from 'firebase/firestore';
-import { CMS_RESET_COLLECTIONS, isQuestionMetadataPath } from '../lib/cmsResetConfig';
+import {
+  CMS_RESET_COLLECTIONS,
+  CMS_RESET_PROGRESS_COLLECTIONS,
+  isQuestionMetadataPath
+} from '../lib/cmsResetConfig';
 import { db } from './firebase';
 
 const BATCH_LIMIT = 450;
 
-export const resetCmsContentForDev = async () => {
+export const resetCmsContentForDev = async ({ includeProgress = false } = {}) => {
   const totals = {
     deleted: {},
+    failed: {},
     cleanedClasses: 0,
-    cleanedStudents: 0
+    cleanedStudents: 0,
+    includedProgress: includeProgress
+  };
+
+  // Elke stap wordt apart afgevangen. Zo maakt een collectie waar de rules
+  // dwarsliggen niet de hele reset stuk, en zie je achteraf precies wat er
+  // wel en niet is gelukt.
+  const run = async (label, taak) => {
+    try {
+      totals.deleted[label] = await taak();
+    } catch (error) {
+      console.error(`CMS-reset: ${label} is mislukt:`, error);
+      totals.failed[label] = error?.code || error?.message || 'onbekende fout';
+    }
   };
 
   for (const collectionName of CMS_RESET_COLLECTIONS) {
-    totals.deleted[collectionName] = await deleteCollectionDocuments(collectionName);
+    await run(collectionName, () => deleteCollectionDocuments(collectionName));
   }
 
-  totals.deleted.questionMetadataQuestions = await deleteQuestionMetadataQuestions();
-  totals.cleanedClasses = await clearClassLessonAssignments();
-  totals.cleanedStudents = await clearStudentLessonState();
+  await run('questionMetadataQuestions', deleteQuestionMetadataQuestions);
+
+  if (includeProgress) {
+    for (const collectionName of CMS_RESET_PROGRESS_COLLECTIONS) {
+      await run(collectionName, () => deleteCollectionDocuments(collectionName));
+    }
+  }
+
+  try {
+    totals.cleanedClasses = await clearClassLessonAssignments();
+  } catch (error) {
+    console.error('CMS-reset: klassen opschonen is mislukt:', error);
+    totals.failed.klassen = error?.code || error?.message || 'onbekende fout';
+  }
+
+  try {
+    totals.cleanedStudents = await clearStudentLessonState();
+  } catch (error) {
+    console.error('CMS-reset: leerlingen opschonen is mislukt:', error);
+    totals.failed.users = error?.code || error?.message || 'onbekende fout';
+  }
 
   return totals;
 };
@@ -63,6 +99,7 @@ const clearClassLessonAssignments = async () => {
     data: {
       enabledParagrafen: [],
       enabledChapters: {},
+      enabledContentBlocks: {},
       studentOverrides: {},
       updatedAt: serverTimestamp()
     }
@@ -82,6 +119,11 @@ const clearStudentLessonState = async () => {
       exerciseData: deleteField(),
       presentationViewed: deleteField(),
       evaluationData: deleteField(),
+      progress: deleteField(),
+      completedSlides: deleteField(),
+      completedChapters: deleteField(),
+      lastSlide: deleteField(),
+      lastChapter: deleteField(),
       updatedAt: serverTimestamp()
     }
   })));
