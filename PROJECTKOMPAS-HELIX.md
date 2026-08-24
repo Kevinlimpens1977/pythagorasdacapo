@@ -4,6 +4,31 @@ Laatst bijgewerkt: 24 augustus 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
 
+## De Leeromgeving Is Leeg (24 augustus 2026)
+
+Op 24 augustus 2026 is de leeromgeving bewust en eenmalig leeggemaakt, zodat de lesstof opnieuw opgebouwd kan worden. **Alles wat hieronder over concrete DV-lesinhoud staat, beschrijft dus hoe het wérkte, niet wat er nu in Firestore staat.**
+
+Verwijderd (692 documenten, via `scripts/reset-leeromgeving.mjs --apply`):
+
+- Alle lesstof: 1 vak, 1 leerjaar, 1 niveau, 6 hoofdstukken (H1-H5 van de DV-lesserie plus een testhoofdstuk), 31 paragrafen, 276 contentblocks en 1 vraag.
+- Alle leerlingveilige snapshots: 276 `publicContentBlocks` en 1 `publicQuestions`.
+- De 5 badges en 2 certificaten uit de DV-seed.
+- De 4 klassen (EOA, H1TL1, H1bk1, h2K1), inclusief hun toegangscodes.
+- Alle 51 voortgangsdocumenten.
+- Alle tokendata: rekeningen, grootboek, aankopen, claims en loadouts.
+
+Bewust behouden:
+
+- De 16 `users` (15 leerlingen + 1 admin). Namen, wachtwoordstatus en foto's staan er nog; `klasId`, `joinedKlasAt` en de oude lesstatusvelden zijn eraf gehaald omdat hun klas niet meer bestaat. **Firebase Auth is niet aangeraakt**, dus deze leerlingen kunnen gewoon inloggen.
+- De tokenshopcatalogus (35 items), `tokenGameRewardRules`, `gameInstellingen`, `promptTemplates`, `photoImports` en `studentBugReports`.
+
+Let op:
+
+- **Firebase Storage is niet opgeruimd.** De geuploade afbeeldingen, video's, PDF's en crops van de verwijderde lesblokken staan er nog. Ze kosten opslag maar zitten niets in de weg.
+- De back-ups staan in `exports/reset-backups/` en bevatten leerlingnamen en e-mailadressen. Die map staat in `.gitignore` en hoort daar te blijven.
+- `scripts/inventaris-leeromgeving.mjs` is een alleen-lezen telling van alle collecties; handig om te controleren wat er staat.
+- De in-app knop `Reset CMS` (`src/components/admin/CmsResetButton.jsx`) is **niet compleet**: die laat `publicContentBlocks`, `publicQuestions`, `badges`, `certificates` en `voortgang` staan, waardoor leerlingen na een reset de oude lesstof blijven zien. Gebruik voorlopig het script, of repareer `CMS_RESET_COLLECTIONS` in `src/lib/cmsResetConfig.js`.
+
 ## Nieuwe Chat Startcontext
 
 Als een nieuwe Codex-chat dit document leest, moet die vooral dit weten:
@@ -203,7 +228,7 @@ Huidig:
 - Tokens worden niet client-side uitgegeven.
 - Tokenregels per spel zijn instelbaar op `/admin/spellen` (paneel "Spelinstellingen": tokens actief, min, max, berekening). Opslaan schrijft naar `tokenGameRewardRules/{gameId}`; "Herstel standaard" verwijdert de eigen regel. Client-helpers en de spiegel van de serverdefaults staan in `src/lib/gameTokenRewardRules.js` + `src/services/tokenService.js`.
 - Speellimiet per spel: zelfde paneel, "Aantal keer speelbaar" (1-5 of Onbeperkt), opgeslagen als `maxPlays` in hetzelfde `tokenGameRewardRules/{gameId}`-document (default in de registry via `game.maxPlays`, 0 = onbeperkt). Telling loopt per leerling per lesblok in de voortgang (`gamePlayCount`); handhaving client-side in `GameBlock` (leerling ziet resterende beurten en na de limiet een "uitgespeeld"-kaart, stap blijft afgerond). `tokenGameRewardRules` is nu leesbaar voor alle ingelogde gebruikers (schrijven admin-only) zodat de limiet live geldt. Bewust een zachte limiet in dezelfde vertrouwenslaag als voortgang; tokens blijven server-side 1x beveiligd.
-- Let op: lesblokken die nog naar verwijderde gameIds verwijzen (o.a. uit de DV-seed) tonen leerlingen "Game niet gevonden" totdat ze een nieuw spel krijgen of worden gedepubliceerd.
+- Let op: lesblokken die naar een verwijderde gameId verwijzen tonen leerlingen "Game niet gevonden" totdat ze een nieuw spel krijgen of worden gedepubliceerd. Sinds de opruimactie van 24 augustus 2026 bestaan er geen lesblokken meer, dus dit speelt pas weer bij nieuwe content.
 - Er is een startgids voor nieuwe spellen: `STARTGIDS-NIEUW-SPEL.md` in de projectroot.
 
 ### Tokensysteem en Tokenshop

@@ -29,3 +29,6 @@ playwright-report
 # Keuringsbeelden van de standalone DVLingo-bouw (209 screenshots, ~66 MB).
 # De speelbare bron staat wel in de repo; deze QA-beelden niet.
 dvlingo_startbestanden/keuring/
+# Back-ups van de leeromgeving-opruimactie. Bevatten leerlingnamen, e-mailadressen
+# en voortgang, dus die horen nooit in git of op GitHub.
+exports/reset-backups/
