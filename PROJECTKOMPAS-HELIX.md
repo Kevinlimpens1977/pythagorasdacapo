@@ -1,6 +1,6 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 18 juli 2026
+Laatst bijgewerkt: 24 augustus 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
 
@@ -19,23 +19,27 @@ Als een nieuwe Codex-chat dit document leest, moet die vooral dit weten:
 - Recente Presenter-flow: naast V1a Core zijn tekstobjecten, een beperkt wiskundesymbolenpalet, verhoudingstabel/Pythagoras-bordtools, paginathumbnails en HELIX-lesstofimport als snapshotpagina's aanwezig. Gum/borstelgroottes zijn in de actuele codecheck nog niet als aparte toolbarflow zichtbaar.
 - Recente leerlingbeheer-flow: leerlingfoto-import ondersteunt klassenfoto upload/plakken, PDF-fotolijstimport op basis van tekstlaag, reviewrijen en definitieve goedkeuring via Callable Function `approveStudentPhotoImportCrop`.
 - Recente tokenshop-flow: de leerlingshop op `/tokenshop` heeft categorietabbladen (`Alles`, `Avatars`, `Frames`, `Pins`, `Banners`, `Effects`, `Titels`) met aantallen per tab; itemnamen zijn vakneutraal (bijv. `Leerheld` in plaats van `Rekenheld`).
-- Vercel-deployment is geconfigureerd (`vercel.json` met Vite/dist en SPA-rewrite, plus `.vercelignore`); Firebase blijft backend voor auth/Firestore/Storage/Functions.
+- Hosting draait op **Vercel** (project `helix`, repo `Kevinlimpens1977/pythagorasdacapo`, `vercel.json` met Vite/dist en SPA-rewrite plus `.vercelignore`). Deployen gebeurt door te pushen naar GitHub. Firebase blijft alleen backend: Auth, Firestore, Storage en Functions in `europe-west1`. Gebruik dus nooit `firebase deploy --only hosting`, ook al staat er nog een `hosting`-blok in `firebase.json` en ligt er een oude `.firebase/`-cache.
+- Recente spellen-flow: naast de vijf React-spellen in `src/games/` bestaat er nu een tweede spelsoort. `ExternalGameHost` draait een compleet standalone spel als statische map uit `public/games/<game-id>/<versie>/` in een same-origin iframe, met een postMessage-contract naar hetzelfde `onComplete`. Eerste gebruiker: **DVLingo** (12 augustus 2026).
 - Bekende ongerelateerde untracked items kunnen in gitstatus staan, bijvoorbeeld losse screenshots in `exports/`, bron-artwork in `badges/` en lokale `.firebase/`-cache. Niet automatisch stagen of verwijderen.
 - De gebruiker wil vaak eerst bevraagd worden bij grote productkeuzes, maar gaf voor de huidige Digidocent- en meldingenrichting expliciet akkoord.
 - Volledige lint kan bestaande repo-brede schuld raken. Gebruik gericht `npx eslint <aangepaste bestanden>`, gerichte `node --test ...` en `npm run build`.
 
 Recente commits die een nieuwe chat moet kennen:
 
-- `fe9b593 feat: verdeel tokenshop in categorietabbladen`
-- `c51e0ff feat: vervang rekenheld door vakneutrale leerheld-titel`
-- `3fa45e0 feat: vul tokenshop met frames, pins, banners, titels en victory-effects`
-- `eb2abf4 chore: configure vercel deployment`
-- `56613ec feat: use helix brand header in content modal`
-- `b09cc50 feat: add animated avatar token shop`
-- `28e7694 feat: integrate token ledger and shop`
-- `9570701 fix: expose cms navigation edit actions`
-- `07bed60 feat: sync uploaded slidedecks to cms blocks`
-- `cdbc25c feat: gate content blocks with source review flags`
+- `80bd7f4 chore: sluit dvlingo_startbestanden uit van de Vercel-upload` (12 aug 2026, HEAD)
+- `80c9632 chore: launch-config dvlingo-bron wijst naar de bronmap op 8124`
+- `5debee8 test: pariteitsbank voor DVLingo tegen de standalone bron`
+- `7121284 feat: DVLingo als extern spel in het leerplatform`
+- `88c4a91 feat: route-introducties met vingeruitleg en voiceover voor data koerier` (2 aug 2026)
+- `ca9671e fix: caps lock-vangnet en uitgestelde onComplete voor data koerier`
+- `0ff94a5 feat: data koerier tienvinger-typspel + spellen-checkpoint`
+- `061721b feat: instrumenten wegklikbaar via toggle in werkbalk` (18 juli 2026)
+- `848bfa8 feat: professionele passer die bogen en cirkels als inkt tekent`
+- `797ca0b feat: precisiegum wist stukjes van een streek i.p.v. de hele streek`
+- `12b4539 feat: presenter award-features (vraagregie, focus, instrumenten v2, bordmodus)`
+- `cd456cb feat: render exercise-vraagblokken in leerlingroute`
+- `8e62b20 feat: maak leerlingroute mobiel- en leerlingvriendelijker`
 
 ## Productvisie
 
@@ -191,7 +195,10 @@ Huidig:
 - Derde spel: **Turbo Typen** (`turbo-typen`, `src/games/turboTypen/`) — sneltypspel in 5 levels voor VMBO leerjaar 1-2. Digitale woorden bewegen via CSS-animatie van links naar de "firewall" rechts; typen zonder invoerveld (eerste letter lockt een woord, ZType-stijl, pure logica in `turboTypenLogic.js` + tests). Per level langere woorden én hoger tempo (vaste woordenlijsten in `turboTypenWoorden.js` → deterministische maxScore 4180 = 10/letter + 100 foutloos-bonus per level). Gevaar-pulse bij de firewall (CSS-animatie met delay op 72% van de baan), combo-teller, letterscore-popups, schermschok bij inslag, climax-eindscherm met optellende score en tokenbedrag. Higgsfield-graphics in `public/games/turbo-typen/` (allemaal met fallback): 5 zachte pastel-achtergronden per level met Ken Burns-animatie + witte leesbaarheidslaag, vlammende firewall-muur (`firewall.png`, cutout), ster-explosie `boem.png` op de exacte woordpositie bij raak (positie via getBoundingClientRect), toetsenbord-mascotte op startscherm, gouden trofee op eindscherm. **replayDecay-mechanisme (server-side, nieuw)**: `tokenGameRewardRules.replayDecay` (0-1) laat herhaalbeurten uitbetalen met verval — beurt n = basis × decay^(n-1), totaalplafond = rule.max; claim-doc houdt `plays`/`totalAwarded` bij, elke uitbetaalde beurt krijgt een eigen grootboekregel (`activity-replay`). Turbo Typen: max 200, decay 0.5, speellimiet Onbeperkt. Spellen zonder replayDecay behouden exact het oude 1x-gedrag.
 - Vierde spel: **PacoPacMan** (`paco-pac-man`, `src/games/pacoPacMan/`) — Pacman-stijl doolhof-arcadespel in 4 levels over de hele DV-leerlijn, VMBO leerjaar 1-2. Eigen naam/karakters (Bandai Namco-rechten). Held Chompy (geel robotje, 3 mond-frames) tegen 4 virus-spookjes met AI-persoonlijkheden (jager/sluiper/twijfelaar/bang) + scatter/chase-klok; finale (level 4) heeft teleport-tunnels en een Virus-Koning die in 2 mini-bosses splitst. 3 computer-icoontjes per level bevriezen het spel voor een powervraag (12 vragen uit de theorie-PDF); goed = power-mode (spoken opeetbaar). Pure engine `pacoLogic.js` (vaste 60Hz-timestep, deterministische seeded RNG, greedy-op-kruispunt-AI, swap-botsingdetectie) met 16 node:tests incl. een BFS-bot die elk level volledig uitspeelt om maze-integriteit te bewijzen. React-laag: rAF-loop met sprites via directe DOM-transforms (geen setState per frame), dots op canvas, muren als multi-stroke SVG, cornering+inputbuffer, D-pad bij touch, 3 levens/level zonder game-over, herkansing voor foute vragen. maxScore 7700, tokenregel max 400 met replayDecay 0.5, maxPlays 0. Assets in `public/games/paco-pac-man/`: Chompy-frames, 4 virussen + bange + Virus-Koning, vraag-icoon, power-orb, 4 achtergronden, licht 3D-logo, trofee, en 5 Seedance 2.0-intro-video's (10s, mét de spelkarakters als image-reference). Ontworpen na brainstorm met 3 subagents (GFX/spelbeleving/architectuur). E2E-getest 19 juli 2026 (alle levels, quiz→power, boss+teleports, eindscherm+resultaatcontract; console schoon).
 - Vijfde spel: **Data Koerier** (`data-koerier`, `src/games/dataKoerier/`) — tienvinger-blindtyptrainer voor VMBO basis/kader/TL leerjaar 1-2, gebouwd 2 augustus 2026 (ontwerp: `SPELOPZET-DATA-KOERIER.md`). Dertien routes (basisrij → boven/onder → Shift → cijfers → leestekens → digiwoorden → zinnen → meesterproef) + Toprit-snelheidsuitdaging (ontgrendelt na route 8, tijdsbonus alleen bij ≥90% accuracy). Route gehaald bij ≥90% nauwkeurigheid, dan pas ontgrendelt de volgende; regels worden per beurt uit grotere pools geschud (maxScore per sessie-inhoud, contract-conform). Visueel toetsenbord met vingerkleuren/mini-handjes/Shift-per-andere-hand, adaptieve scoreloze drills bij <80% regelnauwkeurigheid, fout = niet-bestraffend blijven staan (rood+onderstreping+✗, nooit kleur-alleen). Records/ontgrendeling in localStorage (per apparaat); details (accuracy/wpm/zwakste toetsen) reizen mee naar voortgang. Contentvalidatie is een test: `dataKoerierRoutes.test.js` dwingt de tekensetregel per route af. Higgsfield-assets (stad/koerier-cutout/trofee/mascotte, `nano_banana_2`) in `public/games/data-koerier/` met emoji/CSS-fallbacks. Tokenregel max 200, replayDecay 0.5, maxPlays 0. Let op: de serverdefault in `functions/index.js` vereist een functions-deploy; tot die tijd kan de regel ook via `/admin/spellen` worden opgeslagen. E2E-browsergetest 2 augustus 2026 (route uitspelen 99% → score 1805/1810, faalscenario 66% met drill-invoeging, record/ontgrendeling/mute-persistentie; console schoon; daarna ook visueel geverifieerd in echte Chrome met screenshots). Na gebruikersfeedback zelfde dag: (a) Caps Lock-vangnet — de linkerpink raakt bij het reiken naar de a snel Caps Lock, dan telde élke aanslag als fout; nu duidelijke waarschuwingsbanner en die aanslagen tellen niet mee; (b) onComplete wordt uitgesteld gemeld (bij "Naar de routekaart", unmount of uiterlijk na 6 s, exact 1x via pending-ref) zodat GamePlayer fullscreen niet meer sluit vóór de speler het eindscherm zag. Zelfde dag toegevoegd voor zelfstandig werkende brugklassers: skipbare route-introducties ("zo doe je het") die per route de thuisrij en elke nieuwe toets met de juiste vinger tonen op het echte toetsenbord (stappen uit `buildIntroStappen`, dus altijd correct), met voiceover: Higgsfield-TTS-wav's voor routes 1-4 en 7 in `public/games/data-koerier/audio/`, en automatische fallback op browser-spraak (nl-NL) voor de rest en bij ontbrekende bestanden (`dataKoerierSpraak.js`). Bewust GEEN AI-instructievideo's (videomodellen tonen handen/vingers onbetrouwbaar). Resterende TTS (routes 5, 6, 8-13, Toprit) en de Seedance-sfeervideo wachten op nieuw Higgsfield-tegoed — zie SPELOPZET-DATA-KOERIER.md.
-- De infrastructuur staat er volledig: `/admin/spellen`, GamePlayer, GameComponentRenderer, `gameComponentKeys.js`, het `game`-lesbloktype en de CMS-selectie.
+- Zesde spel: **DVLingo** (`dvlingo`, `public/games/dvlingo/v1/`) — Digitale Vaardigheden Lingo, geintegreerd 12 augustus 2026. Dit is het eerste **externe** spel: een bestaand standalone vanilla-JS spel (~18.600 regels, bron blijft in `dvlingo_startbestanden/`) dat niet is herbouwd maar als statische map wordt geserveerd. De spelmotor is byte-identiek; alleen `index.html` is aangepast en `js/helix-brug.js` is toegevoegd als leesmee-brug die de eindstand uit het DOM-contract en `DVL.Game.staat()` haalt. Woorden raden over veilig en slim online zijn in drie levels, met na elk level de ballenfase en een bonuswoord van elf letters. Tokens: 6.000 spelpunten = 100% accuracy, regel 0-400 met `replayDecay 0.5`, onbeperkt speelbaar. Spelkeuzes: 2-spelersmodus verwijderd, "Stoppen en naar de eindstand" telt als afronding met de tot dan behaalde score, waarschuwing bij verlaten tijdens een lopend potje, geen sessieherstel. Visuele pariteit met de bron is blind bewezen via `scripts/dvlingo-pariteit.mjs` (bron op poort 8124 via launch-config `dvlingo-bron`; zes schermen desktop + mobiel, geen verlies, geen console-fouten; beelden in `exports/dvlingo-pariteit/`).
+- **Platformvoorziening voor externe spellen:** `src/games/ExternalGameHost.jsx` is een herbruikbare iframe-schil voor standalone spellen in `public/games/`, met een postMessage-contract (`gereed`/`gestart`/`bezig`/`klaar`) dat uitkomt op hetzelfde `onStart`/`onComplete`-contract als de React-spellen. Gekozen om CSS- en JS-isolatie te garanderen (geen botsing tussen de spel-reset en Tailwind, geen `id`-collisions, geen document-brede listeners die blijven hangen) en omdat een engine-update dan een mapvervanging is. De vijf React-spellen in `src/games/` blijven ongewijzigd.
+- **Woordenbeheer DVLingo** zit als adminpaneel op `/admin/spellen` (`src/games/DvlingoWoordenPanel.jsx`), naast het paneel Tokenbeloning. Opslag in Firestore-collectie `gameInstellingen/{gameId}`: read voor iedere ingelogde gebruiker, schrijven admin-only. Het spel leest de lijst read-only mee en schrijft zelf nooit naar Firestore. Let op: dit paneel werkt pas nadat `firestore:rules` is gedeployed.
+- De infrastructuur staat er volledig: `/admin/spellen`, GamePlayer, GameComponentRenderer, `gameComponentKeys.js`, `ExternalGameHost.jsx`, het `game`-lesbloktype en de CMS-selectie.
 - Het `game`-lesbloktype werkt end-to-end in de leerlingroute: voortgang gaat naar Firestore en tokens worden server-side toegekend via `awardTokensForActivity` (reward-rules in `tokenGameRewardRules`; defaults voor beide spellen in `DEFAULT_GAME_TOKEN_REWARD_RULES` in `functions/index.js`).
 - Tokens worden niet client-side uitgegeven.
 - Tokenregels per spel zijn instelbaar op `/admin/spellen` (paneel "Spelinstellingen": tokens actief, min, max, berekening). Opslaan schrijft naar `tokenGameRewardRules/{gameId}`; "Herstel standaard" verwijdert de eigen regel. Client-helpers en de spiegel van de serverdefaults staan in `src/lib/gameTokenRewardRules.js` + `src/services/tokenService.js`.
@@ -653,7 +660,9 @@ Registry bevat onder andere:
 - `route`
 - `componentKey`
 - `supportedModes`
+- `cmsEmbeddable`
 - `tokenRewardPotential`
+- `maxPlays`
 - `status`
 
 Veiligheidsregels:
@@ -686,6 +695,14 @@ Belangrijke Firestore-collecties:
 - `questionMetadata`
 - `adminCropSources`
 - `studentBugReports`
+- `tokenAccounts`
+- `tokenTransactions`
+- `tokenPurchases`
+- `tokenAwardClaims`
+- `studentTokenLoadouts`
+- `tokenShopItems`
+- `tokenGameRewardRules`
+- `gameInstellingen`
 
 Belangrijke Storage-paden:
 
@@ -779,11 +796,12 @@ Deze bestanden zijn prototypes/documentatie, geen productcode. Ze zijn bedoeld o
 ### Spellen
 
 - Implementatieplan gemaakt.
-- Game Registry toegevoegd.
-- `/admin/spellen` toegevoegd.
-- GamePlayer-wrapper toegevoegd.
-- Pythagoras Trainer als eerste prototypegame toegevoegd.
-- Resultaten blijven lokaal.
+- Game Registry toegevoegd en per 18 juli 2026 opnieuw opgebouwd; de oude prototypes (Pythagoras Trainer, Account Escape) en de circa 29 placeholders zijn verwijderd.
+- `/admin/spellen` toegevoegd, inclusief de panelen Tokenbeloning (per spel min/max/berekening/`replayDecay`/`maxPlays`) en DVLingo-woordenbeheer.
+- GamePlayer-wrapper toegevoegd, met `variant="student"` en `variant="admin"` en fullscreen via `FullscreenSurface`.
+- `ExternalGameHost` toegevoegd als iframe-schil voor standalone spellen uit `public/games/`.
+- Zes werkende spellen: Wachtwoord Detective, Social Media Zoektocht, Turbo Typen, PacoPacMan, Data Koerier en DVLingo.
+- Resultaten gaan naar `voortgang`; tokens worden uitsluitend server-side toegekend via `awardTokensForActivity`.
 
 ### Slidedeckcreator
 
@@ -1055,6 +1073,17 @@ Belangrijk risico:
 - Lokale dev/admin-login is toegevoegd voor browsermatige verificatie.
 - Firebase authorized domains voor lokaal testen horen `localhost` en eventueel `127.0.0.1` te bevatten, zonder poortnummer.
 
+## Direct Openstaand (stand 24 augustus 2026)
+
+Dit zijn geen ontwerpvragen maar concrete losse eindjes van de laatste sessies. Ze blokkeren DVLingo in de klas.
+
+1. `npx firebase deploy --only firestore:rules --project pythagoras-eoa` — verplicht, anders kan het woordenbeheerpaneel niet opslaan naar `gameInstellingen/dvlingo`.
+2. `npx firebase deploy --only functions --project pythagoras-eoa` — voor de servercode-default DVLingo 0-400 met `replayDecay 0.5`.
+3. Tokenregel voor DVLingo een keer opslaan op `/admin/spellen` -> paneel Tokenbeloning (0-400, "Score en nauwkeurigheid"). Dit is het alternatief zolang de functions-deploy nog niet is gedraaid.
+4. Leerling-test DVLingo: CMS-lesblok van type `game` met DVLingo, uitspelen als testleerling, controleren op toast, saldo en transactie in `/admin/tokenbeheer`.
+5. **Vercel production branch nakijken.** De site staat op Vercel, maar GitHub's default branch is `master` en `codex/digitale-vaardigheden-seed` staat inmiddels 360 commits voor op `master`. Staat Production Branch in het Vercel-dashboard op de codex-branch, dan is elke push al de productie-deploy. Staat het op `master`, dan is er een merge van 360 commits nodig en dat is een aparte beslissing.
+6. Zelfde geldt voor Data Koerier: de serverdefault staat in `functions/index.js` maar vereist een functions-deploy.
+
 ## Belangrijkste Open Productwerk
 
 ### 1. Presenter V1a Valideren En Polijsten
@@ -1216,11 +1245,12 @@ Nodig:
 - Huidige gitstatus kan lokale untracked screenshots/prototypes bevatten, vooral in `exports/`. Niet automatisch stagen of verwijderen.
 - `README.md` is nog geen betrouwbare projectdocumentatie.
 - `FIRESTORE_SCHEMA.md` is deels ouder dan de implementatie.
-- Volledige `npm run lint` kan nog falen op bestaande lint-schuld. Gebruik voorlopig gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
+- Volledige `npm run lint` faalt op bestaande schuld: 205 meldingen (203 errors, 2 warnings) over 36 bestanden op 24 augustus 2026. Daarvan komen er circa 169 uit de DVLingo-vanilla-JS-bestanden (`dvlingo_startbestanden/` en `public/games/dvlingo/`) die globals gebruiken en niet door de React-eslintconfig heen horen te lopen; slechts 35 meldingen zitten in `src/`. Overweeg beide mappen aan de eslint-ignores toe te voegen zodat de lint weer signaal geeft. Gebruik tot die tijd gerichte `npx eslint <aangepaste bestanden>` plus `npm run build`.
 - Firestore rules zijn verder dan een dev-basis voor publieke snapshots en leerlingfoto-import, maar Storage rules voor `photo-imports` en `student-photos` zijn nog pragmatisch en moeten voor productie opnieuw beoordeeld worden.
 - Functions zijn onderdeel van de actuele architectuur; gebruik `functions/index.js` en `functions/index.test.js` bij Digidocent, OCR, leerlingwachtwoorden, leerlingaccount-sync en foto-importgoedkeuring.
-- Recente brede lib-teststatus: expliciete `src/lib` testset draaide groen met 427 tests.
-- Recente buildstatus: `npm run build` slaagde, met bekende Vite-waarschuwingen over chunkgrootte en dynamische imports voor `firestoreService.js`/`storageService.js`.
+- Actuele teststatus (24 augustus 2026): `node --test src/lib/ src/games/ functions/` draait groen met **679 tests**, 0 fouten, circa 20 seconden.
+- Actuele buildstatus (24 augustus 2026): `npm run build` slaagt in circa 31 seconden. Bekende waarschuwingen: hoofdchunk 2,29 MB (660 kB gzip) boven de 500 kB-grens, en INEFFECTIVE_DYNAMIC_IMPORT voor `firestoreService.js`/`storageService.js`. De zes spellen belanden correct in `dist/games/`, inclusief `dist/games/dvlingo/v1/`.
+- `PROJECTKOMPAS-HELIX.md` wordt tijdens de build via de Vite-plugin `helix-project-kompas` in `vite.config.js` ingelezen en als module geleverd aan `/admin/projectkompas`. Dit bestand bijwerken is dus meteen de in-app update; er is geen aparte kopie.
 - Dev server draait meestal op `http://localhost:5173/` of een nabije Vite-poort. De gebruiker gebruikt vaak `localhost` liever dan `127.0.0.1`.
 - Poort `5174` was eerder bezet door een ander project; gebruik die niet zomaar voor HELIX.
 - Voor lokale dev-login kunnen `.env.local` flags nodig zijn:
@@ -1233,6 +1263,7 @@ Actuele belangrijke routes:
 - `/` leerling-overzicht/lesmateriaal
 - `/chapter/:chapterId` leerlingroute
 - `/profiel` leerlingprofiel
+- `/tokenshop` leerling-tokenshop
 - `/admin` legacy redirect naar `/admin/instellingen`
 - `/admin/instellingen` instellingenwerkplek
 - `/admin/lesstof` lesstofwerkplek
@@ -1244,7 +1275,9 @@ Actuele belangrijke routes:
 - `/admin/klassen` klassenbeheer, actief onder `Leerlingen`
 - `/admin/taken-toewijzen` lesmateriaal klaarzetten, actief onder `Lesstof`
 - `/admin/meldingen` leerling-foutmeldingen, actief onder `Instellingen`
-- `/admin/spellen` spellen
+- `/admin/spellen` spellen, inclusief de panelen Tokenbeloning en DVLingo-woordenbeheer
+- `/admin/tokenbeheer` tokenbeheer en shopcatalogus
+- `/admin/crop-tool` crop/OCR-studio
 - `/admin/presenter` Presenter
 - `/admin/ai-instellingen` Digidocent/OpenRouter instellingen, actief onder `Instellingen`
 - `/admin/projectkompas` actueel Projectkompas in de app
@@ -1392,6 +1425,12 @@ npx eslint <aangepaste bestanden>
 node --test <gerichte testbestanden>
 ```
 
+Volledige testset (679 tests, circa 20 seconden):
+
+```bash
+node --test src/lib/ src/games/ functions/
+```
+
 Bij Presenter-wijzigingen minimaal overwegen:
 
 ```bash
@@ -1408,5 +1447,6 @@ Als dit document wordt gelezen na contextcompressie:
 4. Controleer `src/lib/contentBlockUtils.js` voor actuele lesbloktypes.
 5. Controleer `src/lib/questionTypeRegistry.js` voor actuele vraagtypes.
 6. Controleer `src/components/presenter/` en `src/lib/presenter*.js` bij Presenter-werk.
-7. Controleer recente gitstatus voordat je wijzigt.
-8. Vraag bij grote productkeuzes eerst om brainstorm/plan, tenzij de gebruiker expliciet `bouw`, `proceed` of `implementeer` zegt.
+7. Controleer `src/lib/gameRegistry.js` en `STARTGIDS-NIEUW-SPEL.md` bij spellenwerk; de echte tokenbedragen staan in `DEFAULT_GAME_TOKEN_REWARD_RULES` (`functions/index.js`) met spiegel `SERVER_DEFAULT_GAME_REWARD_RULES` (`src/lib/gameTokenRewardRules.js`), niet in de startgids.
+8. Controleer recente gitstatus voordat je wijzigt.
+9. Vraag bij grote productkeuzes eerst om brainstorm/plan, tenzij de gebruiker expliciet `bouw`, `proceed` of `implementeer` zegt. Bij een nieuw spel hoort er eerst een `SPELOPZET-<NAAM>.md` ter review te liggen voordat er code komt.
