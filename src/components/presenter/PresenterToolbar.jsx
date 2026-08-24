@@ -295,6 +295,8 @@ export default function PresenterToolbar({
 
   return (
     <div
+      data-presenter-toolbar="true"
+      data-presenter-toolbar-pinned={pinned ? 'true' : 'false'}
       className={`group pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 ease-out sm:px-5 ${
         pinned || open ? 'translate-y-0' : 'translate-y-[calc(100%-3.75rem)] focus-within:translate-y-0'
       }`}

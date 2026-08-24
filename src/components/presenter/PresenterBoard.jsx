@@ -10,6 +10,9 @@ import { buildSmoothedStrokePath, constrainLineEnd, getStrokePressureWidth } fro
 import {
   getInstrumentEdgeLine,
   isPointNearInstrumentEdge,
+  PRESENTER_PAGE_BAR_RESERVE_PX,
+  PRESENTER_TOOLBAR_PEEK_PX,
+  PRESENTER_TOOLBAR_RESERVE_PX,
   projectPointOntoEdge
 } from '../../lib/presenterInstruments';
 import { getAlignmentSnap } from '../../lib/presenterAlignment';
@@ -370,6 +373,8 @@ export default function PresenterBoard({
   boardTheme = 'light',
   compassPenStyle,
   onCompassStroke,
+  onPenStyle,
+  boardViewportRef,
   onToggleObjectMeasure
 }) {
   const surfaceRef = useRef(null);
@@ -428,6 +433,55 @@ export default function PresenterBoard({
       scaledHeight: Math.round(height * scale)
     };
   }, [measuredViewportWidth, page?.height, page?.width]);
+
+  // Het zichtbare, vrije deel van het bord in boardunits: de werkbalk onderin
+  // en de paginabalk bovenin zijn er al af getrokken, en horizontaal is het
+  // geknipt op wat er van het bord in het scrollvenster past. Nieuwe
+  // instrumenten worden hierbinnen gepast (zie handleInstrument in
+  // PresenterShell) en vallen dus nooit half buiten beeld of achter de balken.
+  useEffect(() => {
+    if (!boardViewportRef) return undefined;
+
+    boardViewportRef.current = () => {
+      const surface = surfaceRef.current;
+      const boardElement = boardRef.current;
+      if (!surface || !boardElement || !(board.scale > 0)) return null;
+
+      const surfaceRect = surface.getBoundingClientRect();
+      const boardRect = boardElement.getBoundingClientRect();
+      // De werkbalk hangt vast onderin. Ingeklapt bedekt hij alleen zijn eigen
+      // randje; hij klapt open bij hover en sluit daarna vanzelf weer. Alleen
+      // een vastgezette werkbalk blijft staan, dus alleen die telt als
+      // permanent bezet. Een tijdelijk open paneel mag geen instrumenten
+      // kleiner maken.
+      const toolbarElement =
+        typeof document !== 'undefined' ? document.querySelector('[data-presenter-toolbar]') : null;
+      const toolbarRect = toolbarElement?.getBoundingClientRect();
+      const peekTop = surfaceRect.bottom - PRESENTER_TOOLBAR_PEEK_PX;
+      const toolbarTop = !toolbarRect
+        ? surfaceRect.bottom - PRESENTER_TOOLBAR_RESERVE_PX
+        : toolbarElement.dataset.presenterToolbarPinned === 'true'
+          ? Math.min(toolbarRect.top, peekTop)
+          : peekTop;
+
+      const visibleTop = Math.max(surfaceRect.top, boardRect.top) + PRESENTER_PAGE_BAR_RESERVE_PX;
+      const visibleBottom = Math.min(toolbarTop, boardRect.bottom);
+      const visibleLeft = Math.max(surfaceRect.left, boardRect.left);
+      const visibleRight = Math.min(surfaceRect.right, boardRect.right);
+
+      return {
+        x: Math.max(0, (visibleLeft - boardRect.left) / board.scale),
+        y: Math.max(0, (visibleTop - boardRect.top) / board.scale),
+        width: Math.max(120, (visibleRight - visibleLeft) / board.scale),
+        height: Math.max(120, (visibleBottom - visibleTop) / board.scale),
+        scale: board.scale
+      };
+    };
+
+    return () => {
+      boardViewportRef.current = null;
+    };
+  }, [board.scale, board.width, boardViewportRef]);
 
   const activeSelectedObjectIds = useMemo(() => {
     const ids = normalizeIds(selectedObjectIds);
@@ -827,10 +881,12 @@ export default function PresenterBoard({
     const projectedPoint = activeStroke.edgeLine ? projectPointOntoEdge(point, activeStroke.edgeLine) : point;
     const nextPoint = pressure === undefined ? projectedPoint : { ...projectedPoint, p: pressure };
 
-    const nextPoints = activeStroke.stroke.variant === 'geometry-pen'
-      ? [activeStroke.stroke.points[0], constrainLineEnd(activeStroke.stroke.points[0], nextPoint, { angleSnap: event.shiftKey })]
-      : activeStroke.edgeLine
-        ? [activeStroke.stroke.points[0], nextPoint]
+    // Ligt de streek op de tekenrand van een instrument, dan is die rand de
+    // bron van waarheid: de 45°-snap van de lijnpen mag hem niet wegtrekken.
+    const nextPoints = activeStroke.edgeLine
+      ? [activeStroke.stroke.points[0], nextPoint]
+      : activeStroke.stroke.variant === 'geometry-pen'
+        ? [activeStroke.stroke.points[0], constrainLineEnd(activeStroke.stroke.points[0], nextPoint, { angleSnap: event.shiftKey })]
         : [...activeStroke.stroke.points, nextPoint];
 
     activeStrokeRef.current = {
@@ -1078,9 +1134,12 @@ export default function PresenterBoard({
             scale={board.scale}
             gridSize={page?.background?.gridSize || 96}
             penStyle={compassPenStyle}
+            boardWidth={board.width}
+            boardHeight={board.height}
             onChange={onInstrumentChange}
             onClose={onInstrumentClose}
             onDrawStroke={onCompassStroke}
+            onPenStyle={onPenStyle}
           />
         ) : null}
         {(Array.isArray(previewPage?.objects) ? previewPage.objects : [])

@@ -30,7 +30,7 @@ import {
   updatePresenterPageBackground
 } from '../../lib/presenterModel';
 import { DEFAULT_PRESENTER_ERASER_SIZE, erasePartialStrokes, getPresenterEraserRadius } from '../../lib/presenterEraser';
-import { createPresenterInstrument } from '../../lib/presenterInstruments';
+import { createPresenterInstrument, planInstrumentPlacement } from '../../lib/presenterInstruments';
 import { createCurtain, createLaser, createSpotlight } from '../../lib/presenterFocus';
 import { PresenterStudentPicker, PresenterTimerOverlay } from './PresenterFocusTools';
 import { createPresenterObject, updatePresenterMathToolObject } from '../../lib/presenterObjects';
@@ -379,6 +379,10 @@ export default function PresenterShell() {
   const [toolbarAlign, setToolbarAlign] = useState('center');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const shellRef = useRef(null);
+  const boardViewportRef = useRef(null);
+  // Onthoudt welk instrument net is neergelegd, zodat de nameting daarna
+  // precies een keer mag bijsturen en nooit een sleepbeweging overschrijft.
+  const instrumentRefitRef = useRef(null);
   const fullscreenErrorTimerRef = useRef(null);
   const toolbarAutoCloseTimerRef = useRef(null);
   const eraseGestureHistoryRef = useRef(null);
@@ -565,8 +569,29 @@ export default function PresenterShell() {
 
   // Instrumentknoppen togglen: nogmaals klikken op het actieve instrument
   // sluit het weer (naast de sluitknop op het instrument zelf en Escape).
+  // Een nieuw instrument wordt door planInstrumentPlacement op maat gemaakt en
+  // gecentreerd in het vrije deel van het bord: de hele omhullende rechthoek,
+  // inclusief de knoppenrij, valt in beeld en nooit achter de balken.
   const handleInstrument = (instrumentId) => {
-    setInstrument((current) => (current?.id === instrumentId ? null : createPresenterInstrument(instrumentId)));
+    const visibleRect = boardViewportRef.current?.() || null;
+    const placement = planInstrumentPlacement({
+      instrumentId,
+      visibleRect,
+      boardWidth: activePage?.width,
+      boardHeight: activePage?.height,
+      boardScale: visibleRect?.scale,
+      gridSize: activePage?.background?.gridSize
+    });
+
+    setInstrument((current) => {
+      if (current?.id === instrumentId) {
+        instrumentRefitRef.current = null;
+        return null;
+      }
+
+      instrumentRefitRef.current = instrumentId;
+      return createPresenterInstrument(instrumentId, placement || {});
+    });
     setActiveCategory('pen');
     setPagePanelOpen(false);
   };
@@ -574,6 +599,39 @@ export default function PresenterShell() {
   const handleInstrumentChange = useCallback((updates) => {
     setInstrument((current) => (current ? { ...current, ...updates } : current));
   }, []);
+
+  // Nameting: het openklappen van een werkbalkpaneel verandert de vrije ruimte
+  // op hetzelfde moment dat het instrument wordt neergelegd. Zodra de layout
+  // staat, wordt de plaatsing een keer opnieuw doorgerekend met de ruimte die
+  // er dan echt is. Daarna niet meer, zodat verslepen ongemoeid blijft.
+  const activeInstrumentId = instrument?.id;
+  useEffect(() => {
+    if (!activeInstrumentId || instrumentRefitRef.current !== activeInstrumentId) return undefined;
+
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        instrumentRefitRef.current = null;
+        const visibleRect = boardViewportRef.current?.();
+        if (!visibleRect) return;
+
+        const placement = planInstrumentPlacement({
+          instrumentId: activeInstrumentId,
+          visibleRect,
+          boardWidth: activePage?.width,
+          boardHeight: activePage?.height,
+          boardScale: visibleRect.scale,
+          gridSize: activePage?.background?.gridSize
+        });
+        if (!placement) return;
+
+        setInstrument((current) =>
+          current?.id === activeInstrumentId ? { ...current, ...placement } : current
+        );
+      });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [activeInstrumentId, activePage?.background?.gridSize, activePage?.height, activePage?.width]);
 
   const handleFocusSelect = (kind) => {
     setFocusTool((current) => {
@@ -1225,6 +1283,8 @@ export default function PresenterShell() {
         boardTheme={boardTheme}
         compassPenStyle={penTool}
         onCompassStroke={handleCompassStroke}
+        onPenStyle={handlePenStyle}
+        boardViewportRef={boardViewportRef}
         onToggleObjectMeasure={handleToggleObjectMeasure}
       />
       <PresenterTimerOverlay timer={timer} onStop={() => setTimer(null)} />
