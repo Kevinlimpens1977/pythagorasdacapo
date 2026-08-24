@@ -411,6 +411,42 @@ test('resizePresenterObjectsOnPage scales selected objects from group bounds', (
   assert.equal(next.pages[0].objects[1].height, 80);
 });
 
+test('resizePresenterObjectsOnPage moves an axes figure with the group but never scales it', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    objects: [
+      { id: 'object-1', type: 'rectangle', x: 10, y: 20, width: 100, height: 80 },
+      {
+        id: 'axes-1',
+        type: 'axes',
+        x: 160,
+        y: 60,
+        width: 960,
+        height: 960,
+        range: { xMin: 0, xMax: 10, yMin: 0, yMax: 10 }
+      }
+    ]
+  });
+  const session = { ...createPresenterSession(), activePageId: page.id, pages: [page] };
+  const fromBounds = getPresenterSelectionBounds(page, ['object-1', 'axes-1']);
+
+  const next = resizePresenterObjectsOnPage(session, page.id, ['object-1', 'axes-1'], fromBounds, {
+    x: fromBounds.x,
+    y: fromBounds.y,
+    width: fromBounds.width * 2,
+    height: fromBounds.height * 2
+  });
+
+  assert.equal(next.pages[0].objects[0].width, 200);
+  assert.equal(next.pages[0].objects[1].width, 960);
+  assert.equal(next.pages[0].objects[1].height, 960);
+  // Verschoven mee met de groep en meteen weer op een roosterlijn gelegd.
+  assert.equal(next.pages[0].objects[1].x % 96, 0);
+  assert.equal(next.pages[0].objects[1].y % 96, 0);
+  assert.equal(next.pages[0].objects[1].x, 288);
+  assert.deepEqual(next.pages[0].objects[1].range, { xMin: 0, xMax: 10, yMin: 0, yMax: 10 });
+});
+
 test('resizePresenterObjectsOnPage scales text font size with the object frame', () => {
   const page = createPresenterPage({
     id: 'page-1',
@@ -517,6 +553,58 @@ test('updatePresenterPageBackground changes only the target page background', ()
   assert.deepEqual(next.pages[1].background, untouchedPage.background);
   assert.notEqual(next.pages[0], session.pages[0]);
   assert.equal(next.pages[1], untouchedPage);
+});
+
+test('updatePresenterPageBackground rebuilds axes figures when the grid size changes', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    background: { kind: 'grid', gridSize: 96 },
+    objects: [
+      {
+        id: 'axes-1',
+        type: 'axes',
+        x: 192,
+        y: 192,
+        width: 1056,
+        height: 1056,
+        range: { xMin: -5, xMax: 6, yMin: -5, yMax: 6 }
+      },
+      { id: 'rect-1', type: 'rectangle', x: 10, y: 10, width: 100, height: 80 }
+    ]
+  });
+  const session = { ...createPresenterSession(), activePageId: page.id, pages: [page] };
+
+  const next = updatePresenterPageBackground(session, page.id, { kind: 'grid', gridSize: 72 });
+
+  assert.equal(next.pages[0].objects[0].width, 11 * 72);
+  assert.equal(next.pages[0].objects[0].height, 11 * 72);
+  assert.equal(next.pages[0].objects[0].x % 72, 0);
+  // Andere objecten blijven onaangeroerd.
+  assert.equal(next.pages[0].objects[1], page.objects[1]);
+});
+
+test('updatePresenterPageBackground leaves axes figures alone when only the pattern changes', () => {
+  const page = createPresenterPage({
+    id: 'page-1',
+    background: { kind: 'white', gridSize: 96 },
+    objects: [
+      {
+        id: 'axes-1',
+        type: 'axes',
+        x: 192,
+        y: 192,
+        width: 1056,
+        height: 1056,
+        range: { xMin: -5, xMax: 6, yMin: -5, yMax: 6 }
+      }
+    ]
+  });
+  const session = { ...createPresenterSession(), activePageId: page.id, pages: [page] };
+
+  const next = updatePresenterPageBackground(session, page.id, { kind: 'grid', gridSize: 96 });
+
+  assert.equal(next.pages[0].objects[0], page.objects[0]);
+  assert.deepEqual(next.pages[0].background, { kind: 'grid', gridSize: 96 });
 });
 
 test('setActivePresenterPage switches to a valid page and clears selected object', () => {

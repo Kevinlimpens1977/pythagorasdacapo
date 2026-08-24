@@ -135,8 +135,67 @@ test('question controls stay hidden until there is input and feedback waits for 
   assert.equal(getQuestionControlState(model, { openAnswer: '' }).hasInput, false);
   assert.equal(getQuestionControlState(model, { openAnswer: 'c' }).hasInput, true);
   assert.equal(getQuestionFeedbackStatus(model, { openAnswer: 'c' }, false), 'idle');
-  assert.equal(getQuestionFeedbackStatus(model, { openAnswer: 'c' }, true), 'correct');
-  assert.equal(getQuestionFeedbackStatus(model, { openAnswer: 'b' }, true), 'incorrect');
+  // Een open vraag met een tekstueel modelantwoord kijkt het bord niet zelf na;
+  // dat doet de leerlingroute ook niet. Het bord toont het modelantwoord en de
+  // docent beoordeelt hardop.
+  assert.equal(getQuestionFeedbackStatus(model, { openAnswer: 'c' }, true), 'unknown');
+  assert.equal(model.modelAnswer, 'c');
+});
+
+test('open questions with a calculable model answer are graded by the shared local assessment', () => {
+  const model = getPresenterImportedObjectModel({
+    type: 'questionWindow',
+    linkedVraag: {
+      vraagtype: 'open',
+      content: { text: '<p>Bereken de schuine zijde.</p>' },
+      antwoord: { modelAnswer: '5' }
+    }
+  });
+
+  assert.equal(getQuestionFeedbackStatus(model, { openAnswer: '5' }, true), 'correct');
+  assert.equal(getQuestionFeedbackStatus(model, { openAnswer: '4' }, true), 'incorrect');
+});
+
+test('a question without answer key says the teacher checks it instead of colouring everything red', () => {
+  const model = getPresenterImportedObjectModel({
+    type: 'questionWindow',
+    linkedVraag: {
+      vraagtype: 'numeriek',
+      content: { text: '<p>Hoeveel is het?</p>' },
+      antwoord: { type: 'numeriek', unit: 'cm' }
+    }
+  });
+
+  assert.equal(getQuestionFeedbackStatus(model, { expectedValue: '12' }, true), 'unknown');
+});
+
+test('imported exercise blocks keep their numbered fields and are never scored', () => {
+  const model = getPresenterImportedObjectModel({
+    type: 'questionWindow',
+    data: {
+      kind: 'question',
+      title: 'Digitale vaardigheden',
+      question: {
+        vraagtype: 'exercise',
+        content: { text: '<p>Voer de stappen uit.</p>' },
+        antwoord: {
+          type: 'exercise',
+          fields: [
+            { id: 'f1', label: 'Noteer de bestandsnaam' },
+            { id: 'f2', label: 'Noteer de mapnaam' }
+          ]
+        }
+      }
+    }
+  });
+
+  assert.equal(model.type, 'exercise');
+  assert.deepEqual(model.fields.map((field) => field.label), [
+    'Noteer de bestandsnaam',
+    'Noteer de mapnaam'
+  ]);
+  assert.equal(getQuestionControlState(model, { f1: 'notulen.docx' }).hasInput, true);
+  assert.equal(getQuestionFeedbackStatus(model, { f1: 'notulen.docx' }, true), 'unknown');
 });
 
 test('matching questions expose pairs and check submitted links', () => {

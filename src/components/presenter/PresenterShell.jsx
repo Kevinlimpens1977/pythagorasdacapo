@@ -34,6 +34,7 @@ import { createPresenterInstrument, planInstrumentPlacement } from '../../lib/pr
 import { createCurtain, createLaser, createSpotlight } from '../../lib/presenterFocus';
 import { PresenterStudentPicker, PresenterTimerOverlay } from './PresenterFocusTools';
 import { createPresenterObject, updatePresenterMathToolObject } from '../../lib/presenterObjects';
+import { AXES_DEFAULT_GRID_SIZE, planAxesObjectPlacement } from '../../lib/presenterAxes';
 import { recognizePresenterShape } from '../../lib/presenterShapeRecognition';
 import {
   clearPresenterRecoveryState,
@@ -41,6 +42,10 @@ import {
   migratePresenterRecoveryState,
   savePresenterRecoveryState
 } from '../../lib/presenterStorage';
+import {
+  applyClassroomLogToObject,
+  clearClassroomLogFromObject
+} from '../../lib/presenterClassroomLog.js';
 import {
   appendHelixContentImportToPresenterSession,
   getPublishedPresenterContentBlocks
@@ -369,6 +374,9 @@ export default function PresenterShell() {
   const [textToolStyle, setTextToolStyle] = useState(DEFAULT_TEXT_TOOL_STYLE);
   const [activeTextCursor, setActiveTextCursor] = useState(null);
   const [textCaretRequest, setTextCaretRequest] = useState(null);
+  // Verzoek aan het bord om het bewerkpaneel van een net geplaatst
+  // assenstelsel meteen te openen.
+  const [axesPanelRequest, setAxesPanelRequest] = useState(null);
   const [eraserSize, setEraserSize] = useState(DEFAULT_PRESENTER_ERASER_SIZE);
   const [penMode, setPenMode] = useState('free');
   // Vormherkenning staat standaard UIT: wie het woord 'Oma' schrijft wil geen
@@ -694,6 +702,26 @@ export default function PresenterShell() {
     });
   }, [updateActivePageWithHistory]);
 
+  // Wat een instrument als bordobject aflevert: nu de hoekconstructie van de
+  // geodriehoek. Een object en geen inkt, want het gradenlabel is data - het
+  // wordt uit angleDegrees afgeleid, verschuift mee met de figuur en kan niet
+  // half weggegumd worden. Precies één history-stap, dus één undo per hoek.
+  const handlePlaceInstrumentObject = useCallback((draft) => {
+    if (!draft?.type) return;
+
+    // Het id staat buiten de updater zodat die puur blijft (StrictMode voert
+    // updaters dubbel uit).
+    const objectId = createObjectId();
+
+    updateActivePageWithHistory((currentSession) =>
+      addObjectToPresenterPage(
+        currentSession,
+        currentSession.activePageId,
+        createPresenterObject(draft.type, { ...draft, id: objectId })
+      )
+    );
+  }, [updateActivePageWithHistory]);
+
   const handleToggleObjectMeasure = useCallback((objectId) => {
     if (!objectId) return;
 
@@ -919,15 +947,78 @@ export default function PresenterShell() {
   };
 
   const handleCreateObject = (type) => {
-    const object = createPresenterObject(type, {
+    const overrides = {
       id: createObjectId(),
       x: 220,
       y: 180
-    });
+    };
+
+    // Een assenstelsel landt niet blind op 220/180: het wordt gecentreerd in het
+    // vrije deel van het bord met zijn hoek op een roosterlijn, zodat de assen
+    // meteen samenvallen met het ruitjespapier.
+    if (type === 'axes') {
+      Object.assign(
+        overrides,
+        planAxesObjectPlacement({
+          gridSize: activePage?.background?.gridSize || AXES_DEFAULT_GRID_SIZE,
+          pageWidth: activePage?.width,
+          pageHeight: activePage?.height,
+          visibleRect: boardViewportRef.current?.() || null
+        })
+      );
+    }
+
+    const object = createPresenterObject(type, overrides);
 
     updateActivePageWithHistory((currentSession) =>
       addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
     );
+
+    if (type === 'axes') {
+      setAxesPanelRequest({ objectId: object.id, requestId: Date.now() });
+    }
+  };
+
+  // Bereik, asnamen en het kader van een assenstelsel komen altijd als één
+  // afgerond pakket binnen (uit het paneel of uit een sleepbeweging), zodat het
+  // opgeslagen kader nooit uit de pas loopt met het bereik.
+  const handleAxesChange = useCallback((objectId, patch) => {
+    if (!objectId || !patch?.range) return;
+
+    updateObjectOnActivePageWithHistory(objectId, (object) => {
+      if (object?.type !== 'axes') return object;
+
+      const unchanged =
+        object.x === patch.x &&
+        object.y === patch.y &&
+        object.width === patch.width &&
+        object.height === patch.height &&
+        object.range?.xMin === patch.range.xMin &&
+        object.range?.xMax === patch.range.xMax &&
+        object.range?.yMin === patch.range.yMin &&
+        object.range?.yMax === patch.range.yMax &&
+        object.labels?.x === patch.labels?.x &&
+        object.labels?.y === patch.labels?.y;
+      // Geen verschil betekent geen undo-stap: het paneel commit bij elke blur.
+      if (unchanged) return object;
+
+      return {
+        ...object,
+        x: patch.x,
+        y: patch.y,
+        width: patch.width,
+        height: patch.height,
+        range: { ...patch.range },
+        labels: { ...patch.labels }
+      };
+    });
+  }, [updateObjectOnActivePageWithHistory]);
+
+  const handleEnableGrid = () => {
+    handleBackground({
+      kind: 'grid',
+      gridSize: activePage?.background?.gridSize || AXES_DEFAULT_GRID_SIZE
+    });
   };
 
   const handleCreateTextObject = (initialText = '') => {
@@ -1042,6 +1133,15 @@ export default function PresenterShell() {
   const handleMathToolChange = useCallback((objectId, mathTool) => {
     updateObjectOnActivePageWithHistory(objectId, (object) =>
       updatePresenterMathToolObject(object, mathTool)
+    );
+  }, [updateObjectOnActivePageWithHistory]);
+
+  // Lesregistratie van een klassikaal behandeld vraagvenster. Dit blijft in de
+  // presenter-sessie (en dus in de bestaande localStorage-recovery): geen
+  // Firestore, geen voortgangsrecord, geen leerling- of klas-id, geen tokens.
+  const handleImportedObjectClassroomLog = useCallback((objectId, entry) => {
+    updateObjectOnActivePageWithHistory(objectId, (object) =>
+      entry ? applyClassroomLogToObject(object, entry) : clearClassroomLogFromObject(object)
     );
   }, [updateObjectOnActivePageWithHistory]);
 
@@ -1320,6 +1420,7 @@ export default function PresenterShell() {
         textCaretRequest={textCaretRequest}
         onTextCursorChange={handleTextCursorChange}
         onMathToolChange={handleMathToolChange}
+        onImportedObjectClassroomLog={handleImportedObjectClassroomLog}
         allowFingerDrawing={fingerDrawing}
         instrument={instrument}
         onInstrumentChange={handleInstrumentChange}
@@ -1329,9 +1430,13 @@ export default function PresenterShell() {
         boardTheme={boardTheme}
         compassPenStyle={penTool}
         onCompassStroke={handleCompassStroke}
+        onPlaceInstrumentObject={handlePlaceInstrumentObject}
         onPenStyle={handlePenStyle}
         boardViewportRef={boardViewportRef}
         onToggleObjectMeasure={handleToggleObjectMeasure}
+        onAxesChange={handleAxesChange}
+        onEnableGrid={handleEnableGrid}
+        axesPanelRequest={axesPanelRequest}
       />
       <PresenterTimerOverlay timer={timer} onStop={() => setTimer(null)} />
       <PresenterStudentPicker open={studentPickerOpen} onClose={() => setStudentPickerOpen(false)} />

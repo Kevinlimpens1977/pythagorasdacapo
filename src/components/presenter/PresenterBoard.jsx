@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getBoardScale,
   getPointerRotationDegrees,
@@ -6,6 +6,14 @@ import {
   snapPointToGrid,
   snapRotationDegrees
 } from '../../lib/presenterGeometry';
+import {
+  AXES_DEFAULT_GRID_SIZE,
+  getAxesMoveSnap,
+  isAxesDoubleTap,
+  planAxesResize,
+  planAxesUpdate,
+  snapAxesPositionToGrid
+} from '../../lib/presenterAxes';
 import { buildStrokeRenderPath, constrainLineEnd } from '../../lib/presenterInk';
 import {
   appendStrokePoint,
@@ -34,6 +42,7 @@ import { PresenterFocusLayer } from './PresenterFocusTools';
 import PresenterInkLayer from './PresenterInkLayer';
 import PresenterInstrumentOverlay from './PresenterInstrumentOverlay';
 import PresenterObjectLayer from './PresenterObjectLayer';
+import PresenterAxesPanel from './PresenterAxesPanel';
 
 const DEFAULT_VIEWPORT_WIDTH = 1920;
 const DEFAULT_PAGE_WIDTH = 1920;
@@ -103,8 +112,20 @@ const getRotationPreviewValue = (interaction) => {
   return snapRotationDegrees(interaction.baseRotation + currentAngle - interaction.startAngle);
 };
 
-const transformObjectsForPreview = (page, interaction) => {
+const transformObjectsForPreview = (page, interaction, axesResize = null) => {
   if (!interaction || !page) return page;
+
+  // Slepen aan een handvat van een assenstelsel verandert het BEREIK: er komen
+  // hele ruitjes bij of af. De preview rekent met precies dezelfde functie als
+  // het commit-pad, zodat de figuur bij loslaten niet verspringt.
+  if (interaction.type === 'resize' && axesResize) {
+    return {
+      ...page,
+      objects: (Array.isArray(page.objects) ? page.objects : []).map((object) =>
+        object?.id === axesResize.objectId ? { ...object, ...axesResize.patch } : object
+      )
+    };
+  }
 
   if (interaction.type === 'rotate') {
     const rotation = getRotationPreviewValue(interaction);
@@ -142,6 +163,20 @@ const transformObjectsForPreview = (page, interaction) => {
           ...object,
           x: getNumber(object.x) + dx,
           y: getNumber(object.y) + dy
+        };
+      }
+
+      // In een groepsselectie schuift een assenstelsel wel mee, maar schaalt
+      // hij niet: één eenheid blijft één ruitje, en zijn nieuwe plek valt weer
+      // op een roosterlijn. Zelfde regel als in resizePresenterObjectsOnPage,
+      // zodat preview en commit gelijk lopen.
+      if (object.type === 'axes') {
+        const pageGridSize = page?.background?.gridSize;
+
+        return {
+          ...object,
+          x: snapAxesPositionToGrid(resizeBounds.x + (getNumber(object.x) - interaction.bounds.x) * scaleX, pageGridSize),
+          y: snapAxesPositionToGrid(resizeBounds.y + (getNumber(object.y) - interaction.bounds.y) * scaleY, pageGridSize)
         };
       }
 
@@ -194,7 +229,7 @@ function SelectionMarquee({ rect, scale }) {
   );
 }
 
-function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, showRotate = false, showMeasureToggle = false, measureActive = false, onDelete, onMovePointerDown, onResizePointerDown, onRotatePointerDown, onBringForward, onSendBackward, onToggleMeasure }) {
+function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false, showRotate = false, showMeasureToggle = false, measureActive = false, showRangeToggle = false, rangeActive = false, onDelete, onMovePointerDown, onResizePointerDown, onRotatePointerDown, onBringForward, onSendBackward, onToggleMeasure, onToggleRange }) {
   const handleSize = 28;
   const scaledBounds = {
     x: bounds.x * scale,
@@ -335,6 +370,27 @@ function SelectionTransformBox({ bounds, scale, allowInteriorInteraction = false
             Meet
           </button>
         ) : null}
+        {/* Zichtbare route naar het bewerkpaneel; dubbelklikken op het
+            assenstelsel doet hetzelfde, maar een verborgen dubbelklik mag nooit
+            de enige weg zijn - op een aanraakscherm is hij onbetrouwbaar. */}
+        {showRangeToggle ? (
+          <button
+            aria-label="Bereik en asnamen van het assenstelsel"
+            aria-pressed={rangeActive}
+            title="Bereik en asnamen instellen (of dubbelklik op het assenstelsel)"
+            className={`rounded-md border-2 px-2 py-1 text-xs font-black shadow-sm ${
+              rangeActive ? 'border-emerald-700 bg-emerald-600 text-white' : 'border-blue-700 bg-white text-blue-800'
+            }`}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onToggleRange?.();
+            }}
+            type="button"
+          >
+            Bereik
+          </button>
+        ) : null}
       </div>
       <button
         aria-label="Selectie verwijderen"
@@ -377,6 +433,7 @@ export default function PresenterBoard({
   textCaretRequest,
   onTextCursorChange,
   onMathToolChange,
+  onImportedObjectClassroomLog,
   allowFingerDrawing = true,
   instrument = null,
   onInstrumentChange,
@@ -386,9 +443,13 @@ export default function PresenterBoard({
   boardTheme = 'light',
   compassPenStyle,
   onCompassStroke,
+  onPlaceInstrumentObject,
   onPenStyle,
   boardViewportRef,
-  onToggleObjectMeasure
+  onToggleObjectMeasure,
+  onAxesChange,
+  onEnableGrid,
+  axesPanelRequest = null
 }) {
   const surfaceRef = useRef(null);
   const boardRef = useRef(null);
@@ -398,6 +459,8 @@ export default function PresenterBoard({
   const touchPanRef = useRef(null);
   const interactionRef = useRef(null);
   const eraserGestureRef = useRef(null);
+  // Vorige tik op een assenstelsel, om een dubbele tik zelf te herkennen.
+  const axesTapRef = useRef(null);
   // Wanneer de pen voor het laatst gezien is (ook zwevend), en welke pointers
   // bij het neerkomen geweigerd zijn. Samen vormen ze de palm rejection die
   // voor pen, gum én selectie geldt.
@@ -406,6 +469,17 @@ export default function PresenterBoard({
   const [measuredViewportWidth, setMeasuredViewportWidth] = useState(viewportWidth);
   const [interaction, setInteraction] = useState(null);
   const [eraserCursor, setEraserCursor] = useState(null);
+  // Welk assenstelsel zijn bewerkpaneel open heeft staan, en op welke pagina de
+  // docent het ruitjesvoorstel heeft weggeklikt. Allebei bewust alleen in dit
+  // scherm: er hoeft niets aan opslag of herstel te veranderen.
+  const [axesPanel, setAxesPanel] = useState({ objectId: null, requestId: null });
+  const [gridSuggestionDismissedPageId, setGridSuggestionDismissedPageId] = useState(null);
+
+  // Een nieuw geplaatst assenstelsel doet zijn paneel meteen open, zodat de
+  // docent nooit hoeft te raden hoe hij het bereik instelt.
+  if (axesPanelRequest?.requestId && axesPanelRequest.requestId !== axesPanel.requestId) {
+    setAxesPanel({ objectId: axesPanelRequest.objectId, requestId: axesPanelRequest.requestId });
+  }
 
   const isEraserTool = tool?.id === 'eraser';
   const eraserRadius = Number.isFinite(tool?.radius) && tool.radius > 0 ? tool.radius : 30;
@@ -506,29 +580,90 @@ export default function PresenterBoard({
     return ids.length > 0 ? ids : normalizeIds(selectedObjectId);
   }, [selectedObjectId, selectedObjectIds]);
 
+  const gridSize = Number.isFinite(page?.background?.gridSize) && page.background.gridSize > 0
+    ? page.background.gridSize
+    : AXES_DEFAULT_GRID_SIZE;
+
+  // Het enige geselecteerde object, als dat een assenstelsel is. Alle
+  // uitzonderingen hieronder hangen hieraan; alle andere objecttypen blijven
+  // precies doen wat ze deden.
+  const singleAxesObject = useMemo(() => {
+    if (activeSelectedObjectIds.length !== 1) return null;
+
+    const object = (Array.isArray(page?.objects) ? page.objects : []).find(
+      (candidate) => candidate?.id === activeSelectedObjectIds[0]
+    );
+    return object?.type === 'axes' ? object : null;
+  }, [activeSelectedObjectIds, page]);
+
   // Smart guides: bij verslepen licht snappen op randen/middens van andere
-  // objecten, met hulplijnen in beeld.
-  const moveSnap = useMemo(() => {
-    if (interaction?.type !== 'move' || !page) return null;
+  // objecten, met hulplijnen in beeld. Een assenstelsel snapt in plaats daarvan
+  // op de ruitjes, want anders komen de assen naast de roosterlijnen te liggen.
+  const computeMoveSnap = useCallback((objectIds, rawDx, rawDy) => {
+    const baseBounds = getPresenterSelectionBounds(page, objectIds);
+    if (!baseBounds) return { dx: 0, dy: 0, guides: [] };
 
-    const selectedIds = new Set(normalizeIds(interaction.objectIds));
-    const baseBounds = getPresenterSelectionBounds(page, interaction.objectIds);
-    if (!baseBounds) return null;
+    const ids = normalizeIds(objectIds);
+    const objects = Array.isArray(page?.objects) ? page.objects : [];
+    const axesSnap = getAxesMoveSnap({
+      objects,
+      objectIds: ids,
+      bounds: baseBounds,
+      dx: rawDx,
+      dy: rawDy,
+      gridSize
+    });
+    if (axesSnap) return axesSnap;
 
-    const rawDx = interaction.current.x - interaction.start.x;
-    const rawDy = interaction.current.y - interaction.start.y;
-    const movedBounds = {
-      ...baseBounds,
-      x: baseBounds.x + rawDx,
-      y: baseBounds.y + rawDy
-    };
-    const otherBounds = (Array.isArray(page.objects) ? page.objects : [])
+    const selectedIds = new Set(ids);
+    const otherBounds = objects
       .filter((object) => !selectedIds.has(object?.id))
       .map(getPresenterObjectBounds)
       .filter(Boolean);
 
-    return getAlignmentSnap(movedBounds, otherBounds);
-  }, [interaction, page]);
+    return getAlignmentSnap({ ...baseBounds, x: baseBounds.x + rawDx, y: baseBounds.y + rawDy }, otherBounds);
+  }, [gridSize, page]);
+
+  const moveSnap = useMemo(() => {
+    if (interaction?.type !== 'move' || !page) return null;
+
+    return computeMoveSnap(
+      interaction.objectIds,
+      interaction.current.x - interaction.start.x,
+      interaction.current.y - interaction.start.y
+    );
+  }, [computeMoveSnap, interaction, page]);
+
+  // Aan een handvat slepen verandert bij een assenstelsel het bereik in plaats
+  // van de schaal. Preview en commit lopen allebei langs deze functie, met
+  // hetzelfde eindpunt, zodat er bij loslaten niets verspringt.
+  const computeAxesResize = useCallback((activeInteraction, point) => {
+    if (activeInteraction?.type !== 'resize' || !point) return null;
+
+    const ids = normalizeIds(activeInteraction.objectIds);
+    if (ids.length !== 1) return null;
+
+    const object = (Array.isArray(page?.objects) ? page.objects : []).find((candidate) => candidate?.id === ids[0]);
+    if (object?.type !== 'axes') return null;
+
+    return {
+      objectId: object.id,
+      patch: planAxesResize({
+        object,
+        gridSize,
+        pageWidth: page?.width,
+        pageHeight: page?.height,
+        handle: activeInteraction.handle,
+        dx: point.x - activeInteraction.start.x,
+        dy: point.y - activeInteraction.start.y
+      })
+    };
+  }, [gridSize, page]);
+
+  const axesResizePreview = useMemo(
+    () => computeAxesResize(interaction, interaction?.current),
+    [computeAxesResize, interaction]
+  );
 
   const snappedInteraction = useMemo(() => {
     if (!interaction || interaction.type !== 'move' || !moveSnap || (moveSnap.dx === 0 && moveSnap.dy === 0)) {
@@ -544,7 +679,10 @@ export default function PresenterBoard({
     };
   }, [interaction, moveSnap]);
 
-  const previewPage = useMemo(() => transformObjectsForPreview(page, snappedInteraction), [snappedInteraction, page]);
+  const previewPage = useMemo(
+    () => transformObjectsForPreview(page, snappedInteraction, axesResizePreview),
+    [axesResizePreview, snappedInteraction, page]
+  );
 
   // Live inkt gaat naar een canvas-laag via requestAnimationFrame; React
   // re-rendert dus niet per pointer-sample. Pas bij het loslaten wordt de
@@ -735,23 +873,21 @@ export default function PresenterBoard({
     if (nextInteraction.type === 'move') {
       if (!hasMoved) return;
 
-      const baseBounds = getPresenterSelectionBounds(page, nextInteraction.objectIds);
-      const selectedIds = new Set(normalizeIds(nextInteraction.objectIds));
-      const snap = baseBounds
-        ? getAlignmentSnap(
-            { ...baseBounds, x: baseBounds.x + dx, y: baseBounds.y + dy },
-            (Array.isArray(page?.objects) ? page.objects : [])
-              .filter((object) => !selectedIds.has(object?.id))
-              .map(getPresenterObjectBounds)
-              .filter(Boolean)
-          )
-        : { dx: 0, dy: 0 };
+      // Exact dezelfde snap als in de preview, anders springt het object bij
+      // loslaten alsnog van de roosterlijn af.
+      const snap = computeMoveSnap(nextInteraction.objectIds, dx, dy);
 
       onMoveObjects?.(nextInteraction.objectIds, { dx: dx + snap.dx, dy: dy + snap.dy });
       return;
     }
 
     if (nextInteraction.type === 'resize' && hasMoved) {
+      const axesResize = computeAxesResize(nextInteraction, point);
+      if (axesResize) {
+        onAxesChange?.(axesResize.objectId, axesResize.patch);
+        return;
+      }
+
       onResizeObjects?.(
         nextInteraction.objectIds,
         nextInteraction.bounds,
@@ -969,11 +1105,36 @@ export default function PresenterBoard({
     schedulePreviewDraw();
   };
 
+  // Twee keer kort achter elkaar op een assenstelsel tikken opent het
+  // bewerkpaneel. Dit wordt bij ELKE tik gemeten, ook die op de selectiebox:
+  // na de eerste tik ligt die box over de figuur heen, en dan komt de tweede
+  // tik daar terecht in plaats van op de as zelf.
+  const registerAxesTap = (event, objectId, point) => {
+    if (!objectId || !point) return;
+
+    const object = (Array.isArray(page?.objects) ? page.objects : []).find(
+      (candidate) => candidate?.id === objectId
+    );
+    if (object?.type !== 'axes') return;
+
+    const tap = { objectId, x: point.x, y: point.y, time: getEventTime(event) };
+
+    if (isAxesDoubleTap(axesTapRef.current, tap)) {
+      axesTapRef.current = null;
+      setAxesPanel((current) => ({ objectId, requestId: current.requestId }));
+      return;
+    }
+
+    axesTapRef.current = tap;
+  };
+
   const handleObjectPointerDown = (event, objectId) => {
     if (tool?.id !== 'select' || event.button !== 0) return;
 
     const point = getBoardPoint(event);
     if (!point) return;
+
+    registerAxesTap(event, objectId, point);
 
     const objectIds = activeSelectedObjectIds.includes(objectId) ? activeSelectedObjectIds : [objectId];
     onSelectObjects?.(objectIds);
@@ -993,6 +1154,10 @@ export default function PresenterBoard({
 
     const point = getBoardPoint(event);
     if (!point) return;
+
+    if (activeSelectedObjectIds.length === 1) {
+      registerAxesTap(event, activeSelectedObjectIds[0], point);
+    }
 
     event.preventDefault();
     event.stopPropagation();
@@ -1068,6 +1233,46 @@ export default function PresenterBoard({
       start: point,
       current: point
     });
+  };
+
+  const axesPanelVisible = Boolean(
+    singleAxesObject && axesPanel.objectId === singleAxesObject.id && tool?.id === 'select' && selectionBounds
+  );
+  const backgroundKind = page?.background?.kind || 'white';
+  const showGridSuggestion =
+    backgroundKind !== 'grid' && backgroundKind !== 'mm' && gridSuggestionDismissedPageId !== (page?.id ?? null);
+
+  const toggleAxesPanel = () => {
+    if (!singleAxesObject) return;
+
+    setAxesPanel((current) => ({
+      objectId: current.objectId === singleAxesObject.id ? null : singleAxesObject.id,
+      requestId: current.requestId
+    }));
+  };
+
+  const applyAxesUpdate = ({ range, labels }) => {
+    if (!singleAxesObject) return;
+
+    const patch = planAxesUpdate({
+      object: singleAxesObject,
+      range,
+      labels,
+      gridSize,
+      pageWidth: page?.width,
+      pageHeight: page?.height,
+      // Een groter bereik mag de figuur niet onder de werkbalk of buiten beeld
+      // duwen: past hij nog in het zichtbare deel, dan schuift hij terug.
+      visibleRect: boardViewportRef?.current?.() || null
+    });
+    if (!patch) return;
+
+    onAxesChange?.(singleAxesObject.id, patch);
+  };
+
+  const handleEnableGrid = () => {
+    setGridSuggestionDismissedPageId(page?.id ?? null);
+    onEnableGrid?.();
   };
 
   const handleSelectionDelete = (event) => {
@@ -1147,6 +1352,7 @@ export default function PresenterBoard({
           textCaretRequest={textCaretRequest}
           onTextCursorChange={onTextCursorChange}
           onMathToolChange={onMathToolChange}
+          onImportedObjectClassroomLog={onImportedObjectClassroomLog}
         />
         <PresenterInkLayer page={page} theme={boardTheme} />
         <canvas
@@ -1199,6 +1405,24 @@ export default function PresenterBoard({
             showMeasureToggle={Boolean(measurableSelectedObject)}
             measureActive={Boolean(measurableSelectedObject?.showMeasure)}
             onToggleMeasure={() => onToggleObjectMeasure?.(measurableSelectedObject?.id)}
+            showRangeToggle={Boolean(singleAxesObject)}
+            rangeActive={axesPanelVisible}
+            onToggleRange={toggleAxesPanel}
+          />
+        ) : null}
+        {axesPanelVisible ? (
+          <PresenterAxesPanel
+            object={singleAxesObject}
+            bounds={selectionBounds}
+            scale={board.scale}
+            boardWidth={board.width}
+            boardHeight={board.height}
+            showGridSuggestion={showGridSuggestion}
+            onApplyRange={(range) => applyAxesUpdate({ range })}
+            onApplyLabels={(labels) => applyAxesUpdate({ labels })}
+            onEnableGrid={handleEnableGrid}
+            onDismissGridSuggestion={() => setGridSuggestionDismissedPageId(page?.id ?? null)}
+            onClose={() => setAxesPanel((current) => ({ objectId: null, requestId: current.requestId }))}
           />
         ) : null}
         {instrument ? (
@@ -1212,6 +1436,7 @@ export default function PresenterBoard({
             onChange={onInstrumentChange}
             onClose={onInstrumentClose}
             onDrawStroke={onCompassStroke}
+            onPlaceObject={onPlaceInstrumentObject}
             onPenStyle={onPenStyle}
           />
         ) : null}

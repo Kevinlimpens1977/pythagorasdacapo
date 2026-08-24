@@ -50,9 +50,13 @@ const v1aShapeDefaults = {
       { x: 240, y: 180 }
     ]
   },
+  // Elf ruitjes van 96 in beide richtingen: het assenstelsel van -5 tot 6 uit
+  // het wiskundeboek, waarbij één eenheid precies één ruitje is.
   axes: {
-    width: 360,
-    height: 260
+    width: 1056,
+    height: 1056,
+    range: { xMin: -5, xMax: 6, yMin: -5, yMax: 6 },
+    labels: { x: 'x', y: 'y' }
   },
   table: {
     width: 360,
@@ -207,6 +211,7 @@ test('createPresenterObject clones nested override values', () => {
 
 test('canRotatePresenterObject returns true for V1A shapes and false for content/question objects', () => {
   for (const type of v1aShapeTypes) {
+    if (type === 'axes') continue;
     assert.equal(canRotatePresenterObject({ type }), true, `${type} should rotate`);
   }
 
@@ -214,6 +219,40 @@ test('canRotatePresenterObject returns true for V1A shapes and false for content
   assert.equal(canRotatePresenterObject({ type: 'questionWindow' }), false);
   assert.equal(canRotatePresenterObject({ type: 'ratioTableTool' }), false);
   assert.equal(canRotatePresenterObject({ type: 'pythagorasTool' }), false);
+});
+
+// Bewuste gedragswijziging: een gedraaid assenstelsel valt niet meer op de
+// ruitjes en zet de getallen scheef. Het rotatiehandvat hoort er dus niet te
+// zijn, terwijl dupliceren gewoon blijft werken.
+test('canRotatePresenterObject refuses to rotate the axes figure off the grid', () => {
+  assert.equal(canRotatePresenterObject({ type: 'axes' }), false);
+  assert.equal(canDuplicatePresenterObject({ type: 'axes' }), true);
+});
+
+test('createPresenterObject clones the axes range so two figures never share one', () => {
+  const first = createPresenterObject('axes');
+  const second = createPresenterObject('axes');
+
+  assert.notEqual(first.range, second.range);
+  assert.notEqual(first.labels, second.labels);
+
+  first.range.xMax = 99;
+  first.labels.x = 't (s)';
+
+  assert.deepEqual(second.range, { xMin: -5, xMax: 6, yMin: -5, yMax: 6 });
+  assert.deepEqual(second.labels, { x: 'x', y: 'y' });
+});
+
+test('createPresenterObject repairs an axes object with a broken range', () => {
+  const object = createPresenterObject('axes', {
+    width: 384,
+    height: 288,
+    range: { xMin: 6, xMax: 6, yMin: -5, yMax: 6 },
+    labels: { x: '  t (s) ' }
+  });
+
+  assert.deepEqual(object.range, { xMin: -1, xMax: 3, yMin: -1, yMax: 2 });
+  assert.deepEqual(object.labels, { x: 't (s)', y: 'y' });
 });
 
 test('canDuplicatePresenterObject returns true for V1A shapes, text and math tools, false for lesson blocks', () => {

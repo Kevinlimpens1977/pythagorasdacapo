@@ -34,10 +34,15 @@ export const snapPointToGrid = (point, { enabled, gridSize }) => {
   };
 };
 
+// De ruitmaat in schermpixels. Bewust NIET op hele pixels afgerond: de
+// objectlaag is een SVG die op dezelfde maatfactor staat en niets afrondt, dus
+// een halve pixel per ruitje zou na twaalf ruitjes een zichtbaar gat tussen het
+// ruitjespapier en de assen van een assenstelsel opleveren. Op een digibord van
+// 1920 is de maatfactor precies 1 en valt het samen; op een laptop niet.
 export const getGridLineStyle = ({ gridSize, scale }) => {
   const safeGridSize = isFinitePositiveNumber(gridSize) ? gridSize : 96;
   const safeScale = isFinitePositiveNumber(scale) ? scale : 1;
-  const lineSize = Math.max(1, Math.round(safeGridSize * safeScale));
+  const lineSize = Math.max(1, Math.round(safeGridSize * safeScale * 100) / 100);
 
   return {
     backgroundSize: `${lineSize}px ${lineSize}px`,

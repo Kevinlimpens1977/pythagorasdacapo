@@ -1,7 +1,13 @@
 import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils.js';
 import { normalizeMediaContent } from '../../lib/mediaUtils.js';
-import { isAnswerCorrect } from '../../lib/answerNormalization.js';
 import { buildQuestionPreviewModel } from '../../lib/questionPreviewUtils.js';
+import { getExerciseFields } from '../../lib/exerciseBlockUtils.js';
+import {
+  GRADE_REASONS,
+  buildInitialOrderItems,
+  getOpenModelAnswer,
+  gradeQuestionAnswer
+} from '../../lib/questionGrading.js';
 
 const TYPE_TO_KIND = {
   lessonBlock: 'lesson',
@@ -128,12 +134,33 @@ const buildSlidedeckModel = (object = {}) => {
   };
 };
 
+// Tokens horen nooit in de Presenter zichtbaar te zijn. De import strijkt ze
+// al weg, maar het bordmodel mag ook nooit per ongeluk een tokenveld uit een
+// oudere sessie of een direct meegegeven object doorgeven.
+const stripTokenKeys = (value) => {
+  if (Array.isArray(value)) return value.map(stripTokenKeys);
+  if (value === null || typeof value !== 'object') return value;
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !key.toLowerCase().includes('token'))
+      .map(([key, entryValue]) => [key, stripTokenKeys(entryValue)])
+  );
+};
+
+const buildExerciseFields = (answer = {}) =>
+  getExerciseFields({ content: { exercise: answer } }).map((field, index) => ({
+    ...field,
+    label: field.label || `Opdracht ${index + 1}`
+  }));
+
 const buildQuestionModel = (object = {}) => {
   const data = getObjectData(object);
   const question = getQuestionSource(object);
   const content = getContent(object);
   const preview = buildQuestionPreviewModel(question);
-  const answer = question?.antwoord || object.antwoord || {};
+  const answer = stripTokenKeys(question?.antwoord || object.antwoord || {});
+  const isExercise = preview.type === 'exercise';
 
   return {
     kind: 'question',
@@ -142,7 +169,7 @@ const buildQuestionModel = (object = {}) => {
     type: preview.type,
     promptHtml: stripEmptyHtml(firstText(preview.promptHtml, data.blockPromptHtml, content.html, content.text, question?.content?.text)),
     segments: preview.segments || [],
-    fields: preview.fields || [],
+    fields: isExercise ? buildExerciseFields(answer) : (preview.fields || []),
     orderItems: preview.orderItems || [],
     pairs: Array.isArray(answer.pairs)
       ? answer.pairs.map((pair, index) => ({
@@ -158,7 +185,11 @@ const buildQuestionModel = (object = {}) => {
           correct: Boolean(option.correct)
         }))
       : [],
-    correctAnswer: answer.expected ?? answer.correctValue ?? answer.modelAnswer ?? answer.answer ?? ''
+    modelAnswer: getOpenModelAnswer({ antwoord: answer }),
+    // De volledige antwoordsleutel gaat mee zodat het bord kan nakijken via
+    // dezelfde gedeelde grader als de leerlingroute. Deze vorm blijft
+    // docent-only: nooit hergebruiken voor een leerlingscherm.
+    answerKey: answer
   };
 };
 
@@ -173,8 +204,17 @@ export const getPresenterImportedObjectModel = (object = {}) => {
   return null;
 };
 
+export const buildQuestionInitialAnswers = (model) => ({
+  orderItems: buildInitialOrderItems(model?.orderItems || [])
+});
+
 export const getQuestionControlState = (model, answers = {}) => {
   if (!model || model.kind !== 'question') return { hasInput: false };
+
+  if (model.type === 'exercise') {
+    const hasInput = (model.fields || []).some((field) => String(answers[field.id] || '').trim());
+    return { hasInput };
+  }
 
   if (model.type === 'invullen') {
     const hasInput = model.fields.some((field) => String(answers[field.id] || '').trim());
@@ -201,34 +241,42 @@ export const getQuestionControlState = (model, answers = {}) => {
   return { hasInput: Boolean(String(answers.openAnswer || '').trim()) };
 };
 
+/**
+ * Vertaalt een bordmodel naar de invoer van de gedeelde grader. Het bord doet
+ * hiermee GEEN eigen vergelijking meer: alles loopt via
+ * src/lib/questionGrading.js, dezelfde laag als de leerlingroute.
+ */
+export const buildQuestionGradingInput = (model, answers = {}) => ({
+  vraag: {
+    vraagtype: model?.type,
+    antwoord: model?.answerKey || {}
+  },
+  preview: {
+    type: model?.type,
+    fields: model?.fields || [],
+    orderItems: model?.orderItems || []
+  },
+  answers
+});
+
+export const gradeQuestionOnBoard = (model, answers = {}) => {
+  if (!model || model.kind !== 'question') {
+    return { canGrade: false, isCorrect: false, parts: [], reason: GRADE_REASONS.NOT_SCORED };
+  }
+  return gradeQuestionAnswer(buildQuestionGradingInput(model, answers));
+};
+
+/**
+ * 'idle' | 'correct' | 'incorrect' | 'unknown'
+ *
+ * 'unknown' is bewust een eigen status: zonder antwoordsleutel (of bij een
+ * open vraag die niet lokaal te rekenen valt) zegt het bord "docent kijkt na"
+ * in plaats van alles rood te kleuren.
+ */
 export const getQuestionFeedbackStatus = (model, answers = {}, checked = false) => {
   if (!checked || !getQuestionControlState(model, answers).hasInput) return 'idle';
 
-  if (model.type === 'invullen') {
-    const correct = model.fields.length > 0 && model.fields.every((field) => isAnswerCorrect(answers[field.id], field.answer));
-    return correct ? 'correct' : 'incorrect';
-  }
-
-  if (model.type === 'meerkeuze') {
-    const correct = model.options.length > 0 && model.options.every((option) => Boolean(answers[option.id]) === option.correct);
-    return correct ? 'correct' : 'incorrect';
-  }
-
-  if (model.type === 'volgorde') {
-    const items = Array.isArray(answers.orderItems) ? answers.orderItems : [];
-    const correct = items.length === model.orderItems.length && items.every((item, index) => item.id === model.orderItems[index]?.id);
-    return correct ? 'correct' : 'incorrect';
-  }
-
-  if (model.type === 'koppelen') {
-    const submittedPairs = answers.pairs || {};
-    const correct = model.pairs.length > 0 && model.pairs.every((pair) => submittedPairs[pair.id] === pair.id);
-    return correct ? 'correct' : 'incorrect';
-  }
-
-  if (model.type === 'numeriek') {
-    return isAnswerCorrect(answers.expectedValue, model.correctAnswer) ? 'correct' : 'incorrect';
-  }
-
-  return isAnswerCorrect(answers.openAnswer, model.correctAnswer) ? 'correct' : 'incorrect';
+  const grade = gradeQuestionOnBoard(model, answers);
+  if (!grade.canGrade) return 'unknown';
+  return grade.isCorrect ? 'correct' : 'incorrect';
 };

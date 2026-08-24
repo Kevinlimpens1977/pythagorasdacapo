@@ -1,4 +1,5 @@
 import { normalizeContentBlocks } from './contentBlockUtils.js';
+import { getExerciseFields } from './exerciseBlockUtils.js';
 import { normalizeMediaContent } from './mediaUtils.js';
 import { createPresenterPage } from './presenterModel.js';
 import { createPresenterObject } from './presenterObjects.js';
@@ -126,18 +127,33 @@ const buildSlidedeckBlockData = (block) =>
     }
   });
 
+// Vraagblokken zonder gekoppeld vraagdocument dragen hun opgave als
+// content.exercise met genummerde invulvelden (de DV-seed). Zo'n blok is een
+// inleverblok: het heeft per ontwerp geen antwoordsleutel. Het krijgt daarom
+// expliciet vraagtype 'exercise' mee, zodat het bord dezelfde genummerde
+// velden toont als de leerlingroute en de controleknop wegblijft. Zonder dit
+// werd het 'open', verdwenen alle velden achter één tekstvak en kleurde elk
+// antwoord rood.
+const buildExerciseFallbackQuestion = (block) => {
+  const fields = getExerciseFields(block);
+
+  return {
+    id: block.linkedVraagId || null,
+    title: block.linkedVraagTitle || block.title || '',
+    vraagtype: fields.length > 0 ? 'exercise' : (block.content?.exercise?.type || 'open'),
+    content: { text: getBlockHtml(block) },
+    antwoord: fields.length > 0
+      ? { type: 'exercise', fields }
+      : (block.content?.exercise || { fields: [] })
+  };
+};
+
 const buildQuestionBlockData = (block, question) =>
   toSerializableSnapshot({
     kind: 'question',
     title: question?.title || block.title || '',
     blockPromptHtml: getBlockHtml(block),
-    question: question || {
-      id: block.linkedVraagId || null,
-      title: block.linkedVraagTitle || block.title || '',
-      vraagtype: block.content?.exercise?.type || 'open',
-      content: { text: getBlockHtml(block) },
-      antwoord: block.content?.exercise || { fields: [] }
-    }
+    question: question || buildExerciseFallbackQuestion(block)
   });
 
 const buildObjectData = (block, question) => {
@@ -150,7 +166,9 @@ const buildObjectData = (block, question) => {
 const getObjectType = (blockType) => (blockType === 'question' ? 'questionWindow' : 'lessonBlock');
 
 const getObjectHeight = (blockType) => {
-  if (blockType === 'question') return 720;
+  // Vraagvensters zijn klassikaal bedienbaar: er moet ruimte zijn voor grote
+  // antwoordknoppen en het schermtoetsenbord van invul- en getalvragen.
+  if (blockType === 'question') return 900;
   if (blockType === 'media' || blockType === 'slidedeck') return 900;
   return DEFAULT_OBJECT_HEIGHT;
 };

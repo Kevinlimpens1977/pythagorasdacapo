@@ -44,7 +44,9 @@ export const PRESENTER_INSTRUMENT_DEFS = {
     anchor: 'topLeft',
     localEdge: { x1: 12, y1: 330, x2: 628, y2: 330 },
     pivot: { x: 320, y: 330 },
-    controlButtonCount: 4
+    // Vier gedeelde knoppen plus twee eigen knoppen voor het eerste been van de
+    // hoekconstructie (naar links / naar rechts).
+    controlButtonCount: 6
   },
   compass: {
     id: 'compass',
@@ -558,6 +560,84 @@ export const buildTriangleScale = ({
   }
 
   return { cx, baseY, arcRadius: cfg.arcRadius, arcTicks, baseTicks, labels, baseTickSpan: cfg.baseTickSpan };
+};
+
+// Maten van het sleepvlak van de geodriehoek: een driehoek binnen het lichaam
+// die de strook langs de tekenrand vrijlaat, zodat de pen daar gewoon langs kan.
+// Alles wat pointers vangt op de geodriehoek hoort BINNEN dit vlak te vallen;
+// dan verandert er voor de pen niets ten opzichte van de bestaande situatie.
+export const TRIANGLE_MOVE_AREA = {
+  inset: 70,
+  lift: 34,
+  apexDrop: 46
+};
+
+export const buildTriangleMoveArea = ({
+  width = PRESENTER_INSTRUMENT_DEFS.triangle.width,
+  baseY = PRESENTER_INSTRUMENT_DEFS.triangle.localEdge.y1,
+  apexY = 26
+} = {}) => {
+  const cfg = TRIANGLE_MOVE_AREA;
+  const points = [
+    { x: round2(cfg.inset), y: round2(baseY - cfg.lift) },
+    { x: round2(width - cfg.inset), y: round2(baseY - cfg.lift) },
+    { x: round2(width / 2), y: round2(apexY + cfg.apexDrop) }
+  ];
+
+  return { points, pathData: `M ${points.map((point) => `${point.x} ${point.y}`).join(' L ')} Z` };
+};
+
+// Aanraakband over de hoekschaal van de geodriehoek: een tik hierop leest een
+// aantal graden af, een sleep verplaatst het instrument gewoon (zie
+// isInstrumentTap in presenterAngleTool).
+//
+// De band ligt om de boog (straal 168) heen, ruim buiten de cijferring (124) en
+// binnen het sleepvlak hierboven. De onderkant wordt vlak afgesneden op dezelfde
+// hoogte als het sleepvlak, zodat de band nooit in de tolerantieband van de
+// tekenrand komt.
+export const TRIANGLE_SCALE_BAND = {
+  // Ruim buiten de verste hoek van het verste hoekcijfer (146) en ruim binnen de
+  // binnenkant van de boogstreepjes (154): de cijfers blijven onbedekt, de
+  // streepjes waar je op tikt vallen wel in de band.
+  innerRadius: 150,
+  outerRadius: 186,
+  cutHeight: TRIANGLE_MOVE_AREA.lift,
+  segments: 48
+};
+
+export const buildTriangleScaleBand = ({
+  cx = PRESENTER_INSTRUMENT_DEFS.triangle.pivot.x,
+  baseY = PRESENTER_INSTRUMENT_DEFS.triangle.localEdge.y1
+} = {}) => {
+  const cfg = TRIANGLE_SCALE_BAND;
+  const minDegrees = (Math.asin(clampNumber(cfg.cutHeight / cfg.outerRadius, 0, 1)) * 180) / Math.PI;
+  const maxDegrees = 180 - minDegrees;
+  const outer = [];
+  const inner = [];
+
+  for (let index = 0; index <= cfg.segments; index += 1) {
+    const degrees = minDegrees + ((maxDegrees - minDegrees) * index) / cfg.segments;
+    const radians = (degrees * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    // Vlak afgesneden onderkant: dichtbij de basislijn volgt de binnenrand de
+    // horizontale snijlijn in plaats van de cirkel.
+    const innerRadius = Math.min(cfg.outerRadius, Math.max(cfg.innerRadius, cfg.cutHeight / Math.max(sin, 1e-6)));
+
+    outer.push({ x: round2(cx + cos * cfg.outerRadius), y: round2(baseY - sin * cfg.outerRadius) });
+    inner.push({ x: round2(cx + cos * innerRadius), y: round2(baseY - sin * innerRadius) });
+  }
+
+  const points = [...outer, ...inner.reverse()];
+
+  return {
+    minDegrees: round2(minDegrees),
+    maxDegrees: round2(maxDegrees),
+    innerRadius: cfg.innerRadius,
+    outerRadius: cfg.outerRadius,
+    points,
+    pointsAttribute: points.map((point) => `${point.x},${point.y}`).join(' ')
+  };
 };
 
 // Lettergroottes van de dubbele schaal op de gradenboog.

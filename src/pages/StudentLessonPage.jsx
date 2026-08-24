@@ -86,6 +86,7 @@ import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { buildQuestionDraftProgressPayload, hasQuestionDraftAnswer } from '../lib/questionDraftProgress';
 import { assessOpenAnswerLocally } from '../lib/localOpenAnswerAssessment';
 import { hasQuestionAnswerKey } from '../lib/publicQuestionView';
+import { buildInitialOrderItems, gradeQuestionAnswer } from '../lib/questionGrading';
 import {
   buildParagraphEndPlan,
   buildQuestionAttemptOutcome,
@@ -1628,42 +1629,19 @@ function QuestionLearningBlock({
     return `${baseClass} ${statusClass}`;
   };
 
+  // Nakijken gebeurt in de gedeelde beoordelingslaag (src/lib/questionGrading.js),
+  // dezelfde die het digibord gebruikt. Hier blijft alleen de leerlinggebonden
+  // boekhouding staan: pogingen, tiers, tokens en voortgang.
   const getQuestionCorrectStatus = () => {
     if (!answerKeyAvailable) return false;
 
-    if (preview.type === 'invullen') {
-      return preview.fields.length > 0 && preview.fields.every((field) =>
-        getPreviewAnswerStatus(previewAnswers[field.id], field.answer) === 'correct'
-      );
-    }
+    const grade = gradeQuestionAnswer({
+      vraag: linkedVraag || {},
+      preview,
+      answers: previewAnswers
+    });
 
-    if (preview.type === 'meerkeuze') {
-      const options = linkedVraag?.antwoord?.options || [];
-      return options.length > 0 && options.every((option, index) => {
-        const fieldId = option.id || `option-${index + 1}`;
-        return Boolean(previewAnswers[fieldId]) === Boolean(option.correct);
-      });
-    }
-
-    if (preview.type === 'volgorde') {
-      return currentOrderItems.length > 0 &&
-        currentOrderItems.every((item, index) => item.id === preview.orderItems?.[index]?.id);
-    }
-
-    if (preview.type === 'numeriek') {
-      return getPreviewAnswerStatus(
-        previewAnswers.expectedValue,
-        linkedVraag.antwoord?.expected ?? linkedVraag.antwoord?.correctValue
-      ) === 'correct';
-    }
-
-    if (preview.type === 'open') {
-      return false;
-    }
-
-    const correctAnswer = linkedVraag.antwoord?.modelAnswer || linkedVraag.antwoord?.answer || '';
-    if (!correctAnswer) return false;
-    return getPreviewAnswerStatus(previewAnswers.openAnswer, correctAnswer) === 'correct';
+    return grade.canGrade && grade.isCorrect;
   };
 
   const handleCheckAnswer = async () => {
@@ -1900,12 +1878,8 @@ function QuestionLearningBlock({
     progressRecords
   });
 
-  const getInitialOrderItems = () => {
-    if (!preview.orderItems?.length) return [];
-    return preview.orderItems.length > 1 ? [...preview.orderItems].reverse() : preview.orderItems;
-  };
-
-  const currentOrderItems = previewAnswers.orderItems || getInitialOrderItems();
+  // Zelfde startvolgorde als het digibord: één gedeelde implementatie.
+  const currentOrderItems = previewAnswers.orderItems || buildInitialOrderItems(preview.orderItems);
   const orderWasChanged = Boolean(previewAnswers.orderTouched);
   const isOrderCorrect = currentOrderItems.length > 0 &&
     currentOrderItems.every((item, index) => item.id === preview.orderItems?.[index]?.id);

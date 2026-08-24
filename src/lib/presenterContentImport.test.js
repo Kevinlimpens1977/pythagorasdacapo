@@ -214,3 +214,56 @@ test('appendHelixContentImportToPresenterSession leaves session unchanged withou
 
   assert.equal(next, session);
 });
+
+test('exercise blocks without a linked question keep their numbered fields on the board', () => {
+  const pages = buildPresenterPagesFromHelixContent({
+    paragraaf,
+    contentBlocks: [
+      {
+        id: 'block-dv',
+        type: 'question',
+        title: 'Bestanden ordenen',
+        status: 'published',
+        order: 1,
+        content: {
+          html: '<p>Voer de stappen uit.</p>',
+          exercise: {
+            fields: [
+              { id: 'f1', label: 'Noteer de bestandsnaam' },
+              { id: 'f2', label: 'Noteer de mapnaam' }
+            ]
+          }
+        }
+      }
+    ]
+  });
+
+  const question = pages[0].objects[0].data.question;
+
+  // Zonder dit werd het vraagtype 'open': alle invulvelden verdwenen achter een
+  // enkel tekstvak en de controleknop kleurde elk antwoord rood.
+  assert.equal(question.vraagtype, 'exercise');
+  assert.equal(question.antwoord.type, 'exercise');
+  assert.deepEqual(question.antwoord.fields, [
+    { id: 'f1', label: 'Noteer de bestandsnaam' },
+    { id: 'f2', label: 'Noteer de mapnaam' }
+  ]);
+});
+
+test('question blocks without a question document and without exercise fields stay open', () => {
+  const pages = buildPresenterPagesFromHelixContent({
+    paragraaf,
+    contentBlocks: [
+      {
+        id: 'block-plain',
+        type: 'question',
+        title: 'Losse vraag',
+        status: 'published',
+        order: 1,
+        content: { html: '<p>Wat denk je?</p>' }
+      }
+    ]
+  });
+
+  assert.equal(pages[0].objects[0].data.question.vraagtype, 'open');
+});

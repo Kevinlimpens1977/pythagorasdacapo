@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react';
-import { Circle, Move, Palette, RotateCw, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Circle, Move, Palette, RotateCw, X } from 'lucide-react';
 import { getPointerRotationDegrees, snapRotationDegrees } from '../../lib/presenterGeometry';
 import {
   buildProtractorScale,
   buildRulerTicks,
+  buildTriangleMoveArea,
   buildTriangleScale,
+  buildTriangleScaleBand,
   formatProtractorReading,
   formatRulerLength,
   getInstrumentAngleLabel,
@@ -17,6 +19,17 @@ import {
   PRESENTER_INSTRUMENT_DEFS,
   PROTRACTOR_LABEL_FONT_SIZE
 } from '../../lib/presenterInstruments';
+import {
+  clampAngleDegrees,
+  formatAngleDegrees,
+  getAngleDegreesFromReading,
+  getAngleFrameGeometry,
+  getAngleLegLength,
+  isInstrumentTap,
+  parseAngleInput,
+  planAngleObjectPlacement
+} from '../../lib/presenterAngleTool';
+import PresenterAngleShape from './PresenterAngleShape';
 import {
   advanceCompassSweep,
   buildCompassArcPoints,
@@ -56,6 +69,14 @@ const PEN_WIDTHS = [
 
 const clamp = (value, min, max) => (max < min ? min : Math.min(Math.max(value, min), max));
 
+// Het gradenveldje hangt boven het hoekpunt: hoog genoeg om het rode
+// dradenkruis, de middenlijn en de getekende benen vrij te laten, laag genoeg om
+// nog "midden op de geodriehoek" te staan.
+const ANGLE_FIELD_OFFSET_PX = 56;
+
+const getNow = () =>
+  typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now();
+
 const rotatePoint = (point, pivot, degrees) => {
   const radians = (degrees * Math.PI) / 180;
   const cos = Math.cos(radians);
@@ -65,6 +86,10 @@ const rotatePoint = (point, pivot, degrees) => {
 
   return { x: pivot.x + dx * cos - dy * sin, y: pivot.y + dx * sin + dy * cos };
 };
+
+// Alles wat in de overlay een pointer opvangt moet die tegenhouden: de overlay
+// hangt binnen de board-div, en die start bij elke pointerdown een penstreek.
+const stopBoardPointer = (event) => event.stopPropagation();
 
 const CONTROL_BUTTON_CLASS =
   'flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-700 shadow-sm transition hover:border-blue-500 hover:text-blue-700 active:scale-95';
@@ -117,9 +142,12 @@ function InstrumentControlBar({
         </div>
       ) : null}
 
+      {/* De knoppenrij hangt binnen het bord: zonder deze rem bubbelt een tik op
+          een knop door naar de tekenlogica en zet die een stip op het bord. */}
       <div
         className="flex items-center gap-2 rounded-3xl border border-slate-300 bg-white/95 p-2 shadow-xl backdrop-blur"
         style={{ pointerEvents: 'auto' }}
+        onPointerDown={stopBoardPointer}
       >
         <button
           type="button"
@@ -189,6 +217,7 @@ function InstrumentControlBar({
             openUpward ? 'bottom-full mb-2' : 'top-full mt-2'
           }`}
           style={{ pointerEvents: 'auto' }}
+          onPointerDown={stopBoardPointer}
         >
           <p className="mb-2 text-xs font-black uppercase tracking-wide text-slate-500">Penkleur</p>
           <div className="mb-3 grid grid-cols-6 gap-1.5">
@@ -380,6 +409,11 @@ const TriangleVisual = ({ width, height, gridSize }) => {
   // langs de basis worden samen uitgerekend, zodat er gegarandeerd geen streepje
   // door een cijfer loopt (zie buildTriangleScale en de tests daarop).
   const { arcRadius, arcTicks, baseTicks, labels } = buildTriangleScale({ cx, baseY, gridSize });
+  const moveArea = buildTriangleMoveArea({ width, baseY, apexY: apex.y });
+  // Aanraakband over de hoekschaal: een tik leest een aantal graden af, een
+  // sleep verplaatst gewoon. De band ligt binnen het sleepvlak, dus voor de pen
+  // verandert er niets.
+  const scaleBand = buildTriangleScaleBand({ cx, baseY });
 
   return (
     <svg aria-hidden="true" className="h-full w-full" viewBox={`0 0 ${width} ${height}`} style={{ pointerEvents: 'none', overflow: 'visible' }}>
@@ -468,9 +502,17 @@ const TriangleVisual = ({ width, height, gridSize }) => {
       {/* sleepvlak: basisstrook blijft vrij om langs te tekenen */}
       <path
         data-instrument-grab="move"
-        d={`M 70 ${baseY - 34} L ${width - 70} ${baseY - 34} L ${apex.x} ${apex.y + 46} Z`}
+        d={moveArea.pathData}
         fill="transparent"
         style={{ cursor: 'move', pointerEvents: 'all' }}
+      />
+      {/* Na het sleepvlak getekend: in SVG wint de laatste vorm de raakproef, en
+          alleen daardoor krijgt een tik op de schaal voorrang op verslepen. */}
+      <polygon
+        data-instrument-grab="scale"
+        points={scaleBand.pointsAttribute}
+        fill="transparent"
+        style={{ cursor: 'pointer', pointerEvents: 'all' }}
       />
     </svg>
   );
@@ -652,6 +694,85 @@ const ProtractorVisual = ({ width, height, reading }) => {
     </svg>
   );
 };
+
+// ---------------------------------------------------------------------------
+// Gradenveldje midden op de geodriehoek, bij het hoekpunt.
+//
+// Bewust een DOM-element en geen foreignObject in de instrument-SVG: die zou
+// meedraaien en bij een gedraaid instrument op zijn kop staan. Het draaipunt is
+// zelf het rotatiecentrum, dus het veld hoeft alleen verschoven te worden.
+//
+// Ook bewust een echte <input>: de globale sneltoetsen van de shell laten
+// invoervelden met rust (isEditableShortcutTarget), zodat Backspace hier geen
+// geselecteerd object wist en de pijltjes geen pagina omslaan.
+// ---------------------------------------------------------------------------
+function AngleDegreeField({ left, top, degrees, onPreview, onCommit }) {
+  const [text, setText] = useState('');
+  const parsed = parseAngleInput(text);
+  const invalid = text.trim() !== '' && parsed === null;
+
+  const handleChange = (event) => {
+    const next = event.target.value;
+    setText(next);
+    onPreview?.(parseAngleInput(next));
+  };
+
+  const handleKeyDown = (event) => {
+    // Nooit doorlaten naar de sneltoetsen van de shell.
+    event.stopPropagation();
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const value = parseAngleInput(text);
+      if (value === null) return;
+
+      onCommit?.(value);
+      setText('');
+      event.currentTarget.blur();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setText('');
+      onPreview?.(null);
+      event.currentTarget.blur();
+    }
+  };
+
+  return (
+    <div
+      className="absolute z-40 -translate-x-1/2 -translate-y-1/2"
+      style={{ left: `${left}px`, top: `${top}px`, pointerEvents: 'none' }}
+    >
+      <div
+        className="flex flex-col items-center gap-1"
+        style={{ pointerEvents: 'auto' }}
+        onPointerDown={stopBoardPointer}
+      >
+        <input
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          aria-label="Aantal graden voor de hoek (0 tot 360)"
+          title="Typ het aantal graden en druk op Enter"
+          placeholder="0-360"
+          className={`h-12 w-28 rounded-xl border-2 bg-white/95 text-center text-2xl font-black shadow-lg outline-none ${
+            invalid ? 'border-red-500 text-red-700' : 'border-blue-600 text-slate-900'
+          }`}
+          value={text}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+        />
+        {Number.isFinite(degrees) ? (
+          <span className="rounded-md bg-slate-950/85 px-2 py-0.5 text-sm font-black text-white shadow">
+            {formatAngleDegrees(degrees)}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 const instrumentVisuals = {
   ruler: RulerVisual,
@@ -1181,6 +1302,7 @@ export default function PresenterInstrumentOverlay({
   onChange,
   onClose,
   onDrawStroke,
+  onPlaceObject,
   onPenStyle
 }) {
   const def = PRESENTER_INSTRUMENT_DEFS[instrument?.id];
@@ -1275,6 +1397,73 @@ export default function PresenterInstrumentOverlay({
     };
   };
 
+  // -------------------------------------------------------------------------
+  // Hoekconstructie op de geodriehoek
+  // -------------------------------------------------------------------------
+  const isTriangle = instrument.id === 'triangle';
+  const legDirection = instrument.legDirection === 'left' ? 'left' : instrument.legDirection === 'right' ? 'right' : null;
+  const legDegrees = clampAngleDegrees(instrument.legDegrees);
+  const legLength = getAngleLegLength(sizeScale);
+
+  const getBoardPoint = (event) => {
+    const boardElement = event.currentTarget.closest('[data-presenter-board]');
+    const rect = boardElement?.getBoundingClientRect();
+    if (!rect) return null;
+
+    return { x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale };
+  };
+
+  // Een tik op de schaalverdeling wijst een richting aan; die wordt tot een
+  // hoekmaat gerekend vanaf het gekozen eerste been.
+  const readScaleDegrees = (event) => {
+    const point = getBoardPoint(event);
+    if (!point) return null;
+
+    return getAngleDegreesFromReading(
+      getProtractorReadingFromPoint({ pivot, rotation, point }),
+      legDirection || 'right'
+    );
+  };
+
+  const placeAngle = (degrees) => {
+    const value = clampAngleDegrees(degrees);
+    if (value === null) return;
+
+    const placement = planAngleObjectPlacement({
+      pivot,
+      instrumentRotation: rotation,
+      legDirection: legDirection || 'right',
+      degrees: value,
+      legLength
+    });
+    if (!placement) return;
+
+    onPlaceObject?.({ type: 'angle', ...placement });
+    // De hoek staat op het bord; het instrument is weer leeg voor de volgende.
+    onChange?.({ legDirection: null, legDegrees: null });
+  };
+
+  const startScale = (event) => {
+    if (event.button !== 0) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    (event.target.setPointerCapture ? event.target : event.currentTarget).setPointerCapture?.(event.pointerId);
+
+    dragRef.current = {
+      mode: 'scale',
+      pointerId: event.pointerId,
+      startClient: { x: event.clientX, y: event.clientY },
+      startTime: getNow(),
+      startX: instrument.x,
+      startY: instrument.y,
+      dragging: false
+    };
+
+    const degrees = readScaleDegrees(event);
+    if (degrees !== null) onChange?.({ legDegrees: degrees });
+  };
+
   const startArm = (event) => {
     if (event.button !== 0) return;
 
@@ -1295,6 +1484,10 @@ export default function PresenterInstrumentOverlay({
       startArm(event);
       return;
     }
+    if (grab === 'scale') {
+      startScale(event);
+      return;
+    }
     if (grab === 'move') startMove(event);
   };
 
@@ -1310,6 +1503,33 @@ export default function PresenterInstrumentOverlay({
         x: drag.startX + (event.clientX - drag.startClientX) / scale,
         y: drag.startY + (event.clientY - drag.startClientY) / scale
       });
+      return;
+    }
+
+    // Op de schaalverdeling wordt pas bij het loslaten beslist of dit een tik
+    // was (graden aanwijzen) of een sleep (instrument verplaatsen). Zodra de
+    // pointer te ver is, blijft het een sleep.
+    if (drag.mode === 'scale') {
+      if (!drag.dragging && !isInstrumentTap({
+        startClient: drag.startClient,
+        client: { x: event.clientX, y: event.clientY },
+        startTime: drag.startTime,
+        time: getNow()
+      })) {
+        drag.dragging = true;
+        onChange?.({ legDegrees: null });
+      }
+
+      if (drag.dragging) {
+        onChange?.({
+          x: drag.startX + (event.clientX - drag.startClient.x) / scale,
+          y: drag.startY + (event.clientY - drag.startClient.y) / scale
+        });
+        return;
+      }
+
+      const degrees = readScaleDegrees(event);
+      if (degrees !== null) onChange?.({ legDegrees: degrees });
       return;
     }
 
@@ -1335,6 +1555,22 @@ export default function PresenterInstrumentOverlay({
     const drag = dragRef.current;
     if (!drag || event.pointerId !== drag.pointerId) return;
     dragRef.current = null;
+
+    if (drag.mode !== 'scale') return;
+
+    const tapped = !drag.dragging && isInstrumentTap({
+      startClient: drag.startClient,
+      client: { x: event.clientX, y: event.clientY },
+      startTime: drag.startTime,
+      time: getNow()
+    });
+
+    if (tapped) {
+      placeAngle(readScaleDegrees(event));
+      return;
+    }
+
+    onChange?.({ legDegrees: null });
   };
 
   const badges = [{ key: 'angle', text: getInstrumentAngleLabel(instrument) }];
@@ -1344,9 +1580,81 @@ export default function PresenterInstrumentOverlay({
   if (instrument.id === 'ruler') {
     badges.unshift({ key: 'length', text: formatRulerLength(metrics.width, gridSize) });
   }
+  if (isTriangle && (legDirection || legDegrees !== null)) {
+    badges.unshift({
+      key: 'leg',
+      text: legDegrees === null
+        ? `been ${legDirection === 'left' ? 'links' : 'rechts'}`
+        : `hoek ${formatAngleDegrees(legDegrees)}`
+    });
+  }
+
+  // Preview van de hoek-in-wording. Die leeft alleen op het instrument: niet in
+  // de sessie, niet in de history, en weg zodra het instrument sluit.
+  //
+  // De preview wordt met exact dezelfde plaatsing en dezelfde tekenfunctie
+  // getekend als het object dat straks op het bord komt, zodat er tussen "wat je
+  // ziet" en "wat je krijgt" niets kan verschuiven.
+  const anglePreview = isTriangle && (legDirection || legDegrees !== null)
+    ? (() => {
+        const placement = planAngleObjectPlacement({
+          pivot,
+          instrumentRotation: rotation,
+          legDirection: legDirection || 'right',
+          degrees: legDegrees ?? 0,
+          legLength
+        });
+        if (!placement) return null;
+
+        return {
+          placement,
+          geometry: getAngleFrameGeometry({
+            width: placement.width,
+            height: placement.height,
+            angleDegrees: placement.angleDegrees
+          }),
+          showSecondLeg: legDegrees !== null
+        };
+      })()
+    : null;
+
+  const handleLegDirection = (direction) => {
+    onChange?.({ legDirection: legDirection === direction ? null : direction });
+  };
+
+  const pivotPx = { x: pivot.x * scale, y: pivot.y * scale };
 
   return (
     <>
+      {anglePreview ? (
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 z-30 h-full w-full"
+          style={{ pointerEvents: 'none', overflow: 'visible' }}
+        >
+          <g transform={`scale(${scale})`}>
+            <g
+              transform={`translate(${anglePreview.placement.x} ${anglePreview.placement.y}) rotate(${anglePreview.placement.rotation} ${anglePreview.placement.width / 2} ${anglePreview.placement.height / 2})`}
+              opacity="0.9"
+            >
+              {anglePreview.showSecondLeg ? (
+                <PresenterAngleShape geometry={anglePreview.geometry} stroke="#2563eb" strokeWidth={5} />
+              ) : (
+                <line
+                  x1={anglePreview.geometry.originX}
+                  y1={anglePreview.geometry.originY}
+                  x2={anglePreview.geometry.leg1End.x}
+                  y2={anglePreview.geometry.leg1End.y}
+                  stroke="#2563eb"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                />
+              )}
+            </g>
+          </g>
+        </svg>
+      ) : null}
+
       <div
         data-presenter-instrument={instrument.id}
         className="absolute z-30"
@@ -1367,6 +1675,16 @@ export default function PresenterInstrumentOverlay({
         <Visual width={def.width} height={def.height} gridSize={localGridSize} reading={reading} />
       </div>
 
+      {isTriangle ? (
+        <AngleDegreeField
+          left={pivotPx.x}
+          top={pivotPx.y - ANGLE_FIELD_OFFSET_PX}
+          degrees={legDegrees}
+          onPreview={(degrees) => onChange?.({ legDegrees: degrees })}
+          onCommit={placeAngle}
+        />
+      ) : null}
+
       <InstrumentControlBar
         anchor={anchor}
         bounds={bounds}
@@ -1380,6 +1698,36 @@ export default function PresenterInstrumentOverlay({
         onRotatePointerDown={startRotate}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        extraButtons={
+          isTriangle ? (
+            <>
+              <button
+                type="button"
+                aria-label="Eerste been naar links"
+                aria-pressed={legDirection === 'left'}
+                title="Teken het eerste been vanaf het hoekpunt naar links"
+                className={`${CONTROL_BUTTON_CLASS} ${
+                  legDirection === 'left' ? 'border-blue-600 bg-blue-50 text-blue-700' : ''
+                }`}
+                onClick={() => handleLegDirection('left')}
+              >
+                <ArrowLeft size={24} />
+              </button>
+              <button
+                type="button"
+                aria-label="Eerste been naar rechts"
+                aria-pressed={legDirection === 'right'}
+                title="Teken het eerste been vanaf het hoekpunt naar rechts"
+                className={`${CONTROL_BUTTON_CLASS} ${
+                  legDirection === 'right' ? 'border-blue-600 bg-blue-50 text-blue-700' : ''
+                }`}
+                onClick={() => handleLegDirection('right')}
+              >
+                <ArrowRight size={24} />
+              </button>
+            </>
+          ) : null
+        }
       />
     </>
   );

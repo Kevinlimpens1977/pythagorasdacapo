@@ -1,4 +1,11 @@
 import { createMathToolWork, MATH_TOOL_TYPES, normalizeMathTool } from './mathToolboxUtils.js';
+import {
+  AXES_DEFAULT_GRID_SIZE,
+  AXES_DEFAULT_LABELS,
+  AXES_DEFAULT_RANGE,
+  getAxesFrame,
+  getAxesModel
+} from './presenterAxes.js';
 
 const V1A_SHAPE_TYPES = new Set([
   'rectangle',
@@ -22,6 +29,16 @@ const DUPLICATABLE_TYPES = new Set([
   'text',
   ...MATH_WORKSHEET_TYPES
 ]);
+
+// Een gedraaid assenstelsel ligt per definitie niet meer op de ruitjes, en de
+// getallen zouden scheef of op hun kop komen te staan. Draaien kan dus niet;
+// het rotatiehandvat verdwijnt daarmee vanzelf uit de selectiebox.
+const NON_ROTATABLE_SHAPE_TYPES = new Set(['axes']);
+
+const AXES_DEFAULT_FRAME = getAxesFrame({
+  range: AXES_DEFAULT_RANGE,
+  gridSize: AXES_DEFAULT_GRID_SIZE
+});
 
 const SHAPE_DEFAULTS = {
   rectangle: {
@@ -53,9 +70,15 @@ const SHAPE_DEFAULTS = {
       { x: 240, y: 180 }
     ]
   },
+  // Het assenstelsel is precies een heel aantal ruitjes groot, want één eenheid
+  // is één ruitje. Het standaardbereik is dat van het wiskundeboek: -5 tot 6 op
+  // beide assen, dus vier kwadranten. Maat en bereik horen bij elkaar; zie
+  // presenterAxes.js voor de enige plek waar dat verband uitgerekend wordt.
   axes: {
-    width: 360,
-    height: 260
+    width: AXES_DEFAULT_FRAME.width,
+    height: AXES_DEFAULT_FRAME.height,
+    range: { ...AXES_DEFAULT_RANGE },
+    labels: { ...AXES_DEFAULT_LABELS }
   },
   table: {
     width: 360,
@@ -144,6 +167,19 @@ export const createPresenterObject = (type, overrides = {}) => {
     rotation: clonedOverrides.rotation ?? 0
   };
 
+  // Bereik en asnamen zijn geneste objecten: ze gaan door getAxesModel zodat
+  // twee assenstelsels nooit hetzelfde bereik delen en een half ingevuld
+  // overschrijf-object toch een tekenbare figuur oplevert.
+  if (objectType === 'axes') {
+    const { range, labels } = getAxesModel(object, AXES_DEFAULT_GRID_SIZE);
+
+    return {
+      ...object,
+      range: { ...range },
+      labels: { ...labels }
+    };
+  }
+
   if (!mathTool) return object;
 
   return {
@@ -157,7 +193,7 @@ export const createPresenterObject = (type, overrides = {}) => {
 };
 
 export const canRotatePresenterObject = (object) =>
-  V1A_SHAPE_TYPES.has(object?.type);
+  V1A_SHAPE_TYPES.has(object?.type) && !NON_ROTATABLE_SHAPE_TYPES.has(object?.type);
 
 export const canDuplicatePresenterObject = (object) =>
   DUPLICATABLE_TYPES.has(object?.type);

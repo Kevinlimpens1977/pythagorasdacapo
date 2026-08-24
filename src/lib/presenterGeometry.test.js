@@ -80,6 +80,15 @@ test('getGridLineStyle returns equal horizontal and vertical size', () => {
   });
 });
 
+test('getGridLineStyle keeps sub-pixel precision so the grid stays under the axes', () => {
+  // 1512px viewport op een bord van 1920: afronden op hele pixels zou de
+  // roosterlijnen na twaalf ruitjes vijf pixels naast de assen leggen.
+  assert.deepEqual(getGridLineStyle({ gridSize: 96, scale: 0.7875 }), {
+    backgroundSize: '75.6px 75.6px',
+    lineSize: 75.6
+  });
+});
+
 test('getGridLineStyle falls back to safe defaults when grid size and scale are invalid', () => {
   assert.deepEqual(getGridLineStyle({ gridSize: undefined, scale: 0 }), {
     backgroundSize: '96px 96px',

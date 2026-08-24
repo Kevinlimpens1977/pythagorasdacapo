@@ -1,4 +1,5 @@
 import { getPresenterStrokeStyle } from '../../lib/presenterModel';
+import { getAxesModel, getAxesOriginRatio } from '../../lib/presenterAxes';
 import {
   getPresenterImportedObjectKind,
   getPresenterImportedObjectModel
@@ -185,13 +186,19 @@ function ThumbnailObject({ object }) {
         return <polygon {...shapeProps} points={`0,${height} ${width / 2},0 ${width},${height}`} strokeLinejoin="round" />;
       case 'polygon':
         return <polygon {...shapeProps} points={getPolygonPoints(object, width, height)} strokeLinejoin="round" />;
-      case 'axes':
+      case 'axes': {
+        // Alleen de twee assen op de plek waar het bereik ze legt. Getallen en
+        // maatstreepjes horen niet in een miniatuur: het paginapaneel tekent
+        // alle pagina's tegelijk en moet goedkoop blijven.
+        const origin = getAxesOriginRatio(getAxesModel(object, DEFAULT_GRID_SIZE).range);
+
         return (
           <g fill="none" stroke={style.stroke} strokeLinecap="round" strokeWidth={style.strokeWidth} vectorEffect="non-scaling-stroke">
-            <line x1={width * 0.18} x2={width * 0.18} y1={height} y2={0} />
-            <line x1={0} x2={width} y1={height * 0.78} y2={height * 0.78} />
+            <line x1={width * origin.x} x2={width * origin.x} y1={height} y2={0} />
+            <line x1={0} x2={width} y1={height * origin.y} y2={height * origin.y} />
           </g>
         );
+      }
       case 'table':
         return (
           <g {...shapeProps} fill={style.fill}>

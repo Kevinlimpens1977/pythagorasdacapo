@@ -1,3 +1,5 @@
+import { getAxesGridSizePatch, snapAxesPositionToGrid } from './presenterAxes.js';
+
 const DEFAULT_BOARD_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
 
@@ -209,6 +211,21 @@ export const resizePresenterObjectsOnPage = (
       ...page,
       objects: objects.map((object) => {
         if (!selectedIds.has(object?.id)) return object;
+
+        // Een assenstelsel schaalt niet mee: één eenheid moet één ruitje
+        // blijven, dus een groepsresize verschuift hem alleen - en zet hem
+        // daarbij weer op een roosterlijn. Zijn eigen maat verandert langs
+        // planAxesResize, waar er hele ruitjes bij of af gaan.
+        if (object.type === 'axes') {
+          const gridSize = page?.background?.gridSize;
+
+          return {
+            ...object,
+            x: snapAxesPositionToGrid(nextBounds.x + (getNumber(object.x) - sourceBounds.x) * scaleX, gridSize),
+            y: snapAxesPositionToGrid(nextBounds.y + (getNumber(object.y) - sourceBounds.y) * scaleY, gridSize)
+          };
+        }
+
         const objectScale = Math.max(0.1, Math.min(Math.abs(scaleX), Math.abs(scaleY)));
         const nextTextStyle = object.type === 'text' && object.textStyle
           ? {
@@ -320,10 +337,38 @@ export const updatePresenterPageBackground = (
 ) => {
   if (!background) return session;
 
-  return updatePresenterPage(session, pageId, (page) => ({
-    ...page,
-    background: cloneValue(background)
-  }));
+  return updatePresenterPage(session, pageId, (page) => {
+    const nextBackground = cloneValue(background);
+    const previousGridSize = getNumber(page?.background?.gridSize, 96);
+    const nextGridSize = getNumber(nextBackground.gridSize, previousGridSize);
+    const objects = Array.isArray(page?.objects) ? page.objects : [];
+    // Een andere ruitmaat betekent een ander kader voor elk assenstelsel op
+    // deze pagina, anders stelt één ruitje ineens geen hele eenheid meer voor.
+    // Het gebeurt in dezelfde stap als de achtergrond zelf, zodat één keer
+    // ongedaan maken alles terugzet.
+    const gridChanged = nextGridSize !== previousGridSize && objects.some((object) => object?.type === 'axes');
+
+    return {
+      ...page,
+      background: nextBackground,
+      ...(gridChanged
+        ? {
+            objects: objects.map((object) =>
+              object?.type === 'axes'
+                ? {
+                    ...object,
+                    ...getAxesGridSizePatch(object, {
+                      gridSize: nextGridSize,
+                      pageWidth: page?.width,
+                      pageHeight: page?.height
+                    })
+                  }
+                : object
+            )
+          }
+        : {})
+    };
+  });
 };
 
 export const setActivePresenterPage = (session, pageId) => {
