@@ -217,12 +217,24 @@ export const resizePresenterObjectsOnPage = (
             }
           : object.textStyle;
 
+        // Veelhoeken dragen hun hoekpunten in de coördinaten van het object zelf
+        // (zie PresenterObjectLayer). Die moeten mee schalen, anders blijft de
+        // getekende vorm achter bij het kader eromheen.
+        const nextPoints = Array.isArray(object.points)
+          ? object.points.map((point) => ({
+              ...point,
+              x: getNumber(point?.x) * scaleX,
+              y: getNumber(point?.y) * scaleY
+            }))
+          : null;
+
         return {
           ...object,
           x: nextBounds.x + (getNumber(object.x) - sourceBounds.x) * scaleX,
           y: nextBounds.y + (getNumber(object.y) - sourceBounds.y) * scaleY,
           width: getNumber(object.width, 120) * scaleX,
           height: getNumber(object.height, 80) * scaleY,
+          ...(nextPoints ? { points: nextPoints } : {}),
           ...(nextTextStyle ? { textStyle: nextTextStyle } : {})
         };
       })

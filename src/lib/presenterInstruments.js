@@ -75,11 +75,14 @@ export const PRESENTER_INSTRUMENT_EDGE_TOLERANCE = 24;
 
 // Hoogte (in CSS-pixels) die de vaste werkbalk onderin afdekt, inclusief een
 // open paneel. Nieuwe instrumenten moeten daarboven landen.
-export const PRESENTER_TOOLBAR_RESERVE_PX = 220;
+// Doorgerekend uit PresenterToolbar: iconenbalk 56px + onderrand 8px, plus het
+// zwevende paneel (2 rijen van 44px met padding = 106px) en 8px tussenruimte.
+export const PRESENTER_TOOLBAR_RESERVE_PX = 184;
 
-// De ingeklapte werkbalk laat alleen een randje zien (60px) waar de knop
-// 'Werkbalk openen' in zit; dat plus wat lucht is wat hij permanent bedekt.
-// Een tijdelijk opengeklapt paneel telt niet mee: dat sluit vanzelf weer.
+// Wat de werkbalk PERMANENT bedekt: alleen de lage iconenbalk zelf (56px plus
+// de onderrand). Het paneel erboven telt niet mee, want dat sluit zodra de pen
+// het bord raakt — tenzij het is vastgezet, en dan rekent PresenterBoard met de
+// reserve hierboven.
 export const PRESENTER_TOOLBAR_PEEK_PX = 72;
 
 // Strook bovenaan het bord waar de paginabalk overheen ligt. Ook daar mag geen

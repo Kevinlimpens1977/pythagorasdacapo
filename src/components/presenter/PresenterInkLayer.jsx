@@ -1,5 +1,5 @@
 import { getPresenterStrokeStyle } from '../../lib/presenterModel';
-import { buildSmoothedStrokePath, getStrokePressureWidth } from '../../lib/presenterInk';
+import { buildStrokeRenderPath } from '../../lib/presenterInk';
 
 const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
@@ -17,21 +17,37 @@ const resolveStrokeColor = (color, theme) =>
   (theme === 'dark' && DARK_THEME_COLOR_MAP[String(color || '').toLowerCase()]) || color;
 
 const renderStroke = (stroke, opacity, theme) => {
-  const pathData = buildSmoothedStrokePath(Array.isArray(stroke?.points) ? stroke.points : []);
-  if (!pathData) return null;
   const style = getPresenterStrokeStyle(stroke);
   const baseWidth = isFinitePositiveNumber(style.width) ? style.width : 5;
+  // Zelfde bron als de live preview op canvas (zie PresenterBoard), zodat wat
+  // je tijdens het tekenen ziet exact is wat er blijft staan.
+  const render = buildStrokeRenderPath(stroke, baseWidth);
+  if (!render.d) return null;
+
+  const color = resolveStrokeColor(style.color, theme);
+
+  if (render.mode === 'fill') {
+    return (
+      <path
+        key={stroke.id || render.d}
+        d={render.d}
+        fill={color}
+        fillOpacity={opacity ?? style.opacity}
+        stroke="none"
+      />
+    );
+  }
 
   return (
     <path
-      key={stroke.id || pathData}
-      d={pathData}
+      key={stroke.id || render.d}
+      d={render.d}
       fill="none"
-      stroke={resolveStrokeColor(style.color, theme)}
+      stroke={color}
       strokeLinecap={style.lineCap}
       strokeLinejoin={style.lineJoin}
       strokeOpacity={opacity ?? style.opacity}
-      strokeWidth={getStrokePressureWidth(stroke, baseWidth)}
+      strokeWidth={render.width}
     />
   );
 };

@@ -34,6 +34,7 @@ import { createPresenterInstrument, planInstrumentPlacement } from '../../lib/pr
 import { createCurtain, createLaser, createSpotlight } from '../../lib/presenterFocus';
 import { PresenterStudentPicker, PresenterTimerOverlay } from './PresenterFocusTools';
 import { createPresenterObject, updatePresenterMathToolObject } from '../../lib/presenterObjects';
+import { recognizePresenterShape } from '../../lib/presenterShapeRecognition';
 import {
   clearPresenterRecoveryState,
   hasRecoverablePresenterState,
@@ -370,13 +371,16 @@ export default function PresenterShell() {
   const [textCaretRequest, setTextCaretRequest] = useState(null);
   const [eraserSize, setEraserSize] = useState(DEFAULT_PRESENTER_ERASER_SIZE);
   const [penMode, setPenMode] = useState('free');
+  // Vormherkenning staat standaard UIT: wie het woord 'Oma' schrijft wil geen
+  // ellips. De docent zet hem aan in het penpaneel.
+  const [shapeRecognition, setShapeRecognition] = useState(false);
   const [fingerDrawing, setFingerDrawing] = useState(true);
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [focusTool, setFocusTool] = useState(null);
   const [timer, setTimer] = useState(null);
   const [studentPickerOpen, setStudentPickerOpen] = useState(false);
   const [boardTheme, setBoardTheme] = useState('light');
-  const [toolbarAlign, setToolbarAlign] = useState('center');
+  const [toolbarAlign, setToolbarAlign] = useState(() => session.toolbar?.align || 'center');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const shellRef = useRef(null);
   const boardViewportRef = useRef(null);
@@ -384,7 +388,6 @@ export default function PresenterShell() {
   // precies een keer mag bijsturen en nooit een sleepbeweging overschrijft.
   const instrumentRefitRef = useRef(null);
   const fullscreenErrorTimerRef = useRef(null);
-  const toolbarAutoCloseTimerRef = useRef(null);
   const eraseGestureHistoryRef = useRef(null);
 
   const activePage = getActivePresenterPage(session);
@@ -431,34 +434,49 @@ export default function PresenterShell() {
   }, [activePage, session.selectedObjectId, session.selectedObjectIds]);
   const selectedTextStyle = selectedTextObject?.textStyle || textToolStyle;
 
-  const clearToolbarAutoCloseTimer = useCallback(() => {
-    if (toolbarAutoCloseTimerRef.current) {
-      window.clearTimeout(toolbarAutoCloseTimerRef.current);
-      toolbarAutoCloseTimerRef.current = null;
-    }
+  // `toolbarOpen` is sinds de nieuwe werkbalk niet meer "is de balk zichtbaar"
+  // maar "staat het gereedschapspaneel boven de balk open". De balk zelf staat
+  // er altijd; alleen het paneel komt en gaat.
+  const openToolbar = useCallback(() => {
+    setToolbarOpen(true);
   }, []);
 
-  const openToolbar = useCallback(() => {
-    clearToolbarAutoCloseTimer();
-    setToolbarOpen(true);
-  }, [clearToolbarAutoCloseTimer]);
-
+  // Het bord aanraken sluit het paneel — tenzij de docent het heeft vastgezet.
   const closeToolbar = useCallback(() => {
     if (toolbarPinned) return;
 
-    clearToolbarAutoCloseTimer();
     setToolbarOpen(false);
-  }, [clearToolbarAutoCloseTimer, toolbarPinned]);
+  }, [toolbarPinned]);
 
-  const scheduleToolbarAutoClose = useCallback(() => {
-    if (toolbarPinned || typeof window === 'undefined') return;
+  // Sluiten op verzoek van de werkbalk zelf (nogmaals op het gereedschap tikken,
+  // de sluitknop, of een afrondende actie). Dat mag ook als het paneel vaststaat.
+  const closeToolbarPanel = useCallback(() => {
+    setToolbarOpen(false);
+  }, []);
 
-    clearToolbarAutoCloseTimer();
-    toolbarAutoCloseTimerRef.current = window.setTimeout(() => {
-      setToolbarOpen(false);
-      toolbarAutoCloseTimerRef.current = null;
-    }, 3000);
-  }, [clearToolbarAutoCloseTimer, toolbarPinned]);
+  // Werkbalkvoorkeuren horen bij de sessie, zodat vastzetten en uitlijnen een
+  // herlaad en een herstel overleven. Dit zet `dirty` bewust NIET: een
+  // balkwijziging alleen mag geen herstelrecord opleveren en hoort niet in de
+  // undo-geschiedenis.
+  const rememberToolbarPreference = useCallback((updates) => {
+    setSession((currentSession) => ({
+      ...currentSession,
+      toolbar: { ...(currentSession.toolbar || {}), ...updates }
+    }));
+  }, []);
+
+  const handleToolbarAlign = useCallback((align) => {
+    setToolbarAlign(align);
+    rememberToolbarPreference({ align });
+  }, [rememberToolbarPreference]);
+
+  const handleTogglePinned = useCallback(() => {
+    const nextPinned = !toolbarPinned;
+
+    setToolbarPinned(nextPinned);
+    setToolbarOpen(nextPinned);
+    rememberToolbarPreference({ pinned: nextPinned });
+  }, [rememberToolbarPreference, toolbarPinned]);
 
   const updateActivePageWithHistory = useCallback((updater) => {
     setSession((currentSession) => {
@@ -559,7 +577,9 @@ export default function PresenterShell() {
 
   const handleCategory = (category) => {
     setActiveCategory(category);
-    setPagePanelOpen(category === 'pages');
+    // Nogmaals op Pagina's tikken sluit het overzicht weer, net als bij de
+    // gereedschapspanelen. Elke andere categorie sluit het.
+    setPagePanelOpen(category === 'pages' ? !(activeCategory === 'pages' && pagePanelOpen) : false);
   };
 
   const handleSelectTool = () => {
@@ -817,7 +837,36 @@ export default function PresenterShell() {
     });
   }, [history]);
 
+  // Vormherkenning gebeurt NA het loslaten, en vervangt de streek in DEZELFDE
+  // history-stap door een echt object: één haal blijft dus één undo-stap, en de
+  // herkende vorm valt meteen in de bestaande machinerie voor selecteren,
+  // schalen, roteren, laagvolgorde en smart guides. Bij twijfel geeft
+  // recognizePresenterShape null terug en blijft de ruwe inkt gewoon staan.
   const handleStrokeComplete = (stroke) => {
+    const shape = shapeRecognition ? recognizePresenterShape(stroke) : null;
+
+    if (shape) {
+      // Het id staat buiten de updater zodat die puur blijft (StrictMode voert
+      // updaters dubbel uit).
+      const object = createPresenterObject(shape.type, {
+        id: createObjectId(),
+        x: shape.x,
+        y: shape.y,
+        width: shape.width,
+        height: shape.height,
+        rotation: shape.rotation || 0,
+        ...(Array.isArray(shape.points) ? { points: shape.points } : {}),
+        fill: 'none',
+        stroke: stroke?.color || '#111827',
+        strokeWidth: Number.isFinite(stroke?.width) && stroke.width > 0 ? stroke.width : 6
+      });
+
+      updateActivePageWithHistory((currentSession) =>
+        addObjectToPresenterPage(currentSession, currentSession.activePageId, object)
+      );
+      return;
+    }
+
     updateActivePageWithHistory((currentSession) =>
       addStrokeToPresenterPage(currentSession, currentSession.activePageId, stroke)
     );
@@ -1090,6 +1139,7 @@ export default function PresenterShell() {
     setToolbarPinned(Boolean(recoveredSession.toolbar?.pinned));
     setToolbarOpen(Boolean(recoveredSession.toolbar?.pinned));
     setActiveCategory(recoveredSession.toolbar?.activeCategory || 'pen');
+    setToolbarAlign(recoveredSession.toolbar?.align || 'center');
     setPagePanelOpen(false);
     setInstrument(null);
     setRecoveredSession(null);
@@ -1206,10 +1256,6 @@ export default function PresenterShell() {
     if (fullscreenErrorTimerRef.current) {
       window.clearTimeout(fullscreenErrorTimerRef.current);
     }
-
-    if (toolbarAutoCloseTimerRef.current) {
-      window.clearTimeout(toolbarAutoCloseTimerRef.current);
-    }
   }, []);
 
   return (
@@ -1310,16 +1356,9 @@ export default function PresenterShell() {
         pinned={toolbarPinned}
         background={activePage?.background}
         penStyle={currentTool}
-        onTogglePinned={() => {
-          clearToolbarAutoCloseTimer();
-          setToolbarPinned((current) => {
-            const nextPinned = !current;
-            setToolbarOpen(nextPinned);
-            return nextPinned;
-          });
-        }}
+        onTogglePinned={handleTogglePinned}
         onOpen={openToolbar}
-        onAction={scheduleToolbarAutoClose}
+        onClosePanel={closeToolbarPanel}
         onCategory={handleCategory}
         onBackground={handleBackground}
         onPenStyle={handlePenStyle}
@@ -1350,6 +1389,8 @@ export default function PresenterShell() {
         onCustomColor={handleCustomColor}
         penMode={penMode}
         onPenMode={setPenMode}
+        shapeRecognition={shapeRecognition}
+        onToggleShapeRecognition={() => setShapeRecognition((current) => !current)}
         fingerDrawing={fingerDrawing}
         onToggleFingerDrawing={() => setFingerDrawing((current) => !current)}
         focusKind={focusTool?.kind || null}
@@ -1363,7 +1404,7 @@ export default function PresenterShell() {
         boardTheme={boardTheme}
         onToggleBoardTheme={() => setBoardTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
         toolbarAlign={toolbarAlign}
-        onToolbarAlign={setToolbarAlign}
+        onToolbarAlign={handleToolbarAlign}
       />
     </section>
   );

@@ -6,12 +6,17 @@ export const getBoardScale = ({ viewportWidth, boardWidth }) => {
   return viewportWidth / boardWidth;
 };
 
+// Subpixelnauwkeurig: afronden op hele boardunits maakte snelle halen hoekig,
+// zeker op een bord dat kleiner getoond wordt dan zijn eigen 1920 units. Twee
+// decimalen is ruim onder wat je ziet en houdt de opgeslagen paden kort.
+const roundToSubpixel = (value) => Math.round(value * 100) / 100;
+
 export const mapClientPointToBoard = ({ clientX, clientY, rect, scrollTop = 0, scale = 1 }) => {
   const safeScale = isFinitePositiveNumber(scale) ? scale : 1;
 
   return {
-    x: Math.round((clientX - rect.left) / safeScale),
-    y: Math.round((clientY - rect.top + scrollTop) / safeScale)
+    x: roundToSubpixel((clientX - rect.left) / safeScale),
+    y: roundToSubpixel((clientY - rect.top + scrollTop) / safeScale)
   };
 };
 

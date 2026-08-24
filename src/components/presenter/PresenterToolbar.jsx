@@ -5,65 +5,109 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  Axis3d,
   Bold,
-  CheckSquare,
+  Circle,
+  Compass,
   Eraser,
   FileText,
+  Gauge,
   Grid3X3,
+  Hand,
   Highlighter,
   Italic,
+  Layers,
   Lightbulb,
   Maximize2,
+  Minus,
+  Moon,
+  MoreHorizontal,
   MousePointer2,
   MoveHorizontal,
+  MoveRight,
   Palette,
+  Pentagon,
   PenLine,
+  Pin,
   Plus,
+  Radius,
+  Ratio,
   Redo2,
+  Rows2,
+  Ruler,
   Shapes,
   Sigma,
+  Spline,
+  Square,
+  Table,
+  Target,
   Timer,
+  Triangle,
+  TriangleRight,
   Type,
   Trash2,
   Undo2,
-  Users
+  Users,
+  Wand2,
+  X
 } from 'lucide-react';
 import { PRESENTER_ERASER_SIZES } from '../../lib/presenterEraser';
 import { SPOTLIGHT_RADII } from '../../lib/presenterFocus';
 import { getPresenterObjectLabel } from '../../lib/presenterObjects';
 
+// Werkbalk in de vorm die een digibord vraagt: ÉÉN lage rij iconen die altijd
+// staat, met daarboven een zwevend paneel dat alleen opengaat als je het vraagt.
+// Het paneel duwt de balk niet omhoog en dekt dus veel minder bord af dan de
+// vroegere stapel van handgreep + paneelstrook + brede knoppenbalk.
+//
+// Bediening zoals op een Prowise-bord:
+//   - een ander gereedschap aantikken = dat gereedschap pakken (één tik);
+//   - het AL ACTIEVE gereedschap nog eens aantikken = zijn paneel openen;
+//   - het paneel blijft staan tot je het sluit of het bord aanraakt, zodat
+//     kleur én dikte achter elkaar te kiezen zijn zonder opnieuw te openen.
+
 const objectTypes = [
-  'rectangle',
-  'ellipse',
-  'line',
-  'arrow',
-  'triangle',
-  'polygon',
-  'axes',
-  'table',
-  'angle',
-  'ratioTableTool',
-  'pythagorasTool'
+  { id: 'rectangle', icon: Square },
+  { id: 'ellipse', icon: Circle },
+  { id: 'line', icon: Minus },
+  { id: 'arrow', icon: MoveRight },
+  { id: 'triangle', icon: Triangle },
+  { id: 'polygon', icon: Pentagon },
+  { id: 'axes', icon: Axis3d },
+  { id: 'table', icon: Table },
+  { id: 'angle', icon: Radius },
+  { id: 'ratioTableTool', icon: Ratio },
+  { id: 'pythagorasTool', icon: Sigma }
 ];
 
 const instrumentTypes = [
-  { id: 'ruler', label: 'Liniaal' },
-  { id: 'triangle', label: 'Geodriehoek' },
-  { id: 'compass', label: 'Passer' },
-  { id: 'protractor', label: 'Gradenboog' }
+  { id: 'ruler', label: 'Liniaal', icon: Ruler },
+  { id: 'triangle', label: 'Geodriehoek', icon: TriangleRight },
+  { id: 'compass', label: 'Passer', icon: Compass },
+  { id: 'protractor', label: 'Gradenboog', icon: Gauge }
 ];
 
-const categories = [
-  { id: 'pen', label: 'Pen', icon: PenLine },
-  { id: 'highlighter', label: 'Markeerstift', icon: Highlighter },
-  { id: 'eraser', label: 'Gum', icon: Eraser },
-  { id: 'text', label: 'Tekst', icon: Type },
-  { id: 'objects', label: 'Objecten', icon: Shapes },
-  { id: 'focus', label: 'Focus', icon: Lightbulb },
-  { id: 'lesson', label: 'Lesstof', icon: FileText },
-  { id: 'background', label: 'Achtergrond', icon: Grid3X3 },
-  { id: 'pages', label: "Pagina's", icon: CheckSquare }
+// Gereedschappen staan in het midden van de balk, net als bij Prowise.
+const toolCategories = [
+  { id: 'select', label: 'Selecteren', icon: MousePointer2, hint: 'Selecteren (Esc)' },
+  { id: 'pen', label: 'Pen', icon: PenLine, hint: 'Pen — nogmaals tikken voor kleur en dikte' },
+  { id: 'highlighter', label: 'Markeerstift', icon: Highlighter, hint: 'Markeerstift — nogmaals tikken voor kleur en dikte' },
+  { id: 'eraser', label: 'Gum', icon: Eraser, hint: 'Gum — nogmaals tikken voor de gumgrootte' },
+  { id: 'text', label: 'Tekst', icon: Type, hint: 'Tekst' },
+  { id: 'objects', label: 'Objecten', icon: Shapes, hint: 'Vormen, tabellen en meetinstrumenten' },
+  { id: 'focus', label: 'Focus', icon: Lightbulb, hint: 'Spotlight, gordijn, laser, timer' }
 ];
+
+// Bestands- en pagina-acties staan links, gescheiden van het gereedschap.
+const fileCategories = [
+  { id: 'lesson', label: 'Lesstof', icon: FileText, hint: 'Lesstof uit HELIX importeren' },
+  { id: 'pages', label: "Pagina's", icon: Layers, hint: "Pagina-overzicht" }
+];
+
+// Categorieën met een eigen paneel boven de balk.
+const PANEL_CATEGORIES = new Set(['pen', 'highlighter', 'eraser', 'text', 'objects', 'focus', 'background']);
+// Tekengereedschap: eerste tik pakt het, tweede tik opent het paneel.
+const DRAWING_CATEGORIES = new Set(['pen', 'highlighter', 'eraser']);
 
 const penColors = [
   { label: 'Zwart', value: '#111827' },
@@ -122,6 +166,14 @@ const textAlignments = [
   { label: 'Rechts', value: 'right', icon: AlignRight }
 ];
 
+const backgroundKinds = [
+  { id: 'white', label: 'Wit' },
+  { id: 'lines', label: 'Lijntjes' },
+  { id: 'grid', label: 'Ruitjes' },
+  { id: 'mm', label: 'Millimeter' },
+  { id: 'axes', label: 'Assenstelsel' }
+];
+
 const mathSymbols = ['π', '√', '²', '³', '×', '÷', '≤', '≥', '≈', '≠', '∠', '°'];
 
 const panelClass = 'rounded-xl border presenter-chrome-surface';
@@ -129,15 +181,45 @@ const idleButtonClass =
   'border-[rgba(255,255,255,0.78)] bg-white/70 text-[var(--helix-navy)] hover:border-white hover:bg-white hover:text-[var(--helix-purple)]';
 const activeButtonClass =
   'border-white bg-white text-[var(--helix-purple)] shadow-[0_8px_18px_rgba(122,60,255,0.12)]';
+const instrumentIdleClass =
+  'border-[rgba(255,122,0,0.28)] bg-white/70 text-orange-700 hover:border-white hover:bg-white hover:text-[var(--helix-purple)]';
 const dividerClass = 'bg-[rgba(122,60,255,0.16)]';
 const toolbarLabelClass = 'text-[var(--helix-purple)]';
-const iconAccentClass = 'bg-[rgba(122,60,255,0.12)] text-[var(--helix-purple)]';
 
-const iconButtonClass =
-  `inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border text-[13px] font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${idleButtonClass}`;
+// 44x44 raakvlak: haalbaar met een gestrekte arm voor een wandbord (WCAG 2.5.5).
+const buttonBase =
+  'relative inline-flex shrink-0 items-center justify-center rounded-xl border font-bold transition disabled:cursor-not-allowed disabled:opacity-40';
+const squareButton = (isActive) => `${buttonBase} h-11 w-11 text-[13px] ${isActive ? activeButtonClass : idleButtonClass}`;
+const labelButton = (isActive) =>
+  `${buttonBase} h-11 px-3 text-[13px] ${isActive ? activeButtonClass : idleButtonClass}`;
 
-const popoverButtonClass =
-  'inline-flex min-h-[38px] shrink-0 items-center justify-center rounded-lg border px-3 py-2 text-[13px] font-bold transition';
+// Achtergrondknoppen tonen het patroon zelf in plaats van het woord.
+const backgroundSwatchStyle = (kind) => {
+  const line = 'rgba(37,99,235,0.45)';
+
+  if (kind === 'lines') {
+    return { backgroundColor: '#ffffff', backgroundImage: `repeating-linear-gradient(180deg, ${line} 0 1px, transparent 1px 6px)` };
+  }
+  if (kind === 'grid') {
+    return {
+      backgroundColor: '#ffffff',
+      backgroundImage: `repeating-linear-gradient(180deg, ${line} 0 1px, transparent 1px 7px), repeating-linear-gradient(90deg, ${line} 0 1px, transparent 1px 7px)`
+    };
+  }
+  if (kind === 'mm') {
+    return {
+      backgroundColor: '#ffffff',
+      backgroundImage: `repeating-linear-gradient(180deg, ${line} 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, ${line} 0 1px, transparent 1px 3px)`
+    };
+  }
+  if (kind === 'axes') {
+    return {
+      backgroundColor: '#ffffff',
+      backgroundImage: `linear-gradient(180deg, transparent 0 49%, ${line} 49% 51%, transparent 51% 100%), linear-gradient(90deg, transparent 0 49%, ${line} 49% 51%, transparent 51% 100%)`
+    };
+  }
+  return { backgroundColor: '#ffffff' };
+};
 
 export default function PresenterToolbar({
   pageLabel = 'Pagina 0/0',
@@ -148,6 +230,7 @@ export default function PresenterToolbar({
   penStyle = { color: '#111827', width: 6 },
   onTogglePinned,
   onOpen,
+  onClosePanel,
   onAction,
   onCategory,
   onBackground,
@@ -179,6 +262,8 @@ export default function PresenterToolbar({
   onCustomColor,
   penMode = 'free',
   onPenMode,
+  shapeRecognition = false,
+  onToggleShapeRecognition,
   fingerDrawing = true,
   onToggleFingerDrawing,
   focusKind = null,
@@ -195,14 +280,67 @@ export default function PresenterToolbar({
   onToolbarAlign
 }) {
   const [symbolsOpen, setSymbolsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  // Gewone paneelknop: doet zijn werk en LAAT HET PANEEL STAAN, zodat kleur en
+  // dikte achter elkaar te kiezen zijn.
+  const runAction = (action) => {
+    action?.();
+    onAction?.();
+  };
+
+  // Afrondende knop: hierna is er niets meer te kiezen, dus het paneel gaat weg
+  // en het bord is meteen weer vrij.
+  const runClosingAction = (action) => {
+    action?.();
+    setSymbolsOpen(false);
+    setMoreOpen(false);
+    onClosePanel?.();
+  };
+
+  const handleCategory = (category) => {
+    if (category.disabled) return;
+    if (category.id === 'lesson') {
+      onClosePanel?.();
+      runAction(onOpenImport);
+      return;
+    }
+
+    setSymbolsOpen(false);
+    setMoreOpen(false);
+
+    const wasActive = activeCategory === category.id;
+    if (category.id === 'select') {
+      onSelect?.();
+    } else {
+      onCategory?.(category.id);
+    }
+    onAction?.();
+
+    if (DRAWING_CATEGORIES.has(category.id)) {
+      // Eerste tik pakt het gereedschap, tweede tik opent (of sluit) het paneel.
+      if (wasActive && open) onClosePanel?.();
+      else if (wasActive) onOpen?.();
+      else onClosePanel?.();
+      return;
+    }
+
+    if (PANEL_CATEGORIES.has(category.id)) {
+      if (wasActive && open) onClosePanel?.();
+      else onOpen?.();
+      return;
+    }
+
+    onClosePanel?.();
+  };
 
   const renderCustomColorControls = (label, activeColor, applyColor) => (
     <>
       <label
-        className={`relative flex h-[38px] w-[38px] shrink-0 cursor-pointer items-center justify-center rounded-lg border transition ${idleButtonClass}`}
+        className={`relative flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border transition ${idleButtonClass}`}
         title={`${label}: eigen kleur kiezen`}
       >
-        <Palette size={17} strokeWidth={2.4} />
+        <Palette size={18} strokeWidth={2.4} />
         <input
           type="color"
           value={activeColor}
@@ -218,9 +356,7 @@ export default function PresenterToolbar({
         <button
           key={`recent-${color}`}
           type="button"
-          className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border transition ${
-            activeColor === color ? activeButtonClass : idleButtonClass
-          }`}
+          className={squareButton(activeColor === color)}
           onClick={() => applyColor(color)}
           aria-label={`${label}: recente kleur ${color}`}
           title={`Recente kleur ${color}`}
@@ -230,22 +366,6 @@ export default function PresenterToolbar({
       ))}
     </>
   );
-
-  const runAction = (action) => {
-    action?.();
-    onAction?.();
-  };
-
-  const handleCategory = (category) => {
-    if (category.disabled) return;
-    if (category.id === 'lesson') {
-      runAction(onOpenImport);
-      return;
-    }
-    setSymbolsOpen(false);
-    onCategory?.(category.id);
-    onAction?.();
-  };
 
   const currentGridSize = background?.gridSize || 96;
   const nextGridSize = currentGridSize === 96 ? 72 : 96;
@@ -268,8 +388,6 @@ export default function PresenterToolbar({
   const drawingCategory = isHighlighter ? 'highlighter' : 'pen';
   const drawingColors = isHighlighter ? highlighterColors : penColors;
   const drawingWidths = isHighlighter ? highlighterWidths : penWidths;
-  const drawingColorLabel = isHighlighter ? 'Markeerkleur' : 'Kleur';
-  const drawingWidthLabel = isHighlighter ? 'Markeerdikte' : 'Dikte';
   const drawingToolLabel = isHighlighter ? 'Markeerstift' : 'Pen';
   const previewOpacity = isHighlighter ? 0.42 : 1;
   const textStyle = selectedTextStyle || {};
@@ -293,628 +411,647 @@ export default function PresenterToolbar({
     onAction?.();
   };
 
+  const renderDrawingPanel = () => (
+    <>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {drawingColors.map((color) => (
+          <button
+            key={color.value}
+            type="button"
+            className={squareButton(penColor === color.value)}
+            onClick={() => runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, color: color.value }))}
+            aria-label={`${drawingToolLabel} kleur ${color.label}`}
+            aria-pressed={penColor === color.value}
+            title={color.label}
+          >
+            <span
+              className="block h-6 w-6 rounded-full ring-2 ring-white/80"
+              style={{ backgroundColor: color.value, opacity: previewOpacity }}
+            />
+          </button>
+        ))}
+        {renderCustomColorControls(drawingToolLabel, penColor, (color) =>
+          runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, color }))
+        )}
+      </div>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {drawingWidths.map((width) => (
+          <button
+            key={width.value}
+            type="button"
+            className={squareButton(penWidth === width.value)}
+            onClick={() => runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, width: width.value }))}
+            aria-label={`${drawingToolLabel} dikte ${width.label}`}
+            aria-pressed={penWidth === width.value}
+            title={width.label}
+          >
+            <span
+              className={isHighlighter ? 'block rounded-sm' : 'block rounded-full'}
+              style={{
+                backgroundColor: penColor,
+                height: isHighlighter ? '9px' : `${Math.min(width.value + 2, 20)}px`,
+                opacity: previewOpacity,
+                width: isHighlighter ? `${Math.min(width.value, 28)}px` : `${Math.min(width.value + 2, 20)}px`
+              }}
+            />
+          </button>
+        ))}
+      </div>
+      {!isHighlighter ? (
+        <>
+          <div className={`h-9 w-px ${dividerClass}`} />
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              className={squareButton(penMode === 'free')}
+              onClick={() => runAction(() => onPenMode?.('free'))}
+              aria-pressed={penMode === 'free'}
+              aria-label="Vrij tekenen"
+              title="Vrij tekenen"
+            >
+              <Spline size={18} strokeWidth={2.4} />
+            </button>
+            <button
+              type="button"
+              className={squareButton(penMode === 'line')}
+              onClick={() => runAction(() => onPenMode?.('line'))}
+              aria-pressed={penMode === 'line'}
+              aria-label="Rechte lijn"
+              title="Rechte lijn; snapt op ruitjes, Shift = hoeksnap"
+            >
+              <Minus size={20} strokeWidth={3} />
+            </button>
+            <button
+              type="button"
+              className={squareButton(shapeRecognition)}
+              onClick={() => runAction(onToggleShapeRecognition)}
+              aria-pressed={shapeRecognition}
+              aria-label="Vormherkenning"
+              title="Vormherkenning: een getekende cirkel, rechthoek, driehoek of lijn wordt een net object"
+            >
+              <Wand2 size={18} strokeWidth={2.4} />
+            </button>
+            <button
+              type="button"
+              className={squareButton(fingerDrawing)}
+              onClick={() => runAction(onToggleFingerDrawing)}
+              aria-pressed={fingerDrawing}
+              aria-label="Vinger tekent"
+              title="Uit: vinger pant/scrollt, alleen de pen tekent"
+            >
+              <Hand size={18} strokeWidth={2.4} />
+            </button>
+          </div>
+        </>
+      ) : null}
+    </>
+  );
+
+  const renderEraserPanel = () => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {PRESENTER_ERASER_SIZES.map((size) => (
+        <button
+          key={size.id}
+          type="button"
+          className={squareButton(eraserSize === size.id)}
+          onClick={() => runAction(() => onEraserSize?.(size.id))}
+          aria-label={`Gumgrootte ${size.label}`}
+          aria-pressed={eraserSize === size.id}
+          title={`Gumgrootte ${size.label}. De gum wist alleen pen- en markeerstiftstreken; objecten verwijder je via selectie.`}
+        >
+          <span
+            className="block rounded-full border-2 border-slate-500 bg-white"
+            style={{
+              height: `${Math.min(26, Math.max(9, size.radius / 2.4))}px`,
+              width: `${Math.min(26, Math.max(9, size.radius / 2.4))}px`
+            }}
+          />
+        </button>
+      ))}
+    </div>
+  );
+
+  const renderFocusPanel = () => (
+    <>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          className={squareButton(focusKind === 'spotlight')}
+          onClick={() => runAction(() => onFocusSelect?.('spotlight'))}
+          aria-pressed={focusKind === 'spotlight'}
+          aria-label="Spotlight"
+          title="Verduister alles behalve een sleepbare cirkel"
+        >
+          <Lightbulb size={18} strokeWidth={2.4} />
+        </button>
+        {focusKind === 'spotlight'
+          ? SPOTLIGHT_RADII.map((radius) => (
+              <button
+                key={radius.id}
+                type="button"
+                className={labelButton(spotlightRadiusId === radius.id)}
+                onClick={() => runAction(() => onSpotlightRadius?.(radius.id))}
+                aria-pressed={spotlightRadiusId === radius.id}
+              >
+                {radius.label}
+              </button>
+            ))
+          : null}
+        <button
+          type="button"
+          className={squareButton(focusKind === 'curtain')}
+          onClick={() => runAction(() => onFocusSelect?.('curtain'))}
+          aria-pressed={focusKind === 'curtain'}
+          aria-label="Gordijn"
+          title="Schuifbaar gordijn over het bord"
+        >
+          <Rows2 size={18} strokeWidth={2.4} />
+        </button>
+        {focusKind === 'curtain' ? (
+          <>
+            <button
+              type="button"
+              className={labelButton(curtainDirection === 'top')}
+              onClick={() => runAction(() => onCurtainDirection?.('top'))}
+              aria-pressed={curtainDirection === 'top'}
+            >
+              Boven
+            </button>
+            <button
+              type="button"
+              className={labelButton(curtainDirection === 'left')}
+              onClick={() => runAction(() => onCurtainDirection?.('left'))}
+              aria-pressed={curtainDirection === 'left'}
+            >
+              Links
+            </button>
+          </>
+        ) : null}
+        <button
+          type="button"
+          className={squareButton(focusKind === 'laser')}
+          onClick={() => runAction(() => onFocusSelect?.('laser'))}
+          aria-pressed={focusKind === 'laser'}
+          aria-label="Laser"
+          title="Rode aanwijsstip met vervagend spoor"
+        >
+          <Target size={18} strokeWidth={2.4} />
+        </button>
+      </div>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className={`px-1 ${toolbarLabelClass}`} aria-hidden="true">
+          <Timer size={16} strokeWidth={2.6} />
+        </span>
+        {[1, 2, 5].map((minutes) => (
+          <button
+            key={minutes}
+            type="button"
+            className={labelButton(false)}
+            onClick={() => runClosingAction(() => onTimer?.(minutes))}
+            title={`Timer van ${minutes} ${minutes === 1 ? 'minuut' : 'minuten'} starten`}
+          >
+            {minutes} min
+          </button>
+        ))}
+        <button
+          type="button"
+          className={squareButton(false)}
+          onClick={() => runClosingAction(onStudentPicker)}
+          aria-label="Leerlingkiezer"
+          title="Kies een willekeurige leerling uit een klas"
+        >
+          <Users size={18} strokeWidth={2.4} />
+        </button>
+      </div>
+    </>
+  );
+
+  const renderBackgroundPanel = () => (
+    <>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {backgroundKinds.map((kind) => (
+          <button
+            key={kind.id}
+            type="button"
+            className={squareButton(backgroundKind === kind.id)}
+            onClick={() => handleBackground(kind.id)}
+            aria-pressed={backgroundKind === kind.id}
+            aria-label={`Achtergrond ${kind.label}`}
+            title={kind.label}
+          >
+            <span
+              className="block h-6 w-6 rounded border border-slate-300"
+              style={backgroundSwatchStyle(kind.id)}
+            />
+          </button>
+        ))}
+      </div>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <button type="button" className={labelButton(false)} onClick={handleGridSizeToggle} title="Ruitmaat wisselen">
+        Ruitmaat {nextGridSize}
+      </button>
+      <button
+        type="button"
+        className={squareButton(boardTheme === 'dark')}
+        onClick={() => runAction(onToggleBoardTheme)}
+        aria-pressed={boardTheme === 'dark'}
+        aria-label="Donker bord"
+        title="Donker bordvlak voor een verduisterd lokaal"
+      >
+        <Moon size={18} strokeWidth={2.4} />
+      </button>
+    </>
+  );
+
+  const renderTextPanel = () => (
+    <>
+      <button
+        type="button"
+        className={squareButton(false)}
+        onClick={() => runClosingAction(onCreateTextObject)}
+        aria-label="Tekstvak toevoegen"
+        title="Tekstvak toevoegen"
+      >
+        <Type size={18} strokeWidth={2.4} />
+      </button>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          className={squareButton(activeTextStyle.bold)}
+          onClick={() => handleTextStyle({ bold: !activeTextStyle.bold })}
+          aria-label="Vet"
+          aria-pressed={activeTextStyle.bold}
+        >
+          <Bold size={18} strokeWidth={2.8} />
+        </button>
+        <button
+          type="button"
+          className={squareButton(activeTextStyle.italic)}
+          onClick={() => handleTextStyle({ italic: !activeTextStyle.italic })}
+          aria-label="Cursief"
+          aria-pressed={activeTextStyle.italic}
+        >
+          <Italic size={18} strokeWidth={2.8} />
+        </button>
+        {textAlignments.map((alignment) => {
+          const Icon = alignment.icon;
+
+          return (
+            <button
+              key={alignment.value}
+              type="button"
+              className={squareButton(activeTextStyle.align === alignment.value)}
+              onClick={() => handleTextStyle({ align: alignment.value })}
+              aria-label={`Uitlijnen ${alignment.label}`}
+              aria-pressed={activeTextStyle.align === alignment.value}
+            >
+              <Icon size={18} strokeWidth={2.6} />
+            </button>
+          );
+        })}
+      </div>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {textColors.map((color) => (
+          <button
+            key={color.value}
+            type="button"
+            className={squareButton(activeTextStyle.color === color.value)}
+            onClick={() => handleTextStyle({ color: color.value })}
+            aria-label={`Tekstkleur ${color.label}`}
+            aria-pressed={activeTextStyle.color === color.value}
+            title={color.label}
+          >
+            <span className="block h-6 w-6 rounded-full ring-2 ring-white/80" style={{ backgroundColor: color.value }} />
+          </button>
+        ))}
+        {renderCustomColorControls('Tekstkleur', activeTextStyle.color, (color) => handleTextStyle({ color }))}
+      </div>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {textSizes.map((size) => (
+          <button
+            key={size.value}
+            type="button"
+            className={squareButton(activeTextStyle.fontSize === size.value)}
+            onClick={() => handleTextStyle({ fontSize: size.value })}
+            aria-label={`Tekstgrootte ${size.label}`}
+            aria-pressed={activeTextStyle.fontSize === size.value}
+          >
+            {size.label}
+          </button>
+        ))}
+        {textFonts.map((font) => (
+          <button
+            key={font.value}
+            type="button"
+            className={labelButton(activeTextStyle.fontFamily === font.value)}
+            onClick={() => handleTextStyle({ fontFamily: font.value })}
+            aria-pressed={activeTextStyle.fontFamily === font.value}
+          >
+            {font.label}
+          </button>
+        ))}
+      </div>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <div className="relative flex items-center">
+        <button
+          type="button"
+          className={squareButton(symbolsOpen)}
+          onClick={() => {
+            setSymbolsOpen((current) => !current);
+            onAction?.();
+          }}
+          aria-label="Wiskundesymbolen"
+          aria-expanded={symbolsOpen}
+          title="Wiskundesymbolen"
+        >
+          <Sigma size={19} strokeWidth={2.8} />
+        </button>
+        {symbolsOpen ? (
+          <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-20 grid w-max max-w-[min(22rem,calc(100vw-2rem))] grid-cols-4 gap-1.5 rounded-xl border border-white/80 bg-white/95 p-2 shadow-[0_16px_32px_rgba(17,24,39,0.16)] backdrop-blur">
+            {mathSymbols.map((symbol) => (
+              <button
+                key={symbol}
+                type="button"
+                className={`${buttonBase} h-11 w-11 bg-white text-[18px] text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]`}
+                onClick={() => handleTextSymbol(symbol)}
+                aria-label={`Wiskundesymbool ${symbol}`}
+              >
+                {symbol}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </>
+  );
+
+  const renderObjectsPanel = () => (
+    <>
+      <div className="flex flex-wrap items-center gap-1.5">
+        {objectTypes.map((type) => {
+          const Icon = type.icon;
+          const label = getPresenterObjectLabel({ type: type.id });
+
+          return (
+            <button
+              key={type.id}
+              type="button"
+              className={squareButton(false)}
+              onClick={() => runClosingAction(() => onCreateObject?.(type.id))}
+              aria-label={label}
+              title={label}
+            >
+              <Icon size={18} strokeWidth={2.4} />
+            </button>
+          );
+        })}
+      </div>
+      <div className={`h-9 w-px ${dividerClass}`} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {instrumentTypes.map((instrument) => {
+          const Icon = instrument.icon;
+          const isActive = activeInstrument === instrument.id;
+
+          return (
+            <button
+              key={instrument.id}
+              type="button"
+              className={`${buttonBase} h-11 w-11 ${isActive ? activeButtonClass : instrumentIdleClass}`}
+              onClick={() => runClosingAction(() => onInstrument?.(instrument.id))}
+              aria-pressed={isActive}
+              aria-label={instrument.label}
+              title={isActive ? `${instrument.label} sluiten` : `${instrument.label} op het bord leggen`}
+            >
+              <Icon size={18} strokeWidth={2.4} />
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  const panelRenderers = {
+    pen: renderDrawingPanel,
+    highlighter: renderDrawingPanel,
+    eraser: renderEraserPanel,
+    focus: renderFocusPanel,
+    background: renderBackgroundPanel,
+    text: renderTextPanel,
+    objects: renderObjectsPanel
+  };
+
+  const panelTitles = {
+    pen: 'Pen',
+    highlighter: 'Markeerstift',
+    eraser: 'Gum',
+    focus: 'Focus',
+    background: 'Achtergrond',
+    text: 'Tekst',
+    objects: 'Objecten en instrumenten'
+  };
+
+  const renderPanel = open ? panelRenderers[activeCategory] : null;
+  const panelAnchorClass =
+    toolbarAlign === 'left' ? 'left-0' : toolbarAlign === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2';
+  const alignClass = toolbarAlign === 'left' ? 'mr-auto' : toolbarAlign === 'right' ? 'ml-auto' : 'mx-auto';
+
+  const renderCategoryButton = (category) => {
+    const Icon = category.icon;
+    const isActive = activeCategory === category.id;
+    const showsColor = category.id === 'pen' || category.id === 'highlighter';
+
+    return (
+      <button
+        key={category.id}
+        type="button"
+        className={squareButton(isActive)}
+        disabled={category.disabled}
+        onClick={() => handleCategory(category)}
+        aria-pressed={isActive}
+        aria-expanded={isActive && PANEL_CATEGORIES.has(category.id) ? open : undefined}
+        aria-label={category.label}
+        title={category.hint || category.label}
+      >
+        <Icon size={19} strokeWidth={2.4} />
+        {showsColor ? (
+          <span
+            aria-hidden="true"
+            className="absolute bottom-1 left-1/2 h-1 w-5 -translate-x-1/2 rounded-full"
+            style={{
+              backgroundColor: category.id === activeCategory ? penColor : 'transparent',
+              opacity: category.id === 'highlighter' ? 0.6 : 1
+            }}
+          />
+        ) : null}
+      </button>
+    );
+  };
+
   return (
     <div
       data-presenter-toolbar="true"
       data-presenter-toolbar-pinned={pinned ? 'true' : 'false'}
-      className={`group pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 ease-out sm:px-5 ${
-        pinned || open ? 'translate-y-0' : 'translate-y-[calc(100%-3.75rem)] focus-within:translate-y-0'
-      }`}
-      onPointerEnter={onOpen}
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-5"
     >
-      <button
-        type="button"
-        className={`pointer-events-auto mx-auto mb-2 flex min-h-[38px] min-w-40 items-center justify-center rounded-lg border px-3.5 py-2 text-[13px] font-bold shadow-[0_10px_22px_rgba(122,60,255,0.12)] transition ${idleButtonClass}`}
-        onClick={onTogglePinned}
-        onPointerEnter={onOpen}
-        onPointerDown={onOpen}
-        aria-pressed={pinned}
-      >
-        {pinned ? 'Werkbalk vast' : 'Werkbalk openen'}
-      </button>
-      {activeCategory === 'pen' || activeCategory === 'highlighter' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(64rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          {!isHighlighter ? (
-            <>
-              <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
-                <button
-                  type="button"
-                  className={`${popoverButtonClass} ${penMode === 'free' ? activeButtonClass : idleButtonClass}`}
-                  onClick={() => runAction(() => onPenMode?.('free'))}
-                  aria-pressed={penMode === 'free'}
-                  title="Vrij tekenen"
-                >
-                  Vrij
-                </button>
-                <button
-                  type="button"
-                  className={`${popoverButtonClass} ${penMode === 'line' ? activeButtonClass : idleButtonClass}`}
-                  onClick={() => runAction(() => onPenMode?.('line'))}
-                  aria-pressed={penMode === 'line'}
-                  title="Rechte lijn; snapt op ruitjes, Shift = hoeksnap"
-                >
-                  Rechte lijn
-                </button>
-                <button
-                  type="button"
-                  className={`${popoverButtonClass} ${fingerDrawing ? activeButtonClass : idleButtonClass}`}
-                  onClick={() => runAction(onToggleFingerDrawing)}
-                  aria-pressed={fingerDrawing}
-                  title="Uit: vinger pant/scrollt, alleen de pen tekent"
-                >
-                  Vinger tekent
-                </button>
-              </div>
-              <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-            </>
-          ) : null}
-          <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
-            <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingColorLabel}</span>
-            {drawingColors.map((color) => {
-              const isActive = penColor === color.value;
-
-              return (
-                <button
-                  key={color.value}
-                  type="button"
-                  className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border transition ${
-                    isActive ? activeButtonClass : idleButtonClass
-                  }`}
-                  onClick={() => runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, color: color.value }))}
-                  aria-label={`${drawingToolLabel} kleur ${color.label}`}
-                  aria-pressed={isActive}
-                >
-                  <span
-                    className="block h-5 w-5 rounded-full ring-2 ring-white/80"
-                    style={{ backgroundColor: color.value, opacity: previewOpacity }}
-                  />
-                </button>
-              );
-            })}
-            {renderCustomColorControls(drawingToolLabel, penColor, (color) =>
-              runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, color }))
-            )}
-          </div>
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex min-h-[38px] flex-wrap items-center justify-center gap-1.5">
-            <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>{drawingWidthLabel}</span>
-            {drawingWidths.map((width) => {
-              const isActive = penWidth === width.value;
-
-              return (
-                <button
-                  key={width.value}
-                  type="button"
-                  className={`inline-flex min-h-[38px] min-w-16 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-bold transition ${
-                    isActive
-                      ? activeButtonClass
-                      : idleButtonClass
-                  }`}
-                  onClick={() => runAction(() => onPenStyle?.({ id: drawingCategory, variant: drawingCategory, width: width.value }))}
-                  aria-label={`${drawingToolLabel} dikte ${width.label}`}
-                  aria-pressed={isActive}
-                >
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-md ${iconAccentClass}`}>
-                    <span
-                      className={isHighlighter ? 'block rounded-sm' : 'block rounded-full'}
-                      style={{
-                        backgroundColor: isActive ? '#7a3cff' : '#0b132b',
-                        height: isHighlighter ? '8px' : `${Math.min(width.value, 16)}px`,
-                        opacity: previewOpacity,
-                        width: isHighlighter ? `${Math.min(width.value, 32)}px` : `${Math.min(width.value, 16)}px`
-                      }}
-                    />
-                  </span>
-                  <span>{width.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-      {activeCategory === 'eraser' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(42rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>Gumgrootte</span>
-          {PRESENTER_ERASER_SIZES.map((size) => {
-            const isActive = eraserSize === size.id;
-
-            return (
-              <button
-                key={size.id}
-                type="button"
-                className={`inline-flex min-h-[38px] min-w-20 shrink-0 items-center justify-center gap-2 rounded-lg border px-3 text-[13px] font-bold transition ${
-                  isActive ? activeButtonClass : idleButtonClass
-                }`}
-                onClick={() => runAction(() => onEraserSize?.(size.id))}
-                aria-label={`Gumgrootte ${size.label}`}
-                aria-pressed={isActive}
-              >
-                <span
-                  className="block rounded-full border-2 border-slate-500 bg-white"
-                  style={{
-                    height: `${Math.min(22, Math.max(8, size.radius / 2.8))}px`,
-                    width: `${Math.min(22, Math.max(8, size.radius / 2.8))}px`
-                  }}
-                />
-                <span>{size.label}</span>
-              </button>
-            );
-          })}
-          <span className="px-2 text-[12px] font-semibold text-[var(--helix-muted)]">
-            De gum wist alleen pen- en markeerstiftstreken; objecten verwijder je via selectie.
-          </span>
-        </div>
-      ) : null}
-      {activeCategory === 'focus' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(64rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${focusKind === 'spotlight' ? activeButtonClass : idleButtonClass}`}
-            onClick={() => runAction(() => onFocusSelect?.('spotlight'))}
-            aria-pressed={focusKind === 'spotlight'}
-            title="Verduister alles behalve een sleepbare cirkel"
+      <div className={`relative w-fit max-w-full ${alignClass}`}>
+        {renderPanel ? (
+          <div
+            className={`pointer-events-auto absolute bottom-[calc(100%+0.5rem)] ${panelAnchorClass} flex w-max max-w-[calc(100vw-1.5rem)] flex-wrap items-center gap-1.5 p-1.5 ${panelClass}`}
+            role="group"
+            aria-label={`${panelTitles[activeCategory]} instellingen`}
           >
-            Spotlight
-          </button>
-          {focusKind === 'spotlight'
-            ? SPOTLIGHT_RADII.map((radius) => (
-                <button
-                  key={radius.id}
-                  type="button"
-                  className={`${popoverButtonClass} ${spotlightRadiusId === radius.id ? activeButtonClass : idleButtonClass}`}
-                  onClick={() => runAction(() => onSpotlightRadius?.(radius.id))}
-                  aria-pressed={spotlightRadiusId === radius.id}
-                >
-                  {radius.label}
-                </button>
-              ))
-            : null}
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${focusKind === 'curtain' ? activeButtonClass : idleButtonClass}`}
-            onClick={() => runAction(() => onFocusSelect?.('curtain'))}
-            aria-pressed={focusKind === 'curtain'}
-            title="Schuifbaar gordijn over het bord"
-          >
-            Gordijn
-          </button>
-          {focusKind === 'curtain' ? (
-            <>
-              <button
-                type="button"
-                className={`${popoverButtonClass} ${curtainDirection === 'top' ? activeButtonClass : idleButtonClass}`}
-                onClick={() => runAction(() => onCurtainDirection?.('top'))}
-                aria-pressed={curtainDirection === 'top'}
-              >
-                Boven
-              </button>
-              <button
-                type="button"
-                className={`${popoverButtonClass} ${curtainDirection === 'left' ? activeButtonClass : idleButtonClass}`}
-                onClick={() => runAction(() => onCurtainDirection?.('left'))}
-                aria-pressed={curtainDirection === 'left'}
-              >
-                Links
-              </button>
-            </>
-          ) : null}
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${focusKind === 'laser' ? activeButtonClass : idleButtonClass}`}
-            onClick={() => runAction(() => onFocusSelect?.('laser'))}
-            aria-pressed={focusKind === 'laser'}
-            title="Rode aanwijsstip met vervagend spoor"
-          >
-            Laser
-          </button>
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <span className={`px-1 text-[12px] font-black uppercase tracking-[0.14em] ${toolbarLabelClass}`}>
-            <Timer className="inline" size={14} /> Timer
-          </span>
-          {[1, 2, 5].map((minutes) => (
+            {renderPanel()}
+            <div className={`h-9 w-px ${dividerClass}`} />
             <button
-              key={minutes}
               type="button"
-              className={`${popoverButtonClass} ${idleButtonClass}`}
-              onClick={() => runAction(() => onTimer?.(minutes))}
-              title={`Timer van ${minutes} ${minutes === 1 ? 'minuut' : 'minuten'} starten`}
+              className={squareButton(false)}
+              onClick={() => onClosePanel?.()}
+              aria-label={`${panelTitles[activeCategory]} instellingen sluiten`}
+              title="Paneel sluiten"
             >
-              {minutes} min
+              <X size={18} strokeWidth={2.6} />
             </button>
-          ))}
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <button
-            type="button"
-            className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
-            onClick={() => runAction(onStudentPicker)}
-            title="Kies een willekeurige leerling uit een klas"
-          >
-            <Users size={16} strokeWidth={2.4} />
-            Leerlingkiezer
-          </button>
-        </div>
-      ) : null}
-      {activeCategory === 'background' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(42rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-1.5 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${
-              backgroundKind === 'white'
-                ? activeButtonClass
-                : idleButtonClass
-            }`}
-            onClick={() => handleBackground('white')}
-            aria-pressed={backgroundKind === 'white'}
-          >
-            Wit
-          </button>
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${
-              backgroundKind === 'lines'
-                ? activeButtonClass
-                : idleButtonClass
-            }`}
-            onClick={() => handleBackground('lines')}
-            aria-pressed={backgroundKind === 'lines'}
-          >
-            Lijntjes
-          </button>
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${
-              backgroundKind === 'grid'
-                ? activeButtonClass
-                : idleButtonClass
-            }`}
-            onClick={() => handleBackground('grid')}
-            aria-pressed={backgroundKind === 'grid'}
-          >
-            Ruitjes
-          </button>
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${
-              backgroundKind === 'mm'
-                ? activeButtonClass
-                : idleButtonClass
-            }`}
-            onClick={() => handleBackground('mm')}
-            aria-pressed={backgroundKind === 'mm'}
-          >
-            Millimeter
-          </button>
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${
-              backgroundKind === 'axes'
-                ? activeButtonClass
-                : idleButtonClass
-            }`}
-            onClick={() => handleBackground('axes')}
-            aria-pressed={backgroundKind === 'axes'}
-          >
-            Assenstelsel
-          </button>
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${idleButtonClass}`}
-            onClick={handleGridSizeToggle}
-          >
-            Ruitmaat {nextGridSize}
-          </button>
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <button
-            type="button"
-            className={`${popoverButtonClass} ${boardTheme === 'dark' ? activeButtonClass : idleButtonClass}`}
-            onClick={() => runAction(onToggleBoardTheme)}
-            aria-pressed={boardTheme === 'dark'}
-            title="Donker bordvlak voor een verduisterd lokaal"
-          >
-            Donker bord
-          </button>
-        </div>
-      ) : null}
-      {activeCategory === 'text' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(72rem,calc(100vw-1.5rem))] flex-wrap items-center justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <button
-            type="button"
-            className={`${popoverButtonClass} gap-2 ${idleButtonClass}`}
-            onClick={() => runAction(onCreateTextObject)}
-          >
-            <Type size={16} strokeWidth={2.4} />
-            Tekstvak
-          </button>
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
+          </div>
+        ) : null}
+
+        <div className={`pointer-events-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-1.5 p-1.5 ${panelClass}`}>
+          <div className="flex shrink-0 items-center gap-1.5">{fileCategories.map(renderCategoryButton)}</div>
+
+          <div className={`mx-0.5 h-9 w-px shrink-0 ${dividerClass}`} />
+
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
-              className={`inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border transition ${activeTextStyle.bold ? activeButtonClass : idleButtonClass}`}
-              onClick={() => handleTextStyle({ bold: !activeTextStyle.bold })}
-              aria-label="Vet"
-              aria-pressed={activeTextStyle.bold}
+              className={squareButton(false)}
+              onClick={() => runAction(onPrev)}
+              disabled={prevDisabled}
+              aria-label="Vorige pagina"
+              title="Vorige pagina (←)"
             >
-              <Bold size={17} strokeWidth={2.8} />
+              <ArrowLeft size={19} strokeWidth={2.4} />
+            </button>
+            <span className="min-w-14 px-1 text-center text-[13px] font-black leading-tight text-[var(--helix-navy)]" title={pageLabel}>
+              {pageLabel.replace('Pagina ', '')}
+            </span>
+            <button
+              type="button"
+              className={squareButton(false)}
+              onClick={() => runAction(onNext)}
+              disabled={nextDisabled}
+              aria-label="Volgende pagina"
+              title="Volgende pagina (→)"
+            >
+              <ArrowRight size={19} strokeWidth={2.4} />
             </button>
             <button
               type="button"
-              className={`inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border transition ${activeTextStyle.italic ? activeButtonClass : idleButtonClass}`}
-              onClick={() => handleTextStyle({ italic: !activeTextStyle.italic })}
-              aria-label="Cursief"
-              aria-pressed={activeTextStyle.italic}
+              className={squareButton(false)}
+              onClick={() => runAction(onAddPage)}
+              aria-label="Nieuwe pagina"
+              title="Nieuwe pagina"
             >
-              <Italic size={17} strokeWidth={2.8} />
+              <Plus size={19} strokeWidth={2.4} />
             </button>
-            {textAlignments.map((alignment) => {
-              const Icon = alignment.icon;
-              const isActive = activeTextStyle.align === alignment.value;
+          </div>
 
-              return (
-                <button
-                  key={alignment.value}
-                  type="button"
-                  className={`inline-flex h-[38px] w-[38px] items-center justify-center rounded-lg border transition ${isActive ? activeButtonClass : idleButtonClass}`}
-                  onClick={() => handleTextStyle({ align: alignment.value })}
-                  aria-label={`Uitlijnen ${alignment.label}`}
-                  aria-pressed={isActive}
-                >
-                  <Icon size={17} strokeWidth={2.6} />
-                </button>
-              );
-            })}
-          </div>
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {textColors.map((color) => {
-              const isActive = activeTextStyle.color === color.value;
+          <div className={`mx-0.5 h-9 w-px shrink-0 ${dividerClass}`} />
 
-              return (
-                <button
-                  key={color.value}
-                  type="button"
-                  className={`flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border transition ${
-                    isActive ? activeButtonClass : idleButtonClass
-                  }`}
-                  onClick={() => handleTextStyle({ color: color.value })}
-                  aria-label={`Tekstkleur ${color.label}`}
-                  aria-pressed={isActive}
-                >
-                  <span className="block h-5 w-5 rounded-full ring-2 ring-white/80" style={{ backgroundColor: color.value }} />
-                </button>
-              );
-            })}
-            {renderCustomColorControls('Tekstkleur', activeTextStyle.color, (color) => handleTextStyle({ color }))}
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {textSizes.map((size) => (
-              <button
-                key={size.value}
-                type="button"
-                className={`${popoverButtonClass} ${activeTextStyle.fontSize === size.value ? activeButtonClass : idleButtonClass}`}
-                onClick={() => handleTextStyle({ fontSize: size.value })}
-                aria-pressed={activeTextStyle.fontSize === size.value}
-              >
-                {size.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {textFonts.map((font) => (
-              <button
-                key={font.value}
-                type="button"
-                className={`${popoverButtonClass} ${activeTextStyle.fontFamily === font.value ? activeButtonClass : idleButtonClass}`}
-                onClick={() => handleTextStyle({ fontFamily: font.value })}
-                aria-pressed={activeTextStyle.fontFamily === font.value}
-              >
-                {font.label}
-              </button>
-            ))}
-          </div>
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <div className="relative flex items-center justify-center">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
-              className={`${iconButtonClass} ${symbolsOpen ? activeButtonClass : idleButtonClass}`}
-              onClick={() => {
-                setSymbolsOpen((current) => !current);
-                onAction?.();
-              }}
-              aria-label="Wiskundesymbolen"
-              aria-expanded={symbolsOpen}
-              title="Wiskundesymbolen"
+              className={squareButton(false)}
+              onClick={canUndo ? () => runAction(onUndo) : undefined}
+              disabled={!canUndo}
+              aria-label="Ongedaan maken"
+              title="Ongedaan maken (Ctrl+Z)"
             >
-              <Sigma size={18} strokeWidth={2.8} />
+              <Undo2 size={19} strokeWidth={2.4} />
             </button>
-            {symbolsOpen ? (
-              <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-20 grid w-max max-w-[min(22rem,calc(100vw-2rem))] grid-cols-4 gap-1.5 rounded-lg border border-white/80 bg-white/95 p-2 shadow-[0_16px_32px_rgba(17,24,39,0.16)] backdrop-blur">
-                {mathSymbols.map((symbol) => (
+            <button
+              type="button"
+              className={squareButton(false)}
+              onClick={canRedo ? () => runAction(onRedo) : undefined}
+              disabled={!canRedo}
+              aria-label="Opnieuw"
+              title="Opnieuw (Ctrl+Y)"
+            >
+              <Redo2 size={19} strokeWidth={2.4} />
+            </button>
+          </div>
+
+          <div className={`mx-0.5 h-9 w-px shrink-0 ${dividerClass}`} />
+
+          <div className="flex shrink-0 items-center gap-1.5">{toolCategories.map(renderCategoryButton)}</div>
+
+          <div className={`mx-0.5 h-9 w-px shrink-0 ${dividerClass}`} />
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            {renderCategoryButton({ id: 'background', label: 'Achtergrond', icon: Grid3X3, hint: 'Achtergrond en bordkleur' })}
+            <div className="relative flex items-center">
+              <button
+                type="button"
+                className={squareButton(moreOpen)}
+                onClick={() => setMoreOpen((current) => !current)}
+                aria-label="Meer"
+                aria-expanded={moreOpen}
+                title="Meer: uitlijnen, vastzetten, volledig scherm, pagina leegmaken"
+              >
+                <MoreHorizontal size={19} strokeWidth={2.4} />
+              </button>
+              {moreOpen ? (
+                <div className="absolute bottom-[calc(100%+0.5rem)] right-0 z-20 flex w-max items-center gap-1.5 rounded-xl border border-white/80 bg-white/95 p-1.5 shadow-[0_16px_32px_rgba(17,24,39,0.16)] backdrop-blur">
                   <button
-                    key={symbol}
                     type="button"
-                    className={`${iconButtonClass} bg-white text-[18px] text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]`}
-                    onClick={() => handleTextSymbol(symbol)}
-                    aria-label={`Wiskundesymbool ${symbol}`}
+                    className={squareButton(false)}
+                    onClick={() => {
+                      const next = toolbarAlign === 'center' ? 'left' : toolbarAlign === 'left' ? 'right' : 'center';
+                      onToolbarAlign?.(next);
+                      onAction?.();
+                    }}
+                    aria-label="Werkbalk uitlijnen (links, midden of rechts)"
+                    title={`Werkbalk uitlijnen (nu: ${toolbarAlign === 'center' ? 'midden' : toolbarAlign === 'left' ? 'links' : 'rechts'})`}
                   >
-                    {symbol}
+                    <MoveHorizontal size={19} strokeWidth={2.4} />
                   </button>
-                ))}
-              </div>
-            ) : null}
+                  <button
+                    type="button"
+                    className={squareButton(pinned)}
+                    onClick={onTogglePinned}
+                    aria-pressed={pinned}
+                    aria-label={pinned ? 'Paneel losmaken' : 'Paneel vastzetten'}
+                    title={pinned ? 'Paneel losmaken: bord aanraken sluit het weer' : 'Paneel vastzetten: blijft open tijdens het tekenen'}
+                  >
+                    <Pin size={19} strokeWidth={2.4} />
+                  </button>
+                  <button
+                    type="button"
+                    className={squareButton(false)}
+                    onClick={() => runClosingAction(onFullscreen)}
+                    aria-label="Volledig scherm"
+                    title="Volledig scherm"
+                  >
+                    <Maximize2 size={19} strokeWidth={2.4} />
+                  </button>
+                  <div className={`h-9 w-px ${dividerClass}`} />
+                  <button
+                    type="button"
+                    className={squareButton(false)}
+                    onClick={canClearPage ? () => runClosingAction(onClearPage) : undefined}
+                    disabled={!canClearPage}
+                    aria-label="Huidige pagina leegmaken"
+                    title="Huidige pagina leegmaken"
+                  >
+                    <Trash2 size={19} strokeWidth={2.4} />
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
-        </div>
-      ) : null}
-      {activeCategory === 'objects' ? (
-        <div className={`pointer-events-auto mx-auto mb-2 flex max-w-[min(64rem,calc(100vw-1.5rem))] flex-wrap items-stretch justify-center gap-2 p-2 ${panelClass}`} onPointerEnter={onOpen}>
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {objectTypes.map((type) => (
-              <button
-                key={type}
-                type="button"
-                className={`${popoverButtonClass} ${idleButtonClass}`}
-                onClick={() => runAction(() => onCreateObject?.(type))}
-              >
-                {getPresenterObjectLabel({ type })}
-              </button>
-            ))}
-          </div>
-          <div className={`min-h-[38px] w-px ${dividerClass} max-sm:hidden`} />
-          <div className="flex flex-wrap items-center justify-center gap-1.5">
-            {instrumentTypes.map((instrument) => {
-              const isActive = activeInstrument === instrument.id;
-
-              return (
-                <button
-                  key={instrument.id}
-                  type="button"
-                  className={`${popoverButtonClass} ${
-                    isActive
-                      ? activeButtonClass
-                      : 'border-[rgba(255,122,0,0.28)] bg-white/70 text-orange-700 hover:border-white hover:bg-white hover:text-[var(--helix-purple)]'
-                  }`}
-                  onClick={() => runAction(() => onInstrument?.(instrument.id))}
-                  aria-pressed={isActive}
-                  title={isActive ? `${instrument.label} sluiten` : `${instrument.label} op het bord leggen`}
-                >
-                  {instrument.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-      <div
-        className={`pointer-events-auto flex w-fit max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-1.5 overflow-visible p-2 ${panelClass} ${
-          toolbarAlign === 'left' ? 'mr-auto' : toolbarAlign === 'right' ? 'ml-auto' : 'mx-auto'
-        }`}
-        onPointerEnter={onOpen}
-      >
-        <div className="flex shrink-0 flex-wrap items-center justify-center gap-1">
-          <button
-            type="button"
-            className={iconButtonClass}
-            onClick={() => runAction(onPrev)}
-            disabled={prevDisabled}
-            aria-label="Vorige pagina"
-            title="Vorige pagina (←)"
-          >
-            <ArrowLeft size={17} strokeWidth={2.4} />
-          </button>
-          <div className="min-w-24 max-w-32 px-2 text-center text-[13px] font-black text-[var(--helix-navy)]">{pageLabel}</div>
-          <button
-            type="button"
-            className={iconButtonClass}
-            onClick={() => runAction(onNext)}
-            disabled={nextDisabled}
-            aria-label="Volgende pagina"
-            title="Volgende pagina (→)"
-          >
-            <ArrowRight size={17} strokeWidth={2.4} />
-          </button>
-          <button
-            type="button"
-            className={iconButtonClass}
-            onClick={() => runAction(onAddPage)}
-            aria-label="Nieuwe pagina"
-            title="Nieuwe pagina"
-          >
-            <Plus size={17} strokeWidth={2.4} />
-          </button>
-        </div>
-
-        <div className={`mx-1 h-[34px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
-
-        <div className="flex shrink-0 flex-wrap items-center justify-center gap-1">
-          <button type="button" className={iconButtonClass} onClick={() => runAction(onSelect)} aria-label="Selecteren" title="Selecteren (Esc)">
-            <MousePointer2 size={17} strokeWidth={2.4} />
-          </button>
-          <button
-            type="button"
-            className={iconButtonClass}
-            onClick={canUndo ? () => runAction(onUndo) : undefined}
-            disabled={!canUndo}
-            aria-label="Ongedaan maken"
-            title="Ongedaan maken (Ctrl+Z)"
-          >
-            <Undo2 size={17} strokeWidth={2.4} />
-          </button>
-          <button
-            type="button"
-            className={iconButtonClass}
-            onClick={canRedo ? () => runAction(onRedo) : undefined}
-            disabled={!canRedo}
-            aria-label="Opnieuw"
-            title="Opnieuw (Ctrl+Y)"
-          >
-            <Redo2 size={17} strokeWidth={2.4} />
-          </button>
-          <button
-            type="button"
-            className={iconButtonClass}
-            onClick={canClearPage ? () => runAction(onClearPage) : undefined}
-            disabled={!canClearPage}
-            aria-label="Huidige pagina leegmaken"
-            title="Huidige pagina leegmaken"
-          >
-            <Trash2 size={17} strokeWidth={2.4} />
-          </button>
-        </div>
-
-        <div className={`mx-1 h-[34px] w-px shrink-0 ${dividerClass} max-[720px]:hidden`} />
-
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-1">
-          {categories.map((category) => {
-            const Icon = category.icon;
-            const isActive = activeCategory === category.id;
-
-            return (
-              <button
-                key={category.id}
-                type="button"
-                className={`inline-flex h-[38px] shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-bold transition disabled:cursor-not-allowed disabled:opacity-45 ${
-                  isActive
-                    ? activeButtonClass
-                    : idleButtonClass
-                }`}
-                disabled={category.disabled}
-                onClick={() => handleCategory(category)}
-                aria-pressed={isActive}
-                aria-label={category.label}
-                title={category.label}
-              >
-                <Icon size={17} strokeWidth={2.4} />
-                <span className="max-w-24 truncate max-lg:hidden">{category.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-1 min-[920px]:ml-auto">
-          <button
-            type="button"
-            className={iconButtonClass}
-            onClick={() => {
-              const next = toolbarAlign === 'center' ? 'left' : toolbarAlign === 'left' ? 'right' : 'center';
-              onToolbarAlign?.(next);
-              onAction?.();
-            }}
-            aria-label="Werkbalk uitlijnen (links, midden of rechts)"
-            title={`Werkbalk uitlijnen (nu: ${toolbarAlign === 'center' ? 'midden' : toolbarAlign === 'left' ? 'links' : 'rechts'})`}
-          >
-            <MoveHorizontal size={17} strokeWidth={2.4} />
-          </button>
-          <button
-            type="button"
-            className={`${iconButtonClass} ${pinned ? activeButtonClass : ''}`}
-            onClick={onTogglePinned}
-            aria-pressed={pinned}
-            aria-label={pinned ? 'Werkbalk losmaken' : 'Werkbalk vastzetten'}
-          >
-            <CheckSquare size={17} strokeWidth={2.4} />
-          </button>
-          <button type="button" className={iconButtonClass} onClick={onFullscreen} aria-label="Volledig scherm" title="Volledig scherm">
-            <Maximize2 size={17} strokeWidth={2.4} />
-          </button>
         </div>
       </div>
     </div>

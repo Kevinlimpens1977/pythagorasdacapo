@@ -6,7 +6,13 @@ import {
   snapPointToGrid,
   snapRotationDegrees
 } from '../../lib/presenterGeometry';
-import { buildSmoothedStrokePath, constrainLineEnd, getStrokePressureWidth } from '../../lib/presenterInk';
+import { buildStrokeRenderPath, constrainLineEnd } from '../../lib/presenterInk';
+import {
+  appendStrokePoint,
+  getCoalescedPointerSamples,
+  isPalmContact,
+  resolvePointerIntent
+} from '../../lib/presenterPointer';
 import {
   getInstrumentEdgeLine,
   isPointNearInstrumentEdge,
@@ -157,6 +163,13 @@ const transformObjectsForPreview = (page, interaction) => {
       };
     })
   };
+};
+
+// Pointer-events dragen een tijdstempel uit dezelfde klok als performance.now.
+const getEventTime = (event) => {
+  if (Number.isFinite(event?.timeStamp)) return event.timeStamp;
+  if (typeof performance !== 'undefined' && typeof performance.now === 'function') return performance.now();
+  return Date.now();
 };
 
 const createStrokeId = () => {
@@ -385,6 +398,11 @@ export default function PresenterBoard({
   const touchPanRef = useRef(null);
   const interactionRef = useRef(null);
   const eraserGestureRef = useRef(null);
+  // Wanneer de pen voor het laatst gezien is (ook zwevend), en welke pointers
+  // bij het neerkomen geweigerd zijn. Samen vormen ze de palm rejection die
+  // voor pen, gum én selectie geldt.
+  const lastPenAtRef = useRef(null);
+  const rejectedPointersRef = useRef(new Set());
   const [measuredViewportWidth, setMeasuredViewportWidth] = useState(viewportWidth);
   const [interaction, setInteraction] = useState(null);
   const [eraserCursor, setEraserCursor] = useState(null);
@@ -545,17 +563,27 @@ export default function PresenterBoard({
     if (!active) return;
 
     const style = getPresenterStrokeStyle(active.stroke);
-    const pathData = buildSmoothedStrokePath(active.stroke.points);
-    if (!pathData) return;
+    // Zelfde bron als de definitieve SVG-inktlaag (zie PresenterInkLayer),
+    // dus preview en resultaat zijn per constructie hetzelfde pad.
+    const render = buildStrokeRenderPath(active.stroke, style.width);
+    if (!render.d) return;
 
     const devicePixels = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
     context.setTransform(board.scale * devicePixels, 0, 0, board.scale * devicePixels, 0, 0);
     context.lineCap = 'round';
     context.lineJoin = 'round';
-    context.strokeStyle = style.color;
     context.globalAlpha = style.opacity;
-    context.lineWidth = getStrokePressureWidth(active.stroke, style.width);
-    context.stroke(new Path2D(pathData));
+
+    const path = new Path2D(render.d);
+    if (render.mode === 'fill') {
+      context.fillStyle = style.color;
+      context.fill(path);
+      return;
+    }
+
+    context.strokeStyle = style.color;
+    context.lineWidth = render.width;
+    context.stroke(path);
   };
 
   const schedulePreviewDraw = () => {
@@ -659,6 +687,13 @@ export default function PresenterBoard({
     if (pan.pointers.size === 0) touchPanRef.current = null;
   };
 
+  // Loslaten: de pointer is niet langer geweigerd, en na een pen begint de
+  // nawerktijd waarin touch nog even genegeerd wordt te lopen.
+  const releasePointer = (event) => {
+    if (event?.pointerId != null) rejectedPointersRef.current.delete(event.pointerId);
+    if (event?.pointerType === 'pen') lastPenAtRef.current = getEventTime(event);
+  };
+
   const completeEraserGesture = (event) => {
     const gesture = eraserGestureRef.current;
     if (!gesture || (event?.pointerId != null && event.pointerId !== gesture.pointerId)) return;
@@ -729,12 +764,44 @@ export default function PresenterBoard({
     onEraseBrush?.({ from, to, radius: eraserRadius }, eraserGestureRef.current?.gestureId);
   };
 
+  // Eén afweging vóór de gereedschapskeuze: pen, vinger en handpalm worden
+  // voor tekenen, gummen en selecteren op dezelfde manier gewogen.
   const handlePointerDown = (event) => {
     onInteract?.();
 
-    if (isEraserTool) {
-      if (event.button !== 0) return;
+    const pointerType = event.pointerType || 'mouse';
+    if (pointerType === 'pen') lastPenAtRef.current = getEventTime(event);
 
+    const activeStroke = activeStrokeRef.current;
+    const decision = resolvePointerIntent({
+      pointerType,
+      pointerWidth: event.width,
+      pointerHeight: event.height,
+      button: event.button,
+      toolId: isEraserTool ? 'eraser' : tool?.id === 'select' ? 'select' : 'draw',
+      canDraw: Boolean(onStrokeComplete),
+      allowFingerDrawing,
+      activeStrokePointerType: activeStroke?.pointerType || null,
+      touchPanActive: Boolean(touchPanRef.current),
+      lastPenAt: lastPenAtRef.current,
+      now: getEventTime(event)
+    });
+
+    if (decision.intent === 'ignore') {
+      // Onthouden, zodat de bijbehorende bewegingen ook genegeerd worden.
+      rejectedPointersRef.current.add(event.pointerId);
+      return;
+    }
+
+    rejectedPointersRef.current.delete(event.pointerId);
+    if (decision.cancelActiveStroke) cancelActiveStroke();
+
+    if (decision.intent === 'pan') {
+      startTouchPan(event);
+      return;
+    }
+
+    if (decision.intent === 'erase') {
       const point = getBoardPoint(event);
       if (!point) return;
 
@@ -750,9 +817,7 @@ export default function PresenterBoard({
       return;
     }
 
-    if (tool?.id === 'select') {
-      if (event.button !== 0) return;
-
+    if (decision.intent === 'select') {
       const point = getBoardPoint(event);
       if (!point) return;
 
@@ -765,37 +830,6 @@ export default function PresenterBoard({
         current: point
       });
       return;
-    }
-
-    if (!onStrokeComplete || event.button !== 0) return;
-
-    const pointerType = event.pointerType || 'mouse';
-    const activeStroke = activeStrokeRef.current;
-
-    if (pointerType === 'touch') {
-      // Palm rejection: zolang een echte pen tekent, negeren we touch volledig.
-      if (activeStroke?.pointerType === 'pen') return;
-
-      // Tweede vinger tijdens tekenen: streek annuleren en overschakelen op pan.
-      if (activeStroke?.pointerType === 'touch') {
-        cancelActiveStroke();
-        startTouchPan(event);
-        return;
-      }
-
-      if (touchPanRef.current) {
-        startTouchPan(event);
-        return;
-      }
-
-      if (!allowFingerDrawing) {
-        startTouchPan(event);
-        return;
-      }
-    }
-
-    if (pointerType === 'pen' && activeStroke?.pointerType === 'touch') {
-      cancelActiveStroke();
     }
 
     const point = getBoardPoint(event);
@@ -821,6 +855,10 @@ export default function PresenterBoard({
       color: tool?.color || '#111827',
       width: Number.isFinite(tool?.width) && tool.width > 0 ? tool.width : 5,
       pointerType,
+      // Langs een instrumentrand is de streek per definitie kaarsrecht; die
+      // hoort geen aanzet- en afzetdunte te krijgen, ook niet nadat de gum hem
+      // in stukken heeft geknipt.
+      ...(edgeLine ? { straight: true } : {}),
       points: [pressure === undefined ? startPoint : { ...startPoint, p: pressure }]
     };
 
@@ -834,6 +872,19 @@ export default function PresenterBoard({
   };
 
   const handlePointerMove = (event) => {
+    // Een pointer die bij het neerkomen geweigerd is (handpalm, of touch vlak
+    // na de pen) blijft geweigerd tot hij loslaat.
+    if (rejectedPointersRef.current.has(event.pointerId)) return;
+
+    if (event.pointerType === 'pen') {
+      // Ook zwevend: de hand die de pen vasthoudt landt vaak net iets eerder
+      // op het bord dan de punt zelf.
+      lastPenAtRef.current = getEventTime(event);
+    } else if (isPalmContact({ pointerType: event.pointerType, width: event.width, height: event.height })) {
+      rejectedPointersRef.current.add(event.pointerId);
+      return;
+    }
+
     if (isEraserTool) {
       const point = getBoardPoint(event);
       if (!point) return;
@@ -870,24 +921,43 @@ export default function PresenterBoard({
     const activeStroke = activeStrokeRef.current;
     if (!activeStroke || event.pointerId !== activeStroke.pointerId) return;
 
-    const point = getBoardPoint(event);
-    if (!point) return;
-
     event.preventDefault();
 
-    const pressure = activeStroke.pointerType === 'pen' && Number.isFinite(event.pressure) && event.pressure > 0
-      ? Math.round(event.pressure * 100) / 100
-      : undefined;
-    const projectedPoint = activeStroke.edgeLine ? projectPointOntoEdge(point, activeStroke.edgeLine) : point;
-    const nextPoint = pressure === undefined ? projectedPoint : { ...projectedPoint, p: pressure };
+    // Alle tussenliggende samples meenemen: een pen die sneller rapporteert
+    // dan het scherm ververst levert er meerdere per beweging, en zonder die
+    // punten wordt een snelle haal hoekig.
+    const samples = getCoalescedPointerSamples(event);
+    const firstPoint = activeStroke.stroke.points[0];
+    const isSinglePointStroke = Boolean(activeStroke.edgeLine) || activeStroke.stroke.variant === 'geometry-pen';
+    let nextPoints = activeStroke.stroke.points;
+    let lastPoint = null;
+
+    for (const sample of samples) {
+      const point = getBoardPoint(sample);
+      if (!point) continue;
+
+      const pressure = activeStroke.pointerType === 'pen' && Number.isFinite(sample.pressure) && sample.pressure > 0
+        ? Math.round(sample.pressure * 100) / 100
+        : undefined;
+      const projectedPoint = activeStroke.edgeLine ? projectPointOntoEdge(point, activeStroke.edgeLine) : point;
+      const nextPoint = pressure === undefined ? projectedPoint : { ...projectedPoint, p: pressure };
+
+      lastPoint = nextPoint;
+      if (!isSinglePointStroke) nextPoints = appendStrokePoint(nextPoints, nextPoint);
+    }
+
+    if (!lastPoint) return;
 
     // Ligt de streek op de tekenrand van een instrument, dan is die rand de
     // bron van waarheid: de 45°-snap van de lijnpen mag hem niet wegtrekken.
-    const nextPoints = activeStroke.edgeLine
-      ? [activeStroke.stroke.points[0], nextPoint]
-      : activeStroke.stroke.variant === 'geometry-pen'
-        ? [activeStroke.stroke.points[0], constrainLineEnd(activeStroke.stroke.points[0], nextPoint, { angleSnap: event.shiftKey })]
-        : [...activeStroke.stroke.points, nextPoint];
+    if (activeStroke.edgeLine) {
+      nextPoints = [firstPoint, lastPoint];
+    } else if (activeStroke.stroke.variant === 'geometry-pen') {
+      nextPoints = [firstPoint, constrainLineEnd(firstPoint, lastPoint, { angleSnap: event.shiftKey })];
+    } else if (nextPoints === activeStroke.stroke.points) {
+      // Niets nieuws: alle samples lagen op het vorige punt.
+      return;
+    }
 
     activeStrokeRef.current = {
       ...activeStroke,
@@ -1034,12 +1104,14 @@ export default function PresenterBoard({
           completeSelectionInteraction(event);
           completeEraserGesture(event);
           endTouchPan(event);
+          releasePointer(event);
         }}
         onPointerCancel={(event) => {
           completeActiveStroke(event);
           completeSelectionInteraction(event);
           completeEraserGesture(event);
           endTouchPan(event);
+          releasePointer(event);
         }}
         onPointerDown={handlePointerDown}
         onPointerLeave={() => {
@@ -1051,6 +1123,7 @@ export default function PresenterBoard({
           completeSelectionInteraction(event);
           completeEraserGesture(event);
           endTouchPan(event);
+          releasePointer(event);
         }}
         style={{
           width: `${board.scaledWidth}px`,

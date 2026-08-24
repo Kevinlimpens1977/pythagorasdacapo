@@ -395,9 +395,13 @@ test('krappe vensters maken het instrument kleiner in plaats van het af te snijd
     assertInsideRect(tight.bounds, cramped.visible, `${instrumentId} krap`);
   }
 
-  // De passer is het hoogste instrument en past op een kleine laptop niet meer
-  // op volle maat; die hoort dus echt te krimpen in plaats van af te lopen.
-  const compass = placeInstrument('compass', cramped);
+  // De passer is het hoogste instrument en past op een echt lage laptop niet
+  // meer op volle maat; die hoort dus te krimpen in plaats van af te lopen.
+  // (Sinds de werkbalk één lage iconenbalk is in plaats van drie gestapelde
+  // stroken, is PRESENTER_TOOLBAR_RESERVE_PX kleiner en past de passer op
+  // 1024x700 wél weer heel; vandaar een apart, lager venster hieronder.)
+  const lowWindow = buildViewport({ name: 'lage laptop 1024x620', windowWidth: 1024, windowHeight: 620 });
+  const compass = placeInstrument('compass', lowWindow);
   assert.ok(
     compass.placement.sizeScale < 1,
     `de passer hoort kleiner te worden op een kleine laptop (was ${compass.placement.sizeScale})`
