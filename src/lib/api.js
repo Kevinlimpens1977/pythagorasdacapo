@@ -49,6 +49,49 @@ export const assessOpenAnswerCall = async ({
   }
 };
 
+/**
+ * Laat een gesloten vraag server-side nakijken.
+ *
+ * De antwoordsleutel staat niet in de leerlingbrowser en hoort daar ook niet:
+ * de callable haalt de volledige vraag met de Admin SDK op, draait de gedeelde
+ * beoordelingslaag en geeft alleen het oordeel terug.
+ *
+ * Faalt de aanroep (functie nog niet gedeployed, offline, throttle), dan komt er
+ * `{ success: false, unavailable: true, code }` terug. De leerlingroute valt dan
+ * zichtbaar terug op de oude situatie; de leerling loopt nooit vast.
+ */
+let closedQuestionGradingMissing = false;
+
+export const gradeClosedQuestionCall = async ({ vraagId = '', blockId = '', answers = {} } = {}) => {
+  if (!vraagId) {
+    return { success: false, unavailable: true, code: 'missing-vraag-id' };
+  }
+
+  // Zolang de functie nog niet gedeployed is, hoeft niet elke vraag opnieuw
+  // tegen een 404 aan te lopen: een keer is genoeg om terug te vallen.
+  if (closedQuestionGradingMissing) {
+    return { success: false, unavailable: true, code: 'functions/not-found' };
+  }
+
+  try {
+    const gradeClosedQuestion = httpsCallable(functions, 'gradeClosedQuestion');
+    const result = await gradeClosedQuestion({ vraagId, blockId, answers });
+    const data = result.data || {};
+    return { ...data, success: data.success === true };
+  } catch (error) {
+    if (error?.code === 'functions/not-found') {
+      closedQuestionGradingMissing = true;
+    }
+    console.error('Closed question grading error:', error);
+    return {
+      success: false,
+      unavailable: true,
+      code: error?.code || 'functions/internal',
+      error: sanitizeOpenAnswerAssessmentFeedback(error?.message || '')
+    };
+  }
+};
+
 export const getOpenRouterConfigStatusCall = async () => {
   try {
     const getStatus = httpsCallable(functions, 'getOpenRouterConfigStatus');

@@ -248,6 +248,13 @@ service cloud.firestore {
       allow read, create, update, delete: if isAdmin();
     }
 
+    // Rem tegen het aftasten van antwoorden. Alleen de callable
+    // gradeClosedQuestion schrijft hier; een leerling mag zijn eigen teller
+    // niet lezen of wissen.
+    match /questionGradingRateLimits/{limitId} {
+      allow read, create, update, delete: if false;
+    }
+
     // Tokensysteem. Saldo's en ledger muteren uitsluitend via Cloud Functions.
     match /tokenAccounts/{studentUid} {
       allow read: if isOwner(studentUid) || isAdmin();

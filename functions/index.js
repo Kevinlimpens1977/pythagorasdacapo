@@ -27,6 +27,23 @@ const ALLOWED_OPENROUTER_MODELS = new Set([
   "gemini-3.5-flash",
 ]);
 const AI_TUTOR_RULES_PATH = "apps/helix/settings/aiTutorRules";
+// Gesloten vragen worden server-side nagekeken (gradeClosedQuestion). Open
+// vragen niet: die lopen via assessOpenAnswer met de bestaande AI-route.
+const CLOSED_QUESTION_TYPES = new Set([
+  "meerkeuze",
+  "waar-niet-waar",
+  "numeriek",
+  "invullen",
+  "volgorde",
+  "koppelen",
+]);
+// Bij deze typen is "onderdeel N is fout" gelijk aan de antwoordsleutel zelf.
+const ANSWER_KEY_REVEALING_PART_TYPES = new Set(["meerkeuze", "waar-niet-waar"]);
+const QUESTION_GRADING_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const QUESTION_GRADING_RATE_LIMIT_MAX = 12;
+const QUESTION_GRADING_ANSWER_MAX_CHARS = 20000;
+const QUESTION_GRADING_RATE_LIMIT_MESSAGE =
+  "Je hebt deze vraag te vaak achter elkaar laten nakijken. Wacht even, denk nog eens na of vraag je docent om hulp.";
 const DEFAULT_MASTER_RULES = `Je bent Digidocent, de AI-hulp van HELIX.
 
 Je helpt leerlingen leren.
@@ -1206,6 +1223,260 @@ async function askAiTutorCore({
     success: true,
     content: normalizeAiTutorContent(responseData.choices?.[0]?.message?.content, { firstName, studentAnswer, lessonContext }),
     helpCounted: true,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Nakijken van gesloten vragen (server-side)
+//
+// De antwoordsleutel hoort niet in de leerlingbrowser: buildPublicQuestionView
+// strijkt hem er bewust uit. Daardoor kan de leerlingroute niet zelf nakijken.
+// Deze callable haalt de VOLLEDIGE vraag uit de private collectie `vraag` met
+// de Admin SDK, draait daar de gedeelde beoordelingslaag op (byte-identieke
+// kopie van src/lib in functions/shared, zie scripts/sync-functions-shared.mjs)
+// en geeft alleen het oordeel terug. Nooit de sleutel, nooit het modelantwoord,
+// nooit welke optie de juiste was.
+// ---------------------------------------------------------------------------
+
+let sharedGradingLayerPromise = null;
+
+function loadSharedGradingLayer() {
+  if (!sharedGradingLayerPromise) {
+    // De gedeelde laag is ESM; functions is CommonJS. Een dynamische import
+    // over die grens is precies waarom functions/shared een eigen
+    // package.json met `type: module` heeft.
+    sharedGradingLayerPromise = Promise.all([
+      import("./shared/questionGrading.js"),
+      import("./shared/questionPreviewUtils.js"),
+    ]).then(([grading, previewUtils]) => ({
+      gradeQuestionAnswer: grading.gradeQuestionAnswer,
+      GRADE_REASONS: grading.GRADE_REASONS,
+      buildQuestionPreviewModel: previewUtils.buildQuestionPreviewModel,
+    }));
+  }
+
+  return sharedGradingLayerPromise;
+}
+
+function normalizeSubmittedAnswers(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+
+  const serialized = JSON.stringify(value);
+  if (typeof serialized !== "string") return {};
+  if (serialized.length > QUESTION_GRADING_ANSWER_MAX_CHARS) {
+    throw new HttpsError("invalid-argument", "Dit antwoord is te groot om na te kijken.");
+  }
+
+  return JSON.parse(serialized);
+}
+
+function getStudentOverride(klasData = {}, uid = "") {
+  const overrides = klasData?.studentOverrides;
+  if (!overrides || typeof overrides !== "object") return {};
+  const override = overrides[uid];
+  return override && typeof override === "object" ? override : {};
+}
+
+function asIdList(value) {
+  return Array.isArray(value) ? value.map((item) => String(item || "")) : [];
+}
+
+// Spiegelt isAssignedParagraph() uit firestore.rules.
+function isParagraphAssignedToStudent(klasData = {}, uid = "", paragraafId = "") {
+  if (!paragraafId) return false;
+  const override = getStudentOverride(klasData, uid);
+  return (
+    asIdList(klasData?.enabledParagrafen).includes(paragraafId) ||
+    asIdList(override.extraParagrafen).includes(paragraafId)
+  );
+}
+
+// Spiegelt isAssignedContentBlock() uit firestore.rules.
+function isContentBlockAssignedToStudent(klasData = {}, uid = "", paragraafId = "", blockId = "") {
+  if (!blockId) return false;
+  const classSelection = klasData?.enabledContentBlocks?.[paragraafId];
+  const override = getStudentOverride(klasData, uid);
+  const studentExtra = asIdList(override.extraContentBlocks?.[paragraafId]);
+
+  if (!Array.isArray(classSelection)) return true;
+  return asIdList(classSelection).includes(blockId) || studentExtra.includes(blockId);
+}
+
+/**
+ * Mag deze aanroeper deze vraag laten nakijken?
+ *
+ * Zonder deze controle kan een leerling willekeurige vraag-ids langslopen en
+ * met geraden antwoorden de sleutel aftasten. De regels hier zijn dezelfde als
+ * die van publicQuestions/publicContentBlocks in firestore.rules: gepubliceerd,
+ * niet gearchiveerd, en toegewezen aan de klas of aan deze leerling.
+ */
+async function assertQuestionAssignedToCaller({ db, uid, callerData = {}, vraag = {}, blockId = "" }) {
+  const role = String(callerData.role || "").trim().toLowerCase();
+  if (role === "admin" || role === "supervisor" || isConfiguredAdminEmail(callerData.email)) {
+    return { role: role || "admin", rateLimited: false };
+  }
+
+  if (vraag.status !== "published" || vraag.isArchived === true) {
+    throw new HttpsError("failed-precondition", "Deze vraag staat niet klaar om nagekeken te worden.");
+  }
+
+  const paragraafId = String(vraag.paragraafId || "").trim();
+  const klasId = String(callerData.klasId || "").trim();
+  if (!klasId) {
+    throw new HttpsError("failed-precondition", "Je bent nog niet aan een klas gekoppeld.");
+  }
+
+  const klas = await getRequiredDoc(db.doc(`klassen/${klasId}`), "Klas");
+  if (!isParagraphAssignedToStudent(klas.data, uid, paragraafId)) {
+    throw new HttpsError("permission-denied", "Deze vraag hoort niet bij jouw lesstof.");
+  }
+
+  const blockSnapshot = blockId ? await db.doc(`contentBlocks/${blockId}`).get() : null;
+
+  // Een onbekend lesblok geeft geen extra rechten: dan geldt alleen de
+  // paragraafcontrole hierboven, net alsof er geen blockId was meegestuurd.
+  if (blockSnapshot?.exists) {
+    const blockData = blockSnapshot.data() || {};
+
+    if (String(blockData.linkedVraagId || "") !== String(vraag.id || "")) {
+      throw new HttpsError("permission-denied", "Dit lesblok hoort niet bij deze vraag.");
+    }
+
+    if (String(blockData.paragraafId || "") !== paragraafId) {
+      throw new HttpsError("permission-denied", "Dit lesblok hoort niet bij deze paragraaf.");
+    }
+
+    if (!isContentBlockAssignedToStudent(klas.data, uid, paragraafId, blockId)) {
+      throw new HttpsError("permission-denied", "Dit lesblok hoort niet bij jouw lesstof.");
+    }
+  }
+
+  return { role: role || "student", rateLimited: true };
+}
+
+/**
+ * Rem tegen aftasten: een leerling die dezelfde vraag twintig keer achter
+ * elkaar laat nakijken is aan het raden, niet aan het leren. Vier pogingen is
+ * de didactische grens; dit venster laat ruimte voor herstel en dubbelklikken
+ * en zet daarna de deur dicht.
+ */
+async function assertQuestionGradingRateLimit({ db, uid, vraagId, nowMs }) {
+  const limitRef = db.doc(`questionGradingRateLimits/${cleanIdPart(uid)}__${cleanIdPart(vraagId)}`);
+
+  await runDbTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(limitRef);
+    const existing = snapshot.exists ? snapshot.data() || {} : {};
+    const windowStartedAt = Number(existing.windowStartedAt);
+    const withinWindow =
+      Number.isFinite(windowStartedAt) && nowMs - windowStartedAt < QUESTION_GRADING_RATE_LIMIT_WINDOW_MS;
+    const count = withinWindow ? normalizeNonNegativeInteger(existing.count, 0) : 0;
+
+    if (count >= QUESTION_GRADING_RATE_LIMIT_MAX) {
+      throw new HttpsError("resource-exhausted", QUESTION_GRADING_RATE_LIMIT_MESSAGE);
+    }
+
+    transaction.set(
+      limitRef,
+      {
+        uid,
+        vraagId,
+        count: count + 1,
+        windowStartedAt: withinWindow ? windowStartedAt : nowMs,
+        updatedAt: nowMs,
+      },
+      { merge: true },
+    );
+  });
+}
+
+/**
+ * Deelscores zijn nuttige feedback, maar bij meerkeuze is "optie 3 is fout
+ * aangevinkt" letterlijk de sleutel: een leerling die niets aanvinkt zou uit de
+ * deelstatus kunnen aflezen welke opties correct zijn. Daarom bij die typen
+ * alleen deelstatus als het geheel al goed is - dan valt er niets te verklappen.
+ */
+function buildSafeGradeParts(grade = {}, questionType = "") {
+  if (ANSWER_KEY_REVEALING_PART_TYPES.has(questionType) && grade.isCorrect !== true) {
+    return { parts: [], partsRedacted: true };
+  }
+
+  const parts = Array.isArray(grade.parts) ? grade.parts : [];
+  return {
+    parts: parts.map((part, index) => ({
+      id: String(part?.id || `part-${index + 1}`),
+      label: String(part?.label || `Onderdeel ${index + 1}`),
+      isCorrect: part?.isCorrect === true,
+    })),
+    partsRedacted: false,
+  };
+}
+
+async function gradeClosedQuestionCore({
+  auth,
+  data,
+  db,
+  loadGradingLayer = loadSharedGradingLayer,
+  nowMs = Date.now(),
+}) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om je antwoord te laten nakijken.");
+  }
+
+  const vraagId = requireString(data?.vraagId, "vraagId");
+  const blockId = String(data?.blockId || "").trim();
+  const answers = normalizeSubmittedAnswers(data?.answers);
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Gebruiker");
+  const vraagDoc = await getRequiredDoc(db.doc(`vraag/${vraagId}`), "Vraag");
+  const vraag = { ...vraagDoc.data, id: vraagDoc.id };
+
+  const access = await assertQuestionAssignedToCaller({
+    db,
+    uid: auth.uid,
+    callerData: caller.data,
+    vraag,
+    blockId,
+  });
+
+  if (access.rateLimited) {
+    await assertQuestionGradingRateLimit({ db, uid: auth.uid, vraagId, nowMs });
+  }
+
+  const questionType = String(vraag.vraagtype || vraag.antwoord?.type || "open").trim();
+
+  // Open vragen blijven bij assessOpenAnswer; hier wordt niets stilzwijgend fout.
+  if (!CLOSED_QUESTION_TYPES.has(questionType)) {
+    return {
+      success: true,
+      vraagId,
+      questionType,
+      canGrade: false,
+      isCorrect: false,
+      reason: "needs-human",
+      parts: [],
+      partsRedacted: false,
+      source: "server",
+    };
+  }
+
+  const { gradeQuestionAnswer, buildQuestionPreviewModel } = await loadGradingLayer();
+  const grade = gradeQuestionAnswer({
+    vraag,
+    preview: buildQuestionPreviewModel(vraag),
+    answers,
+  });
+
+  const canGrade = grade?.canGrade === true;
+
+  return {
+    success: true,
+    vraagId,
+    questionType,
+    canGrade,
+    isCorrect: canGrade && grade.isCorrect === true,
+    reason: String(grade?.reason || ""),
+    ...buildSafeGradeParts(grade || {}, questionType),
+    source: "server",
   };
 }
 
@@ -2426,6 +2697,25 @@ exports.assessOpenAnswer = onCall({
   }
 });
 
+exports.gradeClosedQuestion = onCall({
+  region: REGION,
+}, async (request) => {
+  try {
+    return await gradeClosedQuestionCore({
+      auth: request.auth,
+      data: request.data || {},
+      db: getFirestore(),
+    });
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+
+    console.error("Error in gradeClosedQuestion:", error);
+    throw new HttpsError("internal", "Het nakijken lukte nu niet. Je docent kan meekijken.");
+  }
+});
+
 exports.extractTextViaOcr = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -2476,6 +2766,8 @@ exports.__test = {
   deleteAllStudentDataCore,
   equipTokenShopItemCore,
   extractTextViaOcrCore,
+  gradeClosedQuestionCore,
+  loadSharedGradingLayer,
   importStudentNumberAccountsCore,
   getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,
@@ -2491,4 +2783,6 @@ exports.__test = {
   normalizeAiTutorContent,
   buildOpenAnswerAssessmentMessages,
   shouldPreserveUserDuringStudentReset,
+  QUESTION_GRADING_RATE_LIMIT_MAX,
+  QUESTION_GRADING_RATE_LIMIT_WINDOW_MS,
 };

@@ -108,3 +108,9 @@ test('firestore rules let students read game settings but keep writes admin-only
   assert.match(block, /allow read: if signedIn\(\)/);
   assert.match(block, /allow create, update, delete: if isAdmin\(\)/);
 });
+
+test('firestore rules keep the closed question grading throttle server-only', () => {
+  const block = getRuleBlock('match /questionGradingRateLimits/{limitId}');
+
+  assert.match(block, /allow read, create, update, delete: if false/);
+});

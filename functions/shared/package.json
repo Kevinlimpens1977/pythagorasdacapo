@@ -1,0 +1,6 @@
+{
+  "name": "helix-shared-grading",
+  "private": true,
+  "type": "module",
+  "description": "Gegenereerd door scripts/sync-functions-shared.mjs. Bewerk src/lib, niet deze map."
+}

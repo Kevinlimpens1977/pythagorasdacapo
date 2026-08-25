@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "node --test src/lib/",
+    "sync:functions-shared": "node scripts/sync-functions-shared.mjs",
+    "check:functions-shared": "node scripts/sync-functions-shared.mjs --check",
     "test:e2e": "playwright test",
     "lint": "eslint .",
     "preview": "vite preview",

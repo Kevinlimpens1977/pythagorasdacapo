@@ -77,7 +77,7 @@ import GamePlayer from '../components/games/GamePlayer';
 import MediaRenderer from '../components/media/MediaRenderer';
 import AITutorChat from '../components/slides/AITutorChat';
 import { useStudentBugReportContext } from '../components/studentBugReports/StudentBugReportContext';
-import { askAiTutorCall, assessOpenAnswerCall } from '../lib/api';
+import { askAiTutorCall, assessOpenAnswerCall, gradeClosedQuestionCall } from '../lib/api';
 import { GAME_RESULT_HANDLING, getGameById } from '../lib/gameRegistry';
 import { normalizeMediaContent } from '../lib/mediaUtils';
 import { buildLearningResultMetadata, getLearningResultTone } from '../lib/learningResultUtils';
@@ -87,6 +87,10 @@ import { buildQuestionDraftProgressPayload, hasQuestionDraftAnswer } from '../li
 import { assessOpenAnswerLocally } from '../lib/localOpenAnswerAssessment';
 import { hasQuestionAnswerKey } from '../lib/publicQuestionView';
 import { buildInitialOrderItems, gradeQuestionAnswer } from '../lib/questionGrading';
+import {
+  buildClosedQuestionReviewMessage,
+  resolveClosedQuestionGrade
+} from '../lib/closedQuestionGradingRoute';
 import {
   buildParagraphEndPlan,
   buildQuestionAttemptOutcome,
@@ -1630,25 +1634,31 @@ function QuestionLearningBlock({
   };
 
   // Nakijken gebeurt in de gedeelde beoordelingslaag (src/lib/questionGrading.js),
-  // dezelfde die het digibord gebruikt. Hier blijft alleen de leerlinggebonden
-  // boekhouding staan: pogingen, tiers, tokens en voortgang.
-  const getQuestionCorrectStatus = () => {
-    if (!answerKeyAvailable) return false;
+  // dezelfde die het digibord gebruikt. Bij een leerling draait die laag
+  // SERVER-SIDE (callable gradeClosedQuestion): de antwoordsleutel hoort niet in
+  // de leerlingbrowser en zit dus ook niet in `linkedVraag`. Hier blijft alleen
+  // de leerlinggebonden boekhouding staan: pogingen, tiers, tokens, voortgang.
+  //
+  // Dit lokale oordeel kan alleen iets zeggen als de volledige vraag toch al in
+  // beeld is (docentpreview, lespreview, digibord). Voor een echte leerling is
+  // het `null` en beslist de server.
+  const getLocalQuestionGrade = () => {
+    if (!answerKeyAvailable) return null;
 
-    const grade = gradeQuestionAnswer({
+    return gradeQuestionAnswer({
       vraag: linkedVraag || {},
       preview,
       answers: previewAnswers
     });
-
-    return grade.canGrade && grade.isCorrect;
   };
 
   const handleCheckAnswer = async () => {
     setAssessmentFeedback('');
     setAssessmentMissing([]);
     const isOpenQuestion = preview.type === 'open';
-    const autoAssessmentUnavailable = !isOpenQuestion && !answerKeyAvailable;
+    let autoAssessmentUnavailable = false;
+    let closedReviewReason = '';
+    let closedGradeSource = 'local';
     setSaving(true);
     const answerSnapshot = {
       ...previewAnswers,
@@ -1698,10 +1708,42 @@ function QuestionLearningBlock({
           }
         }
       }
+      // Gesloten vraag: de server kijkt na met de gedeelde beoordelingslaag op
+      // de volledige vraag. Lukt dat niet (functie nog niet gedeployed, offline,
+      // throttle), dan telt het lokale oordeel als dat er is; anders wordt het
+      // zichtbaar "docent kijkt na" - een uitzondering, niet het standaardpad.
+      let closedGrade = null;
+      let closedServerResult = null;
+      if (!isOpenQuestion) {
+        const localGrade = getLocalQuestionGrade();
+
+        // Ligt de volledige vraag toch al op tafel (docentpreview, lespreview),
+        // dan hoeft de server er niet aan te pas te komen: dezelfde laag, zelfde
+        // oordeel. Voor een echte leerling is localGrade leeg en beslist de server.
+        if (!localGrade?.canGrade) {
+          const closedAnswers = { ...answerSnapshot };
+          delete closedAnswers.mathTools;
+
+          closedServerResult = await gradeClosedQuestionCall({
+            vraagId: linkedVraag?.id || block.linkedVraagId || '',
+            blockId: block.id,
+            answers: closedAnswers
+          });
+        }
+
+        closedGrade = resolveClosedQuestionGrade({
+          serverResult: closedServerResult,
+          localGrade
+        });
+        autoAssessmentUnavailable = !closedGrade.graded;
+        closedReviewReason = closedGrade.reviewReason;
+        closedGradeSource = closedGrade.source || 'local';
+      }
+
       const aiAssessmentFailed = (isOpenQuestion && !assessment?.success) || autoAssessmentUnavailable;
       const isCorrect = isOpenQuestion
         ? Boolean(assessment?.success && assessment.isCorrect)
-        : !autoAssessmentUnavailable && getQuestionCorrectStatus();
+        : Boolean(closedGrade?.graded && closedGrade.isCorrect);
       const outcome = buildQuestionAttemptOutcome({
         currentAttempts: attempts,
         isCorrect,
@@ -1745,7 +1787,7 @@ function QuestionLearningBlock({
       }
 
       if (autoAssessmentUnavailable) {
-        feedbackText = 'Je antwoord is opgeslagen. Je docent kijkt deze vraag na, zodat het antwoordmodel niet zichtbaar hoeft te zijn in de leerlingbrowser.';
+        feedbackText = buildClosedQuestionReviewMessage(closedReviewReason, closedServerResult?.error);
         missingItems = [];
       }
 
@@ -1807,8 +1849,11 @@ function QuestionLearningBlock({
           }
         } : {
           lastAssessment: {
-            source: 'local',
-            status: isCorrect ? 'correct' : 'incorrect',
+            source: closedGradeSource,
+            status: autoAssessmentUnavailable
+              ? 'pending_teacher_review'
+              : (isCorrect ? 'correct' : 'incorrect'),
+            reviewReason: closedReviewReason,
             feedback: feedbackText,
             missing: [],
             answerSignature

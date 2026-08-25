@@ -508,6 +508,24 @@ userBatchImport/{batchId}/
 └── vragenAdded: array        ["vraag_14x", "vraag_14y", ...]
 ```
 
+### 11. `questionGradingRateLimits/` - Rem tegen antwoorden aftasten
+
+Alleen geschreven door de callable `gradeClosedQuestion` (Admin SDK). Client-toegang
+is in `firestore.rules` volledig dicht: een leerling mag zijn eigen teller niet
+lezen, aanpassen of wissen.
+
+```
+questionGradingRateLimits/{uid}__{vraagId}/
+├── uid: string               "student_123456"
+├── vraagId: string           "vraag_7-3_01"
+├── count: number             aantal nakijkverzoeken in het huidige venster
+├── windowStartedAt: number   epoch ms waarop het venster begon
+└── updatedAt: number         epoch ms van het laatste verzoek
+```
+
+Venster en plafond staan in `functions/index.js`
+(`QUESTION_GRADING_RATE_LIMIT_WINDOW_MS`, `QUESTION_GRADING_RATE_LIMIT_MAX`).
+
 ---
 
 ## 🔗 Firestore Indexes (Required)
