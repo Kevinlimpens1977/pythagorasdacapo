@@ -32,7 +32,53 @@ const plainText = (html) =>
 const containsTerm = (text, term) =>
   new RegExp(`(^|[^\\p{L}\\p{N}-])(${escapeRegExp(term)})(?![\\p{L}\\p{N}-])`, 'iu').test(text);
 
-const enrichment = { goals: 0, keyTerms: 0, examples: 0 };
+const enrichment = { goals: 0, keyTerms: 0, examples: 0, summaries: 0, templateSummaries: 0 };
+
+// Sjabloonbewaking. Twee dingen mogen niet gebeuren:
+// 1. hetzelfde kernbegrip in blok na blok vet zetten (dan leert vet niets meer);
+// 2. dezelfde volzin in paragraaf na paragraaf laten terugkomen.
+// Daarom tellen we per kernbegrip in hoeveel blokken het staat en per volzin in
+// hoeveel paragrafen die voorkomt. Alleen de leesstappen tellen mee: theorie
+// (inclusief het uitgewerkte voorbeeld) en de samenvatting. De vaste
+// instructieregels bij quiz, toets, game en opdracht zijn geen leesstof.
+const MAX_BLOCKS_PER_KEY_TERM = 2;
+const MAX_PARAGRAFEN_PER_SENTENCE = 3;
+const keyTermBlocks = new Map();
+const sentenceParagrafen = new Map();
+
+const paragraafById = new Map((seed.paragrafen || []).map((item) => [item.id, item]));
+
+const registerKeyTerm = (term, blockId) => {
+  const key = String(term).trim().toLowerCase();
+  if (!keyTermBlocks.has(key)) keyTermBlocks.set(key, []);
+  keyTermBlocks.get(key).push(blockId);
+};
+
+const registerSentences = (html, paragraafCode) => {
+  for (const sentence of plainText(html).split(/(?<=[.!?])\s+/)) {
+    const value = sentence.trim();
+    if (value.split(/\s+/).length < 3) continue;
+    if (!sentenceParagrafen.has(value)) sentenceParagrafen.set(value, new Set());
+    sentenceParagrafen.get(value).add(paragraafCode);
+  }
+};
+
+// Zelfde eisen voor theorie- en samenvattingskernbegrippen: 1 tot 4 stuks en
+// elk begrip staat letterlijk als los woord in de eigen bloktekst.
+const checkKeyTerms = (block, keyTerms, text) => {
+  if (!Array.isArray(keyTerms) || keyTerms.length === 0) {
+    fail(`${block.id} has an empty or non-array keyTerms`);
+  }
+  if (keyTerms.length > 4) {
+    fail(`${block.id} has ${keyTerms.length} keyTerms; maximaal 4 per blok`);
+  }
+  for (const term of keyTerms) {
+    if (!containsTerm(text, term)) {
+      fail(`${block.id} keyTerm "${term}" komt niet als los woord in de eigen bloktekst voor`);
+    }
+    registerKeyTerm(term, block.id);
+  }
+};
 
 const blocksByParagraaf = new Map();
 for (const block of seed.contentBlocks || []) {
@@ -68,18 +114,7 @@ for (const block of seed.contentBlocks || []) {
   if (block.type === 'theory') {
     const keyTerms = block.content?.keyTerms;
     if (keyTerms !== undefined) {
-      if (!Array.isArray(keyTerms) || keyTerms.length === 0) {
-        fail(`${block.id} has an empty or non-array keyTerms`);
-      }
-      if (keyTerms.length > 4) {
-        fail(`${block.id} has ${keyTerms.length} keyTerms; maximaal 4 per theorieblok`);
-      }
-      const text = plainText(block.content?.html);
-      for (const term of keyTerms) {
-        if (!containsTerm(text, term)) {
-          fail(`${block.id} keyTerm "${term}" komt niet als los woord in de theorietekst voor`);
-        }
-      }
+      checkKeyTerms(block, keyTerms, plainText(block.content?.html));
       enrichment.keyTerms += 1;
     }
 
@@ -89,6 +124,40 @@ for (const block of seed.contentBlocks || []) {
         fail(`${block.id} has an exampleHtml without readable text`);
       }
       enrichment.examples += 1;
+    }
+
+    const paragraafCode = paragraafById.get(block.paragraafId)?.code || block.paragraafId;
+    registerSentences(block.content?.html, paragraafCode);
+    registerSentences(block.content?.exampleHtml, paragraafCode);
+  }
+
+  if (block.type === 'summary') {
+    const paragraaf = paragraafById.get(block.paragraafId);
+    const text = plainText(block.content?.html);
+    if (!text) fail(`${block.id} has an empty summary`);
+
+    // Kerndoelcodes zijn docentmetadata en horen op het blok, niet in de
+    // leestekst die de leerling vlak voor de quiz of toets leest.
+    if (/kerndoel/i.test(text)) {
+      fail(`${block.id} noemt kerndoelen in de leerlingtekst; die horen in content.kerndoelen`);
+    }
+    if (!Array.isArray(block.content?.kerndoelen) || block.content.kerndoelen.length === 0) {
+      fail(`${block.id} mist content.kerndoelen als docentmetadata`);
+    }
+
+    // Zolang de verrijking van een hoofdstuk nog niet gevuld is, blijft de ene
+    // sjabloonregel staan. Elke samenvatting die daarvan afwijkt is verrijkte
+    // lesstof en moet dus ook kernbegrippen hebben.
+    const templateText = `Je werkte aan: ${paragraaf?.product || ''}.`;
+    if (text === templateText) {
+      if (block.content?.keyTerms !== undefined) {
+        fail(`${block.id} heeft kernbegrippen maar nog wel de sjabloontekst`);
+      }
+      enrichment.templateSummaries += 1;
+    } else {
+      checkKeyTerms(block, block.content?.keyTerms, text);
+      enrichment.summaries += 1;
+      registerSentences(block.content?.html, paragraaf?.code || block.paragraafId);
     }
   }
 
@@ -142,6 +211,26 @@ for (const paragraaf of seed.paragrafen) {
   }
 }
 
+// Een kernbegrip dat overal terugkomt is geen kernbegrip meer, maar een
+// gewoon woord dat toevallig vet staat.
+const overusedTerms = [...keyTermBlocks.entries()].filter(([, blockIds]) => blockIds.length > MAX_BLOCKS_PER_KEY_TERM);
+if (overusedTerms.length) {
+  const details = overusedTerms
+    .map(([term, blockIds]) => `"${term}" in ${blockIds.length} blokken (${blockIds.join(', ')})`)
+    .join('; ');
+  fail(`kernbegrip mag in maximaal ${MAX_BLOCKS_PER_KEY_TERM} blokken staan: ${details}`);
+}
+
+// Dezelfde zin in paragraaf na paragraaf is sjabloontekst, geen lesstof.
+const repeatedSentences = [...sentenceParagrafen.entries()]
+  .filter(([, codes]) => codes.size > MAX_PARAGRAFEN_PER_SENTENCE);
+if (repeatedSentences.length) {
+  const details = repeatedSentences
+    .map(([sentence, codes]) => `"${sentence}" in ${codes.size} paragrafen (${[...codes].join(', ')})`)
+    .join('; ');
+  fail(`dezelfde volzin mag in maximaal ${MAX_PARAGRAFEN_PER_SENTENCE} paragrafen staan: ${details}`);
+}
+
 assertEqual(seed.contentBlocks?.filter((block) => block.type === 'game').length, 30, 'game block count');
 assertEqual(seed.contentBlocks?.filter((block) => block.type === 'slidedeck').length, 30, 'slidedeck block count');
 assertEqual(seed.contentBlocks?.filter((block) => block.type === 'quiz').length, 25, 'quiz block count');
@@ -152,5 +241,11 @@ console.log(`${seed.contentBlocks.length} blocks checked across ${seed.paragrafe
 console.log(
   `Verrijking: ${enrichment.goals}/30 paragrafen met leerdoelen, ` +
     `${enrichment.keyTerms}/60 theorieblokken met kernbegrippen, ` +
-    `${enrichment.examples}/60 met uitgewerkt voorbeeld.`
+    `${enrichment.examples}/60 met uitgewerkt voorbeeld, ` +
+    `${enrichment.summaries}/30 verrijkte samenvattingen ` +
+    `(${enrichment.templateSummaries} nog sjabloon).`
+);
+console.log(
+  `${keyTermBlocks.size} unieke kernbegrippen, ` +
+    `hoogste hergebruik ${Math.max(0, ...[...keyTermBlocks.values()].map((blockIds) => blockIds.length))} blokken.`
 );

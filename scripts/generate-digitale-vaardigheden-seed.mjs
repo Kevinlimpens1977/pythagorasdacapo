@@ -4,7 +4,8 @@ import { pathToFileURL } from 'node:url';
 
 const outputPath = path.resolve('docs/seeds/digitale-vaardigheden-vmbo1.seed.json');
 
-// Verrijkingslaag: leerdoelen, kernbegrippen en uitgewerkte voorbeelden staan
+// Verrijkingslaag: leerdoelen, kernbegrippen, uitgewerkte voorbeelden en
+// samenvattingen staan
 // per hoofdstuk in scripts/seed-verrijking/h1.mjs t/m h5.mjs, zodat de
 // lesinhoud los van de routestructuur gevuld kan worden. Ontbreekt of faalt een
 // bestand, dan bouwt de seed gewoon door zonder die verrijking.
@@ -57,6 +58,24 @@ const theoryEnrichmentFor = (code, index) => {
   if (exampleHtml) extra.exampleHtml = exampleHtml;
 
   return extra;
+};
+
+// Samenvattingstekst en kernbegrippen voor het samenvattingsblok. Ontbreekt de
+// verrijking, dan valt het blok terug op de sjabloonregel in buildBlocks.
+// Een samenvatting zonder kernbegrippen is een fout: dan blijft er een leesstap
+// over die niets vet kan zetten, en dat is precies wat we willen voorkomen.
+const samenvattingFor = (code) => {
+  const entry = enrichment.get(code)?.samenvatting;
+  if (!entry || typeof entry !== 'object') return null;
+
+  const summaryHtml = String(entry.html || '').trim();
+  const keyTerms = cleanStringList(entry.keyTerms);
+  if (!summaryHtml) return null;
+  if (!keyTerms.length) {
+    throw new Error(`${code}: samenvatting heeft html maar geen keyTerms`);
+  }
+
+  return { html: summaryHtml, keyTerms };
 };
 
 const html = (parts) => parts.map((part) => `<p>${part}</p>`).join('\n');
@@ -499,17 +518,20 @@ const buildBlocks = (chapter, paragraph) => {
     tokens: plan.practice
   }));
 
+  // Samenvatting: de laatste leestekst vóór de quiz of toets. De kerndoelcodes
+  // zijn docentmetadata en staan daarom naast sourceBasis/sourceNotes in de
+  // blokinhoud, niet in de leestekst; sanitizeContent laat ze niet door naar de
+  // leerlingweergave.
+  const samenvatting = samenvattingFor(paragraph.code);
   blocks.push(block({
     id: `${idPrefix}-summary`,
     type: 'summary',
     order: order++,
     title: 'Samenvatting',
     content: {
-      html: html([
-        `Je werkte aan: ${paragraph.product}.`,
-        `Belangrijke kerndoelen: ${paragraph.kerndoelen.join(', ')}.`,
-        `Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.`
-      ])
+      html: samenvatting ? samenvatting.html : html([`Je werkte aan: ${paragraph.product}.`]),
+      ...(samenvatting ? { keyTerms: samenvatting.keyTerms } : {}),
+      kerndoelen: paragraph.kerndoelen
     },
     tokens: plan.summary
   }));
@@ -663,8 +685,10 @@ console.log(`Generated ${outputPath}`);
 console.log(`${seed.contentBlocks.length} content blocks for ${seed.paragrafen.length} paragrafen`);
 
 const theoryBlocks = seed.contentBlocks.filter((item) => item.type === 'theory');
+const summaryBlocks = seed.contentBlocks.filter((item) => item.type === 'summary');
 console.log(
   `Verrijking: ${seed.paragrafen.filter((item) => item.learningGoals?.length).length}/${seed.paragrafen.length} paragrafen met leerdoelen, ` +
     `${theoryBlocks.filter((item) => item.content?.keyTerms?.length).length}/${theoryBlocks.length} theorieblokken met kernbegrippen, ` +
-    `${theoryBlocks.filter((item) => item.content?.exampleHtml).length}/${theoryBlocks.length} met uitgewerkt voorbeeld.`
+    `${theoryBlocks.filter((item) => item.content?.exampleHtml).length}/${theoryBlocks.length} met uitgewerkt voorbeeld, ` +
+    `${summaryBlocks.filter((item) => item.content?.keyTerms?.length).length}/${summaryBlocks.length} samenvattingen verrijkt.`
 );

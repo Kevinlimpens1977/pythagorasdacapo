@@ -36,7 +36,7 @@ export function StappenSpoor({ stappen = [], actieveStapId = '', onSelectStap })
  */
 export default function LeerlingStappen({
   rapport = null,
-  nakijkOpdrachtPerBlockId = {},
+  nakijkOpdrachtenPerBlockId = {},
   onBeoordeel,
   bezigId = ''
 }) {
@@ -54,10 +54,11 @@ export default function LeerlingStappen({
         const presentatie = getStatusPresentatie(stap.status);
         const record = stap.record;
         // Alleen bij een stap die op de docent wacht hoort een besluitknop.
-        // Bij elke andere status zou "goedkeuren" betekenisloos zijn.
-        const nakijkOpdracht = stap.status === STAP_STATUS.NAKIJKEN
-          ? nakijkOpdrachtPerBlockId[stap.blockId] || null
-          : null;
+        // Bij elke andere status zou "goedkeuren" betekenisloos zijn. Een toets
+        // levert er meerdere op: één per vraag die nog op een oordeel wacht.
+        const nakijkOpdrachten = stap.status === STAP_STATUS.NAKIJKEN
+          ? nakijkOpdrachtenPerBlockId[stap.blockId] || []
+          : [];
 
         return (
           <li
@@ -110,14 +111,26 @@ export default function LeerlingStappen({
               </p>
             )}
 
-            {nakijkOpdracht && onBeoordeel && (
-              <BeoordeelActies
-                opdracht={nakijkOpdracht}
-                onBeoordeel={onBeoordeel}
-                bezig={bezigId === nakijkOpdracht.id}
-                compact
-              />
-            )}
+            {onBeoordeel && nakijkOpdrachten.map((nakijkOpdracht) => (
+              <div key={nakijkOpdracht.id}>
+                {nakijkOpdracht.itemId && (
+                  <p className="mt-2 text-xs font-black text-[var(--helix-navy)]">
+                    Vraag {nakijkOpdracht.vraagNummer}: {nakijkOpdracht.vraag}
+                  </p>
+                )}
+                {nakijkOpdracht.itemId && (
+                  <p className="text-xs font-semibold text-[var(--helix-muted)]">
+                    Antwoord: {formatProgressAnswer(nakijkOpdracht.antwoord)}
+                  </p>
+                )}
+                <BeoordeelActies
+                  opdracht={nakijkOpdracht}
+                  onBeoordeel={onBeoordeel}
+                  bezig={bezigId === nakijkOpdracht.id}
+                  compact
+                />
+              </div>
+            ))}
           </li>
         );
       })}

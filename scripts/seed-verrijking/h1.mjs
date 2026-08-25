@@ -8,6 +8,12 @@
 //                  theorietekst staan; de leesopmaak zet ze vet.
 //     exampleHtml: een uitgewerkt voorbeeld als vraag + antwoord. Het paneel
 //                  zet zelf al het label "Voorbeeld" erboven.
+//   samenvatting: de laatste leestekst voor de quiz of toets.
+//     html:     2 of 3 zinnen die de begrippen van die paragraaf herhalen, elk
+//               begrip letterlijk genoemd. Taalniveau B1, brugklas.
+//     keyTerms: verplicht zodra html gevuld is; elk woord staat letterlijk in
+//               die samenvatting. Een kernbegrip mag in de hele seed in
+//               maximaal twee blokken staan (validator bewaakt dat).
 
 export default {
   '1.1': {
@@ -25,13 +31,17 @@ export default {
         ].join('\n')
       },
       {
-        keyTerms: ['map', 'Word-bestand', 'screenshot', 'schoolwerk'],
+        keyTerms: ['vaste map', 'Word-bestand', 'schoolwerk'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Tim slaat zijn eerste opdracht op met de naam nieuw. Een week later kan hij hem niet meer vinden. Wat ging er mis?</p>',
           '<p><strong>Antwoord.</strong> De naam zegt niets over de opdracht, en het bestand staat niet in een vaste map. Beter: een map voor dit vak, met daarin les1-schooltas-tim-1a.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Met je schoolaccount kom je binnen bij HELIX, OneDrive en Outlook. Elke plek heeft een eigen taak: mail in Outlook, bestanden in OneDrive en je lessen in HELIX. Je schoolwerk zet je in een vaste map, zodat je het volgende week nog terugvindt.</p>',
+      keyTerms: ['schoolaccount', 'HELIX', 'schoolwerk']
+    }
   },
 
   '1.2': {
@@ -55,7 +65,11 @@ export default {
           '<p><strong>Antwoord.</strong> Niet terugsturen. De school vraagt nooit om je echte wachtwoord. Je meldt het bericht bij je docent of mentor. Moet je zelf een nieuw wachtwoord, dan gebruik je de officiële herstelroute.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een sterk wachtwoord is vooral lang en uniek: een wachtwoordzin van meerdere woorden is beter dan een kort moeilijk woord. Je deelt je wachtwoord nooit, ook niet met een vriend, en je gebruikt niet overal hetzelfde. Is het gelekt of vergeten, dan neem je de herstelroute van school.</p>',
+      keyTerms: ['uniek', 'wachtwoordzin', 'herstelroute']
+    }
   },
 
   '1.3': {
@@ -79,7 +93,11 @@ export default {
           '<p><strong>Antwoord.</strong> Updates lossen fouten op en dichten gaten in de beveiliging. Blijf je uitstellen, dan wordt je device onveiliger. Plan de update op een moment dat je niet aan het werk bent, bijvoorbeeld in de pauze.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Hardware is alles wat je kunt vastpakken, software is het programma dat erop draait. Een update repareert gaten in de software, daarom stel je hem niet steeds uit.</p>',
+      keyTerms: ['hardware', 'software', 'update']
+    }
   },
 
   '1.4': {
@@ -90,7 +108,7 @@ export default {
     ],
     theorie: [
       {
-        keyTerms: ['lokaal', 'cloud', 'cloudopslag', 'OneDrive'],
+        keyTerms: ['lokaal', 'cloud', 'cloudopslag'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Sam maakt op school zijn opdracht af en slaat hem lokaal op het bureaublad op. Thuis wil hij verder werken. Lukt dat?</p>',
           '<p><strong>Antwoord.</strong> Nee, het bestand staat alleen op die ene schoolcomputer. Had hij het in OneDrive gezet, dan kon hij er thuis gewoon bij.</p>'
@@ -103,7 +121,11 @@ export default {
           '<p><strong>Antwoord.</strong> Zet erin wat het is en van wie: les4-mappen-sam-1c.docx. Nu weten jij en je docent na een maand nog steeds welke opdracht dit is.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een bestand staat lokaal op je apparaat of in de cloud. Zet je het in OneDrive, dan vind je je werk op school en thuis terug, maar alleen met een vaste structuur van vak, hoofdstuk en opdracht. Duidelijke bestandsnamen zorgen dat je na een maand nog weet welk bestand je nodig hebt.</p>',
+      keyTerms: ['cloud', 'structuur', 'bestandsnamen']
+    }
   },
 
   '1.5': {
@@ -127,7 +149,11 @@ export default {
           '<p><strong>Antwoord.</strong> Niet klikken en de bijlage niet openen. Je maakt een screenshot en laat het bericht zien aan je docent of mentor. Melden is slim, geen blunder.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Phishing is een truc om jouw gegevens of geld te krijgen. Je herkent het aan haast, dreiging, spelfouten en een afzender die niet klopt. Klik niet op de link, open geen bijlage en ga melden bij je docent of mentor.</p>',
+      keyTerms: ['phishing', 'haast', 'melden']
+    }
   },
 
   '1.6': {
@@ -138,19 +164,23 @@ export default {
     ],
     theorie: [
       {
-        keyTerms: ['account', 'OneDrive', 'bewijs', 'zelfstandig'],
+        keyTerms: ['account', 'device', 'veiligheid', 'digitaal vaardig'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Een klasgenoot zegt: ik kan alles vinden, maar ik weet niet meer waar mijn opdracht van vorige week staat. Is hij digitaal vaardig?</p>',
           '<p><strong>Antwoord.</strong> Nog niet helemaal. Inloggen lukt, maar terugvinden hoort er ook bij. Met een vaste map in OneDrive en duidelijke namen lost hij dat op.</p>'
         ].join('\n')
       },
       {
-        keyTerms: ['checkpoint', 'bewijs', 'screenshot', 'Outlook-mail'],
+        keyTerms: ['checkpoint', 'bewijs', 'Outlook-mail'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Je levert een screenshot in van een leeg scherm met alleen het woord Checkpoint1. Is dat genoeg bewijs?</p>',
           '<p><strong>Antwoord.</strong> Nee. Op de screenshot moet te zien zijn dat de map bestaat en welk bestand erin staat. Anders kan je docent niet controleren of je het echt gedaan hebt.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>In deze checkpoint laat je zien dat je zelfstandig kunt inloggen, opslaan, mailen en veilig kiezen. Je levert bewijs in: een map, een Word-bestand, een screenshot en een nette Outlook-mail. Weet je iets niet zeker, dan stop je en vraag je hulp.</p>',
+      keyTerms: ['checkpoint', 'zelfstandig', 'Outlook-mail']
+    }
   }
 };

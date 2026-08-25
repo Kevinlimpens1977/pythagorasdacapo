@@ -34,6 +34,67 @@ export const GAME_STATUSES = {
 //   maxPlays: 0, // 0 = onbeperkt; kennisspel bijv. 3, behendigheidsspel 0
 //   status: GAME_STATUSES.PROTOTYPE
 // }
+// Geplande games voor de leerroute Digitale vaardigheden (30 paragrafen).
+// Elk gameblok in docs/seeds/digitale-vaardigheden-vmbo1.seed.json verwijst naar
+// een gameId uit deze lijst; de ids liggen vast in
+// docs/superpowers/plans/2026-06-04-digitale-vaardigheden-seed-implementation-plan.md.
+// Er is nog geen speelbare component, dus GamePlayer toont zelf de nette
+// placeholder "Deze game is nog in ontwikkeling" en er staat geen tokenregel
+// tegenover (zie SERVER_DEFAULT_GAME_REWARD_RULES): een leerling verdient hier
+// niets mee tot het spel echt gebouwd is.
+const plannedDigitaleVaardighedenGame = ([gameId, title, code, paragraafTitle, estimatedMinutes, description]) => ({
+  gameId,
+  title,
+  description,
+  subject: 'Digitale vaardigheden',
+  topic: `${code} ${paragraafTitle}`,
+  level: 'VMBO leerjaar 1',
+  learningGoals: [`De kernbegrippen uit paragraaf ${code} oefenen in spelvorm.`],
+  skills: ['digitale vaardigheden'],
+  estimatedMinutes,
+  // Leeg zolang er geen component en geen eigen route bestaat.
+  route: '',
+  componentKey: '',
+  cmsEmbeddable: true,
+  supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+  tokenRewardPotential: { min: 0, max: 0, basis: 'completion' },
+  maxPlays: 3,
+  status: GAME_STATUSES.PLANNED
+});
+
+const PLANNED_DIGITALE_VAARDIGHEDEN_GAMES = [
+  ['dv-account-escape', 'Account Escape', '1.1', 'Mijn digitale schooltas: HELIX, OneDrive en Outlook', 5, 'Escape met kamers voor inloggen, mail vinden, map maken en veilig uitloggen.'],
+  ['dv-password-lab', 'Password Lab', '1.2', 'Veilig wachtwoord en accountregels', 5, 'Sorteer nepwachtwoorden van zwak naar sterk en verbeter ze naar wachtwoordzinnen.'],
+  ['dv-hardware-hunt', 'Hardware Hunt', '1.3', 'Mijn device: hardware, software, instellingen en updates', 5, 'Klik onderdelen aan, koppel functies en beslis welke instellingen veilig zijn.'],
+  ['dv-bestandenrace', 'Bestandenrace', '1.4', 'Bestanden zonder chaos in OneDrive', 5, 'Sleep bestanden naar de juiste map en kies de beste naam onder tijdsdruk.'],
+  ['dv-phishing-detective', 'Phishing Detective', '1.5', 'Phishing en verdachte berichten', 5, 'Klik rode vlaggen aan in fictieve berichten en kies de juiste vervolgstap.'],
+  ['dv-schoolstart-escape', 'Schoolstart Escape', '1.6', 'Checkpoint: veilig digitaal starten', 7, 'Vijf kamers met één bewijsactie per kamer.'],
+  ['dv-opmaakdokter', 'Opmaakdokter', '2.1', 'Word: een net schooldocument', 5, 'Herstel drukke tekst, ontbrekende titel, verkeerde afbeelding en ontbrekende bron.'],
+  ['dv-plagiaatpolitie', 'Plagiaatpolitie', '2.2', 'Word-verslag met koppen en bronnen', 5, 'Label zinnen als eigen woorden, citaat of kopie zonder bron.'],
+  ['dv-dia-dokter', 'Dia Dokter', '2.3', 'PowerPoint: duidelijk presenteren', 5, 'Verbeter slechte dia’s met keuzes voor tekst, beeld, contrast en volgorde.'],
+  ['dv-pitchtimer', 'Pitchtimer', '2.4', 'PowerPoint: uitleg in 5 dia’s', 5, 'Oefen 45 seconden uitleg zonder alles voor te lezen.'],
+  ['dv-deelrechten-duel', 'Deelrechten Duel', '2.5', 'Samenwerken via OneDrive en Outlook', 5, 'Kies per situatie privé, bekijken, bewerken of niet delen.'],
+  ['dv-microsoft-maker-challenge', 'Microsoft Maker Challenge', '2.6', 'Checkpoint: Microsoft tools', 7, 'Vind fouten in document, dia, mail en deelinstelling.'],
+  ['dv-privacy-thermometer', 'Privacy Thermometer', '3.1', 'Privacy en digitale voetafdruk', 5, 'Sorteer scenario’s in groen, oranje of rood met feedback op wie dit ziet en wat veiliger is.'],
+  ['dv-feed-sorteerspel', 'Feed Sorteerspel', '3.2', 'Social media, algoritmes en identiteit', 5, 'Kies klik, like of negeren bij fictieve posts en zie hoe de feed verandert.'],
+  ['dv-bronbattle', 'Bronbattle', '3.3', 'Nepnieuws en betrouwbare bronnen', 5, 'Rangschik bronnen en verdien bonus voor bewijszinnen.'],
+  ['dv-grenzenkompas', 'Grenzenkompas', '3.4', 'Cyberpesten, grenzen en hulp zoeken', 5, 'Kies bij scenario’s: oké, twijfel, niet oké of hulp nodig.'],
+  ['dv-webshop-inspecteur', 'Webshop Inspecteur', '3.5', 'Online shoppen en betalen', 5, 'Vind acht signalen in fictieve webshops en bepaal veilig, twijfel of niet kopen.'],
+  ['dv-mediawijs-boss', 'Mediawijs Boss', '3.6', 'Checkpoint: mediawijs handelen', 7, 'Levels per thema met een eindbaas die nepbericht, groepschat en kooplink combineert.'],
+  ['dv-tabel-tetris', 'Tabel Tetris', '4.1', 'Excel: tabellen maken', 5, 'Sleep datakaartjes naar de juiste kolom.'],
+  ['dv-formule-fixer', 'Formule Fixer', '4.2', 'Excel: rekenen met formules', 5, 'Repareer kapotte formules en leg uit wat fout was.'],
+  ['dv-grafiek-judge', 'Grafiek Judge', '4.3', 'Grafieken die iets vertellen', 5, 'Beoordeel grafieken met stoplicht en bewijszin.'],
+  ['dv-data-spoorzoeker', 'Data Spoorzoeker', '4.4', 'Data om je heen en data/privacy', 5, 'Volg dataspuren door een schooldag en benoem gebruiker, doel en risico.'],
+  ['dv-claim-checker', 'Claim Checker', '4.5', 'Bronnen beoordelen met data en bewijs', 5, 'Sorteer claims in sterk bewijs, twijfel of zwak bewijs.'],
+  ['dv-dashboard-dash', 'Dashboard Dash', '4.6', 'Checkpoint: data-dashboard en bronkeuze', 7, 'Kies per onderzoeksvraag de beste visualisatie en plaats die op een dashboard.'],
+  ['dv-prompt-duel', 'Prompt Duel', '5.1', 'Wat is AI en hoe gebruik je een chatbot verstandig?', 5, 'Vergelijk prompts en verbeter de zwakke prompt met doel, doelgroep, lengte en controle.'],
+  ['dv-echt-nep-of-twijfel', 'Echt, nep of twijfel?', '5.2', 'AI-beelden, deepfakes en beroepen', 5, 'Verzamel bewijschecks voordat je kiest of iets echt, nep of twijfel is.'],
+  ['dv-algoritme-estafette', 'Algoritme Estafette', '5.3', 'Algoritmes zonder computer', 5, 'Leg stappenkaarten in volgorde; een tester voert letterlijk uit en markeert de eerste onduidelijke stap.'],
+  ['dv-debug-sprint', 'Debug Sprint', '5.4', 'Programmeren met blokken en debuggen', 5, 'Los korte blokkenprogramma’s met één fout op.'],
+  ['dv-portfolio-quest', 'Portfolio Quest', '5.5', 'Portfolio bouwen, digitale samenleving en herstel', 5, 'Unlock bewijsstukken pas na openen, controleren en reflectiezin.'],
+  ['dv-certificaat-quest-finale', 'Certificaat Quest Finale', '5.6', 'Eindexpo: mijn digitale vaardigheden certificaat', 7, 'Beantwoord portfoliovragen en geef peerfeedback met twee sterren en één tip.']
+].map(plannedDigitaleVaardighedenGame);
+
 export const GAME_REGISTRY = [
   {
     gameId: 'wachtwoord-detective',
@@ -178,7 +239,8 @@ export const GAME_REGISTRY = [
     // Onbeperkt spelen; de opbrengst halveert server-side per beurt (replayDecay).
     maxPlays: 0,
     status: GAME_STATUSES.PROTOTYPE
-  }
+  },
+  ...PLANNED_DIGITALE_VAARDIGHEDEN_GAMES
 ];
 
 export const getGameById = (gameId) => {

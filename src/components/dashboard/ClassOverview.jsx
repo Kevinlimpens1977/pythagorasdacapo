@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { Users, AlertTriangle, Search, CheckCircle, ClipboardCheck, Clock, ArrowUpDown, CheckSquare, Square } from 'lucide-react';
 import { db } from '../../services/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, collectionGroup, query, where, onSnapshot } from 'firebase/firestore';
 
 import { isAnswerCorrect } from '../../lib/answerNormalization';
 import { useAuth } from '../auth/AuthProvider';
@@ -44,6 +44,7 @@ import {
   resolveStudentAssignments
 } from '../../lib/klasVoortgangOverzicht';
 import {
+  beschrijfItemLeesfout,
   buildNakijkOpdrachten,
   getBesluitPresentatie,
   telNakijkPerLeerling
@@ -229,6 +230,11 @@ export default function ClassOverview() {
   const [contentBlocksByParagraaf, setContentBlocksByParagraaf] = useState({});
   const [klassenMap, setKlassenMap] = useState({});
   const [studentVoortgang, setStudentVoortgang] = useState({});
+  // De losse toets- en quizantwoorden. Die staan in de subcollectie
+  // voortgang/{uid}_{blockId}/items en komen dus NIET mee met de listener op de
+  // collectie `voortgang` hierboven; daarvoor is een collectionGroup nodig.
+  const [itemVoortgang, setItemVoortgang] = useState({});
+  const [itemsBlokkade, setItemsBlokkade] = useState('');
   const [acknowledgedProgressSignals, setAcknowledgedProgressSignals] = useState([]);
   const [selectedSignalIds, setSelectedSignalIds] = useState([]);
   const [acknowledgingSignals, setAcknowledgingSignals] = useState(false);
@@ -310,6 +316,44 @@ export default function ClassOverview() {
       (error) => {
         console.error('Error listening to voortgang:', error);
         setStudentVoortgang({});
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  /**
+   * De antwoorden op losse toets- en quizvragen.
+   *
+   * Een listener op `collection(db, 'voortgang')` levert alleen de
+   * blokdocumenten op; subcollecties komen daar per definitie niet in mee.
+   * Zonder deze collectionGroup ziet de nakijkstapel van een toets alleen de
+   * opgetelde stand, zonder vraag en zonder antwoord.
+   *
+   * Het filter op `progressType` hoort bij de Firestore-regel: die staat de
+   * groepslezing alleen toe voor documenten die dit veld hebben, en zo'n
+   * voorwaarde kan Firestore alleen waarmaken als de query er zelf op filtert.
+   * Mislukt de lezing (regel nog niet uitgerold, index ontbreekt), dan wordt dat
+   * bewaard als blokkade: de docent krijgt dan geen knoppen te zien die het
+   * wachten toch niet kunnen wegnemen.
+   */
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      query(collectionGroup(db, 'items'), where('progressType', '==', 'assessmentItem')),
+      (snapshot) => {
+        const records = snapshot.docs.map((itemDoc) => {
+          const data = itemDoc.data();
+          // De documentnaam IS het itemId; een leeg veld mag die sleutel niet
+          // overschrijven, want zonder itemId is de vraag niet te beoordelen.
+          return { ...data, id: itemDoc.id, itemId: data?.itemId || itemDoc.id };
+        });
+        setItemVoortgang(groupProgressRecordsByStudent(records));
+        setItemsBlokkade('');
+      },
+      (error) => {
+        console.error('Error listening to assessment item voortgang:', error);
+        setItemVoortgang({});
+        setItemsBlokkade(beschrijfItemLeesfout(error));
       }
     );
 
@@ -404,9 +448,10 @@ export default function ClassOverview() {
       students: scopedStudents,
       scopesByStudentId,
       recordsByStudentId: studentVoortgang,
+      itemRecordsByStudentId: itemVoortgang,
       contentBlocksByParagraaf
     }),
-    [scopedStudents, scopesByStudentId, studentVoortgang, contentBlocksByParagraaf]
+    [scopedStudents, scopesByStudentId, studentVoortgang, itemVoortgang, contentBlocksByParagraaf]
   );
   const voortgangRijPerStudentId = useMemo(
     () => Object.fromEntries(voortgangRijen.map((rij) => [rij.studentId, rij])),
@@ -415,8 +460,31 @@ export default function ClassOverview() {
   const aandachtsLijst = useMemo(() => buildAandachtsLijst(voortgangRijen), [voortgangRijen]);
   // De werkvoorraad van de docent. Komt uit dezelfde rijen als de matrix, dus
   // het getal op het tabblad en de kaarten eronder kunnen niet uiteenlopen.
-  const nakijkOpdrachten = useMemo(() => buildNakijkOpdrachten(voortgangRijen), [voortgangRijen]);
+  const nakijkOpdrachten = useMemo(
+    () => buildNakijkOpdrachten(voortgangRijen, { itemsBlokkade }),
+    [voortgangRijen, itemsBlokkade]
+  );
   const nakijkPerLeerling = useMemo(() => telNakijkPerLeerling(nakijkOpdrachten), [nakijkOpdrachten]);
+
+  /**
+   * De vragen van een toetsblok uit de lesstof, plus de bekende antwoorden per
+   * vraag. Nodig om na één beoordeling de opgetelde stand van het blok bij te
+   * werken; zonder die twee blijft het blok "wacht op nakijken" melden.
+   */
+  const getBlokContext = useCallback((opdracht) => {
+    if (!opdracht?.itemId) return { blokItems: [], itemRecords: {} };
+
+    const blok = (contentBlocksByParagraaf[opdracht.paragraafId] || [])
+      .find((kandidaat) => kandidaat.id === opdracht.blockId) || null;
+    const blokItems = Array.isArray(blok?.content?.items) ? blok.content.items : [];
+    const itemRecords = Object.fromEntries(
+      (itemVoortgang[opdracht.studentId] || [])
+        .filter((record) => record.blockId === opdracht.blockId && record.itemId)
+        .map((record) => [record.itemId, record])
+    );
+
+    return { blokItems, itemRecords };
+  }, [contentBlocksByParagraaf, itemVoortgang]);
 
   /**
    * Het besluit van de docent wegschrijven. De voortganglistener hierboven
@@ -431,6 +499,8 @@ export default function ClassOverview() {
     setNakijkMelding('');
 
     try {
+      const { blokItems, itemRecords } = getBlokContext(opdracht);
+
       await beoordeelOpenAntwoord({
         record: opdracht.record,
         besluit,
@@ -439,11 +509,16 @@ export default function ClassOverview() {
           uid: currentUser?.uid || '',
           displayName: currentUser?.displayName || '',
           email: currentUser?.email || ''
-        }
+        },
+        blokItems,
+        itemRecords
       });
       const presentatie = getBesluitPresentatie(besluit);
+      const waar = opdracht.itemId
+        ? `stap ${opdracht.stapNummer} vraag ${opdracht.vraagNummer}`
+        : `stap ${opdracht.stapNummer}`;
       setNakijkMelding(
-        `${presentatie?.voltooidLabel || 'Beoordeeld'}: ${opdracht.studentNaam}, stap ${opdracht.stapNummer} van ${opdracht.paragraafLabel}. ${presentatie?.gevolg || ''}`.trim()
+        `${presentatie?.voltooidLabel || 'Beoordeeld'}: ${opdracht.studentNaam}, ${waar} van ${opdracht.paragraafLabel}. ${presentatie?.gevolg || ''}`.trim()
       );
       return true;
     } catch (error) {
@@ -453,7 +528,7 @@ export default function ClassOverview() {
     } finally {
       setNakijkBezigId('');
     }
-  }, [currentUser, nakijkBezigId]);
+  }, [currentUser, getBlokContext, nakijkBezigId]);
   const klasStatusTelling = useMemo(() => buildKlasStatusTelling(voortgangRijen), [voortgangRijen]);
   const hoofdstukGroepen = useMemo(() => groepeerParagrafenPerHoofdstuk(paragraphen), [paragraphen]);
   const actiefHoofdstuk = hoofdstukGroepen.find((groep) => groep.hoofdstukId === selectedHoofdstukId)
@@ -636,16 +711,22 @@ export default function ClassOverview() {
         students: [selectedStudent],
         scopesByStudentId: { [selectedStudent.id]: getStudentScope(selectedStudent) },
         recordsByStudentId: { [selectedStudent.id]: selectedStudentRecords },
+        itemRecordsByStudentId: { [selectedStudent.id]: itemVoortgang[selectedStudent.id] || [] },
         contentBlocksByParagraaf
       })[0];
     const selectedStudentAandacht = selectedStudentRij?.aandacht?.redenen || [];
-    // Alleen de open beoordelingen van deze leerling, op lesblok, zodat de
-    // knoppen bij de juiste stap in de lijst terechtkomen.
-    const nakijkPerBlockId = Object.fromEntries(
-      buildNakijkOpdrachten(selectedStudentRij ? [selectedStudentRij] : [])
-        .map((opdracht) => [opdracht.blockId, opdracht])
+    // Alleen de open beoordelingen van deze leerling, gegroepeerd op lesblok,
+    // zodat de knoppen bij de juiste stap in de lijst terechtkomen. Een toets
+    // levert meerdere beoordelingen op hetzelfde blok, dus dit is een lijst.
+    const leerlingOpdrachten = buildNakijkOpdrachten(
+      selectedStudentRij ? [selectedStudentRij] : [],
+      { itemsBlokkade }
     );
-    const openNakijkVoorLeerling = Object.keys(nakijkPerBlockId).length;
+    const nakijkPerBlockId = leerlingOpdrachten.reduce((verzameld, opdracht) => {
+      const bestaand = verzameld[opdracht.blockId] || [];
+      return { ...verzameld, [opdracht.blockId]: [...bestaand, opdracht] };
+    }, {});
+    const openNakijkVoorLeerling = leerlingOpdrachten.length;
 
     return (
       <div className="helix-container animate-in fade-in slide-in-from-right-8 duration-500">
@@ -906,7 +987,7 @@ export default function ClassOverview() {
                                 ? (
                                   <LeerlingStappen
                                     rapport={stapRapport}
-                                    nakijkOpdrachtPerBlockId={nakijkPerBlockId}
+                                    nakijkOpdrachtenPerBlockId={nakijkPerBlockId}
                                     onBeoordeel={beoordeelStap}
                                     bezigId={nakijkBezigId}
                                   />
@@ -1114,6 +1195,7 @@ export default function ClassOverview() {
           bezigId={nakijkBezigId}
           melding={nakijkMelding}
           fout={nakijkFout}
+          itemsBlokkade={itemsBlokkade}
         />
       )}
 

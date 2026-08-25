@@ -26,6 +26,7 @@ function NakijkKaart({ opdracht, onBeoordeel, bezig, toonLeerling = true }) {
         </span>
         <span className="text-xs font-bold text-[var(--helix-muted)]">
           {opdracht.paragraafLabel} - stap {opdracht.stapNummer}: {opdracht.stapTitel}
+          {opdracht.itemId ? ` - vraag ${opdracht.vraagNummer}` : ''}
         </span>
         <span className="ml-auto inline-flex items-center gap-1 text-xs font-black text-amber-700">
           <Clock size={14} />
@@ -77,7 +78,8 @@ export default function NakijkPaneel({
   onBeoordeel,
   bezigId = '',
   melding = '',
-  fout = ''
+  fout = '',
+  itemsBlokkade = ''
 }) {
   return (
     <section className="helix-surface mb-8 p-5">
@@ -104,6 +106,13 @@ export default function NakijkPaneel({
         <p className="mb-3 flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-emerald-600 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800">
           <Check size={16} />
           {melding}
+        </p>
+      )}
+
+      {itemsBlokkade && (
+        <p className="mb-3 flex items-start gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-warning)] bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800">
+          <TriangleAlert size={16} className="mt-0.5 shrink-0" />
+          {itemsBlokkade}
         </p>
       )}
 

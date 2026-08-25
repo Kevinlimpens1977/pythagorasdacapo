@@ -1,7 +1,7 @@
 {
   "meta": {
     "seedId": "digitale-vaardigheden-vmbo1",
-    "generatedAt": "2026-08-25T11:45:55.993Z",
+    "generatedAt": "2026-08-25T17:55:18.543Z",
     "status": "published",
     "sourceDocuments": [
       "docs/LessenserieDigitaleVaardigheden30Lessen.md",
@@ -483,14 +483,14 @@
       "cropCount": 0,
       "isArchived": false,
       "learningGoals": [
-        "Je weet welk Microsoft-programma bij welke taak hoort.",
-        "Je kunt een document, presentatie, gedeelde link en mail maken.",
-        "Je kunt kort opschrijven wat zelfstandig lukte en waar je hulp nodig had."
+        "Je weet welk Microsoft-programma je kiest bij welke taak.",
+        "Je weet wanneer een document, presentatie, gedeelde link of mail netjes genoeg is om in te leveren.",
+        "Je kunt uitleggen wat zelfstandig lukte en waar je hulp bij nodig had."
       ],
       "leerdoelen": [
-        "Je weet welk Microsoft-programma bij welke taak hoort.",
-        "Je kunt een document, presentatie, gedeelde link en mail maken.",
-        "Je kunt kort opschrijven wat zelfstandig lukte en waar je hulp nodig had."
+        "Je weet welk Microsoft-programma je kiest bij welke taak.",
+        "Je weet wanneer een document, presentatie, gedeelde link of mail netjes genoeg is om in te leveren.",
+        "Je kunt uitleggen wat zelfstandig lukte en waar je hulp bij nodig had."
       ]
     },
     {
@@ -675,14 +675,14 @@
       "cropCount": 0,
       "isArchived": false,
       "learningGoals": [
-        "Je kunt bij een online situatie eerst stoppen en het risico inschatten.",
-        "Je kunt een veilige keuze maken en uitleggen waarom je die maakt.",
-        "Je weet wanneer je hulp vraagt aan een volwassene."
+        "Je weet waarom je bij twijfel eerst stopt voordat je klikt of doorstuurt.",
+        "Je weet welke veilige actie je kiest bij nepnieuws, cyberpesten of een verdachte webshop.",
+        "Je weet wanneer je een situatie zelf oplost en wanneer je hulp vraagt aan een volwassene."
       ],
       "leerdoelen": [
-        "Je kunt bij een online situatie eerst stoppen en het risico inschatten.",
-        "Je kunt een veilige keuze maken en uitleggen waarom je die maakt.",
-        "Je weet wanneer je hulp vraagt aan een volwassene."
+        "Je weet waarom je bij twijfel eerst stopt voordat je klikt of doorstuurt.",
+        "Je weet welke veilige actie je kiest bij nepnieuws, cyberpesten of een verdachte webshop.",
+        "Je weet wanneer je een situatie zelf oplost en wanneer je hulp vraagt aan een volwassene."
       ]
     },
     {
@@ -869,12 +869,12 @@
       "isArchived": false,
       "learningGoals": [
         "Je weet welke onderdelen in een mini-dashboard horen.",
-        "Je kunt tabel, formule, grafiek en conclusie samenbrengen op één overzicht.",
+        "Je weet wanneer je een tabel, een formule of een grafiek nodig hebt om je vraag te beantwoorden.",
         "Je kunt uitleggen waar je data vandaan komt en hoe je met privacy omgaat."
       ],
       "leerdoelen": [
         "Je weet welke onderdelen in een mini-dashboard horen.",
-        "Je kunt tabel, formule, grafiek en conclusie samenbrengen op één overzicht.",
+        "Je weet wanneer je een tabel, een formule of een grafiek nodig hebt om je vraag te beantwoorden.",
         "Je kunt uitleggen waar je data vandaan komt en hoe je met privacy omgaat."
       ]
     },
@@ -1067,13 +1067,13 @@
       "cropCount": 0,
       "isArchived": false,
       "learningGoals": [
-        "Je weet welke vier soorten bewijs je bij de eindexpo laat zien.",
-        "Je kunt uitleggen wat je maakte, wat je leerde en wat je nu beter kunt.",
+        "Je weet welk bewijsstuk je kiest bij elk van de vier gebieden van de eindexpo.",
+        "Je weet wanneer je uitleg bij een bewijsstuk sterk is.",
         "Je weet dat digitale vaardigheid ook over veilig en kritisch gedrag gaat."
       ],
       "leerdoelen": [
-        "Je weet welke vier soorten bewijs je bij de eindexpo laat zien.",
-        "Je kunt uitleggen wat je maakte, wat je leerde en wat je nu beter kunt.",
+        "Je weet welk bewijsstuk je kiest bij elk van de vier gebieden van de eindexpo.",
+        "Je weet wanneer je uitleg bij een bewijsstuk sterk is.",
         "Je weet dat digitale vaardigheid ook over veilig en kritisch gedrag gaat."
       ]
     }
@@ -1170,9 +1170,8 @@
       "content": {
         "html": "<p>Maak een vaste map voor dit vak. Sla daarin je eerste Word-bestand op met een duidelijke naam. Voeg een screenshot toe van je map. Zo laat je zien dat je niet alleen hebt geklikt, maar echt weet waar je schoolwerk staat. Als iets niet lukt, vraag je hulp en klik je niet zomaar op onbekende knoppen.</p>",
         "keyTerms": [
-          "map",
+          "vaste map",
           "Word-bestand",
-          "screenshot",
           "schoolwerk"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Tim slaat zijn eerste opdracht op met de naam nieuw. Een week later kan hij hem niet meer vinden. Wat ging er mis?</p>\n<p><strong>Antwoord.</strong> De naam zegt niets over de opdracht, en het bestand staat niet in een vaste map. Beter: een map voor dit vak, met daarin les1-schooltas-tim-1a.</p>",
@@ -1328,7 +1327,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: Word-bewijsbestand in OneDrive.</p>\n<p>Belangrijke kerndoelen: 21A, 23A, 22A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Met je schoolaccount kom je binnen bij HELIX, OneDrive en Outlook. Elke plek heeft een eigen taak: mail in Outlook, bestanden in OneDrive en je lessen in HELIX. Je schoolwerk zet je in een vaste map, zodat je het volgende week nog terugvindt.</p>",
+        "keyTerms": [
+          "schoolaccount",
+          "HELIX",
+          "schoolwerk"
+        ],
+        "kerndoelen": [
+          "21A",
+          "23A",
+          "22A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -1755,7 +1764,16 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: wachtwoordzin-checkkaart zonder echte wachtwoorden.</p>\n<p>Belangrijke kerndoelen: 23A, 21A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een sterk wachtwoord is vooral lang en uniek: een wachtwoordzin van meerdere woorden is beter dan een kort moeilijk woord. Je deelt je wachtwoord nooit, ook niet met een vriend, en je gebruikt niet overal hetzelfde. Is het gelekt of vergeten, dan neem je de herstelroute van school.</p>",
+        "keyTerms": [
+          "uniek",
+          "wachtwoordzin",
+          "herstelroute"
+        ],
+        "kerndoelen": [
+          "23A",
+          "21A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -2182,7 +2200,16 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: device-checkkaart.</p>\n<p>Belangrijke kerndoelen: 21A, 23A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Hardware is alles wat je kunt vastpakken, software is het programma dat erop draait. Een update repareert gaten in de software, daarom stel je hem niet steeds uit.</p>",
+        "keyTerms": [
+          "hardware",
+          "software",
+          "update"
+        ],
+        "kerndoelen": [
+          "21A",
+          "23A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -2415,8 +2442,7 @@
         "keyTerms": [
           "lokaal",
           "cloud",
-          "cloudopslag",
-          "OneDrive"
+          "cloudopslag"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Sam maakt op school zijn opdracht af en slaat hem lokaal op het bureaublad op. Thuis wil hij verder werken. Lukt dat?</p>\n<p><strong>Antwoord.</strong> Nee, het bestand staat alleen op die ene schoolcomputer. Had hij het in OneDrive gezet, dan kon hij er thuis gewoon bij.</p>",
         "sourceBasis": [
@@ -2608,7 +2634,16 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: nette OneDrive-mapstructuur.</p>\n<p>Belangrijke kerndoelen: 21A, 22A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een bestand staat lokaal op je apparaat of in de cloud. Zet je het in OneDrive, dan vind je je werk op school en thuis terug, maar alleen met een vaste structuur van vak, hoofdstuk en opdracht. Duidelijke bestandsnamen zorgen dat je na een maand nog weet welk bestand je nodig hebt.</p>",
+        "keyTerms": [
+          "cloud",
+          "structuur",
+          "bestandsnamen"
+        ],
+        "kerndoelen": [
+          "21A",
+          "22A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -3035,7 +3070,16 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: phishing-herkenkaart.</p>\n<p>Belangrijke kerndoelen: 23A, 21B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Phishing is een truc om jouw gegevens of geld te krijgen. Je herkent het aan haast, dreiging, spelfouten en een afzender die niet klopt. Klik niet op de link, open geen bijlage en ga melden bij je docent of mentor.</p>",
+        "keyTerms": [
+          "phishing",
+          "haast",
+          "melden"
+        ],
+        "kerndoelen": [
+          "23A",
+          "21B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -3267,9 +3311,9 @@
         "html": "<p>Account, mail, OneDrive, device en veiligheid horen bij zelfstandig digitaal starten. Je laat zien dat je weet waar je moet zijn, hoe je bewijs opslaat en wanneer je hulp vraagt. Digitaal vaardig zijn betekent niet dat alles altijd lukt, maar dat je veilig en rustig handelt.</p>",
         "keyTerms": [
           "account",
-          "OneDrive",
-          "bewijs",
-          "zelfstandig"
+          "device",
+          "veiligheid",
+          "digitaal vaardig"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Een klasgenoot zegt: ik kan alles vinden, maar ik weet niet meer waar mijn opdracht van vorige week staat. Is hij digitaal vaardig?</p>\n<p><strong>Antwoord.</strong> Nog niet helemaal. Inloggen lukt, maar terugvinden hoort er ook bij. Met een vaste map in OneDrive en duidelijke namen lost hij dat op.</p>",
         "sourceBasis": [
@@ -3306,7 +3350,6 @@
         "keyTerms": [
           "checkpoint",
           "bewijs",
-          "screenshot",
           "Outlook-mail"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Je levert een screenshot in van een leeg scherm met alleen het woord Checkpoint1. Is dat genoeg bewijs?</p>\n<p><strong>Antwoord.</strong> Nee. Op de screenshot moet te zien zijn dat de map bestaat en welk bestand erin staat. Anders kan je docent niet controleren of je het echt gedaan hebt.</p>",
@@ -3428,7 +3471,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: hoofdstukcheckpoint met bewijsbestand.</p>\n<p>Belangrijke kerndoelen: 21A, 23A, 22A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>In deze checkpoint laat je zien dat je zelfstandig kunt inloggen, opslaan, mailen en veilig kiezen. Je levert bewijs in: een map, een Word-bestand, een screenshot en een nette Outlook-mail. Weet je iets niet zeker, dan stop je en vraag je hulp.</p>",
+        "keyTerms": [
+          "checkpoint",
+          "zelfstandig",
+          "Outlook-mail"
+        ],
+        "kerndoelen": [
+          "21A",
+          "23A",
+          "22A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -3884,7 +3937,16 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: net Word-document.</p>\n<p>Belangrijke kerndoelen: 22A, 21A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een net schooldocument herken je aan een duidelijke titel, korte alinea’s en genoeg witruimte. Opmaak is er om de lezer te helpen, dus zet niet alles vet, groot of gekleurd. Voeg je een afbeelding in, kies er dan een die bij je tekst past en zet er een bronregel bij.</p>",
+        "keyTerms": [
+          "witruimte",
+          "opmaak",
+          "bronregel"
+        ],
+        "kerndoelen": [
+          "22A",
+          "21A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -4310,7 +4372,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: kort verslag met koppen en bronvermelding.</p>\n<p>Belangrijke kerndoelen: 22A, 21B, 23A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Koppen laten zien waar een nieuw onderdeel begint; in Word maak je ze met de stijlen Kop 1 en Kop 2, zodat je verslag geen lange lap tekst wordt. Kopieer je een tekst en zet je er geen bron bij, dan is dat plagiaat. Schrijf daarom in je eigen woorden op wat je begrepen hebt en noem daarna de site, de video of de afbeelding waar je het vandaan hebt.</p>",
+        "keyTerms": [
+          "stijlen",
+          "verslag",
+          "plagiaat"
+        ],
+        "kerndoelen": [
+          "22A",
+          "21B",
+          "23A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -4737,7 +4809,16 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: 3 duidelijke dia’s.</p>\n<p>Belangrijke kerndoelen: 22A, 21B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een dia ondersteunt jouw verhaal en vervangt het niet: weinig tekst, grote letters en één boodschap per dia. Een afbeelding helpt alleen als die past bij wat je op dat moment uitlegt. Kies rustige kleuren en genoeg contrast, want wat jij van dichtbij leest, is achter in het lokaal vaak niet te zien.</p>",
+        "keyTerms": [
+          "dia",
+          "boodschap",
+          "contrast"
+        ],
+        "kerndoelen": [
+          "22A",
+          "21B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -5007,9 +5088,7 @@
         "html": "<p>Lees niet alles voor. Zet kernwoorden op je dia en vertel de rest in je eigen woorden. Oefen hardop. Let op tempo, volume en houding. Een bron hoort ook in je presentatie als je informatie of beeld van internet gebruikt.</p>",
         "keyTerms": [
           "kernwoorden",
-          "hardop",
-          "tempo",
-          "bron"
+          "eigen woorden"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Dani heeft zijn hele tekst op de dia gezet en leest hem in dertig seconden voor. Waarom werkt dat niet?</p>\n<p><strong>Antwoord.</strong> Zijn tempo is te hoog en niemand luistert nog, want de klas leest mee. Beter: alleen kernwoorden op de dia, de rest in eigen woorden, en van tevoren hardop geoefend.</p>",
         "sourceBasis": [
@@ -5164,7 +5243,16 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: mini-presentatie.</p>\n<p>Belangrijke kerndoelen: 22A, 23B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een presentatie van vijf dia’s heeft een vaste opbouw: eerst je onderwerp, dan drie punten, en als laatste een tip of een korte afsluiting. Op de dia zet je alleen kernwoorden; de uitleg vertel je zelf in eigen woorden, zodat de luisteraar naar jou kijkt in plaats van mee te lezen. Haal je informatie of beeld van internet, dan noem je de bron ook in je presentatie.</p>",
+        "keyTerms": [
+          "opbouw",
+          "kernwoorden",
+          "luisteraar"
+        ],
+        "kerndoelen": [
+          "22A",
+          "23B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -5395,7 +5483,6 @@
       "content": {
         "html": "<p>In OneDrive kun je een bestand delen. Kies bewust wie mag kijken of bewerken. Niet elk bestand moet voor iedereen open staan. Bewerkrechten geef je alleen als iemand echt moet meewerken. Bij twijfel kies je veiliger.</p>",
         "keyTerms": [
-          "OneDrive",
           "bestand",
           "delen",
           "Bewerkrechten"
@@ -5591,7 +5678,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: gedeeld bestand en nette mail.</p>\n<p>Belangrijke kerndoelen: 21A, 22A, 23B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Bij het delen in OneDrive bepaal jij wie mag kijken en wie mag meeschrijven: bewerkrechten geef je alleen aan iemand die echt aan het bestand moet werken, en bij twijfel kies je de veiligste optie. Een nette mail heeft een onderwerp, een aanhef, een korte uitleg, de link en een afsluiting met je naam. Open de link daarna zelf even, want dan zie je meteen of de ander er ook echt in kan.</p>",
+        "keyTerms": [
+          "delen",
+          "bewerkrechten",
+          "aanhef"
+        ],
+        "kerndoelen": [
+          "21A",
+          "22A",
+          "23B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -5860,10 +5957,9 @@
       "content": {
         "html": "<p>In deze checkpoint lever je bewijs in. Je laat zien dat je een document, presentatie, gedeelde link en mail kunt maken. Je schrijft ook kort wat zelfstandig lukte en waarbij je nog hulp nodig had.</p>",
         "keyTerms": [
-          "checkpoint",
-          "bewijs",
+          "document",
           "presentatie",
-          "zelfstandig"
+          "gedeelde link"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Kim schrijft bij haar reflectie alleen ging goed. Is dat genoeg?</p>\n<p><strong>Antwoord.</strong> Nee. Schrijf op wat je zelfstandig kon en waar je hulp bij nodig had, bijvoorbeeld: het delen lukte alleen, maar bij de rechten heb ik het aan mijn buurman gevraagd.</p>",
         "sourceBasis": [
@@ -5984,7 +6080,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: Microsoft mini-portfolio.</p>\n<p>Belangrijke kerndoelen: 21A, 21B, 22A, 23B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Elk programma heeft zijn eigen taak: Word voor een verslag dat iemand leest, PowerPoint als je iets aan een groep uitlegt, OneDrive om te bewaren en te delen, Outlook om te mailen. In je mini-portfolio laat je van alle vier iets zien: een document, een presentatie, een gedeelde link en een nette mail. Daarbij schrijf je kort op wat je alleen kon en waarbij je iemand nodig had, want dat hoort er ook bij.</p>",
+        "keyTerms": [
+          "PowerPoint",
+          "mini-portfolio",
+          "gedeelde link"
+        ],
+        "kerndoelen": [
+          "21A",
+          "21B",
+          "22A",
+          "23B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -6440,7 +6547,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: privacy-scenariokaart.</p>\n<p>Belangrijke kerndoelen: 23A, 23B, 21C.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Persoonsgegevens zijn alle gegevens waaraan iemand jou kan herkennen: je naam, je foto, je adres, je locatie en je leerlingnummer. Wat je post, likt en opzoekt hoort bij je digitale voetafdruk, dus ook je zoekgedrag laat sporen na; wat jij weghaalt, kan bij iemand anders gewoon blijven staan. Twijfel je of iets online mag, stel jezelf dan de schoolbordvraag: wat je niet op het schoolbord wilt hangen, zet je ook niet in een groepschat.</p>",
+        "keyTerms": [
+          "persoonsgegevens",
+          "zoekgedrag",
+          "digitale voetafdruk"
+        ],
+        "kerndoelen": [
+          "23A",
+          "23B",
+          "21C"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -6867,7 +6984,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: feed-observatiekaart.</p>\n<p>Belangrijke kerndoelen: 23B, 21B, 22B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een algoritme vult jouw feed met wat je aanklikt, wat je liket en vooral hoe lang je blijft hangen: veel kijktijd levert meer van hetzelfde op. Daarom staat er bij jou iets anders op het scherm dan bij je klasgenoot, ook al zitten jullie in dezelfde klas. Wat je ziet is bovendien een selectie van de leukste momenten, met filters erover, en dat kan aan je zelfbeeld gaan trekken.</p>",
+        "keyTerms": [
+          "feed",
+          "kijktijd",
+          "selectie",
+          "zelfbeeld"
+        ],
+        "kerndoelen": [
+          "23B",
+          "21B",
+          "22B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -7136,7 +7264,6 @@
       "content": {
         "html": "<p>Vraag altijd: wie maakte dit, wanneer, met welk doel, waar is het bewijs en zegt een tweede betrouwbare bron hetzelfde? Video of audio kan ook nep zijn door AI of deepfake. Beeld is dus niet automatisch bewijs. Controleer bron en context.</p>",
         "keyTerms": [
-          "bewijs",
           "deepfake",
           "bron",
           "context"
@@ -7294,7 +7421,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: broncheckkaart.</p>\n<p>Belangrijke kerndoelen: 21B, 21D, 23C.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Nepnieuws lijkt geloofwaardig door heftige koppen, veel emotie en een nette opmaak; clickbait is gemaakt om je te laten klikken, niet om je iets te laten begrijpen. Voor je iets doorstuurt loop je de vijf broncheckvragen langs: wie maakte dit, wanneer, met welk doel, waar is het bewijs en meldt een tweede betrouwbare bron hetzelfde? Beeld en geluid tellen daarbij niet als bewijs, want met een deepfake laat AI iemand dingen zeggen die hij nooit heeft gezegd.</p>",
+        "keyTerms": [
+          "nepnieuws",
+          "geloofwaardig",
+          "clickbait",
+          "deepfake"
+        ],
+        "kerndoelen": [
+          "21B",
+          "21D",
+          "23C"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -7563,7 +7701,6 @@
       "content": {
         "html": "<p>Ga niet terugschelden. Bewaar bewijs, blokkeer waar nodig, meld het op het platform en vraag hulp aan mentor, ouder of docent. Foto’s, memes en screenshots delen vraagt toestemming, vooral als iemand herkenbaar is.</p>",
         "keyTerms": [
-          "bewijs",
           "blokkeer",
           "toestemming",
           "mentor"
@@ -7721,7 +7858,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: hulproutekaart.</p>\n<p>Belangrijke kerndoelen: 23A, 23B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Cyberpesten gaat door na schooltijd, verspreidt zich in seconden en voelt voor de zender anoniem; ook iemand buitensluiten uit de klassengroep hoort erbij. Niet wat de zender als grap bedoelde telt, maar hoe kwetsend het bij de ander binnenkomt. Scheld daarom niet terug maar volg de hulproute: bewaar het bericht, blokkeer, meld het op het platform en vertel het aan je mentor; beeld van iemand anders deel je alleen met toestemming.</p>",
+        "keyTerms": [
+          "cyberpesten",
+          "kwetsend",
+          "hulproute",
+          "toestemming"
+        ],
+        "kerndoelen": [
+          "23A",
+          "23B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -8148,7 +8295,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: webshop-checklist.</p>\n<p>Belangrijke kerndoelen: 23A, 21B, 23C.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Voor je bestelt controleer je de URL, de contactgegevens, reviews buiten de winkel zelf en de retourregels; een strak vormgegeven site zegt nog niets over betrouwbaarheid. Dat een webshop iDEAL aanbiedt, betekent alleen dat je kunt afrekenen, niet dat de winkel deugt. Achteraf betalen met Klarna kost extra geld zodra je te laat bent, en bestel je buiten de EU, dan kunnen de levertijd en de invoerkosten flink tegenvallen.</p>",
+        "keyTerms": [
+          "contactgegevens",
+          "retourregels",
+          "iDEAL",
+          "invoerkosten"
+        ],
+        "kerndoelen": [
+          "23A",
+          "21B",
+          "23C"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -8379,8 +8537,8 @@
       "content": {
         "html": "<p>Bij privacy, feeds, nepnieuws, cyberpesten en online kopen gebruik je steeds dezelfde aanpak: stop, check risico, kies een veilige actie en vraag hulp als dat nodig is. Mediawijs zijn betekent dat je je keuze kunt uitleggen.</p>",
         "keyTerms": [
-          "stop",
           "risico",
+          "veilige actie",
           "mediawijs",
           "cyberpesten"
         ],
@@ -8417,9 +8575,7 @@
       "content": {
         "html": "<p>Bij elke casus beschrijf je kort: wat gebeurt er, wat kan misgaan, wat doe ik en waarom? Je hoeft geen lange tekst te schrijven. Korte duidelijke zinnen zijn genoeg als je laat zien dat je nadenkt.</p>",
         "keyTerms": [
-          "casus",
-          "misgaan",
-          "nadenkt"
+          "casus"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Een klasgenoot deelt een screenshot uit jullie groepschat in een andere groep. Hoe schrijf je deze casus op?</p>\n<p><strong>Antwoord.</strong> In vier korte zinnen. Wat gebeurt er: een privébericht gaat rond zonder toestemming. Wat kan misgaan: het is kwetsend en verspreidt verder. Wat doe ik: er iets van zeggen en bewijs bewaren, want zo laat je zien dat je nadenkt.</p>",
         "sourceBasis": [
@@ -8540,7 +8696,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: mediawijs-casusdossier.</p>\n<p>Belangrijke kerndoelen: 21B, 23A, 23B, 23C.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Bij privacy, je feed, nepnieuws, cyberpesten en online kopen werkt steeds dezelfde aanpak: eerst stoppen, dan het risico inschatten en pas daarna een veilige actie kiezen. Mediawijs zijn betekent dat je die keuze ook aan iemand anders kunt uitleggen. Bij elke casus schrijf je kort op wat er gebeurt, wat er mis kan gaan, wat jij doet en waarom; kun je het risico niet inschatten, dan vraag je hulp aan een volwassene.</p>",
+        "keyTerms": [
+          "mediawijs",
+          "veilige actie",
+          "casus"
+        ],
+        "kerndoelen": [
+          "21B",
+          "23A",
+          "23B",
+          "23C"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -9023,7 +9190,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: Excel-tabel.</p>\n<p>Belangrijke kerndoelen: 21C, 21A, 22A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>In Excel krijgt elk gegeven een eigen cel: een rij is één leerling of één meting, een kolom is één soort gegeven. Boven elke kolom zet je een kolomtitel die over een maand nog steeds duidelijk is, dus Reistijd in minuten in plaats van Tijd. Staat je tabel zo netjes, dan kun je later sorteren, tellen en er een grafiek van maken.</p>",
+        "keyTerms": [
+          "cel",
+          "rij",
+          "kolom",
+          "sorteren"
+        ],
+        "kerndoelen": [
+          "21C",
+          "21A",
+          "22A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -9450,7 +9628,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: Excel-sheet met formules.</p>\n<p>Belangrijke kerndoelen: 21C, 21A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Elke formule in Excel begint met een =-teken: =SOM(B2:B6) telt alles op, =GEMIDDELDE(B2:B6) geeft het gemiddelde van diezelfde vakjes. Excel rekent altijd goed, maar alleen met de cellen die jij aanwijst. Klik daarom op je antwoord en kijk of het bereik alle dagen pakt, anders staat er een keurige uitkomst waar een dag in mist.</p>",
+        "keyTerms": [
+          "formule",
+          "gemiddelde",
+          "bereik",
+          "uitkomst"
+        ],
+        "kerndoelen": [
+          "21C",
+          "21A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -9877,7 +10065,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: grafiek met uitleg.</p>\n<p>Belangrijke kerndoelen: 21C, 22A, 21B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een staafdiagram vergelijkt groepen naast elkaar, een lijngrafiek laat zien hoe iets in de loop van de tijd verandert. Bij allebei horen een titel, labels langs de assen en één zin die vertelt wat je ziet. Controleer daarna de schaal: begint die niet bij nul, dan lijkt een klein verschil veel groter dan het echt is.</p>",
+        "keyTerms": [
+          "staafdiagram",
+          "lijngrafiek",
+          "labels",
+          "schaal"
+        ],
+        "kerndoelen": [
+          "21C",
+          "22A",
+          "21B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -10108,7 +10307,6 @@
       "content": {
         "html": "<p>Apps, websites en schoolsystemen bewaren gegevens zoals klikgedrag, locatie, inlogtijd of zoekwoorden. Dat kan handig zijn, bijvoorbeeld om je rooster te tonen. Maar data zegt ook iets over jou en kan verkeerd gebruikt worden.</p>",
         "keyTerms": [
-          "gegevens",
           "klikgedrag",
           "locatie",
           "data"
@@ -10147,8 +10345,6 @@
         "html": "<p>Privacy betekent dat je nadenkt wie iets mag weten, waarom en wat er kan gebeuren als data wordt gedeeld. Niet alle data is geheim, maar veel data is persoonlijk. Daarom kies je bewust instellingen en deel je niet meer dan nodig.</p>",
         "keyTerms": [
           "Privacy",
-          "gedeeld",
-          "persoonlijk",
           "instellingen"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Yara zet in haar profiel haar school, haar klas en haar woonplaats. Haar account staat open voor iedereen. Wat kan er misgaan?</p>\n<p><strong>Antwoord.</strong> Samen is dat genoeg om haar op te zoeken. Die informatie is persoonlijk, dus zet ze haar account op privé en laat ze de woonplaats weg.</p>",
@@ -10304,7 +10500,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: datastroomkaart.</p>\n<p>Belangrijke kerndoelen: 21C, 21D, 23A, 23C.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Apps, websites en schoolsystemen bewaren sporen van jou: je klikgedrag, je locatie, je inlogtijd en de woorden waarop je zoekt. Vraag je bij elke app af wie die gegevens krijgt, met welk doel dat gebeurt en welk risico jij daarbij loopt; een puzzelspel hoeft niet te weten waar jij bent. Deel daarom niet meer dan nodig en kies bewust je instellingen als je niet weet wie er meekijkt.</p>",
+        "keyTerms": [
+          "klikgedrag",
+          "inlogtijd",
+          "risico"
+        ],
+        "kerndoelen": [
+          "21C",
+          "21D",
+          "23A",
+          "23C"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -10537,7 +10744,7 @@
         "keyTerms": [
           "claim",
           "bewering",
-          "bron",
+          "bewijs",
           "betrouwbaar"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> In een filmpje hoor je: 9 van de 10 leerlingen slapen te weinig door hun telefoon. Geloof je dat meteen?</p>\n<p><strong>Antwoord.</strong> Nog niet. Dit is een bewering. Zoek eerst wie het onderzoek deed, hoeveel leerlingen zijn gevraagd en waar het is gepubliceerd.</p>",
@@ -10575,8 +10782,7 @@
         "keyTerms": [
           "datum",
           "afzender",
-          "steekproef",
-          "cijfers"
+          "steekproef"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Een website meldt dat 80 procent van de jongeren een bepaald merk energiedrank het lekkerst vindt. De site is van dat merk zelf. Wat controleer je?</p>\n<p><strong>Antwoord.</strong> Kijk naar de afzender: die verdient aan de uitkomst. Zoek ook de datum en de steekproef. Vijftig mensen op een festival zegt weinig over alle jongeren.</p>",
         "sourceBasis": [
@@ -10731,7 +10937,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: bewijskaart bij claim.</p>\n<p>Belangrijke kerndoelen: 21B, 21C, 23C.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een claim is een bewering die nog nergens mee is aangetoond: 9 van de 10 jongeren klinkt sterk, maar zegt op zichzelf niets. Ga daarom na wie het zegt, van welke datum het bericht is en hoe groot de steekproef was. Pas als je weet hoe die getallen verzameld zijn, kun je zeggen of de bron betrouwbaar is.</p>",
+        "keyTerms": [
+          "claim",
+          "bewering",
+          "steekproef",
+          "betrouwbaar"
+        ],
+        "kerndoelen": [
+          "21B",
+          "21C",
+          "23C"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -11124,7 +11341,19 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: mini-dashboard met bronkeuze.</p>\n<p>Belangrijke kerndoelen: 21B, 21C, 22A, 23A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een dashboard brengt je tabel, je formule, je grafiek en je uitleg samen in één overzicht, zodat de lezer meteen antwoord krijgt op je onderzoeksvraag. Je schrijft erbij waar je data vandaan komt en waarom die goed genoeg is voor precies die vraag. In je privacyzin leg je uit welke gegevens persoonlijk zijn en hoe je daar netjes mee omgaat.</p>",
+        "keyTerms": [
+          "dashboard",
+          "overzicht",
+          "onderzoeksvraag",
+          "privacyzin"
+        ],
+        "kerndoelen": [
+          "21B",
+          "21C",
+          "22A",
+          "23A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -11423,7 +11652,6 @@
         "html": "<p>Een prompt is je opdracht aan AI. Zeg duidelijk wat je wilt, voor wie, hoe lang en in welke vorm. Deel geen privégegevens, zoals naam, adres, telefoonnummer of leerlingnummer. Gebruik AI als hulp, niet als vervanger van jouw denken.</p>",
         "keyTerms": [
           "prompt",
-          "AI",
           "privégegevens",
           "vervanger"
         ],
@@ -11580,7 +11808,19 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: prompt-en-checkblad.</p>\n<p>Belangrijke kerndoelen: 21D, 21B, 21C, 23A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een chatbot maakt zijn antwoord met patronen uit heel veel tekst; het klinkt daardoor zeker, ook als het niet klopt. Controleer het dus na in je boek of op een schoolsite, want jij levert het in. In een goede prompt zet je wat je wilt, voor wie, hoe lang en in welke vorm, maar nooit privégegevens zoals je adres of leerlingnummer.</p>",
+        "keyTerms": [
+          "chatbot",
+          "patronen",
+          "prompt",
+          "privégegevens"
+        ],
+        "kerndoelen": [
+          "21D",
+          "21B",
+          "21C",
+          "23A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -11811,10 +12051,8 @@
       "content": {
         "html": "<p>AI kan beelden maken van mensen of situaties die nooit hebben bestaan. Soms zie je fouten aan handen, tekst, ogen of rare details, maar niet altijd. Daarom is twijfel soms een goed antwoord. Zoek bewijs voordat je deelt.</p>",
         "keyTerms": [
-          "beelden",
-          "fouten",
-          "twijfel",
-          "bewijs"
+          "AI",
+          "beelden"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> In een groepsapp staat een foto van een bekende voetballer op het schoolplein. De hand op de foto heeft zes vingers. Deel je hem door?</p>\n<p><strong>Antwoord.</strong> Nee. De rare hand is een aanwijzing dat het beeld door AI is gemaakt. Zoek eerst of een nieuwssite of de club zelf het bericht heeft. Vind je niets, dan blijft het twijfel en deel je het niet.</p>",
         "sourceBasis": [
@@ -12007,7 +12245,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: AI-impactkaart.</p>\n<p>Belangrijke kerndoelen: 21D, 21B, 23C, 23B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>AI maakt beelden en video's van dingen die nooit gebeurd zijn; zo'n nepbeeld verraadt zich soms door rare handen, ogen of tekst, maar lang niet altijd. Vind je geen betrouwbare bron die het bevestigt, deel het dan niet. In veel beroepen neemt AI de snelle klussen over, terwijl creativiteit, zorg en keuzes maken mensenwerk blijven.</p>",
+        "keyTerms": [
+          "beelden",
+          "creativiteit",
+          "beroepen"
+        ],
+        "kerndoelen": [
+          "21D",
+          "21B",
+          "23C",
+          "23B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -12278,8 +12527,7 @@
         "keyTerms": [
           "stappenplan",
           "debuggen",
-          "testen",
-          "fouten"
+          "testen"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Yara maakt een stappenplan om een bestand op te slaan, maar haar klasgenoot loopt vast bij stap 3. Wat doet Yara nu?</p>\n<p><strong>Antwoord.</strong> Ze verbetert alleen stap 3 en laat het daarna opnieuw uitproberen. Dat heet debuggen: een fout zoeken, een ding aanpassen en weer testen. Zou ze alles tegelijk veranderen, dan weet ze niet wat het probleem oploste.</p>",
         "sourceBasis": [
@@ -12434,7 +12682,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: papieren algoritme.</p>\n<p>Belangrijke kerndoelen: 22B, 21A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Een algoritme is een rij stappen die zo duidelijk zijn dat iemand anders ze letterlijk kan uitvoeren; een computer doet immers wat er staat en niet wat jij bedoelde. Loopt je stappenplan bij iemand vast, verbeter dan één stap en laat het opnieuw testen. Verander je alles tegelijk, dan weet je niet welke aanpassing het probleem oploste.</p>",
+        "keyTerms": [
+          "stappenplan",
+          "testen"
+        ],
+        "kerndoelen": [
+          "22B",
+          "21A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -12705,8 +12961,7 @@
         "keyTerms": [
           "debuggen",
           "fout",
-          "klasgenoot",
-          "test"
+          "programma"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Bij Milan telt de score bij elk antwoord op, ook bij een fout antwoord. Hij ziet zelf niet waar het misgaat. Wat is de slimste stap?</p>\n<p><strong>Antwoord.</strong> Laat een klasgenoot het spelen. Die kiest expres een fout antwoord en ziet meteen dat het “score +1”-blok buiten de als-voorwaarde staat. Milan sleept het blok naar binnen en test opnieuw.</p>",
         "sourceBasis": [
@@ -12861,7 +13116,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: blokkenprogramma of interactieve mini-quiz.</p>\n<p>Belangrijke kerndoelen: 22B, 22A, 21A.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Bij blokkenprogrammeren bepaalt een start-event wanneer je programma begint, en een voorwaarde zorgt dat er alleen iets gebeurt als iets waar is. Zonder feedback merkt de speler niet of hij het goed deed, dus laat je programma bij elk antwoord iets terugzeggen. Werkt er iets niet, laat dan een klasgenoot spelen, verander één blok en probeer het opnieuw.</p>",
+        "keyTerms": [
+          "blokkenprogrammeren",
+          "start-event",
+          "voorwaarde",
+          "feedback"
+        ],
+        "kerndoelen": [
+          "22B",
+          "22A",
+          "21A"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -13094,7 +13360,6 @@
         "keyTerms": [
           "portfolio",
           "bewijsstuk",
-          "privacy",
           "broncheck"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Jill zet haar PowerPoint in haar portfolio en schrijft eronder: “Dit is mijn PowerPoint.” Is dat genoeg?</p>\n<p><strong>Antwoord.</strong> Nee, dat ziet de docent zelf ook al. Bij elk bewijsstuk hoort wat je leerde. Beter: “Ik heb geleerd hoe ik met een vaste dia-indeling werk en waarom ik niet te veel tekst op een dia zet.”</p>",
@@ -13131,7 +13396,6 @@
         "html": "<p>Missen is niet falen. Als je iets nog niet af hebt, maak je een herstelplan. Zet erin welke taak ontbreekt, wat je gaat doen en wanneer je het afmaakt. Iedereen kan blijven doorwerken richting het volledig certificaat.</p>",
         "keyTerms": [
           "herstelplan",
-          "taak",
           "certificaat"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Ravi mist zijn Excel-dashboard omdat hij twee weken ziek was. Hij denkt dat hij het certificaat niet meer kan halen. Klopt dat?</p>\n<p><strong>Antwoord.</strong> Nee. Hij maakt een herstelplan: welke taak ontbreekt (het dashboard), wat hij doet (les 4.5 opnieuw doorlopen en de grafiek maken) en wanneer het af is (vrijdag). Daarmee kan hij gewoon doorwerken.</p>",
@@ -13287,7 +13551,17 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: portfolio en herstelplan.</p>\n<p>Belangrijke kerndoelen: 22A, 23C, 23B.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Je portfolio is je bewijsmap: uit elk gebied zet je er een bewijsstuk in, van Word en PowerPoint tot Excel, privacy, broncheck, AI en programmeren. Onder elk stuk schrijf je twee zinnen over wat je geleerd hebt, want het bestand alleen laat niet zien wat je begrijpt. Heb je iets nog niet af, dan maak je een herstelplan met wat ontbreekt, wat je gaat doen en wanneer het klaar is.</p>",
+        "keyTerms": [
+          "portfolio",
+          "bewijsstuk",
+          "herstelplan"
+        ],
+        "kerndoelen": [
+          "22A",
+          "23C",
+          "23B"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"
@@ -13519,8 +13793,7 @@
         "html": "<p>Bij de eindexpo kies je vier bewijsstukken: Microsoft, veiligheid/privacy, data/bron en AI/programmeren. Je vertelt wat je maakte, wat je leerde en wat je nu beter kunt. Je hoeft niet alles lang te vertellen. Kies duidelijk bewijs.</p>",
         "keyTerms": [
           "eindexpo",
-          "bewijsstukken",
-          "bewijs"
+          "bewijsstukken"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Fatima wil al haar zeven opdrachten laten zien in vijf minuten. Waarom is dat geen goed plan?</p>\n<p><strong>Antwoord.</strong> Dan wordt alles kort en oppervlakkig. Ze kiest vier bewijsstukken, een uit elk gebied, en vertelt per stuk wat ze maakte en wat ze leerde. Weinig bewijs dat je goed uitlegt is sterker dan veel bewijs dat je afraffelt.</p>",
         "sourceBasis": [
@@ -13555,10 +13828,9 @@
       "content": {
         "html": "<p>Digitale vaardigheden gaan niet alleen over knoppen. Het gaat ook over veilig, kritisch, netjes en zelfstandig werken. Je laat zien dat je hulp kunt vragen, bronnen kunt controleren en bewust omgaat met technologie.</p>",
         "keyTerms": [
+          "digitale vaardigheden",
           "kritisch",
-          "zelfstandig",
-          "bronnen",
-          "bewust"
+          "bronnen"
         ],
         "exampleHtml": "<p><strong>Vraag.</strong> Twee leerlingen kunnen even goed met Word omgaan. De een controleert bronnen en vraagt hulp als hij vastloopt, de ander niet. Wie is digitaal vaardiger?</p>\n<p><strong>Antwoord.</strong> De eerste. Digitale vaardigheid zit niet alleen in de knoppen, maar ook in kritisch kijken naar wat je leest en zelfstandig verder komen. Hulp vragen hoort daar gewoon bij.</p>",
         "sourceBasis": [
@@ -13679,7 +13951,23 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Je werkte aan: eindportfolio, presentatie en certificaatgesprek.</p>\n<p>Belangrijke kerndoelen: 21A, 21B, 21C, 21D, 22A, 22B, 23A, 23B, 23C.</p>\n<p>Onthoud: maak veilige keuzes, werk netjes en leg kort uit waarom je iets doet.</p>",
+        "html": "<p>Bij de eindexpo kies je vier bewijsstukken, één uit elk gebied: Microsoft, veiligheid en privacy, data en bron, en AI of programmeren. Je vertelt per stuk wat je maakte, wat je leerde en wat je nu beter kunt; vier stukken die je goed uitlegt zeggen meer dan zeven die je afraffelt. Laat ook zien hoe je werkt: hulp vragen, controleren wat je leest en netjes omgaan met andermans gegevens hoort bij je certificaat.</p>",
+        "keyTerms": [
+          "eindexpo",
+          "bewijsstukken",
+          "certificaat"
+        ],
+        "kerndoelen": [
+          "21A",
+          "21B",
+          "21C",
+          "21D",
+          "22A",
+          "22B",
+          "23A",
+          "23B",
+          "23C"
+        ],
         "sourceBasis": [
           "lessenserie-md",
           "ai-aanvulling"

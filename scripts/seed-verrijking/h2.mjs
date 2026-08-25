@@ -10,6 +10,13 @@
 //                  alleen als deel van een langer woord voorkomt telt niet.
 //     exampleHtml: een uitgewerkt voorbeeld als vraag + antwoord, twee tot vier
 //                  zinnen. Het paneel zet zelf al het label "Voorbeeld" erboven.
+//   samenvatting: de laatste leestekst voor de quiz of toets.
+//     html:     2 of 3 zinnen die de begrippen van deze paragraaf herhalen, elk
+//               begrip letterlijk genoemd. Taalniveau B1, brugklas. Geen zin die
+//               net zo goed in een andere paragraaf zou kunnen staan.
+//     keyTerms: verplicht zodra html gevuld is; elk woord staat letterlijk in
+//               die samenvatting. Een kernbegrip mag in de hele seed in
+//               maximaal twee blokken staan (validator bewaakt dat).
 
 export default {
   // 2.1 Word: een net schooldocument
@@ -36,7 +43,11 @@ export default {
           '<p><strong>Antwoord.</strong> Twee dingen. De afbeelding past niet bij haar tekst, en er staat geen bronregel bij. Kies een foto over voetbal en zet eronder waar je hem gevonden hebt.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een net schooldocument herken je aan een duidelijke titel, korte alinea’s en genoeg witruimte. Opmaak is er om de lezer te helpen, dus zet niet alles vet, groot of gekleurd. Voeg je een afbeelding in, kies er dan een die bij je tekst past en zet er een bronregel bij.</p>',
+      keyTerms: ['witruimte', 'opmaak', 'bronregel']
+    }
   },
 
   // 2.2 Word-verslag met koppen en bronnen
@@ -63,7 +74,11 @@ export default {
           '<p><strong>Antwoord.</strong> Nee, dat is plagiaat. Lees de tekst, sluit hem en schrijf in je eigen woorden op wat je onthouden hebt. Zet er daarna de bron bij, met de naam van de site en de datum.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Koppen laten zien waar een nieuw onderdeel begint; in Word maak je ze met de stijlen Kop 1 en Kop 2, zodat je verslag geen lange lap tekst wordt. Kopieer je een tekst en zet je er geen bron bij, dan is dat plagiaat. Schrijf daarom in je eigen woorden op wat je begrepen hebt en noem daarna de site, de video of de afbeelding waar je het vandaan hebt.</p>',
+      keyTerms: ['stijlen', 'verslag', 'plagiaat']
+    }
   },
 
   // 2.3 PowerPoint: duidelijk presenteren
@@ -90,7 +105,11 @@ export default {
           '<p><strong>Antwoord.</strong> Er is te weinig contrast tussen de letters en de achtergrond. Donkere letters op een rustige lichte achtergrond kan iedereen lezen, ook achter in het lokaal.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een dia ondersteunt jouw verhaal en vervangt het niet: weinig tekst, grote letters en één boodschap per dia. Een afbeelding helpt alleen als die past bij wat je op dat moment uitlegt. Kies rustige kleuren en genoeg contrast, want wat jij van dichtbij leest, is achter in het lokaal vaak niet te zien.</p>',
+      keyTerms: ['dia', 'boodschap', 'contrast']
+    }
   },
 
   // 2.4 PowerPoint: uitleg in 5 dia's
@@ -111,13 +130,20 @@ export default {
       },
       // theorieblok 2: Kort presenteren
       {
-        keyTerms: ['kernwoorden', 'hardop', 'tempo', 'bron'],
+        // Alleen begrippen die iets te leren geven. "hardop" en "tempo" waren
+        // gewone woorden; in deze theorietekst staat verder geen vakbegrip dat
+        // nog vrij is, dus blijven het er twee.
+        keyTerms: ['kernwoorden', 'eigen woorden'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Dani heeft zijn hele tekst op de dia gezet en leest hem in dertig seconden voor. Waarom werkt dat niet?</p>',
           '<p><strong>Antwoord.</strong> Zijn tempo is te hoog en niemand luistert nog, want de klas leest mee. Beter: alleen kernwoorden op de dia, de rest in eigen woorden, en van tevoren hardop geoefend.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een presentatie van vijf dia’s heeft een vaste opbouw: eerst je onderwerp, dan drie punten, en als laatste een tip of een korte afsluiting. Op de dia zet je alleen kernwoorden; de uitleg vertel je zelf in eigen woorden, zodat de luisteraar naar jou kijkt in plaats van mee te lezen. Haal je informatie of beeld van internet, dan noem je de bron ook in je presentatie.</p>',
+      keyTerms: ['opbouw', 'kernwoorden', 'luisteraar']
+    }
   },
 
   // 2.5 Samenwerken via OneDrive en Outlook
@@ -130,7 +156,7 @@ export default {
     theorie: [
       // theorieblok 1: Delen met rechten
       {
-        keyTerms: ['OneDrive', 'bestand', 'delen', 'Bewerkrechten'],
+        keyTerms: ['bestand', 'delen', 'Bewerkrechten'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Amber deelt haar werkstuk met de hele klas en zet het op bewerken. De volgende dag staat er onzin in. Wat had ze anders moeten doen?</p>',
           '<p><strong>Antwoord.</strong> Alleen haar duopartner had het bestand hoeven bewerken. De rest had genoeg aan kijken. Bij twijfel kies je de veiligste optie.</p>'
@@ -144,15 +170,19 @@ export default {
           '<p><strong>Antwoord.</strong> Een onderwerp, een aanhef, een zin die uitlegt waar het over gaat en een afsluiting met zijn naam. En hij moet zelf de link openen om te zien of de rechten kloppen.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Bij het delen in OneDrive bepaal jij wie mag kijken en wie mag meeschrijven: bewerkrechten geef je alleen aan iemand die echt aan het bestand moet werken, en bij twijfel kies je de veiligste optie. Een nette mail heeft een onderwerp, een aanhef, een korte uitleg, de link en een afsluiting met je naam. Open de link daarna zelf even, want dan zie je meteen of de ander er ook echt in kan.</p>',
+      keyTerms: ['delen', 'bewerkrechten', 'aanhef']
+    }
   },
 
   // 2.6 Checkpoint: Microsoft tools
   '2.6': {
     learningGoals: [
-      'Je weet welk Microsoft-programma bij welke taak hoort.',
-      'Je kunt een document, presentatie, gedeelde link en mail maken.',
-      'Je kunt kort opschrijven wat zelfstandig lukte en waar je hulp nodig had.'
+      'Je weet welk Microsoft-programma je kiest bij welke taak.',
+      'Je weet wanneer een document, presentatie, gedeelde link of mail netjes genoeg is om in te leveren.',
+      'Je kunt uitleggen wat zelfstandig lukte en waar je hulp bij nodig had.'
     ],
     theorie: [
       // theorieblok 1: Microsoft als gereedschapskist
@@ -165,12 +195,16 @@ export default {
       },
       // theorieblok 2: Mini-portfolio
       {
-        keyTerms: ['checkpoint', 'bewijs', 'presentatie', 'zelfstandig'],
+        keyTerms: ['document', 'presentatie', 'gedeelde link'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Kim schrijft bij haar reflectie alleen ging goed. Is dat genoeg?</p>',
           '<p><strong>Antwoord.</strong> Nee. Schrijf op wat je zelfstandig kon en waar je hulp bij nodig had, bijvoorbeeld: het delen lukte alleen, maar bij de rechten heb ik het aan mijn buurman gevraagd.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Elk programma heeft zijn eigen taak: Word voor een verslag dat iemand leest, PowerPoint als je iets aan een groep uitlegt, OneDrive om te bewaren en te delen, Outlook om te mailen. In je mini-portfolio laat je van alle vier iets zien: een document, een presentatie, een gedeelde link en een nette mail. Daarbij schrijf je kort op wat je alleen kon en waarbij je iemand nodig had, want dat hoort er ook bij.</p>',
+      keyTerms: ['PowerPoint', 'mini-portfolio', 'gedeelde link']
+    }
   }
 };

@@ -12,6 +12,13 @@ const BESLUIT_ICOON = {
   [NAKIJK_BESLUIT.AFGEKEURD]: X
 };
 
+const GEBLOKKEERDE_KNOP_CLASS =
+  'border-[var(--helix-border)] bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]';
+
+const STANDAARD_BLOKKADE =
+  'Deze stap komt uit een ouder voortgangrecord zonder lesblok. Beoordelen kan hier niet; ' +
+  'zet het onderdeel opnieuw klaar in de lesstudio.';
+
 /**
  * De drie knoppen waarmee een docent een open antwoord afhandelt, plus het
  * optionele notitieveld dat als toelichting bij het antwoord wordt bewaard.
@@ -19,6 +26,11 @@ const BESLUIT_ICOON = {
  * Bewust een los onderdeel: dezelfde handeling hoort zowel in de nakijkstapel
  * te staan als bij de stap in het leerlingoverzicht, en die twee mogen niet uit
  * elkaar gaan lopen.
+ *
+ * Kan een besluit niets veranderen, dan staan de knoppen er wel maar zijn ze
+ * uitgeschakeld en grijs, met de reden erboven. Een knop die wel klikbaar oogt
+ * maar niets afmaakt, is erger dan geen knop: de docent denkt dat het werk weg
+ * is terwijl de leerling blijft wachten.
  */
 export default function BeoordeelActies({
   opdracht = null,
@@ -30,13 +42,36 @@ export default function BeoordeelActies({
 
   if (!opdracht) return null;
 
-  if (!opdracht.beoordeelbaar) {
+  const blokkade = opdracht.beoordeelbaar ? '' : (opdracht.blokkade || STANDAARD_BLOKKADE);
+
+  if (blokkade) {
     return (
-      <p className="mt-2 flex items-start gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-xs font-semibold text-[var(--helix-muted)]">
-        <TriangleAlert size={14} className="mt-0.5 shrink-0" />
-        Deze stap komt uit een ouder voortgangrecord zonder lesblok. Beoordelen kan hier niet;
-        zet het onderdeel opnieuw klaar in de lesstudio.
-      </p>
+      <div className={compact ? 'mt-2' : 'mt-3'}>
+        <p className="flex items-start gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-xs font-semibold text-[var(--helix-muted)]">
+          <TriangleAlert size={14} className="mt-0.5 shrink-0" />
+          {blokkade}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {NAKIJK_BESLUITEN.map((besluit) => {
+            const presentatie = getBesluitPresentatie(besluit);
+            const Icoon = BESLUIT_ICOON[besluit];
+
+            return (
+              <button
+                key={besluit}
+                type="button"
+                disabled
+                aria-disabled="true"
+                title={blokkade}
+                className={`inline-flex cursor-not-allowed items-center gap-1.5 rounded-[var(--helix-radius-md)] border px-3 py-2 text-xs font-black opacity-60 ${GEBLOKKEERDE_KNOP_CLASS}`}
+              >
+                <Icoon size={14} />
+                {presentatie.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     );
   }
 

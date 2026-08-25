@@ -157,6 +157,32 @@ export const buildRecordIndex = (records = []) => {
 const getRecordVoorBlok = (block = {}, index = new Map()) =>
   index.get(block.id) || (block.linkedVraagId ? index.get(block.linkedVraagId) : null) || null;
 
+/**
+ * De losse vragen van een toets of quiz staan NIET in `voortgang` zelf, maar in
+ * de subcollectie `voortgang/{uid}_{blockId}/items/{itemId}`. Een gewone query
+ * op de collectie `voortgang` ziet die dus niet. Deze index zet zo'n lijst
+ * itemrecords om naar een map blockId -> itemrecords, in vraagvolgorde.
+ */
+export const buildItemRecordIndex = (records = []) => {
+  const index = {};
+
+  records.forEach((record) => {
+    const blockId = record?.blockId || '';
+    if (!blockId) return;
+    if (!index[blockId]) index[blockId] = [];
+    index[blockId].push(record);
+  });
+
+  Object.values(index).forEach((lijst) => {
+    lijst.sort((a, b) => (Number(a.itemIndex) || 0) - (Number(b.itemIndex) || 0));
+  });
+
+  return index;
+};
+
+const getItemRecordsVoorBlok = (block = {}, index = {}) =>
+  index[block.id] || (block.linkedVraagId ? index[block.linkedVraagId] : null) || [];
+
 const getPogingen = (record = {}) => {
   const parsed = Number.parseInt(record.attempts, 10);
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
@@ -177,29 +203,11 @@ const isAangeraakt = (record = {}) =>
   recordTijdstip(record) > 0;
 
 /**
- * De status van EEN stap in de lesroute.
- *
- * "Vastgelopen" is bewust breder dan "fout": een leerling die na drie pogingen
- * nog niet verder is, is voor de docent hetzelfde geval als een leerling van
- * wie het antwoord is afgekeurd. Beide vragen om uitleg, niet om afwachten.
+ * De stand van EEN voortgangrecord, of dat nu een lesblok is of een losse vraag
+ * binnen een toets. Beide soorten records dragen dezelfde velden, dus ze horen
+ * ook door dezelfde regels beoordeeld te worden.
  */
-export const buildStapStatus = ({ block = {}, record = null, index = 0 } = {}) => {
-  const basis = {
-    blockId: block.id || '',
-    nummer: index + 1,
-    titel: block.title || `Stap ${index + 1}`,
-    type: block.type || '',
-    typeLabel: getBlokTypeLabel(block.type),
-    pogingen: 0,
-    aiHulp: 0,
-    laatsteActiviteitMs: 0,
-    record: null
-  };
-
-  if (!record || !isAangeraakt(record)) {
-    return { ...basis, status: STAP_STATUS.NIET_GESTART, toelichting: 'Nog niet geopend' };
-  }
-
+const beoordeelRecord = (record = {}) => {
   const pogingen = getPogingen(record);
   const aiHulp = Number(record.aiHelpCount || 0);
   const laatsteActiviteitMs = recordTijdstip(record);
@@ -210,11 +218,11 @@ export const buildStapStatus = ({ block = {}, record = null, index = 0 } = {}) =
     resultTier: record.resultTier || '',
     helpTier: record.helpTier || ''
   });
-  const gemeenschappelijk = { ...basis, pogingen, aiHulp, laatsteActiviteitMs, record };
+  const basis = { pogingen, aiHulp, laatsteActiviteitMs };
 
   if (tier === 'pending_teacher_review' || record.attemptStatus === 'pending_teacher_review') {
     return {
-      ...gemeenschappelijk,
+      ...basis,
       status: STAP_STATUS.NAKIJKEN,
       toelichting: 'Open antwoord wacht op jouw beoordeling'
     };
@@ -222,7 +230,7 @@ export const buildStapStatus = ({ block = {}, record = null, index = 0 } = {}) =
 
   if (tier === 'failed') {
     return {
-      ...gemeenschappelijk,
+      ...basis,
       status: STAP_STATUS.VASTGELOPEN,
       toelichting: `Afgekeurd na ${pogingen} poging${pogingen === 1 ? '' : 'en'}`
     };
@@ -230,7 +238,7 @@ export const buildStapStatus = ({ block = {}, record = null, index = 0 } = {}) =
 
   if (record.completed === true) {
     return {
-      ...gemeenschappelijk,
+      ...basis,
       status: STAP_STATUS.AFGEROND,
       toelichting: aiHulp > 0
         ? `Afgerond met ${aiHulp}x Digidocent-hulp`
@@ -240,18 +248,126 @@ export const buildStapStatus = ({ block = {}, record = null, index = 0 } = {}) =
 
   if (isPogingenOp(record)) {
     return {
-      ...gemeenschappelijk,
+      ...basis,
       status: STAP_STATUS.VASTGELOPEN,
       toelichting: `${pogingen} poging${pogingen === 1 ? '' : 'en'} zonder resultaat`
     };
   }
 
   return {
-    ...gemeenschappelijk,
+    ...basis,
     status: STAP_STATUS.BEZIG,
     toelichting: pogingen > 0
       ? `${pogingen} poging${pogingen === 1 ? '' : 'en'} gedaan`
       : 'Mee bezig'
+  };
+};
+
+const schoneTekst = (waarde) => String(waarde ?? '').trim();
+
+/** Eén vraag binnen een toets of quiz, als substap onder het lesblok. */
+export const buildItemStap = ({ record = null, index = 0 } = {}) => {
+  const gelezenIndex = Number.parseInt(record?.itemIndex, 10);
+  const nummer = Number.isFinite(gelezenIndex) ? gelezenIndex + 1 : index + 1;
+  const basis = {
+    itemId: schoneTekst(record?.itemId) || schoneTekst(record?.id),
+    blockId: schoneTekst(record?.blockId),
+    nummer,
+    titel: schoneTekst(record?.vraagTitle)
+      || schoneTekst(record?.questionPlainText)
+      || `Vraag ${nummer}`,
+    typeLabel: schoneTekst(record?.vraagType) || 'Vraag',
+    pogingen: 0,
+    aiHulp: 0,
+    laatsteActiviteitMs: 0,
+    record: null
+  };
+
+  if (!record || !isAangeraakt(record)) {
+    return { ...basis, status: STAP_STATUS.NIET_GESTART, toelichting: 'Nog niet gemaakt' };
+  }
+
+  return { ...basis, ...beoordeelRecord(record), record };
+};
+
+/**
+ * De status van EEN stap in de lesroute.
+ *
+ * "Vastgelopen" is bewust breder dan "fout": een leerling die na drie pogingen
+ * nog niet verder is, is voor de docent hetzelfde geval als een leerling van
+ * wie het antwoord is afgekeurd. Beide vragen om uitleg, niet om afwachten.
+ *
+ * Een toets of quiz is een stap met losse vragen eronder. Die vragen staan in
+ * een subcollectie en komen hier binnen als `itemRecords`. Wacht daar nog een
+ * vraag op de docent, dan wacht de STAP op de docent - ook als het blokrecord
+ * zelf al "afgerond" zegt, of juist nog niet af is. Anders verdwijnt een
+ * ingeleverd toetsantwoord uit beeld doordat het blok als geheel nog loopt.
+ */
+export const buildStapStatus = ({ block = {}, record = null, index = 0, itemRecords = [] } = {}) => {
+  const items = (Array.isArray(itemRecords) ? itemRecords : [])
+    .map((itemRecord, positie) => buildItemStap({ record: itemRecord, index: positie }))
+    .sort((a, b) => a.nummer - b.nummer);
+  const itemsNakijken = items.filter((item) => item.status === STAP_STATUS.NAKIJKEN);
+  const itemActiviteitMs = items.reduce((hoogste, item) => Math.max(hoogste, item.laatsteActiviteitMs), 0);
+  const basis = {
+    blockId: block.id || '',
+    nummer: index + 1,
+    titel: block.title || `Stap ${index + 1}`,
+    type: block.type || '',
+    typeLabel: getBlokTypeLabel(block.type),
+    pogingen: 0,
+    aiHulp: 0,
+    laatsteActiviteitMs: 0,
+    items,
+    itemsNakijken: itemsNakijken.length,
+    record: null
+  };
+
+  const heeftRecord = Boolean(record && isAangeraakt(record));
+
+  if (!heeftRecord && !items.length) {
+    return { ...basis, status: STAP_STATUS.NIET_GESTART, toelichting: 'Nog niet geopend' };
+  }
+
+  const beoordeling = heeftRecord ? beoordeelRecord(record) : null;
+  const gemeenschappelijk = {
+    ...basis,
+    pogingen: beoordeling
+      ? beoordeling.pogingen
+      : items.reduce((som, item) => som + item.pogingen, 0),
+    aiHulp: beoordeling
+      ? beoordeling.aiHulp
+      : items.reduce((som, item) => som + item.aiHulp, 0),
+    laatsteActiviteitMs: Math.max(beoordeling?.laatsteActiviteitMs || 0, itemActiviteitMs),
+    record: heeftRecord ? record : null
+  };
+
+  if (itemsNakijken.length) {
+    return {
+      ...gemeenschappelijk,
+      status: STAP_STATUS.NAKIJKEN,
+      toelichting: itemsNakijken.length === 1
+        ? '1 vraag wacht op jouw beoordeling'
+        : `${itemsNakijken.length} vragen wachten op jouw beoordeling`
+    };
+  }
+
+  if (beoordeling) {
+    return { ...gemeenschappelijk, status: beoordeling.status, toelichting: beoordeling.toelichting };
+  }
+
+  // Wel itemantwoorden, geen blokrecord: het blokdocument is er (nog) niet,
+  // maar de leerling heeft aantoonbaar gewerkt. De stand komt dan uit de items.
+  const itemTelling = legeTelling();
+  items.forEach((item) => {
+    itemTelling[item.status] += 1;
+  });
+  const afgeleideStatus = bepaalSamengesteldeStatus(itemTelling, items.length);
+
+  return {
+    ...gemeenschappelijk,
+    status: afgeleideStatus,
+    toelichting: `${itemTelling[STAP_STATUS.AFGEROND]} van ${items.length} vragen af`
   };
 };
 
@@ -279,11 +395,22 @@ export const getParagraafLabel = (paragraaf = {}) => {
 };
 
 /** Volledig rapport van EEN paragraaf voor EEN leerling. */
-export const buildParagraafRapport = ({ paragraaf = {}, blocks = [], records = [], recordIndex = null } = {}) => {
+export const buildParagraafRapport = ({
+  paragraaf = {},
+  blocks = [],
+  records = [],
+  recordIndex = null,
+  itemRecordsByBlockId = {}
+} = {}) => {
   const index = recordIndex || buildRecordIndex(records);
   const gesorteerd = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
   const stappen = gesorteerd.map((block, positie) =>
-    buildStapStatus({ block, record: getRecordVoorBlok(block, index), index: positie })
+    buildStapStatus({
+      block,
+      record: getRecordVoorBlok(block, index),
+      index: positie,
+      itemRecords: getItemRecordsVoorBlok(block, itemRecordsByBlockId)
+    })
   );
 
   const telling = legeTelling();
@@ -487,6 +614,7 @@ export const buildKlasVoortgangRijen = ({
   students = [],
   scopesByStudentId = {},
   recordsByStudentId = {},
+  itemRecordsByStudentId = {},
   contentBlocksByParagraaf = {},
   now = Date.now()
 } = {}) => {
@@ -494,6 +622,7 @@ export const buildKlasVoortgangRijen = ({
     const studentId = student.id || student.uid || '';
     const scope = scopesByStudentId[studentId] || { assignments: [], scopeSource: 'volledigeLesstof' };
     const recordIndex = buildRecordIndex(recordsByStudentId[studentId] || []);
+    const itemRecordsByBlockId = buildItemRecordIndex(itemRecordsByStudentId[studentId] || []);
 
     const rapporten = scope.assignments.map((toewijzing) =>
       buildParagraafRapport({
@@ -501,7 +630,8 @@ export const buildKlasVoortgangRijen = ({
         blocks: toewijzing.blocks.length
           ? toewijzing.blocks
           : contentBlocksByParagraaf[toewijzing.paragraafId] || [],
-        recordIndex
+        recordIndex,
+        itemRecordsByBlockId
       })
     );
 

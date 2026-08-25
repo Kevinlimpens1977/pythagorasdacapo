@@ -21,7 +21,12 @@ import {
   buildContentBlockVoortgangUpdate
 } from '../lib/voortgangPayload';
 import { shouldFallbackToUserProgressQuery } from '../lib/voortgangQueryUtils';
-import { buildBeoordelingData, isBeoordeelbaar } from '../lib/nakijkOpdrachten';
+import {
+  beoordeelBlokkade,
+  buildBeoordelingData,
+  buildBlokstandNaBeoordeling,
+  isAssessmentItemRecord
+} from '../lib/nakijkOpdrachten';
 
 /**
  * Save progress for a single question (upsert)
@@ -271,36 +276,76 @@ export const getAssessmentItemVoortgang = async (userId, blockId) => {
  * aanroeper geen admin, dan weigert Firestore de schrijfactie en vertaalt deze
  * functie dat naar een leesbare melding in plaats van een rauwe foutcode.
  *
+ * Toets- en quizvragen: het antwoord van de leerling staat NIET in het
+ * blokdocument maar in `voortgang/{uid}_{blockId}/items/{itemId}`. Een besluit
+ * over zo'n vraag gaat dus naar het itemdocument, en daarna wordt de opgetelde
+ * stand van het blok bijgewerkt met precies dezelfde optelling die de
+ * leerlingroute gebruikt. Zonder die tweede schrijfactie blijft het blok op
+ * "wacht op nakijken" staan terwijl er niets meer te doen is.
+ *
  * @param {Object} params
  * @param {Object} params.record - Het voortgangrecord van de stap (uit het dashboard)
  * @param {string} params.besluit - Een waarde uit NAKIJK_BESLUIT
  * @param {string} [params.opmerking] - Korte toelichting van de docent
  * @param {Object} [params.docent] - De ingelogde docent (uid, displayName, email)
+ * @param {Array} [params.blokItems] - De vragen van het toetsblok uit de lesstof
+ * @param {Object} [params.itemRecords] - Map itemId -> itemrecord van dit blok
  * @returns {Promise<Object>} De data die is weggeschreven
  */
 export const beoordeelOpenAntwoord = async ({
   record = null,
   besluit = '',
   opmerking = '',
-  docent = {}
+  docent = {},
+  blokItems = [],
+  itemRecords = {}
 } = {}) => {
-  if (!isBeoordeelbaar(record)) {
-    throw new Error(
-      'Deze stap kan niet vanuit het dashboard worden beoordeeld: het voortgangrecord mist een lesblok.'
-    );
+  const blokkade = beoordeelBlokkade(record);
+  if (blokkade) {
+    throw new Error(blokkade);
   }
 
   const data = buildBeoordelingData({ record, besluit, opmerking, docent });
 
   try {
-    await saveContentBlockVoortgang(
-      record.userId,
-      record.blockId,
-      record.paragraafId,
-      record.hoofdstukId || '',
-      record.klasId || '',
-      data
-    );
+    if (isAssessmentItemRecord(record)) {
+      await saveAssessmentItemVoortgang(
+        record.userId,
+        record.blockId,
+        record.itemId,
+        record.paragraafId,
+        record.hoofdstukId || '',
+        record.klasId || '',
+        { ...data, itemIndex: record.itemIndex ?? 0 }
+      );
+
+      const blokstand = buildBlokstandNaBeoordeling({
+        record,
+        beoordeling: data,
+        items: blokItems,
+        itemRecords
+      });
+
+      if (blokstand) {
+        await saveContentBlockVoortgang(
+          record.userId,
+          record.blockId,
+          record.paragraafId,
+          record.hoofdstukId || '',
+          record.klasId || '',
+          blokstand
+        );
+      }
+    } else {
+      await saveContentBlockVoortgang(
+        record.userId,
+        record.blockId,
+        record.paragraafId,
+        record.hoofdstukId || '',
+        record.klasId || '',
+        data
+      );
+    }
   } catch (error) {
     if (error?.code === 'permission-denied') {
       throw new Error(

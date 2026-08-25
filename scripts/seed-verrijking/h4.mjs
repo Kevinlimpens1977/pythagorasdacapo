@@ -8,6 +8,12 @@
 //                  theorietekst staan; de leesopmaak zet ze vet.
 //     exampleHtml: een uitgewerkt voorbeeld als vraag + antwoord. Het paneel
 //                  zet zelf al het label "Voorbeeld" erboven.
+//   samenvatting: de laatste leestekst voor de quiz of toets.
+//     html:     2 of 3 zinnen die de begrippen van die paragraaf herhalen, elk
+//               begrip letterlijk genoemd. Taalniveau B1, brugklas.
+//     keyTerms: verplicht zodra html gevuld is; elk woord staat letterlijk in
+//               die samenvatting. Een kernbegrip mag in de hele seed in
+//               maximaal twee blokken staan (validator bewaakt dat).
 
 export default {
   // 4.1 Excel: tabellen maken
@@ -34,7 +40,11 @@ export default {
           '<p><strong>Antwoord.</strong> Geef de kolom een titel die alles vertelt, bijvoorbeeld Reistijd in minuten. In cel B1 zet je die titel, daaronder komen de getallen.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>In Excel krijgt elk gegeven een eigen cel: een rij is één leerling of één meting, een kolom is één soort gegeven. Boven elke kolom zet je een kolomtitel die over een maand nog steeds duidelijk is, dus Reistijd in minuten in plaats van Tijd. Staat je tabel zo netjes, dan kun je later sorteren, tellen en er een grafiek van maken.</p>',
+      keyTerms: ['cel', 'rij', 'kolom', 'sorteren']
+    }
   },
 
   // 4.2 Excel: rekenen met formules
@@ -61,7 +71,11 @@ export default {
           '<p><strong>Antwoord.</strong> Je typt =GEMIDDELDE(B2:B6). Met =SOM(B2:B6) krijg je alle cijfers bij elkaar opgeteld, en dat is geen rapportcijfer.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Elke formule in Excel begint met een =-teken: =SOM(B2:B6) telt alles op, =GEMIDDELDE(B2:B6) geeft het gemiddelde van diezelfde vakjes. Excel rekent altijd goed, maar alleen met de cellen die jij aanwijst. Klik daarom op je antwoord en kijk of het bereik alle dagen pakt, anders staat er een keurige uitkomst waar een dag in mist.</p>',
+      keyTerms: ['formule', 'gemiddelde', 'bereik', 'uitkomst']
+    }
   },
 
   // 4.3 Grafieken die iets vertellen
@@ -88,7 +102,11 @@ export default {
           '<p><strong>Antwoord.</strong> Een lijngrafiek, want die laat verandering in tijd zien. Let ook op de schaal: begin je niet bij nul, dan lijkt een klein verschil ineens enorm.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een staafdiagram vergelijkt groepen naast elkaar, een lijngrafiek laat zien hoe iets in de loop van de tijd verandert. Bij allebei horen een titel, labels langs de assen en één zin die vertelt wat je ziet. Controleer daarna de schaal: begint die niet bij nul, dan lijkt een klein verschil veel groter dan het echt is.</p>',
+      keyTerms: ['staafdiagram', 'lijngrafiek', 'labels', 'schaal']
+    }
   },
 
   // 4.4 Data om je heen en data/privacy
@@ -101,7 +119,7 @@ export default {
     theorie: [
       // theorieblok 1: Jouw dataspuren
       {
-        keyTerms: ['gegevens', 'klikgedrag', 'locatie', 'data'],
+        keyTerms: ['klikgedrag', 'locatie', 'data'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Een spelletje op je telefoon vraagt of het je locatie mag gebruiken. Het spel is een puzzel. Waarom is die vraag raar?</p>',
           '<p><strong>Antwoord.</strong> Een puzzel heeft je locatie niet nodig om te werken. De maker verzamelt dan gegevens voor iets anders, bijvoorbeeld reclame. Je mag rustig nee zeggen.</p>'
@@ -109,13 +127,17 @@ export default {
       },
       // theorieblok 2: Privacykeuzes
       {
-        keyTerms: ['Privacy', 'gedeeld', 'persoonlijk', 'instellingen'],
+        keyTerms: ['Privacy', 'instellingen'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Yara zet in haar profiel haar school, haar klas en haar woonplaats. Haar account staat open voor iedereen. Wat kan er misgaan?</p>',
           '<p><strong>Antwoord.</strong> Samen is dat genoeg om haar op te zoeken. Die informatie is persoonlijk, dus zet ze haar account op privé en laat ze de woonplaats weg.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Apps, websites en schoolsystemen bewaren sporen van jou: je klikgedrag, je locatie, je inlogtijd en de woorden waarop je zoekt. Vraag je bij elke app af wie die gegevens krijgt, met welk doel dat gebeurt en welk risico jij daarbij loopt; een puzzelspel hoeft niet te weten waar jij bent. Deel daarom niet meer dan nodig en kies bewust je instellingen als je niet weet wie er meekijkt.</p>',
+      keyTerms: ['klikgedrag', 'inlogtijd', 'risico']
+    }
   },
 
   // 4.5 Bronnen beoordelen met data en bewijs
@@ -128,7 +150,7 @@ export default {
     theorie: [
       // theorieblok 1: Een claim is nog geen bewijs
       {
-        keyTerms: ['claim', 'bewering', 'bron', 'betrouwbaar'],
+        keyTerms: ['claim', 'bewering', 'bewijs', 'betrouwbaar'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> In een filmpje hoor je: 9 van de 10 leerlingen slapen te weinig door hun telefoon. Geloof je dat meteen?</p>',
           '<p><strong>Antwoord.</strong> Nog niet. Dit is een bewering. Zoek eerst wie het onderzoek deed, hoeveel leerlingen zijn gevraagd en waar het is gepubliceerd.</p>'
@@ -136,20 +158,24 @@ export default {
       },
       // theorieblok 2: Data controleren
       {
-        keyTerms: ['datum', 'afzender', 'steekproef', 'cijfers'],
+        keyTerms: ['datum', 'afzender', 'steekproef'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Een website meldt dat 80 procent van de jongeren een bepaald merk energiedrank het lekkerst vindt. De site is van dat merk zelf. Wat controleer je?</p>',
           '<p><strong>Antwoord.</strong> Kijk naar de afzender: die verdient aan de uitkomst. Zoek ook de datum en de steekproef. Vijftig mensen op een festival zegt weinig over alle jongeren.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een claim is een bewering die nog nergens mee is aangetoond: 9 van de 10 jongeren klinkt sterk, maar zegt op zichzelf niets. Ga daarom na wie het zegt, van welke datum het bericht is en hoe groot de steekproef was. Pas als je weet hoe die getallen verzameld zijn, kun je zeggen of de bron betrouwbaar is.</p>',
+      keyTerms: ['claim', 'bewering', 'steekproef', 'betrouwbaar']
+    }
   },
 
   // 4.6 Checkpoint: data-dashboard en bronkeuze
   '4.6': {
     learningGoals: [
       'Je weet welke onderdelen in een mini-dashboard horen.',
-      'Je kunt tabel, formule, grafiek en conclusie samenbrengen op één overzicht.',
+      'Je weet wanneer je een tabel, een formule of een grafiek nodig hebt om je vraag te beantwoorden.',
       'Je kunt uitleggen waar je data vandaan komt en hoe je met privacy omgaat.'
     ],
     theorie: [
@@ -169,6 +195,10 @@ export default {
           '<p><strong>Antwoord.</strong> Dat je de gegevens zelf hebt verzameld bij twintig leerlingen uit één klas, dus alleen bruikbaar voor die klas. In je privacyzin zet je dat er geen namen in staan.</p>'
         ].join('\n')
       }
-    ]
+    ],
+    samenvatting: {
+      html: '<p>Een dashboard brengt je tabel, je formule, je grafiek en je uitleg samen in één overzicht, zodat de lezer meteen antwoord krijgt op je onderzoeksvraag. Je schrijft erbij waar je data vandaan komt en waarom die goed genoeg is voor precies die vraag. In je privacyzin leg je uit welke gegevens persoonlijk zijn en hoe je daar netjes mee omgaat.</p>',
+      keyTerms: ['dashboard', 'overzicht', 'onderzoeksvraag', 'privacyzin']
+    }
   }
 };

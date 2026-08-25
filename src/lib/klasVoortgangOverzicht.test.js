@@ -9,6 +9,7 @@ import {
   buildAandachtsLijst,
   buildHoofdstukRapport,
   buildKlasStatusTelling,
+  buildItemRecordIndex,
   buildKlasVoortgangRijen,
   buildMatrixRijen,
   buildParagraafKolommen,
@@ -495,4 +496,125 @@ test('statuspresentatie geeft altijd een bruikbare kleur terug', () => {
   assert.equal(getStatusPresentatie(STAP_STATUS.AFGEROND).label, 'Afgerond');
   assert.equal(getStatusPresentatie('onbekend').status, STAP_STATUS.NIET_GESTART);
   assert.equal(getParagraafLabel({ title: 'Zonder nummer' }), 'Zonder nummer');
+});
+
+// --- Toets- en quizvragen uit de subcollectie voortgang/{uid}_{blockId}/items ---
+
+const itemRecord = (itemId, extra = {}) => ({
+  userId: 'leerling-1',
+  blockId: 'dv-1-1-quiz',
+  itemId,
+  progressType: 'assessmentItem',
+  paragraafId: 'paragraaf-dv-1-1',
+  klasId: 'klas-a',
+  itemIndex: 0,
+  attempts: 1,
+  completed: false,
+  isCorrect: false,
+  updatedAt: new Date(NU),
+  ...extra
+});
+
+test('buildItemRecordIndex groepeert itemrecords per blok in vraagvolgorde', () => {
+  const index = buildItemRecordIndex([
+    itemRecord('vraag-3', { itemIndex: 2 }),
+    itemRecord('vraag-1', { itemIndex: 0 }),
+    itemRecord('vraag-2', { itemIndex: 1 }),
+    { itemId: 'zwever' }
+  ]);
+
+  assert.deepEqual(
+    index['dv-1-1-quiz'].map((item) => item.itemId),
+    ['vraag-1', 'vraag-2', 'vraag-3']
+  );
+  assert.equal(index[''], undefined);
+});
+
+test('een toetsvraag die op de docent wacht zet de stap op nakijken, ook als het blok nog loopt', () => {
+  const stap = buildStapStatus({
+    block: blok('dv-1-1-quiz', 8, { type: 'quiz', title: 'Afsluitquiz' }),
+    // Het blokdocument staat op "bezig": pas als alle vragen af zijn rolt de
+    // leerlingroute 'pending_teacher_review' omhoog. De vraag wacht wel al.
+    record: record('dv-1-1-quiz', { attempts: 1, itemCount: 3, itemsCompleted: 1 }),
+    index: 7,
+    itemRecords: [
+      itemRecord('vraag-1', { itemIndex: 0, completed: true, isCorrect: true }),
+      itemRecord('vraag-2', {
+        itemIndex: 1,
+        completed: true,
+        attemptStatus: 'pending_teacher_review',
+        resultTier: 'pending_teacher_review'
+      })
+    ]
+  });
+
+  assert.equal(stap.status, STAP_STATUS.NAKIJKEN);
+  assert.equal(stap.itemsNakijken, 1);
+  assert.equal(stap.items.length, 2);
+  assert.equal(stap.items[1].itemId, 'vraag-2');
+  assert.equal(stap.items[1].status, STAP_STATUS.NAKIJKEN);
+  assert.equal(stap.toelichting, '1 vraag wacht op jouw beoordeling');
+});
+
+test('een afgerond toetsblok blijft wachten zolang een losse vraag wacht', () => {
+  const stap = buildStapStatus({
+    block: blok('dv-1-1-quiz', 8, { type: 'quiz' }),
+    record: record('dv-1-1-quiz', { completed: true, isCorrect: true, attempts: 1 }),
+    index: 7,
+    itemRecords: [
+      itemRecord('vraag-1', {
+        completed: true,
+        attemptStatus: 'pending_teacher_review',
+        resultTier: 'pending_teacher_review'
+      })
+    ]
+  });
+
+  assert.equal(stap.status, STAP_STATUS.NAKIJKEN);
+});
+
+test('itemantwoorden zonder blokrecord tellen nog steeds als werk van de leerling', () => {
+  const stap = buildStapStatus({
+    block: blok('dv-1-1-quiz', 8, { type: 'quiz' }),
+    record: null,
+    index: 7,
+    itemRecords: [
+      itemRecord('vraag-1', { completed: true, isCorrect: true }),
+      itemRecord('vraag-2', { attempts: 1 })
+    ]
+  });
+
+  assert.equal(stap.status, STAP_STATUS.BEZIG);
+  assert.equal(stap.toelichting, '1 van 2 vragen af');
+  assert.equal(stap.record, null);
+});
+
+test('een stap zonder record en zonder items blijft niet gestart', () => {
+  const stap = buildStapStatus({ block: blok('dv-1-1-quiz', 8, { type: 'quiz' }), index: 7 });
+
+  assert.equal(stap.status, STAP_STATUS.NIET_GESTART);
+  assert.deepEqual(stap.items, []);
+  assert.equal(stap.itemsNakijken, 0);
+});
+
+test('klasvoortgangrijen nemen de itemantwoorden mee in de telling nakijken', () => {
+  const rijen = bouwRijen({
+    recordsByStudentId: {
+      'leerling-1': [record('dv-1-1-quiz', { attempts: 1, itemCount: 2, itemsCompleted: 1 })]
+    },
+    itemRecordsByStudentId: {
+      'leerling-1': [
+        itemRecord('vraag-2', {
+          itemIndex: 1,
+          completed: true,
+          attemptStatus: 'pending_teacher_review',
+          resultTier: 'pending_teacher_review'
+        })
+      ]
+    }
+  });
+
+  const amir = rijen.find((rij) => rij.studentId === 'leerling-1');
+  assert.equal(amir.telling[STAP_STATUS.NAKIJKEN], 1);
+  assert.equal(amir.status, STAP_STATUS.NAKIJKEN);
 });
