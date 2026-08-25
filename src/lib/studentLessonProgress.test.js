@@ -5,6 +5,7 @@ import {
   findResumeBlockIndex,
   getCompletedBlockIds,
   getLessonBlockRenderKey,
+  resolveRequestedBlockIndex,
   shouldSaveBlockProgressBeforeNavigation
 } from './studentLessonProgress.js';
 import { normalizeContentBlockSettings, normalizeContentBlocks } from './contentBlockUtils.js';
@@ -56,6 +57,42 @@ test('findResumeBlockIndex returns last block when lesson is completed', () => {
     { blockId: 'block-2', completed: true },
     { blockId: 'block-3', completed: true }
   ]), 2);
+});
+
+test('resolveRequestedBlockIndex opens the requested block when the route allows it', () => {
+  const routeBlocks = [
+    { id: 'theory-1', type: 'theory' },
+    { id: 'question-1', type: 'question' },
+    { id: 'quiz-1', type: 'quiz' }
+  ];
+
+  assert.equal(
+    resolveRequestedBlockIndex({
+      blocks: routeBlocks,
+      progressRecords: [{ blockId: 'question-1', completed: true }],
+      requestedBlockId: 'quiz-1'
+    }),
+    2
+  );
+});
+
+test('resolveRequestedBlockIndex falls back to the resume block for unknown or locked steps', () => {
+  const routeBlocks = [
+    { id: 'theory-1', type: 'theory' },
+    { id: 'question-1', type: 'question' },
+    { id: 'quiz-1', type: 'quiz' }
+  ];
+
+  // Een onafgeronde kernvraag ervoor houdt de stap dicht.
+  assert.equal(
+    resolveRequestedBlockIndex({ blocks: routeBlocks, progressRecords: [], requestedBlockId: 'quiz-1' }),
+    0
+  );
+  assert.equal(
+    resolveRequestedBlockIndex({ blocks: routeBlocks, progressRecords: [], requestedBlockId: 'bestaat-niet' }),
+    0
+  );
+  assert.equal(resolveRequestedBlockIndex({ blocks: routeBlocks, progressRecords: [] }), 0);
 });
 
 test('shouldSaveBlockProgressBeforeNavigation saves non-question blocks that are not completed yet', () => {

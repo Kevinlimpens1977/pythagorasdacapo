@@ -738,6 +738,395 @@ input[type=number] {
   border-radius: var(--helix-radius-lg);
 }
 
+/* STUDEERWEERGAVE — rustige leeromgeving per paragraaf */
+
+.helix-btn-solid {
+  background: var(--helix-gradient);
+  color: #ffffff;
+  border: 2px solid transparent;
+  box-shadow: var(--helix-shadow-glow);
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 font-extrabold transition-all hover:-translate-y-0.5 active:scale-95 focus:outline-none;
+}
+
+.helix-btn-solid:focus-visible {
+  box-shadow: var(--helix-shadow-glow), var(--helix-focus);
+}
+
+.helix-btn-solid:disabled {
+  background: #eef2f7;
+  color: #94a3b8;
+  box-shadow: none;
+  @apply cursor-not-allowed hover:translate-y-0;
+}
+
+/* Rustige leestypografie: ruime regelafstand, kernbegrippen vet in navy.
+   Let op: @tailwindcss/typography zit niet in dit project, dus de prose-klassen
+   in de JSX doen niets. Deze stijlen zijn de echte leesopmaak. */
+.lesson-prose {
+  color: var(--helix-muted);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  max-width: none;
+  margin-inline: 0;
+}
+
+/* Lopende tekst blijft leesbaar tot ongeveer 68 tekens. De maat staat op de
+   tekstelementen zelf, niet op de kolom, zodat figuren, tabellen en media wél
+   de volle breedte van de kaart mogen gebruiken. */
+.lesson-prose :where(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6, dl) {
+  max-width: 68ch;
+  margin-inline: 0;
+}
+
+.lesson-prose > :first-child {
+  margin-top: 0;
+}
+
+.lesson-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.lesson-prose :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--helix-navy);
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.lesson-prose :where(h1) { font-size: 1.6rem; }
+.lesson-prose :where(h2) { font-size: 1.4rem; }
+.lesson-prose :where(h3) { font-size: 1.2rem; }
+.lesson-prose :where(h4, h5, h6) { font-size: 1.0625rem; }
+
+.lesson-prose :where(p) {
+  margin: 1.15rem 0;
+}
+
+.lesson-prose :where(ul, ol) {
+  margin: 1.15rem 0;
+  padding-left: 1.5rem;
+}
+
+.lesson-prose :where(ul) { list-style: disc; }
+.lesson-prose :where(ol) { list-style: decimal; }
+
+.lesson-prose :where(li) {
+  margin: 0.4rem 0;
+}
+
+.lesson-prose :where(li)::marker {
+  color: var(--helix-purple);
+}
+
+.lesson-prose :where(strong, b) {
+  color: var(--helix-navy);
+  font-weight: 800;
+}
+
+.lesson-prose :where(em, i) {
+  font-style: italic;
+}
+
+.lesson-prose :where(a) {
+  color: var(--helix-purple);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lesson-prose :where(img) {
+  border-radius: var(--helix-radius-lg);
+  border: 1px solid var(--helix-border);
+  margin: 1.5rem 0;
+  max-width: 100%;
+  height: auto;
+}
+
+.lesson-prose :where(blockquote) {
+  border-left: 3px solid var(--helix-purple);
+  margin: 1.5rem 0;
+  padding-left: 1.15rem;
+  font-style: italic;
+}
+
+/* Een tabel mag breder zijn dan de leesregel, maar nooit breder dan de kaart:
+   op een telefoon scrollt hij binnen zijn eigen vak in plaats van de hele pagina
+   scheef te trekken. */
+.lesson-prose :where(table) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.lesson-prose :where(th, td) {
+  border: 1px solid var(--helix-border);
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+}
+
+.lesson-prose :where(th) {
+  background: var(--helix-surface-soft);
+  color: var(--helix-navy);
+  font-weight: 800;
+}
+
+.lesson-prose :where(tbody tr:nth-child(even)) {
+  background: rgba(245, 247, 251, 0.6);
+}
+
+.lesson-prose :where(caption) {
+  color: var(--helix-muted);
+  font-weight: 700;
+  padding-bottom: 0.5rem;
+  text-align: left;
+}
+
+/* Een tussenkopje krijgt lucht erboven, maar plakt aan de alinea eronder: zo
+   leest het als een kopje bij een stuk tekst en niet als los zwevend woord. */
+.lesson-prose :where(h2, h3, h4) + :where(p, ul, ol, dl, table, figure) {
+  margin-top: 0.6rem;
+}
+
+/* Genest lijstje: zichtbaar een niveau dieper, zonder extra lucht. */
+.lesson-prose :where(ul ul) { list-style: circle; }
+.lesson-prose :where(ol ol) { list-style: lower-alpha; }
+.lesson-prose :where(li > ul, li > ol) {
+  margin: 0.35rem 0;
+}
+
+/* Begrippenlijst: term vet in navy, uitleg ingesprongen. */
+.lesson-prose :where(dl) {
+  margin: 1.15rem 0;
+}
+
+.lesson-prose :where(dt) {
+  color: var(--helix-navy);
+  font-weight: 800;
+  margin-top: 0.85rem;
+}
+
+.lesson-prose :where(dd) {
+  margin: 0.25rem 0 0 1.15rem;
+}
+
+.lesson-prose :where(figure) {
+  margin: 1.5rem 0;
+}
+
+.lesson-prose :where(figure) :where(img) {
+  margin: 0;
+}
+
+.lesson-prose :where(figcaption) {
+  color: var(--helix-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-top: 0.6rem;
+}
+
+.lesson-prose :where(code, kbd) {
+  background: var(--helix-surface-soft);
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-sm);
+  color: var(--helix-navy);
+  font-size: 0.9375em;
+  padding: 0.1rem 0.35rem;
+}
+
+.lesson-prose :where(pre) {
+  background: var(--helix-surface-soft);
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-md);
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  padding: 1rem 1.15rem;
+}
+
+.lesson-prose :where(pre) :where(code) {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.lesson-prose :where(mark) {
+  background: var(--helix-soft-lavender);
+  border-radius: 4px;
+  color: var(--helix-navy);
+  font-weight: 700;
+  padding: 0.05rem 0.25rem;
+}
+
+.lesson-prose :where(hr) {
+  border: 0;
+  border-top: 1px solid var(--helix-border);
+  margin: 2rem 0;
+}
+
+/* De studeerweergave is een eigen omgeving: AppShell verbergt zijn header op deze
+   route, dus de studeerroute vult het hele scherm en scrollt van binnen.
+   `flex-1` werkt hier niet: <main> in AppShell heeft geen vaste hoogte, dus een
+   flexkind groeit gewoon mee en duwt de uitgang buiten beeld. */
+.study-shell {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Elke stap staat in hetzelfde kader: één radius, één achtergrond, één padding.
+   Tussen theorie, vraag, quiz, game en slides mag geen sprong zitten in
+   kaartvorm. De hoogte volgt de inhoud: een leesstap van vier regels hoort een
+   kaart van vier regels te zijn, met de afrondknop er direct onder. */
+.study-block {
+  background: var(--helix-surface);
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-xl);
+  box-shadow: var(--helix-shadow-card);
+  @apply p-5 sm:p-8;
+}
+
+/* Een getint deelvlak binnen die kaart (voorbeeld, quiz-intro, slides). Zelfde
+   radius-familie, zodat het een onderdeel blijft en geen tweede kaart wordt. */
+.study-panel {
+  border: 1px solid var(--helix-border);
+  border-radius: var(--helix-radius-lg);
+  @apply p-5 sm:p-6;
+}
+
+/* Uitgewerkt voorbeeld binnen de leeskaart: een eigen, rustig getint vak met een
+   duidelijk labeltje. Links de uitwerking, rechts de figuur. */
+.study-example {
+  background: #f5faff;
+  border: 1px solid #dbeafe;
+  border-radius: var(--helix-radius-lg);
+  @apply p-5 sm:p-6;
+}
+
+.study-example-label {
+  background: #e0f2fe;
+  color: #0c4a6e;
+  @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em];
+}
+
+.study-example .lesson-prose :where(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6, dl) {
+  max-width: 60ch;
+}
+
+.study-surface {
+  background:
+    radial-gradient(circle at 16% -6%, rgba(241, 233, 255, 0.6), transparent 26rem),
+    var(--helix-bg);
+}
+
+.study-rail {
+  background: rgba(255, 255, 255, 0.94);
+  border-right: 1px solid var(--helix-border);
+}
+
+.study-step {
+  color: var(--helix-muted);
+  @apply flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition;
+}
+
+.study-step-idle:hover {
+  background: var(--helix-surface-soft);
+}
+
+.study-step-idle:focus-visible,
+.study-step-active:focus-visible {
+  outline: none;
+  box-shadow: var(--helix-focus);
+}
+
+/* Eén vlakke merkkleur, geen gradient en geen glow: de actieve stap moet rustig
+   opvallen, niet oplichten. */
+.study-step-active {
+  background: var(--helix-purple);
+  color: #ffffff;
+}
+
+/* Geen sloten meer: elke stap is bereikbaar. Een open rondje laat wel zien dat
+   de stap nog niet af is, zonder de regel te dempen. */
+.study-step-todo {
+  @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full;
+}
+
+.study-step-todo::before {
+  content: '';
+  border: 2px solid var(--helix-border);
+  @apply block h-3.5 w-3.5 rounded-full;
+}
+
+.study-step-active .study-step-todo::before {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.study-step-icon {
+  background: var(--helix-soft-lavender);
+  color: var(--helix-purple);
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
+}
+
+.study-step-active .study-step-icon {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.study-step-title {
+  color: var(--helix-navy);
+  @apply block truncate text-sm font-black;
+}
+
+.study-step-meta {
+  color: var(--helix-muted);
+  @apply block truncate text-[11px] font-bold;
+}
+
+.study-step-active .study-step-title {
+  color: #ffffff;
+}
+
+.study-step-active .study-step-meta {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.study-step-check {
+  background: rgba(34, 197, 94, 0.16);
+  color: #15803d;
+  @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full;
+}
+
+.study-step-active .study-step-check {
+  background: rgba(255, 255, 255, 0.92);
+  color: #15803d;
+}
+
+@keyframes study-confirm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.study-confirm-bar {
+  animation: study-confirm-rise 260ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-confirm-bar {
+    animation: none;
+  }
+}
+
 /* Standard Button Styles - Consistent Across App */
 .btn-primary {
   border: 2px solid transparent;

@@ -1,5 +1,5 @@
-import { useCallback, useState, useEffect } from 'react';
-import { Users, AlertTriangle, Search, CheckCircle, Clock, ArrowUpDown, CheckSquare, Square } from 'lucide-react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
+import { Users, AlertTriangle, Search, CheckCircle, ClipboardCheck, Clock, ArrowUpDown, CheckSquare, Square } from 'lucide-react';
 import { db } from '../../services/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
@@ -13,9 +13,7 @@ import {
 } from '../../services/progressSignalService';
 import {
   calculateAssignedProgress,
-  getAssignedProgressRecords,
-  getEffectiveContentBlocks,
-  getStudentEffectiveParagrafen
+  getAssignedProgressRecords
 } from '../../lib/assignmentUtils';
 import { getLearningResultTone } from '../../lib/learningResultUtils';
 import {
@@ -32,6 +30,29 @@ import {
 } from '../../lib/progressDashboardMetrics';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
+import {
+  STAP_STATUS,
+  buildAandachtsLijst,
+  buildKlasStatusTelling,
+  buildKlasVoortgangRijen,
+  buildMatrixRijen,
+  buildParagraafKolommen,
+  buildStapKolommen,
+  buildStapMatrixRijen,
+  getStatusPresentatie,
+  groepeerParagrafenPerHoofdstuk,
+  resolveStudentAssignments
+} from '../../lib/klasVoortgangOverzicht';
+import {
+  buildNakijkOpdrachten,
+  getBesluitPresentatie,
+  telNakijkPerLeerling
+} from '../../lib/nakijkOpdrachten';
+import { beoordeelOpenAntwoord } from '../../services/voortgangService';
+import KlasVoortgangMatrix, { StatusLegenda, StatusChip } from './KlasVoortgangMatrix';
+import AandachtsLijst from './AandachtsLijst';
+import NakijkPaneel from './NakijkPaneel';
+import LeerlingStappen, { StappenSpoor } from './LeerlingStappen';
 import StudentAvatar from '../common/StudentAvatar';
 import HelixBrandBanner from '../common/HelixBrandBanner';
 
@@ -91,7 +112,13 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
   );
 }
 
-function DashboardLensSwitch({ activeLens = 'class', onSelect, signalCount = 0 }) {
+function DashboardLensSwitch({ activeLens = 'class', onSelect, signalCount = 0, nakijkCount = 0 }) {
+  const badgeCount = { signals: signalCount, nakijken: nakijkCount };
+  const badgeClass = {
+    signals: 'bg-red-100 text-red-700',
+    nakijken: 'bg-amber-100 text-amber-800'
+  };
+
   return (
     <div className="flex flex-wrap gap-2" role="tablist" aria-label="Voortgangsweergave">
       {buildDashboardLensTabs(activeLens).map((tab) => (
@@ -104,9 +131,9 @@ function DashboardLensSwitch({ activeLens = 'class', onSelect, signalCount = 0 }
           className={`dashboard-lens-tab ${tab.active ? 'dashboard-lens-tab-active' : ''}`}
         >
           {tab.label}
-          {tab.key === 'signals' && signalCount > 0 && (
-            <span className="ml-1 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-black leading-none text-red-700">
-              {signalCount}
+          {badgeCount[tab.key] > 0 && (
+            <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-black leading-none ${badgeClass[tab.key]}`}>
+              {badgeCount[tab.key]}
             </span>
           )}
         </button>
@@ -194,6 +221,7 @@ export default function ClassOverview() {
   const [expandedEvidence, setExpandedEvidence] = useState({});
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedChapterForClass, setSelectedChapterForClass] = useState(null);
+  const [selectedHoofdstukId, setSelectedHoofdstukId] = useState('');
   const [selectedKlasId, setSelectedKlasId] = useState('');
   const [sortBy, setSortBy] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -204,6 +232,12 @@ export default function ClassOverview() {
   const [acknowledgedProgressSignals, setAcknowledgedProgressSignals] = useState([]);
   const [selectedSignalIds, setSelectedSignalIds] = useState([]);
   const [acknowledgingSignals, setAcknowledgingSignals] = useState(false);
+  // Nakijken is de enige schrijfactie van dit dashboard, dus de stand ervan
+  // (welke kaart is bezig, wat is er net gelukt, wat ging er mis) staat hier
+  // en wordt gedeeld door de nakijkstapel en het leerlingoverzicht.
+  const [nakijkBezigId, setNakijkBezigId] = useState('');
+  const [nakijkMelding, setNakijkMelding] = useState('');
+  const [nakijkFout, setNakijkFout] = useState('');
 
   // Load all paragraphs from CMS hierarchy
   useEffect(() => {
@@ -325,26 +359,24 @@ export default function ClassOverview() {
     return () => unsubscribe();
   }, []);
 
-  const getStudentParagraafAssignments = useCallback((student, paragraafFilterId = null) => {
-    const klasData = klassenMap[student.klasId];
-    if (!klasData) return [];
+  /**
+   * Welke paragrafen en lesblokken tellen mee voor deze leerling. Staat er een
+   * klasselectie klaar, dan is die leidend; zonder klas valt het overzicht
+   * terug op de volledige gepubliceerde lesstof, zodat de docent niet naar een
+   * leeg scherm kijkt terwijl er wel gewerkt wordt.
+   */
+  const getStudentScope = useCallback((student, paragraafFilterId = null) => resolveStudentAssignments({
+    student,
+    klasData: klassenMap[student.klasId] || null,
+    paragrafen: paragraphen,
+    contentBlocksByParagraaf,
+    paragraafFilterId
+  }), [contentBlocksByParagraaf, klassenMap, paragraphen]);
 
-    const effectiveParagraafIds = getStudentEffectiveParagrafen(klasData, student.id);
-    const targetParagrafen = paragraphen.filter((paragraaf) =>
-      effectiveParagraafIds.includes(paragraaf.id) &&
-      (!paragraafFilterId || paragraaf.id === paragraafFilterId)
-    );
-
-    return targetParagrafen.map((paragraaf) => ({
-      paragraafId: paragraaf.id,
-      blocks: getEffectiveContentBlocks(
-        klasData,
-        student.id,
-        paragraaf.id,
-        contentBlocksByParagraaf[paragraaf.id] || []
-      )
-    }));
-  }, [contentBlocksByParagraaf, klassenMap, paragraphen]);
+  const getStudentParagraafAssignments = useCallback(
+    (student, paragraafFilterId = null) => getStudentScope(student, paragraafFilterId).assignments,
+    [getStudentScope]
+  );
 
   const getStudentAssignmentSummary = useCallback((student, paragraafFilterId = null) => {
     const assignments = getStudentParagraafAssignments(student, paragraafFilterId);
@@ -356,8 +388,101 @@ export default function ClassOverview() {
   }, [getStudentParagraafAssignments, studentVoortgang]);
 
   const klasFilterOptions = buildKlasFilterOptions({ students, klassenMap });
-  const scopedStudents = filterStudentsByKlas(students, selectedKlasId);
+  const scopedStudents = useMemo(
+    () => filterStudentsByKlas(students, selectedKlasId),
+    [students, selectedKlasId]
+  );
   const selectedKlasOption = klasFilterOptions.find((option) => option.value === selectedKlasId) || klasFilterOptions[0];
+
+  // Stap-voor-stap beeld van de klas: per leerling per paragraaf per lesblok.
+  const scopesByStudentId = useMemo(
+    () => Object.fromEntries(scopedStudents.map((student) => [student.id, getStudentScope(student)])),
+    [scopedStudents, getStudentScope]
+  );
+  const voortgangRijen = useMemo(
+    () => buildKlasVoortgangRijen({
+      students: scopedStudents,
+      scopesByStudentId,
+      recordsByStudentId: studentVoortgang,
+      contentBlocksByParagraaf
+    }),
+    [scopedStudents, scopesByStudentId, studentVoortgang, contentBlocksByParagraaf]
+  );
+  const voortgangRijPerStudentId = useMemo(
+    () => Object.fromEntries(voortgangRijen.map((rij) => [rij.studentId, rij])),
+    [voortgangRijen]
+  );
+  const aandachtsLijst = useMemo(() => buildAandachtsLijst(voortgangRijen), [voortgangRijen]);
+  // De werkvoorraad van de docent. Komt uit dezelfde rijen als de matrix, dus
+  // het getal op het tabblad en de kaarten eronder kunnen niet uiteenlopen.
+  const nakijkOpdrachten = useMemo(() => buildNakijkOpdrachten(voortgangRijen), [voortgangRijen]);
+  const nakijkPerLeerling = useMemo(() => telNakijkPerLeerling(nakijkOpdrachten), [nakijkOpdrachten]);
+
+  /**
+   * Het besluit van de docent wegschrijven. De voortganglistener hierboven
+   * ververst het scherm vanzelf, dus na een geslaagde schrijfactie verdwijnt de
+   * kaart uit de stapel; de melding blijft kort staan als bevestiging.
+   */
+  const beoordeelStap = useCallback(async (opdracht, besluit, opmerking = '') => {
+    if (!opdracht || nakijkBezigId) return false;
+
+    setNakijkBezigId(opdracht.id);
+    setNakijkFout('');
+    setNakijkMelding('');
+
+    try {
+      await beoordeelOpenAntwoord({
+        record: opdracht.record,
+        besluit,
+        opmerking,
+        docent: {
+          uid: currentUser?.uid || '',
+          displayName: currentUser?.displayName || '',
+          email: currentUser?.email || ''
+        }
+      });
+      const presentatie = getBesluitPresentatie(besluit);
+      setNakijkMelding(
+        `${presentatie?.voltooidLabel || 'Beoordeeld'}: ${opdracht.studentNaam}, stap ${opdracht.stapNummer} van ${opdracht.paragraafLabel}. ${presentatie?.gevolg || ''}`.trim()
+      );
+      return true;
+    } catch (error) {
+      console.error('Beoordelen is mislukt:', error);
+      setNakijkFout(error?.message || 'Beoordelen is mislukt. Probeer het opnieuw.');
+      return false;
+    } finally {
+      setNakijkBezigId('');
+    }
+  }, [currentUser, nakijkBezigId]);
+  const klasStatusTelling = useMemo(() => buildKlasStatusTelling(voortgangRijen), [voortgangRijen]);
+  const hoofdstukGroepen = useMemo(() => groepeerParagrafenPerHoofdstuk(paragraphen), [paragraphen]);
+  const actiefHoofdstuk = hoofdstukGroepen.find((groep) => groep.hoofdstukId === selectedHoofdstukId)
+    || hoofdstukGroepen[0]
+    || null;
+  const matrixKolommen = useMemo(
+    () => buildParagraafKolommen(actiefHoofdstuk?.paragrafen || []),
+    [actiefHoofdstuk]
+  );
+  const matrixRijen = useMemo(
+    () => buildMatrixRijen({ rijen: voortgangRijen, kolommen: matrixKolommen }),
+    [voortgangRijen, matrixKolommen]
+  );
+  // De chips boven de matrix tellen hetzelfde hoofdstuk als de kolommen eronder.
+  const hoofdstukTelling = useMemo(() => buildKlasStatusTelling(matrixRijen), [matrixRijen]);
+  const zonderKlasselectie = voortgangRijen.some((rij) => rij.scopeSource === 'volledigeLesstof');
+
+  // Paragraafweergave: dezelfde matrix, maar dan per stap binnen één paragraaf.
+  const stapParagraaf = paragraphen.find((paragraaf) => paragraaf.id === selectedChapterForClass) || null;
+  const stapKolommen = useMemo(
+    () => (stapParagraaf ? buildStapKolommen(contentBlocksByParagraaf[stapParagraaf.id] || []) : []),
+    [stapParagraaf, contentBlocksByParagraaf]
+  );
+  const stapRijen = useMemo(
+    () => (stapParagraaf
+      ? buildStapMatrixRijen({ rijen: voortgangRijen, paragraafId: stapParagraaf.id, kolommen: stapKolommen })
+      : []),
+    [stapParagraaf, voortgangRijen, stapKolommen]
+  );
 
   const summariesByStudentId = Object.fromEntries(
     scopedStudents.map((student) => [student.id, getStudentAssignmentSummary(student)])
@@ -505,12 +630,29 @@ export default function ClassOverview() {
       records: selectedStudentRecords
     });
     const selectedStudentMetricCards = buildStudentMetricCards(selectedStudentMetrics);
+    // Stap-voor-stap stand van deze leerling, uit hetzelfde overzicht als de klasmatrix.
+    const selectedStudentRij = voortgangRijPerStudentId[selectedStudent.id]
+      || buildKlasVoortgangRijen({
+        students: [selectedStudent],
+        scopesByStudentId: { [selectedStudent.id]: getStudentScope(selectedStudent) },
+        recordsByStudentId: { [selectedStudent.id]: selectedStudentRecords },
+        contentBlocksByParagraaf
+      })[0];
+    const selectedStudentAandacht = selectedStudentRij?.aandacht?.redenen || [];
+    // Alleen de open beoordelingen van deze leerling, op lesblok, zodat de
+    // knoppen bij de juiste stap in de lijst terechtkomen.
+    const nakijkPerBlockId = Object.fromEntries(
+      buildNakijkOpdrachten(selectedStudentRij ? [selectedStudentRij] : [])
+        .map((opdracht) => [opdracht.blockId, opdracht])
+    );
+    const openNakijkVoorLeerling = Object.keys(nakijkPerBlockId).length;
 
     return (
       <div className="helix-container animate-in fade-in slide-in-from-right-8 duration-500">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <DashboardLensSwitch
             activeLens="student"
+            nakijkCount={nakijkOpdrachten.length}
             onSelect={(lens) => {
               if (lens === 'student') {
                 setActiveLens('student');
@@ -558,6 +700,20 @@ export default function ClassOverview() {
                   <p className="mt-2 text-sm font-bold text-[var(--helix-purple)]">
                     Laatst actief: {getRelativeTime(selectedStudent.lastActive)}
                   </p>
+                  {selectedStudentRij && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <StatusChip status={selectedStudentRij.status}>
+                        {selectedStudentRij.afgerondeStappen}/{selectedStudentRij.totaalStappen} stappen -
+                        {' '}{selectedStudentRij.statusLabel}
+                      </StatusChip>
+                      {selectedStudentRij.huidigeParagraaf?.stap && (
+                        <span className="text-xs font-bold text-[var(--helix-muted)]">
+                          Nu bij {selectedStudentRij.huidigeParagraaf.paragraafLabel}, stap{' '}
+                          {selectedStudentRij.huidigeParagraaf.stap.nummer}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="grid w-full gap-3 md:w-auto md:grid-cols-3">
@@ -575,6 +731,46 @@ export default function ClassOverview() {
           </HelixBrandBanner>
 
           <div className="pad-content">
+            {(nakijkMelding || nakijkFout || openNakijkVoorLeerling > 0) && (
+              <div className="mb-6 space-y-2">
+                {openNakijkVoorLeerling > 0 && (
+                  <p className="flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-warning)] bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800">
+                    <ClipboardCheck size={16} />
+                    {openNakijkVoorLeerling} antwoord{openNakijkVoorLeerling === 1 ? '' : 'en'} wacht op je oordeel.
+                    Open de stappen van de paragraaf om goed te keuren of af te keuren.
+                  </p>
+                )}
+                {nakijkMelding && (
+                  <p className="flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-emerald-600 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800">
+                    <CheckCircle size={16} />
+                    {nakijkMelding}
+                  </p>
+                )}
+                {nakijkFout && (
+                  <p className="flex items-start gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-danger)] bg-rose-50 px-3 py-2 text-sm font-bold text-rose-800">
+                    <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                    {nakijkFout}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {selectedStudentAandacht.length > 0 && (
+              <div className="mb-6 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] border-l-4 border-l-[var(--helix-danger)] bg-white p-4">
+                <p className="flex items-center gap-2 font-black text-[var(--helix-navy)]">
+                  <AlertTriangle size={18} className="text-[var(--helix-danger)]" />
+                  Deze leerling vraagt aandacht
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {selectedStudentAandacht.map((reden) => (
+                    <li key={reden.type} className="text-sm font-semibold text-[var(--helix-muted)]">
+                      <span className="font-black text-[var(--helix-navy)]">{reden.label}:</span> {reden.detail}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
               <h3 className="heading-lg">Voortgang per Paragraaf</h3>
 
@@ -630,65 +826,93 @@ export default function ClassOverview() {
                           records: assignedRecords
                         });
                         const evidenceOpen = expandedEvidence[paragraaf.id] === true;
-                        const statusClass = paragraphProgress.signalCount > 0
-                          ? 'border-orange-200 bg-orange-50 text-orange-700'
-                          : progressPercent === 100
-                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                            : 'border-blue-200 bg-blue-50 text-blue-700';
+                        const stapRapport = selectedStudentRij?.rapportByParagraafId?.[paragraaf.id] || null;
+                        const stapStatus = stapRapport?.status || STAP_STATUS.NIET_GESTART;
+                        const stapPresentatie = getStatusPresentatie(stapStatus);
 
                         return (
-                          <div key={paragraaf.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
+                          <div key={paragraaf.id} className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <h5 className="font-bold text-slate-800">
-                                    {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                                  <h5 className="font-bold text-[var(--helix-navy)]">
+                                    {(paragraaf.code || paragraaf.number) && `${paragraaf.code || paragraaf.number}. `}{paragraaf.title}
                                   </h5>
-                                  <span className={`rounded-full border px-2.5 py-1 text-xs font-black ${statusClass}`}>
-                                    {paragraphProgress.statusLabel}
-                                  </span>
-                                </div>
-                                <div className="mt-2 flex flex-wrap gap-3 text-sm font-semibold text-slate-500">
-                                  <span>{paraSummary.completedItems} / {paraSummary.assignedItems} onderdelen afgerond</span>
-                                  <span>{paragraphProgress.qualityLabel}</span>
+                                  <StatusChip status={stapStatus}>{stapPresentatie.label}</StatusChip>
                                   {paragraphProgress.signalCount > 0 && (
-                                    <span className="text-orange-700">{paragraphProgress.signalCount} signalen</span>
+                                    <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-black text-orange-700">
+                                      {paragraphProgress.signalCount} signalen
+                                    </span>
                                   )}
                                 </div>
+                                <div className="mt-2 flex flex-wrap gap-3 text-sm font-semibold text-[var(--helix-muted)]">
+                                  <span>
+                                    {stapRapport
+                                      ? `${stapRapport.afgerondeStappen} / ${stapRapport.totaalStappen} stappen afgerond`
+                                      : `${paraSummary.completedItems} / ${paraSummary.assignedItems} onderdelen afgerond`}
+                                  </span>
+                                  {stapRapport?.huidigeStap && (
+                                    <span>
+                                      Nu bij stap {stapRapport.huidigeStap.nummer}: {stapRapport.huidigeStap.titel}
+                                    </span>
+                                  )}
+                                  <span>{paragraphProgress.qualityLabel}</span>
+                                </div>
+                                {stapRapport && (
+                                  <div className="mt-3">
+                                    <StappenSpoor
+                                      stappen={stapRapport.stappen}
+                                      onSelectStap={() => {
+                                        setExpandedEvidence((current) => ({ ...current, [paragraaf.id]: true }));
+                                      }}
+                                    />
+                                  </div>
+                                )}
                                 <SupportMiniBar records={assignedRecords} />
                               </div>
 
                               <div className="flex flex-wrap items-center gap-4 lg:ml-4">
                                 <div className="w-32">
-                                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
                                     <div
-                                      className={`h-full rounded-full transition-all ${
-                                        progressPercent === 100 ? 'bg-green-500' : 'bg-blue-500'
-                                      }`}
-                                      style={{ width: `${progressPercent}%` }}
+                                      className={`h-full rounded-full transition-all ${stapPresentatie.balkClass}`}
+                                      style={{ width: `${stapRapport ? stapRapport.percentage : progressPercent}%` }}
                                     ></div>
                                   </div>
                                 </div>
-                                <div className="text-right min-w-[60px]">
-                                  <div className="font-bold text-slate-800">{progressPercent}%</div>
+                                <div className="min-w-[60px] text-right">
+                                  <div className="font-bold text-[var(--helix-navy)]">
+                                    {stapRapport ? stapRapport.percentage : progressPercent}%
+                                  </div>
                                 </div>
-                                {paragraphProgress.evidenceCount > 0 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setExpandedEvidence((current) => ({
-                                        ...current,
-                                        [paragraaf.id]: !current[paragraaf.id]
-                                      }));
-                                    }}
-                                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
-                                  >
-                                    {evidenceOpen ? 'Verberg bewijs' : `Toon bewijs (${paragraphProgress.evidenceCount})`}
-                                  </button>
-                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setExpandedEvidence((current) => ({
+                                      ...current,
+                                      [paragraaf.id]: !current[paragraaf.id]
+                                    }));
+                                  }}
+                                  className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-navy)]"
+                                >
+                                  {evidenceOpen
+                                    ? 'Verberg stappen'
+                                    : `Toon stappen (${stapRapport ? stapRapport.totaalStappen : paragraphProgress.evidenceCount})`}
+                                </button>
                               </div>
                             </div>
-                            {evidenceOpen && <StudentProgressRecordList records={assignedRecords} />}
+                            {evidenceOpen && (
+                              stapRapport
+                                ? (
+                                  <LeerlingStappen
+                                    rapport={stapRapport}
+                                    nakijkOpdrachtPerBlockId={nakijkPerBlockId}
+                                    onBeoordeel={beoordeelStap}
+                                    bezigId={nakijkBezigId}
+                                  />
+                                )
+                                : <StudentProgressRecordList records={assignedRecords} />
+                            )}
                           </div>
                         );
                       })}
@@ -821,7 +1045,12 @@ export default function ClassOverview() {
 
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <DashboardLensSwitch activeLens={activeLens} onSelect={setActiveLens} signalCount={openProgressSignals.length} />
+          <DashboardLensSwitch
+            activeLens={activeLens}
+            onSelect={setActiveLens}
+            signalCount={openProgressSignals.length}
+            nakijkCount={nakijkOpdrachten.length}
+          />
           <div className="min-w-56">
             <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">Klas</label>
             <select
@@ -840,6 +1069,11 @@ export default function ClassOverview() {
         <div className="text-sm font-bold text-[var(--helix-muted)]">
           {activeLens === 'signals' && (
             <p>Toont open signalen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
+          )}
+          {activeLens === 'nakijken' && (
+            <p className="text-amber-700">
+              Handelt open beoordelingen af binnen {selectedKlasOption?.label || 'alle klassen'}.
+            </p>
           )}
           {activeLens === 'paragraph' && (
             <p className="text-blue-700">Vergelijkt paragrafen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
@@ -871,6 +1105,167 @@ export default function ClassOverview() {
           </div>
         ))}
       </div>
+
+      {/* Nakijken: de enige weergave waar de docent de status van een stap wijzigt */}
+      {activeLens === 'nakijken' && (
+        <NakijkPaneel
+          opdrachten={nakijkOpdrachten}
+          onBeoordeel={beoordeelStap}
+          bezigId={nakijkBezigId}
+          melding={nakijkMelding}
+          fout={nakijkFout}
+        />
+      )}
+
+      {/* Klasoverzicht: waar staat iedere leerling, en wie heeft nu hulp nodig */}
+      {activeLens === 'class' && (
+        <div className="mb-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <section className="helix-surface order-2 p-5 xl:order-1">
+            <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h2 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">
+                  Klasoverzicht per paragraaf
+                </h2>
+                <p className="text-sm font-semibold text-[var(--helix-muted)]">
+                  Elk vakje toont afgeronde stappen van die paragraaf. Klik door naar de leerling.
+                </p>
+              </div>
+              {hoofdstukGroepen.length > 0 && (
+                <div className="w-full lg:w-72">
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">
+                    Hoofdstuk
+                  </label>
+                  <select
+                    value={actiefHoofdstuk?.hoofdstukId || ''}
+                    onChange={(event) => setSelectedHoofdstukId(event.target.value)}
+                    className="input-standard w-full py-2 text-sm font-bold text-[var(--helix-navy)]"
+                  >
+                    {hoofdstukGroepen.map((groep) => (
+                      <option key={groep.hoofdstukId} value={groep.hoofdstukId}>
+                        {groep.hoofdstukTitel} ({groep.paragrafen.length})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <StatusChip status={STAP_STATUS.AFGEROND}>
+                {hoofdstukTelling[STAP_STATUS.AFGEROND]} afgerond
+              </StatusChip>
+              <StatusChip status={STAP_STATUS.BEZIG}>
+                {hoofdstukTelling[STAP_STATUS.BEZIG]} bezig
+              </StatusChip>
+              <StatusChip status={STAP_STATUS.VASTGELOPEN}>
+                {hoofdstukTelling[STAP_STATUS.VASTGELOPEN]} vastgelopen
+              </StatusChip>
+              <StatusChip status={STAP_STATUS.NAKIJKEN}>
+                {hoofdstukTelling[STAP_STATUS.NAKIJKEN]} nakijken
+              </StatusChip>
+              <StatusChip status={STAP_STATUS.NIET_GESTART}>
+                {hoofdstukTelling[STAP_STATUS.NIET_GESTART]} niet gestart
+              </StatusChip>
+              <span className="ml-auto text-xs font-bold text-[var(--helix-muted)]">
+                Mediaan {hoofdstukTelling.mediaanPercentage}% van dit hoofdstuk
+              </span>
+            </div>
+
+            {zonderKlasselectie && (
+              <p className="mb-4 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-xs font-bold text-[var(--helix-muted)]">
+                Voor leerlingen zonder klasselectie telt de volledige gepubliceerde lesstof mee.
+                Zet lesstof klaar bij Klassen om de omvang te beperken.
+              </p>
+            )}
+
+            <KlasVoortgangMatrix
+              rijen={matrixRijen}
+              kolommen={matrixKolommen}
+              kolomKopLabel="Paragraaf"
+              totaalKopLabel="Dit hoofdstuk"
+              onSelectLeerling={(rij) => {
+                setSelectedStudent(rij.student);
+                setActiveLens('student');
+                setExpandedEvidence({});
+              }}
+              leegTekst="Nog geen leerlingen in deze klas."
+            />
+
+            <StatusLegenda className="mt-4" />
+          </section>
+
+          <div className="order-1 xl:order-2">
+            <AandachtsLijst
+              items={aandachtsLijst}
+              totaalLeerlingen={klasStatusTelling.leerlingen}
+              nakijkTelling={nakijkPerLeerling}
+              onSelectLeerling={(item) => {
+                setSelectedStudent(item.student);
+                setActiveLens('student');
+                setExpandedEvidence({});
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Paragraaffocus: dezelfde klas, maar per stap in de lesroute */}
+      {activeLens === 'paragraph' && (
+        <section className="helix-surface mb-8 p-5">
+          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">
+                Paragraaffocus per stap
+              </h2>
+              <p className="text-sm font-semibold text-[var(--helix-muted)]">
+                {stapParagraaf
+                  ? `${stapKolommen.length} stappen in ${stapParagraaf.code || stapParagraaf.number || ''} ${stapParagraaf.title}`
+                  : 'Kies een paragraaf om de stappen naast elkaar te zetten.'}
+              </p>
+            </div>
+            <div className="w-full lg:w-80">
+              <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">
+                Paragraaf
+              </label>
+              <select
+                value={selectedChapterForClass || ''}
+                onChange={(event) => setSelectedChapterForClass(event.target.value || null)}
+                className="input-standard w-full py-2 text-sm font-bold text-[var(--helix-navy)]"
+              >
+                <option value="">Kies een paragraaf</option>
+                {paragraphen.map((paragraaf) => (
+                  <option key={paragraaf.id} value={paragraaf.id}>
+                    {paragraaf.code || paragraaf.number ? `${paragraaf.code || paragraaf.number}. ` : ''}{paragraaf.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {stapParagraaf ? (
+            <>
+              <KlasVoortgangMatrix
+                rijen={stapRijen}
+                kolommen={stapKolommen}
+                kolomKopLabel="Stap"
+                totaalKopLabel="Deze paragraaf"
+                onSelectLeerling={(rij) => {
+                  setSelectedStudent(rij.student);
+                  setSelectedChapter(stapParagraaf.hoofdstukId || null);
+                  setActiveLens('student');
+                  setExpandedEvidence({ [stapParagraaf.id]: true });
+                }}
+                leegTekst="Nog geen leerlingen in deze klas."
+              />
+              <StatusLegenda className="mt-4" />
+            </>
+          ) : (
+            <p className="rounded-[var(--helix-radius-lg)] border border-dashed border-[var(--helix-border)] bg-white/70 p-6 text-sm font-semibold text-[var(--helix-muted)]">
+              Kies hierboven een paragraaf. Je ziet dan per leerling welke stap af is, welke loopt en waar het vastloopt.
+            </p>
+          )}
+        </section>
+      )}
 
       {/* Live Pythagorean Theorem Measurements Table */}
       {(() => {
@@ -997,7 +1392,7 @@ export default function ClassOverview() {
             </div>
           ) : (
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+              <div className={`flex-1 ${activeLens === 'paragraph' ? 'hidden' : ''}`}>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--helix-muted)]">Paragraaf selecteren</label>
                 <select
                   value={selectedChapterForClass || ""}

@@ -1,7 +1,63 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const outputPath = path.resolve('docs/seeds/digitale-vaardigheden-vmbo1.seed.json');
+
+// Verrijkingslaag: leerdoelen, kernbegrippen en uitgewerkte voorbeelden staan
+// per hoofdstuk in scripts/seed-verrijking/h1.mjs t/m h5.mjs, zodat de
+// lesinhoud los van de routestructuur gevuld kan worden. Ontbreekt of faalt een
+// bestand, dan bouwt de seed gewoon door zonder die verrijking.
+const enrichmentDir = path.resolve('scripts/seed-verrijking');
+const enrichmentFiles = ['h1', 'h2', 'h3', 'h4', 'h5'];
+
+const loadEnrichment = async () => {
+  const map = new Map();
+
+  for (const name of enrichmentFiles) {
+    const file = path.join(enrichmentDir, `${name}.mjs`);
+    if (!fs.existsSync(file)) continue;
+
+    try {
+      const module = await import(pathToFileURL(file).href);
+      const entries = module.default;
+      if (!entries || typeof entries !== 'object') continue;
+      for (const [code, entry] of Object.entries(entries)) {
+        if (entry && typeof entry === 'object') map.set(code, entry);
+      }
+    } catch (error) {
+      console.warn(`Verrijking ${name}.mjs overgeslagen: ${error.message}`);
+    }
+  }
+
+  return map;
+};
+
+const enrichment = await loadEnrichment();
+
+const cleanStringList = (value) =>
+  (Array.isArray(value) ? value : [])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+
+// Leerdoelen voor het paragraaf-document; leeg als de verrijking nog niet gevuld is.
+const learningGoalsFor = (code) => cleanStringList(enrichment.get(code)?.learningGoals);
+
+// Kernbegrippen en uitgewerkt voorbeeld voor theorieblok `index` (0 of 1).
+// Lege waarden worden weggelaten, zodat de blokinhoud niet met lege velden vervuilt.
+const theoryEnrichmentFor = (code, index) => {
+  const blocks = enrichment.get(code)?.theorie;
+  const entry = Array.isArray(blocks) ? blocks[index] : null;
+  if (!entry || typeof entry !== 'object') return {};
+
+  const extra = {};
+  const keyTerms = cleanStringList(entry.keyTerms);
+  if (keyTerms.length) extra.keyTerms = keyTerms;
+  const exampleHtml = String(entry.exampleHtml || '').trim();
+  if (exampleHtml) extra.exampleHtml = exampleHtml;
+
+  return extra;
+};
 
 const html = (parts) => parts.map((part) => `<p>${part}</p>`).join('\n');
 const slug = (value) => String(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -395,7 +451,7 @@ const buildBlocks = (chapter, paragraph) => {
       type: 'theory',
       order: order++,
       title,
-      content: { html: html([text]) },
+      content: { html: html([text]), ...theoryEnrichmentFor(paragraph.code, index) },
       tokens: plan.theory[index] || 0,
       sourceBasis: ['wikiwijs', 'lessenserie-md', 'ai-aanvulling']
     }));
@@ -562,24 +618,31 @@ const seed = {
     isArchived: false,
     badge: chapter.badge
   })),
-  paragrafen: lessons.flatMap((chapter) => chapter.paragraphs.map((paragraph, index) => ({
-    id: `paragraaf-dv-${paragraph.code.replace('.', '-')}`,
-    vakId: 'vak-digitale-vaardigheden',
-    leerjaarId: 'leerjaar-digitale-vaardigheden-vmbo1',
-    niveauId: 'niveau-digitale-vaardigheden-vmbo1-vmbo',
-    hoofdstukId: `hoofdstuk-dv-h${chapter.chapter}`,
-    code: paragraph.code,
-    title: paragraph.title,
-    beschrijving: paragraph.product,
-    kerndoelen: paragraph.kerndoelen,
-    product: paragraph.product,
-    totalTokens: paragraph.tokens,
-    order: index + 1,
-    published: true,
-    aiCompanionEnabled: true,
-    cropCount: 0,
-    isArchived: false
-  }))),
+  paragrafen: lessons.flatMap((chapter) => chapter.paragraphs.map((paragraph, index) => {
+    const learningGoals = learningGoalsFor(paragraph.code);
+
+    return {
+      id: `paragraaf-dv-${paragraph.code.replace('.', '-')}`,
+      vakId: 'vak-digitale-vaardigheden',
+      leerjaarId: 'leerjaar-digitale-vaardigheden-vmbo1',
+      niveauId: 'niveau-digitale-vaardigheden-vmbo1-vmbo',
+      hoofdstukId: `hoofdstuk-dv-h${chapter.chapter}`,
+      code: paragraph.code,
+      title: paragraph.title,
+      beschrijving: paragraph.product,
+      kerndoelen: paragraph.kerndoelen,
+      product: paragraph.product,
+      totalTokens: paragraph.tokens,
+      order: index + 1,
+      published: true,
+      aiCompanionEnabled: true,
+      cropCount: 0,
+      isArchived: false,
+      // normalizeParagraphMetadata leest learningGoals; leerdoelen staat erbij
+      // omdat de CMS-editor dat veld schrijft. Leeg blijft leeg.
+      ...(learningGoals.length ? { learningGoals, leerdoelen: learningGoals } : {})
+    };
+  })),
   contentBlocks: lessons.flatMap((chapter) => chapter.paragraphs.flatMap((paragraph) => buildBlocks(chapter, paragraph))),
   badges: lessons.map((chapter) => ({
     id: `badge-dv-h${chapter.chapter}`,
@@ -598,3 +661,10 @@ fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, `${JSON.stringify(seed, null, 2)}\n`);
 console.log(`Generated ${outputPath}`);
 console.log(`${seed.contentBlocks.length} content blocks for ${seed.paragrafen.length} paragrafen`);
+
+const theoryBlocks = seed.contentBlocks.filter((item) => item.type === 'theory');
+console.log(
+  `Verrijking: ${seed.paragrafen.filter((item) => item.learningGoals?.length).length}/${seed.paragrafen.length} paragrafen met leerdoelen, ` +
+    `${theoryBlocks.filter((item) => item.content?.keyTerms?.length).length}/${theoryBlocks.length} theorieblokken met kernbegrippen, ` +
+    `${theoryBlocks.filter((item) => item.content?.exampleHtml).length}/${theoryBlocks.length} met uitgewerkt voorbeeld.`
+);

@@ -426,6 +426,9 @@ export const buildStudentMetricCards = (metrics = {}) => {
 export const DASHBOARD_LENSES = [
   { key: 'class', label: 'Klas' },
   { key: 'signals', label: 'Signalen' },
+  // Nakijken staat naast Signalen omdat het het enige tabblad is waar de docent
+  // niet kijkt maar handelt: hier verandert een besluit de status van een stap.
+  { key: 'nakijken', label: 'Nakijken' },
   { key: 'paragraph', label: 'Paragraaf' },
   { key: 'student', label: 'Leerling' }
 ];

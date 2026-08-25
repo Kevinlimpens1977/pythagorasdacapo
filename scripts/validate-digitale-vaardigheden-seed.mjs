@@ -20,6 +20,20 @@ assertEqual(seed.niveaus?.length, 1, 'niveau count');
 assertEqual(seed.hoofdstukken?.length, 5, 'hoofdstuk count');
 assertEqual(seed.paragrafen?.length, 30, 'paragraaf count');
 
+// Zelfde woordgrens als de leesopmaak in src/lib/lessonProseFormatting.js: een
+// kernbegrip telt alleen als het als los woord in de theorietekst staat.
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const plainText = (html) =>
+  String(html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+const containsTerm = (text, term) =>
+  new RegExp(`(^|[^\\p{L}\\p{N}-])(${escapeRegExp(term)})(?![\\p{L}\\p{N}-])`, 'iu').test(text);
+
+const enrichment = { goals: 0, keyTerms: 0, examples: 0 };
+
 const blocksByParagraaf = new Map();
 for (const block of seed.contentBlocks || []) {
   if (!blocksByParagraaf.has(block.paragraafId)) blocksByParagraaf.set(block.paragraafId, []);
@@ -51,6 +65,33 @@ for (const block of seed.contentBlocks || []) {
     }
   }
 
+  if (block.type === 'theory') {
+    const keyTerms = block.content?.keyTerms;
+    if (keyTerms !== undefined) {
+      if (!Array.isArray(keyTerms) || keyTerms.length === 0) {
+        fail(`${block.id} has an empty or non-array keyTerms`);
+      }
+      if (keyTerms.length > 4) {
+        fail(`${block.id} has ${keyTerms.length} keyTerms; maximaal 4 per theorieblok`);
+      }
+      const text = plainText(block.content?.html);
+      for (const term of keyTerms) {
+        if (!containsTerm(text, term)) {
+          fail(`${block.id} keyTerm "${term}" komt niet als los woord in de theorietekst voor`);
+        }
+      }
+      enrichment.keyTerms += 1;
+    }
+
+    const exampleHtml = block.content?.exampleHtml;
+    if (exampleHtml !== undefined) {
+      if (typeof exampleHtml !== 'string' || !plainText(exampleHtml)) {
+        fail(`${block.id} has an exampleHtml without readable text`);
+      }
+      enrichment.examples += 1;
+    }
+  }
+
   const visibleContent = JSON.stringify({
     title: block.title,
     html: block.content?.html,
@@ -77,6 +118,19 @@ for (const paragraaf of seed.paragrafen) {
   assertEqual(assessmentBlocks.length, 1, `${paragraaf.code} assessment block count`);
   assertEqual(assessmentBlocks[0].type, expectedAssessment, `${paragraaf.code} assessment type`);
 
+  const learningGoals = paragraaf.learningGoals;
+  if (learningGoals !== undefined) {
+    if (!Array.isArray(learningGoals) || learningGoals.length < 2 || learningGoals.length > 3) {
+      fail(`${paragraaf.code} needs 2 or 3 learningGoals, got ${learningGoals?.length}`);
+    }
+    for (const goal of learningGoals) {
+      if (!/^Je (weet|kunt) /.test(String(goal || ''))) {
+        fail(`${paragraaf.code} learningGoal moet met "Je weet" of "Je kunt" beginnen: "${goal}"`);
+      }
+    }
+    enrichment.goals += 1;
+  }
+
   const totalTokens = blocks.reduce((sum, block) => sum + Number(block.tokenTotal || 0), 0);
   assertEqual(totalTokens, paragraaf.totalTokens, `${paragraaf.code} token total`);
 
@@ -95,3 +149,8 @@ assertEqual(seed.contentBlocks?.filter((block) => block.type === 'toets').length
 
 console.log('Digitale vaardigheden seed valid.');
 console.log(`${seed.contentBlocks.length} blocks checked across ${seed.paragrafen.length} paragrafen.`);
+console.log(
+  `Verrijking: ${enrichment.goals}/30 paragrafen met leerdoelen, ` +
+    `${enrichment.keyTerms}/60 theorieblokken met kernbegrippen, ` +
+    `${enrichment.examples}/60 met uitgewerkt voorbeeld.`
+);

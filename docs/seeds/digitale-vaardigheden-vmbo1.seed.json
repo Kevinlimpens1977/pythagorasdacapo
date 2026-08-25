@@ -1,7 +1,7 @@
 {
   "meta": {
     "seedId": "digitale-vaardigheden-vmbo1",
-    "generatedAt": "2026-06-04T13:21:33.400Z",
+    "generatedAt": "2026-08-25T11:45:55.993Z",
     "status": "published",
     "sourceDocuments": [
       "docs/LessenserieDigitaleVaardigheden30Lessen.md",
@@ -135,7 +135,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet waarvoor je HELIX, OneDrive en Outlook gebruikt.",
+        "Je kunt met je schoolaccount inloggen en je schoolwerk terugvinden.",
+        "Je kunt bewijs van je werk opslaan in een eigen map."
+      ],
+      "leerdoelen": [
+        "Je weet waarvoor je HELIX, OneDrive en Outlook gebruikt.",
+        "Je kunt met je schoolaccount inloggen en je schoolwerk terugvinden.",
+        "Je kunt bewijs van je werk opslaan in een eigen map."
+      ]
     },
     {
       "id": "paragraaf-dv-1-2",
@@ -156,7 +166,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet waarom een lang en uniek wachtwoord veiliger is.",
+        "Je kunt een sterke wachtwoordzin bedenken zonder je eigen gegevens.",
+        "Je weet wat je doet als je wachtwoord gelekt of vergeten is."
+      ],
+      "leerdoelen": [
+        "Je weet waarom een lang en uniek wachtwoord veiliger is.",
+        "Je kunt een sterke wachtwoordzin bedenken zonder je eigen gegevens.",
+        "Je weet wat je doet als je wachtwoord gelekt of vergeten is."
+      ]
     },
     {
       "id": "paragraaf-dv-1-3",
@@ -177,7 +197,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet het verschil tussen hardware en software.",
+        "Je kunt uitleggen waarom updates je device veiliger maken.",
+        "Je weet welke instellingen je zelf aanpast en welke niet."
+      ],
+      "leerdoelen": [
+        "Je weet het verschil tussen hardware en software.",
+        "Je kunt uitleggen waarom updates je device veiliger maken.",
+        "Je weet welke instellingen je zelf aanpast en welke niet."
+      ]
     },
     {
       "id": "paragraaf-dv-1-4",
@@ -198,7 +228,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet het verschil tussen een bestand op je apparaat en in de cloud.",
+        "Je kunt een mappenstructuur maken voor vak, hoofdstuk en opdracht.",
+        "Je kunt bestandsnamen kiezen waarmee je je werk terugvindt."
+      ],
+      "leerdoelen": [
+        "Je weet het verschil tussen een bestand op je apparaat en in de cloud.",
+        "Je kunt een mappenstructuur maken voor vak, hoofdstuk en opdracht.",
+        "Je kunt bestandsnamen kiezen waarmee je je werk terugvindt."
+      ]
     },
     {
       "id": "paragraaf-dv-1-5",
@@ -219,7 +259,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet wat phishing is en waarom het werkt.",
+        "Je kunt rode vlaggen in een verdacht bericht aanwijzen.",
+        "Je weet wat je doet bij twijfel en wie je om hulp vraagt."
+      ],
+      "leerdoelen": [
+        "Je weet wat phishing is en waarom het werkt.",
+        "Je kunt rode vlaggen in een verdacht bericht aanwijzen.",
+        "Je weet wat je doet bij twijfel en wie je om hulp vraagt."
+      ]
     },
     {
       "id": "paragraaf-dv-1-6",
@@ -241,7 +291,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je kunt zelfstandig inloggen, opslaan en mailen met je schoolaccount.",
+        "Je kunt bewijs van je werk verzamelen en inleveren.",
+        "Je weet wanneer je stopt en hulp vraagt bij iets verdachts."
+      ],
+      "leerdoelen": [
+        "Je kunt zelfstandig inloggen, opslaan en mailen met je schoolaccount.",
+        "Je kunt bewijs van je werk verzamelen en inleveren.",
+        "Je weet wanneer je stopt en hulp vraagt bij iets verdachts."
+      ]
     },
     {
       "id": "paragraaf-dv-2-1",
@@ -262,7 +322,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet waaraan een net schooldocument te herkennen is.",
+        "Je kunt met een duidelijke titel en genoeg witruimte rustig opmaken.",
+        "Je kunt een afbeelding invoegen met een korte bronregel erbij."
+      ],
+      "leerdoelen": [
+        "Je weet waaraan een net schooldocument te herkennen is.",
+        "Je kunt met een duidelijke titel en genoeg witruimte rustig opmaken.",
+        "Je kunt een afbeelding invoegen met een korte bronregel erbij."
+      ]
     },
     {
       "id": "paragraaf-dv-2-2",
@@ -284,7 +354,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet waarom koppen een verslag overzichtelijk maken.",
+        "Je kunt een tekst in je eigen woorden opschrijven.",
+        "Je weet wat plagiaat is en hoe je een bron netjes noemt."
+      ],
+      "leerdoelen": [
+        "Je weet waarom koppen een verslag overzichtelijk maken.",
+        "Je kunt een tekst in je eigen woorden opschrijven.",
+        "Je weet wat plagiaat is en hoe je een bron netjes noemt."
+      ]
     },
     {
       "id": "paragraaf-dv-2-3",
@@ -305,7 +385,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet waarom er weinig tekst op een dia hoort.",
+        "Je kunt een dia maken die achter in het lokaal leesbaar is.",
+        "Je kunt beeld en kleur kiezen die je verhaal helpen."
+      ],
+      "leerdoelen": [
+        "Je weet waarom er weinig tekst op een dia hoort.",
+        "Je kunt een dia maken die achter in het lokaal leesbaar is.",
+        "Je kunt beeld en kleur kiezen die je verhaal helpen."
+      ]
     },
     {
       "id": "paragraaf-dv-2-4",
@@ -326,7 +416,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet hoe een korte presentatie is opgebouwd.",
+        "Je kunt kernwoorden op je dia zetten en de uitleg zelf vertellen.",
+        "Je weet waarom je een bron ook in een presentatie noemt."
+      ],
+      "leerdoelen": [
+        "Je weet hoe een korte presentatie is opgebouwd.",
+        "Je kunt kernwoorden op je dia zetten en de uitleg zelf vertellen.",
+        "Je weet waarom je een bron ook in een presentatie noemt."
+      ]
     },
     {
       "id": "paragraaf-dv-2-5",
@@ -348,7 +448,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet het verschil tussen kijkrechten en bewerkrechten.",
+        "Je kunt een bestand delen met de rechten die erbij passen.",
+        "Je kunt een nette mail schrijven met een werkende link erin."
+      ],
+      "leerdoelen": [
+        "Je weet het verschil tussen kijkrechten en bewerkrechten.",
+        "Je kunt een bestand delen met de rechten die erbij passen.",
+        "Je kunt een nette mail schrijven met een werkende link erin."
+      ]
     },
     {
       "id": "paragraaf-dv-2-6",
@@ -371,7 +481,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet welk Microsoft-programma bij welke taak hoort.",
+        "Je kunt een document, presentatie, gedeelde link en mail maken.",
+        "Je kunt kort opschrijven wat zelfstandig lukte en waar je hulp nodig had."
+      ],
+      "leerdoelen": [
+        "Je weet welk Microsoft-programma bij welke taak hoort.",
+        "Je kunt een document, presentatie, gedeelde link en mail maken.",
+        "Je kunt kort opschrijven wat zelfstandig lukte en waar je hulp nodig had."
+      ]
     },
     {
       "id": "paragraaf-dv-3-1",
@@ -393,7 +513,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet welke gegevens over jou persoonsgegevens zijn.",
+        "Je kunt uitleggen wat een digitale voetafdruk is.",
+        "Je kunt per situatie kiezen wat je wel en niet online zet."
+      ],
+      "leerdoelen": [
+        "Je weet welke gegevens over jou persoonsgegevens zijn.",
+        "Je kunt uitleggen wat een digitale voetafdruk is.",
+        "Je kunt per situatie kiezen wat je wel en niet online zet."
+      ]
     },
     {
       "id": "paragraaf-dv-3-2",
@@ -415,7 +545,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet hoe een algoritme bepaalt wat jij te zien krijgt.",
+        "Je kunt uitleggen waarom jouw feed anders is dan die van een klasgenoot.",
+        "Je weet dat social media meestal een selectie laat zien."
+      ],
+      "leerdoelen": [
+        "Je weet hoe een algoritme bepaalt wat jij te zien krijgt.",
+        "Je kunt uitleggen waarom jouw feed anders is dan die van een klasgenoot.",
+        "Je weet dat social media meestal een selectie laat zien."
+      ]
     },
     {
       "id": "paragraaf-dv-3-3",
@@ -437,7 +577,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet waaraan je nepnieuws en clickbait herkent.",
+        "Je kunt een bericht controleren met de vijf broncheckvragen.",
+        "Je weet dat beeld en geluid ook nep kunnen zijn."
+      ],
+      "leerdoelen": [
+        "Je weet waaraan je nepnieuws en clickbait herkent.",
+        "Je kunt een bericht controleren met de vijf broncheckvragen.",
+        "Je weet dat beeld en geluid ook nep kunnen zijn."
+      ]
     },
     {
       "id": "paragraaf-dv-3-4",
@@ -458,7 +608,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet waarom online pesten anders werkt dan pesten op het schoolplein.",
+        "Je kunt de stappen van de hulproute noemen en uitvoeren.",
+        "Je weet wanneer je toestemming nodig hebt om beeld te delen."
+      ],
+      "leerdoelen": [
+        "Je weet waarom online pesten anders werkt dan pesten op het schoolplein.",
+        "Je kunt de stappen van de hulproute noemen en uitvoeren.",
+        "Je weet wanneer je toestemming nodig hebt om beeld te delen."
+      ]
     },
     {
       "id": "paragraaf-dv-3-5",
@@ -480,7 +640,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je kunt controleren of een webshop betrouwbaar lijkt.",
+        "Je weet dat een bekende betaalmethode geen bewijs van betrouwbaarheid is.",
+        "Je weet welke kosten achteraf betalen en kopen buiten de EU kunnen geven."
+      ],
+      "leerdoelen": [
+        "Je kunt controleren of een webshop betrouwbaar lijkt.",
+        "Je weet dat een bekende betaalmethode geen bewijs van betrouwbaarheid is.",
+        "Je weet welke kosten achteraf betalen en kopen buiten de EU kunnen geven."
+      ]
     },
     {
       "id": "paragraaf-dv-3-6",
@@ -503,7 +673,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je kunt bij een online situatie eerst stoppen en het risico inschatten.",
+        "Je kunt een veilige keuze maken en uitleggen waarom je die maakt.",
+        "Je weet wanneer je hulp vraagt aan een volwassene."
+      ],
+      "leerdoelen": [
+        "Je kunt bij een online situatie eerst stoppen en het risico inschatten.",
+        "Je kunt een veilige keuze maken en uitleggen waarom je die maakt.",
+        "Je weet wanneer je hulp vraagt aan een volwassene."
+      ]
     },
     {
       "id": "paragraaf-dv-4-1",
@@ -525,7 +705,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet wat data zijn en waarom je ze netjes opschrijft.",
+        "Je kunt een tabel in Excel maken met rijen en kolommen.",
+        "Je kunt een kolomtitel kiezen die later nog duidelijk is."
+      ],
+      "leerdoelen": [
+        "Je weet wat data zijn en waarom je ze netjes opschrijft.",
+        "Je kunt een tabel in Excel maken met rijen en kolommen.",
+        "Je kunt een kolomtitel kiezen die later nog duidelijk is."
+      ]
     },
     {
       "id": "paragraaf-dv-4-2",
@@ -546,7 +736,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet dat een formule in Excel altijd met = begint.",
+        "Je kunt een som en een gemiddelde laten berekenen.",
+        "Je kunt controleren of een formule de juiste cellen pakt."
+      ],
+      "leerdoelen": [
+        "Je weet dat een formule in Excel altijd met = begint.",
+        "Je kunt een som en een gemiddelde laten berekenen.",
+        "Je kunt controleren of een formule de juiste cellen pakt."
+      ]
     },
     {
       "id": "paragraaf-dv-4-3",
@@ -568,7 +768,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet welke onderdelen een grafiek nodig heeft.",
+        "Je kunt een staafdiagram of lijngrafiek kiezen bij je vraag.",
+        "Je weet hoe een grafiek je kan misleiden."
+      ],
+      "leerdoelen": [
+        "Je weet welke onderdelen een grafiek nodig heeft.",
+        "Je kunt een staafdiagram of lijngrafiek kiezen bij je vraag.",
+        "Je weet hoe een grafiek je kan misleiden."
+      ]
     },
     {
       "id": "paragraaf-dv-4-4",
@@ -591,7 +801,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet welke gegevens apps en schoolsystemen van je bewaren.",
+        "Je kunt bij een app uitleggen wat het doel en het risico is.",
+        "Je kunt een instelling kiezen die je privacy beter beschermt."
+      ],
+      "leerdoelen": [
+        "Je weet welke gegevens apps en schoolsystemen van je bewaren.",
+        "Je kunt bij een app uitleggen wat het doel en het risico is.",
+        "Je kunt een instelling kiezen die je privacy beter beschermt."
+      ]
     },
     {
       "id": "paragraaf-dv-4-5",
@@ -613,7 +833,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet het verschil tussen een claim en bewijs.",
+        "Je kunt bij een bericht nagaan wie het zegt en wanneer.",
+        "Je kunt benoemen welke gegevens in een bericht ontbreken."
+      ],
+      "leerdoelen": [
+        "Je weet het verschil tussen een claim en bewijs.",
+        "Je kunt bij een bericht nagaan wie het zegt en wanneer.",
+        "Je kunt benoemen welke gegevens in een bericht ontbreken."
+      ]
     },
     {
       "id": "paragraaf-dv-4-6",
@@ -636,7 +866,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet welke onderdelen in een mini-dashboard horen.",
+        "Je kunt tabel, formule, grafiek en conclusie samenbrengen op één overzicht.",
+        "Je kunt uitleggen waar je data vandaan komt en hoe je met privacy omgaat."
+      ],
+      "leerdoelen": [
+        "Je weet welke onderdelen in een mini-dashboard horen.",
+        "Je kunt tabel, formule, grafiek en conclusie samenbrengen op één overzicht.",
+        "Je kunt uitleggen waar je data vandaan komt en hoe je met privacy omgaat."
+      ]
     },
     {
       "id": "paragraaf-dv-5-1",
@@ -659,7 +899,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet dat AI antwoorden maakt met patronen en dus fouten kan maken.",
+        "Je kunt een prompt schrijven met doel, doelgroep, lengte en vorm.",
+        "Je weet welke gegevens je nooit aan een chatbot geeft."
+      ],
+      "leerdoelen": [
+        "Je weet dat AI antwoorden maakt met patronen en dus fouten kan maken.",
+        "Je kunt een prompt schrijven met doel, doelgroep, lengte en vorm.",
+        "Je weet welke gegevens je nooit aan een chatbot geeft."
+      ]
     },
     {
       "id": "paragraaf-dv-5-2",
@@ -682,7 +932,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet dat AI beelden kan maken van dingen die nooit gebeurd zijn.",
+        "Je kunt bewijs zoeken voordat je een foto of video deelt.",
+        "Je weet welke menselijke vaardigheden nodig blijven als AI werk overneemt."
+      ],
+      "leerdoelen": [
+        "Je weet dat AI beelden kan maken van dingen die nooit gebeurd zijn.",
+        "Je kunt bewijs zoeken voordat je een foto of video deelt.",
+        "Je weet welke menselijke vaardigheden nodig blijven als AI werk overneemt."
+      ]
     },
     {
       "id": "paragraaf-dv-5-3",
@@ -703,7 +963,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet dat een computer precies doet wat er staat, niet wat jij bedoelt.",
+        "Je kunt een stappenplan schrijven dat een ander letterlijk kan uitvoeren.",
+        "Je kunt een vage of vergeten stap opsporen en verbeteren."
+      ],
+      "leerdoelen": [
+        "Je weet dat een computer precies doet wat er staat, niet wat jij bedoelt.",
+        "Je kunt een stappenplan schrijven dat een ander letterlijk kan uitvoeren.",
+        "Je kunt een vage of vergeten stap opsporen en verbeteren."
+      ]
     },
     {
       "id": "paragraaf-dv-5-4",
@@ -725,7 +995,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet wat een start-event en een voorwaarde doen in een programma.",
+        "Je kunt een klein programma bouwen dat de gebruiker feedback geeft.",
+        "Je kunt een fout in je eigen programma opsporen en oplossen."
+      ],
+      "leerdoelen": [
+        "Je weet wat een start-event en een voorwaarde doen in een programma.",
+        "Je kunt een klein programma bouwen dat de gebruiker feedback geeft.",
+        "Je kunt een fout in je eigen programma opsporen en oplossen."
+      ]
     },
     {
       "id": "paragraaf-dv-5-5",
@@ -747,7 +1027,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet welke bewijsstukken in je portfolio horen.",
+        "Je kunt bij elk bewijsstuk kort opschrijven wat je geleerd hebt.",
+        "Je kunt een herstelplan maken voor werk dat nog niet af is."
+      ],
+      "leerdoelen": [
+        "Je weet welke bewijsstukken in je portfolio horen.",
+        "Je kunt bij elk bewijsstuk kort opschrijven wat je geleerd hebt.",
+        "Je kunt een herstelplan maken voor werk dat nog niet af is."
+      ]
     },
     {
       "id": "paragraaf-dv-5-6",
@@ -775,7 +1065,17 @@
       "published": true,
       "aiCompanionEnabled": true,
       "cropCount": 0,
-      "isArchived": false
+      "isArchived": false,
+      "learningGoals": [
+        "Je weet welke vier soorten bewijs je bij de eindexpo laat zien.",
+        "Je kunt uitleggen wat je maakte, wat je leerde en wat je nu beter kunt.",
+        "Je weet dat digitale vaardigheid ook over veilig en kritisch gedrag gaat."
+      ],
+      "leerdoelen": [
+        "Je weet welke vier soorten bewijs je bij de eindexpo laat zien.",
+        "Je kunt uitleggen wat je maakte, wat je leerde en wat je nu beter kunt.",
+        "Je weet dat digitale vaardigheid ook over veilig en kritisch gedrag gaat."
+      ]
     }
   ],
   "contentBlocks": [
@@ -831,6 +1131,13 @@
       },
       "content": {
         "html": "<p>Met je schoolaccount kom je bij de belangrijkste digitale plekken: HELIX, OneDrive, Outlook en de school-ELO. Zie je account als een sleutelbos. Je gebruikt niet elke sleutel voor hetzelfde. Outlook is voor mail. OneDrive is voor bestanden bewaren en delen. HELIX is voor lessen en opdrachten. De school-ELO is nu nog een placeholder, omdat het platform later verandert.</p>",
+        "keyTerms": [
+          "schoolaccount",
+          "HELIX",
+          "OneDrive",
+          "Outlook"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Noa krijgt een bericht van haar mentor. Daarna moet ze de opdracht van vandaag openen. Welke twee plekken heeft ze nodig?</p>\n<p><strong>Antwoord.</strong> Eerst Outlook, want daar komt het bericht binnen. Daarna HELIX, want daar staan de lessen en opdrachten. Met haar schoolaccount komt ze op allebei binnen.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -862,6 +1169,13 @@
       },
       "content": {
         "html": "<p>Maak een vaste map voor dit vak. Sla daarin je eerste Word-bestand op met een duidelijke naam. Voeg een screenshot toe van je map. Zo laat je zien dat je niet alleen hebt geklikt, maar echt weet waar je schoolwerk staat. Als iets niet lukt, vraag je hulp en klik je niet zomaar op onbekende knoppen.</p>",
+        "keyTerms": [
+          "map",
+          "Word-bestand",
+          "screenshot",
+          "schoolwerk"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Tim slaat zijn eerste opdracht op met de naam nieuw. Een week later kan hij hem niet meer vinden. Wat ging er mis?</p>\n<p><strong>Antwoord.</strong> De naam zegt niets over de opdracht, en het bestand staat niet in een vaste map. Beter: een map voor dit vak, met daarin les1-schooltas-tim-1a.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -1244,6 +1558,13 @@
       },
       "content": {
         "html": "<p>Een sterk wachtwoord is vooral lang en uniek. Een wachtwoordzin met meerdere woorden is vaak beter dan een kort wachtwoord met rare tekens. Gebruik nooit je naam, geboortedatum, club of huisdier. Gebruik ook niet overal hetzelfde wachtwoord. Als één site gehackt wordt, is anders alles onveilig.</p>",
+        "keyTerms": [
+          "wachtwoord",
+          "wachtwoordzin",
+          "uniek",
+          "gehackt"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Welke is sterker: Rex2011! of paarse fiets zoekt kaas?</p>\n<p><strong>Antwoord.</strong> De tweede. Rex2011! lijkt moeilijk, maar het is de naam van een huisdier met een jaartal erachter. Dat kan iemand raden. De vier woorden zijn veel langer en horen niet bij jou.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -1275,6 +1596,13 @@
       },
       "content": {
         "html": "<p>Deel je wachtwoord niet met vrienden. Ook niet als je iemand vertrouwt. Een docent of ICT-medewerker vraagt nooit om jouw echte wachtwoord. Is je wachtwoord vergeten, gelekt of verdacht? Gebruik dan de officiële herstelroute of vraag hulp aan school. In deze les werk je alleen met nepwachtwoorden.</p>",
+        "keyTerms": [
+          "wachtwoord",
+          "gelekt",
+          "herstelroute",
+          "nepwachtwoorden"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Iemand mailt: ik ben van de ICT-helpdesk, stuur je wachtwoord even terug. Wat doe je?</p>\n<p><strong>Antwoord.</strong> Niet terugsturen. De school vraagt nooit om je echte wachtwoord. Je meldt het bericht bij je docent of mentor. Moet je zelf een nieuw wachtwoord, dan gebruik je de officiële herstelroute.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -1657,6 +1985,13 @@
       },
       "content": {
         "html": "<p>Hardware kun je aanraken: scherm, toetsenbord, muis, camera, accu en printer. Software zijn programma’s en systemen die het apparaat laten werken, zoals Windows, browser, Word en beveiliging. Samen zorgen ze dat jij kunt typen, opslaan, zoeken, printen en online werken.</p>",
+        "keyTerms": [
+          "hardware",
+          "software",
+          "Windows",
+          "browser"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je muis beweegt niet meer. Je klasgenoot zegt: dan moet je de browser opnieuw opstarten. Klopt dat?</p>\n<p><strong>Antwoord.</strong> Nee. Een muis is hardware, dus je controleert eerst de kabel, de batterij of de verbinding. De browser is software en heeft hier niets mee te maken.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -1688,6 +2023,13 @@
       },
       "content": {
         "html": "<p>Instellingen helpen je wifi, geluid, scherm en accounts regelen. Verander niet zomaar dingen die je niet begrijpt. Updates zijn belangrijk, omdat ze fouten oplossen en je device veiliger maken. Stel updates dus niet eindeloos uit. Vraag hulp als een update of instelling schoolwerk blokkeert.</p>",
+        "keyTerms": [
+          "instellingen",
+          "updates",
+          "wifi",
+          "device"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je laptop vraagt al twee weken om een update. Je klikt steeds op later, want je hebt haast. Wat is daar het risico van?</p>\n<p><strong>Antwoord.</strong> Updates lossen fouten op en dichten gaten in de beveiliging. Blijf je uitstellen, dan wordt je device onveiliger. Plan de update op een moment dat je niet aan het werk bent, bijvoorbeeld in de pauze.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -2070,6 +2412,13 @@
       },
       "content": {
         "html": "<p>Een bestand kan lokaal op je apparaat staan of in de cloud. OneDrive is cloudopslag van Microsoft. Het voordeel is dat je je werk op school en thuis kunt terugvinden. Dat lukt alleen als je netjes opslaat en weet waar je bestand staat.</p>",
+        "keyTerms": [
+          "lokaal",
+          "cloud",
+          "cloudopslag",
+          "OneDrive"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Sam maakt op school zijn opdracht af en slaat hem lokaal op het bureaublad op. Thuis wil hij verder werken. Lukt dat?</p>\n<p><strong>Antwoord.</strong> Nee, het bestand staat alleen op die ene schoolcomputer. Had hij het in OneDrive gezet, dan kon hij er thuis gewoon bij.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -2101,6 +2450,12 @@
       },
       "content": {
         "html": "<p>Gebruik een vaste structuur: vak, hoofdstuk en opdracht. Goede bestandsnamen helpen jou en je docent. Zet bijvoorbeeld lesnummer, onderwerp, voornaam en klas in de naam. Vermijd namen zoals nieuw, opdracht, klaar of versie2echtklaar. Dan raak je minder kwijt.</p>",
+        "keyTerms": [
+          "structuur",
+          "bestandsnamen",
+          "lesnummer"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Verbeter deze bestandsnaam: versie2echtklaar.docx.</p>\n<p><strong>Antwoord.</strong> Zet erin wat het is en van wie: les4-mappen-sam-1c.docx. Nu weten jij en je docent na een maand nog steeds welke opdracht dit is.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -2483,6 +2838,13 @@
       },
       "content": {
         "html": "<p>Phishing is een truc om gegevens of geld van jou te krijgen. Let op rare afzenders, haast, dreiging, prijzen, spelfouten en onbekende bijlagen. Een bericht kan er netjes uitzien en toch gevaarlijk zijn. Criminelen willen dat je snel klikt zonder na te denken.</p>",
+        "keyTerms": [
+          "phishing",
+          "afzenders",
+          "haast",
+          "bijlagen"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je krijgt een bericht: je schoolaccount wordt binnen 24 uur gesloten, klik hier om dit te voorkomen. Welke twee rode vlaggen zie je?</p>\n<p><strong>Antwoord.</strong> De haast (binnen 24 uur) en de dreiging (je account gaat dicht). Zo willen ze dat je snel klikt zonder na te denken. Dit is phishing.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -2514,6 +2876,13 @@
       },
       "content": {
         "html": "<p>Klik niet zomaar op links. Controleer eerst de afzender en waar een link heen lijkt te gaan. Open geen onbekende bijlagen. Twijfel je? Stop, maak eventueel een screenshot en vraag je docent, mentor of ICT om hulp. Melden is slim, geen blunder.</p>",
+        "keyTerms": [
+          "afzender",
+          "link",
+          "screenshot",
+          "melden"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Het bericht lijkt van school, maar het mailadres eindigt op -school-support.info. Wat doe je?</p>\n<p><strong>Antwoord.</strong> Niet klikken en de bijlage niet openen. Je maakt een screenshot en laat het bericht zien aan je docent of mentor. Melden is slim, geen blunder.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -2896,6 +3265,13 @@
       },
       "content": {
         "html": "<p>Account, mail, OneDrive, device en veiligheid horen bij zelfstandig digitaal starten. Je laat zien dat je weet waar je moet zijn, hoe je bewijs opslaat en wanneer je hulp vraagt. Digitaal vaardig zijn betekent niet dat alles altijd lukt, maar dat je veilig en rustig handelt.</p>",
+        "keyTerms": [
+          "account",
+          "OneDrive",
+          "bewijs",
+          "zelfstandig"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een klasgenoot zegt: ik kan alles vinden, maar ik weet niet meer waar mijn opdracht van vorige week staat. Is hij digitaal vaardig?</p>\n<p><strong>Antwoord.</strong> Nog niet helemaal. Inloggen lukt, maar terugvinden hoort er ook bij. Met een vaste map in OneDrive en duidelijke namen lost hij dat op.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -2927,6 +3303,13 @@
       },
       "content": {
         "html": "<p>In deze checkpoint verzamel je bewijs: een map, een Word-bestand, een screenshot, een nette Outlook-mail en een phishingkeuze. Je hoeft geen perfecte expert te zijn. Je moet wel laten zien dat je de basis zelfstandig kunt uitvoeren en uitleggen.</p>",
+        "keyTerms": [
+          "checkpoint",
+          "bewijs",
+          "screenshot",
+          "Outlook-mail"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je levert een screenshot in van een leeg scherm met alleen het woord Checkpoint1. Is dat genoeg bewijs?</p>\n<p><strong>Antwoord.</strong> Nee. Op de screenshot moet te zien zijn dat de map bestaat en welk bestand erin staat. Anders kan je docent niet controleren of je het echt gedaan hebt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -3304,6 +3687,13 @@
       },
       "content": {
         "html": "<p>Een net Word-document is rustig en goed leesbaar. Gebruik een duidelijke titel, korte alinea’s en genoeg witruimte. Maak niet alles vet, groot of gekleurd. Opmaak helpt de lezer, maar mag niet afleiden van de inhoud.</p>",
+        "keyTerms": [
+          "Word-document",
+          "titel",
+          "witruimte",
+          "opmaak"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Jelle levert een document in met drie kleuren, vier lettertypen en alles vet. Hij zegt: het valt lekker op. Is dit een net Word-document?</p>\n<p><strong>Antwoord.</strong> Nee. Door al die opmaak ziet de lezer niet meer wat belangrijk is. Een duidelijke titel, gewone tekst en genoeg witruimte werken beter.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -3335,6 +3725,13 @@
       },
       "content": {
         "html": "<p>In Word kun je tekst typen, opslaan, kopiëren, afbeeldingen invoegen en bronnen noemen. Een afbeelding maakt je document sterker als die past bij je tekst. Zet er altijd een korte bronregel bij, zodat duidelijk is waar het beeld vandaan komt.</p>",
+        "keyTerms": [
+          "Word",
+          "document",
+          "afbeelding",
+          "bronregel"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Fatima schrijft over voetbal en plakt er een foto van een kat bij, zonder te vertellen waar die vandaan komt. Wat gaat er mis?</p>\n<p><strong>Antwoord.</strong> Twee dingen. De afbeelding past niet bij haar tekst, en er staat geen bronregel bij. Kies een foto over voetbal en zet eronder waar je hem gevonden hebt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -3717,6 +4114,13 @@
       },
       "content": {
         "html": "<p>Koppen helpen de lezer. Ze laten zien waar een nieuw onderdeel begint. In Word kun je stijlen gebruiken zoals Kop 1 en Kop 2. Dat ziet er netter uit en maakt je verslag overzichtelijker. Een verslag zonder koppen wordt snel één lange tekst.</p>",
+        "keyTerms": [
+          "koppen",
+          "stijlen",
+          "Kop",
+          "verslag"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Milan levert een verslag in van twee volle bladzijden zonder een enkele kop. Wat merkt de lezer daarvan?</p>\n<p><strong>Antwoord.</strong> De lezer ziet niet waar een nieuw onderdeel begint en raakt de draad kwijt. Met stijlen als Kop 1 boven het onderwerp en Kop 2 boven de delen is het meteen te volgen.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -3748,6 +4152,12 @@
       },
       "content": {
         "html": "<p>Kopiëren zonder bron heet plagiaat. Schrijf informatie in je eigen woorden, alsof je het uitlegt aan een klasgenoot. Gebruik je een website, video of afbeelding? Noem dan de bron. Zo kan iemand controleren waar je informatie vandaan komt.</p>",
+        "keyTerms": [
+          "plagiaat",
+          "bron",
+          "website"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Sara zet een hele alinea van een website in haar verslag en verandert alleen het eerste woord. Mag dat?</p>\n<p><strong>Antwoord.</strong> Nee, dat is plagiaat. Lees de tekst, sluit hem en schrijf in je eigen woorden op wat je onthouden hebt. Zet er daarna de bron bij, met de naam van de site en de datum.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -4130,6 +4540,13 @@
       },
       "content": {
         "html": "<p>Een PowerPoint-dia ondersteunt jouw verhaal. Zet er dus niet een heel verslag op. Gebruik weinig tekst, grote letters en één boodschap per dia. Als iemand achter in het lokaal het niet kan lezen, is de dia te druk of te klein.</p>",
+        "keyTerms": [
+          "PowerPoint-dia",
+          "tekst",
+          "boodschap",
+          "dia"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Op de dia van Bo staan zeven zinnen in kleine letters. Ze leest ze allemaal voor. Wat kan beter?</p>\n<p><strong>Antwoord.</strong> Zet er maximaal drie korte regels op in grote letters, met een boodschap per dia. De rest vertelt Bo zelf, dan luistert de klas naar haar in plaats van mee te lezen.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -4161,6 +4578,13 @@
       },
       "content": {
         "html": "<p>Een afbeelding kan helpen, maar alleen als die past bij wat je uitlegt. Kies rustige kleuren en goed contrast. Vertel zelf de uitleg; de dia geeft steun. Een goede presentatie bestaat uit duidelijke dia’s én iemand die rustig vertelt.</p>",
+        "keyTerms": [
+          "afbeelding",
+          "kleuren",
+          "contrast",
+          "presentatie"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Yusuf zet gele letters op een witte achtergrond. Van dichtbij leest hij het prima. Waarom klaagt de klas toch?</p>\n<p><strong>Antwoord.</strong> Er is te weinig contrast tussen de letters en de achtergrond. Donkere letters op een rustige lichte achtergrond kan iedereen lezen, ook achter in het lokaal.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -4543,6 +4967,13 @@
       },
       "content": {
         "html": "<p>Een korte presentatie heeft een duidelijke opbouw. Begin met je onderwerp. Leg daarna drie belangrijke punten uit. Sluit af met een tip, samenvatting of vraag. Daardoor kan de luisteraar je beter volgen.</p>",
+        "keyTerms": [
+          "opbouw",
+          "onderwerp",
+          "samenvatting",
+          "luisteraar"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Lisa begint haar presentatie met een dia vol tips en zegt daarna pas waar het over gaat. Wat is er mis met die volgorde?</p>\n<p><strong>Antwoord.</strong> De luisteraar weet nog niet waar de tips bij horen. Begin met je onderwerp, leg dan drie punten uit en sluit af met een tip of samenvatting.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -4574,6 +5005,13 @@
       },
       "content": {
         "html": "<p>Lees niet alles voor. Zet kernwoorden op je dia en vertel de rest in je eigen woorden. Oefen hardop. Let op tempo, volume en houding. Een bron hoort ook in je presentatie als je informatie of beeld van internet gebruikt.</p>",
+        "keyTerms": [
+          "kernwoorden",
+          "hardop",
+          "tempo",
+          "bron"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Dani heeft zijn hele tekst op de dia gezet en leest hem in dertig seconden voor. Waarom werkt dat niet?</p>\n<p><strong>Antwoord.</strong> Zijn tempo is te hoog en niemand luistert nog, want de klas leest mee. Beter: alleen kernwoorden op de dia, de rest in eigen woorden, en van tevoren hardop geoefend.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -4956,6 +5394,13 @@
       },
       "content": {
         "html": "<p>In OneDrive kun je een bestand delen. Kies bewust wie mag kijken of bewerken. Niet elk bestand moet voor iedereen open staan. Bewerkrechten geef je alleen als iemand echt moet meewerken. Bij twijfel kies je veiliger.</p>",
+        "keyTerms": [
+          "OneDrive",
+          "bestand",
+          "delen",
+          "Bewerkrechten"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Amber deelt haar werkstuk met de hele klas en zet het op bewerken. De volgende dag staat er onzin in. Wat had ze anders moeten doen?</p>\n<p><strong>Antwoord.</strong> Alleen haar duopartner had het bestand hoeven bewerken. De rest had genoeg aan kijken. Bij twijfel kies je de veiligste optie.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -4987,6 +5432,13 @@
       },
       "content": {
         "html": "<p>Een goede mail heeft een onderwerp, aanhef, korte uitleg, link en afsluiting. Schrijf vriendelijk en duidelijk. Controleer of de link werkt en of de rechten kloppen. Zo voorkom je dat iemand je bestand niet kan openen of juist te veel kan aanpassen.</p>",
+        "keyTerms": [
+          "onderwerp",
+          "aanhef",
+          "link",
+          "rechten"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Ravi mailt zijn docent alleen de tekst hier is die dan. Wat ontbreekt er in deze mail?</p>\n<p><strong>Antwoord.</strong> Een onderwerp, een aanhef, een zin die uitlegt waar het over gaat en een afsluiting met zijn naam. En hij moet zelf de link openen om te zien of de rechten kloppen.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -5369,6 +5821,13 @@
       },
       "content": {
         "html": "<p>Word, PowerPoint, OneDrive en Outlook zijn verschillende gereedschappen. Word gebruik je voor documenten. PowerPoint gebruik je om iets uit te leggen. OneDrive bewaart en deelt bestanden. Outlook gebruik je om netjes te communiceren.</p>",
+        "keyTerms": [
+          "Word",
+          "PowerPoint",
+          "OneDrive",
+          "Outlook"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je moet de klas in drie minuten uitleggen hoe je veilig een wachtwoord kiest. Welk programma pak je, en welk juist niet?</p>\n<p><strong>Antwoord.</strong> PowerPoint, want je legt iets uit aan een groep. Word is hier niet handig: dat gebruik je als je een verslag schrijft dat iemand alleen leest.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -5400,6 +5859,13 @@
       },
       "content": {
         "html": "<p>In deze checkpoint lever je bewijs in. Je laat zien dat je een document, presentatie, gedeelde link en mail kunt maken. Je schrijft ook kort wat zelfstandig lukte en waarbij je nog hulp nodig had.</p>",
+        "keyTerms": [
+          "checkpoint",
+          "bewijs",
+          "presentatie",
+          "zelfstandig"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Kim schrijft bij haar reflectie alleen ging goed. Is dat genoeg?</p>\n<p><strong>Antwoord.</strong> Nee. Schrijf op wat je zelfstandig kon en waar je hulp bij nodig had, bijvoorbeeld: het delen lukte alleen, maar bij de rechten heb ik het aan mijn buurman gevraagd.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -5777,6 +6243,13 @@
       },
       "content": {
         "html": "<p>Naam, foto, school, locatie, wachtwoord en leerlingnummer zijn gegevens waaraan iemand jou kan herkennen. Vraag jezelf af: zou ik dit ook op het schoolbord hangen? Zo niet, dan moet je extra goed nadenken voordat je het online zet of deelt.</p>",
+        "keyTerms": [
+          "gegevens",
+          "foto",
+          "locatie",
+          "leerlingnummer"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Jelle zet in een openbare groepschat dat hij dit weekend alleen thuis is, met zijn adres erbij. Is dat verstandig?</p>\n<p><strong>Antwoord.</strong> Nee. Zijn adres zegt precies waar hij woont, en samen met alleen thuis maakt dat hem kwetsbaar. Gebruik de schoolbordvraag: dit zou hij nooit op het schoolbord hangen, dus online ook niet.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -5808,6 +6281,13 @@
       },
       "content": {
         "html": "<p>Likes, posts, zoekgedrag en gedeelde foto’s vormen je digitale voetafdruk. Ook als jij iets verwijdert, kan iemand anders een screenshot hebben. Privacy gaat niet alleen over geheimen, maar ook over zelf kiezen wie wat over jou weet.</p>",
+        "keyTerms": [
+          "zoekgedrag",
+          "digitale voetafdruk",
+          "screenshot",
+          "privacy"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Sanne plaatst een foto, vindt hem toch lelijk en haalt hem na tien minuten weg. Is die foto nu echt verdwenen?</p>\n<p><strong>Antwoord.</strong> Dat weet je niet zeker. In die tien minuten kan iemand een screenshot hebben gemaakt en die staat dan bij hem op zijn toestel. Wat je post hoort bij je digitale voetafdruk, ook als jij het zelf weghaalt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -6190,6 +6670,13 @@
       },
       "content": {
         "html": "<p>Een algoritme kiest berichten op basis van klikken, liken, kijktijd en volgen. Het doel is vaak dat jij langer blijft kijken. Daardoor ziet jouw feed er anders uit dan die van een klasgenoot. Jij beïnvloedt de feed, maar de feed beïnvloedt jou ook.</p>",
+        "keyTerms": [
+          "algoritme",
+          "kijktijd",
+          "feed",
+          "liken"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Milan kijkt drie skatefilmpjes helemaal uit. De volgende dag staat zijn feed vol met skaten. Hoe kan dat?</p>\n<p><strong>Antwoord.</strong> Het algoritme meet dat zijn kijktijd hoog is en concludeert: dit vindt hij leuk. Daarom krijgt hij meer van hetzelfde. Wil hij iets anders zien, dan moet hij ook andere filmpjes openen en uitkijken.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -6221,6 +6708,13 @@
       },
       "content": {
         "html": "<p>Op social media laat je meestal een selectie zien. Filters, likes, trends en FOMO kunnen invloed hebben op je zelfbeeld en keuzes. Niet alles wat je ziet is het hele verhaal. Online sterk lijken betekent niet dat iemand zich ook zo voelt.</p>",
+        "keyTerms": [
+          "selectie",
+          "filters",
+          "FOMO",
+          "zelfbeeld"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Ayla ziet een foto van een feestje waar half haar klas was en zij niet. Ze voelt zich er rot door. Hoe heet dat gevoel?</p>\n<p><strong>Antwoord.</strong> Dat heet FOMO: de angst dat je iets mist. Op zo’n foto staat een selectie van de leukste seconden van de avond. Hoe de anderen zich die avond echt voelden, zie je er niet aan af.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -6603,6 +7097,13 @@
       },
       "content": {
         "html": "<p>Nepnieuws gebruikt heftige koppen, emotie, bekende namen of mooie opmaak. Dat maakt het geloofwaardig, ook als het niet klopt. Clickbait wil vooral dat je klikt. Betrouwbare informatie wil dat je begrijpt wat er echt aan de hand is.</p>",
+        "keyTerms": [
+          "nepnieuws",
+          "koppen",
+          "clickbait",
+          "geloofwaardig"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je ziet de kop: deze school gaat morgen dicht! Je schrikt en wilt het meteen doorsturen. Wat doe je eerst?</p>\n<p><strong>Antwoord.</strong> Even niets. Zulke heftige koppen zijn juist gemaakt om je te laten schrikken en klikken; dat heet clickbait. Kijk eerst of een betrouwbare bron, zoals de site van de school zelf, hetzelfde meldt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -6634,6 +7135,13 @@
       },
       "content": {
         "html": "<p>Vraag altijd: wie maakte dit, wanneer, met welk doel, waar is het bewijs en zegt een tweede betrouwbare bron hetzelfde? Video of audio kan ook nep zijn door AI of deepfake. Beeld is dus niet automatisch bewijs. Controleer bron en context.</p>",
+        "keyTerms": [
+          "bewijs",
+          "deepfake",
+          "bron",
+          "context"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> In een filmpje zegt een bekende voetballer iets heel raars. Het beeld ziet er echt uit. Is dat filmpje daarmee bewijs?</p>\n<p><strong>Antwoord.</strong> Nee. Met AI kan iemand een deepfake maken waarin gezicht en stem worden nagemaakt. Vraag je af wie het maakte, wanneer, en of een tweede betrouwbare bron hetzelfde zegt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -7016,6 +7524,13 @@
       },
       "content": {
         "html": "<p>Online pesten kan doorgaan buiten schooltijd, snel verspreiden en anoniem voelen. Voorbeelden zijn gemene DM’s, buitensluiten, bewerkte foto’s of haat in games. Wat voor de één een grap lijkt, kan voor de ander kwetsend zijn.</p>",
+        "keyTerms": [
+          "pesten",
+          "anoniem",
+          "buitensluiten",
+          "kwetsend"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> In de klassengroep maakt iemand elke dag een grap over de schoenen van Youssef. Hij lacht mee, maar baalt ervan. Is dit pesten?</p>\n<p><strong>Antwoord.</strong> Dat kan het zeker zijn. Niet de bedoeling van de zender telt, maar hoe het bij de ander binnenkomt. Is het kwetsend en gaat het dag na dag door, dan moet het stoppen.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -7047,6 +7562,13 @@
       },
       "content": {
         "html": "<p>Ga niet terugschelden. Bewaar bewijs, blokkeer waar nodig, meld het op het platform en vraag hulp aan mentor, ouder of docent. Foto’s, memes en screenshots delen vraagt toestemming, vooral als iemand herkenbaar is.</p>",
+        "keyTerms": [
+          "bewijs",
+          "blokkeer",
+          "toestemming",
+          "mentor"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Iemand stuurt jou een bewerkte foto van een klasgenoot en vraagt of je hem doorstuurt. Wat doe je?</p>\n<p><strong>Antwoord.</strong> Niet doorsturen, want daarvoor is toestemming nodig van degene op de foto. Bewaar een screenshot als bewijs, blokkeer de afzender als het doorgaat en vertel het aan je mentor.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -7429,6 +7951,13 @@
       },
       "content": {
         "html": "<p>Check URL, contactgegevens, reviews buiten de site, retourregels, betaalmogelijkheden en extreem lage prijzen. Een mooie website is niet automatisch betrouwbaar. Als iets te mooi lijkt om waar te zijn, moet je extra goed controleren.</p>",
+        "keyTerms": [
+          "URL",
+          "contactgegevens",
+          "reviews",
+          "retourregels"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een site verkoopt schoenen van 150 euro voor 29 euro. De site ziet er strak uit, maar er staat geen adres of telefoonnummer bij. Bestel je hier?</p>\n<p><strong>Antwoord.</strong> Nee. De extreem lage prijs en het ontbreken van contactgegevens zijn twee sterke waarschuwingen tegelijk. Zoek eerst reviews buiten de site zelf en bekijk de retourregels.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -7460,6 +7989,13 @@
       },
       "content": {
         "html": "<p>iDEAL betekent dat je kunt betalen, niet dat de winkel betrouwbaar is. Klarna of achteraf betalen kan handig zijn, maar te laat betalen geeft kosten. Bij kopen buiten de EU kunnen levertijd, retour en invoerkosten tegenvallen.</p>",
+        "keyTerms": [
+          "iDEAL",
+          "Klarna",
+          "levertijd",
+          "invoerkosten"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een onbekende webshop biedt iDEAL aan. Betekent dat de winkel te vertrouwen is?</p>\n<p><strong>Antwoord.</strong> Nee. iDEAL zegt alleen dat je op die manier kunt afrekenen; ook een oplichter kan het aanbieden. Je blijft dus de URL, de reviews en de retourregels controleren voordat je betaalt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -7842,6 +8378,13 @@
       },
       "content": {
         "html": "<p>Bij privacy, feeds, nepnieuws, cyberpesten en online kopen gebruik je steeds dezelfde aanpak: stop, check risico, kies een veilige actie en vraag hulp als dat nodig is. Mediawijs zijn betekent dat je je keuze kunt uitleggen.</p>",
+        "keyTerms": [
+          "stop",
+          "risico",
+          "mediawijs",
+          "cyberpesten"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je krijgt een appje: klik binnen tien minuten en win een telefoon. Welke drie stappen zet je?</p>\n<p><strong>Antwoord.</strong> Stop met klikken, check het risico (haast plus een gratis prijs wijst op oplichting) en kies een veilige actie: niet klikken en het bericht melden. Kun je het niet inschatten, dan vraag je hulp.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -7873,6 +8416,12 @@
       },
       "content": {
         "html": "<p>Bij elke casus beschrijf je kort: wat gebeurt er, wat kan misgaan, wat doe ik en waarom? Je hoeft geen lange tekst te schrijven. Korte duidelijke zinnen zijn genoeg als je laat zien dat je nadenkt.</p>",
+        "keyTerms": [
+          "casus",
+          "misgaan",
+          "nadenkt"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een klasgenoot deelt een screenshot uit jullie groepschat in een andere groep. Hoe schrijf je deze casus op?</p>\n<p><strong>Antwoord.</strong> In vier korte zinnen. Wat gebeurt er: een privébericht gaat rond zonder toestemming. Wat kan misgaan: het is kwetsend en verspreidt verder. Wat doe ik: er iets van zeggen en bewijs bewaren, want zo laat je zien dat je nadenkt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -8277,6 +8826,13 @@
       },
       "content": {
         "html": "<p>Data zijn losse gegevens, zoals namen, tijden, aantallen of keuzes. In Excel zet je die overzichtelijk in rijen en kolommen. Daardoor kun je later sorteren, tellen of een grafiek maken. Rommelige data geven sneller fouten.</p>",
+        "keyTerms": [
+          "data",
+          "gegevens",
+          "Excel",
+          "sorteren"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Sam vraagt aan tien klasgenoten hoe lang ze naar school reizen. Hij typt alles achter elkaar in één vakje. Waarom is dat later lastig?</p>\n<p><strong>Antwoord.</strong> Zo staan de gegevens niet apart en kan Excel er niets mee. Zet elke leerling op een eigen rij, dan kun je later sorteren en een grafiek maken.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -8308,6 +8864,13 @@
       },
       "content": {
         "html": "<p>Een cel is één vakje. Een rij loopt horizontaal en een kolom verticaal. Kolomtitels moeten kort en duidelijk zijn. Schrijf bijvoorbeeld Reistijd in minuten in plaats van alleen Tijd. Dan weet je later nog wat de gegevens betekenen.</p>",
+        "keyTerms": [
+          "cel",
+          "rij",
+          "kolom",
+          "Kolomtitels"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Boven een kolom staat alleen het woord Tijd. Een week later weet niemand meer of dat minuten of vertrektijden zijn. Hoe los je dat op?</p>\n<p><strong>Antwoord.</strong> Geef de kolom een titel die alles vertelt, bijvoorbeeld Reistijd in minuten. In cel B1 zet je die titel, daaronder komen de getallen.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -8690,6 +9253,13 @@
       },
       "content": {
         "html": "<p>Formules helpen snel totalen, gemiddelden en procenten te berekenen. Toch moet jij controleren of Excel de juiste cellen gebruikt. Een uitkomst kan er netjes uitzien en toch fout zijn als het bereik verkeerd gekozen is.</p>",
+        "keyTerms": [
+          "Formules",
+          "controleren",
+          "bereik",
+          "uitkomst"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Iris telt de kantineverkoop van vijf dagen op, maar haar formule begint pas bij de tweede dag. De uitkomst ziet er netjes uit. Klopt hij?</p>\n<p><strong>Antwoord.</strong> Nee, er mist een dag. Het bereik is te klein gekozen. Klik op de cel met de formule en kijk welke vakjes Excel blauw maakt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -8721,6 +9291,13 @@
       },
       "content": {
         "html": "<p>Een formule begint met =. `=SOM(B2:B6)` betekent: tel alles van B2 tot en met B6 bij elkaar op. Bij `=GEMIDDELDE(B2:B6)` berekent Excel het gemiddelde. Leer niet alleen klikken, maar ook begrijpen wat de formule doet.</p>",
+        "keyTerms": [
+          "formule",
+          "SOM",
+          "GEMIDDELDE",
+          "Excel"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> In B2 tot en met B6 staan de cijfers van vijf toetsen. Je wilt weten hoe hoog je er gemiddeld voor staat. Welke formule typ je?</p>\n<p><strong>Antwoord.</strong> Je typt =GEMIDDELDE(B2:B6). Met =SOM(B2:B6) krijg je alle cijfers bij elkaar opgeteld, en dat is geen rapportcijfer.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -9103,6 +9680,13 @@
       },
       "content": {
         "html": "<p>Een grafiek maakt data sneller zichtbaar. Je ziet bijvoorbeeld wat het meeste voorkomt of wat verandert. Een grafiek heeft een duidelijke titel, labels en een korte conclusie nodig. Zonder uitleg weet de lezer niet wat belangrijk is.</p>",
+        "keyTerms": [
+          "grafiek",
+          "titel",
+          "labels",
+          "conclusie"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Op het bord staan gekleurde staven zonder tekst eromheen. De klas snapt niet waar het over gaat. Wat mist er?</p>\n<p><strong>Antwoord.</strong> Er is geen titel en er zijn geen labels bij de assen. Zet erboven waar de grafiek over gaat en schrijf eronder in één zin wat je ziet.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -9134,6 +9718,13 @@
       },
       "content": {
         "html": "<p>Grafieken kunnen misleiden door een rare schaal, ontbrekende labels of verkeerde grafieksoort. Een staafdiagram is handig voor vergelijken. Een lijngrafiek past bij verandering in tijd. Kies wat helpt bij je vraag, niet alleen wat er mooi uitziet.</p>",
+        "keyTerms": [
+          "schaal",
+          "staafdiagram",
+          "lijngrafiek",
+          "grafieksoort"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je wilt laten zien hoeveel schermtijd je elke dag van de week had. Kies je een staafdiagram of een lijngrafiek?</p>\n<p><strong>Antwoord.</strong> Een lijngrafiek, want die laat verandering in tijd zien. Let ook op de schaal: begin je niet bij nul, dan lijkt een klein verschil ineens enorm.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -9516,6 +10107,13 @@
       },
       "content": {
         "html": "<p>Apps, websites en schoolsystemen bewaren gegevens zoals klikgedrag, locatie, inlogtijd of zoekwoorden. Dat kan handig zijn, bijvoorbeeld om je rooster te tonen. Maar data zegt ook iets over jou en kan verkeerd gebruikt worden.</p>",
+        "keyTerms": [
+          "gegevens",
+          "klikgedrag",
+          "locatie",
+          "data"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een spelletje op je telefoon vraagt of het je locatie mag gebruiken. Het spel is een puzzel. Waarom is die vraag raar?</p>\n<p><strong>Antwoord.</strong> Een puzzel heeft je locatie niet nodig om te werken. De maker verzamelt dan gegevens voor iets anders, bijvoorbeeld reclame. Je mag rustig nee zeggen.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -9547,6 +10145,13 @@
       },
       "content": {
         "html": "<p>Privacy betekent dat je nadenkt wie iets mag weten, waarom en wat er kan gebeuren als data wordt gedeeld. Niet alle data is geheim, maar veel data is persoonlijk. Daarom kies je bewust instellingen en deel je niet meer dan nodig.</p>",
+        "keyTerms": [
+          "Privacy",
+          "gedeeld",
+          "persoonlijk",
+          "instellingen"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Yara zet in haar profiel haar school, haar klas en haar woonplaats. Haar account staat open voor iedereen. Wat kan er misgaan?</p>\n<p><strong>Antwoord.</strong> Samen is dat genoeg om haar op te zoeken. Die informatie is persoonlijk, dus zet ze haar account op privé en laat ze de woonplaats weg.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -9929,6 +10534,13 @@
       },
       "content": {
         "html": "<p>“9 van de 10 jongeren...” klinkt sterk, maar je moet weten wie dit zegt, hoeveel mensen zijn onderzocht en of de bron betrouwbaar is. Een claim is een bewering. Bewijs laat zien waarom je die bewering wel of niet kunt geloven.</p>",
+        "keyTerms": [
+          "claim",
+          "bewering",
+          "bron",
+          "betrouwbaar"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> In een filmpje hoor je: 9 van de 10 leerlingen slapen te weinig door hun telefoon. Geloof je dat meteen?</p>\n<p><strong>Antwoord.</strong> Nog niet. Dit is een bewering. Zoek eerst wie het onderzoek deed, hoeveel leerlingen zijn gevraagd en waar het is gepubliceerd.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -9960,6 +10572,13 @@
       },
       "content": {
         "html": "<p>Kijk naar datum, afzender, grafiek, steekproef en wat er ontbreekt. Soms gebruikt iemand cijfers om iets groter of kleiner te laten lijken. Controleer daarom niet alleen de uitkomst, maar ook hoe de data is verzameld.</p>",
+        "keyTerms": [
+          "datum",
+          "afzender",
+          "steekproef",
+          "cijfers"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een website meldt dat 80 procent van de jongeren een bepaald merk energiedrank het lekkerst vindt. De site is van dat merk zelf. Wat controleer je?</p>\n<p><strong>Antwoord.</strong> Kijk naar de afzender: die verdient aan de uitkomst. Zoek ook de datum en de steekproef. Vijftig mensen op een festival zegt weinig over alle jongeren.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -10342,6 +10961,13 @@
       },
       "content": {
         "html": "<p>Een dashboard laat in één overzicht tabel, formule, grafiek en conclusie zien. Het doel is niet vooral mooi maken, maar duidelijk antwoord geven op een vraag. Je lezer moet snel begrijpen wat de data laat zien.</p>",
+        "keyTerms": [
+          "dashboard",
+          "overzicht",
+          "conclusie",
+          "doel"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Ravi maakt een kleurig dashboard met drie grafieken, maar er staat nergens een zin bij. Zijn docent snapt het niet. Wat voegt hij toe?</p>\n<p><strong>Antwoord.</strong> Zijn onderzoeksvraag bovenaan en onder elke grafiek een korte conclusie. Mooi is niet het doel; de lezer moet meteen het antwoord zien.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -10373,6 +10999,13 @@
       },
       "content": {
         "html": "<p>Je vertelt waar je data vandaan komt en waarom die bruikbaar is. Je schrijft ook een privacyzin: welke data is persoonlijk en hoe ga je daar netjes mee om? Zo combineer je Excel, bronnen en veiligheid.</p>",
+        "keyTerms": [
+          "bruikbaar",
+          "privacyzin",
+          "bronnen",
+          "veiligheid"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je dashboard gaat over de kantine en je hebt zelf twintig klasgenoten gevraagd. Wat schrijf je erbij over je data?</p>\n<p><strong>Antwoord.</strong> Dat je de gegevens zelf hebt verzameld bij twintig leerlingen uit één klas, dus alleen bruikbaar voor die klas. In je privacyzin zet je dat er geen namen in staan.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -10750,6 +11383,13 @@
       },
       "content": {
         "html": "<p>AI lijkt slim, maar maakt antwoorden op basis van patronen in data. Een chatbot kan helpen met uitleg, ideeën en samenvatten, maar kan fouten maken. Jij blijft verantwoordelijk voor wat je inlevert. Controleer dus altijd.</p>",
+        "keyTerms": [
+          "AI",
+          "patronen",
+          "chatbot",
+          "verantwoordelijk"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Sem vraagt een chatbot wanneer de Tweede Wereldoorlog eindigde. Hij krijgt het jaartal 1946 terug en zet dat in zijn werkstuk. Wat ging er mis?</p>\n<p><strong>Antwoord.</strong> Het antwoord klonk zeker, maar het klopt niet. AI kiest woorden die vaak samen voorkomen; dat is geen garantie. Sem had het jaartal even in zijn boek of op een schoolsite moeten nakijken, want hij blijft zelf verantwoordelijk voor wat hij inlevert.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -10781,6 +11421,13 @@
       },
       "content": {
         "html": "<p>Een prompt is je opdracht aan AI. Zeg duidelijk wat je wilt, voor wie, hoe lang en in welke vorm. Deel geen privégegevens, zoals naam, adres, telefoonnummer of leerlingnummer. Gebruik AI als hulp, niet als vervanger van jouw denken.</p>",
+        "keyTerms": [
+          "prompt",
+          "AI",
+          "privégegevens",
+          "vervanger"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Lisa typt: “Schrijf mijn spreekbeurt. Ik ben Lisa de Wit, klas 1B, ik woon in de Kerkstraat 12.” Wat zijn de twee problemen?</p>\n<p><strong>Antwoord.</strong> Ze geeft haar adres weg, en dat hoort niet in een prompt. En ze laat AI het werk doen in plaats van zichzelf. Beter: “Geef vijf ideeën voor een spreekbeurt van drie minuten over honden, voor klas 1 vmbo.”</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -11163,6 +11810,13 @@
       },
       "content": {
         "html": "<p>AI kan beelden maken van mensen of situaties die nooit hebben bestaan. Soms zie je fouten aan handen, tekst, ogen of rare details, maar niet altijd. Daarom is twijfel soms een goed antwoord. Zoek bewijs voordat je deelt.</p>",
+        "keyTerms": [
+          "beelden",
+          "fouten",
+          "twijfel",
+          "bewijs"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> In een groepsapp staat een foto van een bekende voetballer op het schoolplein. De hand op de foto heeft zes vingers. Deel je hem door?</p>\n<p><strong>Antwoord.</strong> Nee. De rare hand is een aanwijzing dat het beeld door AI is gemaakt. Zoek eerst of een nieuwssite of de club zelf het bericht heeft. Vind je niets, dan blijft het twijfel en deel je het niet.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -11194,6 +11848,13 @@
       },
       "content": {
         "html": "<p>AI kan taken sneller doen, maar mensen blijven nodig voor controle, creativiteit, zorg, keuzes en verantwoordelijkheid. Bij veel beroepen verandert het werk. Dat betekent niet dat mensen verdwijnen, maar dat vaardigheden veranderen.</p>",
+        "keyTerms": [
+          "controle",
+          "creativiteit",
+          "verantwoordelijkheid",
+          "beroepen"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een kapper laat AI de afspraken inplannen en de foto's voor Instagram bewerken. Verdwijnt haar beroep nu?</p>\n<p><strong>Antwoord.</strong> Nee, haar werk verandert. Het knippen, het advies en het contact met de klant blijft mensenwerk. AI neemt de saaie taken over, maar de controle en de keuzes blijven bij haar.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -11576,6 +12237,13 @@
       },
       "content": {
         "html": "<p>Een algoritme is een serie duidelijke stappen. Een computer doet precies wat er staat, niet wat jij bedoelde. Daarom moet elke stap helder zijn. “Doe normaal” is geen goede stap, want iedereen kan dat anders uitleggen.</p>",
+        "keyTerms": [
+          "algoritme",
+          "stappen",
+          "computer",
+          "precies"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Een algoritme voor het maken van thee begint met: “Zet water op.” Waarom is dat geen goede stap?</p>\n<p><strong>Antwoord.</strong> Het kan op tien manieren gelezen worden: hoeveel water, waarin, hoe warm? Beter: “Vul de waterkoker tot de streep van 1 liter” en dan “Druk de knop van de waterkoker in.” Nu doet iedereen hetzelfde.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -11607,6 +12275,13 @@
       },
       "content": {
         "html": "<p>Als een stappenplan misgaat, zoek je welke stap onduidelijk, verkeerd of vergeten is. Dat heet debuggen. Je verbetert één stap en test opnieuw. Fouten horen erbij. Door testen wordt je algoritme beter.</p>",
+        "keyTerms": [
+          "stappenplan",
+          "debuggen",
+          "testen",
+          "fouten"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Yara maakt een stappenplan om een bestand op te slaan, maar haar klasgenoot loopt vast bij stap 3. Wat doet Yara nu?</p>\n<p><strong>Antwoord.</strong> Ze verbetert alleen stap 3 en laat het daarna opnieuw uitproberen. Dat heet debuggen: een fout zoeken, een ding aanpassen en weer testen. Zou ze alles tegelijk veranderen, dan weet ze niet wat het probleem oploste.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -11989,6 +12664,13 @@
       },
       "content": {
         "html": "<p>Met blokkenprogrammeren maak je regels: wanneer iets start, wat er gebeurt, wanneer iets herhaalt en welke feedback de gebruiker krijgt. Een start-event bepaalt wanneer het programma begint. Voorwaarden laten iets gebeuren als iets waar is.</p>",
+        "keyTerms": [
+          "blokkenprogrammeren",
+          "start-event",
+          "voorwaarden",
+          "feedback"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Je maakt een quiz. Als de speler het goede antwoord kiest, moet er “Goed zo!” verschijnen. Welke twee onderdelen heb je minstens nodig?</p>\n<p><strong>Antwoord.</strong> Een start-event, bijvoorbeeld “wanneer op de groene vlag geklikt”, zodat de quiz begint. En een voorwaarde: “als antwoord = B, zeg Goed zo!” Zonder die voorwaarde krijgt de speler bij elk antwoord dezelfde reactie.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -12020,6 +12702,13 @@
       },
       "content": {
         "html": "<p>Debuggen is normaal. Je test, zoekt de fout, past aan en test opnieuw. Laat een klasgenoot je programma proberen. Die vindt vaak fouten die jij zelf niet ziet, omdat jij weet wat je bedoelde.</p>",
+        "keyTerms": [
+          "debuggen",
+          "fout",
+          "klasgenoot",
+          "test"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Bij Milan telt de score bij elk antwoord op, ook bij een fout antwoord. Hij ziet zelf niet waar het misgaat. Wat is de slimste stap?</p>\n<p><strong>Antwoord.</strong> Laat een klasgenoot het spelen. Die kiest expres een fout antwoord en ziet meteen dat het “score +1”-blok buiten de als-voorwaarde staat. Milan sleept het blok naar binnen en test opnieuw.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -12402,6 +13091,13 @@
       },
       "content": {
         "html": "<p>Je portfolio laat zien wat je kunt: Word, PowerPoint, Excel/dashboard, privacy, broncheck, AI en programmeren. Bij elk bewijsstuk schrijf je kort wat je hebt geleerd. Zo ziet je docent niet alleen wat je maakte, maar ook wat je begrijpt.</p>",
+        "keyTerms": [
+          "portfolio",
+          "bewijsstuk",
+          "privacy",
+          "broncheck"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Jill zet haar PowerPoint in haar portfolio en schrijft eronder: “Dit is mijn PowerPoint.” Is dat genoeg?</p>\n<p><strong>Antwoord.</strong> Nee, dat ziet de docent zelf ook al. Bij elk bewijsstuk hoort wat je leerde. Beter: “Ik heb geleerd hoe ik met een vaste dia-indeling werk en waarom ik niet te veel tekst op een dia zet.”</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -12433,6 +13129,12 @@
       },
       "content": {
         "html": "<p>Missen is niet falen. Als je iets nog niet af hebt, maak je een herstelplan. Zet erin welke taak ontbreekt, wat je gaat doen en wanneer je het afmaakt. Iedereen kan blijven doorwerken richting het volledig certificaat.</p>",
+        "keyTerms": [
+          "herstelplan",
+          "taak",
+          "certificaat"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Ravi mist zijn Excel-dashboard omdat hij twee weken ziek was. Hij denkt dat hij het certificaat niet meer kan halen. Klopt dat?</p>\n<p><strong>Antwoord.</strong> Nee. Hij maakt een herstelplan: welke taak ontbreekt (het dashboard), wat hij doet (les 4.5 opnieuw doorlopen en de grafiek maken) en wanneer het af is (vrijdag). Daarmee kan hij gewoon doorwerken.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -12815,6 +13517,12 @@
       },
       "content": {
         "html": "<p>Bij de eindexpo kies je vier bewijsstukken: Microsoft, veiligheid/privacy, data/bron en AI/programmeren. Je vertelt wat je maakte, wat je leerde en wat je nu beter kunt. Je hoeft niet alles lang te vertellen. Kies duidelijk bewijs.</p>",
+        "keyTerms": [
+          "eindexpo",
+          "bewijsstukken",
+          "bewijs"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Fatima wil al haar zeven opdrachten laten zien in vijf minuten. Waarom is dat geen goed plan?</p>\n<p><strong>Antwoord.</strong> Dan wordt alles kort en oppervlakkig. Ze kiest vier bewijsstukken, een uit elk gebied, en vertelt per stuk wat ze maakte en wat ze leerde. Weinig bewijs dat je goed uitlegt is sterker dan veel bewijs dat je afraffelt.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",
@@ -12846,6 +13554,13 @@
       },
       "content": {
         "html": "<p>Digitale vaardigheden gaan niet alleen over knoppen. Het gaat ook over veilig, kritisch, netjes en zelfstandig werken. Je laat zien dat je hulp kunt vragen, bronnen kunt controleren en bewust omgaat met technologie.</p>",
+        "keyTerms": [
+          "kritisch",
+          "zelfstandig",
+          "bronnen",
+          "bewust"
+        ],
+        "exampleHtml": "<p><strong>Vraag.</strong> Twee leerlingen kunnen even goed met Word omgaan. De een controleert bronnen en vraagt hulp als hij vastloopt, de ander niet. Wie is digitaal vaardiger?</p>\n<p><strong>Antwoord.</strong> De eerste. Digitale vaardigheid zit niet alleen in de knoppen, maar ook in kritisch kijken naar wat je leest en zelfstandig verder komen. Hulp vragen hoort daar gewoon bij.</p>",
         "sourceBasis": [
           "wikiwijs",
           "lessenserie-md",

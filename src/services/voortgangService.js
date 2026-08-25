@@ -21,6 +21,7 @@ import {
   buildContentBlockVoortgangUpdate
 } from '../lib/voortgangPayload';
 import { shouldFallbackToUserProgressQuery } from '../lib/voortgangQueryUtils';
+import { buildBeoordelingData, isBeoordeelbaar } from '../lib/nakijkOpdrachten';
 
 /**
  * Save progress for a single question (upsert)
@@ -257,6 +258,63 @@ export const getAssessmentItemVoortgang = async (userId, blockId) => {
 };
 
 /**
+ * Een docent handelt een open beoordeling af.
+ *
+ * Dit is de enige schrijfactie van het docentdashboard. Ze loopt bewust over
+ * `saveContentBlockVoortgang`, zodat de beoordeling exact dezelfde velden en
+ * dezelfde documentsleutel raakt als een gewone poging van de leerling. Er komt
+ * geen tweede waarheid bij.
+ *
+ * Beveiliging: `firestore.rules` staat een update op `voortgang/{docId}` toe
+ * voor de eigenaar OF voor `isAdmin()`. Een docent zit in de tweede categorie,
+ * dus hier is geen Cloud Function en geen regelwijziging voor nodig. Is de
+ * aanroeper geen admin, dan weigert Firestore de schrijfactie en vertaalt deze
+ * functie dat naar een leesbare melding in plaats van een rauwe foutcode.
+ *
+ * @param {Object} params
+ * @param {Object} params.record - Het voortgangrecord van de stap (uit het dashboard)
+ * @param {string} params.besluit - Een waarde uit NAKIJK_BESLUIT
+ * @param {string} [params.opmerking] - Korte toelichting van de docent
+ * @param {Object} [params.docent] - De ingelogde docent (uid, displayName, email)
+ * @returns {Promise<Object>} De data die is weggeschreven
+ */
+export const beoordeelOpenAntwoord = async ({
+  record = null,
+  besluit = '',
+  opmerking = '',
+  docent = {}
+} = {}) => {
+  if (!isBeoordeelbaar(record)) {
+    throw new Error(
+      'Deze stap kan niet vanuit het dashboard worden beoordeeld: het voortgangrecord mist een lesblok.'
+    );
+  }
+
+  const data = buildBeoordelingData({ record, besluit, opmerking, docent });
+
+  try {
+    await saveContentBlockVoortgang(
+      record.userId,
+      record.blockId,
+      record.paragraafId,
+      record.hoofdstukId || '',
+      record.klasId || '',
+      data
+    );
+  } catch (error) {
+    if (error?.code === 'permission-denied') {
+      throw new Error(
+        'Je account mag deze voortgang niet aanpassen. Vraag een beheerder om je docentrol te controleren.',
+        { cause: error }
+      );
+    }
+    throw error;
+  }
+
+  return data;
+};
+
+/**
  * Get the last incomplete question in a paragraph
  * Useful for "continue" functionality
  *
@@ -389,6 +447,7 @@ export const getStudentVoortgang = async (userId, klasId) => {
 export default {
   saveVoortgang,
   saveContentBlockVoortgang,
+  beoordeelOpenAntwoord,
   saveAssessmentItemVoortgang,
   getAssessmentItemVoortgang,
   getVoortgangForParagraaf,

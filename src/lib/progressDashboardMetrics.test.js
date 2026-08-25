@@ -275,12 +275,12 @@ test('buildStudentMetricCards turns student metrics into next action, route and 
   assert.equal(cards[2].detail, '2 met Digidocent, 2 signalen');
 });
 
-test('buildDashboardLensTabs exposes the four teacher lenses with one active tab', () => {
+test('buildDashboardLensTabs exposes the five teacher lenses with one active tab', () => {
   const tabs = buildDashboardLensTabs('signals');
 
-  assert.deepEqual(tabs.map((tab) => tab.key), ['class', 'signals', 'paragraph', 'student']);
-  assert.deepEqual(tabs.map((tab) => tab.label), ['Klas', 'Signalen', 'Paragraaf', 'Leerling']);
-  assert.deepEqual(tabs.map((tab) => tab.active), [false, true, false, false]);
+  assert.deepEqual(tabs.map((tab) => tab.key), ['class', 'signals', 'nakijken', 'paragraph', 'student']);
+  assert.deepEqual(tabs.map((tab) => tab.label), ['Klas', 'Signalen', 'Nakijken', 'Paragraaf', 'Leerling']);
+  assert.deepEqual(tabs.map((tab) => tab.active), [false, true, false, false, false]);
 });
 
 test('buildParagraphProgressSummary summarizes paragraph status without exposing raw records', () => {

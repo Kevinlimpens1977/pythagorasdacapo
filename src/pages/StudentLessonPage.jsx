@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
-  ArrowLeft,
   BookOpen,
   Calculator,
+  Check,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -12,12 +12,16 @@ import {
   GripVertical,
   Image,
   Layers3,
+  ListChecks,
   Loader2,
+  Maximize2,
   MessageCircle,
+  Minimize2,
   PlayCircle,
   Plus,
   RotateCcw,
   Table2,
+  Target,
   Trash2,
   Triangle,
   X
@@ -54,16 +58,34 @@ import { hasAssessmentItemAnswerKey } from '../lib/publicContentBlockView';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import {
   calculateLessonProgress,
-  findResumeBlockIndex,
   getCompletedBlockIds,
   getLessonBlockRenderKey,
+  resolveRequestedBlockIndex,
   shouldSaveBlockProgressBeforeNavigation
 } from '../lib/studentLessonProgress';
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
 import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
 import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
 import { shouldCollapseAiTutorOnMouseLeave, shouldExpandAiTutorOnHover } from '../lib/aiTutorPanelState';
-import { getLessonBlockAccent, hasRenderableLessonHtml } from '../lib/lessonBlockPresentation';
+import {
+  getLessonReadingPresentation,
+  hasRenderableLessonHtml,
+  resolveLessonReadingSections
+} from '../lib/lessonBlockPresentation';
+import { createLessonReadingFormatter } from '../lib/lessonProseFormatting';
+import {
+  buildLearningGoalsIntro,
+  buildStudyStepModel,
+  getReadConfirmLabels,
+  hasLearningGoalsIntroContent,
+  mergeCompletedBlockIds,
+  requiresReadConfirmation,
+  shouldOpenLearningGoalsIntro,
+  summarizeStudySteps
+} from '../lib/studyRouteState';
+import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
+import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
+import StudyStepRail from '../components/lesson/StudyStepRail';
 import {
   areExerciseAnswersComplete,
   buildExerciseAnswerPayload,
@@ -81,6 +103,7 @@ import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter'
 import GamePlayer from '../components/games/GamePlayer';
 import MediaRenderer from '../components/media/MediaRenderer';
 import AITutorChat from '../components/slides/AITutorChat';
+import StudentBugReportButton from '../components/studentBugReports/StudentBugReportButton';
 import { useStudentBugReportContext } from '../components/studentBugReports/StudentBugReportContext';
 import { askAiTutorCall, assessOpenAnswerCall, gradeClosedQuestionCall } from '../lib/api';
 import { GAME_RESULT_HANDLING, getGameById } from '../lib/gameRegistry';
@@ -135,6 +158,8 @@ const blockIcons = {
   slidedeck: FileText
 };
 
+const EMPTY_ID_SET = new Set();
+
 const htmlValue = (value = '') => ({ __html: value || '' });
 
 const deviceSupportsHover = () => {
@@ -169,6 +194,16 @@ export default function StudentLessonPage() {
   // Voortgang per vraag binnen een toets of quiz: blockId -> { itemId: record }.
   const [assessmentItemRecords, setAssessmentItemRecords] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
+  // Bevestigingen die de leerling net zelf gaf. Firestore bevestigt pas na een
+  // round-trip; zonder deze set loopt het vinkje zichtbaar achter op de klik.
+  const [localConfirmations, setLocalConfirmations] = useState(() => ({ paragraafId: '', ids: EMPTY_ID_SET }));
+  const [confirmedReadBlockId, setConfirmedReadBlockId] = useState('');
+  // Eén regel onderin die vertelt wat er nu van de leerling wordt gevraagd: een
+  // slotje dat niet opengaat, of een vinkje dat niet is opgeslagen.
+  const [studyNotice, setStudyNotice] = useState('');
+  const [learningGoalsView, setLearningGoalsView] = useState({ closedFor: '', forced: false });
+  const [showStepDrawer, setShowStepDrawer] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
   const [showParagraphEnd, setShowParagraphEnd] = useState(false);
   const [tokenAwardNotice, setTokenAwardNotice] = useState('');
@@ -180,6 +215,8 @@ export default function StudentLessonPage() {
   const victoryDoneRef = useRef(null);
   const skipNextAiTutorSaveRef = useRef(false);
   const previewMode = getLessonPreviewMode(searchParams.get('preview') || '');
+  // De lesstofpagina start een los onderdeel rechtstreeks: /chapter/<id>?stap=<blokId>.
+  const requestedBlockId = searchParams.get('stap') || '';
   const includeDraftPreview = shouldIncludeDraftBlocksForPreview({ isAdmin, previewMode });
 
   useEffect(() => {
@@ -292,7 +329,11 @@ export default function StudentLessonPage() {
         setHoofdstuk(hoofdstukData);
         setBlocks(enrichedBlocks);
         setProgressRecords(voortgang);
-        setCurrentIndex(findResumeBlockIndex(enrichedBlocks, voortgang));
+        setCurrentIndex(resolveRequestedBlockIndex({
+          blocks: enrichedBlocks,
+          progressRecords: voortgang,
+          requestedBlockId
+        }));
         setShowParagraphEnd(loadedLessonProgress.isCompleted && !hasCompletedParagraphEnd);
 
         // Toets- en quizantwoorden staan per vraag in een subcollectie onder het
@@ -323,11 +364,86 @@ export default function StudentLessonPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentUser, includeDraftPreview, isAdmin, klasData, paragraafId]);
+  }, [currentUser, includeDraftPreview, isAdmin, klasData, paragraafId, requestedBlockId]);
 
-  const completedIds = useMemo(() => getCompletedBlockIds(progressRecords), [progressRecords]);
-  const lessonProgress = useMemo(() => calculateLessonProgress(blocks, progressRecords), [blocks, progressRecords]);
+  // Lokale bevestigingen horen bij één paragraaf; bij een andere route tellen ze niet mee.
+  const localCompletedIds = useMemo(
+    () => (localConfirmations.paragraafId === paragraafId ? localConfirmations.ids : EMPTY_ID_SET),
+    [localConfirmations, paragraafId]
+  );
+  const completedIds = useMemo(
+    () => mergeCompletedBlockIds(getCompletedBlockIds(progressRecords), localCompletedIds),
+    [localCompletedIds, progressRecords]
+  );
   const currentBlock = blocks[currentIndex] || null;
+  const studySteps = useMemo(() => {
+    const model = buildStudyStepModel({ blocks, completedIds, currentIndex, labels: CONTENT_BLOCK_LABELS });
+
+    return model.map((step) => {
+      const record = progressRecords.find((item) => (item.blockId || item.vraagId) === step.id) || null;
+      if (!record?.completed) return step;
+
+      const tone = getLearningResultTone({
+        completed: true,
+        isCorrect: Boolean(record.isCorrect),
+        aiHelpCount: record.aiHelpCount || 0,
+        resultTier: record.resultTier,
+        helpTier: record.helpTier
+      });
+
+      return { ...step, statusLabel: tone.label, statusTier: tone.tier };
+    });
+  }, [blocks, completedIds, currentIndex, progressRecords]);
+  const studySummary = useMemo(() => summarizeStudySteps(studySteps), [studySteps]);
+  const learningGoalsIntro = useMemo(
+    () => buildLearningGoalsIntro({ paragraaf, blocks }),
+    [blocks, paragraaf]
+  );
+  const hasLearningGoals = hasLearningGoalsIntroContent(learningGoalsIntro);
+  const currentBlockCompleted = Boolean(currentBlock?.id && completedIds.has(currentBlock.id));
+  const readConfirmLabels = getReadConfirmLabels(currentBlock?.type || '');
+
+  // Het leerdoelenscherm opent bij elke nieuwe paragraaf en gaat dicht zodra de
+  // leerling op Verder klikt. Afgeleid uit de sluitmarkering, dus geen effect nodig.
+  // `forced` is de knop in de bovenbalk: die opent de leerdoelen ook opnieuw.
+  const showLearningGoals =
+    !loading &&
+    hasLearningGoals &&
+    (learningGoalsView.forced ||
+      shouldOpenLearningGoalsIntro({
+        intro: learningGoalsIntro,
+        paragraphEndVisible: showParagraphEnd,
+        alreadyOpened: learningGoalsView.closedFor === paragraafId
+      }));
+
+  const openLearningGoals = () => setLearningGoalsView({ closedFor: '', forced: true });
+  const closeLearningGoals = () => setLearningGoalsView({ closedFor: paragraafId, forced: false });
+  // De leerdoelen zijn de eerste ingang in de linkerbalk. Zolang het scherm open
+  // staat is dat de actieve stap; na "Verder" krijgt hij zijn vinkje.
+  const learningGoalsSeen = learningGoalsView.closedFor === paragraafId;
+
+  useEffect(() => {
+    const syncFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    syncFullscreen();
+    return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+  }, []);
+
+  // Het hele document gaat naar volledig scherm, niet alleen de studeerkaart:
+  // dialogen zoals de foutmelder hangen via een portal aan <body> en zouden in
+  // een kleinere fullscreen-wortel onzichtbaar zijn.
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen?.();
+      }
+    } catch (fullscreenError) {
+      console.warn('Volledig scherm is niet beschikbaar:', fullscreenError);
+    }
+  };
+
   useEffect(() => {
     if (!currentBlock) {
       setStudentBugReportContext({});
@@ -571,20 +687,9 @@ export default function StudentLessonPage() {
     }
   }, [aiTutorMessages, aiTutorStorageKey]);
 
-  const getBlockResultClasses = (block) => {
-    const record = getBlockProgressRecord(block?.id);
-    if (!record?.completed) return 'border-slate-300 bg-slate-100';
-    const tone = getLearningResultTone({
-      completed: record.completed,
-      isCorrect: record.isCorrect,
-      aiHelpCount: record.aiHelpCount || 0,
-      resultTier: record.resultTier,
-      helpTier: record.helpTier
-    });
-    return `${tone.borderClass} ${tone.fillClass} ${tone.ringClass}`;
-  };
-
   const advanceToNextStep = (completedBlockId = '') => {
+    setConfirmedReadBlockId('');
+    setStudyNotice('');
     const completedIndex = blocks.findIndex((block) => block.id === completedBlockId);
     if (completedBlockId && completedIndex !== currentIndex) return;
 
@@ -597,30 +702,71 @@ export default function StudentLessonPage() {
   };
 
   const saveCurrentBlockBeforeNavigation = async () => {
+    // Lees- en kijkstappen rondt de leerling zelf af met een knop. Ze mogen niet
+    // stilletjes op afgerond springen omdat er ergens anders is geklikt.
+    if (requiresReadConfirmation(currentBlock)) return;
     if (shouldSaveBlockProgressBeforeNavigation({ block: currentBlock, completedIds })) {
       await saveBlockProgress(currentBlock, true);
     }
   };
 
+  const confirmCurrentBlockRead = async () => {
+    const block = currentBlock;
+    if (!block?.id) return;
+
+    const alreadyCompleted = completedIds.has(block.id);
+    setStudyNotice('');
+    setLocalConfirmations((current) => {
+      const ids = new Set(current.paragraafId === paragraafId ? current.ids : []);
+      ids.add(block.id);
+      return { paragraafId, ids };
+    });
+    setConfirmedReadBlockId(block.id);
+
+    if (alreadyCompleted) return;
+
+    try {
+      await saveBlockProgress(block, true);
+    } catch (saveError) {
+      // Mislukt opslaan mag geen voortgang beloven die er niet is: het vinkje
+      // gaat weer weg en de leerling ziet waarom.
+      console.error('Vinkje kon niet worden opgeslagen:', saveError);
+      setLocalConfirmations((current) => {
+        if (current.paragraafId !== paragraafId) return current;
+        const ids = new Set(current.ids);
+        ids.delete(block.id);
+        return { paragraafId, ids };
+      });
+      setConfirmedReadBlockId((current) => (current === block.id ? '' : current));
+      setStudyNotice('Je vinkje is niet opgeslagen, probeer opnieuw');
+    }
+  };
+
   const goNext = async () => {
     if (showParagraphEnd) return;
-    const isCurrentQuestion = currentBlock?.type === 'question';
-    const currentCompleted = completedIds.has(currentBlock?.id);
+    setConfirmedReadBlockId('');
+    setStudyNotice('');
 
     await saveCurrentBlockBeforeNavigation();
 
-    if (isCurrentQuestion && !currentCompleted) {
-      return;
-    }
-
+    // Vooruit is net zo vrij als springen in de stappenbalk: een openstaande vraag
+    // of een niet-afgevinkte leesstap houdt de leerling hier niet tegen. Die stap
+    // blijft als "nog niet af" in de balk staan; de enige stop zit hieronder, bij
+    // het afronden van de hele paragraaf.
     if (currentIndex < blocks.length - 1) {
       setCurrentIndex((index) => index + 1);
     } else if (paragraphEndPlan.kind !== 'in_progress') {
       setShowParagraphEnd(true);
+    } else {
+      // De afsluiting wacht tot alle kernvragen rond zijn. Zonder dit bericht
+      // klikt de leerling op "Les afronden" en gebeurt er zichtbaar niets.
+      setStudyNotice('Maak eerst alle vragen van deze paragraaf af, dan kun je de les afronden.');
     }
   };
 
   const goPrev = () => {
+    setConfirmedReadBlockId('');
+    setStudyNotice('');
     if (showParagraphEnd) {
       setShowParagraphEnd(false);
       return;
@@ -629,16 +775,14 @@ export default function StudentLessonPage() {
   };
 
   const goToStep = async (nextIndex) => {
+    setConfirmedReadBlockId('');
+    setStudyNotice('');
     setShowParagraphEnd(false);
     if (nextIndex === currentIndex) return;
 
-    if (nextIndex > currentIndex) {
-      const hasIncompleteQuestionBeforeTarget = blocks
-        .slice(0, nextIndex)
-        .some((block) => block.type === 'question' && !completedIds.has(block.id));
-      if (hasIncompleteQuestionBeforeTarget) return;
-    }
-
+    // Vrij navigeren: ook vooruit springen over een vraag die nog openstaat mag.
+    // Die vraag blijft in de balk als "nog niet af" staan en de paragraaf sluit
+    // pas als alles rond is.
     await saveCurrentBlockBeforeNavigation();
     setCurrentIndex(nextIndex);
   };
@@ -678,200 +822,273 @@ export default function StudentLessonPage() {
     );
   }
 
-  return (
-    <div className="helix-page min-h-full">
-      <VictoryEffectOverlay playback={victoryPlayback} onDone={finishVictoryPlayback} />
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-        <header className="helix-surface p-5">
-          <button
-            onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 rounded-xl px-2 py-1 text-sm font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-navy)]"
-          >
-            <ArrowLeft size={18} />
-            Overzicht
-          </button>
+  const ActiveStepIcon = blockIcons[currentBlock?.type] || BookOpen;
+  const currentStepTitle =
+    currentBlock?.title || CONTENT_BLOCK_LABELS[currentBlock?.type] || 'Lesblok';
+  const hoofdstukLabel =
+    hoofdstuk?.title || (hoofdstuk?.number ? `Hoofdstuk ${hoofdstuk.number}` : '');
+  const isLastStep = currentIndex === blocks.length - 1;
+  // Het resultaatlabel hoort leesbaar op het scherm te staan, niet alleen in een
+  // tooltip: in de bovenbalk naast "afgerond" en in de linkerbalk onder de stap.
+  const currentStepStatusLabel =
+    studySteps[currentIndex]?.statusLabel || 'afgerond';
+  // Zolang de bevestigingsbalk open staat is dát de enige weg naar de volgende
+  // stap. De footerknop verdwijnt, zodat er nooit twee CTA's tegelijk staan.
+  const readConfirmBarOpen =
+    Boolean(confirmedReadBlockId) && confirmedReadBlockId === currentBlock?.id;
 
-          <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="helix-eyebrow">Leerroute</p>
-              <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-[var(--helix-navy)]">
-                {paragraaf?.title || 'Les'}
-              </h1>
-              {hoofdstuk && (
-                <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
-                  {hoofdstuk.title || (hoofdstuk.number ? `Hoofdstuk ${hoofdstuk.number}` : 'Hoofdstuk')}
-                </p>
+  const railProps = {
+    paragraafTitle: paragraaf?.title || 'Les',
+    hoofdstukTitle: hoofdstukLabel,
+    steps: studySteps,
+    summary: studySummary,
+    iconForType: (type) => blockIcons[type] || BookOpen,
+    hasIntro: hasLearningGoals,
+    isIntroActive: showLearningGoals,
+    isIntroDone: learningGoalsSeen,
+    onOpenIntro: () => {
+      setShowStepDrawer(false);
+      openLearningGoals();
+    },
+    onSelectStep: (step) => {
+      // Geen sloten meer: elke stap in de balk brengt je er ook echt heen.
+      setShowStepDrawer(false);
+      goToStep(step.index);
+    },
+    onExit: () => navigate('/')
+  };
+
+  return (
+    <div className="study-surface study-shell flex flex-col">
+      <VictoryEffectOverlay playback={victoryPlayback} onDone={finishVictoryPlayback} />
+      <LearningGoalsIntro
+        open={showLearningGoals}
+        intro={learningGoalsIntro}
+        paragraafTitle={paragraaf?.title || ''}
+        hoofdstukTitle={hoofdstukLabel}
+        onContinue={closeLearningGoals}
+      />
+
+      <div className="flex min-h-0 flex-1">
+        <aside className="study-rail hidden w-[290px] shrink-0 lg:block xl:w-[320px]">
+          <StudyStepRail {...railProps} />
+        </aside>
+
+        {/* min-w-0: zonder dit krimpt de kolom niet onder de min-content van een
+            brede tabel, en loopt de les op een telefoon buiten beeld. */}
+        <section className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="flex shrink-0 items-center gap-3 border-b border-[var(--helix-border)] bg-white/86 px-4 py-3 backdrop-blur-xl sm:px-6">
+            <button
+              type="button"
+              onClick={() => setShowStepDrawer(true)}
+              className="flex h-11 items-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-navy)] lg:hidden"
+            >
+              <ListChecks size={17} />
+              Stappen
+            </button>
+
+            <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] sm:flex">
+              <ActiveStepIcon size={19} />
+            </span>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black text-[var(--helix-navy)]">
+                {showParagraphEnd ? 'Paragraaf afronden' : currentStepTitle}
+              </p>
+              <p className="truncate text-[11px] font-bold text-[var(--helix-muted)]">
+                {showParagraphEnd
+                  ? paragraaf?.title || 'Les'
+                  : `Stap ${currentIndex + 1} van ${blocks.length} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
+              </p>
+            </div>
+
+            {tokenAwardNotice ? (
+              <span className="hidden items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800 sm:inline-flex">
+                {tokenAwardNotice}
+              </span>
+            ) : (
+              <span className="hidden text-xs font-black text-[var(--helix-muted)] sm:inline">
+                {studySummary.percentage}%
+              </span>
+            )}
+
+            {hasLearningGoals && (
+              <button
+                type="button"
+                onClick={openLearningGoals}
+                title="Bekijk de leerdoelen van deze paragraaf"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
+              >
+                <Target size={18} />
+                <span className="sr-only">Leerdoelen</span>
+              </button>
+            )}
+
+            {!isAdmin && <StudentBugReportButton />}
+
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Verlaat volledig scherm' : 'Volledig scherm'}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
+            >
+              {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              <span className="sr-only">{isFullscreen ? 'Verlaat volledig scherm' : 'Volledig scherm'}</span>
+            </button>
+          </div>
+
+          {isAdmin && (
+            <div className="shrink-0 border-b border-[var(--helix-border)] bg-white/70 px-4 py-2 text-xs font-bold text-[var(--helix-muted)] sm:px-6">
+              <span className="text-[var(--helix-navy)]">Adminpreview:</span>{' '}
+              {includeDraftPreview
+                ? 'conceptblokken zijn inbegrepen in deze weergave.'
+                : 'alleen gepubliceerde blokken worden getoond in deze weergave.'}
+            </div>
+          )}
+
+          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
+            {/* De kaart krijgt de hoogte van zijn eigen inhoud. Rekt hij mee met de
+                contentkolom, dan valt er onder een korte leesstap honderden pixels
+                wit tussen de tekst en de afrondknop. */}
+            <div className="mx-auto flex w-full max-w-5xl flex-col px-4 py-6 sm:px-8 sm:py-10">
+              {showParagraphEnd ? (
+                <div className="helix-surface overflow-hidden">
+                  <ParagraphEndActivity
+                    plan={paragraphEndPlan}
+                    activity={paragraphEndActivity}
+                    paragraaf={paragraaf}
+                    onBack={() => setShowParagraphEnd(false)}
+                    onFinish={async (payload) => {
+                      if (payload) {
+                        await saveParagraphEndProgress(paragraphEndActivity, payload);
+
+                        const playback = buildVictoryEffectPlayback({
+                          effectItem: activeVictoryEffect,
+                          trigger: 'paragraphEnd'
+                        });
+                        if (playback) {
+                          await new Promise((resolve) => {
+                            victoryDoneRef.current = resolve;
+                            setVictoryPlayback(playback);
+                          });
+                        }
+                      }
+                      navigate('/');
+                    }}
+                  />
+                </div>
+              ) : (
+                <LessonBlockContent
+                  key={getLessonBlockRenderKey(currentBlock)}
+                  block={currentBlock}
+                  isCompleted={currentBlockCompleted}
+                  progressRecord={getBlockProgressRecord(currentBlock?.id)}
+                  assessmentItemRecords={assessmentItemRecords[currentBlock?.id] || null}
+                  onSaveAssessmentItemProgress={(itemId, payload) =>
+                    saveAssessmentItemProgress(currentBlock, itemId, payload)}
+                  studentName={studentFirstName}
+                  paragraaf={paragraaf}
+                  hoofdstuk={hoofdstuk}
+                  blocks={blocks}
+                  progressRecords={progressRecords}
+                  aiTutorMessages={aiTutorMessages}
+                  aiTutorDraftInput={aiTutorDraftInput}
+                  onAiTutorMessagesChange={setAiTutorMessages}
+                  onAiTutorDraftInputChange={setCurrentAiTutorDraftInput}
+                  onOpenSlidedeck={setActiveSlidedeck}
+                  gameRewardRules={gameRewardRules}
+                  onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
+                  onGameComplete={(result) => {
+                    const prevCount = Number(getBlockProgressRecord(currentBlock?.id)?.gamePlayCount) || 0;
+                    saveBlockProgress(currentBlock, true, { lastAnswer: result, gamePlayCount: prevCount + 1 });
+                  }}
+                  onAutoAdvance={advanceToNextStep}
+                  onConfirmRead={confirmCurrentBlockRead}
+                />
               )}
             </div>
-
-            <div className="min-w-64 rounded-2xl bg-[var(--helix-surface-soft)] p-4">
-              <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-[var(--helix-muted)]">
-                <span>Voortgang</span>
-                <span>{lessonProgress.percentage}%</span>
-              </div>
-              <div className="helix-progress-track mt-3 h-3">
-                <div className="helix-progress-fill" style={{ width: `${lessonProgress.percentage}%` }} />
-              </div>
-              <p className="mt-2 text-sm font-bold text-[var(--helix-muted)]">
-                {lessonProgress.completedBlocks} van {lessonProgress.totalBlocks} blokken klaar
-              </p>
-              <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Voortgang per lesblok">
-                {blocks.map((block, index) => {
-                  const record = getBlockProgressRecord(block.id);
-                  const tone = getLearningResultTone({
-                    completed: Boolean(record?.completed),
-                    isCorrect: Boolean(record?.isCorrect),
-                    aiHelpCount: record?.aiHelpCount || 0,
-                    resultTier: record?.resultTier,
-                    helpTier: record?.helpTier
-                  });
-                  return (
-                    <span
-                      key={block.id}
-                      className={`h-4 w-8 rounded-full border-2 ${getBlockResultClasses(block)}`}
-                      title={record?.completed ? `${index + 1}. ${tone.label}` : `${index + 1}. Nog niet afgerond`}
-                    />
-                  );
-                })}
-              </div>
-            </div>
           </div>
-          {tokenAwardNotice ? (
-            <div className="mt-4 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-black text-amber-800">
-              {tokenAwardNotice}
-            </div>
-          ) : null}
-        </header>
 
-        {isAdmin && (
-          <div className="rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 text-sm font-bold text-[var(--helix-muted)] shadow-sm">
-            <span className="text-[var(--helix-navy)]">Adminpreview:</span>{' '}
-            {includeDraftPreview
-              ? 'conceptblokken zijn inbegrepen in deze weergave.'
-              : 'alleen gepubliceerde blokken worden getoond in deze weergave.'}
-          </div>
-        )}
+          {!showParagraphEnd && (
+            <div className="relative shrink-0">
+              <StudyConfirmBar
+                open={readConfirmBarOpen}
+                message={readConfirmLabels.done}
+                actionLabel={isLastStep ? 'Les afronden' : 'Volgende'}
+                onAction={goNext}
+              />
 
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="helix-card p-3 lg:sticky lg:top-24 lg:self-start">
-            <p className="px-2 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-muted)]">Stappen</p>
-            <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-2 lg:overflow-visible lg:pb-0">
-              {blocks.map((block, index) => {
-                const Icon = blockIcons[block.type] || BookOpen;
-                const isActive = index === currentIndex;
-                const isDone = completedIds.has(block.id);
+              <footer className="flex flex-col gap-3 border-t border-[var(--helix-border)] bg-white/86 px-4 py-3 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <button
+                  onClick={goPrev}
+                  disabled={currentIndex === 0}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-5 py-3 text-sm font-black text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={18} />
+                  Vorige
+                </button>
 
-                return (
+                <p
+                  role={studyNotice ? 'status' : undefined}
+                  aria-live={studyNotice ? 'polite' : undefined}
+                  className={`text-center text-xs font-bold ${
+                    studyNotice ? 'text-[var(--helix-danger)]' : 'text-[var(--helix-muted)]'
+                  }`}
+                >
+                  {/* De leesstap heeft zijn eigen hint in de kaartvoet, direct naast
+                      de afrondknop. Die niet hier herhalen: dan staan er twee zinnen
+                      die hetzelfde zeggen. */}
+                  {studyNotice
+                    ? studyNotice
+                    : readConfirmBarOpen
+                      ? 'Ga verder met de knop hierboven'
+                      : `Stap ${currentIndex + 1} van ${blocks.length}`}
+                </p>
+
+                {/* De knop staat nooit uit: vooruit werkt hier hetzelfde als
+                    springen in de stappenbalk. De paragraaf sluit pas als alles
+                    rond is. */}
+                {readConfirmBarOpen ? (
+                  <span className="hidden sm:block sm:w-[9.5rem]" aria-hidden="true" />
+                ) : (
                   <button
-                    key={block.id}
-                    onClick={() => goToStep(index)}
-                    className={`flex max-w-56 shrink-0 items-center gap-3 rounded-xl p-3 text-left transition lg:w-full lg:max-w-none ${
-                      isActive
-                        ? 'helix-gradient text-white shadow-lg shadow-fuchsia-500/10'
-                        : 'text-[var(--helix-muted)] hover:bg-[var(--helix-surface-soft)]'
-                    }`}
+                    onClick={goNext}
+                    className="btn-primary px-5 py-3 text-sm"
                   >
-                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isActive ? 'bg-white/10' : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'}`}>
-                      {isDone ? <CheckCircle2 size={18} /> : <Icon size={18} />}
-                    </span>
-                    <span className="min-w-0">
-                      <span className={`block truncate text-sm font-black ${isActive ? 'text-white' : 'text-[var(--helix-navy)]'}`}>
-                        {block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'}
-                      </span>
-                      <span className={`text-xs font-bold ${isActive ? 'text-white/75' : 'text-[var(--helix-muted)]'}`}>
-                        Stap {index + 1} · {CONTENT_BLOCK_LABELS[block.type] || block.type}
-                      </span>
-                    </span>
+                    {isLastStep ? 'Les afronden' : 'Volgende'}
+                    <ChevronRight size={18} />
                   </button>
-                );
-              })}
+                )}
+              </footer>
             </div>
-          </aside>
-
-          <main className="helix-surface min-w-0 overflow-hidden">
-            {showParagraphEnd ? (
-              <ParagraphEndActivity
-                plan={paragraphEndPlan}
-                activity={paragraphEndActivity}
-                paragraaf={paragraaf}
-                onBack={() => setShowParagraphEnd(false)}
-                onFinish={async (payload) => {
-                  if (payload) {
-                    await saveParagraphEndProgress(paragraphEndActivity, payload);
-
-                    const playback = buildVictoryEffectPlayback({
-                      effectItem: activeVictoryEffect,
-                      trigger: 'paragraphEnd'
-                    });
-                    if (playback) {
-                      await new Promise((resolve) => {
-                        victoryDoneRef.current = resolve;
-                        setVictoryPlayback(playback);
-                      });
-                    }
-                  }
-                  navigate('/');
-                }}
-              />
-            ) : (
-              <LessonBlockContent
-                key={getLessonBlockRenderKey(currentBlock)}
-                block={currentBlock}
-                step={currentIndex + 1}
-                totalSteps={blocks.length}
-                isCompleted={completedIds.has(currentBlock?.id)}
-                progressRecord={getBlockProgressRecord(currentBlock?.id)}
-                assessmentItemRecords={assessmentItemRecords[currentBlock?.id] || null}
-                onSaveAssessmentItemProgress={(itemId, payload) =>
-                  saveAssessmentItemProgress(currentBlock, itemId, payload)}
-                studentName={studentFirstName}
-                paragraaf={paragraaf}
-                hoofdstuk={hoofdstuk}
-                blocks={blocks}
-                progressRecords={progressRecords}
-                aiTutorMessages={aiTutorMessages}
-                aiTutorDraftInput={aiTutorDraftInput}
-                onAiTutorMessagesChange={setAiTutorMessages}
-                onAiTutorDraftInputChange={setCurrentAiTutorDraftInput}
-                onOpenSlidedeck={setActiveSlidedeck}
-                gameRewardRules={gameRewardRules}
-                onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
-                onGameComplete={(result) => {
-                  const prevCount = Number(getBlockProgressRecord(currentBlock?.id)?.gamePlayCount) || 0;
-                  saveBlockProgress(currentBlock, true, { lastAnswer: result, gamePlayCount: prevCount + 1 });
-                }}
-                onAutoAdvance={advanceToNextStep}
-              />
-            )}
-
-            {!showParagraphEnd && (
-            <footer className="flex flex-col gap-3 border-t border-[var(--helix-border)] bg-white/72 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                onClick={goPrev}
-                disabled={currentIndex === 0}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-5 py-3 text-sm font-black text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <ChevronLeft size={18} />
-                Vorige
-              </button>
-
-              <div className="text-center text-sm font-bold text-[var(--helix-muted)]">
-                Stap {currentIndex + 1} van {blocks.length}
-              </div>
-
-              <button
-                onClick={goNext}
-                disabled={currentBlock?.type === 'question' && !completedIds.has(currentBlock?.id)}
-                className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {currentIndex === blocks.length - 1 ? 'Les afronden' : 'Klaar, volgende'}
-                <ChevronRight size={18} />
-              </button>
-            </footer>
-            )}
-          </main>
-        </div>
+          )}
+        </section>
       </div>
+
+      {showStepDrawer && (
+        <div className="fixed inset-0 z-[250] flex lg:hidden">
+          <div
+            role="presentation"
+            onClick={() => setShowStepDrawer(false)}
+            className="absolute inset-0 bg-[rgba(11,19,43,0.42)] backdrop-blur-sm"
+          />
+          <div className="study-rail relative z-10 flex h-full w-[86%] max-w-[340px] flex-col bg-white">
+            <div className="flex justify-end p-2">
+              <button
+                type="button"
+                onClick={() => setShowStepDrawer(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)]"
+                aria-label="Stappen sluiten"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <StudyStepRail {...railProps} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeSlidedeck && (
         <PdfSlideDeckPresenter slide={activeSlidedeck} onClose={() => setActiveSlidedeck(null)} />
@@ -882,8 +1099,6 @@ export default function StudentLessonPage() {
 
 function LessonBlockContent({
   block,
-  step,
-  totalSteps,
   isCompleted,
   progressRecord,
   assessmentItemRecords,
@@ -901,38 +1116,23 @@ function LessonBlockContent({
   gameRewardRules,
   onSaveProgress,
   onGameComplete,
-  onAutoAdvance
+  onAutoAdvance,
+  onConfirmRead
 }) {
-  const Icon = blockIcons[block?.type] || BookOpen;
   const content = block?.content || {};
   const linkedVraag = block?.linkedVraag || null;
-  const title = block?.title || CONTENT_BLOCK_LABELS[block?.type] || 'Lesblok';
   const bodyHtml =
     block?.type === 'question'
       ? linkedVraag?.content?.text || content.html || '<p>Nog geen vraagtekst ingevuld.</p>'
       : content.html || content.text || '';
+  const isReadingBlock = requiresReadConfirmation(block);
+  const confirmLabels = getReadConfirmLabels(block?.type || '');
 
+  // Elke stap staat in hetzelfde kader. De stapnaam, het type, de teller en de
+  // afgerond-status staan in de studeerbalk bovenaan; hier geen tweede kop.
   return (
-    <article className="min-h-[32rem] p-5 sm:p-8">
-      <div className="flex flex-col gap-5 border-b border-[var(--helix-border)] pb-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-            <Icon size={26} />
-          </div>
-          <div>
-            <p className="helix-eyebrow">
-              {CONTENT_BLOCK_LABELS[block.type] || block.type}
-            </p>
-            <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-[var(--helix-navy)]">{title}</h2>
-            <p className="mt-2 text-sm font-bold text-[var(--helix-muted)]">
-              Stap {step} van {totalSteps}
-              {isCompleted ? ' · afgerond' : ''}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8">
+    <article className="study-block flex flex-col gap-6">
+      <div className="min-w-0">
         {block.type === 'game' ? (
           <GameBlock
             block={block}
@@ -981,7 +1181,62 @@ function LessonBlockContent({
           <DefaultLearningBlock block={block} bodyHtml={bodyHtml} linkedVraag={linkedVraag} />
         )}
       </div>
+
+      {isReadingBlock && (
+        <ReadingBlockCompletion
+          isCompleted={isCompleted}
+          actionLabel={confirmLabels.action}
+          hintLabel={confirmLabels.hint}
+          onConfirm={onConfirmRead}
+        />
+      )}
     </article>
+  );
+}
+
+// Een leesstap rondt de leerling zelf af. Dat is de enige plek waar theorie,
+// voorbeeld, samenvatting en media op afgerond komen te staan.
+function ReadingBlockCompletion({ isCompleted, actionLabel, hintLabel, onConfirm }) {
+  const [saving, setSaving] = useState(false);
+
+  const handleConfirm = async () => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onConfirm?.();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Na het afvinken verandert alleen de knop zelf van staat. De felicitatie staat
+  // één keer op het scherm: in de zwevende balk onderin.
+  if (isCompleted) {
+    return (
+      <div className="flex justify-end border-t border-[var(--helix-border)] pt-5">
+        <span className="inline-flex items-center gap-2 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-5 py-3 text-sm font-black text-[var(--helix-muted)]">
+          <Check size={18} strokeWidth={3.2} className="text-[#15803d]" />
+          Afgevinkt
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-[var(--helix-border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+        {hintLabel}
+      </p>
+      <button
+        type="button"
+        onClick={handleConfirm}
+        disabled={saving}
+        className="helix-btn-solid shrink-0 px-5 py-3 text-sm"
+      >
+        <Check size={18} strokeWidth={3.2} />
+        {saving ? 'Bezig...' : actionLabel}
+      </button>
+    </div>
   );
 }
 
@@ -2078,7 +2333,7 @@ function QuestionLearningBlock({
 
         {preview.promptHtml && (
           <div
-            className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
+            className="lesson-prose"
             dangerouslySetInnerHTML={htmlValue(preview.promptHtml)}
           />
         )}
@@ -2358,68 +2613,118 @@ function QuestionLearningBlock({
   );
 }
 
+// De kaart eromheen (.study-block) is voor elke stap gelijk. Dit blok vult alleen
+// de inhoud: een klein labeltje bij voorbeeld en samenvatting, de leestekst in een
+// begrensde kolom, en de figuur ernaast.
 function DefaultLearningBlock({ block, bodyHtml, linkedVraag }) {
   const content = block.content || {};
   const imageUrl = content.imageUrl || content.mediaUrl || linkedVraag?.content?.images?.[0] || '';
   const caption = content.caption || content.altText || '';
+  const presentation = getLessonReadingPresentation(block.type);
+  const isExampleBlock = block.type === 'example';
+  // Eén begrippenlijst voor het hele blok, zodat theorie en voorbeeld dezelfde
+  // kernbegrippen vet zetten.
+  const formatReading = createLessonReadingFormatter(bodyHtml, content);
+
+  // Een voorbeeldblok draagt zijn label in het voorbeeldvak zelf; dan hoeft er
+  // niet ook nog een chip boven de kaart te staan.
+  const typeChip = presentation && !isExampleBlock ? (
+    <span
+      className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] ${presentation.chipClass}`}
+    >
+      {presentation.eyebrow}
+    </span>
+  ) : null;
 
   if (block.type === 'media') {
     return (
       <div className="space-y-6">
-        {bodyHtml && (
-          <div
-            className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
-            dangerouslySetInnerHTML={htmlValue(bodyHtml)}
-          />
+        {typeChip}
+        {hasRenderableLessonHtml(bodyHtml) && (
+          <div className="lesson-prose" dangerouslySetInnerHTML={htmlValue(formatReading(bodyHtml))} />
         )}
-        <MediaRenderer
-          media={normalizeMediaContent(content)}
-          title={block.title || 'Media'}
-        />
+        <MediaRenderer media={normalizeMediaContent(content)} title={block.title || 'Media'} />
       </div>
     );
   }
 
-  const accent = getLessonBlockAccent(block.type);
-  const hasBodyContent = hasRenderableLessonHtml(bodyHtml);
+  const { theoryHtml, exampleHtml, exampleLabel } = resolveLessonReadingSections({
+    type: block.type,
+    bodyHtml,
+    content
+  });
+  const hasBodyContent = hasRenderableLessonHtml(theoryHtml);
+  const hasExample = hasRenderableLessonHtml(exampleHtml);
 
-  if (!hasBodyContent && !imageUrl) {
+  if (!hasBodyContent && !hasExample && !imageUrl) {
     return (
-      <div className="rounded-3xl border border-dashed border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-8 text-center">
+      <div className="rounded-[var(--helix-radius-lg)] border border-dashed border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-8 text-center sm:p-12">
         <BookOpen className="mx-auto text-[var(--helix-muted)]" size={34} />
         <p className="mt-3 font-black text-[var(--helix-navy)]">Nog geen inhoud</p>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
-          Je docent vult dit lesblok nog aan. Je kunt verder met de volgende stap.
+          Je docent vult dit lesblok nog aan. Vink de stap af en ga verder met de route.
         </p>
       </div>
     );
   }
 
-  const proseContent = (
-    <div
-      className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)] prose-img:rounded-2xl prose-img:border prose-img:border-[var(--helix-border)]"
-      dangerouslySetInnerHTML={htmlValue(bodyHtml)}
-    />
-  );
+  const figure = imageUrl ? (
+    <figure className="overflow-hidden rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white/70 p-3">
+      <img src={imageUrl} alt={caption || block.title || ''} className="w-full rounded-[var(--helix-radius-md)] object-contain" />
+      {caption && (
+        <figcaption className="mt-3 px-1 text-sm font-semibold leading-6 text-[var(--helix-muted)]">{caption}</figcaption>
+      )}
+    </figure>
+  ) : null;
+
+  // Een voorbeeldblok is in zijn geheel de uitwerking; bij theorie met een
+  // ingesloten voorbeeld is alleen het afgesplitste deel de uitwerking.
+  const exampleBodyHtml = hasExample ? exampleHtml : isExampleBlock ? theoryHtml : '';
+  const showExample = hasRenderableLessonHtml(exampleBodyHtml);
+  const showTheory = hasBodyContent && !(isExampleBlock && !hasExample);
+  // De figuur hoort bij de uitwerking zodra er een voorbeeldvak is; anders staat
+  // hij naast de theorie.
+  const theoryFigure = showExample ? null : figure;
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
-      {accent ? (
-        <div className={accent.className}>
-          <p className="helix-eyebrow">{accent.eyebrow}</p>
-          <div className="mt-4">{proseContent}</div>
+    <div className="space-y-6">
+      {typeChip}
+
+      {showTheory && (
+        <div className={`grid items-start gap-8 ${theoryFigure ? 'xl:grid-cols-[minmax(0,1fr)_320px]' : ''}`}>
+          <div className="lesson-prose min-w-0" dangerouslySetInnerHTML={htmlValue(formatReading(theoryHtml))} />
+          {theoryFigure}
         </div>
-      ) : (
-        proseContent
       )}
 
-      {imageUrl && (
-        <figure className="overflow-hidden rounded-3xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
-          <img src={imageUrl} alt={caption || block.title || ''} className="w-full rounded-xl object-contain" />
-          {caption && <figcaption className="mt-3 px-1 text-sm font-semibold text-[var(--helix-muted)]">{caption}</figcaption>}
-        </figure>
+      {!showTheory && theoryFigure}
+
+      {showExample && (
+        <LessonExamplePanel
+          label={exampleLabel || presentation?.eyebrow || 'Voorbeeld'}
+          html={formatReading(exampleBodyHtml)}
+          figure={figure}
+        />
       )}
     </div>
+  );
+}
+
+// Uitgewerkt voorbeeld: een apart gelabeld vak binnen dezelfde leeskaart. Links
+// de uitwerking, rechts de figuur. Zonder figuur wordt het netjes één kolom.
+function LessonExamplePanel({ label, html, figure = null }) {
+  return (
+    <section className="study-example">
+      <p className="study-example-label">{label || 'Voorbeeld'}</p>
+      <div
+        className={`mt-4 grid items-start gap-6 ${
+          figure ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)]' : ''
+        }`}
+      >
+        <div className="lesson-prose min-w-0" dangerouslySetInnerHTML={htmlValue(html)} />
+        {figure}
+      </div>
+    </section>
   );
 }
 
@@ -2439,17 +2744,14 @@ function SlidedeckBlock({ block, onOpen }) {
   };
 
   return (
-    <div className="rounded-3xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/70 p-6">
+    <div className="study-panel border-fuchsia-100 bg-[var(--helix-soft-lavender)]/70">
       <p className="helix-eyebrow">Presentatie</p>
       <h3 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">{presenterSlide.title}</h3>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--helix-muted)]">
         Bekijk deze presentatie als losse slides. Gebruik vorige/volgende of fullscreen voor digibordweergave.
       </p>
       {content.html && (
-        <div
-          className="prose prose-sm mt-5 max-w-none text-[var(--helix-muted)]"
-          dangerouslySetInnerHTML={htmlValue(content.html)}
-        />
+        <div className="lesson-prose mt-5" dangerouslySetInnerHTML={htmlValue(content.html)} />
       )}
       <button
         onClick={() => onOpen(presenterSlide)}
@@ -2493,14 +2795,11 @@ function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, onSaveIt
 
   return (
     <div className="space-y-6">
-      <div className={`rounded-3xl border p-6 ${isToets ? 'border-blue-100 bg-blue-50 text-blue-950' : 'border-emerald-100 bg-emerald-50 text-emerald-950'}`}>
+      <div className={`study-panel ${isToets ? 'border-blue-100 bg-blue-50 text-blue-950' : 'border-emerald-100 bg-emerald-50 text-emerald-950'}`}>
         <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
         <h3 className="mt-2 font-display text-2xl font-extrabold">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
         {bodyHtml && (
-          <div
-            className="prose prose-sm mt-4 max-w-none"
-            dangerouslySetInnerHTML={htmlValue(bodyHtml)}
-          />
+          <div className="lesson-prose mt-4" dangerouslySetInnerHTML={htmlValue(bodyHtml)} />
         )}
         <p className="mt-4 text-sm font-bold">
           {items.length} {items.length === 1 ? 'vraag' : 'vragen'}
@@ -2978,7 +3277,7 @@ function ExerciseLearningBlock({ block, bodyHtml, progressRecord, onSaveProgress
     <div className="space-y-6">
       {hasRenderableLessonHtml(bodyHtml) && (
         <div
-          className="prose prose-lg max-w-none leading-8 text-[var(--helix-muted)] prose-headings:font-display prose-headings:text-[var(--helix-navy)]"
+          className="lesson-prose"
           dangerouslySetInnerHTML={htmlValue(bodyHtml)}
         />
       )}
@@ -3045,7 +3344,7 @@ function GameBlock({ block, gameRewardRules = {}, playCount = 0, lastResult = nu
     <div className="space-y-5">
       {block.content?.html && (
         <div
-          className="prose prose-lg max-w-none text-[var(--helix-muted)]"
+          className="lesson-prose"
           dangerouslySetInnerHTML={htmlValue(block.content.html)}
         />
       )}

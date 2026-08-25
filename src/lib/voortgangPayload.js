@@ -9,6 +9,26 @@ const normalizeCount = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
 };
 
+/**
+ * Beoordeling door een docent, in opslagvorm. Firestore weigert `undefined`,
+ * dus een ontbrekende beoordeling is expliciet `null` en niet een half object.
+ */
+export const normalizeTeacherReview = (review) => {
+  if (!review || typeof review !== 'object') return null;
+
+  const besluit = String(review.besluit || '').trim();
+  if (!besluit) return null;
+
+  return {
+    besluit,
+    besluitLabel: String(review.besluitLabel || '').trim(),
+    opmerking: String(review.opmerking || '').trim(),
+    docentId: String(review.docentId || '').trim(),
+    docentNaam: String(review.docentNaam || '').trim(),
+    beoordeeldOp: review.beoordeeldOp ?? null
+  };
+};
+
 const buildAssessmentPayload = ({ data = {}, existingData = {}, lastAnswer = null } = {}) => {
   if (data.openAnswerAssessment) {
     return {
@@ -86,6 +106,10 @@ export const buildContentBlockVoortgangUpdate = ({
     lastAssessment: buildLastAssessmentPayload({ data, existingData, lastAnswer }),
     teacherSignal: data.teacherSignal ?? existingData.teacherSignal ?? '',
     teacherFeedbackSummary: data.teacherFeedbackSummary ?? existingData.teacherFeedbackSummary ?? '',
+    // Wie heeft dit nagekeken, wanneer en met welk besluit. Blijft staan als de
+    // leerling daarna nog een poging doet: de beoordeling is geschiedenis, geen
+    // vlag die opnieuw gezet moet worden.
+    teacherReview: normalizeTeacherReview(data.teacherReview ?? existingData.teacherReview),
     draftSaved: data.completed === true ? false : (data.draftSaved ?? existingData.draftSaved ?? false),
     // Deelscores van de gedeelde beoordelingslaag. Hier stond eerder alleen
     // "goed of fout", terwijl de docent juist wil zien welk onderdeel misging.
@@ -175,6 +199,7 @@ export const buildAssessmentItemVoortgangUpdate = ({
     attemptStatus: data.attemptStatus ?? existingData.attemptStatus ?? (data.completed ? 'completed' : 'open'),
     completionReason: data.completionReason ?? existingData.completionReason ?? '',
     teacherSignal: data.teacherSignal ?? existingData.teacherSignal ?? '',
+    teacherReview: normalizeTeacherReview(data.teacherReview ?? existingData.teacherReview),
     lastAnswer: data.lastAnswer ?? existingData.lastAnswer ?? null,
     lastAssessment: data.lastAssessment ?? existingData.lastAssessment ?? null,
     parts,

@@ -9,6 +9,7 @@ import { StudentBugReportContext } from '../studentBugReports/StudentBugReportCo
 import TokenBalancePill from '../tokens/TokenBalancePill';
 import { BarChart3, BellRing, BookOpen, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
+import { isStudyRoutePath } from '../../lib/studyRouteState';
 import { getOpenStudentBugReportCount } from '../../services/studentBugReportService';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewards';
@@ -32,6 +33,9 @@ export default function AppShell() {
   const [studentLoadout, setStudentLoadout] = useState({ activePinIds: [] });
   const [rewardItems, setRewardItems] = useState([]);
   const canShowStudentRewards = !isAdmin && !isDevBypass && Boolean(currentUser?.uid);
+  // Tijdens het studeren is de app-chrome weg: geen logo, geen navigatie, geen
+  // tokenpil, geen profiel of uitloggen. De studeerroute bouwt zijn eigen balk.
+  const isStudyRoute = isStudyRoutePath(location.pathname);
 
   useEffect(() => {
     if (isAdmin && location.pathname === '/') {
@@ -112,6 +116,7 @@ export default function AppShell() {
     <div className="helix-page flex min-h-screen flex-col font-sans selection:bg-fuchsia-100 selection:text-[var(--helix-navy)]">
       <NameSetupModal />
 
+      {!isStudyRoute && (
       <header className="sticky top-0 z-[100] flex min-h-20 items-center justify-between border-b border-[var(--helix-border)] bg-white/86 px-4 shadow-[0_14px_34px_-28px_rgba(11,19,43,0.45)] backdrop-blur-2xl md:px-10">
         <div className="flex min-w-0 items-center gap-4 md:gap-8">
           <h1
@@ -265,8 +270,12 @@ export default function AppShell() {
           </button>
         </div>
       </header>
+      )}
 
-      <main className="relative flex flex-1 flex-col overflow-hidden">
+      {/* overflow-x-clip in plaats van overflow-hidden: clip maakt geen scrollcontainer,
+          dus blijft `position: sticky` binnen een pagina (zoals de ankernavigatie op de
+          lesstofpagina) meescrollen met het venster. */}
+      <main className="relative flex flex-1 flex-col overflow-x-clip">
         <Outlet />
       </main>
     </div>
