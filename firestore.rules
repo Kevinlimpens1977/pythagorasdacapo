@@ -267,6 +267,15 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Collectiegroep-lezing van toets- en quizitems.
+    // De nakijkstapel van de docent haalt alle wachtende beoordelingen op met
+    // collectionGroup('items'); een padregel hierboven dekt zo'n query niet.
+    // Bewust admin-only: deze query filtert niet op uid en levert dus items
+    // van alle leerlingen. Leerlingen houden hun eigen toegang via het pad.
+    match /{path=**}/items/{itemId} {
+      allow read: if isAdmin();
+    }
+
     // Door docenten/admins afgevinkte voortgangssignalen.
     // Leerlingen zien of wijzigen deze moderatiestatus niet.
     match /progressSignalAcknowledgements/{signalId} {
