@@ -86,6 +86,35 @@ export const resolveClosedQuestionGrade = ({ serverResult = null, localGrade = n
   };
 };
 
+// Hoeveel uitleg mag de leerling NU lezen?
+//
+// `chosen` gaat over de optie die de leerling zelf heeft aangewezen en verklapt
+// dus niets: die mag altijd mee. `correct` beschrijft het juiste antwoord. Zou
+// die zin al na de eerste van twee pogingen verschijnen, dan is de tweede
+// poging gratis en heeft de socratische hint geen functie meer. Daarom pas als
+// de vraag voor deze leerling klaar is: goed, of geen poging meer over.
+//
+// Deze filter bepaalt ook wat er in de voortgang wordt bewaard. Zolang de vraag
+// openstaat, komt de uitleg van het juiste antwoord dus in geen enkel document
+// terecht dat de leerling zelf kan lezen.
+export const MAX_VISIBLE_EXPLANATION_NOTES = 3;
+
+export const selectAnswerExplanation = ({ explanation = null, questionFinished = false } = {}) => {
+  const take = (value) =>
+    (Array.isArray(value) ? value : [])
+      .map((note) => String(note ?? '').trim())
+      .filter(Boolean)
+      .slice(0, MAX_VISIBLE_EXPLANATION_NOTES);
+
+  return {
+    chosen: take(explanation?.chosen),
+    correct: questionFinished ? take(explanation?.correct) : []
+  };
+};
+
+export const hasAnswerExplanation = (explanation = null) =>
+  (explanation?.chosen?.length || 0) > 0 || (explanation?.correct?.length || 0) > 0;
+
 export const buildClosedQuestionReviewMessage = (reviewReason, fallbackMessage = '') => {
   if (reviewReason === CLOSED_GRADE_REVIEW_REASONS.RATE_LIMITED) {
     return fallbackMessage

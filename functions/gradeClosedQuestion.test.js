@@ -160,7 +160,10 @@ test("gradeClosedQuestion redacts multiple choice part status until the answer i
   assert.equal(right.partsRedacted, false);
   assert.equal(right.parts.length, 3);
   assert.equal(right.parts.every((part) => part.isCorrect), true);
-  assert.equal(JSON.stringify(right).includes("Parijs"), false);
+  // De deelstatussen dragen labels, geen optietekst. De uitleg die de leerling
+  // NA het beoordelen leest mag de optietekst wel noemen - dat is precies waar
+  // hij voor is - dus die staat bewust buiten deze controle.
+  assert.equal(JSON.stringify(right.parts).includes("Parijs"), false);
 });
 
 test("gradeClosedQuestion grades numeriek, volgorde and koppelen through the shared layer", async () => {
@@ -663,4 +666,142 @@ test("gradeClosedQuestion gives an unknown block no extra rights, only the parag
     () => gradeAs(unassigned, { vraagId: "vraag-1", blockId: "block-does-not-exist", answers: {} }),
     (error) => error.code === "permission-denied",
   );
+});
+
+// DE UITLEG BIJ HET GEGEVEN ANTWOORD
+//
+// De leerlingsnapshot draagt `explanation` en `misconception` niet: dat is
+// feitelijk de antwoordsleutel. Ze horen pas terug NA het beoordelen, en dan
+// alleen over de optie die de leerling zelf aanwees, plus - bij een fout
+// antwoord - waarom het juiste antwoord wel klopt.
+const uitlegVraag = publishedQuestion({
+  vraagtype: "meerkeuze",
+  antwoord: {
+    type: "meerkeuze",
+    options: [
+      { id: "option-1", text: "In je OneDrive.", correct: true, explanation: "Daar staat het op elk apparaat." },
+      { id: "option-2", text: "Op een USB-stick.", correct: false, misconception: "Een stick kun je vergeten." },
+      { id: "option-3", text: "In Downloads.", correct: false, misconception: "Downloads is een tijdelijke map." },
+    ],
+  },
+});
+
+test("gradeClosedQuestion returns the explanation of the chosen option after grading", async () => {
+  const db = createDb(baseDocs(uitlegVraag));
+
+  const fout = await gradeAs(db, {
+    vraagId: "vraag-1",
+    blockId: "block-1",
+    answers: { "option-2": true },
+  });
+
+  assert.deepEqual(fout.explanation.chosen, ["Een stick kun je vergeten."]);
+  assert.deepEqual(fout.explanation.correct, ["Daar staat het op elk apparaat."]);
+  // De denkfout van een optie die de leerling NIET koos blijft weg.
+  assert.equal(JSON.stringify(fout.explanation).includes("Downloads is een tijdelijke map."), false);
+
+  const goed = await gradeAs(db, {
+    vraagId: "vraag-1",
+    blockId: "block-1",
+    answers: { "option-1": true },
+  });
+
+  assert.deepEqual(goed.explanation.chosen, ["Daar staat het op elk apparaat."]);
+  assert.deepEqual(goed.explanation.correct, []);
+});
+
+test("gradeClosedQuestion returns no explanation for a question nobody can grade", async () => {
+  const zonderSleutel = createDb(baseDocs(publishedQuestion({
+    vraagtype: "meerkeuze",
+    antwoord: {
+      type: "meerkeuze",
+      options: [
+        { id: "option-1", text: "A", correct: false, misconception: "GEHEIMEDENKFOUT" },
+        { id: "option-2", text: "B", correct: false, misconception: "GEHEIMEDENKFOUT" },
+      ],
+    },
+  })));
+
+  const result = await gradeAs(zonderSleutel, {
+    vraagId: "vraag-1",
+    blockId: "block-1",
+    answers: { "option-1": true },
+  });
+
+  assert.equal(result.canGrade, false);
+  assert.deepEqual(result.explanation, { chosen: [], correct: [] });
+  assert.equal(JSON.stringify(result).includes("GEHEIMEDENKFOUT"), false);
+});
+
+test("gradeClosedQuestion returns no option explanation for a fill in the blank question", async () => {
+  const db = createDb(baseDocs(publishedQuestion({
+    vraagtype: "invullen",
+    antwoord: {
+      type: "invullen",
+      segments: [
+        { type: "text", text: "Bewaar je werk in " },
+        { type: "gap", id: "gap-1", answer: "OneDrive" },
+      ],
+      gaps: [{ id: "gap-1", answer: "OneDrive" }],
+    },
+  })));
+
+  const result = await gradeAs(db, {
+    vraagId: "vraag-1",
+    blockId: "block-1",
+    answers: { "gap-1": "usb" },
+  });
+
+  assert.equal(result.canGrade, true);
+  assert.deepEqual(result.explanation, { chosen: [], correct: [] });
+});
+
+test("gradeClosedQuestion returns the explanation for a question inside a toets block", async () => {
+  const db = createDb(assessmentDocs([
+    {
+      id: "item-1",
+      type: "waar-niet-waar",
+      prompt: "De map Downloads is een bewaarplek.",
+      answer: {
+        type: "meerkeuze",
+        options: [
+          { id: "option-1", text: "Waar", correct: false, misconception: "Verwart een tijdelijke map met een bewaarplek." },
+          { id: "option-2", text: "Niet waar", correct: true, explanation: "Downloads wordt regelmatig opgeruimd." },
+        ],
+      },
+    },
+  ]));
+
+  const fout = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "option-1" } });
+  assert.equal(fout.isCorrect, false);
+  assert.deepEqual(fout.explanation.chosen, ["Verwart een tijdelijke map met een bewaarplek."]);
+  assert.deepEqual(fout.explanation.correct, ["Downloads wordt regelmatig opgeruimd."]);
+
+  const goed = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "option-2" } });
+  assert.equal(goed.isCorrect, true);
+  assert.deepEqual(goed.explanation.chosen, ["Downloads wordt regelmatig opgeruimd."]);
+  assert.deepEqual(goed.explanation.correct, []);
+});
+
+test("gradeClosedQuestion caps an author who pasted a whole chapter into one option", async () => {
+  const langeUitleg = "x".repeat(1200);
+  const db = createDb(baseDocs(publishedQuestion({
+    vraagtype: "meerkeuze",
+    antwoord: {
+      type: "meerkeuze",
+      options: [
+        { id: "option-1", text: "Goed", correct: true, explanation: langeUitleg },
+        { id: "option-2", text: "Fout", correct: false, misconception: langeUitleg },
+      ],
+    },
+  })));
+
+  const result = await gradeAs(db, {
+    vraagId: "vraag-1",
+    blockId: "block-1",
+    answers: { "option-2": true },
+  });
+
+  assert.equal(result.explanation.chosen[0].length, 400);
+  assert.equal(result.explanation.correct[0].length, 400);
 });

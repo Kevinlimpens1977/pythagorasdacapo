@@ -42,6 +42,11 @@ const ANSWER_KEY_REVEALING_PART_TYPES = new Set(["meerkeuze", "waar-niet-waar"])
 const QUESTION_GRADING_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const QUESTION_GRADING_RATE_LIMIT_MAX = 12;
 const QUESTION_GRADING_ANSWER_MAX_CHARS = 20000;
+// De uitleg per optie is door een docent geschreven, niet door een leerling.
+// Deze grenzen zijn er dus niet tegen misbruik maar tegen een uitgeschoten
+// plakactie in de studio: een leerling hoort een paar zinnen te lezen.
+const EXPLANATION_NOTE_MAX_COUNT = 3;
+const EXPLANATION_NOTE_MAX_CHARS = 400;
 const QUESTION_GRADING_RATE_LIMIT_MESSAGE =
   "Je hebt deze vraag te vaak achter elkaar laten nakijken. Wacht even, denk nog eens na of vraag je docent om hulp.";
 const DEFAULT_MASTER_RULES = `Je bent Digidocent, de AI-hulp van HELIX.
@@ -1249,12 +1254,16 @@ function loadSharedGradingLayer() {
       import("./shared/questionGrading.js"),
       import("./shared/questionPreviewUtils.js"),
       import("./shared/assessmentItemGrading.js"),
-    ]).then(([grading, previewUtils, assessmentGrading]) => ({
+      import("./shared/answerExplanationFeedback.js"),
+    ]).then(([grading, previewUtils, assessmentGrading, explanationFeedback]) => ({
       gradeQuestionAnswer: grading.gradeQuestionAnswer,
       GRADE_REASONS: grading.GRADE_REASONS,
       buildQuestionPreviewModel: previewUtils.buildQuestionPreviewModel,
       gradeAssessmentItemAnswer: assessmentGrading.gradeAssessmentItemAnswer,
       getAssessmentGradingType: assessmentGrading.getAssessmentGradingType,
+      buildAssessmentItemExplanationFeedback:
+        assessmentGrading.buildAssessmentItemExplanationFeedback,
+      buildQuestionExplanationFeedback: explanationFeedback.buildQuestionExplanationFeedback,
     }));
   }
 
@@ -1415,6 +1424,36 @@ function buildSafeGradeParts(grade = {}, questionType = "") {
 }
 
 /**
+ * De uitleg bij het gegeven antwoord, klaar om over de lijn te gaan.
+ *
+ * Dit is de ENIGE plek waar `explanation` en `misconception` de leerling
+ * bereiken, en dan pas NA het beoordelen. De leerlingsnapshot draagt ze niet
+ * (publicQuestionView / publicContentBlockView strippen ze), dus vóór het
+ * antwoorden staat er niets over de sleutel in de browser.
+ *
+ * `chosen` gaat over de optie die de leerling zelf aanwees en verklapt niets.
+ * `correct` beschrijft het juiste antwoord en gaat alleen mee bij een fout
+ * antwoord; de leerlingroute toont hem pas als de vraag klaar is
+ * (selectAnswerExplanation in closedQuestionGradingRoute.js).
+ *
+ * Bij een vraag zonder oordeel (docent kijkt na) gaat er niets mee: er valt
+ * dan ook niets uit te leggen.
+ */
+function buildSafeExplanationFeedback(explanation = null) {
+  const take = (value) =>
+    (Array.isArray(value) ? value : [])
+      .map((note) => String(note ?? "").trim())
+      .filter(Boolean)
+      .slice(0, EXPLANATION_NOTE_MAX_COUNT)
+      .map((note) => note.slice(0, EXPLANATION_NOTE_MAX_CHARS));
+
+  return {
+    chosen: take(explanation?.chosen),
+    correct: take(explanation?.correct),
+  };
+}
+
+/**
  * Mag deze aanroeper dit toets- of quizitem laten nakijken?
  *
  * Zelfde grenzen als bij een losse vraag: gepubliceerd, niet gearchiveerd, en
@@ -1504,10 +1543,15 @@ async function gradeAssessmentItemCore({
     throw new HttpsError("invalid-argument", "Deze toetsvraag bestaat niet in dit lesblok.");
   }
 
-  const { gradeAssessmentItemAnswer, getAssessmentGradingType } = await loadGradingLayer();
+  const {
+    gradeAssessmentItemAnswer,
+    getAssessmentGradingType,
+    buildAssessmentItemExplanationFeedback,
+  } = await loadGradingLayer();
   const questionType = getAssessmentGradingType(item);
   const grade = gradeAssessmentItemAnswer({ item, answer: answers.itemAnswer });
   const canGrade = grade?.canGrade === true;
+  const isCorrect = canGrade && grade.isCorrect === true;
 
   return {
     success: true,
@@ -1515,9 +1559,14 @@ async function gradeAssessmentItemCore({
     itemId,
     questionType,
     canGrade,
-    isCorrect: canGrade && grade.isCorrect === true,
+    isCorrect,
     reason: String(grade?.reason || ""),
     ...buildSafeGradeParts(grade || {}, questionType),
+    explanation: buildSafeExplanationFeedback(
+      canGrade
+        ? buildAssessmentItemExplanationFeedback({ item, answer: answers.itemAnswer, isCorrect })
+        : null,
+    ),
     source: "server",
   };
 }
@@ -1579,11 +1628,13 @@ async function gradeClosedQuestionCore({
       reason: "needs-human",
       parts: [],
       partsRedacted: false,
+      explanation: buildSafeExplanationFeedback(null),
       source: "server",
     };
   }
 
-  const { gradeQuestionAnswer, buildQuestionPreviewModel } = await loadGradingLayer();
+  const { gradeQuestionAnswer, buildQuestionPreviewModel, buildQuestionExplanationFeedback } =
+    await loadGradingLayer();
   const grade = gradeQuestionAnswer({
     vraag,
     preview: buildQuestionPreviewModel(vraag),
@@ -1591,15 +1642,19 @@ async function gradeClosedQuestionCore({
   });
 
   const canGrade = grade?.canGrade === true;
+  const isCorrect = canGrade && grade.isCorrect === true;
 
   return {
     success: true,
     vraagId,
     questionType,
     canGrade,
-    isCorrect: canGrade && grade.isCorrect === true,
+    isCorrect,
     reason: String(grade?.reason || ""),
     ...buildSafeGradeParts(grade || {}, questionType),
+    explanation: buildSafeExplanationFeedback(
+      canGrade ? buildQuestionExplanationFeedback({ vraag, answers, isCorrect }) : null,
+    ),
     source: "server",
   };
 }

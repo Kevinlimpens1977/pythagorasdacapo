@@ -20,6 +20,11 @@
 
 import { gradeQuestionAnswer } from './questionGrading.js';
 import { buildQuestionPreviewModel } from './questionPreviewUtils.js';
+import {
+  buildChoiceExplanationFeedback,
+  emptyAnswerExplanation,
+  getSelectedChoiceIds
+} from './answerExplanationFeedback.js';
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -282,5 +287,34 @@ export const gradeAssessmentItemAnswer = ({ item = {}, answer } = {}) => {
     vraag,
     preview: buildQuestionPreviewModel(vraag),
     answers: buildAssessmentGradingAnswers(item, answer)
+  });
+};
+
+/**
+ * De uitleg bij de gekozen optie(s) van een toets- of quizitem.
+ *
+ * Zelfde adapterrol als hierboven: een toetsitem bewaart zijn opties in
+ * `item.answer.options` (of nog in het oude `item.options`), en
+ * `waar-niet-waar` is onder water gewoon meerkeuze. Het kiezen van de zinnen
+ * gebeurt in answerExplanationFeedback.js, zodat een losse vraag en een
+ * toetsitem daar niet uit elkaar kunnen lopen.
+ *
+ * Verwacht het VOLLEDIGE item, met sleutel. Een leerlingsnapshot heeft die
+ * niet - daar bouwt de Cloud Function deze uitleg, na het beoordelen.
+ */
+export const buildAssessmentItemExplanationFeedback = ({
+  item = {},
+  answer,
+  isCorrect = false
+} = {}) => {
+  if (getAssessmentGradingType(item) !== 'meerkeuze') return emptyAnswerExplanation();
+
+  const key = getAssessmentAnswerKey(item);
+  const options = asArray(key.options).length > 0 ? asArray(key.options) : asArray(item?.options);
+
+  return buildChoiceExplanationFeedback({
+    options,
+    selectedIds: getSelectedChoiceIds(buildAssessmentGradingAnswers(item, answer)),
+    isCorrect
   });
 };

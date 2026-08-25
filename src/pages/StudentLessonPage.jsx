@@ -49,6 +49,7 @@ import {
   normalizeAssessmentItems
 } from '../lib/assessmentBlockUtils';
 import {
+  buildAssessmentItemExplanationFeedback,
   buildAssessmentMatchOptions,
   gradeAssessmentItemAnswer
 } from '../lib/assessmentItemGrading';
@@ -117,8 +118,18 @@ import { hasQuestionAnswerKey } from '../lib/publicQuestionView';
 import { buildInitialOrderItems, gradeQuestionAnswer } from '../lib/questionGrading';
 import {
   buildClosedQuestionReviewMessage,
-  resolveClosedQuestionGrade
+  hasAnswerExplanation,
+  resolveClosedQuestionGrade,
+  selectAnswerExplanation
 } from '../lib/closedQuestionGradingRoute';
+import {
+  buildQuestionExplanationFeedback,
+  emptyAnswerExplanation
+} from '../lib/answerExplanationFeedback';
+import {
+  buildOptionShuffleSeed,
+  shuffleAnswerOptions
+} from '../lib/answerOptionShuffle';
 import {
   buildParagraphEndPlan,
   buildQuestionAttemptOutcome,
@@ -987,6 +998,10 @@ export default function StudentLessonPage() {
                   onSaveAssessmentItemProgress={(itemId, payload) =>
                     saveAssessmentItemProgress(currentBlock, itemId, payload)}
                   studentName={studentFirstName}
+                  // De seed voor de antwoordvolgorde. Leeg voor een docent: in de
+                  // docent- en lespreview blijft de auteursvolgorde staan, zodat
+                  // een docent zijn eigen lijst herkent.
+                  studentId={isAdmin ? '' : (currentUser?.uid || '')}
                   paragraaf={paragraaf}
                   hoofdstuk={hoofdstuk}
                   blocks={blocks}
@@ -1104,6 +1119,7 @@ function LessonBlockContent({
   assessmentItemRecords,
   onSaveAssessmentItemProgress,
   studentName,
+  studentId = '',
   paragraaf,
   hoofdstuk,
   blocks,
@@ -1148,6 +1164,7 @@ function LessonBlockContent({
             block={block}
             bodyHtml={bodyHtml}
             itemRecords={assessmentItemRecords}
+            studentId={studentId}
             onSaveItemProgress={onSaveAssessmentItemProgress}
           />
         ) : block.type === 'question' && !block.linkedVraagId && hasExerciseFields(block) ? (
@@ -1166,6 +1183,7 @@ function LessonBlockContent({
             linkedVraag={linkedVraag}
             progressRecord={progressRecord}
             studentName={studentName}
+            studentId={studentId}
             paragraaf={paragraaf}
             hoofdstuk={hoofdstuk}
             blocks={blocks}
@@ -1870,6 +1888,7 @@ function QuestionLearningBlock({
   linkedVraag,
   progressRecord,
   studentName = 'leerling',
+  studentId = '',
   paragraaf,
   hoofdstuk,
   blocks = [],
@@ -1883,6 +1902,24 @@ function QuestionLearningBlock({
 }) {
   const preview = buildQuestionPreviewModel(linkedVraag || {});
   const answerKeyAvailable = hasQuestionAnswerKey(linkedVraag || {});
+  // De volgorde waarin de opties op het scherm komen. Alleen de VOLGORDE
+  // verandert: het antwoord wordt als optie-id bewaard en nagekeken, dus
+  // previewAnswers, gradeQuestionAnswer en de uitleg-per-antwoord blijven
+  // hetzelfde lezen. De seed is uid + blok + vraag, zodat dezelfde leerling bij
+  // een tweede poging of na verversen dezelfde lijst terugziet.
+  const choiceOptions = useMemo(
+    () =>
+      shuffleAnswerOptions({
+        options: linkedVraag?.antwoord?.options || [],
+        questionType: preview.type,
+        seed: buildOptionShuffleSeed({
+          studentId,
+          blockId: block?.id || '',
+          questionId: linkedVraag?.id || block?.linkedVraagId || ''
+        })
+      }),
+    [block?.id, block?.linkedVraagId, linkedVraag?.antwoord?.options, linkedVraag?.id, preview.type, studentId]
+  );
   const savedAssessment = isAssessmentForAnswer(
     progressRecord?.openAnswerAssessment,
     progressRecord?.lastAnswer || {}
@@ -1899,6 +1936,15 @@ function QuestionLearningBlock({
     sanitizeOpenAnswerAssessmentFeedback(savedAssessment?.feedback || '')
   );
   const [assessmentMissing, setAssessmentMissing] = useState(savedAssessment?.missing || []);
+  // Alleen wat bewaard is mag terug in beeld; selectAnswerExplanation heeft de
+  // uitleg van het juiste antwoord er bij een openstaande vraag al uit gefilterd
+  // voordat hij naar de voortgang ging.
+  const [answerExplanation, setAnswerExplanation] = useState(() =>
+    selectAnswerExplanation({
+      explanation: progressRecord?.lastAssessment?.explanation,
+      questionFinished: true
+    })
+  );
   const onSaveProgressRef = useRef(onSaveProgress);
   const autoAdvanceTimeoutRef = useRef(null);
   const initialDraftSignature = JSON.stringify({
@@ -1996,6 +2042,7 @@ function QuestionLearningBlock({
   const handleCheckAnswer = async () => {
     setAssessmentFeedback('');
     setAssessmentMissing([]);
+    setAnswerExplanation(emptyAnswerExplanation());
     const isOpenQuestion = preview.type === 'open';
     let autoAssessmentUnavailable = false;
     let closedReviewReason = '';
@@ -2055,6 +2102,7 @@ function QuestionLearningBlock({
       // zichtbaar "docent kijkt na" - een uitzondering, niet het standaardpad.
       let closedGrade = null;
       let closedServerResult = null;
+      let rawExplanation = null;
       if (!isOpenQuestion) {
         const localGrade = getLocalQuestionGrade();
 
@@ -2079,6 +2127,19 @@ function QuestionLearningBlock({
         autoAssessmentUnavailable = !closedGrade.graded;
         closedReviewReason = closedGrade.reviewReason;
         closedGradeSource = closedGrade.source || 'local';
+
+        // Telde het lokale oordeel (docentpreview, lespreview), dan ligt de
+        // volledige vraag hier toch al op tafel en bouwen we dezelfde uitleg met
+        // dezelfde gedeelde laag. Bij een echte leerling komt hij van de server.
+        if (closedGrade.graded) {
+          rawExplanation = closedGrade.source === 'local'
+            ? buildQuestionExplanationFeedback({
+                vraag: linkedVraag || {},
+                answers: answerSnapshot,
+                isCorrect: closedGrade.isCorrect
+              })
+            : closedServerResult?.explanation || null;
+        }
       }
 
       const aiAssessmentFailed = (isOpenQuestion && !assessment?.success) || autoAssessmentUnavailable;
@@ -2149,10 +2210,16 @@ function QuestionLearningBlock({
         resultTier: outcome.resultTier
       });
 
+      const visibleExplanation = selectAnswerExplanation({
+        explanation: rawExplanation,
+        questionFinished: outcome.completed
+      });
+
       if (feedbackText) {
         setAssessmentFeedback(feedbackText);
         setAssessmentMissing(missingItems);
       }
+      setAnswerExplanation(visibleExplanation);
       setAttempts(outcome.attempts);
       setResultTier(outcome.resultTier);
       setAttemptStatus(outcome.attemptStatus);
@@ -2197,6 +2264,7 @@ function QuestionLearningBlock({
               : (isCorrect ? 'correct' : 'incorrect'),
             reviewReason: closedReviewReason,
             feedback: feedbackText,
+            explanation: visibleExplanation,
             missing: [],
             answerSignature
           }
@@ -2311,7 +2379,7 @@ function QuestionLearningBlock({
           </div>
         )}
 
-        {assessmentFeedback && (
+        {(assessmentFeedback || hasAnswerExplanation(answerExplanation)) && (
           <div className={`rounded-2xl border-2 px-4 py-3 text-sm font-bold ${
             resultTier === 'pending_teacher_review'
               ? 'border-amber-200 bg-amber-50 text-amber-950'
@@ -2321,7 +2389,7 @@ function QuestionLearningBlock({
               ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
               : 'border-violet-200 bg-violet-50 text-violet-950'
           }`}>
-            <p>{assessmentFeedback}</p>
+            {assessmentFeedback && <p>{assessmentFeedback}</p>}
             {assessmentMissing.length > 0 && (
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 {assessmentMissing.map((item) => (
@@ -2329,6 +2397,10 @@ function QuestionLearningBlock({
                 ))}
               </ul>
             )}
+            <AnswerExplanationNotes
+              explanation={answerExplanation}
+              className={assessmentFeedback ? '' : 'mt-0 border-t-0 pt-0'}
+            />
           </div>
         )}
 
@@ -2369,9 +2441,12 @@ function QuestionLearningBlock({
         </div>
       ) : preview.type === 'meerkeuze' ? (
         <div className="space-y-3">
-          {(linkedVraag.antwoord?.options || []).map((option, index) => (
+          {choiceOptions.map((option) => (
             (() => {
-              const fieldId = option.id || `option-${index + 1}`;
+              // Het id ligt vast op de oorspronkelijke positie (zie
+              // withStableOptionIds); na het schudden verwijst het dus nog naar
+              // dezelfde optie als aan de kant van de nakijker.
+              const fieldId = option.id;
               const checked = Boolean(previewAnswers[fieldId]);
               const status = checked && answerKeyAvailable ? (option.correct ? 'correct' : 'incorrect') : 'empty';
               return (
@@ -2389,7 +2464,7 @@ function QuestionLearningBlock({
                     disabled={submitted}
                     className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100 disabled:cursor-not-allowed"
                   />
-                  {option.text || `Optie ${index + 1}`}
+                  {option.text || `Optie ${option.originalIndex + 1}`}
                 </label>
               );
             })()
@@ -2766,7 +2841,36 @@ function SlidedeckBlock({ block, onOpen }) {
   );
 }
 
-function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, onSaveItemProgress = null }) {
+/**
+ * De uitleg bij het gegeven antwoord, onder de algemene feedback.
+ *
+ * Bewust een tweede regel binnen hetzelfde vlak en niet een eigen melding: de
+ * leerling leest eerst wat er gebeurd is ("Goed gewerkt", een hint, "je docent
+ * kijkt mee") en daarna waarom. Twee gekleurde kaders naast elkaar zou dubbel
+ * voelen.
+ *
+ * De zinnen komen uit het nakijkpad, niet uit de leerlingsnapshot: zie
+ * answerExplanationFeedback.js.
+ */
+function AnswerExplanationNotes({ explanation = null, className = '' }) {
+  if (!hasAnswerExplanation(explanation)) return null;
+
+  return (
+    <div className={`mt-3 space-y-1 border-t border-current/20 pt-3 text-sm font-semibold leading-6 ${className}`}>
+      {explanation.chosen.map((note) => (
+        <p key={`chosen-${note}`}>{note}</p>
+      ))}
+      {explanation.correct.map((note) => (
+        <p key={`correct-${note}`}>
+          <span className="font-black">Het goede antwoord: </span>
+          {note}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, studentId = '', onSaveItemProgress = null }) {
   const content = block.content || {};
   const rawItems = Array.isArray(content.items) ? content.items : [];
   const items = normalizeAssessmentItems(rawItems).map((item, index) => {
@@ -2827,6 +2931,7 @@ function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, onSaveIt
               isToets={isToets}
               maxAttempts={maxAttempts}
               progressRecord={itemRecords?.[item.id] || null}
+              studentId={studentId}
               onSaveItemProgress={onSaveItemProgress}
             />
           ))}
@@ -2865,6 +2970,7 @@ function AssessmentItemLearningCard({
   isToets,
   maxAttempts = MAX_CORE_QUESTION_ATTEMPTS,
   progressRecord = null,
+  studentId = '',
   onSaveItemProgress = null
 }) {
   const [answer, setAnswer] = useState(() =>
@@ -2878,9 +2984,35 @@ function AssessmentItemLearningCard({
     progressRecord?.attemptStatus || (progressRecord?.completed ? 'completed' : 'open')
   );
   const [feedback, setFeedback] = useState(progressRecord?.lastAssessment?.feedback || '');
+  // Wat er bewaard is, is ook wat er getoond mag worden: selectAnswerExplanation
+  // filtert de uitleg van het juiste antwoord er bij een openstaande vraag uit
+  // voordat hij naar de voortgang gaat.
+  const [answerExplanation, setAnswerExplanation] = useState(() =>
+    selectAnswerExplanation({
+      explanation: progressRecord?.lastAssessment?.explanation,
+      questionFinished: true
+    })
+  );
   const [saving, setSaving] = useState(false);
   const closed = isClosedAssessmentItem(item);
   const answerKeyAvailable = hasAssessmentItemAnswerKey(item);
+  // Alleen de weergavevolgorde. `item` zelf blijft ongeschud: die gaat naar de
+  // beoordelingslaag en naar de voortgang, en daar is de auteursvolgorde de
+  // gezaghebbende. `waar-niet-waar` wordt door shuffleAnswerOptions overgeslagen,
+  // zodat "Waar" boven "Niet waar" blijft staan.
+  const displayOptions = useMemo(
+    () =>
+      shuffleAnswerOptions({
+        options: item.options,
+        questionType: item.type,
+        seed: buildOptionShuffleSeed({
+          studentId,
+          blockId: block?.id || '',
+          questionId: item.id || ''
+        })
+      }),
+    [block?.id, item.id, item.options, item.type, studentId]
+  );
   const isOpenItem = !closed;
   const locked = attemptStatus === 'completed' || attemptStatus === 'locked';
   const hasResult = Boolean(resultTier) && resultTier !== 'in_progress';
@@ -2895,6 +3027,7 @@ function AssessmentItemLearningCard({
     if (saving || locked) return;
     setSaving(true);
     setFeedback('');
+    setAnswerExplanation(emptyAnswerExplanation());
 
     try {
       let graded = false;
@@ -2904,6 +3037,7 @@ function AssessmentItemLearningCard({
       let reviewReason = '';
       let serverError = '';
       let assessment = null;
+      let rawExplanation = null;
 
       if (isOpenItem) {
         // Zelfde volgorde als bij een gewone open vraag: eerst de lokale
@@ -2957,6 +3091,16 @@ function AssessmentItemLearningCard({
         source = closedGrade.source || 'local';
         reviewReason = closedGrade.reviewReason;
         serverError = serverResult?.error || '';
+
+        // Telt het lokale oordeel (docentpreview, lespreview), dan ligt de
+        // volledige vraag hier toch al op tafel en bouwen we dezelfde uitleg
+        // met dezelfde gedeelde laag. Voor een echte leerling komt hij van de
+        // server, want daar staat de sleutel.
+        if (graded) {
+          rawExplanation = closedGrade.source === 'local'
+            ? buildAssessmentItemExplanationFeedback({ item, answer, isCorrect })
+            : serverResult?.explanation || null;
+        }
       }
 
       const outcome = buildQuestionAttemptOutcome({
@@ -2981,11 +3125,16 @@ function AssessmentItemLearningCard({
       }
 
       const score = buildPartScore({ parts, isCorrect: outcome.isCorrect, graded });
+      const visibleExplanation = selectAnswerExplanation({
+        explanation: rawExplanation,
+        questionFinished: outcome.completed
+      });
 
       setAttempts(outcome.attempts);
       setResultTier(outcome.resultTier);
       setAttemptStatus(outcome.attemptStatus);
       setFeedback(feedbackText);
+      setAnswerExplanation(visibleExplanation);
 
       await onSaveItemProgress?.(item.id, {
         itemIndex: index,
@@ -3014,7 +3163,8 @@ function AssessmentItemLearningCard({
           source,
           status: !graded ? 'pending_teacher_review' : (isCorrect ? 'correct' : 'incorrect'),
           reviewReason,
-          feedback: feedbackText
+          feedback: feedbackText,
+          explanation: visibleExplanation
         },
         attemptEntry: buildAttemptHistoryEntry({
           attemptNr: outcome.attempts || attempts + 1,
@@ -3047,6 +3197,7 @@ function AssessmentItemLearningCard({
       <div className="mt-4">
         <AssessmentAnswerInput
           item={item}
+          displayOptions={displayOptions}
           value={answer}
           onChange={setAnswer}
           disabled={locked || saving}
@@ -3070,10 +3221,11 @@ function AssessmentItemLearningCard({
         )}
       </div>
 
-      {feedback && (
-        <p className="mt-3 rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
-          {feedback}
-        </p>
+      {(feedback || hasAnswerExplanation(answerExplanation)) && (
+        <div className="mt-3 rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+          {feedback && <p>{feedback}</p>}
+          <AnswerExplanationNotes explanation={answerExplanation} className={feedback ? '' : 'mt-0 border-t-0 pt-0'} />
+        </div>
       )}
     </div>
   );
@@ -3087,11 +3239,24 @@ function buildInitialAssessmentAnswer(item) {
   return '';
 }
 
-function AssessmentAnswerInput({ item, value, onChange, disabled = false, answerKeyAvailable = true }) {
+function AssessmentAnswerInput({
+  item,
+  value,
+  onChange,
+  disabled = false,
+  answerKeyAvailable = true,
+  // De opties in de volgorde waarin ze getoond moeten worden. Alleen dat: het
+  // nakijken en de voortgang werken met `item` en dus met de auteursvolgorde.
+  displayOptions = null
+}) {
+  const choiceOptions = Array.isArray(displayOptions) && displayOptions.length > 0
+    ? displayOptions
+    : item.options;
+
   if (item.type === 'waar-niet-waar') {
     return (
       <div className="grid gap-2 sm:grid-cols-2">
-        {item.options.map((option) => (
+        {choiceOptions.map((option) => (
           <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
             <input
               type="radio"
@@ -3112,7 +3277,7 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false, answer
     const multipleCorrect = answerKeyAvailable && item.options.filter((option) => option.correct).length > 1;
     return (
       <div className="grid gap-2 sm:grid-cols-2">
-        {item.options.map((option) => (
+        {choiceOptions.map((option) => (
           <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
             <input
               type={multipleCorrect ? 'checkbox' : 'radio'}
