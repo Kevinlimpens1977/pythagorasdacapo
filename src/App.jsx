@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './components/auth/AuthProvider';
 import LoginScreen from './components/auth/LoginScreen';
+import AdminLoginScreen from './components/auth/AdminLoginScreen';
 import AppShell from './components/layout/AppShell';
 import TableOfContents from './components/layout/TableOfContents';
 import StudentLessonPage from './pages/StudentLessonPage';
@@ -38,6 +39,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginScreen />} />
+      <Route path="/login/beheer" element={<AdminLoginScreen />} />
       <Route path="/" element={<PrivateRoute><AppShell /></PrivateRoute>}>
         <Route index element={<TableOfContents />} />
         <Route path="profiel" element={<StudentProfilePage />} />

@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Sora:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #f1e9ff;
-  --color-primary-100: #ffe6f2;
-  --color-primary-500: #ff2d8d;
-  --color-primary-600: #7a3cff;
+  --color-primary-50: oklch(0.97 0.012 300);
+  --color-primary-100: oklch(0.95 0.02 300);
+  --color-primary-500: oklch(0.52 0.19 300);
+  --color-primary-600: oklch(0.46 0.19 300);
   
   --color-success-50: #f0fdf4;
   --color-success-500: #22c55e;
@@ -19,44 +19,44 @@
   --color-warning-500: #f97316;
   --color-warning-600: #ff7a00;
 
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
 @layer base {
   :root {
-    --helix-orange: #ff7a00;
-    --helix-pink: #ff2d8d;
-    --helix-purple: #7a3cff;
-    --helix-navy: #0b132b;
-    --helix-bg: #fafbff;
+    --helix-orange: oklch(0.72 0.15 75);
+    --helix-pink: oklch(0.6 0.17 25);
+    --helix-purple: oklch(0.52 0.19 300);
+    --helix-purple-dark: oklch(0.46 0.19 300);
+    --helix-navy: oklch(0.2 0.03 300);
+    --helix-bg: oklch(0.97 0.012 300);
     --helix-surface: #ffffff;
-    --helix-surface-soft: #f5f7fb;
-    --helix-border: #e7ebf2;
-    --helix-muted: #5b6478;
-    --helix-text: #0b132b;
-    --helix-soft-peach: #ffe9dc;
-    --helix-soft-lavender: #f1e9ff;
-    --helix-soft-pink: #ffe6f2;
-    --helix-success: #22c55e;
-    --helix-warning: #f97316;
-    --helix-danger: #ef4444;
-    --helix-info: #7a3cff;
-    --helix-gradient: linear-gradient(135deg, #ff7a00 0%, #ff2d8d 48%, #7a3cff 100%);
-    --helix-gradient-border: linear-gradient(135deg, oklch(0.72 0.16 35), oklch(0.66 0.16 342), oklch(0.58 0.17 286));
-    --helix-gradient-soft: linear-gradient(135deg, rgba(255, 122, 0, 0.14), rgba(255, 45, 141, 0.12), rgba(122, 60, 255, 0.12));
+    --helix-surface-soft: oklch(0.985 0.006 300);
+    --helix-border: oklch(0.92 0.012 300);
+    --helix-muted: oklch(0.5 0.02 300);
+    --helix-text: oklch(0.2 0.03 300);
+    --helix-soft-peach: oklch(0.96 0.06 75);
+    --helix-soft-lavender: oklch(0.95 0.02 300);
+    --helix-soft-pink: oklch(0.96 0.05 25);
+    --helix-success: oklch(0.6 0.14 150);
+    --helix-warning: oklch(0.72 0.15 75);
+    --helix-danger: oklch(0.58 0.19 25);
+    --helix-info: oklch(0.52 0.19 300);
+    --helix-gradient: linear-gradient(135deg, oklch(0.52 0.19 300) 0%, oklch(0.46 0.19 300) 100%);
+    --helix-gradient-border: linear-gradient(135deg, oklch(0.52 0.19 300), oklch(0.46 0.19 300));
+    --helix-gradient-soft: linear-gradient(135deg, oklch(0.52 0.19 300 / 0.1), oklch(0.6 0.17 25 / 0.08));
     --helix-page-background:
-      radial-gradient(circle at top left, rgba(255, 233, 220, 0.72), transparent 34rem),
-      radial-gradient(circle at 82% 12%, rgba(241, 233, 255, 0.8), transparent 28rem),
+      radial-gradient(circle at 78% -6%, oklch(0.52 0.19 300 / 0.07), transparent 32rem),
       var(--helix-bg);
-    --helix-radius-sm: 10px;
-    --helix-radius-md: 14px;
-    --helix-radius-lg: 18px;
-    --helix-radius-xl: 24px;
+    --helix-radius-sm: 12px;
+    --helix-radius-md: 16px;
+    --helix-radius-lg: 22px;
+    --helix-radius-xl: 28px;
     --helix-shadow-soft: 0 14px 44px rgba(11, 19, 43, 0.08);
     --helix-shadow-card: 0 12px 34px rgba(11, 19, 43, 0.07);
-    --helix-shadow-glow: 0 16px 34px rgba(255, 45, 141, 0.22);
-    --helix-focus: 0 0 0 4px rgba(122, 60, 255, 0.16);
+    --helix-shadow-glow: 0 12px 26px oklch(0.52 0.19 300 / 0.3);
+    --helix-focus: 0 0 0 4px oklch(0.52 0.19 300 / 0.16);
   }
 }
 
@@ -71,7 +71,7 @@ body {
   min-height: 100dvh;
   background: transparent;
   color: var(--helix-text);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   @apply antialiased overflow-x-hidden;
   text-rendering: geometricPrecision;
 }
@@ -85,7 +85,7 @@ h2,
 h3,
 h4,
 .font-display {
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
 a {
@@ -201,28 +201,27 @@ input[type=number] {
 }
 
 .helix-action-card-active {
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    var(--helix-gradient-border) border-box;
+  border-color: var(--helix-purple);
+  background: var(--helix-surface);
   color: var(--helix-navy);
-  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+  box-shadow: 0 10px 22px oklch(0.52 0.19 300 / 0.14);
 }
 
 .helix-eyebrow {
   color: var(--helix-purple);
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   @apply text-xs font-extrabold uppercase tracking-[0.18em];
 }
 
 .helix-heading-xl {
   color: var(--helix-navy);
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   @apply text-4xl font-extrabold tracking-tight md:text-5xl;
 }
 
 .helix-heading-lg {
   color: var(--helix-navy);
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   @apply text-2xl font-extrabold tracking-tight md:text-4xl;
 }
 
@@ -788,7 +787,7 @@ input[type=number] {
 
 .lesson-prose :where(h1, h2, h3, h4, h5, h6) {
   color: var(--helix-navy);
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.35;
@@ -1130,12 +1129,15 @@ input[type=number] {
 /* Standard Button Styles - Consistent Across App */
 .btn-primary {
   border: 2px solid transparent;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    var(--helix-gradient-border) border-box;
-  color: var(--helix-navy);
-  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 font-extrabold rounded-2xl transition-all active:scale-95 hover:-translate-y-0.5 focus:outline-none;
+  background: var(--helix-purple);
+  color: #ffffff;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  box-shadow: var(--helix-shadow-glow);
+  @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 font-bold rounded-[var(--helix-radius-md)] transition-all active:scale-[0.985] focus:outline-none;
+}
+
+.btn-primary:hover {
+  background: var(--helix-purple-dark);
 }
 
 .btn-primary:disabled {
@@ -1149,12 +1151,15 @@ input[type=number] {
 /* Large Primary Button - Full Width (forms, auth screens) */
 .btn-primary-lg {
   border: 2px solid transparent;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    var(--helix-gradient-border) border-box;
-  color: var(--helix-navy);
-  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
-  @apply w-full py-3.5 font-extrabold rounded-2xl transition-all focus:outline-none flex items-center justify-center gap-2 active:scale-95 hover:-translate-y-0.5;
+  background: var(--helix-purple);
+  color: #ffffff;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  box-shadow: var(--helix-shadow-glow);
+  @apply w-full py-4 font-bold rounded-[var(--helix-radius-md)] transition-all focus:outline-none flex items-center justify-center gap-2 active:scale-[0.985];
+}
+
+.btn-primary-lg:hover {
+  background: var(--helix-purple-dark);
 }
 
 .btn-primary-lg:disabled {
@@ -1208,11 +1213,9 @@ input[type=number] {
 
 .admin-nav-tab-active {
   border: 2px solid transparent;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    var(--helix-gradient-border) border-box;
-  color: var(--helix-navy);
-  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+  background: var(--helix-purple);
+  color: #ffffff;
+  box-shadow: 0 8px 18px oklch(0.52 0.19 300 / 0.26);
 }
 
 .admin-nav-alert {
@@ -1301,18 +1304,16 @@ input[type=number] {
 
 /* Secondary Button - Outline Style */
 .btn-secondary {
-  border: 2px solid transparent;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    linear-gradient(#dfe5ee, #dfe5ee) border-box;
+  border: 2px solid var(--helix-border);
+  background: var(--helix-surface);
   color: var(--helix-navy);
-  @apply inline-flex w-full items-center justify-center gap-2 py-3 rounded-2xl font-extrabold transition-all hover:-translate-y-0.5 hover:shadow-sm focus:outline-none;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  @apply inline-flex w-full items-center justify-center gap-2 py-3.5 rounded-[var(--helix-radius-md)] font-bold transition-all focus:outline-none;
 }
 
 .btn-secondary:hover {
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
-    var(--helix-gradient-border) border-box;
+  border-color: var(--helix-purple);
+  background: var(--helix-surface-soft);
 }
 
 .btn-secondary:focus-visible {
@@ -1365,15 +1366,16 @@ input[type=number] {
 
 /* Standard Input Styles - Consistent Across App */
 .input-standard {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--helix-border);
+  background: var(--helix-surface-soft);
+  border: 2px solid var(--helix-border);
   color: var(--helix-text);
   border-radius: var(--helix-radius-md);
   @apply px-4 py-3 transition-all focus:outline-none;
 }
 
 .input-standard:focus {
-  border-color: rgba(122, 60, 255, 0.42);
+  border-color: var(--helix-purple);
+  background: var(--helix-surface);
   box-shadow: var(--helix-focus);
 }
 
@@ -1383,14 +1385,15 @@ input[type=number] {
 
 /* Auth Form Input - Rounded with subtle border */
 .input-auth {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid var(--helix-border);
+  background: var(--helix-surface-soft);
+  border: 2px solid var(--helix-border);
   color: var(--helix-text);
-  @apply w-full p-3.5 rounded-2xl outline-none transition-all;
+  @apply w-full p-4 rounded-[var(--helix-radius-md)] outline-none transition-all;
 }
 
 .input-auth:focus {
-  border-color: rgba(122, 60, 255, 0.42);
+  border-color: var(--helix-purple);
+  background: var(--helix-surface);
   box-shadow: var(--helix-focus);
 }
 
@@ -1432,19 +1435,19 @@ input[type=number] {
 /* Typography Standards */
 .heading-xl {
   color: var(--helix-navy);
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight;
 }
 
 .heading-lg {
   color: var(--helix-navy);
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   @apply text-3xl md:text-4xl font-extrabold tracking-tight;
 }
 
 .heading-md {
   color: var(--helix-navy);
-  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   @apply text-2xl md:text-3xl font-bold;
 }
 

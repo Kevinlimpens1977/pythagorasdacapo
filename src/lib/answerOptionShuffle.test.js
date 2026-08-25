@@ -15,6 +15,7 @@ import {
   gradeAssessmentItemAnswer
 } from './assessmentItemGrading.js';
 import { buildQuestionExplanationFeedback } from './answerExplanationFeedback.js';
+import { normalizeAssessmentItems } from './assessmentBlockUtils.js';
 import { gradeQuestionAnswer } from './questionGrading.js';
 import { buildQuestionPreviewModel } from './questionPreviewUtils.js';
 
@@ -198,6 +199,28 @@ test('een optie zonder id houdt het id van zijn oorspronkelijke plek', () => {
     assert.equal(option.text, zonderIds[positie].text);
     assert.equal(option.originalIndex, positie);
   });
+});
+
+test('een toetsitem zonder eigen id krijgt elke keer een ander id: daar mag niet op geseed worden', () => {
+  // normalizeAssessmentItems verzint dat id met Date.now() + Math.random().
+  // Seedt de leerlingroute daarop, dan staan de opties na elke render ergens
+  // anders. De leerlingroute gebruikt daarom de positie in het blok als de
+  // ruwe data geen id draagt; deze test bewaakt de aanleiding daarvoor.
+  const ruw = [{ type: 'meerkeuze', prompt: 'Zonder id', answer: { type: 'meerkeuze', options: opties } }];
+  const eerst = normalizeAssessmentItems(ruw)[0].id;
+  const nogEens = normalizeAssessmentItems(ruw)[0].id;
+
+  assert.notEqual(eerst, nogEens);
+
+  const positieSeed = buildOptionShuffleSeed({
+    studentId: 'leerling-aisha',
+    blockId: 'blok-1',
+    questionId: 'item-1'
+  });
+  assert.equal(
+    positieSeed,
+    buildOptionShuffleSeed({ studentId: 'leerling-aisha', blockId: 'blok-1', questionId: 'item-1' })
+  );
 });
 
 test('hashSeed en seededShuffle zijn deterministisch en seed-gevoelig', () => {

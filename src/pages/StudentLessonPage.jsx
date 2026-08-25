@@ -2931,7 +2931,17 @@ function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, studentI
               isToets={isToets}
               maxAttempts={maxAttempts}
               progressRecord={itemRecords?.[item.id] || null}
-              studentId={studentId}
+              // De seed komt uit het RUWE item, niet uit het genormaliseerde:
+              // normalizeAssessmentItems verzint voor een item zonder id een
+              // nieuw id met Date.now() + Math.random(), en dat verandert bij
+              // elke render. Daarop seeden zou de opties bij elke render
+              // opnieuw door elkaar gooien - precies wat we niet willen. De
+              // positie in het blok ligt wel vast.
+              optionShuffleSeed={buildOptionShuffleSeed({
+                studentId,
+                blockId: block.id || '',
+                questionId: rawItems[index]?.id || `item-${index + 1}`
+              })}
               onSaveItemProgress={onSaveItemProgress}
             />
           ))}
@@ -2970,7 +2980,7 @@ function AssessmentItemLearningCard({
   isToets,
   maxAttempts = MAX_CORE_QUESTION_ATTEMPTS,
   progressRecord = null,
-  studentId = '',
+  optionShuffleSeed = '',
   onSaveItemProgress = null
 }) {
   const [answer, setAnswer] = useState(() =>
@@ -3005,13 +3015,9 @@ function AssessmentItemLearningCard({
       shuffleAnswerOptions({
         options: item.options,
         questionType: item.type,
-        seed: buildOptionShuffleSeed({
-          studentId,
-          blockId: block?.id || '',
-          questionId: item.id || ''
-        })
+        seed: optionShuffleSeed
       }),
-    [block?.id, item.id, item.options, item.type, studentId]
+    [item.options, item.type, optionShuffleSeed]
   );
   const isOpenItem = !closed;
   const locked = attemptStatus === 'completed' || attemptStatus === 'locked';
