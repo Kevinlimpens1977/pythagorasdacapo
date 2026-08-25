@@ -25,9 +25,21 @@ const createDocRef = (path, store) => ({
     store.docs[path] = { ...(store.docs[path] || {}), ...data };
   },
   collection(name) {
+    const prefix = `${path}/${name}/`;
     return {
       doc(id) {
-        return createDocRef(`${path}/${name}/${id}`, store);
+        return createDocRef(`${prefix}${id}`, store);
+      },
+      async get() {
+        return createQuerySnapshot(
+          Object.entries(store.docs)
+            .filter(([docPath]) => docPath.startsWith(prefix) && !docPath.slice(prefix.length).includes("/"))
+            .map(([docPath, data]) => ({
+              id: docPath.split("/").at(-1),
+              ref: createDocRef(docPath, store),
+              data: () => data,
+            })),
+        );
       },
     };
   },
@@ -716,6 +728,8 @@ test("deleteAllStudentData deletes students while preserving admins and protecte
     "users/student-3": { role: "student", email: "kevlimpens@gmail.com" },
     "users/student-4": { role: "student", email: "ander@example.com" },
     "voortgang/student-1_block-1": { userId: "student-1" },
+    "voortgang/student-1_block-1/items/item-1": { userId: "student-1", itemId: "item-1" },
+    "voortgang/student-1_block-1/items/item-2": { userId: "student-1", itemId: "item-2" },
     "voortgang/student-2_block-1": { userId: "student-2" },
     "voortgang/student-4_block-1": { userId: "student-4" },
     "pendingStudents/pending-1": { displayNameProposed: "Nieuwe" },
@@ -729,7 +743,12 @@ test("deleteAllStudentData deletes students while preserving admins and protecte
   });
 
   assert.equal(result.deletedStudents, 2);
-  assert.equal(result.deletedProgress, 2);
+  // Twee blokdocumenten plus de twee toetsitems eronder. Firestore ruimt een
+  // subcollectie niet mee op met het ouderdocument; zonder die lus bleef de
+  // itemvoortgang als onzichtbare wees achter.
+  assert.equal(result.deletedProgress, 4);
+  assert.equal(db.store.docs["voortgang/student-1_block-1/items/item-1"], undefined);
+  assert.equal(db.store.docs["voortgang/student-1_block-1/items/item-2"], undefined);
   assert.equal(result.deletedPendingStudents, 1);
   assert.equal(db.store.docs["users/student-1"], undefined);
   assert.equal(db.store.docs["users/student-4"], undefined);

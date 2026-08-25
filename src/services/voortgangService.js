@@ -16,7 +16,10 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { buildLearningResultMetadata } from '../lib/learningResultUtils';
-import { buildContentBlockVoortgangUpdate } from '../lib/voortgangPayload';
+import {
+  buildAssessmentItemVoortgangUpdate,
+  buildContentBlockVoortgangUpdate
+} from '../lib/voortgangPayload';
 import { shouldFallbackToUserProgressQuery } from '../lib/voortgangQueryUtils';
 
 /**
@@ -179,6 +182,81 @@ export const saveContentBlockVoortgang = async (
 };
 
 /**
+ * Voortgang van EEN vraag binnen een toets of quiz.
+ * Document: voortgang/{userId}_{blockId}/items/{itemId}
+ *
+ * Een toets is een blok, maar de docent kijkt per vraag. Daarom een subcollectie
+ * onder het blokdocument: de bestaande queries op `voortgang` blijven werken en
+ * de Firestore-regels kunnen dezelfde eigenaarstoets gebruiken.
+ */
+export const saveAssessmentItemVoortgang = async (
+  userId,
+  blockId,
+  itemId,
+  paragraafId,
+  hoofdstukId,
+  klasId,
+  data = {}
+) => {
+  if (!userId || !blockId || !itemId || !paragraafId || !klasId) {
+    throw new Error('userId, blockId, itemId, paragraafId, and klasId are required');
+  }
+
+  const docRef = doc(db, 'voortgang', `${userId}_${blockId}`, 'items', itemId);
+
+  let existingData = {};
+  try {
+    const existing = await getDoc(docRef);
+    if (existing.exists()) {
+      existingData = existing.data();
+    }
+  } catch {
+    // Eerste poging op dit item: er is nog niets om te bewaren.
+  }
+
+  const updates = buildAssessmentItemVoortgangUpdate({
+    userId,
+    blockId,
+    itemId,
+    itemIndex: data.itemIndex ?? 0,
+    paragraafId,
+    hoofdstukId,
+    klasId,
+    data,
+    existingData,
+    timestamp: serverTimestamp()
+  });
+
+  await setDoc(docRef, updates, { merge: true });
+
+  // De aanroeper wil meteen verder met de nieuwe stand; serverTimestamp() is op
+  // dat moment nog een sentinel, dus die wordt hier lokaal ingevuld.
+  return {
+    ...updates,
+    id: itemId,
+    updatedAt: new Date(),
+    firstAttemptAt: existingData.firstAttemptAt || new Date()
+  };
+};
+
+/**
+ * Alle itemvoortgang van een toets- of quizblok, als map itemId -> record.
+ */
+export const getAssessmentItemVoortgang = async (userId, blockId) => {
+  if (!userId || !blockId) return {};
+
+  try {
+    const snapshot = await getDocs(collection(db, 'voortgang', `${userId}_${blockId}`, 'items'));
+    return Object.fromEntries(
+      snapshot.docs.map((itemDoc) => [itemDoc.id, { id: itemDoc.id, ...itemDoc.data() }])
+    );
+  } catch (error) {
+    console.error('❌ [Voortgang] Error fetching assessment item progress:', error);
+    return {};
+  }
+};
+
+/**
  * Get the last incomplete question in a paragraph
  * Useful for "continue" functionality
  *
@@ -311,6 +389,8 @@ export const getStudentVoortgang = async (userId, klasId) => {
 export default {
   saveVoortgang,
   saveContentBlockVoortgang,
+  saveAssessmentItemVoortgang,
+  getAssessmentItemVoortgang,
   getVoortgangForParagraaf,
   getLastIncompleteVraag,
   getKlasVoortgangForParagraaf,

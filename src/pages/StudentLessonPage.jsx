@@ -41,10 +41,15 @@ import {
 import VictoryEffectOverlay from '../components/tokens/VictoryEffectOverlay';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
 import {
-  evaluateAssessmentAnswer,
   isClosedAssessmentItem,
   normalizeAssessmentItems
 } from '../lib/assessmentBlockUtils';
+import {
+  buildAssessmentMatchOptions,
+  gradeAssessmentItemAnswer
+} from '../lib/assessmentItemGrading';
+import { summarizeAssessmentItemProgress } from '../lib/voortgangPayload';
+import { buildAttemptHistoryEntry, buildPartScore } from '../lib/voortgangAttemptLog';
 import { hasAssessmentItemAnswerKey } from '../lib/publicContentBlockView';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import {
@@ -94,6 +99,7 @@ import {
 import {
   buildParagraphEndPlan,
   buildQuestionAttemptOutcome,
+  resolveBlockMaxAttempts,
   MAX_CORE_QUESTION_ATTEMPTS
 } from '../lib/studentQuestionAttemptFlow';
 import {
@@ -160,6 +166,8 @@ export default function StudentLessonPage() {
   const [hoofdstuk, setHoofdstuk] = useState(null);
   const [blocks, setBlocks] = useState([]);
   const [progressRecords, setProgressRecords] = useState([]);
+  // Voortgang per vraag binnen een toets of quiz: blockId -> { itemId: record }.
+  const [assessmentItemRecords, setAssessmentItemRecords] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
   const [showParagraphEnd, setShowParagraphEnd] = useState(false);
@@ -286,6 +294,22 @@ export default function StudentLessonPage() {
         setProgressRecords(voortgang);
         setCurrentIndex(findResumeBlockIndex(enrichedBlocks, voortgang));
         setShowParagraphEnd(loadedLessonProgress.isCompleted && !hasCompletedParagraphEnd);
+
+        // Toets- en quizantwoorden staan per vraag in een subcollectie onder het
+        // blokdocument. Zonder dit hervinden zou een leerling na een refresh met
+        // een lege toets terugkomen terwijl zijn antwoorden wel bewaard zijn.
+        if (currentUser?.uid && !isAdmin) {
+          const assessmentBlocks = enrichedBlocks.filter(
+            (block) => block.type === 'quiz' || block.type === 'toets'
+          );
+          const loadedItemRecords = await Promise.all(
+            assessmentBlocks.map(async (block) => [
+              block.id,
+              await voortgangService.getAssessmentItemVoortgang(currentUser.uid, block.id)
+            ])
+          );
+          if (!cancelled) setAssessmentItemRecords(Object.fromEntries(loadedItemRecords));
+        }
       } catch (loadError) {
         console.error('Leerlingroute kon niet laden:', loadError);
         if (!cancelled) setError('Deze les kon niet goed worden geladen. Probeer het opnieuw of vraag je docent.');
@@ -432,6 +456,58 @@ export default function StudentLessonPage() {
 
   const getBlockProgressRecord = (blockId) =>
     progressRecords.find((record) => (record.blockId || record.vraagId) === blockId) || null;
+
+  /**
+   * Voortgang van EEN vraag binnen een toets of quiz.
+   *
+   * Het itemdocument is de bron: daar staan pogingen, deelscores en het
+   * pogingenlogboek. Het blokdocument krijgt daarna de opgetelde stand, zodat de
+   * voortgangsbalk, de lesnavigatie en de tokentoekenning ongewijzigd blijven
+   * werken - een toets ziet er voor de rest van de route uit als elk ander blok.
+   */
+  const saveAssessmentItemProgress = async (block, itemId, payload = {}) => {
+    const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+    if (!block || !itemId || !currentUser || isAdmin || !effectiveKlasId) return null;
+
+    const saved = await voortgangService.saveAssessmentItemVoortgang(
+      currentUser.uid,
+      block.id,
+      itemId,
+      block.paragraafId || paragraafId,
+      block.hoofdstukId || paragraaf?.hoofdstukId || '',
+      effectiveKlasId,
+      {
+        blockTitle: block.title || CONTENT_BLOCK_LABELS[block.type] || 'Toets',
+        blockType: block.type || '',
+        ...payload
+      }
+    );
+
+    const nextBlockRecords = { ...(assessmentItemRecords[block.id] || {}), [itemId]: saved };
+    setAssessmentItemRecords((current) => ({ ...current, [block.id]: nextBlockRecords }));
+
+    const summary = summarizeAssessmentItemProgress({
+      items: Array.isArray(block.content?.items) ? block.content.items : [],
+      records: nextBlockRecords
+    });
+
+    await saveBlockProgress(block, summary.completed, {
+      isCorrect: summary.isCorrect,
+      resultTier: summary.resultTier,
+      attemptStatus: summary.attemptStatus,
+      completionReason: summary.completed ? (summary.isCorrect ? 'correct' : 'assessment_finished') : '',
+      score: summary.score,
+      maxScore: summary.maxScore,
+      aiHelpCount: summary.aiHelpCount,
+      itemCount: summary.itemCount,
+      itemsCompleted: summary.itemsCompleted,
+      itemsCorrect: summary.itemsCorrect,
+      teacherSignal: summary.itemsPendingReview > 0 ? 'ai_assessment_failed' : '',
+      vraagType: block.content?.assessmentType || block.type || ''
+    });
+
+    return saved;
+  };
 
   const coreQuestionRecords = useMemo(() => (
     blocks
@@ -745,6 +821,9 @@ export default function StudentLessonPage() {
                 totalSteps={blocks.length}
                 isCompleted={completedIds.has(currentBlock?.id)}
                 progressRecord={getBlockProgressRecord(currentBlock?.id)}
+                assessmentItemRecords={assessmentItemRecords[currentBlock?.id] || null}
+                onSaveAssessmentItemProgress={(itemId, payload) =>
+                  saveAssessmentItemProgress(currentBlock, itemId, payload)}
                 studentName={studentFirstName}
                 paragraaf={paragraaf}
                 hoofdstuk={hoofdstuk}
@@ -807,6 +886,8 @@ function LessonBlockContent({
   totalSteps,
   isCompleted,
   progressRecord,
+  assessmentItemRecords,
+  onSaveAssessmentItemProgress,
   studentName,
   paragraaf,
   hoofdstuk,
@@ -863,7 +944,12 @@ function LessonBlockContent({
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
         ) : block.type === 'quiz' || block.type === 'toets' ? (
-          <AssessmentLearningBlock block={block} bodyHtml={bodyHtml} />
+          <AssessmentLearningBlock
+            block={block}
+            bodyHtml={bodyHtml}
+            itemRecords={assessmentItemRecords}
+            onSaveItemProgress={onSaveAssessmentItemProgress}
+          />
         ) : block.type === 'question' && !block.linkedVraagId && hasExerciseFields(block) ? (
           <ExerciseLearningBlock
             block={block}
@@ -2377,7 +2463,7 @@ function SlidedeckBlock({ block, onOpen }) {
   );
 }
 
-function AssessmentLearningBlock({ block, bodyHtml }) {
+function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, onSaveItemProgress = null }) {
   const content = block.content || {};
   const rawItems = Array.isArray(content.items) ? content.items : [];
   const items = normalizeAssessmentItems(rawItems).map((item, index) => {
@@ -2400,6 +2486,10 @@ function AssessmentLearningBlock({ block, bodyHtml }) {
   });
   const isToets = block.type === 'toets';
   const tokenTotal = Number(content.tokenConfig?.totalTokens || block.tokenTotal || 0);
+  // Een toets staat in de studio standaard op twee pogingen; die grens gold tot nu
+  // toe niet omdat de leerlingroute altijd de default van een gewone vraag pakte.
+  const maxAttempts = resolveBlockMaxAttempts(block);
+  const progressSummary = summarizeAssessmentItemProgress({ items, records: itemRecords || {} });
 
   return (
     <div className="space-y-6">
@@ -2415,8 +2505,15 @@ function AssessmentLearningBlock({ block, bodyHtml }) {
         <p className="mt-4 text-sm font-bold">
           {items.length} {items.length === 1 ? 'vraag' : 'vragen'}
           {tokenTotal ? ` - ${tokenTotal} tokens` : ''}
+          {isToets ? ` - ${maxAttempts} ${maxAttempts === 1 ? 'poging' : 'pogingen'} per vraag` : ''}
           {isToets ? ' - Digidocent uit' : ' - Oefenfeedback beschikbaar'}
         </p>
+        {progressSummary.itemsAnswered > 0 && (
+          <p className="mt-2 text-sm font-bold">
+            {progressSummary.itemsCompleted} van {progressSummary.itemCount} afgerond
+            {progressSummary.maxScore > 0 ? ` - ${progressSummary.score} van ${progressSummary.maxScore} punten` : ''}
+          </p>
+        )}
       </div>
 
       {items.length > 0 ? (
@@ -2424,9 +2521,13 @@ function AssessmentLearningBlock({ block, bodyHtml }) {
           {items.map((item, index) => (
             <AssessmentItemLearningCard
               key={item.id || `${block.id}-item-${index}`}
+              block={block}
               item={item}
               index={index}
               isToets={isToets}
+              maxAttempts={maxAttempts}
+              progressRecord={itemRecords?.[item.id] || null}
+              onSaveItemProgress={onSaveItemProgress}
             />
           ))}
         </div>
@@ -2445,60 +2546,229 @@ function AssessmentLearningBlock({ block, bodyHtml }) {
   );
 }
 
-function AssessmentItemLearningCard({ item, index, isToets }) {
-  const [answer, setAnswer] = useState(() => buildInitialAssessmentAnswer(item));
-  const [result, setResult] = useState(null);
+/**
+ * Een vraag binnen een toets of quiz.
+ *
+ * Dit is dezelfde route als QuestionLearningBlock, alleen dan voor een item dat
+ * in het lesblok woont in plaats van in de collectie `vraag`:
+ *   - nakijken via de gedeelde beoordelingslaag, bij een leerling server-side
+ *     (gradeClosedQuestion) omdat de antwoordsleutel niet in de browser hoort;
+ *   - open vragen via assessOpenAnswer met de lokale rekencontrole ervoor;
+ *   - pogingen, tiers en voortgang worden bewaard, per item;
+ *   - lukt nakijken niet, dan is het zichtbaar "docent kijkt na" en loopt de
+ *     leerling nooit vast.
+ */
+function AssessmentItemLearningCard({
+  block,
+  item,
+  index,
+  isToets,
+  maxAttempts = MAX_CORE_QUESTION_ATTEMPTS,
+  progressRecord = null,
+  onSaveItemProgress = null
+}) {
+  const [answer, setAnswer] = useState(() =>
+    progressRecord?.lastAnswer?.value !== undefined
+      ? progressRecord.lastAnswer.value
+      : buildInitialAssessmentAnswer(item)
+  );
+  const [attempts, setAttempts] = useState(progressRecord?.attempts || 0);
+  const [resultTier, setResultTier] = useState(progressRecord?.resultTier || '');
+  const [attemptStatus, setAttemptStatus] = useState(
+    progressRecord?.attemptStatus || (progressRecord?.completed ? 'completed' : 'open')
+  );
+  const [feedback, setFeedback] = useState(progressRecord?.lastAssessment?.feedback || '');
+  const [saving, setSaving] = useState(false);
   const closed = isClosedAssessmentItem(item);
   const answerKeyAvailable = hasAssessmentItemAnswerKey(item);
+  const isOpenItem = !closed;
+  const locked = attemptStatus === 'completed' || attemptStatus === 'locked';
+  const hasResult = Boolean(resultTier) && resultTier !== 'in_progress';
+  const tone = getLearningResultTone({
+    completed: locked || attemptStatus === 'pending_teacher_review',
+    isCorrect: resultTier === 'independent' || resultTier === 'guided',
+    aiHelpCount: progressRecord?.aiHelpCount || 0,
+    resultTier
+  });
 
-  const handleCheck = () => {
-    if (!closed || !answerKeyAvailable) {
-      setResult({
-        closed: false,
-        correct: null,
-        feedback: item.feedback || 'Je antwoord is opgeslagen. Je docent kijkt deze vraag na, zodat het antwoordmodel niet zichtbaar hoeft te zijn in de leerlingbrowser.'
+  const handleCheck = async () => {
+    if (saving || locked) return;
+    setSaving(true);
+    setFeedback('');
+
+    try {
+      let graded = false;
+      let isCorrect = false;
+      let parts = [];
+      let source = 'local';
+      let reviewReason = '';
+      let serverError = '';
+      let assessment = null;
+
+      if (isOpenItem) {
+        // Zelfde volgorde als bij een gewone open vraag: eerst de lokale
+        // rekencontrole, pas daarna Digidocent.
+        const studentAnswer = String(answer ?? '').trim();
+        const modelAnswer = item.answer?.modelAnswer || item.answer?.answer || '';
+        const local = assessOpenAnswerLocally({
+          questionPrompt: item.prompt || '',
+          modelAnswer,
+          studentAnswer
+        });
+
+        if (local.canAssess) {
+          assessment = { success: true, source: 'local', isCorrect: local.isCorrect, feedback: local.feedback };
+        } else {
+          try {
+            assessment = await assessOpenAnswerCall({
+              blockId: block?.id || '',
+              questionTitle: item.prompt || block?.title || 'Open vraag',
+              questionPrompt: item.prompt || '',
+              modelAnswer,
+              studentAnswer
+            });
+          } catch {
+            assessment = { success: false, source: 'ai' };
+          }
+        }
+
+        graded = Boolean(assessment?.success);
+        isCorrect = Boolean(assessment?.success && assessment.isCorrect);
+        source = assessment?.source || 'ai';
+      } else {
+        // Ligt de volledige vraag toch al op tafel (docentpreview, lespreview),
+        // dan hoeft de server er niet aan te pas te komen: dezelfde laag, zelfde
+        // oordeel. Voor een echte leerling is dit leeg en beslist de server.
+        const localGrade = answerKeyAvailable
+          ? gradeAssessmentItemAnswer({ item, answer })
+          : null;
+        const serverResult = localGrade?.canGrade
+          ? null
+          : await gradeClosedQuestionCall({
+              blockId: block?.id || '',
+              itemId: item.id,
+              answers: { itemAnswer: answer ?? null }
+            });
+
+        const closedGrade = resolveClosedQuestionGrade({ serverResult, localGrade });
+        graded = closedGrade.graded;
+        isCorrect = closedGrade.isCorrect;
+        parts = closedGrade.parts;
+        source = closedGrade.source || 'local';
+        reviewReason = closedGrade.reviewReason;
+        serverError = serverResult?.error || '';
+      }
+
+      const outcome = buildQuestionAttemptOutcome({
+        currentAttempts: attempts,
+        maxAttempts,
+        isCorrect,
+        aiAssessmentFailed: !graded,
+        aiHelpCount: progressRecord?.aiHelpCount || 0
       });
-      return;
+
+      let feedbackText = '';
+      if (!graded) {
+        feedbackText = isOpenItem
+          ? 'Je antwoord is opgeslagen. Digidocent kon dit nu niet beoordelen, dus je docent kijkt mee.'
+          : buildClosedQuestionReviewMessage(reviewReason, serverError);
+      } else if (outcome.resultTier === 'failed') {
+        feedbackText = 'Deze vraag wordt geparkeerd voor herstel. Je docent ziet dit terug.';
+      } else if (isCorrect) {
+        feedbackText = item.feedback || 'Goed gedaan.';
+      } else {
+        feedbackText = assessment?.feedback || item.feedback || 'Nog niet goed. Probeer het nog een keer.';
+      }
+
+      const score = buildPartScore({ parts, isCorrect: outcome.isCorrect, graded });
+
+      setAttempts(outcome.attempts);
+      setResultTier(outcome.resultTier);
+      setAttemptStatus(outcome.attemptStatus);
+      setFeedback(feedbackText);
+
+      await onSaveItemProgress?.(item.id, {
+        itemIndex: index,
+        completed: outcome.completed,
+        isCorrect: outcome.isCorrect,
+        graded,
+        attempts: outcome.attempts,
+        maxAttempts: outcome.maxAttempts,
+        resultTier: outcome.resultTier,
+        attemptStatus: outcome.attemptStatus,
+        completionReason: outcome.completionReason,
+        teacherSignal: outcome.teacherSignal,
+        vraagTitle: item.prompt || '',
+        vraagType: item.type || '',
+        questionPlainText: stripHtmlText(item.prompt || ''),
+        tokens: item.tokens || 0,
+        parts,
+        score: score.score,
+        maxScore: score.maxScore,
+        lastAnswer: { value: answer ?? null },
+        lastAssessment: {
+          source,
+          status: !graded ? 'pending_teacher_review' : (isCorrect ? 'correct' : 'incorrect'),
+          reviewReason,
+          feedback: feedbackText
+        },
+        attemptEntry: buildAttemptHistoryEntry({
+          attemptNr: outcome.attempts || attempts + 1,
+          answer: answer ?? null,
+          isCorrect: outcome.isCorrect,
+          graded,
+          aiHelpCount: progressRecord?.aiHelpCount || 0,
+          source,
+          reviewReason,
+          at: new Date().toISOString()
+        })
+      });
+    } finally {
+      setSaving(false);
     }
-    setResult(evaluateAssessmentAnswer(item, answer));
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+    <div className={`rounded-2xl border-2 bg-white p-4 ${hasResult ? `${tone.borderClass} ${tone.ringClass}` : 'border-[var(--helix-border)]'}`}>
       <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">
         <span>Vraag {index + 1}</span>
         <span>- {item.type}</span>
         {Number(item.tokens) > 0 && <span>- {item.tokens} tokens</span>}
+        {attempts > 0 && <span>- poging {attempts} van {maxAttempts}</span>}
       </div>
       <p className="mt-2 text-base font-bold leading-7 text-[var(--helix-navy)]">
         {item.prompt || 'Vraag wordt nog ingevuld.'}
       </p>
 
       <div className="mt-4">
-        <AssessmentAnswerInput item={item} value={answer} onChange={setAnswer} disabled={isToets && result !== null} answerKeyAvailable={answerKeyAvailable} />
+        <AssessmentAnswerInput
+          item={item}
+          value={answer}
+          onChange={setAnswer}
+          disabled={locked || saving}
+          answerKeyAvailable={answerKeyAvailable}
+        />
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="button" onClick={handleCheck} className="btn-primary px-4 py-2 text-sm">
-          {closed && answerKeyAvailable ? 'Controleer antwoord' : 'Antwoord inleveren'}
+        <button
+          type="button"
+          onClick={handleCheck}
+          disabled={saving || locked}
+          className="btn-primary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {saving ? 'Bezig...' : closed && !isToets ? 'Controleer antwoord' : 'Antwoord inleveren'}
         </button>
-        {result && (
-          <div className={[
-            'rounded-xl px-3 py-2 text-sm font-black',
-            result.closed === false
-              ? 'bg-blue-50 text-blue-700'
-              : result.correct
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'bg-amber-50 text-amber-700'
-          ].join(' ')}>
-            {result.closed === false ? 'Ingeleverd' : result.correct ? 'Goed' : 'Nog niet goed'}
+        {hasResult && (
+          <div className={`rounded-xl px-3 py-2 text-sm font-black ${tone.fillClass}`}>
+            {tone.label}
           </div>
         )}
       </div>
 
-      {result?.feedback && (
+      {feedback && (
         <p className="mt-3 rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
-          {result.feedback}
+          {feedback}
         </p>
       )}
     </div>
@@ -2586,9 +2856,14 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false, answer
 
   if (item.type === 'koppelen') {
     const pairs = Array.isArray(item.answer?.pairs) ? item.answer.pairs : [];
+    // De keuze wordt als ID bewaard, niet als tekst. De gedeelde beoordelingslaag
+    // vergelijkt koppelvragen op id; met tekst zou er een tweede, afwijkende
+    // vergelijking naast ontstaan. In de leerlingsnapshot staan de opties al
+    // klaar (geroteerd, met positionele id's); ligt de volledige vraag op tafel
+    // (docentpreview, digibord), dan bouwt dezelfde helper ze uit de paren.
     const options = Array.isArray(item.answer?.options) && item.answer.options.length > 0
-      ? item.answer.options.map((option) => option.text).filter(Boolean)
-      : pairs.map((pair) => pair.right).filter(Boolean);
+      ? item.answer.options
+      : buildAssessmentMatchOptions(pairs);
     return (
       <div className="space-y-2">
         {pairs.map((pair) => (
@@ -2602,7 +2877,7 @@ function AssessmentAnswerInput({ item, value, onChange, disabled = false, answer
             >
               <option value="">Kies match</option>
               {options.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option.id} value={option.id}>{option.text}</option>
               ))}
             </select>
           </div>

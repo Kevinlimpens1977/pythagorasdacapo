@@ -1,10 +1,9 @@
 import { QUESTION_TYPES, buildDefaultAnswerForQuestionType } from './questionTypeRegistry.js';
+import { gradeAssessmentItemAnswer } from './assessmentItemGrading.js';
 
 const createId = (prefix = 'item') => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
-
-const trimLower = (value) => String(value ?? '').trim().toLocaleLowerCase('nl-NL');
 
 const parseNumber = (value, fallback = 0) => {
   const parsed = Number(String(value ?? '').replace(',', '.'));
@@ -443,46 +442,28 @@ export const updateAssessmentItemType = (item = {}, type) => {
 export const isClosedAssessmentItem = (item = {}) =>
   CLOSED_ASSESSMENT_ITEM_TYPES.has(getAssessmentItemType(item.type ?? item.vraagtype));
 
-const evaluateChoice = (item, answerValue) => {
-  const selected = Array.isArray(answerValue) ? answerValue : [answerValue].filter(Boolean);
-  const correctIds = getAssessmentOptionsForItem(item).filter((option) => option.correct).map((option) => option.id).sort();
-  const selectedIds = selected.map(String).sort();
-  return correctIds.length === selectedIds.length && correctIds.every((id, index) => id === selectedIds[index]);
-};
-
-const evaluateMatching = (item, answerValue = {}) =>
-  item.answer.pairs.every((pair) => trimLower(answerValue[pair.id]) === trimLower(pair.right));
-
-const evaluateFillIn = (item, answerValue = {}) =>
-  item.answer.gaps.every((gap) => {
-    const accepted = [gap.answer, ...(gap.alternatives || [])].map(trimLower).filter(Boolean);
-    return accepted.includes(trimLower(answerValue[gap.id]));
-  });
-
-const evaluateOrder = (item, answerValue = []) =>
-  Array.isArray(answerValue)
-    && answerValue.length === item.answer.items.length
-    && item.answer.items.every((orderItem, index) => answerValue[index] === orderItem.id);
-
+/**
+ * Kijk een toetsitem na.
+ *
+ * Dit is GEEN beoordelaar meer: het is een dunne laag om
+ * `gradeAssessmentItemAnswer`, die het item vertaalt naar de vraagvorm van de
+ * gedeelde beoordelingslaag (src/lib/questionGrading.js). Zo geven het digibord,
+ * de leerlingroute en de Cloud Function per definitie hetzelfde oordeel. Bouw
+ * hier nooit opnieuw een eigen vergelijking met de antwoordsleutel op.
+ *
+ * `canGrade: false` betekent: geen bruikbare antwoordsleutel (bijvoorbeeld een
+ * leerlingsnapshot). Dan is het antwoord niet fout, maar niet nagekeken.
+ */
 export const evaluateAssessmentAnswer = (rawItem = {}, answerValue) => {
   const item = normalizeAssessmentItem(rawItem);
-  let correct = false;
-
-  if (item.type === 'waar-niet-waar' || item.type === 'meerkeuze') {
-    correct = evaluateChoice(item, answerValue);
-  } else if (item.type === 'numeriek') {
-    const value = parseNumber(answerValue, Number.NaN);
-    correct = Number.isFinite(value) && Math.abs(value - item.answer.expected) <= item.answer.tolerance;
-  } else if (item.type === 'koppelen') {
-    correct = evaluateMatching(item, answerValue);
-  } else if (item.type === 'invullen') {
-    correct = evaluateFillIn(item, answerValue);
-  } else if (item.type === 'volgorde') {
-    correct = evaluateOrder(item, answerValue);
-  }
+  const grade = gradeAssessmentItemAnswer({ item, answer: answerValue });
 
   return {
-    correct,
+    correct: grade.canGrade === true && grade.isCorrect === true,
+    canGrade: grade.canGrade === true,
+    parts: Array.isArray(grade.parts) ? grade.parts : [],
+    reason: grade.reason || '',
+    source: grade.source || 'local',
     closed: isClosedAssessmentItem(item),
     feedback: item.feedback || ''
   };

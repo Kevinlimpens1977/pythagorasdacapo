@@ -114,3 +114,14 @@ test('firestore rules keep the closed question grading throttle server-only', ()
 
   assert.match(block, /allow read, create, update, delete: if false/);
 });
+
+test('firestore rules keep assessment item progress readable and writable by its owner only', () => {
+  const block = getRuleBlock('match /voortgang/{docId}/items/{itemId}');
+
+  assert.match(block, /allow read: if signedIn\(\) && \(\s*resource\.data\.userId == request\.auth\.uid \|\|\s*isAdmin\(\)/);
+  assert.match(block, /allow create: if signedIn\(\) &&\s*request\.resource\.data\.userId == request\.auth\.uid/);
+  assert.match(block, /allow update: if signedIn\(\)/);
+  // Wissen blijft bij de admin: een leerling mag zijn eigen pogingengeschiedenis
+  // niet laten verdwijnen.
+  assert.match(block, /allow delete: if isAdmin\(\)/);
+});

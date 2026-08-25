@@ -242,6 +242,31 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Voortgang per vraag binnen een toets of quiz.
+    // Een toets is een blok, maar de docent kijkt per vraag. Zelfde eigenaars-
+    // toets als het ouderdocument: een leerling leest en schrijft alleen zijn
+    // eigen items, een admin alles. Verwijderen blijft aan de admin, zodat een
+    // leerling zijn eigen pogingengeschiedenis niet kan wissen.
+    match /voortgang/{docId}/items/{itemId} {
+      allow read: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if signedIn() &&
+        request.resource.data.userId == request.auth.uid;
+
+      allow update: if signedIn() && (
+        (
+          resource.data.userId == request.auth.uid &&
+          request.resource.data.userId == request.auth.uid
+        ) ||
+        isAdmin()
+      );
+
+      allow delete: if isAdmin();
+    }
+
     // Door docenten/admins afgevinkte voortgangssignalen.
     // Leerlingen zien of wijzigen deze moderatiestatus niet.
     match /progressSignalAcknowledgements/{signalId} {

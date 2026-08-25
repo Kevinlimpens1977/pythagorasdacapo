@@ -62,8 +62,10 @@ export const assessOpenAnswerCall = async ({
  */
 let closedQuestionGradingMissing = false;
 
-export const gradeClosedQuestionCall = async ({ vraagId = '', blockId = '', answers = {} } = {}) => {
-  if (!vraagId) {
+export const gradeClosedQuestionCall = async ({ vraagId = '', blockId = '', itemId = '', answers = {} } = {}) => {
+  // Een toetsitem heeft geen eigen vraag-document: dat wordt met blockId +
+  // itemId opgezocht in het lesblok. Dezelfde callable, dezelfde grenzen.
+  if (!vraagId && !(blockId && itemId)) {
     return { success: false, unavailable: true, code: 'missing-vraag-id' };
   }
 
@@ -75,7 +77,7 @@ export const gradeClosedQuestionCall = async ({ vraagId = '', blockId = '', answ
 
   try {
     const gradeClosedQuestion = httpsCallable(functions, 'gradeClosedQuestion');
-    const result = await gradeClosedQuestion({ vraagId, blockId, answers });
+    const result = await gradeClosedQuestion({ vraagId, blockId, itemId, answers });
     const data = result.data || {};
     return { ...data, success: data.success === true };
   } catch (error) {

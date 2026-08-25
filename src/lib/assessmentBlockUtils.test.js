@@ -296,11 +296,17 @@ test('evaluateAssessmentAnswer checks closed assessment item answers', () => {
   assert.equal(evaluateAssessmentAnswer(numeric, '10.4').correct, true);
   assert.equal(evaluateAssessmentAnswer(numeric, '11').correct, false);
 
+  // Koppelen vergelijkt op ID, net als de gedeelde beoordelingslaag en het
+  // digibord. De oude tekstvergelijking is bewust weg: twee beoordelaars met
+  // verschillende regels is precies wat hier niet meer mag bestaan.
   const matching = normalizeAssessmentItem({
     type: 'koppelen',
     answer: { pairs: [{ id: 'p1', left: 'Word', right: 'Tekst' }] }
   });
-  assert.equal(evaluateAssessmentAnswer(matching, { p1: 'Tekst' }).correct, true);
+  assert.equal(evaluateAssessmentAnswer(matching, { p1: 'p1' }).correct, true);
+  assert.equal(evaluateAssessmentAnswer(matching, { p1: 'match-1' }).correct, true);
+  assert.equal(evaluateAssessmentAnswer(matching, { p1: 'p1-option' }).correct, true);
+  assert.equal(evaluateAssessmentAnswer(matching, { p1: '' }).correct, false);
 
   const fillIn = normalizeAssessmentItem({
     type: 'invullen',

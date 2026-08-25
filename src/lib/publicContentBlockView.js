@@ -1,5 +1,6 @@
 import { normalizeContentBlockSettings } from './contentBlockUtils.js';
 import { sanitizePublicExercise } from './exerciseBlockUtils.js';
+import { buildAssessmentMatchOptions } from './assessmentItemGrading.js';
 
 const cleanText = (value) => String(value || '').trim();
 
@@ -71,11 +72,15 @@ const sanitizeMatchingPairs = (pairs = []) =>
     left: cleanText(pair.left || pair.term || `Begrip ${index + 1}`)
   })).filter((pair) => pair.left);
 
+// De id's komen uit de gedeelde adapter en zijn positioneel (`match-1`, ...).
+// Zo staat de koppeling niet in de id's zelf: met `pair-1` links en
+// `pair-1-option` rechts kon een leerling de sleutel uit de DOM lezen.
+// De Cloud Function bouwt dezelfde lijst en weet daardoor welk paar erbij hoort.
 const sanitizeMatchingOptions = (pairs = []) =>
-  rotateItems((Array.isArray(pairs) ? pairs : []).map((pair, index) => ({
-    id: `${pair.id || `pair-${index + 1}`}-option`,
-    text: cleanText(pair.right || pair.match || `Optie ${index + 1}`)
-  })).filter((option) => option.text));
+  buildAssessmentMatchOptions(pairs).map((option) => ({
+    id: option.id,
+    text: option.text
+  }));
 
 const sanitizeOrderItems = (items = []) =>
   rotateItems((Array.isArray(items) ? items : []).map((item, index) => ({

@@ -10,6 +10,21 @@ const normalizeAiHelpCount = (value) => {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 };
 
+/**
+ * Hoeveel pogingen mag een leerling in DIT blok?
+ *
+ * Een toets staat in de studio standaard op twee pogingen
+ * (contentBlockUtils: attemptPolicy.maxAttempts). Dat getal werd genegeerd,
+ * waardoor een toets stilzwijgend op de vier pogingen van een gewone vraag
+ * stond. `null` of 0 betekent: geen eigen grens, dus de didactische default.
+ */
+export const resolveBlockMaxAttempts = (block = {}, fallback = MAX_CORE_QUESTION_ATTEMPTS) => {
+  const configured = block?.content?.attemptPolicy?.maxAttempts ?? block?.attemptPolicy?.maxAttempts;
+  const parsed = Number.parseInt(configured, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+};
+
 export const buildQuestionAttemptOutcome = ({
   currentAttempts = 0,
   maxAttempts = MAX_CORE_QUESTION_ATTEMPTS,

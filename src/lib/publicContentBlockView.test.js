@@ -128,10 +128,16 @@ test('buildPublicContentBlockSnapshot separates matching choices from private pa
     { id: 'p1', left: 'Privacy' },
     { id: 'p2', left: 'Phishing' }
   ]);
+  // De id's zijn positioneel en zeggen niets over het paar waar ze bij horen.
+  // Met `p1` links en `p1-option` rechts stond de antwoordsleutel gewoon in de
+  // DOM van de leerlingbrowser.
   assert.deepEqual(publicBlock.content.items[0].answer.options, [
-    { id: 'p2-option', text: 'Nepbericht om gegevens te stelen' },
-    { id: 'p1-option', text: 'Persoonsgegevens beschermen' }
+    { id: 'match-1', text: 'Nepbericht om gegevens te stelen' },
+    { id: 'match-2', text: 'Persoonsgegevens beschermen' }
   ]);
+  const serialized = JSON.stringify(publicBlock.content.items[0]);
+  assert.equal(serialized.includes('p1-option'), false);
+  assert.equal(serialized.includes('p2-option'), false);
 });
 
 test('buildPublicContentBlockSnapshot keeps fill blank layout but strips answers', () => {

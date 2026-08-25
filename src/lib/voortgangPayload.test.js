@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildContentBlockVoortgangUpdate } from './voortgangPayload.js';
+import {
+  buildAssessmentItemVoortgangUpdate,
+  buildContentBlockVoortgangUpdate,
+  summarizeAssessmentItemProgress
+} from './voortgangPayload.js';
 
 const base = {
   userId: 'student-1',
@@ -237,4 +241,161 @@ test('buildContentBlockVoortgangUpdate preserves first attempt and existing comp
   assert.equal(update.completedAt, undefined);
   assert.equal(update.attempts, 3);
   assert.deepEqual(update.lastAnswer, { gap_1: 'oud' });
+});
+
+test('buildContentBlockVoortgangUpdate keeps part scores instead of only right or wrong', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    data: {
+      completed: true,
+      isCorrect: false,
+      parts: [
+        { id: 'gap-1', label: 'Invulveld 1', isCorrect: true },
+        { id: 'gap-2', label: 'Invulveld 2', isCorrect: false }
+      ],
+      score: 1,
+      maxScore: 2
+    }
+  });
+
+  assert.deepEqual(update.parts, [
+    { id: 'gap-1', label: 'Invulveld 1', isCorrect: true },
+    { id: 'gap-2', label: 'Invulveld 2', isCorrect: false }
+  ]);
+  assert.equal(update.score, 1);
+  assert.equal(update.maxScore, 2);
+});
+
+test('buildContentBlockVoortgangUpdate logs attempts instead of only counting them', () => {
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    existingData: {
+      attemptHistory: [{ attemptNr: 1, answer: { openAnswer: 'eerste' }, isCorrect: false, aiHelpCount: 0 }]
+    },
+    data: {
+      completed: true,
+      isCorrect: true,
+      attempts: 2,
+      attemptEntry: { attemptNr: 2, answer: { openAnswer: 'tweede' }, isCorrect: true, aiHelpCount: 1 }
+    }
+  });
+
+  assert.equal(update.attemptHistory.length, 2);
+  assert.deepEqual(update.attemptHistory.map((entry) => entry.isCorrect), [false, true]);
+  assert.equal(update.attemptHistory[1].aiHelpCount, 1);
+});
+
+test('buildAssessmentItemVoortgangUpdate stores one question inside a toets', () => {
+  const update = buildAssessmentItemVoortgangUpdate({
+    userId: 'student-1',
+    blockId: 'toets-1',
+    itemId: 'item-3',
+    itemIndex: 2,
+    paragraafId: 'par-1',
+    hoofdstukId: 'h-1',
+    klasId: 'klas-1',
+    timestamp: 'now',
+    data: {
+      completed: true,
+      isCorrect: false,
+      attempts: 2,
+      maxAttempts: 2,
+      attemptStatus: 'locked',
+      resultTier: 'failed',
+      blockType: 'toets',
+      vraagTitle: 'Wat is phishing?',
+      vraagType: 'meerkeuze',
+      parts: [
+        { id: 'gap-1', label: 'Invulveld 1', isCorrect: true },
+        { id: 'gap-2', label: 'Invulveld 2', isCorrect: false }
+      ],
+      lastAnswer: { value: ['option-1'] },
+      attemptEntry: { attemptNr: 2, answer: ['option-1'], isCorrect: false, aiHelpCount: 1 }
+    }
+  });
+
+  assert.equal(update.progressType, 'assessmentItem');
+  assert.equal(update.itemId, 'item-3');
+  assert.equal(update.itemIndex, 2);
+  assert.equal(update.blockId, 'toets-1');
+  assert.equal(update.maxAttempts, 2);
+  assert.equal(update.resultTier, 'failed');
+  // Deelscore uit de gedeelde beoordelingslaag: 1 van de 2 onderdelen goed.
+  assert.equal(update.score, 1);
+  assert.equal(update.maxScore, 2);
+  assert.equal(update.attemptHistory.length, 1);
+  assert.equal(update.firstAttemptAt, 'now');
+  assert.equal(update.completedAt, 'now');
+});
+
+test('buildAssessmentItemVoortgangUpdate keeps the first attempt and appends to the log', () => {
+  const update = buildAssessmentItemVoortgangUpdate({
+    userId: 'student-1',
+    blockId: 'toets-1',
+    itemId: 'item-1',
+    paragraafId: 'par-1',
+    klasId: 'klas-1',
+    timestamp: 'later',
+    existingData: {
+      firstAttemptAt: 'first',
+      completedAt: 'done',
+      attemptHistory: [{ attemptNr: 1, answer: 'option-2', isCorrect: false }]
+    },
+    data: {
+      completed: true,
+      isCorrect: true,
+      attempts: 2,
+      attemptEntry: { attemptNr: 2, answer: 'option-1', isCorrect: true }
+    }
+  });
+
+  assert.equal(update.firstAttemptAt, 'first');
+  assert.equal(update.completedAt, undefined);
+  assert.deepEqual(update.attemptHistory.map((entry) => entry.attemptNr), [1, 2]);
+});
+
+test('summarizeAssessmentItemProgress rolls items up to the state of the block', () => {
+  const items = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+
+  const halfway = summarizeAssessmentItemProgress({
+    items,
+    records: { a: { completed: true, isCorrect: true, score: 1, maxScore: 1 } }
+  });
+  assert.equal(halfway.completed, false);
+  assert.equal(halfway.itemsAnswered, 1);
+  assert.equal(halfway.resultTier, 'in_progress');
+
+  const allGood = summarizeAssessmentItemProgress({
+    items,
+    records: {
+      a: { completed: true, isCorrect: true, score: 1, maxScore: 1 },
+      b: { completed: true, isCorrect: true, score: 2, maxScore: 2 },
+      c: { completed: true, isCorrect: true, score: 1, maxScore: 1 }
+    }
+  });
+  assert.equal(allGood.completed, true);
+  assert.equal(allGood.isCorrect, true);
+  assert.equal(allGood.score, 4);
+  assert.equal(allGood.maxScore, 4);
+  assert.equal(allGood.resultTier, 'independent');
+
+  // Groen met Digidocent-hulp blijft groen, maar wel herkenbaar anders.
+  const withHelp = summarizeAssessmentItemProgress({
+    items: [{ id: 'a' }],
+    records: { a: { completed: true, isCorrect: true, score: 1, maxScore: 1, aiHelpCount: 1 } }
+  });
+  assert.equal(withHelp.resultTier, 'guided');
+
+  const pending = summarizeAssessmentItemProgress({
+    items: [{ id: 'a' }],
+    records: { a: { completed: true, isCorrect: false, attemptStatus: 'pending_teacher_review' } }
+  });
+  assert.equal(pending.resultTier, 'pending_teacher_review');
+  assert.equal(pending.attemptStatus, 'pending_teacher_review');
+
+  const failed = summarizeAssessmentItemProgress({
+    items: [{ id: 'a' }],
+    records: { a: { completed: true, isCorrect: false, resultTier: 'failed', score: 0, maxScore: 1 } }
+  });
+  assert.equal(failed.resultTier, 'failed');
 });

@@ -389,6 +389,266 @@ test("gradeClosedQuestion refuses an oversized answer payload", async () => {
   );
 });
 
+// --- Vragen binnen een toets of quiz -----------------------------------------
+// Zelfde callable, zelfde beloftes. Alleen de vindplaats verschilt: het item
+// staat in het contentBlock, niet in de collectie `vraag`.
+
+const assessmentBlock = (items, extra = {}) => ({
+  type: "toets",
+  status: "published",
+  paragraafId: "par-1",
+  content: { items },
+  ...extra,
+});
+
+const assessmentDocs = (items, { klas, block } = {}) => ({
+  "users/student-1": { role: "student", klasId: "klas-1" },
+  "klassen/klas-1": klas || { enabledParagrafen: ["par-1"] },
+  "contentBlocks/toets-1": block || assessmentBlock(items),
+});
+
+const gradeItem = (db, data, overrides = {}) =>
+  gradeClosedQuestionCore({
+    auth: { uid: "student-1" },
+    data: { blockId: "toets-1", ...data },
+    db,
+    nowMs: 1_000_000,
+    ...overrides,
+  });
+
+test("gradeClosedQuestion grades a question inside a toets block", async () => {
+  const db = createDb(assessmentDocs([
+    {
+      id: "item-1",
+      type: "waar-niet-waar",
+      prompt: "Een sterk wachtwoord is lang.",
+      answer: {
+        type: "meerkeuze",
+        options: [
+          { id: "option-1", text: "Waar", correct: true },
+          { id: "option-2", text: "Niet waar", correct: false },
+        ],
+      },
+    },
+  ]));
+
+  const goed = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "option-1" } });
+  assert.equal(goed.success, true);
+  assert.equal(goed.canGrade, true);
+  assert.equal(goed.isCorrect, true);
+  assert.equal(goed.itemId, "item-1");
+  assert.equal(goed.questionType, "meerkeuze");
+
+  const fout = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "option-2" } });
+  assert.equal(fout.canGrade, true);
+  assert.equal(fout.isCorrect, false);
+  assert.equal(fout.reason, "graded");
+});
+
+test("gradeClosedQuestion never returns a toets answer key over the wire", async () => {
+  const db = createDb(assessmentDocs([
+    {
+      id: "item-1",
+      type: "invullen",
+      prompt: "GEHEIMEVRAAGTEKST",
+      answer: {
+        type: "invullen",
+        text: "Bewaar je bestanden in ...",
+        gaps: [{ id: "gap-1", answer: "GEHEIMGAT", alternatives: ["GEHEIMALTERNATIEF"] }],
+      },
+    },
+    {
+      id: "item-2",
+      type: "meerkeuze",
+      prompt: "Welke is veilig?",
+      answer: {
+        type: "meerkeuze",
+        options: [
+          { id: "option-1", text: "GEHEIMEOPTIE", correct: true },
+          { id: "option-2", text: "Andere", correct: false },
+        ],
+      },
+    },
+  ]));
+
+  const invullen = await gradeItem(db, {
+    itemId: "item-1",
+    answers: { itemAnswer: { "gap-1": "iets anders" } },
+  });
+  const meerkeuze = await gradeItem(db, { itemId: "item-2", answers: { itemAnswer: [] } });
+
+  const serialized = JSON.stringify({ invullen, meerkeuze });
+  ["GEHEIMGAT", "GEHEIMALTERNATIEF", "GEHEIMEOPTIE", "GEHEIMEVRAAGTEKST"].forEach((secret) => {
+    assert.equal(serialized.includes(secret), false, `antwoordsleutel lekte via ${secret}`);
+  });
+
+  assert.equal(invullen.canGrade, true);
+  assert.equal(invullen.isCorrect, false);
+  assert.deepEqual(invullen.parts, [{ id: "gap-1", label: "Invulveld 1", isCorrect: false }]);
+
+  // Zelfde redactie als bij een losse meerkeuzevraag: zonder dit zou een lege
+  // inzending de hele sleutel uit de deelstatussen verklappen.
+  assert.deepEqual(meerkeuze.parts, []);
+  assert.equal(meerkeuze.partsRedacted, true);
+});
+
+test("gradeClosedQuestion accepts a gap alternative inside a toets", async () => {
+  const db = createDb(assessmentDocs([
+    {
+      id: "item-1",
+      type: "invullen",
+      answer: {
+        type: "invullen",
+        text: "Bewaar je bestanden in ...",
+        gaps: [{ id: "gap-1", answer: "OneDrive", alternatives: ["Onedrive"] }],
+      },
+    },
+  ]));
+
+  const result = await gradeItem(db, {
+    itemId: "item-1",
+    answers: { itemAnswer: { "gap-1": "onedrive" } },
+  });
+
+  assert.equal(result.isCorrect, true);
+});
+
+test("gradeClosedQuestion resolves a matching choice by id, never by text", async () => {
+  const db = createDb(assessmentDocs([
+    {
+      id: "item-1",
+      type: "koppelen",
+      answer: {
+        type: "koppelen",
+        pairs: [
+          { id: "p1", left: "Privacy", right: "Persoonsgegevens beschermen" },
+          { id: "p2", left: "Phishing", right: "Nepbericht" },
+        ],
+      },
+    },
+  ]));
+
+  // `match-1` .. `match-N` is wat de leerlingsnapshot toont: geroteerd en
+  // positioneel, zodat de koppeling niet in de id's zelf staat.
+  const goed = await gradeItem(db, {
+    itemId: "item-1",
+    answers: { itemAnswer: { p1: "match-2", p2: "match-1" } },
+  });
+  assert.equal(goed.isCorrect, true);
+
+  const fout = await gradeItem(db, {
+    itemId: "item-1",
+    answers: { itemAnswer: { p1: "match-1", p2: "match-2" } },
+  });
+  assert.equal(fout.canGrade, true);
+  assert.equal(fout.isCorrect, false);
+
+  // De tekst zelf is geen geldige keuze meer: er is nog maar een beoordelaar.
+  const tekst = await gradeItem(db, {
+    itemId: "item-1",
+    answers: { itemAnswer: { p1: "Persoonsgegevens beschermen", p2: "Nepbericht" } },
+  });
+  assert.equal(tekst.isCorrect, false);
+});
+
+test("gradeClosedQuestion leaves an open toets question to assessOpenAnswer", async () => {
+  const db = createDb(assessmentDocs([
+    { id: "item-1", type: "open", answer: { type: "open", modelAnswer: "GEHEIMMODEL" } },
+  ]));
+
+  const result = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "iets" } });
+
+  assert.equal(result.canGrade, false);
+  assert.equal(JSON.stringify(result).includes("GEHEIMMODEL"), false);
+});
+
+test("gradeClosedQuestion keeps teacher review for a toets question without an answer key", async () => {
+  const db = createDb(assessmentDocs([
+    {
+      id: "item-1",
+      type: "meerkeuze",
+      answer: { type: "meerkeuze", options: [{ id: "option-1", text: "A" }, { id: "option-2", text: "B" }] },
+    },
+  ]));
+
+  const result = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "option-1" } });
+
+  assert.equal(result.canGrade, false);
+  assert.equal(result.isCorrect, false);
+  assert.equal(result.reason, "no-answer-key");
+});
+
+test("gradeClosedQuestion refuses a toets outside the student assignment", async () => {
+  const items = [{ id: "item-1", type: "numeriek", answer: { type: "numeriek", expected: 12 } }];
+
+  const otherParagraph = createDb(assessmentDocs(items, { klas: { enabledParagrafen: ["par-9"] } }));
+  await assert.rejects(
+    () => gradeItem(otherParagraph, { itemId: "item-1", answers: {} }),
+    (error) => error.code === "permission-denied",
+  );
+
+  const otherBlock = createDb(assessmentDocs(items, {
+    klas: { enabledParagrafen: ["par-1"], enabledContentBlocks: { "par-1": ["toets-2"] } },
+  }));
+  await assert.rejects(
+    () => gradeItem(otherBlock, { itemId: "item-1", answers: {} }),
+    (error) => error.code === "permission-denied",
+  );
+
+  const draft = createDb(assessmentDocs(items, { block: assessmentBlock(items, { status: "draft" }) }));
+  await assert.rejects(
+    () => gradeItem(draft, { itemId: "item-1", answers: {} }),
+    (error) => error.code === "failed-precondition",
+  );
+});
+
+// "not-found" zou de client de hele serverroute laten uitzetten voor de rest van
+// de sessie; een onbekend item is een verkeerde aanvraag, geen kapotte functie.
+test("gradeClosedQuestion answers an unknown toets item with invalid-argument", async () => {
+  const db = createDb(assessmentDocs([
+    { id: "item-1", type: "numeriek", answer: { type: "numeriek", expected: 12 } },
+  ]));
+
+  await assert.rejects(
+    () => gradeItem(db, { itemId: "item-99", answers: {} }),
+    (error) => error.code === "invalid-argument",
+  );
+});
+
+test("gradeClosedQuestion throttles guessing per toets item", async () => {
+  const db = createDb(assessmentDocs([
+    { id: "item-1", type: "numeriek", answer: { type: "numeriek", expected: 12, tolerance: 0 } },
+    { id: "item-2", type: "numeriek", answer: { type: "numeriek", expected: 30, tolerance: 0 } },
+  ]));
+  const payload = { itemId: "item-1", answers: { itemAnswer: "1" } };
+
+  for (let attempt = 0; attempt < QUESTION_GRADING_RATE_LIMIT_MAX; attempt += 1) {
+
+    await gradeItem(db, payload);
+  }
+
+  await assert.rejects(
+    () => gradeItem(db, payload),
+    (error) => error.code === "resource-exhausted",
+  );
+
+  // De rem geldt per vraag, niet per toets: vraag 2 kan gewoon door.
+  const other = await gradeItem(db, { itemId: "item-2", answers: { itemAnswer: "30" } });
+  assert.equal(other.isCorrect, true);
+});
+
+test("gradeClosedQuestion refuses a block that is not a toets or quiz", async () => {
+  const db = createDb({
+    ...assessmentDocs([]),
+    "contentBlocks/toets-1": { type: "theory", status: "published", paragraafId: "par-1" },
+  });
+
+  await assert.rejects(
+    () => gradeItem(db, { itemId: "item-1", answers: {} }),
+    (error) => error.code === "invalid-argument",
+  );
+});
+
 test("gradeClosedQuestion gives an unknown block no extra rights, only the paragraph check", async () => {
   const assigned = createDb(baseDocs(meerkeuzeVraag));
   const result = await gradeAs(assigned, {

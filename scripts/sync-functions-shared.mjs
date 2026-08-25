@@ -32,7 +32,13 @@ export const SHARED_DIR = join(REPO_ROOT, 'functions', 'shared');
 
 // Alles wat de callable server-side nodig heeft. De rest van de graaf volgt
 // automatisch uit de imports.
-export const SHARED_ENTRY_POINTS = ['questionGrading.js', 'questionPreviewUtils.js'];
+export const SHARED_ENTRY_POINTS = [
+  'questionGrading.js',
+  'questionPreviewUtils.js',
+  // Toets- en quizitems lopen door dezelfde beoordelingslaag; de callable heeft
+  // de adapter dus ook server-side nodig.
+  'assessmentItemGrading.js'
+];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(
   {

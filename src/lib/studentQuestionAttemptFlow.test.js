@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   buildParagraphEndPlan,
   buildQuestionAttemptOutcome,
+  resolveBlockMaxAttempts,
   MAX_CORE_QUESTION_ATTEMPTS
 } from './studentQuestionAttemptFlow.js';
 
@@ -113,4 +114,30 @@ test('buildParagraphEndPlan stays in progress when any assigned core question ha
 
   assert.equal(plan.kind, 'in_progress');
   assert.equal(plan.required, false);
+});
+
+test('resolveBlockMaxAttempts follows the attempt policy of the block', () => {
+  // Een toets staat in de studio standaard op twee pogingen. Dat getal werd
+  // genegeerd, waardoor een toets stilzwijgend vier pogingen gaf.
+  assert.equal(resolveBlockMaxAttempts({ type: 'toets', content: { attemptPolicy: { maxAttempts: 2 } } }), 2);
+  assert.equal(resolveBlockMaxAttempts({ type: 'toets', content: { attemptPolicy: { maxAttempts: 1 } } }), 1);
+
+  // `null` betekent "geen eigen grens" (quiz): dan geldt de didactische default.
+  assert.equal(resolveBlockMaxAttempts({ type: 'quiz', content: { attemptPolicy: { maxAttempts: null } } }), MAX_CORE_QUESTION_ATTEMPTS);
+  assert.equal(resolveBlockMaxAttempts({ type: 'quiz', content: {} }), MAX_CORE_QUESTION_ATTEMPTS);
+  assert.equal(resolveBlockMaxAttempts({}), MAX_CORE_QUESTION_ATTEMPTS);
+});
+
+test('a toets question really locks after the configured number of attempts', () => {
+  const maxAttempts = resolveBlockMaxAttempts({ type: 'toets', content: { attemptPolicy: { maxAttempts: 2 } } });
+
+  const first = buildQuestionAttemptOutcome({ currentAttempts: 0, maxAttempts, isCorrect: false });
+  assert.equal(first.completed, false);
+  assert.equal(first.attemptStatus, 'open');
+
+  const second = buildQuestionAttemptOutcome({ currentAttempts: first.attempts, maxAttempts, isCorrect: false });
+  assert.equal(second.attempts, 2);
+  assert.equal(second.completed, true);
+  assert.equal(second.attemptStatus, 'locked');
+  assert.equal(second.resultTier, 'failed');
 });

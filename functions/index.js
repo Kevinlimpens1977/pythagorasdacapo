@@ -1248,10 +1248,13 @@ function loadSharedGradingLayer() {
     sharedGradingLayerPromise = Promise.all([
       import("./shared/questionGrading.js"),
       import("./shared/questionPreviewUtils.js"),
-    ]).then(([grading, previewUtils]) => ({
+      import("./shared/assessmentItemGrading.js"),
+    ]).then(([grading, previewUtils, assessmentGrading]) => ({
       gradeQuestionAnswer: grading.gradeQuestionAnswer,
       GRADE_REASONS: grading.GRADE_REASONS,
       buildQuestionPreviewModel: previewUtils.buildQuestionPreviewModel,
+      gradeAssessmentItemAnswer: assessmentGrading.gradeAssessmentItemAnswer,
+      getAssessmentGradingType: assessmentGrading.getAssessmentGradingType,
     }));
   }
 
@@ -1360,8 +1363,8 @@ async function assertQuestionAssignedToCaller({ db, uid, callerData = {}, vraag 
  * de didactische grens; dit venster laat ruimte voor herstel en dubbelklikken
  * en zet daarna de deur dicht.
  */
-async function assertQuestionGradingRateLimit({ db, uid, vraagId, nowMs }) {
-  const limitRef = db.doc(`questionGradingRateLimits/${cleanIdPart(uid)}__${cleanIdPart(vraagId)}`);
+async function assertQuestionGradingRateLimit({ db, uid, subjectId, nowMs }) {
+  const limitRef = db.doc(`questionGradingRateLimits/${cleanIdPart(uid)}__${cleanIdPart(subjectId)}`);
 
   await runDbTransaction(db, async (transaction) => {
     const snapshot = await transaction.get(limitRef);
@@ -1379,7 +1382,7 @@ async function assertQuestionGradingRateLimit({ db, uid, vraagId, nowMs }) {
       limitRef,
       {
         uid,
-        vraagId,
+        subjectId,
         count: count + 1,
         windowStartedAt: withinWindow ? windowStartedAt : nowMs,
         updatedAt: nowMs,
@@ -1411,6 +1414,114 @@ function buildSafeGradeParts(grade = {}, questionType = "") {
   };
 }
 
+/**
+ * Mag deze aanroeper dit toets- of quizitem laten nakijken?
+ *
+ * Zelfde grenzen als bij een losse vraag: gepubliceerd, niet gearchiveerd, en
+ * toegewezen aan de klas of aan deze leerling. Een toetsitem staat niet in de
+ * collectie `vraag` maar in het contentBlock zelf, dus de controle hangt hier
+ * volledig aan het blok.
+ */
+async function assertAssessmentBlockAssignedToCaller({ db, uid, callerData = {}, block = {}, blockId = "" }) {
+  const role = String(callerData.role || "").trim().toLowerCase();
+  if (role === "admin" || role === "supervisor" || isConfiguredAdminEmail(callerData.email)) {
+    return { role: role || "admin", rateLimited: false };
+  }
+
+  if (block.status !== "published" || block.isArchived === true) {
+    throw new HttpsError("failed-precondition", "Dit toetsblok staat niet klaar om nagekeken te worden.");
+  }
+
+  const paragraafId = String(block.paragraafId || "").trim();
+  const klasId = String(callerData.klasId || "").trim();
+  if (!klasId) {
+    throw new HttpsError("failed-precondition", "Je bent nog niet aan een klas gekoppeld.");
+  }
+
+  const klas = await getRequiredDoc(db.doc(`klassen/${klasId}`), "Klas");
+  if (!isParagraphAssignedToStudent(klas.data, uid, paragraafId)) {
+    throw new HttpsError("permission-denied", "Dit toetsblok hoort niet bij jouw lesstof.");
+  }
+
+  if (!isContentBlockAssignedToStudent(klas.data, uid, paragraafId, blockId)) {
+    throw new HttpsError("permission-denied", "Dit toetsblok hoort niet bij jouw lesstof.");
+  }
+
+  return { role: role || "student", rateLimited: true };
+}
+
+/**
+ * Nakijken van een vraag BINNEN een toets of quiz.
+ *
+ * Bewust geen tweede functie naast gradeClosedQuestion: het is dezelfde
+ * beveiligingsbelofte (nooit de sleutel terug, deelstatussen bij meerkeuze pas
+ * als het geheel goed is, een rem tegen aftasten) en dezelfde beoordelingslaag.
+ * Alleen de vindplaats van de vraag verschilt.
+ */
+async function gradeAssessmentItemCore({
+  auth,
+  data,
+  db,
+  loadGradingLayer,
+  nowMs,
+  callerData,
+}) {
+  const blockId = requireString(data?.blockId, "blockId");
+  const itemId = requireString(data?.itemId, "itemId");
+  const answers = normalizeSubmittedAnswers(data?.answers);
+
+  const blockDoc = await getRequiredDoc(db.doc(`contentBlocks/${blockId}`), "Lesblok");
+  const block = { ...blockDoc.data, id: blockDoc.id };
+
+  if (block.type !== "quiz" && block.type !== "toets") {
+    throw new HttpsError("invalid-argument", "Dit lesblok is geen toets of quiz.");
+  }
+
+  const access = await assertAssessmentBlockAssignedToCaller({
+    db,
+    uid: auth.uid,
+    callerData,
+    block,
+    blockId,
+  });
+
+  if (access.rateLimited) {
+    await assertQuestionGradingRateLimit({
+      db,
+      uid: auth.uid,
+      subjectId: `${blockId}__${itemId}`,
+      nowMs,
+    });
+  }
+
+  const items = Array.isArray(block.content?.items) ? block.content.items : [];
+  const item = items.find((entry) => String(entry?.id || "") === itemId);
+
+  // Bewust geen "not-found": de client zet daarop de hele serverroute uit voor
+  // de rest van de sessie. Een onbekend item is een verkeerde aanvraag, geen
+  // ontbrekende functie.
+  if (!item) {
+    throw new HttpsError("invalid-argument", "Deze toetsvraag bestaat niet in dit lesblok.");
+  }
+
+  const { gradeAssessmentItemAnswer, getAssessmentGradingType } = await loadGradingLayer();
+  const questionType = getAssessmentGradingType(item);
+  const grade = gradeAssessmentItemAnswer({ item, answer: answers.itemAnswer });
+  const canGrade = grade?.canGrade === true;
+
+  return {
+    success: true,
+    blockId,
+    itemId,
+    questionType,
+    canGrade,
+    isCorrect: canGrade && grade.isCorrect === true,
+    reason: String(grade?.reason || ""),
+    ...buildSafeGradeParts(grade || {}, questionType),
+    source: "server",
+  };
+}
+
 async function gradeClosedQuestionCore({
   auth,
   data,
@@ -1420,6 +1531,19 @@ async function gradeClosedQuestionCore({
 }) {
   if (!auth?.uid) {
     throw new HttpsError("unauthenticated", "Log in om je antwoord te laten nakijken.");
+  }
+
+  // Een toetsitem heeft geen vraagId: het woont in het contentBlock.
+  if (data?.itemId) {
+    const itemCaller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Gebruiker");
+    return gradeAssessmentItemCore({
+      auth,
+      data,
+      db,
+      loadGradingLayer,
+      nowMs,
+      callerData: itemCaller.data,
+    });
   }
 
   const vraagId = requireString(data?.vraagId, "vraagId");
@@ -1439,7 +1563,7 @@ async function gradeClosedQuestionCore({
   });
 
   if (access.rateLimited) {
-    await assertQuestionGradingRateLimit({ db, uid: auth.uid, vraagId, nowMs });
+    await assertQuestionGradingRateLimit({ db, uid: auth.uid, subjectId: vraagId, nowMs });
   }
 
   const questionType = String(vraag.vraagtype || vraag.antwoord?.type || "open").trim();
@@ -1798,6 +1922,16 @@ async function deleteStudentProgress(db, studentIds) {
 
   for (const studentId of studentIds) {
     const snapshot = await db.collection("voortgang").where("userId", "==", studentId).get();
+
+    // Firestore verwijdert subcollecties NIET mee met het ouderdocument. Zonder
+    // deze lus blijft de itemvoortgang van elke toets als wees achter: onzichtbaar
+    // in de console, maar wel bewaarde leerlingdata.
+    for (const progressDoc of snapshot.docs) {
+      if (typeof progressDoc.ref?.collection !== "function") continue;
+      const itemsSnapshot = await progressDoc.ref.collection("items").get();
+      deleted += await deleteQuerySnapshot(db, itemsSnapshot);
+    }
+
     deleted += await deleteQuerySnapshot(db, snapshot);
   }
 
