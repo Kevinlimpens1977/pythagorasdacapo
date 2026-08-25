@@ -80,27 +80,33 @@ const normalizeOption = (option = {}, index = 0) => ({
  *             gevoelig: de leerlingroute toont hem pas als de vraag klaar is
  *             (zie selectAnswerExplanation in closedQuestionGradingRoute.js).
  */
+// `isCorrect` wordt bewust niet meer gelezen: de uitleg van het juiste antwoord
+// gaat sinds de sleutel-lek nooit meer mee, ongeacht de uitkomst.
 export const buildChoiceExplanationFeedback = ({
   options = [],
-  selectedIds = [],
-  isCorrect = false
+  selectedIds = []
 } = {}) => {
   const normalized = asArray(options).map(normalizeOption);
   if (normalized.length === 0) return emptyAnswerExplanation();
 
   const selected = new Set(asArray(selectedIds).map((id) => cleanText(id)).filter(Boolean));
 
+  // Zonder keuze valt er niets uit te leggen. Dit is ook een sluitboom: een
+  // aanroep met een leeg antwoord mocht vroeger de sleutel oogsten zonder
+  // ooit te antwoorden.
+  if (selected.size === 0) return emptyAnswerExplanation();
+
   const chosen = normalized
     .filter((option) => selected.has(option.id))
     .map((option) => (option.correct ? option.explanation : option.misconception));
 
-  const correct = isCorrect
-    ? []
-    : normalized.filter((option) => option.correct).map((option) => option.explanation);
-
+  // `correct` wijst het juiste antwoord aan en hoort daarom NOOIT bij een fout
+  // antwoord mee terug: wie het goed heeft, leest die uitleg al via `chosen`.
+  // Een poortje in de browser is hier geen bescherming, want de leerling kan
+  // de callable rechtstreeks aanroepen.
   return {
     chosen: uniqueNotes(chosen),
-    correct: uniqueNotes(correct)
+    correct: []
   };
 };
 

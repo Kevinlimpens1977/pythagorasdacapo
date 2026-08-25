@@ -31,7 +31,7 @@ const opties = [
   }
 ];
 
-test('een fout antwoord levert de denkfout van de gekozen optie op, plus de uitleg van het juiste antwoord', () => {
+test('een fout antwoord levert alleen de denkfout van de gekozen optie op', () => {
   const feedback = buildChoiceExplanationFeedback({
     options: opties,
     selectedIds: ['optie-2'],
@@ -39,7 +39,7 @@ test('een fout antwoord levert de denkfout van de gekozen optie op, plus de uitl
   });
 
   assert.deepEqual(feedback.chosen, ['Vertrouwt op een stick die je kunt vergeten of verliezen.']);
-  assert.deepEqual(feedback.correct, ['Wat in OneDrive staat, staat op elk apparaat waar je inlogt.']);
+  assert.deepEqual(feedback.correct, []);
 });
 
 test('een goed antwoord leest zijn eigen uitleg en krijgt geen tweede keer hetzelfde', () => {
@@ -109,7 +109,7 @@ test('een losse vraag uit de collectie vraag loopt door dezelfde keuze', () => {
   });
 
   assert.deepEqual(feedback.chosen, ['Denkt dat een bestand vanzelf meereist met de leerling.']);
-  assert.deepEqual(feedback.correct, ['Wat in OneDrive staat, staat op elk apparaat waar je inlogt.']);
+  assert.deepEqual(feedback.correct, []);
 });
 
 test('een toetsitem geeft dezelfde uitleg als een losse vraag met dezelfde opties', () => {
@@ -140,7 +140,7 @@ test('waar-niet-waar telt als keuzevraag binnen een toets', () => {
 
   const feedback = buildAssessmentItemExplanationFeedback({ item, answer: 'waar', isCorrect: false });
   assert.deepEqual(feedback.chosen, ['Denkt dat een stelling altijd klopt.']);
-  assert.deepEqual(feedback.correct, ['De stelling gaat over een tijdelijke map.']);
+  assert.deepEqual(feedback.correct, []);
 });
 
 test('een open toetsitem krijgt geen optie-uitleg', () => {

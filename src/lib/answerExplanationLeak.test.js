@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import { buildPublicQuestionSnapshot } from './publicQuestionView.js';
 import { buildPublicContentBlockSnapshot } from './publicContentBlockView.js';
+import { buildQuestionExplanationFeedback } from './answerExplanationFeedback.js';
 
 // WAAROM DEZE TEST BESTAAT
 //
@@ -126,4 +127,34 @@ test('ook het losse options-veld naast answer.options blijft schoon', () => {
 
   assertGeenSleutel(snapshot, 'legacy options');
   assert.equal(snapshot.content.items[0].options.length, 2);
+});
+
+// De uitleg van het JUISTE antwoord is feitelijk de antwoordsleutel. Een poortje
+// in de browser beschermt daar niet tegen: een leerling kan de callable
+// rechtstreeks aanroepen met een leeg antwoord. Deze test bewaakt dat de
+// gedeelde laag die zin nooit teruggeeft aan iemand die het niet goed had.
+test('het beoordeelantwoord verklapt de sleutel niet bij leeg of fout antwoord', () => {
+  const vraag = {
+    id: 'vraag-lek',
+    vraagtype: 'meerkeuze',
+    antwoord: {
+      type: 'meerkeuze',
+      options: [
+        { id: 'fout', text: 'Op een USB-stick', correct: false, misconception: 'Een stick raak je kwijt.' },
+        { id: 'goed', text: 'In OneDrive', correct: true, explanation: 'OneDrive staat in de cloud.' }
+      ]
+    }
+  };
+
+  const leeg = buildQuestionExplanationFeedback({ vraag, answers: {}, isCorrect: false });
+  assert.deepEqual(leeg.chosen, [], 'zonder keuze valt er niets uit te leggen');
+  assert.deepEqual(leeg.correct, [], 'een leeg antwoord mag de sleutel niet oogsten');
+
+  const fout = buildQuestionExplanationFeedback({ vraag, answers: { fout: true }, isCorrect: false });
+  assert.deepEqual(fout.chosen, ['Een stick raak je kwijt.'], 'wel: waarom jouw keuze niet klopt');
+  assert.deepEqual(fout.correct, [], 'niet: welke optie dan wel goed is');
+
+  const goed = buildQuestionExplanationFeedback({ vraag, answers: { goed: true }, isCorrect: true });
+  assert.deepEqual(goed.chosen, ['OneDrive staat in de cloud.'], 'wie het goed heeft leest de uitleg via zijn eigen keuze');
+  assert.deepEqual(goed.correct, []);
 });

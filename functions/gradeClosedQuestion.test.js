@@ -696,7 +696,9 @@ test("gradeClosedQuestion returns the explanation of the chosen option after gra
   });
 
   assert.deepEqual(fout.explanation.chosen, ["Een stick kun je vergeten."]);
-  assert.deepEqual(fout.explanation.correct, ["Daar staat het op elk apparaat."]);
+  // De uitleg van het JUISTE antwoord mag nooit mee bij een fout antwoord:
+  // dat is de antwoordsleutel en de leerling kan de callable rechtstreeks aanroepen.
+  assert.deepEqual(fout.explanation.correct, []);
   // De denkfout van een optie die de leerling NIET koos blijft weg.
   assert.equal(JSON.stringify(fout.explanation).includes("Downloads is een tijdelijke map."), false);
 
@@ -775,7 +777,7 @@ test("gradeClosedQuestion returns the explanation for a question inside a toets 
   const fout = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "option-1" } });
   assert.equal(fout.isCorrect, false);
   assert.deepEqual(fout.explanation.chosen, ["Verwart een tijdelijke map met een bewaarplek."]);
-  assert.deepEqual(fout.explanation.correct, ["Downloads wordt regelmatig opgeruimd."]);
+  assert.deepEqual(fout.explanation.correct, []);
 
   const goed = await gradeItem(db, { itemId: "item-1", answers: { itemAnswer: "option-2" } });
   assert.equal(goed.isCorrect, true);
@@ -803,5 +805,7 @@ test("gradeClosedQuestion caps an author who pasted a whole chapter into one opt
   });
 
   assert.equal(result.explanation.chosen[0].length, 400);
-  assert.equal(result.explanation.correct[0].length, 400);
+  // Bij een fout antwoord komt de uitleg van het juiste antwoord niet mee,
+  // dus valt er aan die kant ook niets te kappen.
+  assert.deepEqual(result.explanation.correct, []);
 });
