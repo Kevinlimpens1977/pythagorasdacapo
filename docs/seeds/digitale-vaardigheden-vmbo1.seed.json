@@ -1,7 +1,7 @@
 {
   "meta": {
     "seedId": "digitale-vaardigheden-vmbo1",
-    "generatedAt": "2026-08-25T17:55:18.543Z",
+    "generatedAt": "2026-08-25T18:55:17.732Z",
     "status": "published",
     "sourceDocuments": [
       "docs/LessenserieDigitaleVaardigheden30Lessen.md",
@@ -1372,87 +1372,304 @@
         "items": [
           {
             "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Koppel app aan functie.",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je maakt je werkstuk thuis af en morgen moet je het op school laten zien. Waar zet je het bestand neer?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Op het bureaublad van de computer thuis.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat een bestand vanzelf meereist met de leerling."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Op een USB-stick in je etui.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Vertrouwt op een stick die je kunt vergeten, verliezen of thuis laten liggen."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "In de map Downloads van de computer in het lokaal.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Verwart een tijdelijke map met een bewaarplek."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "In OneDrive, in de map van dit vak.",
+                  "correct": true,
+                  "explanation": "OneDrive staat in de cloud, dus je opent het bestand op elk apparaat waarop je inlogt.",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Op het bureaublad van de computer thuis.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat een bestand vanzelf meereist met de leerling."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Op een USB-stick in je etui.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Vertrouwt op een stick die je kunt vergeten, verliezen of thuis laten liggen."
+              },
+              {
+                "id": "optie-3",
+                "text": "In de map Downloads van de computer in het lokaal.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Verwart een tijdelijke map met een bewaarplek."
+              },
+              {
+                "id": "optie-4",
+                "text": "In OneDrive, in de map van dit vak.",
+                "correct": true,
+                "explanation": "OneDrive staat in de cloud, dus je opent het bestand op elk apparaat waarop je inlogt.",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "OneDrive staat in de cloud. Daardoor open je hetzelfde bestand thuis en op school, zolang je met je schoolaccount inlogt.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt met je schoolaccount inloggen en je schoolwerk terugvinden.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Kies de juiste map.",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Met je schoolaccount log je alleen in bij Outlook; voor HELIX heb je een apart account nodig.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Een schoolaccount is een sleutelbos: dezelfde inlog opent HELIX, OneDrive en Outlook.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet waarvoor je HELIX, OneDrive en Outlook gebruikt.",
+              "cognitiveSkill": "herkennen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat doe je als je bestand kwijt is?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je mentor stuurt een bericht over de excursie van volgende week. Waar lees je dat bericht?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "In Outlook.",
+                  "correct": true,
+                  "explanation": "Berichten van school komen binnen in de mail van je schoolaccount.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "In OneDrive, bij je bestanden.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat de opslagplek ook de berichtenplek is."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "In HELIX bij de opdrachten.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Verwart lesmateriaal met communicatie."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "In de appgroep van je klas.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat school officiële berichten ook via privé-apps stuurt."
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "In Outlook.",
+                "correct": true,
+                "explanation": "Berichten van school komen binnen in de mail van je schoolaccount.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "In OneDrive, bij je bestanden.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat de opslagplek ook de berichtenplek is."
+              },
+              {
+                "id": "optie-3",
+                "text": "In HELIX bij de opdrachten.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Verwart lesmateriaal met communicatie."
+              },
+              {
+                "id": "optie-4",
+                "text": "In de appgroep van je klas.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat school officiële berichten ook via privé-apps stuurt."
+              }
+            ],
+            "feedback": "Berichten lees je in Outlook. OneDrive is voor bestanden en HELIX voor je lessen en opdrachten.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet waarvoor je HELIX, OneDrive en Outlook gebruikt.",
+              "cognitiveSkill": "herkennen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Welke informatie deel je niet?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "open",
+            "vraagtype": "open",
+            "prompt": "Leg uit waarom je een vaste map voor dit vak maakt in plaats van alles los op te slaan.",
+            "answer": {
+              "type": "open",
+              "modelAnswer": "In een vaste map staat al mijn werk voor dit vak bij elkaar. Ik hoef niet te zoeken en ik raak minder snel iets kwijt. Mijn docent kan ook sneller zien wat ik gemaakt heb.",
+              "rubric": "- Noemt dat het werk bij elkaar staat en dus terug te vinden is.\n- Noemt een nadeel van los opslaan, bijvoorbeeld kwijtraken of lang zoeken.\n- Antwoordt in eigen woorden en in hele zinnen.",
+              "teacherNotes": ""
+            },
+            "options": [],
+            "feedback": "Een vaste map is geen extra werk maar tijdwinst: volgende week zoek je niet meer waar je bestand gebleven is.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt bewijs van je werk opslaan in een eigen map.",
+              "cognitiveSkill": "uitleggen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "reflecteren"
+            }
           },
           {
             "id": "quiz-5",
             "type": "meerkeuze",
-            "prompt": "Welke screenshot bewijst dat je map bestaat?",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat doe je als inloggen op je schoolaccount niet lukt?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Steeds hetzelfde wachtwoord opnieuw proberen tot het lukt.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat volhouden helpt bij een accountprobleem."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Het account van een klasgenoot lenen.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Ziet niet dat een geleend account het probleem verplaatst en niet mag."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Het melden bij je docent, mentor of de ICT-helpdesk van school.",
+                  "correct": true,
+                  "explanation": "School kan je account herstellen; jij kunt dat zelf niet.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Zelf een nieuw account maken met je privé-mailadres.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat je je eigen schoolaccount kunt aanmaken."
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Steeds hetzelfde wachtwoord opnieuw proberen tot het lukt.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat volhouden helpt bij een accountprobleem."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Het account van een klasgenoot lenen.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Ziet niet dat een geleend account het probleem verplaatst en niet mag."
+              },
+              {
+                "id": "optie-3",
+                "text": "Het melden bij je docent, mentor of de ICT-helpdesk van school.",
+                "correct": true,
+                "explanation": "School kan je account herstellen; jij kunt dat zelf niet.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-4",
+                "text": "Zelf een nieuw account maken met je privé-mailadres.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat je je eigen schoolaccount kunt aanmaken."
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Bij inlogproblemen vraag je hulp op school. Het account van een ander gebruiken mag niet, ook niet als het even handig lijkt.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt met je schoolaccount inloggen en je schoolwerk terugvinden.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           }
         ],
         "attemptPolicy": {
@@ -1808,87 +2025,276 @@
         "items": [
           {
             "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Kies het sterkste nepwachtwoord.",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk nepwachtwoord is het sterkst?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Rex2011!",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Ziet een uitroepteken aan voor sterkte, terwijl dit een huisdiernaam met jaartal is."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "paarse fiets zoekt kaas",
+                  "correct": true,
+                  "explanation": "Vier gewone woorden zijn veel langer en hebben niets met de leerling te maken.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Wachtwoord123",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat cijfers achter een woord genoeg zijn."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Qwerty2026",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat een rij toetsen van het toetsenbord willekeurig overkomt."
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Rex2011!",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Ziet een uitroepteken aan voor sterkte, terwijl dit een huisdiernaam met jaartal is."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "paarse fiets zoekt kaas",
+                "correct": true,
+                "explanation": "Vier gewone woorden zijn veel langer en hebben niets met de leerling te maken.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Wachtwoord123",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat cijfers achter een woord genoeg zijn."
+              },
+              {
+                "id": "optie-4",
+                "text": "Qwerty2026",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat een rij toetsen van het toetsenbord willekeurig overkomt."
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Lengte wint van rare tekens. Vier gewone woorden zijn langer dan een naam met een jaartal, en ze horen niet bij jou.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt een sterke wachtwoordzin bedenken zonder je eigen gegevens.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Waarom is 123456 zwak?",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een docent of ICT-medewerker mag jou om je echte wachtwoord vragen als er iets kapot is.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat school het wachtwoord nodig heeft om te kunnen helpen."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "School kan altijd helpen zonder jouw wachtwoord; ernaar vragen is juist een alarmsignaal.",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat school het wachtwoord nodig heeft om te kunnen helpen."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "School kan altijd helpen zonder jouw wachtwoord; ernaar vragen is juist een alarmsignaal.",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "School vraagt nooit om je echte wachtwoord. Gebeurt het toch, dan is dat juist een reden om het te melden.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet wat je doet als je wachtwoord gelekt of vergeten is.",
+              "cognitiveSkill": "herkennen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat doe je als een vriend je wachtwoord vraagt?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waarom is hetzelfde wachtwoord voor school, je game-account en je mail een risico?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Als één site gehackt wordt, kan iemand meteen bij al je accounts.",
+                  "correct": true,
+                  "explanation": "Eén lek opent dan alle deuren tegelijk.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Je vergeet het wachtwoord dan sneller.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat het probleem het onthouden is."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Je mag van school maar één wachtwoord per website gebruiken.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Zoekt de reden in een schoolregel in plaats van in het risico."
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Als één site gehackt wordt, kan iemand meteen bij al je accounts.",
+                "correct": true,
+                "explanation": "Eén lek opent dan alle deuren tegelijk.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Je vergeet het wachtwoord dan sneller.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat het probleem het onthouden is."
+              },
+              {
+                "id": "optie-3",
+                "text": "Je mag van school maar één wachtwoord per website gebruiken.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Zoekt de reden in een schoolregel in plaats van in het risico."
+              }
+            ],
+            "feedback": "Eén gelekt wachtwoord opent dan alle deuren. Daarom is elk wachtwoord uniek, ook al kost dat even moeite.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet waarom een lang en uniek wachtwoord veiliger is.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat betekent uniek wachtwoord?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "open",
+            "vraagtype": "open",
+            "prompt": "Je hoort dat een website waar jij een account hebt gehackt is. Beschrijf wat je doet.",
+            "answer": {
+              "type": "open",
+              "modelAnswer": "Ik verander meteen het wachtwoord van die site. Gebruikte ik hetzelfde wachtwoord ergens anders, dan verander ik het daar ook. Gaat het om mijn schoolaccount, dan gebruik ik de herstelroute van school of vraag ik hulp.",
+              "rubric": "- Noemt dat het wachtwoord veranderd wordt.\n- Noemt de andere accounts met hetzelfde wachtwoord.\n- Noemt hulp vragen of de herstelroute van school.",
+              "teacherNotes": ""
+            },
+            "options": [],
+            "feedback": "Bij een lek is snel handelen belangrijker dan je schamen. Veranderen en melden is precies de goede reactie.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet wat je doet als je wachtwoord gelekt of vergeten is.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "reflecteren"
+            }
           },
           {
             "id": "quiz-5",
             "type": "meerkeuze",
-            "prompt": "Wat doe je bij een lek?",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat maakt een wachtwoordzin veilig?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Dat je je geboortedatum erin verwerkt.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat persoonlijke gegevens iets moeilijker maken, terwijl ze juist te raden zijn."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Dat je hem opslaat in de notities van je telefoon.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Verwart een bewaarplek met de sterkte van het wachtwoord zelf."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Dat hij lang is en uit woorden bestaat die niets met jou te maken hebben.",
+                  "correct": true,
+                  "explanation": "Lengte plus onvoorspelbaarheid maakt raden zinloos.",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Dat je je geboortedatum erin verwerkt.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat persoonlijke gegevens iets moeilijker maken, terwijl ze juist te raden zijn."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Dat je hem opslaat in de notities van je telefoon.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Verwart een bewaarplek met de sterkte van het wachtwoord zelf."
+              },
+              {
+                "id": "optie-3",
+                "text": "Dat hij lang is en uit woorden bestaat die niets met jou te maken hebben.",
+                "correct": true,
+                "explanation": "Lengte plus onvoorspelbaarheid maakt raden zinloos.",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Een wachtwoordzin is veilig door lengte en doordat niemand hem aan jou kan koppelen.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt een sterke wachtwoordzin bedenken zonder je eigen gegevens.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
           }
         ],
         "attemptPolicy": {
@@ -2244,87 +2650,290 @@
         "items": [
           {
             "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Hardware of software?",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk onderdeel is hardware?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het toetsenbord.",
+                  "correct": true,
+                  "explanation": "Je kunt het vastpakken, dus het is hardware.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Windows.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat het besturingssysteem bij het apparaat zelf hoort."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De browser.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Verwart een programma dat je ziet met een apparaat dat je voelt."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "De virusscanner.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat beveiliging een onderdeel is dat in het apparaat gebouwd zit."
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Het toetsenbord.",
+                "correct": true,
+                "explanation": "Je kunt het vastpakken, dus het is hardware.",
+                "misconception": ""
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Windows.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat het besturingssysteem bij het apparaat zelf hoort."
+              },
+              {
+                "id": "optie-3",
+                "text": "De browser.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Verwart een programma dat je ziet met een apparaat dat je voelt."
+              },
+              {
+                "id": "optie-4",
+                "text": "De virusscanner.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat beveiliging een onderdeel is dat in het apparaat gebouwd zit."
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Hardware kun je aanraken. Windows, de browser en de virusscanner zijn software: programma’s die op het apparaat draaien.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet het verschil tussen hardware en software.",
+              "cognitiveSkill": "herkennen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat is invoer?",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een update stel je beter niet eindeloos uit, omdat updates fouten oplossen en je device veiliger maken.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Uitstellen laat gaten in de beveiliging openstaan. Plan de update liever op een moment dat je niet met schoolwerk bezig bent.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt uitleggen waarom updates je device veiliger maken.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom zijn updates nodig?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je krijgt tijdens de les een onbekende melding met de knop Nu installeren. Wat doe je?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Meteen op Nu installeren klikken.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Gaat ervan uit dat elke melding op een schoolcomputer veilig is."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "De melding wegklikken en er niets over zeggen.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat wegklikken hetzelfde is als oplossen."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De melding laten staan en je docent vragen wat het is.",
+                  "correct": true,
+                  "explanation": "De docent kan meekijken zolang de melding nog in beeld staat.",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Meteen op Nu installeren klikken.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Gaat ervan uit dat elke melding op een schoolcomputer veilig is."
+              },
+              {
+                "id": "optie-2",
+                "text": "De melding wegklikken en er niets over zeggen.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat wegklikken hetzelfde is als oplossen."
+              },
+              {
+                "id": "optie-3",
+                "text": "De melding laten staan en je docent vragen wat het is.",
+                "correct": true,
+                "explanation": "De docent kan meekijken zolang de melding nog in beeld staat.",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Bij een onbekende melding klik je niet, maar vraag je. Een screenshot maken helpt je docent om mee te kijken.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet welke instellingen je zelf aanpast en welke niet.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat doe je bij een onbekende melding?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "open",
+            "vraagtype": "open",
+            "prompt": "Leg het verschil uit tussen hardware en software. Geef van allebei een voorbeeld.",
+            "answer": {
+              "type": "open",
+              "modelAnswer": "Hardware is het deel dat je kunt aanraken, zoals het scherm of het toetsenbord. Software zijn de programma’s die daarop draaien, zoals Windows of Word. Samen zorgen ze dat je kunt typen, opslaan en printen.",
+              "rubric": "- Zegt dat hardware tastbaar is en software niet.\n- Geeft van allebei een voorbeeld dat klopt.\n- Legt uit dat hardware en software samenwerken.",
+              "teacherNotes": ""
+            },
+            "options": [],
+            "feedback": "Het verschil zit in aanraken: kun je het vasthouden, dan is het hardware; draait het erop, dan is het software.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet het verschil tussen hardware en software.",
+              "cognitiveSkill": "uitleggen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-5",
             "type": "meerkeuze",
-            "prompt": "Welke volgorde hoort bij invoer-verwerking-uitvoer?",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke instelling mag je zonder overleg zelf aanpassen?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "De beveiligingsinstellingen van de schoolcomputer.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat toegang hebben hetzelfde is als mogen wijzigen."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Het beheerderswachtwoord van het apparaat.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Ziet niet dat beheerdersrechten voor de hele school gelden."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De wifi-instellingen van het schoolnetwerk.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat wifi op school net zo van jou is als de wifi thuis."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Het volume van je eigen koptelefoon.",
+                  "correct": true,
+                  "explanation": "Dit raakt alleen jouw eigen gebruik en niets in de beveiliging.",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "De beveiligingsinstellingen van de schoolcomputer.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat toegang hebben hetzelfde is als mogen wijzigen."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Het beheerderswachtwoord van het apparaat.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Ziet niet dat beheerdersrechten voor de hele school gelden."
+              },
+              {
+                "id": "optie-3",
+                "text": "De wifi-instellingen van het schoolnetwerk.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat wifi op school net zo van jou is als de wifi thuis."
+              },
+              {
+                "id": "optie-4",
+                "text": "Het volume van je eigen koptelefoon.",
+                "correct": true,
+                "explanation": "Dit raakt alleen jouw eigen gebruik en niets in de beveiliging.",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Je eigen geluid of helderheid mag je regelen. Van beveiliging, wifi en beheerdersinstellingen blijf je af.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet welke instellingen je zelf aanpast en welke niet.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           }
         ],
         "attemptPolicy": {
@@ -2678,87 +3287,290 @@
         "items": [
           {
             "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Kies de beste map.",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke bestandsnaam vind je over drie weken het snelst terug?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "opdracht2 definitief echt klaar.docx",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Beschrijft de staat van het werk in plaats van de inhoud."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "les4-bestandsnamen-noa-1a.docx",
+                  "correct": true,
+                  "explanation": "Les, onderwerp, naam en klas staan erin; je hoeft het bestand niet te openen.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "nieuw (1).docx",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Laat de standaardnaam van het programma staan."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "huiswerk.docx",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat één algemeen woord genoeg is omdat je zelf toch wel weet welk bestand het is."
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "opdracht2 definitief echt klaar.docx",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Beschrijft de staat van het werk in plaats van de inhoud."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "les4-bestandsnamen-noa-1a.docx",
+                "correct": true,
+                "explanation": "Les, onderwerp, naam en klas staan erin; je hoeft het bestand niet te openen.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "nieuw (1).docx",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Laat de standaardnaam van het programma staan."
+              },
+              {
+                "id": "optie-4",
+                "text": "huiswerk.docx",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat één algemeen woord genoeg is omdat je zelf toch wel weet welk bestand het is."
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Een goede naam vertelt zonder openen wat erin zit: de les, het onderwerp, je naam en je klas.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt bestandsnamen kiezen waarmee je je werk terugvindt.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Verbeter een foute bestandsnaam.",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een bestand kopiëren en een bestand verplaatsen komt op hetzelfde neer.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Na kopiëren staat het bestand op twee plekken, na verplaatsen op één. Dat verschil verklaart de meeste zoekacties.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt een mappenstructuur maken voor vak, hoofdstuk en opdracht.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat betekent cloud?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waarom bewaar je schoolwerk in OneDrive en niet alleen op de computer in het lokaal?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Omdat een bestand in OneDrive daarna nooit meer kwijt kan raken.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat de cloud ook slordig opslaan en rommelige namen repareert."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Omdat je op een schoolcomputer geen bestanden mag opslaan.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt aan een verbod in plaats van aan bereikbaarheid."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Omdat je bestanden dan in de cloud staan en je er thuis ook bij kunt.",
+                  "correct": true,
+                  "explanation": "De cloud maakt je werk los van één apparaat.",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Omdat een bestand in OneDrive daarna nooit meer kwijt kan raken.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat de cloud ook slordig opslaan en rommelige namen repareert."
+              },
+              {
+                "id": "optie-2",
+                "text": "Omdat je op een schoolcomputer geen bestanden mag opslaan.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt aan een verbod in plaats van aan bereikbaarheid."
+              },
+              {
+                "id": "optie-3",
+                "text": "Omdat je bestanden dan in de cloud staan en je er thuis ook bij kunt.",
+                "correct": true,
+                "explanation": "De cloud maakt je werk los van één apparaat.",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De cloud maakt je werk plaats-onafhankelijk. Op één vaste computer ben je je bestand kwijt zodra je ergens anders zit.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet het verschil tussen een bestand op je apparaat en in de cloud.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Waarom is versiebeheer handig?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "open",
+            "vraagtype": "open",
+            "prompt": "Beschrijf hoe jij je map voor dit vak indeelt. Noem minstens twee niveaus.",
+            "answer": {
+              "type": "open",
+              "modelAnswer": "Ik maak eerst een map Digitale Vaardigheden. Daarin maak ik een map per hoofdstuk, bijvoorbeeld H1 Starten en Account & Veilig. Daarin komt een map Inleverbestanden met mijn opdrachten.",
+              "rubric": "- Noemt een vaste hoofdmap voor het vak.\n- Noemt minstens één onderverdeling, bijvoorbeeld per hoofdstuk of opdracht.\n- De indeling is logisch en navolgbaar voor iemand anders.",
+              "teacherNotes": ""
+            },
+            "options": [],
+            "feedback": "Een map in een map werkt als een kast met laden: hoe duidelijker de indeling, hoe minder je zoekt.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt een mappenstructuur maken voor vak, hoofdstuk en opdracht.",
+              "cognitiveSkill": "maken_controleren",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-5",
             "type": "meerkeuze",
-            "prompt": "Welke screenshot bewijst je structuur?",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je hebt drie versies van hetzelfde werkstuk. Welke aanpak houdt het overzichtelijk?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Noem ze versie2, versie2echt en versie2echtklaar.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Bedenkt per keer een nieuwe naam zonder vaste regel."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Bewaar alleen de laatste en gooi de rest meteen weg.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Ziet niet dat een oudere versie soms nog nodig is."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Zet elke versie in een eigen map en laat de bestandsnaam hetzelfde.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Verplaatst het probleem naar de mappen; buiten de map zie je nog steeds niets."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Zet de datum in de naam, bijvoorbeeld werkstuk-2026-09-12.",
+                  "correct": true,
+                  "explanation": "Met een datum zie je meteen welke versie de nieuwste is.",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Noem ze versie2, versie2echt en versie2echtklaar.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Bedenkt per keer een nieuwe naam zonder vaste regel."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Bewaar alleen de laatste en gooi de rest meteen weg.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Ziet niet dat een oudere versie soms nog nodig is."
+              },
+              {
+                "id": "optie-3",
+                "text": "Zet elke versie in een eigen map en laat de bestandsnaam hetzelfde.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Verplaatst het probleem naar de mappen; buiten de map zie je nog steeds niets."
+              },
+              {
+                "id": "optie-4",
+                "text": "Zet de datum in de naam, bijvoorbeeld werkstuk-2026-09-12.",
+                "correct": true,
+                "explanation": "Met een datum zie je meteen welke versie de nieuwste is.",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Met een datum in de naam zie je in één blik welke versie de nieuwste is, zonder alle bestanden te openen.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt bestandsnamen kiezen waarmee je je werk terugvindt.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
           }
         ],
         "attemptPolicy": {
@@ -3114,87 +3926,290 @@
         "items": [
           {
             "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Veilig, twijfel of gevaar?",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Een mail zegt: je account wordt binnen 24 uur gesloten, klik hier om dat te voorkomen. Wat is hier de rode vlag?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Dat de mail over een account gaat.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Vindt het onderwerp verdacht in plaats van de manier van vragen."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Dat er een link in de mail staat.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat elke link phishing is."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Dat er haast wordt gemaakt met een dreiging.",
+                  "correct": true,
+                  "explanation": "Druk zorgt dat je klikt voordat je nadenkt; dat is precies de bedoeling.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Dat de mail in goed Nederlands geschreven is.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat phishing altijd te herkennen is aan slechte taal."
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Dat de mail over een account gaat.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Vindt het onderwerp verdacht in plaats van de manier van vragen."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Dat er een link in de mail staat.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat elke link phishing is."
+              },
+              {
+                "id": "optie-3",
+                "text": "Dat er haast wordt gemaakt met een dreiging.",
+                "correct": true,
+                "explanation": "Druk zorgt dat je klikt voordat je nadenkt; dat is precies de bedoeling.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-4",
+                "text": "Dat de mail in goed Nederlands geschreven is.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat phishing altijd te herkennen is aan slechte taal."
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Haast en dreiging zijn de motor van phishing: wie snel klikt, denkt niet na. Links en accounts zijn op zichzelf niet verdacht.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt rode vlaggen in een verdacht bericht aanwijzen.",
+              "cognitiveSkill": "herkennen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Welke rode vlag zie je?",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een bericht dat er netjes uitziet en geen spelfouten heeft, is daarom veilig.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Ook een verzorgd bericht kan phishing zijn. Je kijkt naar de afzender en waar de link heen gaat, niet naar de opmaak.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet wat phishing is en waarom het werkt.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat doe je met een onbekende bijlage?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Een onbekende afzender stuurt je een bijlage met de naam factuur.zip. Wat doe je?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Niet openen en het bericht laten zien aan je docent of mentor.",
+                  "correct": true,
+                  "explanation": "Melden kost niets en voorkomt schade.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Openen om te kijken of het klopt.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat kijken zonder klikken kan bij een bijlage."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Doorsturen naar een klasgenoot om te vragen wat het is.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Verplaatst het risico naar iemand anders."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "De bijlage alvast downloaden en later beslissen.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat downloaden nog geen risico is zolang je het bestand niet opent."
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Niet openen en het bericht laten zien aan je docent of mentor.",
+                "correct": true,
+                "explanation": "Melden kost niets en voorkomt schade.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Openen om te kijken of het klopt.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat kijken zonder klikken kan bij een bijlage."
+              },
+              {
+                "id": "optie-3",
+                "text": "Doorsturen naar een klasgenoot om te vragen wat het is.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Verplaatst het risico naar iemand anders."
+              },
+              {
+                "id": "optie-4",
+                "text": "De bijlage alvast downloaden en later beslissen.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat downloaden nog geen risico is zolang je het bestand niet opent."
+              }
+            ],
+            "feedback": "Een onbekende bijlage open je niet en stuur je niet door. Melden is slim, geen blunder.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet wat je doet bij twijfel en wie je om hulp vraagt.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Waarom is haast verdacht?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "type": "open",
+            "vraagtype": "open",
+            "prompt": "Noem drie signalen waaraan je een phishingbericht kunt herkennen.",
+            "answer": {
+              "type": "open",
+              "modelAnswer": "Een afzender die niet klopt, haast of dreiging in de tekst, en een link die ergens anders heen gaat dan hij belooft. Ook een onverwachte bijlage, een prijs die je niet gewonnen kunt hebben en veel spelfouten zijn signalen.",
+              "rubric": "- Noemt drie verschillende signalen.\n- De signalen komen uit de les en zijn geen gok.\n- Beschrijft de signalen in eigen woorden.",
+              "teacherNotes": ""
+            },
+            "options": [],
+            "feedback": "Drie signalen zijn genoeg om te twijfelen. Twijfel is het moment waarop je stopt en het aan iemand laat zien.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je kunt rode vlaggen in een verdacht bericht aanwijzen.",
+              "cognitiveSkill": "uitleggen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "quiz-5",
             "type": "meerkeuze",
-            "prompt": "Wie vraag je om hulp?",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat is je eerste stap als je twijfelt over een bericht?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Op de link klikken om te zien waar hij heen gaat.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat je een link veilig kunt uitproberen."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Stoppen, niet klikken en het bericht aan iemand op school laten zien.",
+                  "correct": true,
+                  "explanation": "Stoppen houdt alle opties open, ook melden.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Het bericht meteen verwijderen zodat niemand het ziet.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Wil het probleem laten verdwijnen in plaats van het te melden."
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Op de link klikken om te zien waar hij heen gaat.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat je een link veilig kunt uitproberen."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Stoppen, niet klikken en het bericht aan iemand op school laten zien.",
+                "correct": true,
+                "explanation": "Stoppen houdt alle opties open, ook melden.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Het bericht meteen verwijderen zodat niemand het ziet.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Wil het probleem laten verdwijnen in plaats van het te melden."
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
+            "feedback": "Stoppen kost tien seconden. Klikken kan je account kosten, en weggooien maakt melden onmogelijk.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "Je weet wat je doet bij twijfel en wie je om hulp vraagt.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           }
         ],
         "attemptPolicy": {
@@ -3516,116 +4531,563 @@
         "items": [
           {
             "id": "toets-1",
-            "type": "open",
-            "prompt": "Waar hoort schoolwerk?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je zit in de mediatheek achter een andere computer en wilt verder aan je opdracht van gisteren. Wat doe je?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "De opdracht opnieuw typen, want dit is een andere computer.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat een bestand vastzit aan het apparaat waarop het gemaakt is."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Een klasgenoot vragen of hij zijn versie doorstuurt.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Lost een opslagprobleem op met het werk van iemand anders."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Hier een nieuwe map maken en opnieuw beginnen.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Maakt een tweede bewaarplek in plaats van de bestaande te openen."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Inloggen met je schoolaccount en het bestand in OneDrive openen.",
+                  "correct": true,
+                  "explanation": "Je werk staat in de cloud, dus het opent op elke computer waarop je inlogt.",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "De opdracht opnieuw typen, want dit is een andere computer.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat een bestand vastzit aan het apparaat waarop het gemaakt is."
+              },
+              {
+                "id": "optie-2",
+                "text": "Een klasgenoot vragen of hij zijn versie doorstuurt.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Lost een opslagprobleem op met het werk van iemand anders."
+              },
+              {
+                "id": "optie-3",
+                "text": "Hier een nieuwe map maken en opnieuw beginnen.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Maakt een tweede bewaarplek in plaats van de bestaande te openen."
+              },
+              {
+                "id": "optie-4",
+                "text": "Inloggen met je schoolaccount en het bestand in OneDrive openen.",
+                "correct": true,
+                "explanation": "Je werk staat in de cloud, dus het opent op elke computer waarop je inlogt.",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een ander apparaat is geen probleem zolang je werk in OneDrive staat: je logt in en gaat verder waar je gebleven was.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je kunt zelfstandig inloggen, opslaan en mailen met je schoolaccount.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-2",
-            "type": "meerkeuze",
-            "prompt": "Wat doe je bij phishing?",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Je wachtwoord delen met je beste vriend is veilig, want die vertelt het toch niet door.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "feedback": "Een wachtwoord dat twee mensen kennen is geen wachtwoord meer. Vertrouwen verandert daar niets aan.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je weet wat je doet als je wachtwoord gelekt of vergeten is.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-3",
-            "type": "open",
-            "prompt": "Wat is een sterk wachtwoord?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke rij bevat alleen software?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het toetsenbord, de muis en het scherm.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Noemt juist de onderdelen die je kunt vastpakken software."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Windows, de browser en Word.",
+                  "correct": true,
+                  "explanation": "Dit zijn alle drie programma’s die op het apparaat draaien.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Word, de printer en de accu.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Ziet één programma staan en let niet op de twee tastbare onderdelen ernaast."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "De camera, de wifi-antenne en de luidspreker.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat onderdelen die je zelden ziet daarom software zijn."
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het toetsenbord, de muis en het scherm.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Noemt juist de onderdelen die je kunt vastpakken software."
+              },
+              {
+                "id": "optie-2",
+                "text": "Windows, de browser en Word.",
+                "correct": true,
+                "explanation": "Dit zijn alle drie programma’s die op het apparaat draaien.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Word, de printer en de accu.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Ziet één programma staan en let niet op de twee tastbare onderdelen ernaast."
+              },
+              {
+                "id": "optie-4",
+                "text": "De camera, de wifi-antenne en de luidspreker.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat onderdelen die je zelden ziet daarom software zijn."
+              }
+            ],
+            "feedback": "Software draait op het apparaat en kun je niet vastpakken. Zodra er een printer, accu of camera in de rij staat, gaat het over hardware.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je weet het verschil tussen hardware en software.",
+              "cognitiveSkill": "herkennen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-4",
             "type": "open",
-            "prompt": "Wat is hardware?",
+            "vraagtype": "open",
+            "prompt": "Leg uit wat je doet als je een verdachte mail krijgt op je schoolaccount.",
+            "answer": {
+              "type": "open",
+              "modelAnswer": "Ik klik niet op de link en open geen bijlage. Ik kijk naar de afzender en of het bericht ergens op slaat. Daarna maak ik een screenshot en laat ik het zien aan mijn docent, mentor of de ICT-helpdesk.",
+              "rubric": "- Noemt dat er niet geklikt wordt.\n- Noemt het controleren van de afzender of de link.\n- Noemt melden bij iemand op school.",
+              "teacherNotes": ""
+            },
             "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "feedback": "Niet klikken, wel controleren, altijd melden. Die volgorde werkt bij elk verdacht bericht.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je weet wanneer je stopt en hulp vraagt bij iets verdachts.",
+              "cognitiveSkill": "uitleggen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-5",
             "type": "meerkeuze",
-            "prompt": "Wat is OneDrive?",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke bestandsnaam hoort bij een nette inlevering?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "document1.docx",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Laat de standaardnaam staan."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "klaar!!.docx",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Beschrijft een gevoel in plaats van de inhoud."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "h1-checkpoint-noa-1a.docx",
+                  "correct": true,
+                  "explanation": "Hoofdstuk, opdracht, naam en klas staan erin.",
+                  "misconception": ""
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "document1.docx",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Laat de standaardnaam staan."
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "klaar!!.docx",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Beschrijft een gevoel in plaats van de inhoud."
+              },
+              {
+                "id": "optie-3",
+                "text": "h1-checkpoint-noa-1a.docx",
+                "correct": true,
+                "explanation": "Hoofdstuk, opdracht, naam en klas staan erin.",
+                "misconception": ""
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "feedback": "Aan zo’n naam ziet je docent meteen om welk hoofdstuk, welke leerling en welke klas het gaat.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je kunt bewijs van je werk verzamelen en inleveren.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-6",
-            "type": "open",
-            "prompt": "Welke mailregel is netjes?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een wachtwoordzin van vier gewone woorden is meestal sterker dan een kort wachtwoord met vreemde tekens.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Lengte telt zwaarder dan moeilijkdoenerij: vier woorden geven veel meer mogelijke combinaties dan acht tekens.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je weet waarom een lang en uniek wachtwoord veiliger is.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-7",
-            "type": "open",
-            "prompt": "Wat doe je bij inlogproblemen?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je stuurt je docent een mail over een opdracht. Wat hoort er zeker in?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Alleen een link, zonder verdere tekst.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat de link voor zichzelf spreekt."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Een onderwerp, een aanhef en een korte uitleg.",
+                  "correct": true,
+                  "explanation": "Daarmee weet de ontvanger meteen waar het over gaat.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Je wachtwoord, zodat de docent kan meekijken.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Verwart meekijken met inloggen als jou."
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Je hele opdracht als tekst in de mail geplakt.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat mailen hetzelfde is als inleveren."
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Alleen een link, zonder verdere tekst.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat de link voor zichzelf spreekt."
+              },
+              {
+                "id": "optie-2",
+                "text": "Een onderwerp, een aanhef en een korte uitleg.",
+                "correct": true,
+                "explanation": "Daarmee weet de ontvanger meteen waar het over gaat.",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Je wachtwoord, zodat de docent kan meekijken.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Verwart meekijken met inloggen als jou."
+              },
+              {
+                "id": "optie-4",
+                "text": "Je hele opdracht als tekst in de mail geplakt.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat mailen hetzelfde is als inleveren."
+              }
+            ],
+            "feedback": "Een nette mail begint met een onderwerp en een aanhef. Je wachtwoord hoort nergens in een bericht thuis.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je kunt zelfstandig inloggen, opslaan en mailen met je schoolaccount.",
+              "cognitiveSkill": "toepassen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-8",
             "type": "meerkeuze",
-            "prompt": "Welke screenshot hoort erbij?",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wanneer installeer je een update op je device?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Zo snel als het uitkomt, bijvoorbeeld na schooltijd.",
+                  "correct": true,
+                  "explanation": "De update gebeurt snel, maar niet midden in je werk.",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Pas als het apparaat helemaal niet meer werkt.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Ziet een update als reparatie achteraf."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Nooit, want updates maken het apparaat trager.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Denkt dat onderhoud alleen nadelen heeft."
+                }
+              ]
+            },
             "options": [
               {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
+                "id": "optie-1",
+                "text": "Zo snel als het uitkomt, bijvoorbeeld na schooltijd.",
+                "correct": true,
+                "explanation": "De update gebeurt snel, maar niet midden in je werk.",
+                "misconception": ""
               },
               {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
+                "id": "optie-2",
+                "text": "Pas als het apparaat helemaal niet meer werkt.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Ziet een update als reparatie achteraf."
+              },
+              {
+                "id": "optie-3",
+                "text": "Nooit, want updates maken het apparaat trager.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Denkt dat onderhoud alleen nadelen heeft."
               }
             ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "feedback": "Een update is onderhoud, geen storing. Je plant hem op een handig moment, maar je slaat hem niet over.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je kunt uitleggen waarom updates je device veiliger maken.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
           },
           {
             "id": "toets-9",
             "type": "open",
-            "prompt": "Wat deel je nooit?",
+            "vraagtype": "open",
+            "prompt": "Beschrijf welk bewijs je inlevert om te laten zien dat je map en bestanden op orde zijn.",
+            "answer": {
+              "type": "open",
+              "modelAnswer": "Ik lever een screenshot in van mijn map Digitale Vaardigheden in OneDrive, waarop de mappen en de bestandsnamen te zien zijn. Daarnaast lever ik het Word-bestand zelf in, met mijn naam en klas erin.",
+              "rubric": "- Noemt een screenshot waarop de mapstructuur zichtbaar is.\n- Noemt het bestand zelf met een duidelijke naam.\n- Het bewijs is controleerbaar voor iemand anders.",
+              "teacherNotes": ""
+            },
             "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "feedback": "Bewijs is iets wat een ander kan controleren. Een screenshot van je map plus het bestand zelf is genoeg.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je kunt bewijs van je werk verzamelen en inleveren.",
+              "cognitiveSkill": "maken_controleren",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "bewijs_leveren"
+            }
           },
           {
             "id": "toets-10",
-            "type": "open",
-            "prompt": "Waarom vraag je hulp?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waarom vraag je hulp als iets digitaals niet lukt?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Omdat je dan zelf niets meer hoeft te leren.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Ziet hulp vragen als het overdragen van de taak."
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Omdat de docent het altijd sneller doet.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": "Maakt snelheid belangrijker dan begrijpen."
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Omdat je zo voorkomt dat je uit onzekerheid op iets onveiligs klikt.",
+                  "correct": true,
+                  "explanation": "Doorklikken zonder te snappen wat er gebeurt geeft het meeste risico.",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Omdat je dan zelf niets meer hoeft te leren.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Ziet hulp vragen als het overdragen van de taak."
+              },
+              {
+                "id": "optie-2",
+                "text": "Omdat de docent het altijd sneller doet.",
+                "correct": false,
+                "explanation": "",
+                "misconception": "Maakt snelheid belangrijker dan begrijpen."
+              },
+              {
+                "id": "optie-3",
+                "text": "Omdat je zo voorkomt dat je uit onzekerheid op iets onveiligs klikt.",
+                "correct": true,
+                "explanation": "Doorklikken zonder te snappen wat er gebeurt geeft het meeste risico.",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Hulp vragen hoort bij digitaal vaardig zijn. Wie blijft doorklikken zonder het te snappen, loopt het meeste risico.",
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "Je weet wanneer je stopt en hulp vraagt bij iets verdachts.",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "reflecteren"
+            }
           }
         ],
         "attemptPolicy": {
@@ -3965,7 +5427,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -3976,93 +5438,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Wat maakt een titel duidelijk?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Welke opmaak is rustig?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom noem je een bron?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is een goede bestandsnaam?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Waar sla je op?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Wat maakt een titel duidelijk?",
+          "Welke opmaak is rustig?",
+          "Waarom noem je een bron?",
+          "Wat is een goede bestandsnaam?",
+          "Waar sla je op?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -4401,7 +5785,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -4412,93 +5796,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Is dit plagiaat?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Welke kop is duidelijk?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom schrijf je in eigen woorden?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Welke bronregel klopt?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat controleer je bij peerfeedback?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Is dit plagiaat?",
+          "Welke kop is duidelijk?",
+          "Waarom schrijf je in eigen woorden?",
+          "Welke bronregel klopt?",
+          "Wat controleer je bij peerfeedback?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -4837,7 +6143,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -4848,93 +6154,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Welke dia is duidelijker?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat is te veel tekst?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom gebruik je contrast?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Welke afbeelding past?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat vertel je zelf?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welke dia is duidelijker?",
+          "Wat is te veel tekst?",
+          "Waarom gebruik je contrast?",
+          "Welke afbeelding past?",
+          "Wat vertel je zelf?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -5271,7 +6499,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -5282,93 +6510,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Welke volgorde klopt?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat is een goede afsluitdia?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat hoort op de dia en wat vertel je?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Waarom oefen je hardop?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Waar staat de bron?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welke volgorde klopt?",
+          "Wat is een goede afsluitdia?",
+          "Wat hoort op de dia en wat vertel je?",
+          "Waarom oefen je hardop?",
+          "Waar staat de bron?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -5707,7 +6857,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -5718,93 +6868,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Welke rechten passen?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat ontbreekt in deze mail?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom geen openbare link?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat doe je bij foutmelding?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Welke afspraak voorkomt chaos?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welke rechten passen?",
+          "Wat ontbreekt in deze mail?",
+          "Waarom geen openbare link?",
+          "Wat doe je bij foutmelding?",
+          "Welke afspraak voorkomt chaos?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -6110,7 +7182,7 @@
       "type": "toets",
       "order": 7,
       "title": "Hoofdstuktoets",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 50
@@ -6121,122 +7193,20 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze toets zelfstandig. De Digidocent staat hier uit.</p>",
+        "html": "<p>Deze toets heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "toets",
-        "items": [
-          {
-            "id": "toets-1",
-            "type": "open",
-            "prompt": "Welke tool hoort bij een verslag?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-2",
-            "type": "meerkeuze",
-            "prompt": "Welke tool hoort bij presenteren?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-3",
-            "type": "open",
-            "prompt": "Wat is een goede deelinstelling?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-4",
-            "type": "open",
-            "prompt": "Welke mail is netjes?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-5",
-            "type": "meerkeuze",
-            "prompt": "Waar hoort bronvermelding?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-6",
-            "type": "open",
-            "prompt": "Wat maakt een dia duidelijk?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-7",
-            "type": "open",
-            "prompt": "Wat is een goede bestandsnaam?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-8",
-            "type": "meerkeuze",
-            "prompt": "Waarom reflecteer je?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-9",
-            "type": "open",
-            "prompt": "Wat controleer je bij delen?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-10",
-            "type": "open",
-            "prompt": "Wat doe je als link niet werkt?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welke tool hoort bij een verslag?",
+          "Welke tool hoort bij presenteren?",
+          "Wat is een goede deelinstelling?",
+          "Welke mail is netjes?",
+          "Waar hoort bronvermelding?",
+          "Wat maakt een dia duidelijk?",
+          "Wat is een goede bestandsnaam?",
+          "Waarom reflecteer je?",
+          "Wat controleer je bij delen?",
+          "Wat doe je als link niet werkt?"
         ],
         "attemptPolicy": {
           "maxAttempts": 1,
@@ -6576,7 +7546,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -6587,93 +7557,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Persoonsgegeven of niet?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wie mag dit zien?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat is een digitale voetafdruk?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is toestemming?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat is de veiligste keuze?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Persoonsgegeven of niet?",
+          "Wie mag dit zien?",
+          "Wat is een digitale voetafdruk?",
+          "Wat is toestemming?",
+          "Wat is de veiligste keuze?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -7014,7 +7906,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -7025,93 +7917,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Wat doet een algoritme?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat is FOMO?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat is een filterbubbel?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Welke keuze beïnvloedt je feed?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat is online identiteit?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Wat doet een algoritme?",
+          "Wat is FOMO?",
+          "Wat is een filterbubbel?",
+          "Welke keuze beïnvloedt je feed?",
+          "Wat is online identiteit?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -7451,7 +8265,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -7462,93 +8276,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Welke bron is betrouwbaarst?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat mist er aan bewijs?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom is datum belangrijk?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is deepfake?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat is clickbait?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welke bron is betrouwbaarst?",
+          "Wat mist er aan bewijs?",
+          "Waarom is datum belangrijk?",
+          "Wat is deepfake?",
+          "Wat is clickbait?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -7887,7 +8623,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -7898,93 +8634,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Oké, twijfel of niet oké?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat is de beste eerste stap?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom vraag je hulp?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wanneer is toestemming nodig?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat bewaar je als bewijs?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Oké, twijfel of niet oké?",
+          "Wat is de beste eerste stap?",
+          "Waarom vraag je hulp?",
+          "Wanneer is toestemming nodig?",
+          "Wat bewaar je als bewijs?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -8325,7 +8983,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -8336,93 +8994,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Veilig of niet kopen?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat zegt een URL?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Waarom reviews buiten de site?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is risico van achteraf betalen?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Waarom bewijs bewaren?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Veilig of niet kopen?",
+          "Wat zegt een URL?",
+          "Waarom reviews buiten de site?",
+          "Wat is risico van achteraf betalen?",
+          "Waarom bewijs bewaren?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -8726,7 +9306,7 @@
       "type": "toets",
       "order": 7,
       "title": "Hoofdstuktoets",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 50
@@ -8737,149 +9317,22 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze toets zelfstandig. De Digidocent staat hier uit.</p>",
+        "html": "<p>Deze toets heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "toets",
-        "items": [
-          {
-            "id": "toets-1",
-            "type": "open",
-            "prompt": "Privacycasus",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-2",
-            "type": "meerkeuze",
-            "prompt": "Algoritme/FOMO",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-3",
-            "type": "open",
-            "prompt": "Broncheck",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-4",
-            "type": "open",
-            "prompt": "Cyberpesten",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-5",
-            "type": "meerkeuze",
-            "prompt": "Webshop",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-6",
-            "type": "open",
-            "prompt": "Hulproute",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-7",
-            "type": "open",
-            "prompt": "Toestemming",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-8",
-            "type": "meerkeuze",
-            "prompt": "Clickbait",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-9",
-            "type": "open",
-            "prompt": "Risico uitleggen",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-10",
-            "type": "open",
-            "prompt": "Veilige actie kiezen",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-11",
-            "type": "meerkeuze",
-            "prompt": "Tweede bron",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-12",
-            "type": "open",
-            "prompt": "Reflectie",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Privacycasus",
+          "Algoritme/FOMO",
+          "Broncheck",
+          "Cyberpesten",
+          "Webshop",
+          "Hulproute",
+          "Toestemming",
+          "Clickbait",
+          "Risico uitleggen",
+          "Veilige actie kiezen",
+          "Tweede bron",
+          "Reflectie"
         ],
         "attemptPolicy": {
           "maxAttempts": 1,
@@ -9220,7 +9673,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -9231,93 +9684,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Wijs cel B3 aan.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Kies een goede kolomtitel.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Verbeter rommelige data.",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is een rij?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Waarom sorteer je?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Wijs cel B3 aan.",
+          "Kies een goede kolomtitel.",
+          "Verbeter rommelige data.",
+          "Wat is een rij?",
+          "Waarom sorteer je?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -9657,7 +10032,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -9668,93 +10043,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Kies de juiste SOM-formule.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Herken fout celbereik.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat is gemiddelde?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Waarom controleren?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Welke formule past?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Kies de juiste SOM-formule.",
+          "Herken fout celbereik.",
+          "Wat is gemiddelde?",
+          "Waarom controleren?",
+          "Welke formule past?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -10095,7 +10392,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -10106,93 +10403,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Welke grafiek past?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat mist aan deze grafiek?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Is de schaal eerlijk?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Schrijf een conclusie.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat betekent label?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welke grafiek past?",
+          "Wat mist aan deze grafiek?",
+          "Is de schaal eerlijk?",
+          "Schrijf een conclusie.",
+          "Wat betekent label?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -10530,7 +10749,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -10541,93 +10760,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Welke data wordt verzameld?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wie gebruikt het?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat is het doel?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is risico?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Welke instelling is veiliger?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welke data wordt verzameld?",
+          "Wie gebruikt het?",
+          "Wat is het doel?",
+          "Wat is risico?",
+          "Welke instelling is veiliger?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -10967,7 +11108,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -10978,93 +11119,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Sterk bewijs of twijfel?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Welke bron is beter?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat ontbreekt?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Waarom datum checken?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Schrijf conclusie.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Sterk bewijs of twijfel?",
+          "Welke bron is beter?",
+          "Wat ontbreekt?",
+          "Waarom datum checken?",
+          "Schrijf conclusie."
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -11372,7 +11435,7 @@
       "type": "toets",
       "order": 7,
       "title": "Hoofdstuktoets",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 50
@@ -11383,122 +11446,20 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze toets zelfstandig. De Digidocent staat hier uit.</p>",
+        "html": "<p>Deze toets heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "toets",
-        "items": [
-          {
-            "id": "toets-1",
-            "type": "open",
-            "prompt": "Excelbegrippen",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-2",
-            "type": "meerkeuze",
-            "prompt": "Formule kiezen",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-3",
-            "type": "open",
-            "prompt": "Grafiek beoordelen",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-4",
-            "type": "open",
-            "prompt": "Privacycasus",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-5",
-            "type": "meerkeuze",
-            "prompt": "Bronkeuze",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-6",
-            "type": "open",
-            "prompt": "Dashboardonderdeel",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-7",
-            "type": "open",
-            "prompt": "Conclusie",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-8",
-            "type": "meerkeuze",
-            "prompt": "Datafout",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-9",
-            "type": "open",
-            "prompt": "Steekproef",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          },
-          {
-            "id": "toets-10",
-            "type": "open",
-            "prompt": "Reflectie",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 5
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Excelbegrippen",
+          "Formule kiezen",
+          "Grafiek beoordelen",
+          "Privacycasus",
+          "Bronkeuze",
+          "Dashboardonderdeel",
+          "Conclusie",
+          "Datafout",
+          "Steekproef",
+          "Reflectie"
         ],
         "attemptPolicy": {
           "maxAttempts": 1,
@@ -11839,7 +11800,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -11850,93 +11811,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Kies de beste prompt.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Herken privacyfout.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat kan AI fout doen?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is controleren?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Welke bron gebruik je?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Kies de beste prompt.",
+          "Herken privacyfout.",
+          "Wat kan AI fout doen?",
+          "Wat is controleren?",
+          "Welke bron gebruik je?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -12275,7 +12158,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -12286,93 +12169,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Echt, nep of twijfel?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Welke aanwijzing zie je?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat is een deepfake?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Welk beroep verandert?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Welke mensvaardigheid blijft nodig?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Echt, nep of twijfel?",
+          "Welke aanwijzing zie je?",
+          "Wat is een deepfake?",
+          "Welk beroep verandert?",
+          "Welke mensvaardigheid blijft nodig?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -12709,7 +12514,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -12720,93 +12525,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Zet stappen in volgorde.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Herken vage stap.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat is debuggen?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Welke stap ontbreekt?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Wat doet een computer letterlijk?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Zet stappen in volgorde.",
+          "Herken vage stap.",
+          "Wat is debuggen?",
+          "Welke stap ontbreekt?",
+          "Wat doet een computer letterlijk?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -13146,7 +12873,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -13157,93 +12884,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is event?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat is herhaling?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Voorspel uitkomst.",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Vind bug.",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Welke feedback ontbreekt?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Wat is event?",
+          "Wat is herhaling?",
+          "Voorspel uitkomst.",
+          "Vind bug.",
+          "Welke feedback ontbreekt?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -13580,7 +13229,7 @@
       "type": "quiz",
       "order": 8,
       "title": "Afsluitquiz",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 15
@@ -13591,93 +13240,15 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze korte quiz om te controleren of je de paragraaf begrepen hebt.</p>",
+        "html": "<p>Deze quiz heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "quiz",
-        "items": [
-          {
-            "id": "quiz-1",
-            "type": "waar-niet-waar",
-            "prompt": "Welk bewijs hoort erbij?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-2",
-            "type": "meerkeuze",
-            "prompt": "Wat is reflectie?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-3",
-            "type": "open",
-            "prompt": "Wat mist nog?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-4",
-            "type": "waar-niet-waar",
-            "prompt": "Wat is een herstelactie?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "quiz-5",
-            "type": "meerkeuze",
-            "prompt": "Welke badge past?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Welk bewijs hoort erbij?",
+          "Wat is reflectie?",
+          "Wat mist nog?",
+          "Wat is een herstelactie?",
+          "Welke badge past?"
         ],
         "attemptPolicy": {
           "maxAttempts": null,
@@ -13986,7 +13557,7 @@
       "type": "toets",
       "order": 7,
       "title": "Eindtoets",
-      "status": "published",
+      "status": "draft",
       "tokenConfig": {
         "enabled": true,
         "totalTokens": 25
@@ -13997,106 +13568,18 @@
         "allowMathToolbox": false
       },
       "content": {
-        "html": "<p>Maak deze toets zelfstandig. De Digidocent staat hier uit.</p>",
+        "html": "<p>Deze toets heeft nog geen vragen. Vul ze aan in scripts/seed-verrijking en zet het blok daarna op gepubliceerd.</p>",
         "assessmentType": "toets",
-        "items": [
-          {
-            "id": "toets-1",
-            "type": "open",
-            "prompt": "Wat doe je nu veiliger?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 4
-          },
-          {
-            "id": "toets-2",
-            "type": "meerkeuze",
-            "prompt": "Hoe controleer je bronnen?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "toets-3",
-            "type": "open",
-            "prompt": "Wat kan AI wel?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "toets-4",
-            "type": "open",
-            "prompt": "Wat kan AI niet?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "toets-5",
-            "type": "meerkeuze",
-            "prompt": "Hoe gebruik je data?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "toets-6",
-            "type": "open",
-            "prompt": "Wat heb je gemaakt?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "toets-7",
-            "type": "open",
-            "prompt": "Wat is je beste bewijs?",
-            "options": [],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          },
-          {
-            "id": "toets-8",
-            "type": "meerkeuze",
-            "prompt": "Waar ben je trots op?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Beste keuze",
-                "correct": true
-              },
-              {
-                "id": "b",
-                "text": "Twijfel of onveilig",
-                "correct": false
-              }
-            ],
-            "feedback": "Bespreek kort waarom dit antwoord past bij de lesstof.",
-            "tokens": 3
-          }
+        "items": [],
+        "pendingPrompts": [
+          "Wat doe je nu veiliger?",
+          "Hoe controleer je bronnen?",
+          "Wat kan AI wel?",
+          "Wat kan AI niet?",
+          "Hoe gebruik je data?",
+          "Wat heb je gemaakt?",
+          "Wat is je beste bewijs?",
+          "Waar ben je trots op?"
         ],
         "attemptPolicy": {
           "maxAttempts": 1,

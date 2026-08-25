@@ -4,6 +4,59 @@ import { relatieveTijd } from '../../lib/relatieveTijd';
 import BeoordeelActies from './BeoordeelActies';
 import StudentAvatar from '../common/StudentAvatar';
 
+/**
+ * Waartegen de docent het antwoord afzet: het modelantwoord en de punten waar
+ * hij op let. Allebei komen ze uit de vraag zelf en reizen ze mee met de
+ * voortgang; hier wordt alleen getoond wat er staat.
+ *
+ * Ontbreken ze, dan blijft het vak staan met een zin die uitlegt waarom het leeg
+ * is. Zonder die zin lijkt een antwoord zonder referentie op een laadfout, en
+ * dan gaat de docent zoeken in plaats van nakijken.
+ */
+function NakijkReferentie({ opdracht }) {
+  const nakijkpunten = opdracht.nakijkpunten || [];
+  const heeftReferentie = Boolean(opdracht.modelAntwoord) || nakijkpunten.length > 0;
+
+  return (
+    <div className="mt-2 rounded-[var(--helix-radius-md)] border border-dashed border-[var(--helix-border)] px-3 py-2">
+      <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--helix-muted)]">
+        Waartegen je nakijkt
+      </span>
+
+      {!heeftReferentie && (
+        <p className="mt-0.5 text-sm font-semibold text-[var(--helix-muted)]">
+          Bij deze vraag staat geen modelantwoord en staan geen nakijkpunten. Beoordeel op de
+          vraag zelf, of vul ze aan in de lesstudio zodat ze er de volgende keer bij staan.
+        </p>
+      )}
+
+      {opdracht.modelAntwoord && (
+        <>
+          <span className="mt-1 block text-[10px] font-black uppercase tracking-wider text-[var(--helix-muted)]">
+            Modelantwoord
+          </span>
+          <p className="mt-0.5 whitespace-pre-wrap break-words text-sm font-semibold text-[var(--helix-muted)]">
+            {opdracht.modelAntwoord}
+          </p>
+        </>
+      )}
+
+      {nakijkpunten.length > 0 && (
+        <>
+          <span className="mt-2 block text-[10px] font-black uppercase tracking-wider text-[var(--helix-muted)]">
+            Nakijkpunten
+          </span>
+          <ul className="mt-0.5 list-disc space-y-0.5 pl-4 text-sm font-semibold text-[var(--helix-muted)]">
+            {nakijkpunten.map((punt) => (
+              <li key={punt} className="break-words">{punt}</li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** Eén open beoordeling: wie, welke vraag, welk antwoord, en wat je ermee doet. */
 function NakijkKaart({ opdracht, onBeoordeel, bezig, toonLeerling = true }) {
   return (
@@ -45,16 +98,7 @@ function NakijkKaart({ opdracht, onBeoordeel, bezig, toonLeerling = true }) {
         </p>
       </div>
 
-      {opdracht.modelAntwoord && (
-        <div className="mt-2 rounded-[var(--helix-radius-md)] border border-dashed border-[var(--helix-border)] px-3 py-2">
-          <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--helix-muted)]">
-            Modelantwoord
-          </span>
-          <p className="mt-0.5 whitespace-pre-wrap break-words text-sm font-semibold text-[var(--helix-muted)]">
-            {opdracht.modelAntwoord}
-          </p>
-        </div>
-      )}
+      <NakijkReferentie opdracht={opdracht} />
 
       <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-semibold text-[var(--helix-muted)]">
         <span>Pogingen: {opdracht.pogingen}</span>

@@ -89,6 +89,59 @@ export const getVraagTekst = (record = {}, stap = {}) =>
 export const getModelAntwoord = (record = {}) =>
   schoon(record.modelAnswer) || schoon(record.expectedAnswer) || '';
 
+// De nakijkpunten worden als tekstvak bewaard, één punt per regel, meestal met
+// een streepje ervoor (zo schrijft de seedgenerator ze ook weg). Dat streepje is
+// opmaak, geen inhoud, en hoort er in de nakijkstapel weer af.
+const NAKIJKPUNT_OPSOMMINGSTEKEN = /^\s*(?:[-*•‣·–—]|\d+[.)])\s+/;
+
+/**
+ * De punten waar de docent op let, als lijst.
+ *
+ * Waarom een lijst en geen blok tekst: dit is precies het rijtje dat de docent
+ * langsloopt voordat hij goedkeurt of terugstuurt. Als lijst is het af te vinken;
+ * als alinea moet hij het eerst zelf uit elkaar halen.
+ *
+ * De bron heet in de CMS `rubric` (het tekstvak bij een open vraag) en in de
+ * seedbestanden `nakijkpunten`. Allebei worden gelezen, en een array mag ook:
+ * dan is er niets te splitsen.
+ */
+export const getNakijkpunten = (record = {}) => {
+  const bron = record.rubric ?? record.nakijkpunten ?? record.beoordelingspunten ?? null;
+  const regels = Array.isArray(bron) ? bron : String(bron ?? '').split(/\r?\n/);
+  const gezien = new Set();
+  const punten = [];
+
+  regels.forEach((regel) => {
+    const punt = schoon(String(regel ?? '').replace(NAKIJKPUNT_OPSOMMINGSTEKEN, ''));
+    if (punt.length < 2) return;
+    const sleutel = punt.toLowerCase();
+    if (gezien.has(sleutel)) return;
+    gezien.add(sleutel);
+    punten.push(punt);
+  });
+
+  return punten;
+};
+
+/**
+ * Waartegen de docent dit antwoord afzet: het modelantwoord en de nakijkpunten.
+ *
+ * Staan ze er allebei niet, dan zegt `heeftReferentie` dat eerlijk. Het scherm
+ * toont dan een lege staat in plaats van een leeg kader; de docent weet dan dat
+ * er niets te vergelijken valt en dat het aan de vraag zelf ligt, niet aan een
+ * laadfout.
+ */
+export const buildNakijkReferentie = (record = null) => {
+  const modelAntwoord = getModelAntwoord(record || {});
+  const nakijkpunten = getNakijkpunten(record || {});
+
+  return {
+    modelAntwoord,
+    nakijkpunten,
+    heeftReferentie: Boolean(modelAntwoord) || nakijkpunten.length > 0
+  };
+};
+
 /** Een record uit de subcollectie `voortgang/{uid}_{blockId}/items`. */
 export const isAssessmentItemRecord = (record = null) =>
   Boolean(record && (record.progressType === 'assessmentItem' || schoon(record.itemId)));
@@ -214,7 +267,7 @@ export const buildNakijkOpdrachten = (rijen = [], { itemsBlokkade = '' } = {}) =
               vraagNummer: item.nummer,
               vraag: getVraagTekst(itemRecord || {}, item),
               antwoord: itemRecord?.lastAnswer ?? null,
-              modelAntwoord: getModelAntwoord(itemRecord || {}),
+              ...buildNakijkReferentie(itemRecord),
               pogingen: item.pogingen || 0,
               aiHulp: item.aiHulp || 0,
               wachtSindsMs: item.laatsteActiviteitMs || 0,
@@ -243,7 +296,7 @@ export const buildNakijkOpdrachten = (rijen = [], { itemsBlokkade = '' } = {}) =
           vraagNummer: 0,
           vraag: getVraagTekst(record || {}, stap),
           antwoord: record?.lastAnswer ?? null,
-          modelAntwoord: getModelAntwoord(record || {}),
+          ...buildNakijkReferentie(record),
           pogingen: stap.pogingen || 0,
           aiHulp: stap.aiHulp || 0,
           wachtSindsMs: stap.laatsteActiviteitMs || 0,

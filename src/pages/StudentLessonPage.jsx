@@ -2175,6 +2175,7 @@ function QuestionLearningBlock({
         questionPlainText: stripHtmlText(linkedVraag?.content?.text || bodyHtml || ''),
         expectedAnswer: linkedVraag?.antwoord?.expected || linkedVraag?.antwoord?.correctValue || linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
         modelAnswer: linkedVraag?.antwoord?.modelAnswer || linkedVraag?.antwoord?.answer || '',
+        rubric: linkedVraag?.antwoord?.rubric || '',
         ...(openAnswerAssessment ? {
           openAnswerAssessment: {
             ...openAnswerAssessment,
@@ -3000,6 +3001,10 @@ function AssessmentItemLearningCard({
         vraagTitle: item.prompt || '',
         vraagType: item.type || '',
         questionPlainText: stripHtmlText(item.prompt || ''),
+        // Referentie voor de nakijkstapel: zonder dit ziet de docent straks wel
+        // het antwoord van de leerling, maar niet waartegen hij het afzet.
+        modelAnswer: item.answer?.modelAnswer || item.answer?.answer || '',
+        rubric: item.answer?.rubric || '',
         tokens: item.tokens || 0,
         parts,
         score: score.score,

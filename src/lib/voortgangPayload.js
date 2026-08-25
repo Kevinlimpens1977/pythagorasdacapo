@@ -93,6 +93,10 @@ export const buildContentBlockVoortgangUpdate = ({
     questionPlainText: data.questionPlainText ?? existingData.questionPlainText ?? '',
     expectedAnswer: data.expectedAnswer ?? existingData.expectedAnswer ?? '',
     modelAnswer: data.modelAnswer ?? existingData.modelAnswer ?? '',
+    // De nakijkpunten van de vraag. Ze reizen mee met de voortgang omdat het
+    // docentdashboard de lesstof zelf niet inleest: zonder dit veld staat een
+    // open antwoord daar zonder enige referentie.
+    rubric: data.rubric ?? existingData.rubric ?? '',
     hints: data.hints ?? existingData.hints ?? [],
     completed: data.completed || false,
     isCorrect: data.isCorrect || false,
@@ -192,6 +196,11 @@ export const buildAssessmentItemVoortgangUpdate = ({
     vraagTitle: data.vraagTitle ?? existingData.vraagTitle ?? '',
     vraagType: data.vraagType ?? existingData.vraagType ?? '',
     questionPlainText: data.questionPlainText ?? existingData.questionPlainText ?? '',
+    // Zelfde reden als bij een losse vraag: het modelantwoord en de nakijkpunten
+    // horen bij het antwoord dat de docent straks beoordeelt, en het dashboard
+    // heeft de toetsinhoud niet bij de hand.
+    modelAnswer: data.modelAnswer ?? existingData.modelAnswer ?? '',
+    rubric: data.rubric ?? existingData.rubric ?? '',
     completed: data.completed || false,
     isCorrect: data.isCorrect || false,
     attempts: data.attempts ?? existingData.attempts ?? 0,

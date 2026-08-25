@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  createLessonReadingFormatter,
   deriveLessonKeyTerms,
   enhanceLessonProseHtml,
   formatLessonReadingHtml,
@@ -97,4 +98,69 @@ test('de leesstap zet de kernbegrippen uit de seedtekst vet', () => {
   assert.match(html, /<strong>school-ELO<\/strong>/);
   // De tekst zelf verandert niet: alleen nadruk komt erbij.
   assert.equal(html.replace(/<\/?strong>/g, ''), SEED_THEORY);
+});
+
+test('een begrip wordt per lesblok maar één keer vet, ook als het blok uiteenvalt in secties', () => {
+  const theorie = '<p>In OneDrive bewaar je je werk. Outlook is voor mail.</p>';
+  const voorbeeld = '<p>Sara zet haar verslag in OneDrive en mailt de link via Outlook.</p>';
+  const formatReading = createLessonReadingFormatter(`${theorie}${voorbeeld}`, {});
+
+  const eerste = formatReading(theorie);
+  const tweede = formatReading(voorbeeld);
+
+  assert.equal(eerste, '<p>In <strong>OneDrive</strong> bewaar je je werk. <strong>Outlook</strong> is voor mail.</p>');
+  // Het voorbeeldvak leest door op de theorie erboven: daar staat het begrip al vet.
+  assert.equal(tweede, voorbeeld);
+  assert.equal(`${eerste}${tweede}`.match(/<strong>OneDrive<\/strong>/g).length, 1);
+});
+
+test('staat een begrip alleen in het voorbeeld, dan wordt het daar wel vet', () => {
+  const theorie = '<p>Je werk hoort op een vaste plek te staan.</p>';
+  const voorbeeld = '<p>Sara bewaart haar verslag in OneDrive.</p>';
+  const formatReading = createLessonReadingFormatter(`${theorie}${voorbeeld}`, {});
+
+  assert.equal(formatReading(theorie), theorie);
+  assert.equal(formatReading(voorbeeld), '<p>Sara bewaart haar verslag in <strong>OneDrive</strong>.</p>');
+});
+
+test('elk lesblok begint met een schone lei: een nieuwe formatter zet opnieuw vet', () => {
+  const html = '<p>Bewaar het in OneDrive.</p>';
+  const eersteBlok = createLessonReadingFormatter(html, {});
+  eersteBlok(html);
+
+  const tweedeBlok = createLessonReadingFormatter(html, {});
+  assert.equal(tweedeBlok(html), '<p>Bewaar het in <strong>OneDrive</strong>.</p>');
+  assert.equal(formatLessonReadingHtml(html, {}), '<p>Bewaar het in <strong>OneDrive</strong>.</p>');
+});
+
+test('ook kernbegrippen van de docent worden per lesblok één keer vet', () => {
+  const content = { keyTerms: ['account', 'wachtwoord'] };
+  const formatReading = createLessonReadingFormatter(
+    '<p>Je account hoort bij je wachtwoord.</p><p>Je account blijft van jou.</p>',
+    content
+  );
+
+  assert.equal(
+    formatReading('<p>Je account hoort bij je wachtwoord.</p>'),
+    '<p>Je <strong>account</strong> hoort bij je <strong>wachtwoord</strong>.</p>'
+  );
+  assert.equal(formatReading('<p>Je account blijft van jou.</p>'), '<p>Je account blijft van jou.</p>');
+});
+
+test('enhanceLessonProseHtml houdt een meegegeven used-set bij', () => {
+  const used = new Set();
+  const eerste = enhanceLessonProseHtml('<p>Outlook is voor mail.</p>', {
+    keyTerms: ['Outlook'],
+    caseSensitive: true,
+    used
+  });
+  const tweede = enhanceLessonProseHtml('<p>Outlook staat op je telefoon.</p>', {
+    keyTerms: ['Outlook'],
+    caseSensitive: true,
+    used
+  });
+
+  assert.equal(eerste, '<p><strong>Outlook</strong> is voor mail.</p>');
+  assert.equal(tweede, '<p>Outlook staat op je telefoon.</p>');
+  assert.deepEqual([...used], ['Outlook']);
 });

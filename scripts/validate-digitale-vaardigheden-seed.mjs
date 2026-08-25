@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getGameById } from '../src/lib/gameRegistry.js';
 import { MEDIA_KINDS, parseYouTubeUrl } from '../src/lib/mediaUtils.js';
+import { normalizeAssessmentItem } from '../src/lib/assessmentBlockUtils.js';
+import { gradeAssessmentItemAnswer } from '../src/lib/assessmentItemGrading.js';
 
 const seedPath = path.resolve('docs/seeds/digitale-vaardigheden-vmbo1.seed.json');
 const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
@@ -231,12 +233,280 @@ if (repeatedSentences.length) {
   fail(`dezelfde volzin mag in maximaal ${MAX_PARAGRAFEN_PER_SENTENCE} paragrafen staan: ${details}`);
 }
 
+// ---------------------------------------------------------------------------
+// Toetsvragen
+//
+// Tot nu toe keek deze validator alleen naar de route en de leesstof, nooit naar
+// de vragen zelf. Daardoor meldde hij "seed valid" terwijl elke quiz twee vaste
+// opties had ("Beste keuze" en "Twijfel of onveilig") met het goede antwoord
+// altijd bovenaan: 116 van de 116 vragen waren te halen zonder lezen.
+//
+// De generator dwingt deze regels al af, maar hij is niet de enige schrijver:
+// een vraag kan ook uit de CMS-editor komen of met de hand in de seed-JSON
+// gezet zijn. Daarom controleert de validator ze hier nog een keer, en wel op
+// het GENORMALISEERDE item (normalizeAssessmentItem) - precies het item dat de
+// leerlingroute en de beoordelaar te zien krijgen. Staat er onzin in
+// `answer.options` terwijl `options` er netjes uitziet, dan valt dat hier om.
+//
+// Deze controles stoppen niet bij de eerste fout: alles wordt verzameld en
+// onderaan als lijst gerapporteerd, zodat een run laat zien welke paragrafen
+// nog werk nodig hebben in plaats van alleen de eerste.
+// ---------------------------------------------------------------------------
+
+const MIN_ASSESSMENT_ITEMS = { quiz: 3, toets: 6 };
+const MIN_CLOSED_OPTIONS = 3;
+const MAX_ITEMS_PER_OPTION_TEXT = 3;
+const MAX_SAME_POSITION_SHARE = 0.4;
+const MIN_MEERKEUZE_FOR_POSITION_CHECK = 10;
+const MIN_NAKIJKPUNTEN = 2;
+const MIN_FEEDBACK_LENGTH = 20;
+// Blind steeds de bovenste knop klikken hoort niet te lonen. 60% laat ruimte
+// voor toeval bij weinig vragen, maar vangt de oude 100%-bug ruim af.
+const MAX_BLIND_TOP_BUTTON_SHARE = 0.6;
+
+const VRAAGWOORDEN =
+  /^(wat|waarom|hoe|welke|welk|wanneer|wie|waardoor|waarmee|waarvoor|noem|leg|beschrijf|geef|vergelijk|verklaar|kies)\b/i;
+
+const questionProblems = [];
+const noteProblem = (message) => questionProblems.push(message);
+
+const feedbackItems = new Map(); // feedbackzin -> itemlabels
+const optionTextItems = new Map(); // optietekst -> itemlabels
+const correctPositions = new Map(); // positie (1-based) -> aantal meerkeuzevragen
+const blindResults = { closed: 0, correct: 0 };
+const questionStats = { blocks: 0, drafts: 0, items: 0, closed: 0, open: 0, waarNietWaar: 0 };
+const draftParagrafen = [];
+
+// Waar/Niet waar is per definitie hetzelfde tweetal opties. Die twee teksten
+// tellen dus niet mee in de hergebruikcontrole - maar alleen als het echt dat
+// vaste paar is. "Beste keuze"/"Twijfel of onveilig" is geen waar-niet-waar.
+const isWaarNietWaarPair = (options) =>
+  options.length === 2 &&
+  ['waar', 'niet waar'].every((text) => options.some((option) => option.text.trim().toLowerCase() === text));
+
+const countNakijkpunten = (rubric) =>
+  String(rubric || '')
+    .split('\n')
+    .map((line) => line.replace(/^[-*•]\s*/, '').trim())
+    .filter(Boolean).length;
+
+const registerToMap = (map, key, label) => {
+  if (!map.has(key)) map.set(key, []);
+  map.get(key).push(label);
+};
+
+// Een sjabloonfout raakt al snel tientallen vragen. De melding noemt er een
+// paar bij naam en telt de rest, anders is het rapport onleesbaar.
+const summarizeLabels = (labels, max = 5) =>
+  labels.length <= max ? labels.join(', ') : `${labels.slice(0, max).join(', ')} en ${labels.length - max} meer`;
+
+for (const block of seed.contentBlocks || []) {
+  if (block.type !== 'quiz' && block.type !== 'toets') continue;
+
+  const code = paragraafById.get(block.paragraafId)?.code || block.paragraafId;
+  const blockLabel = `${code} ${block.type}`;
+  const rawItems = Array.isArray(block.content?.items) ? block.content.items : [];
+
+  // Nog geen echte vragen: dat is geen detail dat je stil laat passeren. Het
+  // blok hoort dan op draft te staan, zodat de leerlingroute het overslaat en
+  // de tokens onbereikbaar blijven.
+  if (rawItems.length === 0) {
+    questionStats.drafts += 1;
+    const ideas = Array.isArray(block.content?.pendingPrompts) ? block.content.pendingPrompts.length : 0;
+    draftParagrafen.push(`${blockLabel}: nog geen vragen, ${ideas} vraagideeën in content.pendingPrompts`);
+    if (block.status !== 'draft') {
+      noteProblem(`${blockLabel}: staat op status "${block.status}" zonder vragen; een leeg toetsblok hoort op draft`);
+    }
+    continue;
+  }
+
+  questionStats.blocks += 1;
+  if (block.status !== 'published') {
+    noteProblem(`${blockLabel}: heeft ${rawItems.length} vragen maar staat op status "${block.status}"`);
+  }
+
+  const minItems = MIN_ASSESSMENT_ITEMS[block.type] ?? MIN_ASSESSMENT_ITEMS.quiz;
+  if (rawItems.length < minItems) {
+    noteProblem(`${blockLabel}: een ${block.type} heeft minstens ${minItems} vragen nodig, kreeg ${rawItems.length}`);
+  }
+
+  const items = rawItems.map((item, index) => normalizeAssessmentItem(item, index));
+  if (items.length > 0 && items.every((item) => item.type === 'open')) {
+    noteProblem(`${blockLabel}: alleen open vragen; een quiz of toets heeft ook nakijkbare gesloten vragen nodig`);
+  }
+
+  items.forEach((item, index) => {
+    const label = `${blockLabel} vraag ${index + 1}`;
+    questionStats.items += 1;
+
+    const prompt = String(item.prompt || '').trim();
+    if (!prompt) noteProblem(`${label}: lege vraagtekst`);
+
+    // Elke vraag legt zijn eigen ding uit. Een sjabloonzin die overal onder
+    // staat leert niets; dat was de "Bespreek kort waarom..."-regel.
+    const feedback = String(item.feedback || '').trim();
+    if (feedback.length < MIN_FEEDBACK_LENGTH) {
+      noteProblem(
+        `${label}: feedback ontbreekt of is te kort (${feedback.length} tekens, minstens ${MIN_FEEDBACK_LENGTH} nodig)`
+      );
+    } else {
+      registerToMap(feedbackItems, feedback.toLowerCase(), label);
+    }
+
+    if (item.type === 'open') {
+      questionStats.open += 1;
+      const modelAnswer = String(item.answer?.modelAnswer || '').trim();
+      if (!modelAnswer) noteProblem(`${label}: open vraag zonder modelAnswer, dus niet na te kijken`);
+      const nakijkpunten = countNakijkpunten(item.answer?.rubric);
+      if (nakijkpunten < MIN_NAKIJKPUNTEN) {
+        noteProblem(
+          `${label}: open vraag heeft minstens ${MIN_NAKIJKPUNTEN} nakijkpunten nodig in answer.rubric, kreeg ${nakijkpunten}`
+        );
+      }
+      return;
+    }
+
+    const options = (item.options || []).map((option) => ({ ...option, text: String(option.text || '').trim() }));
+    questionStats.closed += 1;
+    if (item.type === 'waar-niet-waar') questionStats.waarNietWaar += 1;
+
+    const vastPaar = isWaarNietWaarPair(options);
+    if (item.type === 'waar-niet-waar' && !vastPaar) {
+      noteProblem(
+        `${label}: staat als waar-niet-waar in de seed maar heeft niet de twee opties Waar en Niet waar (${options
+          .map((option) => `"${option.text}"`)
+          .join(', ')})`
+      );
+    }
+    if (!vastPaar && options.length < MIN_CLOSED_OPTIONS) {
+      noteProblem(
+        `${label}: een gesloten vraag heeft minstens ${MIN_CLOSED_OPTIONS} antwoordopties nodig, kreeg ${options.length}`
+      );
+    }
+
+    // Een vraagzin is geen stelling. "Welk onderdeel is software?" met alleen
+    // Waar/Niet waar eronder is niet te beantwoorden.
+    if (item.type === 'waar-niet-waar') {
+      if (VRAAGWOORDEN.test(prompt)) {
+        noteProblem(`${label}: "${prompt.slice(0, 48)}..." begint met een vraagwoord en kan geen waar-niet-waar zijn`);
+      } else if (prompt.endsWith('?')) {
+        noteProblem(`${label}: een waar-niet-waar-vraag is een stelling, geen vraagzin`);
+      }
+    }
+
+    // De sleutel wordt op de RUWE seedopties gecontroleerd, niet op de
+    // genormaliseerde. normalizeChoiceAnswer repareert een item zonder goed
+    // antwoord namelijk stilletjes door optie 1 goed te rekenen
+    // (assessmentBlockUtils.js). Precies het patroon dat we willen vangen zou
+    // dus onzichtbaar zijn als we alleen naar het genormaliseerde item keken.
+    // Een lege optietekst wordt op dezelfde manier stil aangevuld tot
+    // "Antwoord N", dus ook die telling gaat over de ruwe opties.
+    const rawItem = rawItems[index] || {};
+    const rawOptions = (Array.isArray(rawItem.answer?.options) && rawItem.answer.options.length > 0
+      ? rawItem.answer.options
+      : Array.isArray(rawItem.options)
+        ? rawItem.options
+        : []
+    ).map((option) => ({ text: String(option?.text ?? '').trim(), correct: option?.correct === true }));
+
+    const correctCount = rawOptions.filter((option) => option.correct).length;
+    if (rawOptions.length > 0 && correctCount === 0) {
+      noteProblem(
+        `${label}: geen enkele optie staat als goed antwoord gemarkeerd; de app rekent dan stil de bovenste goed`
+      );
+    }
+    if (rawOptions.length > 0 && correctCount === rawOptions.length) {
+      noteProblem(`${label}: alle opties staan als goed antwoord gemarkeerd`);
+    }
+    for (const [optionIndex, option] of rawOptions.entries()) {
+      if (!option.text) noteProblem(`${label}: antwoordoptie ${optionIndex + 1} heeft geen tekst`);
+    }
+
+    const texts = options.map((option) => option.text.toLowerCase());
+    if (new Set(texts).size !== texts.length) noteProblem(`${label}: dezelfde antwoordoptie staat er twee keer in`);
+    for (const text of new Set(texts)) {
+      if (!text || vastPaar) continue;
+      registerToMap(optionTextItems, text, label);
+    }
+
+    // `options` en `answer.options` moeten hetzelfde zeggen. De beoordelaar
+    // leest `answer`; wie alleen `options` bijwerkt, verandert niets aan wat er
+    // fout of goed gerekend wordt.
+    const legacyOptions = Array.isArray(rawItem.options) ? rawItem.options : [];
+    if (legacyOptions.length > 0) {
+      const spiegel =
+        legacyOptions.length === options.length &&
+        legacyOptions.every(
+          (option, optionIndex) =>
+            String(option?.text || '').trim() === options[optionIndex].text &&
+            (option?.correct === true) === (options[optionIndex].correct === true)
+        );
+      if (!spiegel) {
+        noteProblem(`${label}: item.options en answer.options verschillen; de beoordelaar gebruikt answer.options`);
+      }
+    }
+
+    if (options.length >= MIN_CLOSED_OPTIONS) {
+      const position = options.findIndex((option) => option.correct === true) + 1;
+      if (position > 0) correctPositions.set(position, (correctPositions.get(position) || 0) + 1);
+    }
+
+    // De echte proef: het item door dezelfde beoordelaar halen als de app, met
+    // de bovenste knop als antwoord.
+    if (options.length > 0) {
+      blindResults.closed += 1;
+      const result = gradeAssessmentItemAnswer({ item, answer: options[0].id });
+      if (result?.isCorrect === true) blindResults.correct += 1;
+    }
+  });
+}
+
+const duplicateFeedback = [...feedbackItems.entries()].filter(([, labels]) => labels.length > 1);
+for (const [feedback, labels] of duplicateFeedback) {
+  noteProblem(
+    `dezelfde feedbackzin staat bij ${labels.length} vragen (${summarizeLabels(labels)}): ` +
+      `"${feedback.slice(0, 60)}${feedback.length > 60 ? '...' : ''}"`
+  );
+}
+
+const overusedOptions = [...optionTextItems.entries()].filter(
+  ([, labels]) => labels.length > MAX_ITEMS_PER_OPTION_TEXT
+);
+for (const [text, labels] of overusedOptions) {
+  noteProblem(
+    `antwoordoptie "${text}" staat in ${labels.length} vragen; ` +
+      `maximaal ${MAX_ITEMS_PER_OPTION_TEXT} (${summarizeLabels(labels)})`
+  );
+}
+
+const positionTotal = [...correctPositions.values()].reduce((sum, count) => sum + count, 0);
+if (positionTotal >= MIN_MEERKEUZE_FOR_POSITION_CHECK) {
+  for (const [position, count] of [...correctPositions.entries()].sort((a, b) => a[0] - b[0])) {
+    const share = count / positionTotal;
+    if (share > MAX_SAME_POSITION_SHARE) {
+      noteProblem(
+        `het goede antwoord staat in ${count} van de ${positionTotal} meerkeuzevragen op positie ${position} ` +
+          `(${Math.round(share * 100)}%); maximaal ${Math.round(MAX_SAME_POSITION_SHARE * 100)}%`
+      );
+    }
+  }
+}
+
+// Waar/Niet waar heeft maar twee knoppen, dus daar is 40% rekenkundig
+// onhaalbaar; die balans wordt hieronder alleen gerapporteerd.
+const blindShare = blindResults.closed > 0 ? blindResults.correct / blindResults.closed : 0;
+if (blindResults.closed > 0 && blindShare > MAX_BLIND_TOP_BUTTON_SHARE) {
+  noteProblem(
+    `blind de bovenste knop klikken levert ${blindResults.correct}/${blindResults.closed} goed ` +
+      `(${Math.round(blindShare * 100)}%); een gesloten vraag hoort gelezen te moeten worden`
+  );
+}
+
 assertEqual(seed.contentBlocks?.filter((block) => block.type === 'game').length, 30, 'game block count');
 assertEqual(seed.contentBlocks?.filter((block) => block.type === 'slidedeck').length, 30, 'slidedeck block count');
 assertEqual(seed.contentBlocks?.filter((block) => block.type === 'quiz').length, 25, 'quiz block count');
 assertEqual(seed.contentBlocks?.filter((block) => block.type === 'toets').length, 5, 'toets block count');
 
-console.log('Digitale vaardigheden seed valid.');
 console.log(`${seed.contentBlocks.length} blocks checked across ${seed.paragrafen.length} paragrafen.`);
 console.log(
   `Verrijking: ${enrichment.goals}/30 paragrafen met leerdoelen, ` +
@@ -249,3 +519,40 @@ console.log(
   `${keyTermBlocks.size} unieke kernbegrippen, ` +
     `hoogste hergebruik ${Math.max(0, ...[...keyTermBlocks.values()].map((blockIds) => blockIds.length))} blokken.`
 );
+
+const positieVerdeling = [...correctPositions.entries()]
+  .sort((a, b) => a[0] - b[0])
+  .map(([position, count]) => `pos${position}: ${count}`)
+  .join(', ');
+console.log(
+  `Toetsvragen: ${questionStats.blocks}/30 blokken met vragen (${questionStats.drafts} nog draft), ` +
+    `${questionStats.items} vragen (${questionStats.closed} gesloten waarvan ${questionStats.waarNietWaar} waar-niet-waar, ` +
+    `${questionStats.open} open).`
+);
+console.log(
+  `Goed antwoord in meerkeuzevragen: ${positieVerdeling || 'geen'}; ` +
+    `blind de bovenste knop klikken geeft ${blindResults.correct}/${blindResults.closed} goed ` +
+    `(${Math.round(blindShare * 100)}%, grens ${Math.round(MAX_BLIND_TOP_BUTTON_SHARE * 100)}%); ` +
+    `${feedbackItems.size} unieke feedbackzinnen op ${questionStats.items} vragen.`
+);
+
+if (questionProblems.length > 0 || draftParagrafen.length > 0) {
+  console.error('');
+  console.error(
+    `Digitale vaardigheden seed NIET valid: ${questionProblems.length} fout(en) in bestaande vragen, ` +
+      `${draftParagrafen.length} blok(ken) zonder vragen.`
+  );
+  if (questionProblems.length > 0) {
+    console.error('');
+    console.error(`Fout in bestaande vragen (${questionProblems.length}):`);
+    for (const problem of questionProblems) console.error(`  - ${problem}`);
+  }
+  if (draftParagrafen.length > 0) {
+    console.error('');
+    console.error(`Nog geen toetsvragen (${draftParagrafen.length}):`);
+    for (const draft of draftParagrafen) console.error(`  - ${draft}`);
+  }
+  process.exit(1);
+}
+
+console.log('Digitale vaardigheden seed valid.');

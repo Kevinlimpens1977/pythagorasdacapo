@@ -8,7 +8,9 @@ import {
   buildBeoordelingData,
   buildBlokstandNaBeoordeling,
   buildNakijkOpdrachten,
+  buildNakijkReferentie,
   getModelAntwoord,
+  getNakijkpunten,
   getVraagTekst,
   isAssessmentItemRecord,
   isBeoordeelbaar,
@@ -561,4 +563,106 @@ test('de kaart draagt de reden mee, zodat de knoppen uitgeschakeld getoond worde
 
   assert.equal(opdracht.beoordeelbaar, false);
   assert.match(opdracht.blokkade, /geen klas/);
+});
+
+// --- De referentie waartegen de docent nakijkt ---
+
+test('nakijkpunten worden een lijst, zonder de streepjes waarmee ze zijn opgeslagen', () => {
+  assert.deepEqual(
+    getNakijkpunten({ rubric: '- Noemt het aantal tekens\n- Legt uit waarom dat helpt' }),
+    ['Noemt het aantal tekens', 'Legt uit waarom dat helpt']
+  );
+  assert.deepEqual(
+    getNakijkpunten({ rubric: '1. Eerste punt\n2) Tweede punt\n\n   \n* Derde punt' }),
+    ['Eerste punt', 'Tweede punt', 'Derde punt']
+  );
+  // Een array mag ook: dan valt er niets te splitsen.
+  assert.deepEqual(getNakijkpunten({ nakijkpunten: ['Punt een', 'Punt een', 'Punt twee'] }), [
+    'Punt een',
+    'Punt twee'
+  ]);
+  assert.deepEqual(getNakijkpunten({}), []);
+  assert.deepEqual(getNakijkpunten({ rubric: '   ' }), []);
+});
+
+test('een vraag zonder modelantwoord en zonder nakijkpunten zegt dat er geen referentie is', () => {
+  assert.deepEqual(buildNakijkReferentie(null), {
+    modelAntwoord: '',
+    nakijkpunten: [],
+    heeftReferentie: false
+  });
+  assert.equal(buildNakijkReferentie({ modelAnswer: 'Zo hoort het.' }).heeftReferentie, true);
+  assert.equal(buildNakijkReferentie({ rubric: '- Noemt de reden' }).heeftReferentie, true);
+});
+
+test('de nakijkstapel neemt modelantwoord en nakijkpunten van een open vraag mee', () => {
+  const rij = rijMetWachtendeStap();
+  rij.rapporten[0].stappen[1].record = wachtendRecord({
+    rubric: '- Noemt het aantal tekens\n- Legt uit dat raden dan langer duurt'
+  });
+
+  const [opdracht] = buildNakijkOpdrachten([rij]);
+
+  assert.equal(
+    opdracht.modelAntwoord,
+    'Hoe langer het wachtwoord, hoe meer combinaties een computer moet proberen.'
+  );
+  assert.deepEqual(opdracht.nakijkpunten, [
+    'Noemt het aantal tekens',
+    'Legt uit dat raden dan langer duurt'
+  ]);
+  assert.equal(opdracht.heeftReferentie, true);
+});
+
+test('de nakijkstapel neemt de referentie van een toetsvraag mee', () => {
+  const opdrachten = buildNakijkOpdrachten([
+    rijMetToets({
+      items: [
+        wachtendItemRecord({
+          modelAnswer: 'Omdat iemand anders dan bij jouw gegevens kan.',
+          rubric: '- Noemt dat het account persoonlijk is\n- Noemt een gevolg'
+        })
+      ]
+    })
+  ]);
+
+  assert.equal(opdrachten[0].modelAntwoord, 'Omdat iemand anders dan bij jouw gegevens kan.');
+  assert.deepEqual(opdrachten[0].nakijkpunten, [
+    'Noemt dat het account persoonlijk is',
+    'Noemt een gevolg'
+  ]);
+  assert.equal(opdrachten[0].heeftReferentie, true);
+});
+
+test('staat de referentie er niet, dan blijft de kaart gewoon beoordeelbaar', () => {
+  const [opdracht] = buildNakijkOpdrachten([rijMetToets()]);
+
+  assert.equal(opdracht.modelAntwoord, '');
+  assert.deepEqual(opdracht.nakijkpunten, []);
+  assert.equal(opdracht.heeftReferentie, false);
+  assert.equal(opdracht.beoordeelbaar, true);
+});
+
+test('modelantwoord en nakijkpunten blijven bewaard bij de voortgang van een toetsvraag', () => {
+  const record = wachtendItemRecord({
+    modelAnswer: 'Omdat iemand anders dan bij jouw gegevens kan.',
+    rubric: '- Noemt dat het account persoonlijk is'
+  });
+
+  const opgeslagen = buildAssessmentItemVoortgangUpdate({
+    userId: record.userId,
+    blockId: record.blockId,
+    itemId: record.itemId,
+    paragraafId: record.paragraafId,
+    klasId: record.klasId,
+    data: buildBeoordelingData({ record, besluit: NAKIJK_BESLUIT.GOEDGEKEURD }),
+    existingData: record,
+    timestamp: 1700000100000
+  });
+
+  assert.equal(opgeslagen.modelAnswer, 'Omdat iemand anders dan bij jouw gegevens kan.');
+  assert.equal(opgeslagen.rubric, '- Noemt dat het account persoonlijk is');
+  assert.deepEqual(buildNakijkReferentie(opgeslagen).nakijkpunten, [
+    'Noemt dat het account persoonlijk is'
+  ]);
 });

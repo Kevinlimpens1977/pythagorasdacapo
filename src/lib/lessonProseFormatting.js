@@ -158,12 +158,20 @@ const applyMarkdownBold = (text) =>
   });
 
 // Zet nadruk in de lopende tekst, en laat alle bestaande markup met rust.
-export const enhanceLessonProseHtml = (html, { keyTerms = [], caseSensitive = false } = {}) => {
+//
+// `used` mag van buiten meegegeven worden. Dat is nodig zodra één lesblok in
+// meer stukken gerenderd wordt (theorie, voorbeeld, samenvatting): de lezer ziet
+// die stukken onder elkaar als één tekst, dus een begrip hoort daarin één keer
+// vet te staan. Zonder gedeelde set begint elk stuk opnieuw en wordt hetzelfde
+// begrip in het voorbeeldvak nog een tweede keer benadrukt.
+export const enhanceLessonProseHtml = (
+  html,
+  { keyTerms = [], caseSensitive = false, used = new Set() } = {}
+) => {
   const source = String(html || '');
   if (!source) return '';
 
   const terms = keyTerms.filter((term) => String(term || '').trim().length >= 2);
-  const used = new Set();
   const segments = source.split(TAG_SEGMENT_PATTERN);
 
   let skipDepth = 0;
@@ -193,16 +201,25 @@ export const enhanceLessonProseHtml = (html, { keyTerms = [], caseSensitive = fa
 // Eén begrippenlijst per lesblok, ook als het blok in secties uiteenvalt
 // (theorie boven, uitgewerkt voorbeeld eronder). Zo bepaalt de hele tekst welke
 // begrippen tellen, niet het toevallige stukje dat als eerste gerenderd wordt.
+//
+// De formatter onthoudt ook WELKE begrippen al vet staan, over de secties heen.
+// Een lesblok is voor de lezer één doorlopende tekst; een begrip dat boven in de
+// theorie al vet staat, hoort in het voorbeeldvak eronder gewoon mee te lopen.
+// Daarom is de teruggegeven functie bewust volgordegevoelig: het eerste stuk dat
+// je erdoorheen haalt, krijgt de nadruk. Roep hem dus aan in leesvolgorde, en
+// maak per render een nieuwe formatter (dat doet `createLessonReadingFormatter`
+// vanzelf) in plaats van er één te bewaren en opnieuw te gebruiken.
 export const createLessonReadingFormatter = (sourceHtml, content = {}) => {
   const source = String(sourceHtml || '');
   const explicit = readExplicitKeyTerms(content);
   const keyTerms = explicit.length ? explicit : hasExplicitEmphasis(source) ? [] : deriveLessonKeyTerms(source);
   const caseSensitive = explicit.length === 0;
+  const used = new Set();
 
   return (html) => {
     const section = String(html || '');
     if (!section.trim()) return section;
-    return enhanceLessonProseHtml(section, { keyTerms, caseSensitive });
+    return enhanceLessonProseHtml(section, { keyTerms, caseSensitive, used });
   };
 };
 
