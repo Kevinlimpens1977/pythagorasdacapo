@@ -96,7 +96,7 @@ export default {
         keyTerms: ['schoolaccount', 'HELIX', 'OneDrive', 'Outlook'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Noa krijgt een bericht van haar mentor. Daarna moet ze de opdracht van vandaag openen. Welke twee plekken heeft ze nodig?</p>',
-          '<p><strong>Antwoord.</strong> Eerst Outlook, want daar komt het bericht binnen. Daarna HELIX, want daar staan de lessen en opdrachten. Met haar schoolaccount komt ze op allebei binnen.</p>'
+          '<p><strong>Antwoord.</strong> Eerst Outlook, want daar komt het bericht binnen. Daarna HELIX, want daar staan de lessen en opdrachten. Voor Outlook gebruikt ze haar schoolaccount; voor HELIX logt ze apart in met haar eigen HELIX-wachtwoord.</p>'
         ].join('\n')
       },
       {
@@ -108,7 +108,7 @@ export default {
       }
     ],
     samenvatting: {
-      html: '<p>Met je schoolaccount kom je binnen bij HELIX, OneDrive en Outlook. Elke plek heeft een eigen taak: mail in Outlook, bestanden in OneDrive en je lessen in HELIX. Je schoolwerk zet je in een vaste map, zodat je het volgende week nog terugvindt.</p>',
+      html: '<p>Met je schoolaccount kom je binnen bij Outlook en OneDrive; voor HELIX heb je een eigen inlog met een eigen wachtwoord. Elke plek heeft een eigen taak: mail in Outlook, bestanden in OneDrive en je lessen in HELIX. Je schoolwerk zet je in een vaste map, zodat je het volgende week nog terugvindt.</p>',
       keyTerms: ['schoolaccount', 'HELIX', 'schoolwerk']
     },
     vragen: [
@@ -126,12 +126,12 @@ export default {
         feedback: 'OneDrive staat in de cloud. Daardoor open je hetzelfde bestand thuis en op school, zolang je met je schoolaccount inlogt.'
       },
       {
-        prompt: 'Met je schoolaccount log je alleen in bij Outlook; voor HELIX heb je een apart account nodig.',
+        prompt: 'Je logt met precies dezelfde inloggegevens in bij Outlook, OneDrive en HELIX.',
         waar: false,
         leerdoel: 'Je weet waarvoor je HELIX, OneDrive en Outlook gebruikt.',
         denkniveau: 'herkennen',
         niveau: 'basis',
-        feedback: 'Een schoolaccount is een sleutelbos: dezelfde inlog opent HELIX, OneDrive en Outlook.'
+        feedback: 'Je schoolaccount opent Outlook en OneDrive. Voor HELIX heb je een eigen inlog met een eigen wachtwoord.'
       },
       {
         prompt: 'Je mentor stuurt een bericht over de excursie van volgende week. Waar lees je dat bericht?',

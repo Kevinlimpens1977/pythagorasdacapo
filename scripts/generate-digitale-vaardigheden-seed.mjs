@@ -102,7 +102,7 @@ const lessons = [
     badge: 'Account Starter',
     paragraphs: [
       p('1.1', 'Mijn digitale schooltas: HELIX, OneDrive en Outlook', ['21A', '23A', '22A'], 'Word-bewijsbestand in OneDrive', 100, 'Account Escape',
-        ['Je schoolaccount is je digitale sleutel', 'Met je schoolaccount kom je bij de belangrijkste digitale plekken: HELIX, OneDrive, Outlook en de school-ELO. Zie je account als een sleutelbos. Je gebruikt niet elke sleutel voor hetzelfde. Outlook is voor mail. OneDrive is voor bestanden bewaren en delen. HELIX is voor lessen en opdrachten. De school-ELO is nu nog een placeholder, omdat het platform later verandert.'],
+        ['Twee inloggen: school en HELIX', 'Op school werk je met twee inloggen. Met je schoolaccount kom je binnen bij Outlook en OneDrive: Outlook is voor mail, OneDrive is voor bestanden bewaren en delen. Voor HELIX heb je een eigen inlog met een eigen wachtwoord; daar staan je lessen en opdrachten. Zie je inloggegevens als sleutels: elke sleutel past op een andere deur, dus bewaar ze allebei goed.'],
         ['Bewijs opslaan', 'Maak een vaste map voor dit vak. Sla daarin je eerste Word-bestand op met een duidelijke naam. Voeg een screenshot toe van je map. Zo laat je zien dat je niet alleen hebt geklikt, maar echt weet waar je schoolwerk staat. Als iets niet lukt, vraag je hulp en klik je niet zomaar op onbekende knoppen.'],
         media('https://support.microsoft.com/nl-nl/office/basisbewerkingen-in-microsoft-365-videotraining-396b8d9e-e118-42d0-8a0d-87d1f2f055fb', 'Microsoft 365 basis', 'Welke drie plekken moet je op dag 1 kunnen vinden?'),
         ['Waar bewaar je schoolwerk?', 'Wanneer gebruik je Outlook?', 'Wat doe je als inloggen niet lukt?'],
