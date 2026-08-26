@@ -8,9 +8,9 @@ export const TURBO_LEVELS = [
     thema: 'Korte woorden, rustig tempo',
     gradient: 'from-sky-100 via-cyan-50 to-white',
     accent: '#0ea5e9',
-    baanSeconden: 10,
+    baanSeconden: 12.5,
     achtergrond: 'achtergrond1.webp',
-    spawnIntervalMs: 3600,
+    spawnIntervalMs: 4500,
     woorden: ['app', 'wifi', 'chat', 'mail', 'klik', 'muis', 'data', 'spam']
   },
   {
@@ -19,9 +19,9 @@ export const TURBO_LEVELS = [
     thema: 'Iets langere woorden, iets sneller',
     gradient: 'from-emerald-100 via-teal-50 to-white',
     accent: '#10b981',
-    baanSeconden: 8.5,
+    baanSeconden: 10.5,
     achtergrond: 'achtergrond2.webp',
-    spawnIntervalMs: 3200,
+    spawnIntervalMs: 4000,
     woorden: ['code', 'cloud', 'login', 'virus', 'emoji', 'pixel', 'webcam', 'server', 'router']
   },
   {
@@ -30,9 +30,9 @@ export const TURBO_LEVELS = [
     thema: 'Middellange woorden, vlot tempo',
     gradient: 'from-violet-100 via-purple-50 to-white',
     accent: '#8b5cf6',
-    baanSeconden: 7.5,
+    baanSeconden: 8.5,
     achtergrond: 'achtergrond3.webp',
-    spawnIntervalMs: 2800,
+    spawnIntervalMs: 3200,
     woorden: ['online', 'upload', 'cursor', 'browser', 'account', 'hashtag', 'monitor', 'bestand', 'computer', 'internet']
   },
   {

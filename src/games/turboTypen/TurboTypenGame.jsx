@@ -284,6 +284,8 @@ export default function TurboTypenGame({ onStart, onComplete }) {
             <div
               ref={veldRef}
               className="relative w-full overflow-hidden rounded-2xl border border-white/60 bg-white/55 shadow-inner backdrop-blur-sm"
+              // containerType maakt cqw-eenheden mogelijk voor de baananimatie
+              data-turbo-veld=""
               // Het veld groeit mee met het venster: in fullscreen bijna schermvullend,
               // in de les nooit kleiner dan de oude 20rem. Woordposities zijn
               // procentueel, dus die schalen vanzelf mee.
@@ -388,11 +390,12 @@ function WoordOpBaan({ item, level, isLocked, getypt, onGemist, actief }) {
       onAnimationEnd={(event) => {
         if (event.animationName === 'turbo-baan') onGemist();
       }}
-      className={`turbo-woord absolute -translate-y-1/2 rounded-xl border-2 bg-white px-3 py-1.5 font-mono text-lg font-black shadow-md ${
-        isLocked ? 'z-10 scale-110' : ''
+      className={`turbo-woord absolute rounded-2xl border-2 bg-white px-5 py-3 font-mono text-3xl font-black shadow-md ${
+        isLocked ? 'z-10' : ''
       }`}
       style={{
         top: `${item.baan}%`,
+        left: 0,
         borderColor: isLocked ? level.accent : 'rgba(148, 163, 184, 0.5)',
         animation: `turbo-baan ${level.baanSeconden}s linear forwards, turbo-gevaar 0.55s ease-in-out ${gevaarDelayMs}ms infinite alternate`,
         animationPlayState: actief ? 'running, running' : 'paused, paused'
@@ -634,13 +637,17 @@ function Confetti() {
 function TurboStijlen() {
   return (
     <style>{`
+      /* De baan loopt via transform in containerbreedte-eenheden (cqw), niet
+         via left: transform draait op de compositor en left dwingt elke frame
+         een layout af - dat was het schokkerige bewegen. */
+      [data-turbo-veld] { container-type: inline-size; }
       @keyframes turbo-baan {
-        from { left: -18%; }
-        to { left: 96%; }
+        from { transform: translateY(-50%) translateX(-22cqw); }
+        to { transform: translateY(-50%) translateX(97cqw); }
       }
       @keyframes turbo-gevaar {
-        from { transform: translateY(-50%) scale(1); box-shadow: 0 4px 10px rgba(244, 63, 94, 0); }
-        to { transform: translateY(-50%) scale(1.12); box-shadow: 0 4px 18px rgba(244, 63, 94, 0.55); border-color: #f43f5e; }
+        from { scale: 1; box-shadow: 0 4px 10px rgba(244, 63, 94, 0); }
+        to { scale: 1.12; box-shadow: 0 4px 18px rgba(244, 63, 94, 0.55); border-color: #f43f5e; }
       }
       @keyframes turbo-boem-anim {
         0% { transform: translateY(-50%) scale(0.6); opacity: 1; }
