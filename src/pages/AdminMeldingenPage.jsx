@@ -1,261 +1,218 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Bug, CheckCircle2, Clock, ExternalLink, RefreshCw, Search, XCircle } from 'lucide-react';
+import { Bell, ExternalLink, Loader2, MessageSquareReply, Save } from 'lucide-react';
 import {
-  BUG_REPORT_CATEGORIES,
-  BUG_REPORT_STATUSES
-} from '../lib/studentBugReportUtils';
-import {
-  getStudentBugReports,
-  updateStudentBugReport
-} from '../services/studentBugReportService';
+  MELDING_STATUSSEN,
+  markMeldingGelezenDoorBeheer,
+  saveMeldingAfhandeling,
+  subscribeToAlleMeldingen
+} from '../services/meldingenService';
 
-const statusIcons = {
-  new: AlertTriangle,
-  in_progress: Clock,
-  resolved: CheckCircle2,
-  rejected: XCircle
+/**
+ * Het beheerscherm van de meldbel: alle meldingen, nieuwste eerst, met per
+ * melding de schermafbeelding, een status en een antwoordveld. Het antwoord
+ * komt bij de melder terug in de bel (met rood bolletje), dus schrijf het aan
+ * de melder en niet als interne notitie.
+ */
+
+const datumLabel = (waarde) => {
+  const d = waarde?.toDate ? waarde.toDate() : waarde;
+  if (!d) return '';
+  return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 };
 
-const statusTone = {
-  new: 'border-amber-200 bg-amber-50 text-amber-800',
-  in_progress: 'border-blue-200 bg-blue-50 text-blue-800',
-  resolved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-  rejected: 'border-slate-200 bg-slate-100 text-slate-600'
-};
-
-const formatDateTime = (value = '') => {
-  if (!value) return 'Onbekend';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return 'Onbekend';
-  return new Intl.DateTimeFormat('nl-NL', {
-    dateStyle: 'short',
-    timeStyle: 'short'
-  }).format(date);
-};
-
-const getStatusLabel = (status = '') =>
-  BUG_REPORT_STATUSES.find((item) => item.id === status)?.label || 'Nieuw';
-
-const getCategoryLabel = (category = '') =>
-  BUG_REPORT_CATEGORIES.find((item) => item.id === category)?.label || 'Anders';
+const FILTERS = [
+  ['open', 'Open'],
+  ['alles', 'Alles'],
+  ['afgerond', 'Afgerond']
+];
 
 export default function AdminMeldingenPage() {
-  const [reports, setReports] = useState([]);
+  const [meldingen, setMeldingen] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [savingId, setSavingId] = useState('');
-  const [error, setError] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [notesById, setNotesById] = useState({});
-
-  const filteredReports = useMemo(() => reports, [reports]);
-
-  const loadReports = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const nextReports = await getStudentBugReports({
-        status: statusFilter,
-        category: categoryFilter,
-        maxResults: 120
-      });
-      setReports(nextReports);
-      setNotesById(Object.fromEntries(nextReports.map((report) => [report.id, report.adminNote || ''])));
-    } catch (loadError) {
-      console.error('Meldingen konden niet laden:', loadError);
-      setError('Meldingen konden niet worden geladen.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [filter, setFilter] = useState('open');
+  const [openMelding, setOpenMelding] = useState(null);
 
   useEffect(() => {
-    // Firestore sync: load reports on first render and whenever filters change.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadReports();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, categoryFilter]);
+    const unsubscribe = subscribeToAlleMeldingen(
+      (rows) => { setMeldingen(rows); setLoading(false); },
+      () => setLoading(false)
+    );
+    return unsubscribe;
+  }, []);
 
-  const updateReport = async (reportId, updates) => {
-    setSavingId(reportId);
-    setError('');
-    try {
-      await updateStudentBugReport(reportId, updates);
-      await loadReports();
-    } catch (updateError) {
-      console.error('Melding kon niet worden bijgewerkt:', updateError);
-      setError('Melding kon niet worden bijgewerkt.');
-    } finally {
-      setSavingId('');
-    }
-  };
+  const zichtbaar = useMemo(() => {
+    if (filter === 'open') return meldingen.filter((m) => m.status === 'nieuw' || m.status === 'opgepakt');
+    if (filter === 'afgerond') return meldingen.filter((m) => m.status === 'opgelost' || m.status === 'afgewezen');
+    return meldingen;
+  }, [meldingen, filter]);
+
+  const nieuwAantal = meldingen.filter((m) => m.gelezenDoorBeheer === false).length;
 
   return (
-    <div className="helix-page min-h-screen">
-      <div className="helix-container">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="helix-page">
+      <div className="helix-container py-10 md:py-12">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="helix-eyebrow">Leerlingmeldingen</p>
-            <h1 className="mt-2 helix-heading-xl">Meldingen</h1>
-            <p className="mt-3 max-w-2xl text-lg leading-8 text-[var(--helix-muted)]">
-              Bekijk fouten die leerlingen melden, inclusief leerlinggegevens, lescontext en technische locatie.
+            <p className="helix-eyebrow">Meldingen</p>
+            <h1 className="helix-heading-xl mt-2">Meldbel</h1>
+            <p className="helix-muted mt-3 max-w-2xl text-lg leading-8">
+              Alles wat via de bel rechtsonder is gemeld. Je antwoord komt bij de melder terug in diezelfde bel.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={loadReports}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-5 py-3 text-sm font-black text-[var(--helix-navy)] shadow-sm transition hover:bg-slate-50"
-          >
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-            Vernieuwen
-          </button>
+          <div className="flex gap-2">
+            {FILTERS.map(([sleutel, label]) => (
+              <button
+                key={sleutel}
+                type="button"
+                onClick={() => setFilter(sleutel)}
+                className={`btn-tool min-h-11 px-4 text-sm ${filter === sleutel ? 'border-[var(--helix-purple)] text-[var(--helix-purple-dark)]' : ''}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <section className="mt-8 grid gap-3 rounded-3xl border border-[var(--helix-border)] bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr_auto]">
-          <label className="block">
-            <span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">Status</span>
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="input-standard w-full">
-              <option value="">Alle statussen</option>
-              {BUG_REPORT_STATUSES.map((status) => (
-                <option key={status.id} value={status.id}>{status.label}</option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">Categorie</span>
-            <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="input-standard w-full">
-              <option value="">Alle categorieen</option>
-              {BUG_REPORT_CATEGORIES.map((category) => (
-                <option key={category.id} value={category.id}>{category.label}</option>
-              ))}
-            </select>
-          </label>
-          <div className="flex items-end">
-            <div className="flex min-h-12 items-center gap-2 rounded-2xl bg-slate-50 px-4 text-sm font-black text-[var(--helix-navy)]">
-              <Search size={17} />
-              {filteredReports.length} melding{filteredReports.length === 1 ? '' : 'en'}
-            </div>
-          </div>
-        </section>
+        {nieuwAantal > 0 ? (
+          <p className="mt-6 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-4 py-3 text-sm font-bold text-[var(--helix-purple-dark)]">
+            {nieuwAantal} nieuwe {nieuwAantal === 1 ? 'melding' : 'meldingen'} sinds je laatste bezoek.
+          </p>
+        ) : null}
 
-        {error && (
-          <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800">
-            {error}
-          </div>
-        )}
-
-        <section className="mt-6 space-y-4">
+        <section className="mt-8">
           {loading ? (
-            <div className="helix-card p-8 text-center text-sm font-bold text-[var(--helix-muted)]">
-              Meldingen laden...
-            </div>
-          ) : filteredReports.length === 0 ? (
-            <div className="helix-card p-8 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-400">
-                <Bug size={24} />
-              </div>
-              <p className="mt-4 font-black text-[var(--helix-navy)]">Geen meldingen gevonden</p>
-              <p className="mt-1 text-sm text-[var(--helix-muted)]">Pas je filters aan of wacht tot leerlingen een fout melden.</p>
+            <div className="helix-muted flex items-center gap-2 text-sm"><Loader2 size={16} className="animate-spin" /> Meldingen laden...</div>
+          ) : zichtbaar.length === 0 ? (
+            <div className="helix-surface p-10 text-center">
+              <Bell size={36} className="mx-auto text-[var(--helix-purple)]/40" />
+              <p className="mt-3 font-black text-[var(--helix-navy)]">
+                {filter === 'open' ? 'Geen openstaande meldingen' : 'Geen meldingen gevonden'}
+              </p>
+              <p className="helix-muted mt-1 text-sm">Zodra iemand op de bel klikt en iets meldt, verschijnt het hier.</p>
             </div>
           ) : (
-            filteredReports.map((report) => {
-              const StatusIcon = statusIcons[report.status] || AlertTriangle;
-
-              return (
-                <article key={report.id} className="helix-card overflow-hidden">
-                  <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black ${statusTone[report.status] || statusTone.new}`}>
-                          <StatusIcon size={15} />
-                          {getStatusLabel(report.status)}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
-                          {getCategoryLabel(report.category)}
-                        </span>
-                        <span className="text-xs font-bold text-[var(--helix-muted)]">
-                          {formatDateTime(report.clientCreatedAt)}
-                        </span>
-                      </div>
-
-                      <h2 className="mt-4 font-display text-xl font-extrabold text-[var(--helix-navy)]">
-                        {report.student?.displayName || 'Onbekende leerling'}
-                      </h2>
-                      <p className="mt-1 text-sm font-semibold text-[var(--helix-muted)]">
-                        {report.student?.email || 'Geen e-mail'} · {report.klas?.name || report.klas?.id || 'Geen klas bekend'}
-                        {report.student?.studentNumber ? ` · ${report.student.studentNumber}` : ''}
-                      </p>
-
-                      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p className="text-sm font-black text-[var(--helix-navy)]">Melding leerling</p>
-                        <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{report.description}</p>
-                        {report.details && (
-                          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">{report.details}</p>
-                        )}
-                      </div>
-
-                      <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                          <p className="text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">Lescontext</p>
-                          <p className="mt-2 font-bold text-[var(--helix-navy)]">{report.context?.paragraafTitle || 'Onbekende paragraaf'}</p>
-                          <p className="mt-1 text-slate-600">
-                            {[report.context?.blockTitle, report.context?.vraagTitle].filter(Boolean).join(' · ') || 'Geen lesblok gekoppeld'}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                          <p className="text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">Locatie</p>
-                          <p className="mt-2 break-all text-slate-600">{report.page?.pathname || '-'}</p>
-                          {report.page?.href && (
-                            <a href={report.page.href} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-sm font-black text-[var(--helix-purple)] hover:underline">
-                              Open pagina <ExternalLink size={14} />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                      <label className="block">
-                        <span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">Status aanpassen</span>
-                        <select
-                          value={report.status || 'new'}
-                          onChange={(event) => updateReport(report.id, { status: event.target.value })}
-                          disabled={savingId === report.id}
-                          className="input-standard w-full bg-white"
-                        >
-                          {BUG_REPORT_STATUSES.map((status) => (
-                            <option key={status.id} value={status.id}>{status.label}</option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label className="block">
-                        <span className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">Adminnotitie</span>
-                        <textarea
-                          value={notesById[report.id] || ''}
-                          onChange={(event) => setNotesById((current) => ({ ...current, [report.id]: event.target.value }))}
-                          className="input-standard min-h-32 w-full resize-y bg-white"
-                          placeholder="Bijvoorbeeld: antwoordmodel aangepast in vraagstudio."
-                          maxLength={1600}
-                        />
-                      </label>
-
-                      <button
-                        type="button"
-                        onClick={() => updateReport(report.id, { adminNote: notesById[report.id] || '' })}
-                        disabled={savingId === report.id}
-                        className="btn-primary w-full px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {savingId === report.id ? 'Opslaan...' : 'Notitie opslaan'}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              );
-            })
+            <div className="grid gap-4">
+              {zichtbaar.map((melding) => (
+                <MeldingKaart
+                  key={melding.id}
+                  melding={melding}
+                  isOpen={openMelding === melding.id}
+                  onToggle={() => {
+                    setOpenMelding(openMelding === melding.id ? null : melding.id);
+                    if (melding.gelezenDoorBeheer === false) {
+                      markMeldingGelezenDoorBeheer(melding.id).catch(() => {});
+                    }
+                  }}
+                />
+              ))}
+            </div>
           )}
         </section>
       </div>
     </div>
   );
 }
+
+const MeldingKaart = ({ melding, isOpen, onToggle }) => {
+  const s = MELDING_STATUSSEN[melding.status] || MELDING_STATUSSEN.nieuw;
+  const [status, setStatus] = useState(melding.status);
+  const [reactie, setReactie] = useState(melding.reactie || '');
+  const [bezig, setBezig] = useState(false);
+  const [bewaard, setBewaard] = useState(false);
+
+  const bewaar = async () => {
+    setBezig(true);
+    setBewaard(false);
+    try {
+      await saveMeldingAfhandeling(melding.id, { status, reactie: reactie.trim() });
+      setBewaard(true);
+    } catch (e) {
+      console.error('Afhandeling opslaan mislukt:', e);
+    } finally {
+      setBezig(false);
+    }
+  };
+
+  return (
+    <article className={`helix-surface overflow-hidden ${melding.gelezenDoorBeheer === false ? 'border-[var(--helix-purple)]/40' : ''}`}>
+      <button type="button" onClick={onToggle} className="flex w-full items-start gap-4 px-5 py-4 text-left">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className="rounded-full px-2.5 py-0.5 text-[11px] font-black"
+              style={{ color: s.kleur, background: s.achtergrond }}
+            >
+              {s.label}
+            </span>
+            {melding.gelezenDoorBeheer === false ? (
+              <span className="rounded-full bg-[var(--helix-purple)] px-2.5 py-0.5 text-[11px] font-black text-white">Nieuw binnen</span>
+            ) : null}
+            <span className="text-xs text-slate-400">{datumLabel(melding.aangemaakt)}</span>
+            <span className="text-xs font-bold text-[var(--helix-muted)]">
+              {melding.melder?.naam} ({melding.melder?.rol})
+            </span>
+          </div>
+          <p className="mt-2 font-bold text-[var(--helix-navy)]">{melding.tekst}</p>
+          <p className="helix-muted mt-1 text-xs">Pagina: {melding.pagina || 'onbekend'} · Venster: {melding.venster || '-'}</p>
+        </div>
+      </button>
+
+      {isOpen ? (
+        <div className="border-t border-[var(--helix-border)] px-5 py-4">
+          {melding.afbeeldingUrl ? (
+            <a
+              href={melding.afbeeldingUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mb-4 block"
+              title="Open de schermafbeelding groot in een nieuw tabblad"
+            >
+              <img
+                src={melding.afbeeldingUrl}
+                alt="Schermafbeelding bij de melding"
+                className="max-h-72 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] object-contain"
+              />
+              <span className="mt-1 inline-flex items-center gap-1 text-xs font-bold text-[var(--helix-purple)]">
+                <ExternalLink size={12} /> Groot bekijken
+              </span>
+            </a>
+          ) : (
+            <p className="helix-muted mb-4 text-sm">Bij deze melding zit geen schermafbeelding.</p>
+          )}
+
+          <div className="grid gap-3 md:grid-cols-[220px_1fr_auto] md:items-end">
+            <label className="block">
+              <span className="text-xs font-black uppercase tracking-wide text-slate-400">Status</span>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="input-auth mt-1"
+              >
+                {Object.entries(MELDING_STATUSSEN).map(([sleutel, waarde]) => (
+                  <option key={sleutel} value={sleutel}>{waarde.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs font-black uppercase tracking-wide text-slate-400">
+                <MessageSquareReply size={12} className="mr-1 inline" />
+                Antwoord aan de melder
+              </span>
+              <input
+                type="text"
+                value={reactie}
+                onChange={(e) => setReactie(e.target.value)}
+                placeholder="Bijv: gevonden en opgelost, dank voor het melden!"
+                className="input-auth mt-1"
+              />
+            </label>
+            <button type="button" onClick={bewaar} disabled={bezig} className="btn-tool min-h-11 px-4 text-sm">
+              {bezig ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              {bewaard ? 'Bewaard' : 'Opslaan'}
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </article>
+  );
+};

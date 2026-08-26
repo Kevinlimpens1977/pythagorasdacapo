@@ -17,8 +17,23 @@ service firebase.storage {
 
     function isAdmin() {
       return signedIn() && (
-        userDoc().data.role == 'admin' || isAdminEmail()
+        userDoc().data.role == 'admin' ||
+        userDoc().data.role == 'supervisor' ||
+        isAdminEmail()
       );
+    }
+
+    /* Schermafbeeldingen bij meldingen. Het pad draagt de uid van de melder,
+       zodat de regels de eigenaar kennen zonder Firestore erbij te halen.
+       Niet overschrijven: een melding hoort te tonen wat er toen te zien was. */
+    match /meldingen/{userId}/{bestand} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == userId);
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.contentType.matches('image/.*')
+        && request.resource.size < 2 * 1024 * 1024;
+      allow update, delete: if false;
     }
 
     // Bestaande crop/OCR uploads

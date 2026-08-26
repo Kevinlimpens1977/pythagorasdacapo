@@ -106,7 +106,6 @@ import PdfSlideDeckPresenter from '../components/digibord/PdfSlideDeckPresenter'
 import GamePlayer from '../components/games/GamePlayer';
 import MediaRenderer from '../components/media/MediaRenderer';
 import AITutorChat from '../components/slides/AITutorChat';
-import StudentBugReportButton from '../components/studentBugReports/StudentBugReportButton';
 import { useStudentBugReportContext } from '../components/studentBugReports/StudentBugReportContext';
 import { askAiTutorCall, assessOpenAnswerCall, gradeClosedQuestionCall } from '../lib/api';
 import { GAME_RESULT_HANDLING, getGameById } from '../lib/gameRegistry';
@@ -953,8 +952,6 @@ export default function StudentLessonPage() {
                 <span className="sr-only">Leerdoelen</span>
               </button>
             )}
-
-            {!isAdmin && <StudentBugReportButton />}
 
             <button
               type="button"

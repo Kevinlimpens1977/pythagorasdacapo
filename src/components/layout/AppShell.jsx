@@ -4,13 +4,13 @@ import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
 import CmsResetButton from '../admin/CmsResetButton';
 import DeleteStudentsButton from '../admin/DeleteStudentsButton';
-import StudentBugReportButton from '../studentBugReports/StudentBugReportButton';
+import Meldbel from '../common/Meldbel';
 import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
 import TokenBalancePill from '../tokens/TokenBalancePill';
 import { BarChart3, BellRing, BookOpen, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import { isStudyRoutePath } from '../../lib/studyRouteState';
-import { getOpenStudentBugReportCount } from '../../services/studentBugReportService';
+import { subscribeToNieuweMeldingenAantal } from '../../services/meldingenService';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewards';
 import helixLogo from '../../afbeeldingen/logo.png';
@@ -48,30 +48,10 @@ export default function AppShell() {
       return undefined;
     }
 
-    let cancelled = false;
-
-    const refreshOpenBugReportCount = async () => {
-      try {
-        const nextCount = await getOpenStudentBugReportCount();
-        if (!cancelled) {
-          setOpenBugReportCount(nextCount);
-        }
-      } catch (error) {
-        console.warn('Open meldingen konden niet worden geladen:', error);
-        if (!cancelled) {
-          setOpenBugReportCount(0);
-        }
-      }
-    };
-
-    refreshOpenBugReportCount();
-    const intervalId = window.setInterval(refreshOpenBugReportCount, 60_000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(intervalId);
-    };
-  }, [isAdmin, location.pathname]);
+    // Live meetellen wat het beheer nog niet bekeken heeft: dat is het rode
+    // bolletje op Instellingen, hetzelfde signaal als de bel bij de melder.
+    return subscribeToNieuweMeldingenAantal(setOpenBugReportCount, () => setOpenBugReportCount(0));
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!canShowStudentRewards) {
@@ -209,8 +189,6 @@ export default function AppShell() {
             />
           )}
 
-          {!isAdmin && <StudentBugReportButton />}
-
           {!isAdmin ? (
             <button
               onClick={() => navigate('/profiel')}
@@ -278,6 +256,10 @@ export default function AppShell() {
       <main className="relative flex flex-1 flex-col overflow-x-clip">
         <Outlet />
       </main>
+
+      {/* De meldbel zweeft rechtsonder over elke pagina, ook tijdens het
+          studeren: hij hoort niet bij de app-chrome maar bij het vangnet. */}
+      <Meldbel user={currentUser} rol={isAdmin ? 'beheer' : 'leerling'} />
     </div>
     </StudentBugReportContext.Provider>
   );

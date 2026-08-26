@@ -357,6 +357,37 @@ service cloud.firestore {
     // Leerling-foutmeldingen.
     // Leerlingen mogen alleen eigen meldingen aanmaken en teruglezen voor rate limiting.
     // Moderatie, status en adminnotities blijven admin-only.
+    /* Meldingen van de meldbel rechtsonder. De grenzen:
+       - iedereen die is ingelogd mag melden, maar alleen namens zichzelf;
+       - je leest alleen je eigen meldingen, het beheer leest alles;
+       - status en reactie zijn van het beheer;
+       - de melder mag een ding aan zijn eigen melding wijzigen: aangeven dat
+         hij het antwoord gelezen heeft (dat zet het rode bolletje uit). */
+    match /meldingen/{meldingId} {
+      function isMelder() {
+        return signedIn() && resource.data.melder.uid == request.auth.uid;
+      }
+
+      allow read: if isAdminOrSupervisor() || isMelder();
+
+      /* Bij het aanmaken ligt de status vast op 'nieuw' en is er nog geen
+         reactie, anders kan een melding er al afgehandeld uitzien en zo
+         tussen de openstaande punten uit glippen. */
+      allow create: if signedIn()
+        && request.resource.data.melder.uid == request.auth.uid
+        && request.resource.data.status == 'nieuw'
+        && request.resource.data.reactie == ''
+        && request.resource.data.tekst is string
+        && request.resource.data.tekst.size() > 0
+        && request.resource.data.tekst.size() <= 4000
+        && request.resource.data.aangemaakt is timestamp;
+
+      allow update: if isAdminOrSupervisor()
+        || (isMelder()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['gelezenDoorMelder']));
+    }
+
     match /studentBugReports/{reportId} {
       allow read: if signedIn() && (
         resource.data.student.uid == request.auth.uid ||
