@@ -15,6 +15,12 @@
 
 import { normalizeResultTier } from './learningResultUtils.js';
 import { getEffectiveContentBlocks, getStudentEffectiveParagrafen } from './assignmentUtils.js';
+import {
+  PLUS_KORT,
+  PLUS_LABEL,
+  PLUS_UITLEG_DOCENT,
+  isOptionalParagraph
+} from './paragraphMetadata.js';
 
 export const STAP_STATUS = {
   AFGEROND: 'afgerond',
@@ -90,6 +96,33 @@ export const STAP_STATUS_PRESENTATIE = {
 
 export const getStatusPresentatie = (status) =>
   STAP_STATUS_PRESENTATIE[status] || STAP_STATUS_PRESENTATIE[STAP_STATUS.NIET_GESTART];
+
+/**
+ * Hoe een vrijwillige plusparagraaf eruitziet. Bewust GEEN status uit
+ * STAP_STATUS_PRESENTATIE: die vijf kleuren zeggen allemaal iets over "hoever
+ * ben je", en dat is precies wat een plusparagraaf niet meet. Een leerling die
+ * hem overslaat loopt nergens op achter, dus mag hij nooit dezelfde grijze
+ * "niet gestart" of rode markering krijgen als verplichte stof.
+ */
+export const PLUS_PRESENTATIE = {
+  label: PLUS_LABEL,
+  kort: PLUS_KORT,
+  uitleg: PLUS_UITLEG_DOCENT,
+  chipClass: 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]',
+  dotClass: 'bg-[var(--helix-purple)]',
+  leegClass: 'border-dashed border-[var(--helix-purple)]/40 bg-[var(--helix-soft-lavender)]/40 text-[var(--helix-purple)]/70'
+};
+
+/** Zin voor de docent: hoeveel plusparagrafen deed deze leerling vrijwillig. */
+export const getPlusSamenvattingLabel = (plus = null) => {
+  const totaal = Number(plus?.totaalParagrafen) || 0;
+  if (!totaal) return 'Geen plusparagrafen klaargezet';
+
+  const af = Number(plus?.afgerondeParagrafen) || 0;
+  if (af > 0) return `${af} van ${totaal} plusparagra${totaal === 1 ? 'af' : 'fen'} vrijwillig af`;
+  if ((Number(plus?.gestarteStappen) || 0) > 0) return `Begonnen aan de plusstof, nog niets af`;
+  return 'Nog geen plusstof gedaan';
+};
 
 const BLOKTYPE_LABELS = {
   theory: 'Theorie',
@@ -433,6 +466,10 @@ export const buildParagraafRapport = ({
     paragraafTitel: paragraaf.title || 'Paragraaf',
     hoofdstukId: paragraaf.hoofdstukId || '',
     hoofdstukTitel: paragraaf.hoofdstukTitle || '',
+    // Vrijwillige plusparagraaf: hij hoort wel bij de leerling en de docent mag
+    // hem openklappen, maar hij blijft buiten elke optelling die "hoever ben je"
+    // meet. Zie splitOptioneel hieronder.
+    optioneel: isOptionalParagraph(paragraaf),
     stappen,
     telling,
     totaalStappen: totaal,
@@ -453,10 +490,65 @@ const telOp = (doel, bron) => {
   return doel;
 };
 
+/**
+ * Verplichte stof links, vrijwillige plusstof rechts.
+ *
+ * Elke optelling die iets zegt over "hoever is deze leerling" gebruikt alleen
+ * de linkerhelft. Anders zakt een leerling die alles af heeft naar 80% zodra
+ * er een plusparagraaf klaarstaat die hij niet hoefde te doen, en dat leest de
+ * docent als achterstand terwijl er niets aan de hand is.
+ */
+const splitOptioneel = (rapporten = []) => ({
+  verplicht: rapporten.filter((rapport) => rapport.optioneel !== true),
+  plus: rapporten.filter((rapport) => rapport.optioneel === true)
+});
+
+/**
+ * Wat een leerling vrijwillig extra deed, apart opgeteld. Dit is nadrukkelijk
+ * geen tweede voortgangsbalk: er staat geen eis tegenover, alleen een telling
+ * van wat er bovenop de verplichte stof gedaan is.
+ */
+export const buildPlusSamenvatting = (plusRapporten = []) => {
+  const telling = plusRapporten.reduce((totaal, rapport) => telOp(totaal, rapport.telling), legeTelling());
+  const totaalStappen = plusRapporten.reduce((som, rapport) => som + rapport.totaalStappen, 0);
+  const afgerondeStappen = telling[STAP_STATUS.AFGEROND];
+  const gestarteStappen = totaalStappen - telling[STAP_STATUS.NIET_GESTART];
+  const paragrafen = plusRapporten.map((rapport) => ({
+    paragraafId: rapport.paragraafId,
+    paragraafLabel: rapport.paragraafLabel,
+    paragraafCode: rapport.paragraafCode,
+    paragraafTitel: rapport.paragraafTitel,
+    hoofdstukId: rapport.hoofdstukId,
+    status: rapport.status,
+    statusLabel: rapport.statusLabel,
+    afgerondeStappen: rapport.afgerondeStappen,
+    totaalStappen: rapport.totaalStappen,
+    percentage: rapport.percentage,
+    afgerond: rapport.status === STAP_STATUS.AFGEROND,
+    gestart: rapport.status !== STAP_STATUS.NIET_GESTART
+  }));
+
+  return {
+    telling,
+    paragrafen,
+    afgerondeParagrafen: paragrafen.filter((paragraaf) => paragraaf.afgerond).length,
+    gestarteParagrafen: paragrafen.filter((paragraaf) => paragraaf.gestart).length,
+    totaalParagrafen: paragrafen.length,
+    totaalStappen,
+    afgerondeStappen,
+    gestarteStappen,
+    // Alleen ter informatie: 0% hier betekent "niets extra's gedaan", nooit
+    // "loopt achter".
+    percentage: totaalStappen ? Math.round((afgerondeStappen / totaalStappen) * 100) : 0,
+    laatsteActiviteitMs: plusRapporten.reduce((hoogste, rapport) => Math.max(hoogste, rapport.laatsteActiviteitMs), 0)
+  };
+};
+
 /** Rolt paragraafrapporten op tot de stand van een hoofdstuk. */
 export const buildHoofdstukRapport = ({ hoofdstukId = '', hoofdstukTitel = '', rapporten = [] } = {}) => {
-  const telling = rapporten.reduce((totaal, rapport) => telOp(totaal, rapport.telling), legeTelling());
-  const totaalStappen = rapporten.reduce((som, rapport) => som + rapport.totaalStappen, 0);
+  const { verplicht, plus } = splitOptioneel(rapporten);
+  const telling = verplicht.reduce((totaal, rapport) => telOp(totaal, rapport.telling), legeTelling());
+  const totaalStappen = verplicht.reduce((som, rapport) => som + rapport.totaalStappen, 0);
   const afgerondeStappen = telling[STAP_STATUS.AFGEROND];
   const status = bepaalSamengesteldeStatus(telling, totaalStappen);
 
@@ -464,13 +556,16 @@ export const buildHoofdstukRapport = ({ hoofdstukId = '', hoofdstukTitel = '', r
     hoofdstukId,
     hoofdstukTitel,
     rapporten,
+    verplichteRapporten: verplicht,
+    plusRapporten: plus,
+    plus: buildPlusSamenvatting(plus),
     telling,
     totaalStappen,
     afgerondeStappen,
     percentage: totaalStappen ? Math.round((afgerondeStappen / totaalStappen) * 100) : 0,
     status,
     statusLabel: getStatusPresentatie(status).label,
-    afgerondeParagrafen: rapporten.filter((rapport) => rapport.status === STAP_STATUS.AFGEROND).length,
+    afgerondeParagrafen: verplicht.filter((rapport) => rapport.status === STAP_STATUS.AFGEROND).length,
     laatsteActiviteitMs: rapporten.reduce((hoogste, rapport) => Math.max(hoogste, rapport.laatsteActiviteitMs), 0)
   };
 };
@@ -528,29 +623,79 @@ const mediaan = (waarden = []) => {
   return Math.round((gesorteerd[midden - 1] + gesorteerd[midden]) / 2);
 };
 
+/** Achter de detailregel als de reden helemaal uit de vrijwillige plusstof komt. */
+export const PLUS_REDEN_SUFFIX = ' - in de vrijwillige plusstof';
+
+/**
+ * De eerste stap met precies deze status, verplichte stof eerst.
+ *
+ * `rij.eersteProbleem` pakt de eerste stap die vastgelopen OF op nakijken staat.
+ * Voor de regel onder "Vastgelopen" is dat te grof: die zou dan naar een stap
+ * kunnen wijzen die alleen op een oordeel wacht en nergens vastloopt. Elke reden
+ * zoekt daarom zijn eigen stap, en onthoudt of die in de plusstof stond.
+ */
+const zoekEersteStapMetStatus = (rij = {}, status = '') => {
+  const rapporten = [...(rij.verplichteRapporten || []), ...(rij.plusRapporten || [])];
+
+  for (const rapport of rapporten) {
+    const stap = (rapport.stappen || []).find((kandidaat) => kandidaat.status === status);
+    if (stap) {
+      return {
+        ...stap,
+        paragraafId: rapport.paragraafId,
+        paragraafLabel: rapport.paragraafLabel,
+        optioneel: rapport.optioneel === true
+      };
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Aandacht heeft twee soorten redenen, en de plusstof hoort maar bij één ervan.
+ *
+ * "Vastgelopen" en "nakijken" gaan over iets wat de leerling GEDAAN heeft: dat
+ * telt ook als het in een vrijwillige plusparagraaf gebeurde, want een
+ * ingeleverd antwoord mag nooit blijven liggen. "Niet begonnen", "al even stil"
+ * en "loopt achter" gaan over iets wat NIET gedaan is; daar mag de plusstof
+ * nooit in meetellen, anders straft het overslaan van vrijwillig werk.
+ *
+ * Zit een reden HELEMAAL in de plusstof, dan blijft hij staan maar krijgt hij
+ * `optioneel: true` mee. De docent ziet dan nog steeds dat er iets ligt, maar
+ * niet in de kleur van een achterstand: er is niets ingehaald te worden.
+ */
 const buildAandacht = ({ rij, klasMediaan, now }) => {
   const redenen = [];
-  const vastgelopen = rij.telling[STAP_STATUS.VASTGELOPEN];
-  const nakijken = rij.telling[STAP_STATUS.NAKIJKEN];
+  const plusTelling = rij.plus?.telling || {};
+  const vastgelopen = rij.telling[STAP_STATUS.VASTGELOPEN] + (plusTelling[STAP_STATUS.VASTGELOPEN] || 0);
+  const nakijken = rij.telling[STAP_STATUS.NAKIJKEN] + (plusTelling[STAP_STATUS.NAKIJKEN] || 0);
 
   if (vastgelopen > 0) {
-    const stap = rij.eersteProbleem;
+    const stap = zoekEersteStapMetStatus(rij, STAP_STATUS.VASTGELOPEN) || rij.eersteProbleem;
+    // Alleen plusstof als er geen enkele verplichte stap vastloopt.
+    const alleenPlus = rij.telling[STAP_STATUS.VASTGELOPEN] === 0;
     redenen.push({
       type: STAP_STATUS.VASTGELOPEN,
       prioriteit: 1,
       label: 'Vastgelopen',
-      detail: stap
+      optioneel: alleenPlus,
+      detail: (stap
         ? `${stap.paragraafLabel} - stap ${stap.nummer}: ${stap.titel}`
-        : `${vastgelopen} stap${vastgelopen === 1 ? '' : 'pen'} loopt vast`
+        : `${vastgelopen} stap${vastgelopen === 1 ? '' : 'pen'} loopt vast`)
+        + (alleenPlus ? PLUS_REDEN_SUFFIX : '')
     });
   }
 
   if (nakijken > 0) {
+    const alleenPlus = rij.telling[STAP_STATUS.NAKIJKEN] === 0;
     redenen.push({
       type: STAP_STATUS.NAKIJKEN,
       prioriteit: 2,
       label: 'Nakijken',
+      optioneel: alleenPlus,
       detail: `${nakijken} antwoord${nakijken === 1 ? '' : 'en'} wacht op jou`
+        + (alleenPlus ? PLUS_REDEN_SUFFIX : '')
     });
   }
 
@@ -563,6 +708,8 @@ const buildAandacht = ({ rij, klasMediaan, now }) => {
       type: 'nietGestart',
       prioriteit: 3,
       label: 'Nog niet begonnen',
+      // Deze drie redenen kijken per definitie alleen naar verplichte stof.
+      optioneel: false,
       detail: `${rij.totaalStappen} stappen staan klaar`
     });
   } else if (
@@ -574,6 +721,7 @@ const buildAandacht = ({ rij, klasMediaan, now }) => {
       type: 'stil',
       prioriteit: 4,
       label: 'Al even stil',
+      optioneel: false,
       detail: `${dagenStil} dagen geen activiteit`
     });
   }
@@ -588,6 +736,7 @@ const buildAandacht = ({ rij, klasMediaan, now }) => {
       type: 'achterstand',
       prioriteit: 5,
       label: 'Loopt achter',
+      optioneel: false,
       detail: `${rij.percentage}% tegenover ${klasMediaan}% in de klas`
     });
   }
@@ -635,19 +784,32 @@ export const buildKlasVoortgangRijen = ({
       })
     );
 
-    const telling = rapporten.reduce((totaal, rapport) => telOp(totaal, rapport.telling), legeTelling());
-    const totaalStappen = rapporten.reduce((som, rapport) => som + rapport.totaalStappen, 0);
+    // Verplichte stof bepaalt de stand; de vrijwillige plusstof wordt ernaast
+    // geteld. Zie splitOptioneel: wie een plusparagraaf overslaat hoort
+    // gewoon op 100% te kunnen staan.
+    const { verplicht: verplichteRapporten, plus: plusRapporten } = splitOptioneel(rapporten);
+    const telling = verplichteRapporten.reduce((totaal, rapport) => telOp(totaal, rapport.telling), legeTelling());
+    const totaalStappen = verplichteRapporten.reduce((som, rapport) => som + rapport.totaalStappen, 0);
     const afgerondeStappen = telling[STAP_STATUS.AFGEROND];
     const gestarteStappen = totaalStappen - telling[STAP_STATUS.NIET_GESTART];
     const status = bepaalSamengesteldeStatus(telling, totaalStappen);
+    const plus = buildPlusSamenvatting(plusRapporten);
 
-    const eersteProbleem = rapporten
+    // Verplichte stof eerst: een vastgelopen stap in de hoofdroute is
+    // dringender dan eentje in de plusstof, maar allebei mogen ze niet blijven
+    // liggen.
+    const eersteProbleem = [...verplichteRapporten, ...plusRapporten]
       .map((rapport) => (rapport.eersteProbleem
-        ? { ...rapport.eersteProbleem, paragraafId: rapport.paragraafId, paragraafLabel: rapport.paragraafLabel }
+        ? {
+          ...rapport.eersteProbleem,
+          paragraafId: rapport.paragraafId,
+          paragraafLabel: rapport.paragraafLabel,
+          optioneel: rapport.optioneel === true
+        }
         : null))
       .find(Boolean) || null;
 
-    const huidigRapport = rapporten.find((rapport) => rapport.status !== STAP_STATUS.AFGEROND) || null;
+    const huidigRapport = verplichteRapporten.find((rapport) => rapport.status !== STAP_STATUS.AFGEROND) || null;
 
     return {
       studentId,
@@ -657,6 +819,9 @@ export const buildKlasVoortgangRijen = ({
       scopeSource: scope.scopeSource,
       scopeLabel: scope.scopeLabel || '',
       rapporten,
+      verplichteRapporten,
+      plusRapporten,
+      plus,
       rapportByParagraafId: Object.fromEntries(rapporten.map((rapport) => [rapport.paragraafId, rapport])),
       telling,
       totaalStappen,
@@ -736,25 +901,34 @@ export const buildKlasStatusTelling = (rijen = []) => {
 
 /** Kolomkoppen voor het klasoverzicht: kort in de kop, volledig in de tooltip. */
 export const buildParagraafKolommen = (paragrafen = []) =>
-  paragrafen.map((paragraaf) => ({
-    id: paragraaf.id,
-    kort: paragraaf.code || paragraaf.number || paragraaf.title || 'Paragraaf',
-    titel: getParagraafLabel(paragraaf),
-    hoofdstukId: paragraaf.hoofdstukId || ''
-  }));
+  paragrafen.map((paragraaf) => {
+    const optioneel = isOptionalParagraph(paragraaf);
+
+    return {
+      id: paragraaf.id,
+      kort: paragraaf.code || paragraaf.number || paragraaf.title || 'Paragraaf',
+      titel: optioneel
+        ? `${getParagraafLabel(paragraaf)} - ${PLUS_PRESENTATIE.uitleg}`
+        : getParagraafLabel(paragraaf),
+      hoofdstukId: paragraaf.hoofdstukId || '',
+      optioneel
+    };
+  });
 
 /**
  * Eén vakje in het klasoverzicht. Een paragraaf die niet aan deze leerling is
  * toegewezen krijgt bewust een eigen leeg vakje: "niets gedaan" en "hoeft niet"
  * mogen er niet hetzelfde uitzien.
  */
-export const buildMatrixCel = ({ rij = {}, paragraafId = '' } = {}) => {
+export const buildMatrixCel = ({ rij = {}, paragraafId = '', optioneel = false } = {}) => {
   const rapport = rij.rapportByParagraafId?.[paragraafId] || null;
+  const isPlus = rapport ? rapport.optioneel === true : optioneel === true;
 
   if (!rapport) {
     return {
       paragraafId,
       toegewezen: false,
+      optioneel: isPlus,
       status: STAP_STATUS.NIET_GESTART,
       kort: '',
       label: 'Niet toegewezen',
@@ -763,15 +937,25 @@ export const buildMatrixCel = ({ rij = {}, paragraafId = '' } = {}) => {
     };
   }
 
+  // Een plusparagraaf waar nog niets aan gedaan is, is geen achterstand maar
+  // een openstaande uitnodiging. Hij krijgt daarom een eigen label in plaats
+  // van "Niet gestart", zodat het vakje niet als gemis leest.
+  const nietBegonnenAanPlus = isPlus && rapport.status === STAP_STATUS.NIET_GESTART;
+
   return {
     paragraafId,
     toegewezen: true,
+    optioneel: isPlus,
     status: rapport.status,
-    kort: `${rapport.afgerondeStappen}/${rapport.totaalStappen}`,
-    label: rapport.statusLabel,
-    detail: rapport.huidigeStap
-      ? `Stap ${rapport.huidigeStap.nummer}: ${rapport.huidigeStap.titel}`
-      : 'Alle stappen af',
+    kort: nietBegonnenAanPlus
+      ? PLUS_PRESENTATIE.kort
+      : `${rapport.afgerondeStappen}/${rapport.totaalStappen}`,
+    label: nietBegonnenAanPlus ? PLUS_PRESENTATIE.label : rapport.statusLabel,
+    detail: nietBegonnenAanPlus
+      ? PLUS_PRESENTATIE.uitleg
+      : (rapport.huidigeStap
+        ? `Stap ${rapport.huidigeStap.nummer}: ${rapport.huidigeStap.titel}`
+        : 'Alle stappen af'),
     percentage: rapport.percentage
   };
 };
@@ -786,15 +970,20 @@ export const buildMatrixRijen = ({ rijen = [], kolommen = [] } = {}) =>
     const zichtbareRapporten = kolommen
       .map((kolom) => rij.rapportByParagraafId?.[kolom.id])
       .filter(Boolean);
-    const telling = zichtbareRapporten.reduce((totaal, rapport) => telOp(totaal, rapport.telling), legeTelling());
-    const totaalStappen = zichtbareRapporten.reduce((som, rapport) => som + rapport.totaalStappen, 0);
+    // Ook hier: de balk links gaat over de verplichte kolommen. Een
+    // plusparagraaf in beeld mag het rijtotaal niet omlaag trekken.
+    const { verplicht: zichtbaarVerplicht, plus: zichtbaarPlus } = splitOptioneel(zichtbareRapporten);
+    const telling = zichtbaarVerplicht.reduce((totaal, rapport) => telOp(totaal, rapport.telling), legeTelling());
+    const totaalStappen = zichtbaarVerplicht.reduce((som, rapport) => som + rapport.totaalStappen, 0);
     const afgerondeStappen = telling[STAP_STATUS.AFGEROND];
     const status = bepaalSamengesteldeStatus(telling, totaalStappen);
-    const huidigRapport = zichtbareRapporten.find((rapport) => rapport.status !== STAP_STATUS.AFGEROND) || null;
+    const huidigRapport = zichtbaarVerplicht.find((rapport) => rapport.status !== STAP_STATUS.AFGEROND) || null;
 
     return {
       ...rij,
-      cellen: kolommen.map((kolom) => buildMatrixCel({ rij, paragraafId: kolom.id })),
+      cellen: kolommen.map((kolom) => buildMatrixCel({ rij, paragraafId: kolom.id, optioneel: kolom.optioneel })),
+      plus: buildPlusSamenvatting(zichtbaarPlus),
+      plusVolledigeRoute: rij.plus,
       telling,
       totaalStappen,
       afgerondeStappen,
@@ -840,6 +1029,12 @@ export const buildStapMatrixRijen = ({ rijen = [], paragraafId = '', kolommen = 
       statusLabel: rapport ? rapport.statusLabel : 'Niet toegewezen',
       afgerondeStappen: rapport ? rapport.afgerondeStappen : 0,
       totaalStappen: rapport ? rapport.totaalStappen : 0,
+      // Ingezoomd op één paragraaf gaat de rij OVER die paragraaf. Is dat de
+      // plusparagraaf, dan zegt de balk iets over vrijwillig werk; dat moet de
+      // kop erbij vertellen. Een losse plustelling ernaast zou hetzelfde getal
+      // twee keer tonen, dus die blijft hier leeg.
+      optioneel: rapport ? rapport.optioneel === true : false,
+      plus: buildPlusSamenvatting([]),
       huidigeParagraaf: rapport
         ? { paragraafId, paragraafLabel: rapport.paragraafLabel, stap: rapport.huidigeStap }
         : null,
@@ -868,6 +1063,85 @@ export const buildStapMatrixRijen = ({ rijen = [], paragraafId = '', kolommen = 
       })
     };
   });
+
+/**
+ * Wie deed er vrijwillig meer dan het moest?
+ *
+ * Dit is bewust een LOSSE lijst en geen extra kolom in de voortgangsmatrix.
+ * Alles in die matrix leest als "hoever ben je", en daar hoort vrijwillig werk
+ * niet in thuis: een leeg vakje zou dan een gemis lijken. Hier staat alleen
+ * wat er extra gedaan is, met de naam van de plusparagraaf erbij, zodat een
+ * docent ziet wie er meer aankan.
+ *
+ * @param {Array} rijen - Klasvoortgangrijen uit `buildKlasVoortgangRijen`
+ * @param {Object} [opties]
+ * @param {string} [opties.hoofdstukId] - Beperk tot één hoofdstuk.
+ */
+export const buildPlusOverzicht = (rijen = [], { hoofdstukId = '' } = {}) => {
+  const hoortErbij = (paragraaf) => !hoofdstukId || paragraaf.hoofdstukId === hoofdstukId;
+
+  const leerlingen = rijen.map((rij) => {
+    const paragrafen = (rij.plus?.paragrafen || []).filter(hoortErbij);
+    const afgerond = paragrafen.filter((paragraaf) => paragraaf.afgerond);
+    const bezig = paragrafen.filter((paragraaf) => paragraaf.gestart && !paragraaf.afgerond);
+
+    return {
+      studentId: rij.studentId,
+      student: rij.student,
+      studentNaam: rij.studentNaam,
+      klasId: rij.klasId,
+      paragrafen,
+      afgerondeParagrafen: afgerond,
+      bezigeParagrafen: bezig,
+      aantalAf: afgerond.length,
+      aantalBezig: bezig.length,
+      totaalParagrafen: paragrafen.length,
+      // De verplichte stand staat erbij zodat een docent ziet of dit een
+      // leerling is die extra werk deed bovenop een afgeronde hoofdroute.
+      verplichtPercentage: rij.percentage
+    };
+  });
+
+  const paragraafTelling = new Map();
+  leerlingen.forEach((leerling) => {
+    leerling.paragrafen.forEach((paragraaf) => {
+      const bestaand = paragraafTelling.get(paragraaf.paragraafId) || {
+        paragraafId: paragraaf.paragraafId,
+        paragraafLabel: paragraaf.paragraafLabel,
+        paragraafCode: paragraaf.paragraafCode,
+        paragraafTitel: paragraaf.paragraafTitel,
+        hoofdstukId: paragraaf.hoofdstukId,
+        aantalAf: 0,
+        aantalBezig: 0
+      };
+      if (paragraaf.afgerond) bestaand.aantalAf += 1;
+      else if (paragraaf.gestart) bestaand.aantalBezig += 1;
+      paragraafTelling.set(paragraaf.paragraafId, bestaand);
+    });
+  });
+
+  const metPlus = leerlingen
+    .filter((leerling) => leerling.aantalAf > 0 || leerling.aantalBezig > 0)
+    .sort((a, b) =>
+      b.aantalAf - a.aantalAf ||
+      b.aantalBezig - a.aantalBezig ||
+      a.studentNaam.localeCompare(b.studentNaam, 'nl-NL', { numeric: true }));
+
+  const zonderPlus = leerlingen
+    .filter((leerling) => leerling.aantalAf === 0 && leerling.aantalBezig === 0)
+    .sort((a, b) => a.studentNaam.localeCompare(b.studentNaam, 'nl-NL', { numeric: true }));
+
+  return {
+    aangeboden: paragraafTelling.size > 0,
+    paragrafen: [...paragraafTelling.values()],
+    leerlingen,
+    metPlus,
+    zonderPlus,
+    aantalLeerlingen: leerlingen.length,
+    aantalMetPlus: metPlus.length,
+    aantalParagrafen: paragraafTelling.size
+  };
+};
 
 /** Groepeert paragrafen per hoofdstuk, in de volgorde waarin ze binnenkomen. */
 export const groepeerParagrafenPerHoofdstuk = (paragrafen = []) => {

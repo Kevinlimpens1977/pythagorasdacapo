@@ -20,6 +20,7 @@ import {
   PlayCircle,
   Plus,
   RotateCcw,
+  Star,
   Table2,
   Target,
   Trash2,
@@ -44,6 +45,7 @@ import {
 } from '../lib/victoryEffects';
 import VictoryEffectOverlay from '../components/tokens/VictoryEffectOverlay';
 import { CONTENT_BLOCK_LABELS, normalizeContentBlocks } from '../lib/contentBlockUtils';
+import { PLUS_LABEL, PLUS_UITLEG_LEERLING, isOptionalParagraph } from '../lib/paragraphMetadata';
 import {
   isClosedAssessmentItem,
   normalizeAssessmentItems
@@ -848,9 +850,15 @@ export default function StudentLessonPage() {
   const readConfirmBarOpen =
     Boolean(confirmedReadBlockId) && confirmedReadBlockId === currentBlock?.id;
 
+  // Een vrijwillige plusparagraaf blijft ook binnen de les herkenbaar. De
+  // leerling is er gewoon in - starten mag altijd - maar hij moet nergens de
+  // indruk krijgen dat hij hier iets inhaalt.
+  const paragraafIsPlus = isOptionalParagraph(paragraaf || {});
+
   const railProps = {
     paragraafTitle: paragraaf?.title || 'Les',
     hoofdstukTitle: hoofdstukLabel,
+    optioneel: paragraafIsPlus,
     steps: studySteps,
     summary: studySummary,
     iconForType: (type) => blockIcons[type] || BookOpen,
@@ -877,6 +885,7 @@ export default function StudentLessonPage() {
         intro={learningGoalsIntro}
         paragraafTitle={paragraaf?.title || ''}
         hoofdstukTitle={hoofdstukLabel}
+        optioneel={paragraafIsPlus}
         onContinue={closeLearningGoals}
       />
 
@@ -912,6 +921,16 @@ export default function StudentLessonPage() {
                   : `Stap ${currentIndex + 1} van ${blocks.length} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
               </p>
             </div>
+
+            {paragraafIsPlus && (
+              <span
+                title={PLUS_UITLEG_LEERLING}
+                className="hidden shrink-0 items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)] sm:inline-flex"
+              >
+                <Star size={11} />
+                {PLUS_LABEL}
+              </span>
+            )}
 
             {tokenAwardNotice ? (
               <span className="hidden items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800 sm:inline-flex">

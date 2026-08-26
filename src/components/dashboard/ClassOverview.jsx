@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { Users, AlertTriangle, Search, CheckCircle, ClipboardCheck, Clock, ArrowUpDown, CheckSquare, Square } from 'lucide-react';
+import { Users, AlertTriangle, Search, CheckCircle, ClipboardCheck, Clock, ArrowUpDown, CheckSquare, Square, Star } from 'lucide-react';
 import { db } from '../../services/firebase';
 import { collection, collectionGroup, query, where, onSnapshot } from 'firebase/firestore';
 
@@ -28,17 +28,21 @@ import {
   buildStudentProgressMetrics,
   getVisibleStudentProgressParagraphs
 } from '../../lib/progressDashboardMetrics';
+import { isOptionalParagraph } from '../../lib/paragraphMetadata';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
 import {
+  PLUS_PRESENTATIE,
   STAP_STATUS,
   buildAandachtsLijst,
   buildKlasStatusTelling,
   buildKlasVoortgangRijen,
   buildMatrixRijen,
   buildParagraafKolommen,
+  buildPlusOverzicht,
   buildStapKolommen,
   buildStapMatrixRijen,
+  getPlusSamenvattingLabel,
   getStatusPresentatie,
   groepeerParagrafenPerHoofdstuk,
   resolveStudentAssignments
@@ -50,8 +54,9 @@ import {
   telNakijkPerLeerling
 } from '../../lib/nakijkOpdrachten';
 import { beoordeelOpenAntwoord } from '../../services/voortgangService';
-import KlasVoortgangMatrix, { StatusLegenda, StatusChip } from './KlasVoortgangMatrix';
+import KlasVoortgangMatrix, { PlusChip, StatusLegenda, StatusChip } from './KlasVoortgangMatrix';
 import AandachtsLijst from './AandachtsLijst';
+import PlusOverzicht from './PlusOverzicht';
 import NakijkPaneel from './NakijkPaneel';
 import LeerlingStappen, { StappenSpoor } from './LeerlingStappen';
 import StudentAvatar from '../common/StudentAvatar';
@@ -542,6 +547,13 @@ export default function ClassOverview() {
     () => buildMatrixRijen({ rijen: voortgangRijen, kolommen: matrixKolommen }),
     [voortgangRijen, matrixKolommen]
   );
+  // Vrijwillig werk krijgt een eigen lijst naast de matrix. Zie PlusOverzicht:
+  // in de matrix zou het als achterstand lezen, hier als winst.
+  const plusOverzicht = useMemo(
+    () => buildPlusOverzicht(voortgangRijen, { hoofdstukId: actiefHoofdstuk?.hoofdstukId || '' }),
+    [voortgangRijen, actiefHoofdstuk]
+  );
+  const heeftPlusKolommen = matrixKolommen.some((kolom) => kolom.optioneel);
   // De chips boven de matrix tellen hetzelfde hoofdstuk als de kolommen eronder.
   const hoofdstukTelling = useMemo(() => buildKlasStatusTelling(matrixRijen), [matrixRijen]);
   const zonderKlasselectie = voortgangRijen.some((rij) => rij.scopeSource === 'volledigeLesstof');
@@ -552,6 +564,9 @@ export default function ClassOverview() {
     () => (stapParagraaf ? buildStapKolommen(contentBlocksByParagraaf[stapParagraaf.id] || []) : []),
     [stapParagraaf, contentBlocksByParagraaf]
   );
+  // Een plusparagraaf onder de loep: de kop vertelt erbij dat deze stof
+  // vrijwillig is, anders leest een rij lege vakjes als klassikale achterstand.
+  const stapParagraafIsPlus = Boolean(stapParagraaf && isOptionalParagraph(stapParagraaf));
   const stapRijen = useMemo(
     () => (stapParagraaf
       ? buildStapMatrixRijen({ rijen: voortgangRijen, paragraafId: stapParagraaf.id, kolommen: stapKolommen })
@@ -793,6 +808,13 @@ export default function ClassOverview() {
                           {selectedStudentRij.huidigeParagraaf.stap.nummer}
                         </span>
                       )}
+                      {/* De stappenteller links gaat over de verplichte stof;
+                          vrijwillig werk krijgt zijn eigen chip ernaast. */}
+                      {selectedStudentRij.plus?.totaalParagrafen > 0 && (
+                        <PlusChip titel={PLUS_PRESENTATIE.uitleg}>
+                          {getPlusSamenvattingLabel(selectedStudentRij.plus)}
+                        </PlusChip>
+                      )}
                     </div>
                   )}
                 </div>
@@ -849,6 +871,32 @@ export default function ClassOverview() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Vrijwillig werk apart, en bewust in de accentkleur en niet in
+                rood of oranje: hier valt niets te repareren. */}
+            {selectedStudentRij?.plus?.totaalParagrafen > 0 && (
+              <div className="mb-6 rounded-[var(--helix-radius-lg)] border border-[rgba(122,60,255,0.3)] border-l-4 border-l-[var(--helix-purple)] bg-[var(--helix-soft-lavender)]/40 p-4">
+                <p className="flex items-center gap-2 font-black text-[var(--helix-purple)]">
+                  <Star size={18} />
+                  Vrijwillig extra: {getPlusSamenvattingLabel(selectedStudentRij.plus)}
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {selectedStudentRij.plus.paragrafen.map((paragraaf) => (
+                    <li key={paragraaf.paragraafId} className="text-sm font-semibold text-[var(--helix-navy)]">
+                      <span className="font-black">{paragraaf.paragraafLabel}:</span>{' '}
+                      {paragraaf.afgerond
+                        ? 'af'
+                        : paragraaf.gestart
+                          ? `${paragraaf.afgerondeStappen} van ${paragraaf.totaalStappen} stappen`
+                          : 'niet gedaan'}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
+                  {PLUS_PRESENTATIE.uitleg} Wat hier niet af is, is geen achterstand.
+                </p>
               </div>
             )}
 
@@ -910,16 +958,32 @@ export default function ClassOverview() {
                         const stapRapport = selectedStudentRij?.rapportByParagraafId?.[paragraaf.id] || null;
                         const stapStatus = stapRapport?.status || STAP_STATUS.NIET_GESTART;
                         const stapPresentatie = getStatusPresentatie(stapStatus);
+                        const isPlus = stapRapport
+                          ? stapRapport.optioneel === true
+                          : isOptionalParagraph(paragraaf);
+                        // Niets gedaan aan de plusstof is geen status om te
+                        // melden; dan blijft alleen het plusmerkteken staan.
+                        const toonStatusChip = !isPlus || stapStatus !== STAP_STATUS.NIET_GESTART;
 
                         return (
-                          <div key={paragraaf.id} className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
+                          <div
+                            key={paragraaf.id}
+                            className={`rounded-2xl border p-4 ${
+                              isPlus
+                                ? 'border-[rgba(122,60,255,0.3)] bg-[var(--helix-soft-lavender)]/35'
+                                : 'border-[var(--helix-border)] bg-[var(--helix-surface-soft)]'
+                            }`}
+                          >
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <h5 className="font-bold text-[var(--helix-navy)]">
                                     {(paragraaf.code || paragraaf.number) && `${paragraaf.code || paragraaf.number}. `}{paragraaf.title}
                                   </h5>
-                                  <StatusChip status={stapStatus}>{stapPresentatie.label}</StatusChip>
+                                  {isPlus && <PlusChip />}
+                                  {toonStatusChip && (
+                                    <StatusChip status={stapStatus}>{stapPresentatie.label}</StatusChip>
+                                  )}
                                   {paragraphProgress.signalCount > 0 && (
                                     <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-black text-orange-700">
                                       {paragraphProgress.signalCount} signalen
@@ -931,6 +995,7 @@ export default function ClassOverview() {
                                     {stapRapport
                                       ? `${stapRapport.afgerondeStappen} / ${stapRapport.totaalStappen} stappen afgerond`
                                       : `${paraSummary.completedItems} / ${paraSummary.assignedItems} onderdelen afgerond`}
+                                    {isPlus && ' - telt niet mee voor het hoofdstuk'}
                                   </span>
                                   {stapRapport?.huidigeStap && (
                                     <span>
@@ -1273,16 +1338,27 @@ export default function ClassOverview() {
               leegTekst="Nog geen leerlingen in deze klas."
             />
 
-            <StatusLegenda className="mt-4" />
+            <StatusLegenda className="mt-4" toonPlus={heeftPlusKolommen} />
           </section>
 
-          <div className="order-1 xl:order-2">
+          <div className="order-1 space-y-6 xl:order-2">
             <AandachtsLijst
               items={aandachtsLijst}
               totaalLeerlingen={klasStatusTelling.leerlingen}
               nakijkTelling={nakijkPerLeerling}
               onSelectLeerling={(item) => {
                 setSelectedStudent(item.student);
+                setActiveLens('student');
+                setExpandedEvidence({});
+              }}
+            />
+
+            <PlusOverzicht
+              overzicht={plusOverzicht}
+              hoofdstukTitel={actiefHoofdstuk?.hoofdstukTitel || ''}
+              onSelectLeerling={(leerling) => {
+                setSelectedStudent(leerling.student);
+                setSelectedChapter(actiefHoofdstuk?.hoofdstukId || null);
                 setActiveLens('student');
                 setExpandedEvidence({});
               }}
@@ -1304,6 +1380,12 @@ export default function ClassOverview() {
                   ? `${stapKolommen.length} stappen in ${stapParagraaf.code || stapParagraaf.number || ''} ${stapParagraaf.title}`
                   : 'Kies een paragraaf om de stappen naast elkaar te zetten.'}
               </p>
+              {stapParagraafIsPlus && (
+                <p className="mt-2 inline-flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-[rgba(122,60,255,0.3)] bg-[var(--helix-soft-lavender)]/60 px-3 py-1.5 text-xs font-bold text-[var(--helix-navy)]">
+                  <Star size={13} className="text-[var(--helix-purple)]" />
+                  {PLUS_PRESENTATIE.uitleg} Een leeg vakje is hier dus geen achterstand.
+                </p>
+              )}
             </div>
             <div className="w-full lg:w-80">
               <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">
@@ -1318,6 +1400,7 @@ export default function ClassOverview() {
                 {paragraphen.map((paragraaf) => (
                   <option key={paragraaf.id} value={paragraaf.id}>
                     {paragraaf.code || paragraaf.number ? `${paragraaf.code || paragraaf.number}. ` : ''}{paragraaf.title}
+                    {isOptionalParagraph(paragraaf) ? ` (${PLUS_PRESENTATIE.label})` : ''}
                   </option>
                 ))}
               </select>
@@ -1339,7 +1422,7 @@ export default function ClassOverview() {
                 }}
                 leegTekst="Nog geen leerlingen in deze klas."
               />
-              <StatusLegenda className="mt-4" />
+              <StatusLegenda className="mt-4" toonPlus={stapParagraafIsPlus} />
             </>
           ) : (
             <p className="rounded-[var(--helix-radius-lg)] border border-dashed border-[var(--helix-border)] bg-white/70 p-6 text-sm font-semibold text-[var(--helix-muted)]">

@@ -521,5 +521,10 @@ export const getVisibleStudentProgressParagraphs = ({
 } = {}) =>
   paragraphen.filter((paragraaf) => {
     const summary = summariesByParagraafId[paragraaf.id] || {};
-    return Number(summary.assignedItems || 0) > 0;
+    // `totaal` telt verplicht en vrijwillig samen: een plusparagraaf mag nooit
+    // uit de lijst vallen omdat hij niet meetelt voor het percentage.
+    const toegewezen = summary.totaal
+      ? Number(summary.totaal.assignedItems || 0)
+      : Number(summary.assignedItems || 0);
+    return toegewezen > 0;
   });

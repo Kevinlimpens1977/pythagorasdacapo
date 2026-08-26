@@ -1,3 +1,5 @@
+import { isOptionalParagraph } from './paragraphMetadata.js';
+
 const getProgressPercent = (completed, total) => {
   if (!total) return 0;
   return Math.round((completed / total) * 100);
@@ -22,9 +24,14 @@ export const buildStudentProgressSummary = (
     const questions = paragraaf.vragen || [];
     const paragraafTotal = questions.length;
     const paragraafCompleted = getCompletedQuestionCount(voortgangMap[paragraaf.id] || []);
+    // Een vrijwillige plusparagraaf staat wel in de lijst, maar telt niet mee in
+    // het percentage dat een leerling af moet hebben.
+    const optioneel = isOptionalParagraph(paragraaf);
 
-    totalQuestions += paragraafTotal;
-    completedQuestions += paragraafCompleted;
+    if (!optioneel) {
+      totalQuestions += paragraafTotal;
+      completedQuestions += paragraafCompleted;
+    }
 
     const hoofdstuk = hoofdstukkenMap[paragraaf.hoofdstukId] || {
       id: paragraaf.hoofdstukId || 'zonder-hoofdstuk',
@@ -46,12 +53,16 @@ export const buildStudentProgressSummary = (
     }
 
     const chapter = chapterMap.get(hoofdstuk.id);
-    chapter.totalQuestions += paragraafTotal;
-    chapter.completedQuestions += paragraafCompleted;
+    if (!optioneel) {
+      chapter.totalQuestions += paragraafTotal;
+      chapter.completedQuestions += paragraafCompleted;
+    }
     chapter.paragrafen.push({
       id: paragraaf.id,
       number: paragraaf.number || paragraaf.code,
       title: paragraaf.title || 'Zonder titel',
+      optioneel,
+      verplicht: !optioneel,
       totalQuestions: paragraafTotal,
       completedQuestions: paragraafCompleted,
       progressPercent: getProgressPercent(paragraafCompleted, paragraafTotal)

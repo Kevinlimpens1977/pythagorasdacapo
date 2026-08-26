@@ -1,5 +1,6 @@
-import { ArrowRight, CircleDashed, ClipboardCheck, Clock, TriangleAlert, TrendingDown } from 'lucide-react';
+import { ArrowRight, CircleDashed, ClipboardCheck, Clock, Star, TriangleAlert, TrendingDown } from 'lucide-react';
 import { STAP_STATUS, getStatusPresentatie } from '../../lib/klasVoortgangOverzicht';
+import { PLUS_KORT, PLUS_UITLEG_DOCENT } from '../../lib/paragraphMetadata';
 import StudentAvatar from '../common/StudentAvatar';
 
 const REDEN_ICOON = {
@@ -64,8 +65,14 @@ export default function AandachtsLijst({
       <ul className="space-y-2">
         {zichtbaar.map((item) => {
           const hoofdreden = item.hoofdreden || {};
-          const Icoon = REDEN_ICOON[hoofdreden.type] || TriangleAlert;
-          const randClass = REDEN_RAND[hoofdreden.type] || 'border-l-[var(--helix-danger)]';
+          // Ligt het volledig in de vrijwillige plusstof, dan blijft de regel
+          // staan - een ingeleverd antwoord mag nooit blijven liggen - maar niet
+          // in de kleur van een achterstand. Er valt hier niets in te halen.
+          const isPlusReden = hoofdreden.optioneel === true;
+          const Icoon = isPlusReden ? Star : (REDEN_ICOON[hoofdreden.type] || TriangleAlert);
+          const randClass = isPlusReden
+            ? 'border-l-[var(--helix-purple)]'
+            : (REDEN_RAND[hoofdreden.type] || 'border-l-[var(--helix-danger)]');
           const presentatie = getStatusPresentatie(item.status);
           const openNakijk = nakijkTelling[item.studentId] || 0;
 
@@ -86,10 +93,23 @@ export default function AandachtsLijst({
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="font-black text-[var(--helix-navy)]">{item.studentNaam}</span>
-                    <span className="inline-flex items-center gap-1 text-xs font-black text-[var(--helix-muted)]">
+                    <span
+                      className={`inline-flex items-center gap-1 text-xs font-black ${
+                        isPlusReden ? 'text-[var(--helix-purple)]' : 'text-[var(--helix-muted)]'
+                      }`}
+                    >
                       <Icoon size={14} />
                       {hoofdreden.label || 'Aandacht'}
                     </span>
+                    {isPlusReden && (
+                      <span
+                        title={PLUS_UITLEG_DOCENT}
+                        className="inline-flex items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
+                      >
+                        <Star size={11} />
+                        {PLUS_KORT}
+                      </span>
+                    )}
                     {openNakijk > 0 && (
                       <span className="inline-flex items-center gap-1 rounded-full border border-[var(--helix-warning)] bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800">
                         <ClipboardCheck size={12} />

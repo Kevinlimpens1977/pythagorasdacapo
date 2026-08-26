@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   ACHTERSTAND_MARGE,
+  PLUS_REDEN_SUFFIX,
   STAP_STATUS,
   STIL_NA_DAGEN,
   VASTGELOPEN_POGINGEN,
@@ -14,6 +15,7 @@ import {
   buildMatrixRijen,
   buildParagraafKolommen,
   buildParagraafRapport,
+  buildPlusOverzicht,
   buildRecordIndex,
   buildStapKolommen,
   buildStapMatrixRijen,
@@ -617,4 +619,293 @@ test('klasvoortgangrijen nemen de itemantwoorden mee in de telling nakijken', ()
   const amir = rijen.find((rij) => rij.studentId === 'leerling-1');
   assert.equal(amir.telling[STAP_STATUS.NAKIJKEN], 1);
   assert.equal(amir.status, STAP_STATUS.NAKIJKEN);
+});
+
+
+// --------------------------------------------------------------------------
+// Vrijwillige plusparagrafen
+//
+// De theoretische leerweg heeft per hoofdstuk een plusparagraaf: een aanrader
+// voor wie naar de havo wil, geen voorwaarde om verder te mogen. Hij mag dus
+// nooit in de noemer van de voortgang belanden, en het overslaan ervan mag
+// nergens als achterstand of waarschuwing terugkomen.
+// --------------------------------------------------------------------------
+
+const plusParagraaf = {
+  id: 'paragraaf-dv-tl-1-6',
+  code: '1.6',
+  title: 'Plus: hoe beschermt een wachtwoord jou eigenlijk?',
+  hoofdstukId: 'hoofdstuk-dv-h1',
+  hoofdstukTitle: 'H1: Starten en Account & Veilig',
+  optioneel: true,
+  verplicht: false
+};
+
+/** Twee verplichte paragrafen plus een vrijwillige plusparagraaf ernaast. */
+const bouwRijenMetPlus = (overrides = {}) => {
+  const paragrafen = [
+    paragraaf11,
+    { ...paragraaf11, id: 'paragraaf-dv-1-2', code: '1.2', title: 'Wachtwoorden' },
+    plusParagraaf
+  ];
+  const contentBlocksByParagraaf = {
+    'paragraaf-dv-1-1': negenBlokken(),
+    'paragraaf-dv-1-2': negenBlokken().map((b) => ({ ...b, id: `p2-${b.id}` })),
+    'paragraaf-dv-tl-1-6': negenBlokken().map((b) => ({ ...b, id: `plus-${b.id}` }))
+  };
+  const students = [
+    { id: 'leerling-1', displayName: 'Amir', klasId: 'klas-a' },
+    { id: 'leerling-2', displayName: 'Bo', klasId: 'klas-a' }
+  ];
+  const scopesByStudentId = Object.fromEntries(
+    students.map((student) => [
+      student.id,
+      resolveStudentAssignments({ student, klasData: null, paragrafen, contentBlocksByParagraaf })
+    ])
+  );
+
+  return {
+    paragrafen,
+    contentBlocksByParagraaf,
+    rijen: buildKlasVoortgangRijen({
+      students,
+      scopesByStudentId,
+      contentBlocksByParagraaf,
+      now: NU,
+      ...overrides
+    })
+  };
+};
+
+/** Alle achttien verplichte stappen af, geen enkele plusstap aangeraakt. */
+const alleVerplichteStappenAf = () => [
+  ...negenBlokken().map((b) => record(b.id, { completed: true, isCorrect: true, updatedAt: new Date(NU) })),
+  ...negenBlokken().map((b) => record(`p2-${b.id}`, {
+    paragraafId: 'paragraaf-dv-1-2',
+    completed: true,
+    isCorrect: true,
+    updatedAt: new Date(NU)
+  }))
+];
+
+const alleePlusStappenAf = () => negenBlokken().map((b) => record(`plus-${b.id}`, {
+  paragraafId: 'paragraaf-dv-tl-1-6',
+  completed: true,
+  isCorrect: true,
+  updatedAt: new Date(NU)
+}));
+
+test('alle verplichte stof af zonder een enkele plusparagraaf is gewoon 100 procent', () => {
+  const { rijen } = bouwRijenMetPlus({
+    recordsByStudentId: { 'leerling-1': alleVerplichteStappenAf(), 'leerling-2': alleVerplichteStappenAf() }
+  });
+  const amir = rijen.find((rij) => rij.studentId === 'leerling-1');
+
+  // De negen stappen van de plusparagraaf zitten NIET in de noemer.
+  assert.equal(amir.totaalStappen, 18);
+  assert.equal(amir.afgerondeStappen, 18);
+  assert.equal(amir.percentage, 100);
+  assert.equal(amir.status, STAP_STATUS.AFGEROND);
+
+  // En het overslaan levert geen waarschuwing op, in geen enkele vorm.
+  assert.equal(amir.aandacht.nodig, false);
+  assert.deepEqual(amir.aandacht.redenen, []);
+  assert.deepEqual(buildAandachtsLijst(rijen), []);
+
+  // De plusstof is wel gewoon zichtbaar, als losse telling.
+  assert.equal(amir.plus.totaalParagrafen, 1);
+  assert.equal(amir.plus.afgerondeParagrafen, 0);
+  assert.equal(amir.plus.totaalStappen, 9);
+  assert.equal(amir.plus.afgerondeStappen, 0);
+  assert.equal(amir.rapportByParagraafId['paragraaf-dv-tl-1-6'].optioneel, true);
+});
+
+test('wie de plusparagraaf overslaat loopt niet achter op de klasmediaan', () => {
+  const { rijen } = bouwRijenMetPlus({
+    recordsByStudentId: {
+      // Amir doet alles inclusief de plusstof, Bo alleen wat moet.
+      'leerling-1': [...alleVerplichteStappenAf(), ...alleePlusStappenAf()],
+      'leerling-2': alleVerplichteStappenAf()
+    }
+  });
+
+  const amir = rijen.find((rij) => rij.studentId === 'leerling-1');
+  const bo = rijen.find((rij) => rij.studentId === 'leerling-2');
+
+  // Beiden staan op 100%: extra werk maakt de lat niet hoger voor de rest.
+  assert.equal(amir.percentage, 100);
+  assert.equal(bo.percentage, 100);
+  assert.equal(amir.klasMediaan, 100);
+  assert.ok(amir.klasMediaan - bo.percentage < ACHTERSTAND_MARGE);
+  assert.equal(bo.aandacht.nodig, false);
+
+  // Het verschil zit in de plustelling, en nergens anders.
+  assert.equal(amir.plus.afgerondeParagrafen, 1);
+  assert.equal(bo.plus.afgerondeParagrafen, 0);
+});
+
+test('een antwoord uit de plusstof blijft wel gewoon op de docent wachten', () => {
+  const { rijen } = bouwRijenMetPlus({
+    recordsByStudentId: {
+      'leerling-1': [
+        ...alleVerplichteStappenAf(),
+        record('plus-dv-1-1-question-practice', {
+          paragraafId: 'paragraaf-dv-tl-1-6',
+          attemptStatus: 'pending_teacher_review',
+          updatedAt: new Date(NU)
+        })
+      ]
+    }
+  });
+  const amir = rijen.find((rij) => rij.studentId === 'leerling-1');
+
+  // De stand blijft 100% - er valt niets in te halen - maar het ingeleverde
+  // antwoord mag niet uit beeld verdwijnen omdat het vrijwillig werk was.
+  assert.equal(amir.percentage, 100);
+  assert.equal(amir.aandacht.nodig, true);
+  assert.equal(amir.aandacht.redenen[0].type, STAP_STATUS.NAKIJKEN);
+
+  // Maar de reden zegt er wel bij dat het vrijwillig werk was, zodat de docent
+  // hem niet leest als iets wat deze leerling nog moet inhalen.
+  assert.equal(amir.aandacht.redenen[0].optioneel, true);
+  assert.ok(amir.aandacht.redenen[0].detail.endsWith(PLUS_REDEN_SUFFIX));
+  assert.equal(buildAandachtsLijst(rijen)[0].hoofdreden.optioneel, true);
+});
+
+test('vastlopen in alleen de plusstof is aandacht, maar geen achterstand', () => {
+  const { rijen } = bouwRijenMetPlus({
+    recordsByStudentId: {
+      'leerling-1': [
+        ...alleVerplichteStappenAf(),
+        record('plus-dv-1-1-question-practice', {
+          paragraafId: 'paragraaf-dv-tl-1-6',
+          attempts: VASTGELOPEN_POGINGEN + 1,
+          updatedAt: new Date(NU)
+        })
+      ],
+      'leerling-2': alleVerplichteStappenAf()
+    }
+  });
+  const amir = rijen.find((rij) => rij.studentId === 'leerling-1');
+  const vastgelopen = amir.aandacht.redenen.find((reden) => reden.type === STAP_STATUS.VASTGELOPEN);
+
+  // De verplichte route is af: geen achterstand, geen "nog niet begonnen".
+  assert.equal(amir.percentage, 100);
+  assert.equal(amir.aandacht.redenen.some((reden) => reden.type === 'achterstand'), false);
+  assert.equal(amir.aandacht.redenen.some((reden) => reden.type === 'nietGestart'), false);
+
+  // Het vastlopen zelf blijft wel zichtbaar, gemarkeerd als vrijwillig.
+  assert.ok(vastgelopen);
+  assert.equal(vastgelopen.optioneel, true);
+  assert.ok(vastgelopen.detail.includes(plusParagraaf.code));
+  assert.ok(vastgelopen.detail.endsWith(PLUS_REDEN_SUFFIX));
+});
+
+test('de reden vastgelopen wijst naar de stap die echt vastliep', () => {
+  const { rijen } = bouwRijenMetPlus({
+    recordsByStudentId: {
+      'leerling-1': [
+        // Eerder in de route wacht een antwoord op nakijken; dat is geen vastloper.
+        record('dv-1-1-question-check', {
+          attemptStatus: 'pending_teacher_review',
+          updatedAt: new Date(NU)
+        }),
+        // Verderop loopt de leerling echt vast, in de tweede paragraaf.
+        record('p2-dv-1-1-question-practice', {
+          paragraafId: 'paragraaf-dv-1-2',
+          attempts: VASTGELOPEN_POGINGEN + 1,
+          updatedAt: new Date(NU)
+        })
+      ]
+    }
+  });
+  const amir = rijen.find((rij) => rij.studentId === 'leerling-1');
+  const vastgelopen = amir.aandacht.redenen.find((reden) => reden.type === STAP_STATUS.VASTGELOPEN);
+
+  // rij.eersteProbleem pakt de eerste stap die vastliep OF wacht: hier de
+  // wachtende stap uit 1.1. De regel onder "Vastgelopen" moet naar 1.2 wijzen.
+  assert.equal(amir.eersteProbleem.status, STAP_STATUS.NAKIJKEN);
+  assert.ok(vastgelopen);
+  assert.equal(vastgelopen.optioneel, false);
+  assert.ok(vastgelopen.detail.includes('1.2'));
+  assert.ok(vastgelopen.detail.includes('Praktijkopdracht'));
+  assert.equal(vastgelopen.detail.endsWith(PLUS_REDEN_SUFFIX), false);
+});
+
+test('de matrix laat de pluskolom buiten het rijtotaal en markeert het vakje', () => {
+  const { rijen, paragrafen } = bouwRijenMetPlus({
+    recordsByStudentId: { 'leerling-1': alleVerplichteStappenAf(), 'leerling-2': [] }
+  });
+  const kolommen = buildParagraafKolommen(paragrafen);
+  const matrixRijen = buildMatrixRijen({ rijen, kolommen });
+  const amir = matrixRijen.find((rij) => rij.studentId === 'leerling-1');
+  const plusKolom = kolommen.find((kolom) => kolom.id === 'paragraaf-dv-tl-1-6');
+  const plusCel = amir.cellen.find((cel) => cel.paragraafId === 'paragraaf-dv-tl-1-6');
+
+  assert.equal(plusKolom.optioneel, true);
+  assert.equal(kolommen[0].optioneel, false);
+
+  // Drie kolommen in beeld, maar het rijtotaal telt er twee: 18 van 18.
+  assert.equal(amir.cellen.length, 3);
+  assert.equal(amir.totaalStappen, 18);
+  assert.equal(amir.percentage, 100);
+  assert.equal(amir.status, STAP_STATUS.AFGEROND);
+
+  // Het lege plusvakje leest als aanbod, niet als "niet gestart".
+  assert.equal(plusCel.optioneel, true);
+  assert.equal(plusCel.kort, 'Plus');
+  assert.match(plusCel.detail, /vrijwillig/i);
+  assert.equal(amir.plus.totaalParagrafen, 1);
+});
+
+test('het plusoverzicht laat zien wie welke plusparagraaf vrijwillig maakte', () => {
+  const { rijen } = bouwRijenMetPlus({
+    recordsByStudentId: {
+      'leerling-1': [...alleVerplichteStappenAf(), ...alleePlusStappenAf()],
+      'leerling-2': alleVerplichteStappenAf()
+    }
+  });
+
+  const overzicht = buildPlusOverzicht(rijen);
+
+  assert.equal(overzicht.aangeboden, true);
+  assert.equal(overzicht.aantalParagrafen, 1);
+  assert.equal(overzicht.aantalMetPlus, 1);
+  assert.equal(overzicht.metPlus[0].studentNaam, 'Amir');
+  assert.equal(overzicht.metPlus[0].aantalAf, 1);
+  assert.deepEqual(
+    overzicht.metPlus[0].afgerondeParagrafen.map((paragraaf) => paragraaf.paragraafCode),
+    ['1.6']
+  );
+  assert.deepEqual(overzicht.zonderPlus.map((leerling) => leerling.studentNaam), ['Bo']);
+
+  // Filteren op een ander hoofdstuk laat de plusstof van dit hoofdstuk weg.
+  assert.equal(buildPlusOverzicht(rijen, { hoofdstukId: 'hoofdstuk-dv-h2' }).aangeboden, false);
+});
+
+test('een hoofdstukrapport rekent de plusparagraaf niet mee in het percentage', () => {
+  const verplichtRapport = buildParagraafRapport({
+    paragraaf: paragraaf11,
+    blocks: negenBlokken(),
+    records: negenBlokken().map((b) => record(b.id, { completed: true, isCorrect: true }))
+  });
+  const plusRapport = buildParagraafRapport({
+    paragraaf: plusParagraaf,
+    blocks: negenBlokken().map((b) => ({ ...b, id: `plus-${b.id}` })),
+    records: []
+  });
+
+  const hoofdstukMetPlus = buildHoofdstukRapport({
+    hoofdstukId: 'hoofdstuk-dv-h1',
+    hoofdstukTitel: 'H1',
+    rapporten: [verplichtRapport, plusRapport]
+  });
+
+  assert.equal(verplichtRapport.optioneel, false);
+  assert.equal(plusRapport.optioneel, true);
+  assert.equal(hoofdstukMetPlus.totaalStappen, 9);
+  assert.equal(hoofdstukMetPlus.percentage, 100);
+  assert.equal(hoofdstukMetPlus.status, STAP_STATUS.AFGEROND);
+  assert.equal(hoofdstukMetPlus.plus.totaalParagrafen, 1);
+  assert.equal(hoofdstukMetPlus.plus.afgerondeParagrafen, 0);
 });

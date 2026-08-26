@@ -1,0 +1,28 @@
+# Kaderberoepsgerichte leerweg (kb)
+
+Omvang: alle paragrafen.
+
+## Taal
+
+Zinnen van 12 tot 15 woorden. Elk begrip eerst uitleggen met een voorbeeld, daarna pas gebruiken. Meer hoe dan waarom. Wissel voordoen en zelf proberen af.
+
+## Didactiek
+
+Wissel theorie en doen af: hooguit 6 of 7 zinnen achter elkaar lezen. Mix goed/fout-vragen met meerkeuze en een enkele open vraag. Media met kijkvraag waar het uitleg scheelt.
+
+## Wat er in deze map hoort
+
+Per hoofdstuk een bestand `h<n>.mjs` met leerdoelen, kernbegrippen, uitgewerkte voorbeelden, samenvattingen en alle toetsvragen. Lees `../PATROON.md` helemaal voordat je vragen schrijft. De structuur en de lesstof horen in `scripts/seed-structuur/kb/`.
+
+## Paragrafen per hoofdstuk
+
+| H | Titel | Paragrafen | Vrijwillig |
+| --- | --- | --- | --- |
+| 1 | Startklaar op je nieuwe school | 1.1, 1.2, 1.3, 1.4, 1.5 | - |
+| 2 | Je device en hoe het werkt | 2.1, 2.2, 2.3, 2.4, 2.5 | - |
+| 3 | Veilig internet en jouw gegevens | 3.1, 3.2, 3.3, 3.4 | - |
+| 4 | Werken met Word, Excel en PowerPoint | 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7 | - |
+| 5 | Jouw digitale wereld: normen, waarden en online kopen | 5.1, 5.2, 5.3, 5.4, 5.5 | - |
+| 6 | Mediawijs: social media, welzijn en betrouwbaar nieuws | 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7 | - |
+| 7 | Kunstmatige intelligentie en chatbots | 7.1, 7.2, 7.3, 7.4, 7.5 | - |
+| 8 | Zelf maken: programmeren, ontwerpen en terugblikken | 8.1, 8.2, 8.3, 8.4, 8.5, 8.6 | - |

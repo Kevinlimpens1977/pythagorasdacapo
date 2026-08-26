@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, BadgeCheck, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, ShieldCheck, UserCircle } from 'lucide-react';
+import { AlertCircle, BadgeCheck, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, ShieldCheck, Star, UserCircle } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { buildStudentProgressSummary } from '../lib/progressSummary';
+import { PLUS_LABEL, PLUS_UITLEG_LEERLING } from '../lib/paragraphMetadata';
 import { changeCurrentUserPassword } from '../services/studentPasswordService';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
@@ -370,17 +371,31 @@ export default function StudentProfilePage() {
                           <div className="flex items-center gap-3">
                             <div
                               className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                                isComplete ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                                isComplete
+                                  ? 'bg-green-100 text-green-600'
+                                  : paragraaf.optioneel
+                                    ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+                                    : 'bg-blue-100 text-blue-600'
                               }`}
                             >
-                              {isComplete ? <CheckCircle2 size={20} /> : <BookOpen size={20} />}
+                              {isComplete ? <CheckCircle2 size={20} /> : paragraaf.optioneel ? <Star size={20} /> : <BookOpen size={20} />}
                             </div>
                             <div>
-                              <h3 className="font-bold text-slate-900">
+                              <h3 className="flex flex-wrap items-center gap-2 font-bold text-slate-900">
                                 {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                                {paragraaf.optioneel && (
+                                  <span
+                                    title={PLUS_UITLEG_LEERLING}
+                                    className="inline-flex items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
+                                  >
+                                    <Star size={11} />
+                                    {PLUS_LABEL}
+                                  </span>
+                                )}
                               </h3>
                               <p className="text-sm text-slate-500">
                                 {paragraaf.completedQuestions} / {paragraaf.totalQuestions} vragen
+                                {paragraaf.optioneel && ' - telt niet mee voor je hoofdstuk'}
                               </p>
                             </div>
                           </div>

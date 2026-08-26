@@ -165,6 +165,19 @@ test('"Toon alles" verschijnt pas als er meer paragrafen zijn dan de voorvertoni
   assert.equal(getShowAllLabel(rows, true), 'Toon minder');
 });
 
+test('"Toon alles" zegt erbij dat de plusparagraaf erachter zit', () => {
+  const rows = [1, 2, 3, 4, 5].map((value) => ({ id: `row-${value}`, optioneel: value === 5 }));
+
+  // De plusparagraaf staat achteraan en valt dus buiten de eerste drie. Zonder
+  // deze regel zou een leerling die meer wil nergens zien waar hij moet kijken.
+  assert.equal(getShowAllLabel(rows), 'Toon alles (5) - ook de plusparagraaf');
+  assert.equal(getShowAllLabel(rows, true), 'Toon minder');
+
+  // Zit de plusparagraaf al in de voorvertoning, dan valt er niets te melden.
+  const kortHoofdstuk = [{ id: 'row-1' }, { id: 'row-2', optioneel: true }];
+  assert.equal(getShowAllLabel(kortHoofdstuk), 'Toon alles (2)');
+});
+
 test('startknop vertelt of je begint of verdergaat', () => {
   assert.equal(getStartLabel({ progress: { total: 0, done: 0, isCompleted: false } }), 'Openen');
   assert.equal(getStartLabel({ progress: { total: 3, done: 0, isCompleted: false } }), 'Start');
@@ -176,4 +189,71 @@ test('buildLessonPath verwijst naar de paragraaf of rechtstreeks naar een onderd
   assert.equal(buildLessonPath('paragraaf-dv-1-1'), '/chapter/paragraaf-dv-1-1');
   assert.equal(buildLessonPath('paragraaf-dv-1-1', 'blok 3'), '/chapter/paragraaf-dv-1-1?stap=blok%203');
   assert.equal(buildLessonPath(''), '/');
+});
+
+test('een vrijwillige plusparagraaf telt niet mee in het percentage van het hoofdstuk', () => {
+  const verplicht = makeParagraaf('p-verplicht', 1, 'Paragraaf een', [
+    { id: 'v-b1', type: 'theory', title: 'Uitleg' },
+    { id: 'v-b2', type: 'quiz', title: 'Afsluitquiz' }
+  ], { code: '1.1' });
+  const plus = makeParagraaf('p-plus', 2, 'Plus: verdieping', [
+    { id: 'plus-b1', type: 'theory', title: 'Verdieping' },
+    { id: 'plus-b2', type: 'quiz', title: 'Afsluitquiz' }
+  ], { code: '1.2', optioneel: true, verplicht: false });
+
+  const voortgang = { 'p-verplicht': [{ blockId: 'v-b1', completed: true }, { blockId: 'v-b2', completed: true }] };
+
+  const outline = buildChapterOutline({ hoofdstuk, paragrafen: [verplicht, plus], voortgangMap: voortgang });
+
+  // De plusparagraaf staat gewoon in de lijst, maar zijn twee onderdelen zitten
+  // niet in de noemer: wie hem overslaat kan het hoofdstuk toch afronden.
+  assert.equal(outline.paragraphRows.length, 2);
+  assert.equal(outline.paragraphRows[1].optioneel, true);
+  assert.equal(outline.paragraphRows[1].verplicht, false);
+  assert.equal(outline.paragraphRows[0].optioneel, false);
+  assert.equal(outline.progress.total, 2);
+  assert.equal(outline.progress.done, 2);
+  assert.equal(outline.progress.percentage, 100);
+  assert.equal(outline.progress.isCompleted, true);
+});
+
+test('vrijwillig werk wordt apart geteld, niet in de eis van het hoofdstuk', () => {
+  const verplicht = makeParagraaf('p-verplicht', 1, 'Paragraaf een', [
+    { id: 'v-b1', type: 'theory', title: 'Uitleg' }
+  ], { code: '1.1' });
+  const plus = makeParagraaf('p-plus', 2, 'Plus: verdieping', [
+    { id: 'plus-b1', type: 'theory', title: 'Verdieping' },
+    { id: 'plus-b2', type: 'quiz', title: 'Afsluitquiz' }
+  ], { code: '1.2', optioneel: true, verplicht: false });
+
+  const outline = buildChapterOutline({
+    hoofdstuk,
+    paragrafen: [verplicht, plus],
+    voortgangMap: { 'p-plus': [{ blockId: 'plus-b1', completed: true }] }
+  });
+
+  assert.equal(outline.progress.total, 1);
+  assert.equal(outline.progress.done, 0);
+  assert.equal(outline.progress.percentage, 0);
+  assert.equal(outline.progress.optioneelTotal, 2);
+  assert.equal(outline.progress.optioneelDone, 1);
+  assert.equal(outline.optioneleRows.length, 1);
+});
+
+
+test('de oefentoetsrij markeert de quiz van een plusparagraaf als vrijwillig', () => {
+  const verplicht = makeParagraaf('p-verplicht', 1, 'Paragraaf een', [
+    { id: 'v-b1', type: 'theory', title: 'Uitleg' },
+    { id: 'v-b2', type: 'quiz', title: 'Afsluitquiz' }
+  ], { code: '1.1' });
+  const plus = makeParagraaf('p-plus', 2, 'Plus: verdieping', [
+    { id: 'plus-b1', type: 'quiz', title: 'Plusquiz' }
+  ], { code: '1.2', optioneel: true, verplicht: false });
+
+  const outline = buildChapterOutline({ hoofdstuk, paragrafen: [verplicht, plus], voortgangMap: {} });
+  const quizRijen = outline.oefentoetsRows;
+
+  assert.equal(quizRijen.length, 2);
+  assert.equal(quizRijen.find((rij) => rij.id === 'v-b2').optioneel, false);
+  assert.equal(quizRijen.find((rij) => rij.id === 'plus-b1').optioneel, true);
 });

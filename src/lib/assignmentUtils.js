@@ -1,3 +1,5 @@
+import { isOptionalParagraph } from './paragraphMetadata.js';
+
 const unique = (items = []) => [...new Set(items.filter(Boolean))];
 
 const isPublishedBlock = (block = {}) =>
@@ -75,24 +77,55 @@ export const getAssignedProgressRecords = ({ assignments = [], progressRecords =
     .filter((record) => record.assignedItemId);
 };
 
+/**
+ * Voortgang over toegewezen lesblokken.
+ *
+ * De hoofdvelden gaan over de VERPLICHTE stof. Een vrijwillige plusparagraaf
+ * telt niet mee in de noemer: wie alles af heeft wat af moest hoort op 100% te
+ * staan, ook als hij geen enkele plusparagraaf deed. Wat er vrijwillig extra
+ * gedaan is staat compleet in `plus`, en `totaal` houdt de oude, ongesplitste
+ * telling bij voor lijsten die alleen willen weten of er iets klaarstaat.
+ */
 export const calculateAssignedProgress = ({ assignments = [], progressRecords = [] } = {}) => {
-  const assignedIds = unique(
-    assignments.flatMap((assignment) => (assignment.blocks || []).map((block) => block.id))
-  );
   const relevantProgress = getAssignedProgressRecords({ assignments, progressRecords });
-  const startedIds = unique(relevantProgress.map((record) => record.assignedItemId));
-  const completedIds = unique(
+  const startedIds = new Set(relevantProgress.map((record) => record.assignedItemId));
+  const completedIds = new Set(
     relevantProgress
       .filter((record) => record.completed === true)
       .map((record) => record.assignedItemId)
   );
-  const assignedItems = assignedIds.length;
+
+  const tel = (lijst = []) => {
+    const ids = unique(lijst.flatMap((assignment) => (assignment.blocks || []).map((block) => block.id)));
+    const assignedItems = ids.length;
+    const startedItems = ids.filter((id) => startedIds.has(id)).length;
+    const completedItems = ids.filter((id) => completedIds.has(id)).length;
+
+    return {
+      assignedItems,
+      startedItems,
+      completedItems,
+      percentage: assignedItems > 0 ? Math.round((completedItems / assignedItems) * 100) : 0,
+      startedPercentage: assignedItems > 0 ? Math.round((startedItems / assignedItems) * 100) : 0
+    };
+  };
+
+  const isOptioneel = (assignment = {}) => isOptionalParagraph(assignment.paragraaf || assignment);
+  const verplichteAssignments = assignments.filter((assignment) => !isOptioneel(assignment));
+  const plusAssignments = assignments.filter(isOptioneel);
+  const verplicht = tel(verplichteAssignments);
+  const plus = tel(plusAssignments);
+
+  // Staat er alleen vrijwillige stof in beeld - bijvoorbeeld omdat er op één
+  // plusparagraaf gefilterd is - dan zou 0 van 0 een leeg vakje opleveren en
+  // zou de paragraaf uit de lijst vallen. De hoofdvelden beschrijven dan die
+  // plusstof; `alleenPlus` vertelt de UI dat er niets afgedwongen wordt.
+  const alleenPlus = verplichteAssignments.length === 0 && plusAssignments.length > 0;
 
   return {
-    assignedItems,
-    startedItems: startedIds.length,
-    completedItems: completedIds.length,
-    percentage: assignedItems > 0 ? Math.round((completedIds.length / assignedItems) * 100) : 0,
-    startedPercentage: assignedItems > 0 ? Math.round((startedIds.length / assignedItems) * 100) : 0
+    ...(alleenPlus ? plus : verplicht),
+    alleenPlus,
+    plus,
+    totaal: tel(assignments)
   };
 };

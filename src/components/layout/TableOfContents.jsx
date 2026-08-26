@@ -14,6 +14,7 @@ import {
   MoreVertical,
   PlayCircle,
   Sparkles,
+  Star,
   Target
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthProvider';
@@ -32,6 +33,7 @@ import {
   getVisibleParagraphRows,
   shouldOfferShowAll
 } from '../../lib/chapterOutline';
+import { PLUS_LABEL, PLUS_UITLEG_LEERLING } from '../../lib/paragraphMetadata';
 import HelixBrandBanner from '../common/HelixBrandBanner';
 
 // De lesstofpagina van de leerling. Elk hoofdstuk heeft dezelfde ruggengraat:
@@ -252,6 +254,10 @@ export default function TableOfContents() {
   }
 
   const activeAnchorId = markedAnchorId || chapters[0].anchorId;
+  const heeftPlusParagrafen = chapters.some((chapter) =>
+    chapter.paragraphRows.some((row) => row.optioneel));
+  // De teller in de kop telt alleen de verplichte onderdelen: chapter.progress
+  // laat de plusparagrafen al buiten de noemer (zie chapterOutline.js).
   const totals = chapters.reduce(
     (sum, chapter) => ({
       done: sum.done + chapter.progress.done,
@@ -294,6 +300,13 @@ export default function TableOfContents() {
           <p className="helix-alert px-5 py-4 text-sm font-semibold">
             Tip: klap een paragraaf open om te zien wat je gaat leren. Je kunt daarna elk onderdeel
             los starten — HELIX onthoudt waar je gebleven bent.
+            {heeftPlusParagrafen && (
+              <>
+                {' '}Paragrafen met het label <span className="font-black text-[var(--helix-purple)]">{PLUS_LABEL}</span>{' '}
+                hoef je niet te doen. Ze tellen niet mee voor je hoofdstuk, maar leveren wel tokens op
+                en zijn een aanrader als je later naar de havo wilt.
+              </>
+            )}
           </p>
         </div>
 
@@ -328,6 +341,11 @@ function ChapterCard({
   const visibleParagraphRows = getVisibleParagraphRows(chapter.paragraphRows, showAll);
   const canShowAll = shouldOfferShowAll(chapter.paragraphRows);
   const duration = formatStudyDuration(chapter.estimatedMinutes);
+  // De telling in de kop volgt de voortgangsbalk: die gaat over de verplichte
+  // stof. De plusparagraaf wordt er apart naast genoemd, als aanbod.
+  const verplichteRows = chapter.paragraphRows.filter((row) => !row.optioneel);
+  const plusRows = chapter.paragraphRows.filter((row) => row.optioneel);
+  const plusDone = plusRows.filter((row) => row.progress.isCompleted).length;
 
   const renderParagraphRow = (row, label) => (
     <OutlineRow
@@ -335,8 +353,9 @@ function ChapterCard({
       rowId={row.id}
       label={label}
       title={row.title}
-      icon={row.progress.isCompleted ? CheckCircle2 : PlayCircle}
+      icon={row.optioneel ? Star : (row.progress.isCompleted ? CheckCircle2 : PlayCircle)}
       isDone={row.progress.isCompleted}
+      optioneel={row.optioneel}
       meta={buildParagraphMeta(row)}
       progress={row.progress}
       expanded={expandedRowIds.includes(row.id)}
@@ -360,8 +379,17 @@ function ChapterCard({
           </h2>
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="helix-badge normal-case tracking-normal">
-              {chapter.paragraphRows.length} paragra{chapter.paragraphRows.length === 1 ? 'af' : 'fen'}
+              {verplichteRows.length} paragra{verplichteRows.length === 1 ? 'af' : 'fen'}
             </span>
+            {plusRows.length > 0 && (
+              <span
+                title={PLUS_UITLEG_LEERLING}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2.5 py-1 text-xs font-black normal-case tracking-normal text-[var(--helix-purple)]"
+              >
+                <Star size={13} />
+                {plusRows.length === 1 ? '1 plus' : `${plusRows.length} plus`} · vrijwillig
+              </span>
+            )}
             {duration && (
               <span className="helix-badge inline-flex items-center gap-1.5 normal-case tracking-normal">
                 <Clock3 size={13} />
@@ -395,6 +423,16 @@ function ChapterCard({
                 style={{ width: `${chapter.progress.percentage}%` }}
               />
             </div>
+            {/* De plusstof staat bewust ONDER de balk en niet erin: de balk
+                toont wat af moet, deze regel wat je extra deed. */}
+            {plusRows.length > 0 && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-[var(--helix-purple)]">
+                <Star size={12} />
+                {plusDone > 0
+                  ? `Plus: ${plusDone} van ${plusRows.length} extra af`
+                  : 'Plus staat klaar als je meer wilt'}
+              </p>
+            )}
           </div>
         )}
       </header>
@@ -465,6 +503,8 @@ function ChapterCard({
 
 function buildParagraphMeta(row) {
   const parts = [];
+  // Bij een plusparagraaf staat het belangrijkste vooraan: dit hoeft niet.
+  if (row.optioneel) parts.push('Hoeft niet - mag wel');
   if (row.progress.total > 0) {
     parts.push(`${row.progress.total} onderdeel${row.progress.total === 1 ? '' : 'en'}`);
   } else {
@@ -485,6 +525,7 @@ function OutlineRow({
   meta,
   icon: Icon = PlayCircle,
   isDone = false,
+  optioneel = false,
   progress = null,
   expanded = false,
   onToggle,
@@ -497,9 +538,11 @@ function OutlineRow({
   return (
     <div
       className={`rounded-[var(--helix-radius-lg)] border transition-colors ${
-        expanded
-          ? 'border-[rgba(122,60,255,0.32)] bg-white'
-          : 'border-[var(--helix-border)] bg-white/70 hover:border-[rgba(122,60,255,0.28)]'
+        optioneel
+          ? 'border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)]/35 hover:border-[var(--helix-purple)]'
+          : expanded
+            ? 'border-[rgba(122,60,255,0.32)] bg-white'
+            : 'border-[var(--helix-border)] bg-white/70 hover:border-[rgba(122,60,255,0.28)]'
       }`}
     >
       <div className="flex items-center gap-2 p-3 sm:gap-3 sm:p-4">
@@ -517,16 +560,21 @@ function OutlineRow({
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
               isDone
                 ? 'bg-[rgba(34,197,94,0.14)] text-[#15803d]'
-                : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+                : optioneel
+                  ? 'bg-white text-[var(--helix-purple)] ring-1 ring-[rgba(122,60,255,0.35)]'
+                  : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
             }`}
           >
             <Icon size={19} />
           </span>
           <span className="min-w-0">
-            <span className="block truncate font-display text-[15px] font-extrabold text-[var(--helix-navy)] md:text-base">
-              {label && <span className="text-[var(--helix-purple)]">{label}</span>}
-              {label && title ? ' ' : ''}
-              {title}
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-display text-[15px] font-extrabold text-[var(--helix-navy)] md:text-base">
+                {label && <span className="text-[var(--helix-purple)]">{label}</span>}
+                {label && title ? ' ' : ''}
+                {title}
+              </span>
+              {optioneel && <PlusLabel />}
             </span>
             {meta && (
               <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--helix-muted)]">{meta}</span>
@@ -534,7 +582,15 @@ function OutlineRow({
           </span>
         </button>
 
-        {progress?.total > 0 && (
+        {/* Een plusparagraaf waar nog niets aan gedaan is krijgt geen lege balk:
+            een balk op nul leest als achterstand, en dat is dit niet. */}
+        {optioneel && progress?.total > 0 && progress.done === 0 && (
+          <span className="hidden shrink-0 text-xs font-bold text-[var(--helix-purple)] sm:block">
+            Extra
+          </span>
+        )}
+
+        {progress?.total > 0 && !(optioneel && progress.done === 0) && (
           <div className="hidden flex-col items-end sm:flex">
             <span className="mb-1 text-xs font-bold text-[var(--helix-muted)]">
               {progress.done} / {progress.total}
@@ -573,9 +629,37 @@ function OutlineRow({
   );
 }
 
+/**
+ * Het merkteken van een vrijwillige plusparagraaf. Bewust in de accentkleur van
+ * HELIX en niet in grijs of oranje: dit is een aanbod, geen waarschuwing.
+ */
+function PlusLabel() {
+  return (
+    <span
+      title={PLUS_UITLEG_LEERLING}
+      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
+    >
+      <Star size={11} />
+      {PLUS_LABEL}
+    </span>
+  );
+}
+
 function ParagraphPanel({ row, onStart, onCopyLink }) {
   return (
     <div>
+      {row.optioneel && (
+        <div className="mb-3 rounded-[var(--helix-radius-md)] border border-[rgba(122,60,255,0.3)] bg-[var(--helix-soft-lavender)]/70 p-4">
+          <p className="flex items-center gap-2 font-display text-sm font-extrabold text-[var(--helix-purple)]">
+            <Star size={15} />
+            {PLUS_LABEL}
+          </p>
+          <p className="mt-1.5 text-sm font-semibold leading-6 text-[var(--helix-navy)]">
+            {PLUS_UITLEG_LEERLING}
+          </p>
+        </div>
+      )}
+
       {row.learningGoals.length > 0 && (
         <div className="rounded-[var(--helix-radius-md)] border border-[rgba(122,60,255,0.18)] bg-[var(--helix-soft-lavender)]/60 p-4">
           <p className="helix-eyebrow flex items-center gap-2">
@@ -651,7 +735,15 @@ function ParagraphPanel({ row, onStart, onCopyLink }) {
 }
 
 function AssessmentRow({ rowId, label, icon, rows, expanded, onToggle, onStart, onCopyLink }) {
-  const done = rows.filter((row) => row.isDone).length;
+  // De telling gaat over wat af moet; de toetsen van een plusparagraaf worden
+  // er apart bij genoemd zodat ze de teller niet omhoog duwen.
+  const verplichteRows = rows.filter((row) => !row.optioneel);
+  const plusRows = rows.filter((row) => row.optioneel);
+  const done = verplichteRows.filter((row) => row.isDone).length;
+  const meta = [
+    `${verplichteRows.length} onderdeel${verplichteRows.length === 1 ? '' : 'en'} · ${done} af`,
+    plusRows.length > 0 ? `${plusRows.length} plus (vrijwillig)` : ''
+  ].filter(Boolean).join(' · ');
 
   return (
     <OutlineRow
@@ -659,7 +751,7 @@ function AssessmentRow({ rowId, label, icon, rows, expanded, onToggle, onStart, 
       label={label}
       title=""
       icon={icon}
-      meta={`${rows.length} onderdeel${rows.length === 1 ? '' : 'en'} · ${done} af`}
+      meta={meta}
       expanded={expanded}
       onToggle={() => onToggle(rowId)}
     >
@@ -679,7 +771,10 @@ function AssessmentRow({ rowId, label, icon, rows, expanded, onToggle, onStart, 
               {row.isDone ? <CheckCircle2 size={15} /> : <ClipboardCheck size={14} />}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-bold text-[var(--helix-navy)]">{row.title}</span>
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="truncate text-sm font-bold text-[var(--helix-navy)]">{row.title}</span>
+                {row.optioneel && <PlusLabel />}
+              </span>
               <span className="block truncate text-[11px] font-semibold text-[var(--helix-muted)]">
                 {[row.paragraafNumber, row.paragraafTitle].filter(Boolean).join(' · ')}
               </span>

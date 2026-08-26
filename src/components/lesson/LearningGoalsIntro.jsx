@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { ArrowRight, Target } from 'lucide-react';
+import { ArrowRight, Star, Target } from 'lucide-react';
 import { formatStudyDuration } from '../../lib/studyRouteState';
+import { PLUS_LABEL, PLUS_UITLEG_LEERLING } from '../../lib/paragraphMetadata';
 
 // Startscherm van een paragraaf: één compact venster met de leerdoelen als losse
 // zinnen. Niet de route, niet de stappenlijst - alleen wat je gaat leren, en één
@@ -10,6 +11,7 @@ export default function LearningGoalsIntro({
   intro,
   paragraafTitle = '',
   hoofdstukTitle = '',
+  optioneel = false,
   onContinue
 }) {
   const continueRef = useRef(null);
@@ -66,6 +68,21 @@ export default function LearningGoalsIntro({
             )}
           </div>
         </div>
+
+        {/* Een plusparagraaf zegt hier meteen wat hij is. Dit is het eerste dat
+            een leerling van de paragraaf ziet, dus hier hoort de belofte te
+            staan: je hoeft dit niet, je mag dit - en het levert tokens op. */}
+        {optioneel && (
+          <div className="mt-4 rounded-[var(--helix-radius-lg)] border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] p-4">
+            <p className="flex items-center gap-2 font-display text-sm font-extrabold text-[var(--helix-purple)]">
+              <Star size={15} />
+              {PLUS_LABEL}
+            </p>
+            <p className="mt-1.5 text-sm font-semibold leading-6 text-[var(--helix-navy)]">
+              {PLUS_UITLEG_LEERLING}
+            </p>
+          </div>
+        )}
 
         <ul className="custom-scrollbar mt-4 min-h-0 space-y-2 overflow-y-auto rounded-[var(--helix-radius-lg)] border border-[rgba(122,60,255,0.18)] bg-[var(--helix-soft-lavender)]/70 p-4 sm:p-5">
           {intro.items.map((item, index) => (

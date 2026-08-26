@@ -102,6 +102,10 @@ const buildParagraphRow = ({ paragraaf = {}, kind = 'paragraaf', voortgang = [] 
     evidenceProduct: metadata.evidenceProduct,
     estimatedMinutes: metadata.estimatedMinutes,
     questionCount: Math.max(0, Number(paragraaf.vragenCount) || 0),
+    // Vrijwillige plusparagraaf: hij staat gewoon in de lijst, maar telt niet
+    // mee in het percentage van het hoofdstuk.
+    optioneel: metadata.optioneel,
+    verplicht: metadata.verplicht,
     onderdelen,
     resumeOnderdeelId: firstOpen?.id || '',
     progress: {
@@ -124,7 +128,10 @@ const buildAssessmentRows = (rows = [], type = 'quiz') =>
         paragraafTitle: row.title,
         title: onderdeel.title,
         typeLabel: onderdeel.typeLabel,
-        isDone: onderdeel.isDone
+        isDone: onderdeel.isDone,
+        // De quiz van een vrijwillige plusparagraaf staat gewoon in de lijst,
+        // maar hoort niet bij wat de leerling af moet hebben.
+        optioneel: row.optioneel === true
       }))
   );
 
@@ -151,8 +158,15 @@ export const buildChapterOutline = ({ hoofdstuk = null, paragrafen = [], voortga
     }));
 
   const numberedRows = [...introParagraphRows, ...voorkennisRows, ...paragraphRows];
-  const done = numberedRows.reduce((total, row) => total + row.progress.done, 0);
-  const total = numberedRows.reduce((sum, row) => sum + row.progress.total, 0);
+
+  // Een optionele paragraaf is een aanrader, geen voorwaarde: hij staat wel in
+  // de lijst en levert tokens op, maar hij telt niet mee in het percentage dat
+  // een leerling van dit hoofdstuk af moet hebben. Anders zou een leerling die
+  // de plusparagraaf overslaat het hoofdstuk nooit op 100% kunnen krijgen.
+  const verplichteRows = numberedRows.filter((row) => !row.optioneel);
+  const optioneleRows = numberedRows.filter((row) => row.optioneel);
+  const done = verplichteRows.reduce((total, row) => total + row.progress.done, 0);
+  const total = verplichteRows.reduce((sum, row) => sum + row.progress.total, 0);
   const estimatedMinutes = numberedRows.reduce((sum, row) => sum + (row.estimatedMinutes || 0), 0);
   const description = cleanText(hoofdstuk?.description || hoofdstuk?.beschrijving);
 
@@ -185,11 +199,16 @@ export const buildChapterOutline = ({ hoofdstuk = null, paragrafen = [], voortga
     oefentoetsRows: buildAssessmentRows(numberedRows, 'quiz'),
     toetsRows: buildAssessmentRows(numberedRows, 'toets'),
     estimatedMinutes,
+    optioneleRows,
     progress: {
       done,
       total,
       percentage: total > 0 ? Math.round((done / total) * 100) : 0,
-      isCompleted: total > 0 && done === total
+      isCompleted: total > 0 && done === total,
+      // Wat de leerling vrijwillig extra deed; los geteld zodat de docent het
+      // ziet zonder dat het de eis van het hoofdstuk verandert.
+      optioneelDone: optioneleRows.reduce((sum, row) => sum + row.progress.done, 0),
+      optioneelTotal: optioneleRows.reduce((sum, row) => sum + row.progress.total, 0)
     }
   };
 };
@@ -220,8 +239,25 @@ export const getVisibleParagraphRows = (rows = [], showAll = false, previewCount
 export const shouldOfferShowAll = (rows = [], previewCount = PARAGRAPH_PREVIEW_COUNT) =>
   rows.length > Math.max(0, previewCount);
 
-export const getShowAllLabel = (rows = [], showAll = false) =>
-  showAll ? 'Toon minder' : `Toon alles (${rows.length})`;
+/**
+ * De kaart toont standaard maar de eerste paar paragrafen. De plusparagraaf
+ * staat altijd achteraan en valt dus buiten dat voorproefje, terwijl de kop van
+ * het hoofdstuk hem wél aanbiedt. Daarom zegt de knop erbij dat de plusstof
+ * achter dit knopje zit: vrijwillig mag nooit betekenen dat je hem niet vindt.
+ */
+export const getShowAllLabel = (rows = [], showAll = false, previewCount = PARAGRAPH_PREVIEW_COUNT) => {
+  if (showAll) return 'Toon minder';
+
+  const verborgenPlus = rows
+    .slice(Math.max(0, previewCount))
+    .filter((row) => row?.optioneel === true).length;
+
+  if (verborgenPlus > 0) {
+    return `Toon alles (${rows.length}) - ook de plusparagra${verborgenPlus === 1 ? 'af' : 'fen'}`;
+  }
+
+  return `Toon alles (${rows.length})`;
+};
 
 export const getStartLabel = (row = null) => {
   if (!row?.progress?.total) return 'Openen';

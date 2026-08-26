@@ -1,10 +1,12 @@
-import { BookOpen, Check, DoorOpen, Target } from 'lucide-react';
+import { BookOpen, Check, DoorOpen, Star, Target } from 'lucide-react';
+import { PLUS_LABEL, PLUS_UITLEG_LEERLING } from '../../lib/paragraphMetadata';
 
 // Linkerbalk van de studeerweergave: de stappen van deze paragraaf, met de actieve
 // stap gevuld, een vinkje bij wat af is, en onderin een duidelijke uitgang.
 export default function StudyStepRail({
   paragraafTitle = '',
   hoofdstukTitle = '',
+  optioneel = false,
   steps = [],
   summary = { total: 0, done: 0, percentage: 0 },
   iconForType = () => BookOpen,
@@ -27,11 +29,25 @@ export default function StudyStepRail({
           <p className="mt-1 text-xs font-bold text-[var(--helix-muted)]">{hoofdstukTitle}</p>
         )}
 
+        {optioneel && (
+          <span
+            title={PLUS_UITLEG_LEERLING}
+            className="mt-2 inline-flex items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
+          >
+            <Star size={11} />
+            {PLUS_LABEL}
+          </span>
+        )}
+
         <div className="helix-progress-track mt-4 h-2">
           <div className="helix-progress-fill" style={{ width: `${summary.percentage}%` }} />
         </div>
+        {/* De balk hierboven gaat over déze paragraaf, niet over het hoofdstuk.
+            Bij plusstof zegt de regel eronder er meteen bij dat het extra is,
+            zodat een halve balk nooit als achterstand leest. */}
         <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
           {summary.done} van {summary.total} stappen af
+          {optioneel && ' · extra werk'}
         </p>
       </div>
 

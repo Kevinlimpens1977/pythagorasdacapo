@@ -1,4 +1,5 @@
-import { STAP_STATUS, getStatusPresentatie } from '../../lib/klasVoortgangOverzicht';
+import { Star } from 'lucide-react';
+import { PLUS_PRESENTATIE, STAP_STATUS, getStatusPresentatie } from '../../lib/klasVoortgangOverzicht';
 import StudentAvatar from '../common/StudentAvatar';
 
 const LEGENDA = [
@@ -9,7 +10,7 @@ const LEGENDA = [
   STAP_STATUS.NIET_GESTART
 ];
 
-export function StatusLegenda({ className = '' }) {
+export function StatusLegenda({ className = '', toonPlus = false }) {
   return (
     <div className={`flex flex-wrap items-center gap-3 ${className}`}>
       {LEGENDA.map((status) => {
@@ -21,7 +22,29 @@ export function StatusLegenda({ className = '' }) {
           </span>
         );
       })}
+      {toonPlus && (
+        <span
+          title={PLUS_PRESENTATIE.uitleg}
+          className="flex items-center gap-1.5 text-xs font-bold text-[var(--helix-purple)]"
+        >
+          <Star size={12} />
+          {PLUS_PRESENTATIE.label} - telt niet mee
+        </span>
+      )}
     </div>
+  );
+}
+
+/** Het merkteken van een vrijwillige plusparagraaf, overal hetzelfde. */
+export function PlusChip({ children, className = '', titel = '' }) {
+  return (
+    <span
+      title={titel || PLUS_PRESENTATIE.uitleg}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${PLUS_PRESENTATIE.chipClass} ${className}`}
+    >
+      <Star size={11} />
+      {children || PLUS_PRESENTATIE.kort}
+    </span>
   );
 }
 
@@ -76,11 +99,17 @@ export default function KlasVoortgangMatrix({
                 <th
                   key={kolom.id}
                   title={kolom.titel}
-                  className="px-2 py-3 text-center text-xs font-black text-[var(--helix-navy)]"
+                  className={`px-2 py-3 text-center text-xs font-black ${
+                    kolom.optioneel ? 'text-[var(--helix-purple)]' : 'text-[var(--helix-navy)]'
+                  }`}
                 >
                   <span className="block max-w-24 truncate">{kolom.kort}</span>
-                  <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-wider text-[var(--helix-muted)]">
-                    {kolomKopLabel}
+                  {/* De kop zegt meteen dat deze kolom vrijwillig is, zodat een
+                      lege kolom niet als klassikale achterstand leest. */}
+                  <span className={`mt-0.5 block text-[10px] font-semibold uppercase tracking-wider ${
+                    kolom.optioneel ? 'text-[var(--helix-purple)]' : 'text-[var(--helix-muted)]'
+                  }`}>
+                    {kolom.optioneel ? PLUS_PRESENTATIE.kort : kolomKopLabel}
                   </span>
                 </th>
               ))}
@@ -131,9 +160,22 @@ export default function KlasVoortgangMatrix({
                   <span className="mt-1 block text-[10px] font-semibold text-[var(--helix-muted)]">
                     {rij.afgerondeStappen}/{rij.totaalStappen} stappen
                   </span>
+                  {/* Vrijwillig extra werk staat NAAST de balk, niet erin: het
+                      verandert niets aan wat deze leerling af moet hebben. */}
+                  {rij.plus?.afgerondeParagrafen > 0 && (
+                    <span className="mt-1 block">
+                      <PlusChip titel={`${rij.studentNaam} maakte ${rij.plus.afgerondeParagrafen} van ${rij.plus.totaalParagrafen} plusparagrafen vrijwillig af`}>
+                        +{rij.plus.afgerondeParagrafen} af
+                      </PlusChip>
+                    </span>
+                  )}
                 </td>
                 {(rij.cellen || []).map((cel) => {
                   const presentatie = getStatusPresentatie(cel.status);
+                  // Een plusparagraaf waar nog niets aan gedaan is krijgt een
+                  // eigen, rustige weergave. De vijf statuskleuren zeggen
+                  // allemaal iets over voortgang, en dit vakje meet dat niet.
+                  const plusNogNiet = cel.optioneel && cel.status === STAP_STATUS.NIET_GESTART;
 
                   if (!cel.toegewezen) {
                     return (
@@ -154,8 +196,11 @@ export default function KlasVoortgangMatrix({
                         type="button"
                         onClick={() => onSelectLeerling?.(rij, cel)}
                         title={`${rij.studentNaam} - ${cel.label}. ${cel.detail}`}
-                        className={`inline-flex h-9 w-14 items-center justify-center rounded-lg border text-xs font-black transition hover:brightness-95 ${presentatie.chipClass}`}
+                        className={`inline-flex h-9 w-14 items-center justify-center gap-1 rounded-lg border text-xs font-black transition hover:brightness-95 ${
+                          plusNogNiet ? PLUS_PRESENTATIE.leegClass : presentatie.chipClass
+                        }`}
                       >
+                        {cel.optioneel && <Star size={11} />}
                         {cel.kort}
                       </button>
                     </td>

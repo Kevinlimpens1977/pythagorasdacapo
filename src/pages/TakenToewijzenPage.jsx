@@ -12,6 +12,7 @@ import {
   Layers3,
   ListChecks,
   Route,
+  Star,
   UsersRound
 } from 'lucide-react';
 import klasService from '../services/klasService';
@@ -19,6 +20,7 @@ import cmsService from '../services/cmsService';
 import { getColorStyle } from '../lib/paletColors';
 import { CONTENT_BLOCK_LABELS, buildContentBlockPreview, normalizeContentBlocks } from '../lib/contentBlockUtils';
 import { buildCmsNavigationTree, getCmsItemLabel } from '../lib/cmsNavigationUtils';
+import { PLUS_LABEL, PLUS_UITLEG_DOCENT, isOptionalParagraph } from '../lib/paragraphMetadata';
 
 const showLegacyCardBrowser = false;
 
@@ -104,6 +106,7 @@ const AssignmentTreeNode = ({
   const isExpanded = expandedIds.includes(node.id);
   const isSelected = selectedIds[node.type] === node.id;
   const isParagraaf = node.type === 'paragraaf';
+  const isPlus = isParagraaf && isOptionalParagraph(node);
   const blocks = isParagraaf ? (contentBlocksByParagraaf[node.id] || []) : [];
   const isInClassDefault = isParagraaf && assignedParagrafen.includes(node.id);
   const studentExtras = studentOverrides[selectedStudentId] || [];
@@ -156,12 +159,24 @@ const AssignmentTreeNode = ({
         </button>
 
         <div className="min-w-0">
-          <div className={['truncate', isParagraaf ? 'font-medium' : 'font-bold'].join(' ')}>
-            {rowLabel}
+          <div className={['flex min-w-0 items-center gap-2', isParagraaf ? 'font-medium' : 'font-bold'].join(' ')}>
+            <span className="truncate">{rowLabel}</span>
+            {/* Een plusparagraaf is vrijwillig. Dat moet de docent zien vóór hij
+                hem aanvinkt, anders zet hij ongemerkt bonusstof klaar als eis. */}
+            {isPlus && (
+              <span
+                title={PLUS_UITLEG_DOCENT}
+                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
+              >
+                <Star size={11} />
+                {PLUS_LABEL}
+              </span>
+            )}
           </div>
           {isParagraaf && (
             <div className="text-xs text-[var(--helix-muted)]">
               {blocks.length} lesblokken
+              {isPlus && <span className="ml-2 font-bold text-[var(--helix-purple)]">vrijwillig - telt niet mee</span>}
               {Array.isArray(assignedContentBlocks[node.id]) && (
                 <span className="ml-2 rounded-full bg-violet-50 px-2 py-0.5 font-bold text-[var(--helix-purple)]">
                   {assignedContentBlocks[node.id].length} geselecteerd

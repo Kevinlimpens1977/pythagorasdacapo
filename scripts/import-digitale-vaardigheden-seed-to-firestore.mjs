@@ -10,7 +10,25 @@ const PROJECT_ID = 'pythagoras-eoa';
 const seedPath = path.resolve('docs/seeds/digitale-vaardigheden-vmbo1.seed.json');
 const apply = process.argv.includes('--apply');
 
+// --hoofdstuk N importeert alleen dat hoofdstuk (plus vak, leerjaar en niveaus),
+// zodat de leeromgeving live kan met een deel van de stof zonder lege
+// hoofdstukken te tonen. Latere hoofdstukken volgen met hetzelfde filter.
+const hoofdstukArgIndex = process.argv.indexOf('--hoofdstuk');
+const hoofdstukFilter = hoofdstukArgIndex === -1 ? null : Number(process.argv[hoofdstukArgIndex + 1]);
+if (hoofdstukArgIndex !== -1 && !Number.isInteger(hoofdstukFilter)) {
+  console.error('Gebruik: --hoofdstuk <nummer>, bijvoorbeeld --hoofdstuk 1');
+  process.exit(1);
+}
+
 const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+
+const hoortBijHoofdstuk = (item) => {
+  if (hoofdstukFilter === null) return true;
+  const suffix = `-h${hoofdstukFilter}`;
+  if (typeof item.number === 'number') return item.number === hoofdstukFilter;
+  if (item.hoofdstukId) return item.hoofdstukId.endsWith(suffix);
+  return item.id.endsWith(suffix);
+};
 
 if (getApps().length === 0) {
   initializeApp({
@@ -25,11 +43,12 @@ const collectionMap = [
   ['vak', seed.vakken || []],
   ['leerjaar', seed.leerjaren || []],
   ['niveau', seed.niveaus || []],
-  ['hoofdstuk', seed.hoofdstukken || []],
-  ['paragraaf', seed.paragrafen || []],
-  ['contentBlocks', seed.contentBlocks || []],
-  ['badges', seed.badges || []],
-  ['certificates', seed.certificates || []]
+  ['hoofdstuk', (seed.hoofdstukken || []).filter(hoortBijHoofdstuk)],
+  ['paragraaf', (seed.paragrafen || []).filter(hoortBijHoofdstuk)],
+  ['contentBlocks', (seed.contentBlocks || []).filter(hoortBijHoofdstuk)],
+  ['badges', (seed.badges || []).filter(hoortBijHoofdstuk)],
+  // Certificaten zijn jaarafsluiters; bij een deelimport horen ze er nog niet bij.
+  ['certificates', hoofdstukFilter === null ? (seed.certificates || []) : []]
 ];
 
 const cleanForFirestore = (value) => {
@@ -91,6 +110,7 @@ const writeCollection = async (collectionName, docs) => {
 };
 
 console.log(`Digitale vaardigheden Firestore import (${apply ? 'APPLY' : 'DRY RUN'})`);
+if (hoofdstukFilter !== null) console.log(`Filter: alleen hoofdstuk ${hoofdstukFilter} (alle niveaus); certificaten overgeslagen.`);
 console.log(`Project: ${PROJECT_ID}`);
 console.log(`Seed: ${seedPath}`);
 
