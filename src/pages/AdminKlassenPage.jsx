@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
+import { Gamepad2,
   Bot,
   BookMarked,
   BookOpenCheck,
@@ -105,9 +105,13 @@ export default function AdminKlassenPage() {
       const klas = klassen.find(k => k.id === klasId);
       if (!klas) return;
 
+      // spelAlsAfsluiting staat standaard aan; zonder veld is de huidige stand
+      // dus true en moet de eerste klik hem expliciet op false zetten.
+      const defaultAan = setting === 'spelAlsAfsluiting';
+      const huidig = defaultAan ? klas.settings?.[setting] !== false : Boolean(klas.settings?.[setting]);
       const newSettings = {
         ...klas.settings,
-        [setting]: !klas.settings[setting]
+        [setting]: !huidig
       };
 
       await klasService.updateKlasSettings(klasId, newSettings);
@@ -278,6 +282,14 @@ export default function AdminKlassenPage() {
       label: 'Rekenmachine beschikbaar',
       description: 'Leerlingen kunnen de ingebouwde rekenmachine gebruiken.',
       icon: Calculator
+    },
+    {
+      key: 'spelAlsAfsluiting',
+      label: 'Spel als afsluiting',
+      description: 'Het spel in een paragraaf is pas speelbaar als alle andere stappen af zijn.',
+      icon: Gamepad2,
+      // Standaard aan: alleen een expliciete false zet het spel meteen open.
+      defaultAan: true
     }
   ];
 
@@ -415,7 +427,7 @@ export default function AdminKlassenPage() {
                       >
                         <input
                           type="checkbox"
-                          checked={Boolean(selectedKlas.settings?.[setting.key])}
+                          checked={setting.defaultAan ? selectedKlas.settings?.[setting.key] !== false : Boolean(selectedKlas.settings?.[setting.key])}
                           onChange={() => handleToggleSetting(selectedKlas.id, setting.key)}
                           className="mt-1 h-5 w-5 cursor-pointer rounded accent-[var(--helix-purple)]"
                         />

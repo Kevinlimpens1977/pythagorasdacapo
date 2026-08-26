@@ -90,6 +90,7 @@ import {
 import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
 import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
 import StudyStepRail from '../components/lesson/StudyStepRail';
+import { spelSlotStatus } from '../lib/spelSlot';
 import {
   buildExerciseAnswerPayload,
   buildInitialExerciseAnswers,
@@ -435,6 +436,14 @@ export default function StudentLessonPage() {
     });
   }, [blocks, completedIds, currentIndex, progressRecords]);
   const studySummary = useMemo(() => summarizeStudySteps(studySteps), [studySteps]);
+
+  // Het spel als afsluiting: pas speelbaar wanneer de rest van de paragraaf af
+  // is (klas-instelling spelAlsAfsluiting, standaard aan). Navigeren naar de
+  // spelstap mag altijd; alleen de speelknop zit op slot.
+  const spelSlot = useMemo(
+    () => spelSlotStatus({ blocks, progressRecords, klasSettings: isAdmin ? { spelAlsAfsluiting: false } : klasData?.settings }),
+    [blocks, progressRecords, klasData?.settings, isAdmin]
+  );
   const learningGoalsIntro = useMemo(
     () => buildLearningGoalsIntro({ paragraaf, blocks }),
     [blocks, paragraaf]
@@ -1063,6 +1072,7 @@ export default function StudentLessonPage() {
                   onOpenSlidedeck={setActiveSlidedeck}
                   gameRewardRules={gameRewardRules}
                   onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
+                  spelSlot={spelSlot}
                   onGameComplete={(result) => {
                     const prevCount = Number(getBlockProgressRecord(currentBlock?.id)?.gamePlayCount) || 0;
                     saveBlockProgress(currentBlock, true, { lastAnswer: result, gamePlayCount: prevCount + 1 });
@@ -1163,6 +1173,7 @@ export default function StudentLessonPage() {
 }
 
 function LessonBlockContent({
+  spelSlot = null,
   block,
   isCompleted,
   progressRecord,
@@ -1200,13 +1211,24 @@ function LessonBlockContent({
     <article className="study-block flex flex-col gap-6">
       <div className="min-w-0">
         {block.type === 'game' ? (
-          <GameBlock
-            block={block}
-            gameRewardRules={gameRewardRules}
-            playCount={Number(progressRecord?.gamePlayCount) || 0}
-            lastResult={progressRecord?.lastAnswer || null}
-            onComplete={onGameComplete}
-          />
+          spelSlot?.vergrendeld ? (
+            <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-6">
+              <p className="font-black text-[var(--helix-navy)]">Dit spel is de afsluiting van deze paragraaf</p>
+              <p className="helix-muted mt-2 text-sm leading-6">
+                Maak eerst de andere stappen af, dan gaat het spel open. Nog te doen:{' '}
+                {spelSlot.resterend.slice(0, 4).join(', ')}
+                {spelSlot.resterend.length > 4 ? ` en nog ${spelSlot.resterend.length - 4} stappen` : ''}.
+              </p>
+            </div>
+          ) : (
+            <GameBlock
+              block={block}
+              gameRewardRules={gameRewardRules}
+              playCount={Number(progressRecord?.gamePlayCount) || 0}
+              lastResult={progressRecord?.lastAnswer || null}
+              onComplete={onGameComplete}
+            />
+          )
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
         ) : block.type === 'quiz' || block.type === 'toets' ? (
