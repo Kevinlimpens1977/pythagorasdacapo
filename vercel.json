@@ -7,5 +7,8 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "alias": [
+    "dvdacapo.vercel.app"
   ]
 }
