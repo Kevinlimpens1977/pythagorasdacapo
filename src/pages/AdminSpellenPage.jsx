@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Clock, Coins, Gamepad2, Goal, Layers3, Repeat, RotateCcw, Save, Sparkles } from 'lucide-react';
 import DvlingoWoordenPanel from '../components/games/DvlingoWoordenPanel';
 import GamePlayer from '../components/games/GamePlayer';
+import KlasSpelToewijzing from '../components/games/KlasSpelToewijzing';
 import {
   GAME_REGISTRY,
   GAME_RESULT_HANDLING,
@@ -170,6 +171,8 @@ export default function AdminSpellenPage() {
                     <DetailList title="Vaardigheden" items={selectedGame.skills} icon={Sparkles} />
                   </div>
                 </section>
+
+                <KlasSpelToewijzing game={selectedGame} />
 
                 <TokenRewardPanel
                   key={selectedGame.gameId}

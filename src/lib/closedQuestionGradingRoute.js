@@ -30,6 +30,41 @@ export const CLOSED_GRADE_REVIEW_REASONS = {
 
 const SERVER_NO_KEY_REASONS = new Set(['no-answer-key', 'not-scored', 'needs-human']);
 
+// De server WEIGERDE bewust: het blok hoort niet bij de lesstof van de leerling
+// (permission-denied) of de leerling heeft geen klas (failed-precondition).
+// Dat is geen storing en dus ook geen "docent kijkt mee": de leerling zit in de
+// verkeerde stof en hoort dat gewoon te horen. Het antwoord wordt dan NIET als
+// docentbeoordeling geparkeerd en er wordt geen voortgang geschreven.
+const CLOSED_GRADE_ACCESS_ERROR_CODES = new Set([
+  'functions/permission-denied',
+  'functions/failed-precondition'
+]);
+
+export const isClosedQuestionAccessError = (serverResult = null) =>
+  Boolean(serverResult) &&
+  serverResult.success !== true &&
+  CLOSED_GRADE_ACCESS_ERROR_CODES.has(String(serverResult.code || ''));
+
+// Wat de leerling er zelf aan kan doen, per weigering. De servermelding zegt
+// wat er mis is; deze zin zegt wie het kan oplossen.
+const CLOSED_GRADE_ACCESS_ADVICE = {
+  'functions/permission-denied': 'Vraag je docent om de paragraaf toe te wijzen.',
+  'functions/failed-precondition': 'Vraag je docent om je aan een klas te koppelen.'
+};
+
+export const buildClosedQuestionAccessMessage = (serverResult = null) => {
+  const serverMessage = String(serverResult?.error || '').trim();
+  const advice = CLOSED_GRADE_ACCESS_ADVICE[String(serverResult?.code || '')] || '';
+
+  if (!serverMessage) {
+    return `Dit onderdeel hoort niet bij jouw lesstof. ${advice || 'Vraag je docent om hulp.'}`;
+  }
+
+  // Noemt de server de docent al, dan is het advies dubbelop.
+  if (!advice || /docent/i.test(serverMessage)) return serverMessage;
+  return `${serverMessage} ${advice}`;
+};
+
 export const resolveClosedQuestionGrade = ({ serverResult = null, localGrade = null } = {}) => {
   const serverAnswered = Boolean(serverResult && serverResult.success === true);
 

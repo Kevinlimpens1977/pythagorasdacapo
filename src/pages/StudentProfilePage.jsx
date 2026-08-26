@@ -8,6 +8,7 @@ import { buildStudentProgressSummary } from '../lib/progressSummary';
 import { PLUS_LABEL, PLUS_UITLEG_LEERLING } from '../lib/paragraphMetadata';
 import { changeCurrentUserPassword } from '../services/studentPasswordService';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
+import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../lib/tokenShopRewards';
 
@@ -83,7 +84,12 @@ export default function StudentProfilePage() {
           effectiveParagraafIds.map((id) => cmsService.getParagraaf(id).catch(() => null))
         );
 
-        const validParagrafen = paragraafDetails.filter(Boolean);
+        // Zelfde regel als op de lesstofpagina: een klas met een route ziet
+        // alleen de paragrafen van dat niveau.
+        const validParagrafen = filterLesstofOpKlasRoute(
+          paragraafDetails.filter(Boolean),
+          getKlasNiveauId(klasData)
+        );
         const paragrafenWithQuestions = await Promise.all(
           validParagrafen.map(async (paragraaf) => {
             const vragen = await cmsService.getPublicVragen(paragraaf.id).catch(() => []);

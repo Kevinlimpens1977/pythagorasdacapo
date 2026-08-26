@@ -23,6 +23,7 @@ import AdminMeldingenPage from './pages/AdminMeldingenPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminProjectKompasPage from './pages/AdminProjectKompasPage';
 import StudentTokenShopPage from './pages/StudentTokenShopPage';
+import StudentSpellenPage from './pages/StudentSpellenPage';
 import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route index element={<TableOfContents />} />
         <Route path="profiel" element={<StudentProfilePage />} />
         <Route path="tokenshop" element={<StudentTokenShopPage />} />
+        <Route path="spellen" element={<StudentSpellenPage />} />
         <Route path="chapter/:chapterId" element={<StudentLessonPage />} />
         <Route path="admin" element={
           <PrivateRoute requireAdmin={true}>

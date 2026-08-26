@@ -11,11 +11,13 @@ import {
   Trash2,
   UserCheck,
   Users,
-  UsersRound
+  UsersRound,
+  Waypoints
 } from 'lucide-react';
 import * as klasService from '../services/klasService';
 import * as cmsService from '../services/cmsService';
 import { useAuth } from '../components/auth/AuthProvider';
+import { buildKlasRouteOpties, getKlasRouteLabel } from '../lib/klasRoute';
 
 export default function AdminKlassenPage() {
   const { currentUser } = useAuth();
@@ -83,6 +85,18 @@ export default function AdminKlassenPage() {
     } catch (err) {
       console.error('Error deleting class:', err);
       setError(err.message || 'Kon klas niet verwijderen');
+    }
+  };
+
+  // De leerroute van de klas: welk niveau (Blauwe/Groene/Paarse route) de
+  // leerlingen van deze klas te zien krijgen. Leeg = geen route = alles.
+  const handleSelectRoute = async (klasId, niveauId) => {
+    try {
+      await klasService.updateKlasNiveau(klasId, niveauId || null);
+      await loadKlassen();
+    } catch (err) {
+      console.error('Error updating klas route:', err);
+      setError(err.message || 'Kon de route niet bijwerken');
     }
   };
 
@@ -236,6 +250,16 @@ export default function AdminKlassenPage() {
 
   const selectedKlas = klassen.find(k => k.id === selectedKlasId);
   const selectedStudents = selectedKlasId ? klassesWithStudents[selectedKlasId] || [] : [];
+  // Alle niveaus plat uit de geladen CMS-boom, voor de routekeuze en de labels
+  // in de klassenlijst.
+  const alleNiveaus = Object.values(cmsContent).flatMap(vakData =>
+    Object.values(vakData.leerjaren).flatMap(leerjaarData =>
+      Object.values(leerjaarData.niveaus)
+        .map(({ niveau }) => niveau)
+        .filter(Boolean)
+    )
+  );
+  const routeOpties = buildKlasRouteOpties(alleNiveaus);
   const classSettings = [
     {
       key: 'hintsEnabled',
@@ -344,7 +368,7 @@ export default function AdminKlassenPage() {
                       <div>
                         <div>{klas.name}</div>
                         <div className="mt-1 text-xs font-bold text-[var(--helix-muted)]">
-                          {klassesWithStudents[klas.id]?.length || 0} leerlingen
+                          {klassesWithStudents[klas.id]?.length || 0} leerlingen · {getKlasRouteLabel(klas, alleNiveaus)}
                         </div>
                       </div>
                     </button>
@@ -407,6 +431,33 @@ export default function AdminKlassenPage() {
                       </label>
                     );
                     })}
+                  </div>
+
+                  {/* Leerroute: welk niveau de leerlingen van deze klas zien. */}
+                  <div className="mt-4 max-w-md">
+                    <label
+                      htmlFor="klas-route-keuze"
+                      className="mb-1 flex items-center gap-2 font-black text-[var(--helix-navy)]"
+                    >
+                      <Waypoints size={18} className="text-[var(--helix-purple)]" />
+                      Leerroute
+                    </label>
+                    <select
+                      id="klas-route-keuze"
+                      value={selectedKlas.niveauId || ''}
+                      onChange={(e) => handleSelectRoute(selectedKlas.id, e.target.value)}
+                      className="input-standard w-full"
+                    >
+                      {routeOpties.map(optie => (
+                        <option key={optie.id || 'geen-route'} value={optie.id}>
+                          {optie.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-1 text-sm leading-5 text-[var(--helix-muted)]">
+                      Met een route ziet deze klas alleen de hoofdstukken en paragrafen van dat
+                      niveau. Zonder route blijft alle toegewezen lesstof zichtbaar.
+                    </p>
                   </div>
                 </div>
 

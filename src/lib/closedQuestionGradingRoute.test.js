@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {
   CLOSED_GRADE_REVIEW_REASONS,
   CLOSED_GRADE_SOURCES,
+  buildClosedQuestionAccessMessage,
   buildClosedQuestionReviewMessage,
+  isClosedQuestionAccessError,
   resolveClosedQuestionGrade
 } from './closedQuestionGradingRoute.js';
 
@@ -84,6 +86,75 @@ test('review messages never mention an answer model and always let the student c
     });
 
   assert.equal(buildClosedQuestionReviewMessage(CLOSED_GRADE_REVIEW_REASONS.NONE), '');
+});
+
+// Verkeerde lesstof of geen klas is een bewuste weigering van de server, geen
+// storing. De leerling hoort dan de echte melding en er wordt niets geparkeerd.
+test('a deliberate server refusal is an access error, not a teacher-review case', () => {
+  assert.equal(
+    isClosedQuestionAccessError({ success: false, code: 'functions/permission-denied' }),
+    true
+  );
+  assert.equal(
+    isClosedQuestionAccessError({ success: false, code: 'functions/failed-precondition' }),
+    true
+  );
+});
+
+test('real unavailability is NOT an access error and keeps the teacher-review fallback', () => {
+  assert.equal(isClosedQuestionAccessError(null), false);
+  assert.equal(isClosedQuestionAccessError({ success: false, code: 'functions/not-found' }), false);
+  assert.equal(isClosedQuestionAccessError({ success: false, code: 'functions/internal' }), false);
+  assert.equal(
+    isClosedQuestionAccessError({ success: false, code: 'functions/resource-exhausted' }),
+    false
+  );
+  // Een geslaagd antwoord kan nooit een weigering zijn, wat de code ook zegt.
+  assert.equal(
+    isClosedQuestionAccessError({ success: true, code: 'functions/permission-denied' }),
+    false
+  );
+});
+
+test('the access message passes the real server message through, plus what to do', () => {
+  assert.equal(
+    buildClosedQuestionAccessMessage({
+      success: false,
+      code: 'functions/permission-denied',
+      error: 'Dit toetsblok hoort niet bij jouw lesstof.'
+    }),
+    'Dit toetsblok hoort niet bij jouw lesstof. Vraag je docent om de paragraaf toe te wijzen.'
+  );
+
+  assert.equal(
+    buildClosedQuestionAccessMessage({
+      success: false,
+      code: 'functions/failed-precondition',
+      error: 'Je bent nog niet aan een klas gekoppeld.'
+    }),
+    'Je bent nog niet aan een klas gekoppeld. Vraag je docent om je aan een klas te koppelen.'
+  );
+});
+
+test('the access message never doubles the advice when the server already names the teacher', () => {
+  assert.equal(
+    buildClosedQuestionAccessMessage({
+      success: false,
+      code: 'functions/permission-denied',
+      error: 'Dit hoort niet bij jouw lesstof. Vraag je docent om hulp.'
+    }),
+    'Dit hoort niet bij jouw lesstof. Vraag je docent om hulp.'
+  );
+});
+
+test('the access message has a readable fallback when the server message is empty', () => {
+  const message = buildClosedQuestionAccessMessage({
+    success: false,
+    code: 'functions/permission-denied',
+    error: ''
+  });
+  assert.ok(message.includes('hoort niet bij jouw lesstof'));
+  assert.ok(message.includes('docent'));
 });
 
 test('server parts are passed through for the student feedback', () => {

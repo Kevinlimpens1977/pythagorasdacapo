@@ -23,6 +23,7 @@ import * as klasService from '../../services/klasService';
 import * as voortgangService from '../../services/voortgangService';
 import { getEffectiveContentBlocks } from '../../lib/assignmentUtils';
 import { getEffectiveKlasId } from '../../lib/classIdUtils';
+import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../../lib/klasRoute';
 import { formatStudyDuration } from '../../lib/studyRouteState';
 import {
   CHAPTER_SECTION_LABELS,
@@ -74,7 +75,12 @@ export default function TableOfContents() {
           enabledParagraafIds.map((id) => cmsService.getParagraaf(id).catch(() => null))
         );
 
-        const validParagrafen = paragraafDetails.filter(Boolean);
+        // Heeft de klas een route (niveauId), dan ziet de leerling alleen de
+        // paragrafen van dat niveau; zonder route blijft alles zichtbaar.
+        const validParagrafen = filterLesstofOpKlasRoute(
+          paragraafDetails.filter(Boolean),
+          getKlasNiveauId(klasData)
+        );
         const paragraafWithContent = await Promise.all(
           validParagrafen.map(async (paragraaf) => {
             const [vragen, contentBlocks] = await Promise.all([

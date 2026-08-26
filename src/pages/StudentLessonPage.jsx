@@ -17,6 +17,7 @@ import {
   Maximize2,
   MessageCircle,
   Minimize2,
+  Paperclip,
   PlayCircle,
   Plus,
   RotateCcw,
@@ -128,8 +129,10 @@ import { assessOpenAnswerLocally } from '../lib/localOpenAnswerAssessment';
 import { hasQuestionAnswerKey } from '../lib/publicQuestionView';
 import { buildInitialOrderItems, gradeQuestionAnswer } from '../lib/questionGrading';
 import {
+  buildClosedQuestionAccessMessage,
   buildClosedQuestionReviewMessage,
   hasAnswerExplanation,
+  isClosedQuestionAccessError,
   resolveClosedQuestionGrade,
   selectAnswerExplanation
 } from '../lib/closedQuestionGradingRoute';
@@ -166,6 +169,13 @@ import {
   updateMathToolValue
 } from '../lib/mathToolboxUtils';
 import { getLessonPreviewMode, shouldIncludeDraftBlocksForPreview } from '../lib/lessonPreviewMode';
+import { getKlasNiveauId, isLesstofInKlasRoute } from '../lib/klasRoute';
+import {
+  INLEVERING_ACCEPT_ATTRIBUUT,
+  magInleveringVervangen,
+  valideerInleverBestand
+} from '../lib/inleveringUtils';
+import { uploadInlevering } from '../services/inleveringService';
 import { buildTokenAwardPayload } from '../lib/tokenAwardUtils';
 
 const blockIcons = {
@@ -313,6 +323,14 @@ export default function StudentLessonPage() {
 
         if (!paragraafData) {
           setError('Deze les kon niet worden gevonden.');
+          setLoading(false);
+          return;
+        }
+
+        // Klas met een route (niveauId): lesstof van een ander niveau is voor
+        // deze leerling geen lesstof, ook niet via een directe link.
+        if (!isAdmin && klasData && !isLesstofInKlasRoute(paragraafData, getKlasNiveauId(klasData))) {
+          setError('Deze les hoort niet bij de route van jouw klas. Vraag je docent om de juiste paragraaf toe te wijzen.');
           setLoading(false);
           return;
         }
@@ -529,12 +547,16 @@ export default function StudentLessonPage() {
       }
     );
 
-    const tokenPayload = buildTokenAwardPayload({
-      block,
-      paragraafId,
-      completed,
-      extra
-    });
+    // Een upload bij een inleveropdracht verandert alleen het bestand, niet de
+    // leeruitkomst: geen tokens en geen streak, alleen de verversing onderaan.
+    const tokenPayload = extra.inleveringOnly === true
+      ? null
+      : buildTokenAwardPayload({
+          block,
+          paragraafId,
+          completed,
+          extra
+        });
 
     if (tokenPayload) {
       try {
@@ -548,11 +570,13 @@ export default function StudentLessonPage() {
       }
     }
 
-    const nextStreak = updateVictoryStreak(victoryStreakRef.current, {
-      blockType: block.type,
-      completed,
-      isCorrect: extra.isCorrect
-    });
+    const nextStreak = extra.inleveringOnly === true
+      ? victoryStreakRef.current
+      : updateVictoryStreak(victoryStreakRef.current, {
+          blockType: block.type,
+          completed,
+          isCorrect: extra.isCorrect
+        });
     victoryStreakRef.current = nextStreak;
     if (nextStreak.milestone && activeVictoryEffect && !victoryPlayback) {
       setVictoryPlayback(buildVictoryEffectPlayback({
@@ -1908,6 +1932,122 @@ function PythagorasCalculator({ disabled = false }) {
   );
 }
 
+/**
+ * Bestandsinlevering bij een praktijkopdracht (open vraag): één Word-, PDF- of
+ * afbeeldingsbestand naast het getypte antwoord.
+ *
+ * Vervangen mag zolang een docent het record niet definitief beoordeeld heeft
+ * (magInleveringVervangen in src/lib/inleveringUtils.js); bij vervangen ruimt
+ * de service het oude bestand in Storage op. Na een docentbesluit verdwijnt de
+ * knop en staat het bestand vast.
+ */
+function InleveringVak({ blockId, studentId, progressRecord, onSaveProgress }) {
+  const inputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  const inlevering = progressRecord?.inlevering || null;
+  const vervangbaar = magInleveringVervangen(progressRecord);
+
+  // In docentpreview of beheer is er geen leerling en dus niets in te leveren.
+  if (!studentId) return null;
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0] || null;
+    event.target.value = '';
+    if (!file || uploading) return;
+
+    const controle = valideerInleverBestand({ name: file.name, size: file.size, type: file.type });
+    if (!controle.ok) {
+      setUploadError(controle.reden);
+      return;
+    }
+
+    setUploading(true);
+    setUploadError('');
+    try {
+      const nieuweInlevering = await uploadInlevering({
+        uid: studentId,
+        blockId,
+        file,
+        vorigeStoragePath: inlevering?.storagePath || ''
+      });
+
+      // Alleen het bestand wijzigt; de leeruitkomst van het record blijft
+      // precies zoals hij was. inleveringOnly voorkomt tokens en streak.
+      await onSaveProgress?.(Boolean(progressRecord?.completed), {
+        isCorrect: progressRecord?.isCorrect === true,
+        resultTier: progressRecord?.resultTier || '',
+        inlevering: nieuweInlevering,
+        inleveringOnly: true
+      });
+    } catch (error) {
+      console.error('Inlevering uploaden mislukt:', error);
+      setUploadError('Uploaden is niet gelukt. Controleer je verbinding en probeer het opnieuw.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
+      <p className="text-[11px] font-black uppercase tracking-wider text-[var(--helix-muted)]">
+        Bestand inleveren
+      </p>
+
+      {inlevering?.url ? (
+        <div className="mt-2 flex flex-wrap items-center gap-3 rounded-lg border border-[var(--helix-border)] bg-white px-3 py-2">
+          <FileText size={18} className="shrink-0 text-[var(--helix-purple)]" />
+          <span className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--helix-navy)]">
+            {inlevering.bestandsnaam}
+          </span>
+          <a
+            href={inlevering.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-black text-[var(--helix-purple)] hover:underline"
+          >
+            Openen
+          </a>
+        </div>
+      ) : (
+        <p className="mt-1 text-sm font-semibold text-[var(--helix-muted)]">
+          Je kunt één bestand toevoegen: Word (.doc/.docx), PDF of een afbeelding, maximaal 15 MB.
+        </p>
+      )}
+
+      {vervangbaar ? (
+        <div className="mt-2">
+          <input
+            ref={inputRef}
+            type="file"
+            accept={INLEVERING_ACCEPT_ATTRIBUUT}
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Paperclip size={16} />}
+            {uploading ? 'Uploaden...' : inlevering ? 'Vervang bestand' : 'Kies bestand'}
+          </button>
+        </div>
+      ) : (
+        <p className="mt-2 text-sm font-bold text-[var(--helix-muted)]">
+          Beoordeeld — vervangen kan niet meer.
+        </p>
+      )}
+
+      {uploadError && (
+        <p className="mt-2 text-sm font-bold text-[var(--helix-danger)]">{uploadError}</p>
+      )}
+    </div>
+  );
+}
+
 function QuestionLearningBlock({
   block,
   bodyHtml,
@@ -2144,6 +2284,15 @@ function QuestionLearningBlock({
             blockId: block.id,
             answers: closedAnswers
           });
+
+          // De server weigerde bewust: verkeerde lesstof of geen klas. Dat is
+          // geen storing, dus geen "docent kijkt mee", geen poging, geen
+          // voortgang en geen tokens. De leerling krijgt de echte melding.
+          if (isClosedQuestionAccessError(closedServerResult)) {
+            setAssessmentFeedback(buildClosedQuestionAccessMessage(closedServerResult));
+            setAssessmentMissing([]);
+            return;
+          }
         }
 
         closedGrade = resolveClosedQuestionGrade({
@@ -2589,6 +2738,12 @@ function QuestionLearningBlock({
                     onResetTool={resetMathToolById}
                   />
                 )}
+                <InleveringVak
+                  blockId={block.id}
+                  studentId={studentId}
+                  progressRecord={progressRecord}
+                  onSaveProgress={onSaveProgress}
+                />
               </>
             );
           })()}
@@ -3115,6 +3270,14 @@ function AssessmentItemLearningCard({
               itemId: item.id,
               answers: { itemAnswer: answer ?? null }
             });
+
+        // Bewuste weigering (verkeerde lesstof of geen klas): toon de echte
+        // servermelding en schrijf niets weg - geen docentbeoordeling, geen
+        // poging, geen voortgang.
+        if (isClosedQuestionAccessError(serverResult)) {
+          setFeedback(buildClosedQuestionAccessMessage(serverResult));
+          return;
+        }
 
         const closedGrade = resolveClosedQuestionGrade({ serverResult, localGrade });
         graded = closedGrade.graded;

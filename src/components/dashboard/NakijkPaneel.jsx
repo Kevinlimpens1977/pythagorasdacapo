@@ -1,5 +1,6 @@
-import { AlertCircle, Check, ClipboardCheck, Clock, TriangleAlert } from 'lucide-react';
+import { AlertCircle, Check, ClipboardCheck, Clock, FileText, TriangleAlert } from 'lucide-react';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
+import { normalizeInlevering } from '../../lib/inleveringUtils';
 import { relatieveTijd } from '../../lib/relatieveTijd';
 import BeoordeelActies from './BeoordeelActies';
 import StudentAvatar from '../common/StudentAvatar';
@@ -57,6 +58,38 @@ function NakijkReferentie({ opdracht }) {
   );
 }
 
+/**
+ * Het ingeleverde bestand bij een praktijkopdracht (veld `inlevering` op het
+ * voortgangsrecord): naam plus een open/download-link. De link is de download-URL
+ * van Storage, dus openen werkt ook als het bestand niet in de browser rendert.
+ */
+function InleveringBestandsKaart({ record }) {
+  const inlevering = normalizeInlevering(record?.inlevering);
+  if (!inlevering?.url) return null;
+
+  return (
+    <div className="mt-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 py-2">
+      <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--helix-muted)]">
+        Ingeleverd bestand
+      </span>
+      <div className="mt-1 flex flex-wrap items-center gap-3">
+        <FileText size={18} className="shrink-0 text-[var(--helix-purple)]" />
+        <span className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--helix-navy)]">
+          {inlevering.bestandsnaam}
+        </span>
+        <a
+          href={inlevering.url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-sm font-black text-[var(--helix-purple)] hover:underline"
+        >
+          Openen of downloaden
+        </a>
+      </div>
+    </div>
+  );
+}
+
 /** Eén open beoordeling: wie, welke vraag, welk antwoord, en wat je ermee doet. */
 function NakijkKaart({ opdracht, onBeoordeel, bezig, toonLeerling = true }) {
   return (
@@ -97,6 +130,8 @@ function NakijkKaart({ opdracht, onBeoordeel, bezig, toonLeerling = true }) {
           {formatProgressAnswer(opdracht.antwoord)}
         </p>
       </div>
+
+      <InleveringBestandsKaart record={opdracht.record} />
 
       <NakijkReferentie opdracht={opdracht} />
 

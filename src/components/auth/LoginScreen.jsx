@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, GraduationCap, LogIn, UserPlus } from 'lucide-react';
 import { auth } from '../../services/firebase';
 import { DOMEIN_FOUTMELDING, isToegestaanSchoolEmail } from '../../lib/allowedEmailDomains';
+import { naarInlogEmail } from '../../lib/loginIdentifier';
 import { useFinishGoogleRedirect, useRedirectWhenAuthenticated } from './loginFlow';
 
 const MERKPUNTEN = ['Stap voor stap', 'Directe hulp', 'Tokens'];
@@ -40,16 +41,17 @@ export default function LoginScreen() {
           setError('Vul je voornaam en achternaam in.');
           return;
         }
-        if (!isToegestaanSchoolEmail(email)) {
+        const aanmeldEmail = naarInlogEmail(email);
+        if (!isToegestaanSchoolEmail(aanmeldEmail)) {
           setError(DOMEIN_FOUTMELDING);
           return;
         }
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, aanmeldEmail, password);
         await updateProfile(userCredential.user, {
           displayName: `${firstName} ${lastName}`
         });
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, naarInlogEmail(email), password);
       }
       // Doorsturen gebeurt vanzelf zodra currentUser verandert.
     } catch (err) {
@@ -78,7 +80,7 @@ export default function LoginScreen() {
     }
 
     try {
-      await sendPasswordResetEmail(auth, email.trim());
+      await sendPasswordResetEmail(auth, naarInlogEmail(email));
       setNotice('We hebben je een herstelmail gestuurd. Kijk in je schoolmail.');
     } catch (err) {
       console.error(err);
@@ -182,7 +184,7 @@ export default function LoginScreen() {
               )}
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">E-mailadres</label>
+                <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">Leerlingnummer of e-mailadres</label>
                 <input
                   type="email"
                   required

@@ -205,6 +205,30 @@ export const updateKlasChapters = async (klasId, enabledChapters) => {
 };
 
 /**
+ * Zet de leerroute (het niveau) van een klas.
+ * Een lege of ontbrekende niveauId betekent "geen route": de leerling ziet dan
+ * alles wat is toegewezen, ongeacht niveau.
+ * @param {string} klasId
+ * @param {string|null} niveauId - Niveau-document-id (bijv. 'niveau-dv-vmbo1-bb') of null
+ * @returns {Promise<void>}
+ */
+export const updateKlasNiveau = async (klasId, niveauId) => {
+  if (!klasId) {
+    throw new Error('klasId is required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      niveauId: String(niveauId || '').trim() || null,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to update class niveau: ${error.message}`, { cause: error });
+  }
+};
+
+/**
  * Delete a class
  * @param {string} klasId
  * @returns {Promise<void>}
@@ -408,6 +432,7 @@ export default {
   getKlasStudents,
   updateKlasSettings,
   updateKlasChapters,
+  updateKlasNiveau,
   deleteKlas,
   updateKlasEnabledParagrafen,
   updateKlasEnabledContentBlocks,

@@ -218,7 +218,7 @@ export const GAME_REGISTRY = [
     tokenRewardPotential: { min: 0, max: 200, basis: 'score_accuracy_completion' },
     // Onbeperkt oefenen mag: de tokenopbrengst halveert server-side per beurt (replayDecay).
     maxPlays: 0,
-    status: GAME_STATUSES.PROTOTYPE
+    status: GAME_STATUSES.ACTIVE
   },
   {
     gameId: 'paco-pac-man',

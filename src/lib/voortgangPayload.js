@@ -1,4 +1,5 @@
 import { buildLearningResultMetadata } from './learningResultUtils.js';
+import { normalizeInlevering } from './inleveringUtils.js';
 import { buildAnswerSignature, isAssessmentForAnswer } from './openAnswerAssessmentFeedback.js';
 import { appendAttemptHistory, buildPartScore, normalizeGradeParts } from './voortgangAttemptLog.js';
 
@@ -102,6 +103,10 @@ export const buildContentBlockVoortgangUpdate = ({
     isCorrect: data.isCorrect || false,
     attempts: data.attempts ?? existingData.attempts ?? 0,
     lastAnswer,
+    // Het ingeleverde bestand (Word/PDF/afbeelding) naast het getypte antwoord.
+    // Reist mee met elke latere save, zodat een nieuwe poging de inlevering
+    // niet wist; alleen een nieuwe upload vervangt hem.
+    inlevering: normalizeInlevering(data.inlevering ?? existingData.inlevering),
     openAnswerAssessment: buildAssessmentPayload({ data, existingData, lastAnswer }),
     assignmentKind: data.assignmentKind ?? existingData.assignmentKind ?? 'core',
     completionReason: data.completionReason ?? existingData.completionReason ?? '',

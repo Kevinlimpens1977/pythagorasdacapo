@@ -182,6 +182,21 @@ export default function AppShell() {
           )}
 
           {!isAdmin && (
+            <button
+              onClick={() => navigate('/spellen')}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition ${
+                location.pathname === '/spellen'
+                  ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+                  : 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
+              }`}
+              title="Spellen"
+            >
+              <Gamepad2 size={18} />
+              <span className="sr-only">Spellen</span>
+            </button>
+          )}
+
+          {!isAdmin && (
             <TokenBalancePill
               studentUid={currentUser?.uid}
               disabled={isDevBypass}
