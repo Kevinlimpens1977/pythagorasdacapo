@@ -284,7 +284,10 @@ export default function TurboTypenGame({ onStart, onComplete }) {
             <div
               ref={veldRef}
               className="relative w-full overflow-hidden rounded-2xl border border-white/60 bg-white/55 shadow-inner backdrop-blur-sm"
-              style={{ height: '20rem' }}
+              // Het veld groeit mee met het venster: in fullscreen bijna schermvullend,
+              // in de les nooit kleiner dan de oude 20rem. Woordposities zijn
+              // procentueel, dus die schalen vanzelf mee.
+              style={{ height: 'clamp(20rem, 62vh, 52rem)' }}
             >
               <VeldAchtergrond key={level.nummer} level={level} />
 
