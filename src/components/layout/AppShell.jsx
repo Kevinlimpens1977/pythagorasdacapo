@@ -109,7 +109,7 @@ export default function AppShell() {
             </span>
           </h1>
 
-          <nav className="custom-scrollbar flex max-w-[54vw] gap-1 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:max-w-none md:gap-2">
+          <nav className="nav-scroll-onzichtbaar flex max-w-[54vw] gap-1 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:max-w-none md:gap-2">
             {isAdmin ? (
               ADMIN_WORKSPACES.map((workspace) => {
                 const Icon = workspaceIcons[workspace.id] || SettingsIcon;

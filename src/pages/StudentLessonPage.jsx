@@ -90,12 +90,22 @@ import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
 import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
 import StudyStepRail from '../components/lesson/StudyStepRail';
 import {
-  areExerciseAnswersComplete,
   buildExerciseAnswerPayload,
   buildInitialExerciseAnswers,
   getExerciseFields,
   hasExerciseFields
 } from '../lib/exerciseBlockUtils';
+import { ZELFOORDELEN } from '../lib/zelfbeoordeling';
+import {
+  OEFEN_FASEN,
+  createOefenFlow,
+  huidigeOpgave,
+  isLaatsteOpgave,
+  kiesZelfoordeel,
+  magOefenInleveren,
+  verwerkInlevering,
+  volgendeOpgave
+} from '../lib/oefenFlow';
 import {
   buildAnswerSignature,
   isAssessmentForAnswer,
@@ -3439,79 +3449,311 @@ function AssessmentAnswerInput({
   );
 }
 
+/**
+ * Oefenblok volgens het "probeer eerst"-contract: EEN opgave tegelijk, en per
+ * opgave drie fasen - Proberen, Vergelijken, Zelf beoordelen. De uitwerking
+ * staat niet meer in de leshtml; die komt pas van de server terug nadat het
+ * eigen antwoord is ingeleverd (assessOpenAnswer met blockId + fieldId).
+ * De fase-overgangen zelf staan in src/lib/oefenFlow.js en zijn daar getest.
+ */
 function ExerciseLearningBlock({ block, bodyHtml, progressRecord, onSaveProgress, onAutoAdvance }) {
   const fields = useMemo(() => getExerciseFields(block), [block]);
   const [answers, setAnswers] = useState(() => buildInitialExerciseAnswers(fields, progressRecord?.lastAnswer));
+  const [flow, setFlow] = useState(() => createOefenFlow(fields));
+  const [assessing, setAssessing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [submitted, setSubmitted] = useState(Boolean(progressRecord?.completed));
-  const isComplete = areExerciseAnswersComplete(fields, answers);
+  const [saveError, setSaveError] = useState('');
+  // Wie het blok al eerder afrondde, heeft de uitwerkingen al gezien. Opnieuw
+  // oefenen zou dan naslaan zijn, geen proberen: alleen de samenvatting tonen.
+  const [alreadyCompleted] = useState(Boolean(progressRecord?.completed));
 
-  const handleSubmit = async () => {
-    if (!isComplete || saving) return;
+  const veld = huidigeOpgave(flow);
+  const antwoord = veld ? String(answers[veld.id] || '') : '';
+  const assessment = flow.assessment || null;
+  const laatsteRecord = flow.records[flow.records.length - 1] || null;
+  const huidigRecord = laatsteRecord && veld && laatsteRecord.fieldId === veld.id ? laatsteRecord : null;
+  const aiMislukt = flow.fase === OEFEN_FASEN.BEOORDEELD && huidigRecord?.zelfoordeelOvergeslagen === true;
+
+  const handleInleveren = async () => {
+    if (!veld || assessing || !magOefenInleveren(flow, antwoord)) return;
+    setAssessing(true);
+    try {
+      // Geen modelAnswer meekunnen sturen is hier het punt: de server zoekt de
+      // uitwerking zelf op en geeft die pas terug nadat er beoordeeld is.
+      const result = await assessOpenAnswerCall({
+        blockId: block.id,
+        fieldId: veld.id,
+        questionTitle: block.title || 'Oefenopgave',
+        questionPrompt: veld.label,
+        studentAnswer: antwoord.trim()
+      });
+      setFlow((current) => verwerkInlevering(current, { antwoord, assessment: result }));
+    } finally {
+      setAssessing(false);
+    }
+  };
+
+  const handleZelfoordeel = (zelfoordeel) => {
+    setFlow((current) => kiesZelfoordeel(current, { zelfoordeel, antwoord }));
+  };
+
+  const handleVolgende = async () => {
+    if (saving) return;
+    const next = volgendeOpgave(flow);
+    if (next === flow) return;
+
+    if (!next.afgerond) {
+      setFlow(next);
+      return;
+    }
+
+    // Laatste opgave beoordeeld: nu pas landt alles in de voortgang. Tokens
+    // belonen het afronden van de drie fasen, nooit het oordeel zelf.
     setSaving(true);
+    setSaveError('');
     try {
       await onSaveProgress(true, {
         isCorrect: true,
         vraagType: 'exercise',
-        lastAnswer: buildExerciseAnswerPayload(fields, answers)
+        lastAnswer: buildExerciseAnswerPayload(fields, answers),
+        zelfbeoordeling: next.records
       });
-      const isFirstSubmit = !submitted;
-      setSubmitted(true);
-      if (isFirstSubmit) {
-        onAutoAdvance?.(block.id);
-      }
+      setFlow(next);
+      onAutoAdvance?.(block.id);
+    } catch (error) {
+      console.error('Oefenblok kon niet worden opgeslagen:', error);
+      setSaveError('Je werk kon niet worden opgeslagen. Probeer het opnieuw.');
     } finally {
       setSaving(false);
     }
   };
 
+  if (alreadyCompleted || flow.afgerond) {
+    const savedRecords = flow.afgerond && flow.records.length
+      ? flow.records
+      : Array.isArray(progressRecord?.zelfbeoordeling) ? progressRecord.zelfbeoordeling : [];
+    const savedAnswers = flow.afgerond ? answers : buildInitialExerciseAnswers(fields, progressRecord?.lastAnswer);
+
+    return (
+      <div className="space-y-6">
+        {hasRenderableLessonHtml(bodyHtml) && (
+          <div className="lesson-prose" dangerouslySetInnerHTML={htmlValue(bodyHtml)} />
+        )}
+
+        <p className="text-sm font-bold text-[var(--helix-muted)]">
+          Je hebt deze oefening afgerond. Dit zijn je antwoorden en je eigen oordeel per opgave.
+        </p>
+
+        <div className="space-y-3">
+          {fields.map((field, index) => {
+            const record = savedRecords.find((entry) => entry?.fieldId === field.id) || null;
+            const oordeel = record ? ZELFOORDELEN[record.zelfoordeel] || null : null;
+            return (
+              <div key={field.id} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)]">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="pt-1 text-base font-bold leading-6 text-[var(--helix-navy)]">{field.label}</p>
+                    <p className="mt-2 whitespace-pre-wrap text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+                      {String(record?.antwoord || savedAnswers[field.id] || '').trim() || 'Geen antwoord bewaard.'}
+                    </p>
+                    {oordeel ? (
+                      <span
+                        className="mt-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-black"
+                        style={{ color: oordeel.kleur, backgroundColor: oordeel.achtergrond }}
+                      >
+                        Eigen oordeel: {oordeel.label}
+                      </span>
+                    ) : record?.zelfoordeelOvergeslagen ? (
+                      <span className="mt-2 inline-flex items-center rounded-full bg-[var(--helix-surface-soft)] px-2.5 py-0.5 text-[11px] font-black text-[var(--helix-muted)]">
+                        Je docent kijkt dit na
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {hasRenderableLessonHtml(bodyHtml) && (
-        <div
-          className="lesson-prose"
-          dangerouslySetInnerHTML={htmlValue(bodyHtml)}
-        />
+        <div className="lesson-prose" dangerouslySetInnerHTML={htmlValue(bodyHtml)} />
       )}
 
-      <div className="space-y-3">
-        {fields.map((field, index) => (
-          <div key={field.id} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
-            <label htmlFor={`${block.id}-${field.id}`} className="flex items-start gap-3">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)]">
-                {index + 1}
-              </span>
-              <span className="pt-1 text-base font-bold leading-6 text-[var(--helix-navy)]">{field.label}</span>
-            </label>
-            <textarea
-              id={`${block.id}-${field.id}`}
-              value={answers[field.id] || ''}
-              onChange={(event) => setAnswers((current) => ({ ...current, [field.id]: event.target.value }))}
-              disabled={saving}
-              className="input-standard mt-3 min-h-20 w-full resize-y leading-6"
-              placeholder="Typ je antwoord"
-            />
-          </div>
-        ))}
+      {/* Microstap: waar ben je in de reeks. */}
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">
+            Opgave {flow.index + 1} van {fields.length}
+          </p>
+          <p className="text-xs font-bold text-[var(--helix-muted)]">
+            {flow.fase === OEFEN_FASEN.PROBEREN
+              ? 'Proberen'
+              : flow.fase === OEFEN_FASEN.VERGELIJKEN
+                ? 'Vergelijken en zelf beoordelen'
+                : 'Beoordeeld'}
+          </p>
+        </div>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--helix-surface-soft)]">
+          <div
+            className="h-full rounded-full bg-[var(--helix-purple)] transition-all"
+            style={{ width: `${Math.round((flow.records.length / Math.max(1, fields.length)) * 100)}%` }}
+          />
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--helix-border)] pt-4">
-        <p className="text-sm font-bold text-[var(--helix-muted)]">
-          {submitted
-            ? 'Ingeleverd · je docent kan je antwoorden bekijken'
-            : isComplete
-              ? 'Alle velden ingevuld'
-              : 'Vul alle velden in om in te leveren'}
-        </p>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!isComplete || saving}
-          className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {saving ? 'Opslaan...' : submitted ? 'Opnieuw inleveren' : 'Antwoorden inleveren'}
-        </button>
-      </div>
+      {veld && (
+        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+          <label htmlFor={`${block.id}-${veld.id}`} className="flex items-start gap-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)]">
+              {flow.index + 1}
+            </span>
+            <span className="pt-1 text-base font-bold leading-6 text-[var(--helix-navy)]">{veld.label}</span>
+          </label>
+
+          {flow.fase === OEFEN_FASEN.PROBEREN ? (
+            <>
+              <textarea
+                id={`${block.id}-${veld.id}`}
+                value={antwoord}
+                onChange={(event) => setAnswers((current) => ({ ...current, [veld.id]: event.target.value }))}
+                disabled={assessing}
+                className="input-standard mt-3 min-h-24 w-full resize-y leading-6"
+                placeholder="Typ je antwoord"
+              />
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs font-semibold text-[var(--helix-muted)]">
+                  {magOefenInleveren(flow, antwoord)
+                    ? 'Na het inleveren zie je de uitwerking.'
+                    : 'Probeer het eerst zelf: schrijf je antwoord in een paar woorden of zinnen.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleInleveren}
+                  disabled={assessing || !magOefenInleveren(flow, antwoord)}
+                  className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {assessing ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Digidocent kijkt na...
+                    </>
+                  ) : (
+                    'Lever in'
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="mt-3 space-y-3">
+              {/* Het eigen antwoord staat op slot: vergelijken, niet bijwerken. */}
+              <div className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
+                <p className="text-[11px] font-black uppercase tracking-wider text-[var(--helix-muted)]">Jouw antwoord</p>
+                <p className="mt-1 whitespace-pre-wrap text-sm font-semibold leading-6 text-[var(--helix-navy)]">
+                  {antwoord.trim()}
+                </p>
+              </div>
+
+              {aiMislukt ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-bold text-amber-900">
+                  De uitwerking kon niet worden opgehaald; je docent kijkt dit na. Je kunt gewoon verder.
+                </div>
+              ) : (
+                <>
+                  {(assessment?.modelAnswer || assessment?.explanation) && (
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                      <p className="text-[11px] font-black uppercase tracking-wider text-emerald-700">Uitwerking</p>
+                      {assessment?.modelAnswer && (
+                        <p className="mt-1 whitespace-pre-wrap text-sm font-bold leading-6 text-emerald-950">
+                          {assessment.modelAnswer}
+                        </p>
+                      )}
+                      {assessment?.explanation && (
+                        <p className="mt-2 whitespace-pre-wrap text-sm font-semibold leading-6 text-emerald-900">
+                          {assessment.explanation}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {assessment?.feedback && (
+                    <div className="rounded-xl border border-violet-200 bg-violet-50 p-3">
+                      <p className="text-[11px] font-black uppercase tracking-wider text-violet-700">Digidocent</p>
+                      <p className="mt-1 text-sm font-semibold leading-6 text-violet-950">{assessment.feedback}</p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {flow.fase === OEFEN_FASEN.VERGELIJKEN && (
+                <div>
+                  <p className="text-sm font-bold text-[var(--helix-navy)]">
+                    Vergelijk je antwoord met de uitwerking. Hoe ging het?
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {Object.entries(ZELFOORDELEN).map(([waarde, oordeel]) => (
+                      <button
+                        key={waarde}
+                        type="button"
+                        onClick={() => handleZelfoordeel(waarde)}
+                        className="rounded-xl border border-transparent px-4 py-2.5 text-sm font-black transition hover:brightness-95"
+                        style={{ color: oordeel.kleur, backgroundColor: oordeel.achtergrond }}
+                      >
+                        {oordeel.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {flow.fase === OEFEN_FASEN.BEOORDEELD && !aiMislukt && huidigRecord && ZELFOORDELEN[huidigRecord.zelfoordeel] && (
+                <p className="inline-flex items-center gap-2 text-sm font-bold text-[var(--helix-navy)]">
+                  <Check size={16} strokeWidth={3.2} className="text-[#15803d]" />
+                  Jouw oordeel:
+                  <span
+                    className="rounded-full px-2.5 py-0.5 text-[11px] font-black"
+                    style={{
+                      color: ZELFOORDELEN[huidigRecord.zelfoordeel].kleur,
+                      backgroundColor: ZELFOORDELEN[huidigRecord.zelfoordeel].achtergrond
+                    }}
+                  >
+                    {ZELFOORDELEN[huidigRecord.zelfoordeel].label}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {saveError && (
+        <p className="text-sm font-bold text-[var(--helix-danger)]">{saveError}</p>
+      )}
+
+      {flow.fase === OEFEN_FASEN.BEOORDEELD && (
+        <div className="flex justify-end border-t border-[var(--helix-border)] pt-4">
+          <button
+            type="button"
+            onClick={handleVolgende}
+            disabled={saving}
+            className="btn-primary px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving
+              ? 'Opslaan...'
+              : isLaatsteOpgave(flow)
+                ? 'Oefening afronden'
+                : 'Volgende opgave'}
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

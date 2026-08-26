@@ -114,6 +114,14 @@ export const buildContentBlockVoortgangUpdate = ({
     // leerling daarna nog een poging doet: de beoordeling is geschiedenis, geen
     // vlag die opnieuw gezet moet worden.
     teacherReview: normalizeTeacherReview(data.teacherReview ?? existingData.teacherReview),
+    // Zelfbeoordeling bij oefenblokken: per opgave het antwoord, het eigen
+    // oordeel en de denktijd (zie zelfbeoordeling.js). Het docentdashboard
+    // rekent hier de "controleer even"-signalen uit.
+    zelfbeoordeling: Array.isArray(data.zelfbeoordeling)
+      ? data.zelfbeoordeling
+      : Array.isArray(existingData.zelfbeoordeling)
+        ? existingData.zelfbeoordeling
+        : [],
     draftSaved: data.completed === true ? false : (data.draftSaved ?? existingData.draftSaved ?? false),
     // Deelscores van de gedeelde beoordelingslaag. Hier stond eerder alleen
     // "goed of fout", terwijl de docent juist wil zien welk onderdeel misging.

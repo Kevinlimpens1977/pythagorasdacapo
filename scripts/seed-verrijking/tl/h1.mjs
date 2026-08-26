@@ -5,6 +5,12 @@
 // alle toetsvragen. Het patroon en alle regels staan in ../PATROON.md; lees dat
 // eerst.
 //
+// LET OP - BEWUSTE AFWIJKING VAN DE BRON (geen dekkingsfout)
+//   De bron (Wikiwijs les 0) behandelt ItsLearning als losse ELO naast
+//   SOMtoday. DaCapo College gebruikt dat systeem in schooljaar 2026-2027 niet
+//   meer: opdrachten en inleveren lopen nu via de ELO van SOMtoday. Alle stof
+//   over de losse ELO is daarom bewust omgezet naar de ELO van SOMtoday.
+//
 // Twee dingen die deze leerweg sturen:
 //   - Zinnen van 15 tot 20 woorden, begrippen mogen abstract blijven, en het
 //     waarom staat er altijd bij. Vandaar de langere theorieblokken.
@@ -180,7 +186,7 @@
 
 const LD_1_1 = [
   'Je kunt inloggen op je schoolaccount, het wifi-netwerk van school en Office 365.',
-  'Je weet waarvoor SOMtoday en ItsLearning zijn en waar je je rooster, cijfers en opdrachten vindt.',
+  'Je weet waar je in SOMtoday je rooster en je cijfers vindt en waar de ELO met je opdrachten zit.',
   'Je kunt een screenshot maken en die inleveren bij je docent.'
 ];
 
@@ -225,16 +231,16 @@ export default {
         ].join('\n')
       },
       {
-        keyTerms: ['SOMtoday', 'ItsLearning', 'screenshot', 'OneDrive'],
+        keyTerms: ['SOMtoday', 'ELO', 'screenshot', 'OneDrive'],
         exampleHtml: [
           '<p><strong>Vraag.</strong> Sara moet haar werkstuk inleveren en wil daarna kunnen bewijzen dat het gelukt is. Welke stappen zet ze achter elkaar, en waar kijkt ze tussendoor nog even voor haar rooster?</p>',
-          '<p><strong>Antwoord.</strong> Ze opent ItsLearning, klikt haar vak aan en zoekt de opdracht van vandaag op in de lijst. Ze kiest Inleveren, sleept haar bestand in het vak en controleert de bestandsnaam voordat ze bevestigt. Op het scherm verschijnt dan een bevestiging met datum en tijd, en van precies dat scherm maakt ze een screenshot. Dat doet ze met de Windows-toets, Shift en S, waarna ze het beeld met Ctrl en V in haar Word-bestand plakt. Wil ze daarna weten hoe laat haar volgende les begint, dan kijkt ze in SOMtoday, want daar staan het rooster en de cijfers. Haar bestand bewaart ze tot slot in OneDrive, zodat ze er thuis op een andere computer ook bij kan.</p>'
+          '<p><strong>Antwoord.</strong> Ze opent in SOMtoday de ELO, klikt haar vak aan en zoekt de opdracht van vandaag op in de lijst. Ze kiest Inleveren, sleept haar bestand in het vak en controleert de bestandsnaam voordat ze bevestigt. Op het scherm verschijnt dan een bevestiging met datum en tijd, en van precies dat scherm maakt ze een screenshot. Dat doet ze met de Windows-toets, Shift en S, waarna ze het beeld met Ctrl en V in haar Word-bestand plakt. Wil ze daarna weten hoe laat haar volgende les begint, dan kijkt ze bij haar rooster, dat ook gewoon in SOMtoday staat. Haar bestand bewaart ze tot slot in OneDrive, zodat ze er thuis op een andere computer ook bij kan.</p>'
         ].join('\n')
       }
     ],
     samenvatting: {
-      html: '<p>Met één schoolaccount open je de schoolcomputers, het wifi van school en Office 365 in je browser. Eén sleutel, veel deuren. Je gebruikersnaam is je leerlingnummer, dus het deel vóór de @, en je wachtwoord koos je helemaal zelf. Je rooster staat in SOMtoday, je opdrachten staan in ItsLearning, en bewijs lever je met een schermafdruk van je scherm.</p>',
-      keyTerms: ['schoolaccount', 'leerlingnummer', 'ItsLearning']
+      html: '<p>Met één schoolaccount open je de schoolcomputers, het wifi van school en Office 365 in je browser. Eén sleutel, veel deuren. Je gebruikersnaam is je leerlingnummer, dus het deel vóór de @, en je wachtwoord koos je helemaal zelf. Je rooster staat in SOMtoday, je opdrachten staan daar ook, in de ELO, en bewijs lever je met een schermafdruk.</p>',
+      keyTerms: ['schoolaccount', 'leerlingnummer', 'ELO']
     },
     vragen: [
       {
@@ -272,26 +278,26 @@ export default {
         rol: 'zelf_proberen',
         options: [
           { text: 'In SOMtoday, want daar staan je rooster en je cijfers bij elkaar.', correct: true, explanation: 'SOMtoday is het administratiesysteem: rooster, roosterwijzigingen, cijfers en meldingen.' },
-          { text: 'In ItsLearning, want daar zet je docent alle schoolinformatie voor jou neer.', correct: false, misconception: 'Denkt dat de elektronische leeromgeving ook rooster en cijfers bijhoudt.' },
+          { text: 'In de ELO bij je vakken, want daar zet je docent alle schoolinformatie voor jou neer.', correct: false, misconception: 'Denkt dat de elektronische leeromgeving ook het rooster en de cijfers bijhoudt.' },
           { text: 'In OneDrive, want daar staan al jouw eigen opgeslagen bestanden bij elkaar.', correct: false, misconception: 'Verwart een opslagplek met een informatiesysteem.' },
           { text: 'In de klassenapp, want daar hoor je zulke dingen altijd als eerste van elkaar.', correct: false, misconception: 'Vertrouwt op klasgenoten in plaats van op het officiële systeem van school.' }
         ],
-        feedback: 'SOMtoday is je rooster en je cijferlijst, en je kunt er zelfs meldingen aanzetten voor nieuwe cijfers. ItsLearning is er voor het lesmateriaal van je docenten en voor het inleveren van je werk.'
+        feedback: 'SOMtoday is je rooster en je cijferlijst, en je kunt er zelfs meldingen aanzetten voor nieuwe cijfers. De ELO is er voor het lesmateriaal van je docenten en voor het inleveren van je werk.'
       },
       {
-        prompt: 'Je klasgenoot beweert dat SOMtoday en ItsLearning eigenlijk gewoon twee namen voor hetzelfde systeem zijn. Leg het verschil uit en geef van allebei een voorbeeld van iets wat jij er zelf doet.',
+        prompt: 'Je klasgenoot beweert dat je rooster en de ELO gewoon twee namen voor dezelfde plek in SOMtoday zijn. Leg het verschil uit en geef van allebei een voorbeeld van iets wat jij er zelf doet.',
         type: 'open',
         leerdoel: LD_1_1[1],
         denkniveau: 'uitleggen',
         niveau: 'plus',
         rol: 'zelf_proberen',
-        modelAnswer: 'SOMtoday gaat over hoe ik ervoor sta en wanneer ik waar moet zijn: ik bekijk er mijn rooster en mijn cijfers en zet er een melding aan voor een roosterwijziging. ItsLearning is de leeromgeving: daar staat het lesmateriaal van mijn docent en daar lever ik mijn opdrachten en werkstukken in. Het is dus niet hetzelfde: het ene systeem is de administratie, het andere is de les.',
+        modelAnswer: 'Het rooster met de cijfers gaat over hoe ik ervoor sta en wanneer ik waar moet zijn: ik bekijk er mijn lessen en zet er een melding aan voor een roosterwijziging. De ELO is de leeromgeving binnen SOMtoday: daar staat het lesmateriaal van mijn docent en daar lever ik mijn opdrachten en werkstukken in. Het is dus niet dezelfde plek: het ene deel is de administratie, het andere is de les.',
         nakijkpunten: [
-          'Noemt bij SOMtoday rooster, cijfers of meldingen.',
-          'Noemt bij ItsLearning lesmateriaal of het inleveren van werk.',
+          'Noemt bij het rooster de cijfers of de meldingen.',
+          'Noemt bij de ELO lesmateriaal of het inleveren van werk.',
           'Geeft bij allebei een eigen voorbeeld en schrijft in hele zinnen.'
         ],
-        feedback: 'Het verschil zit in je vraag. SOMtoday beantwoordt wanneer iets is en hoe je ervoor staat, ItsLearning wat je moet maken en waar je het inlevert.'
+        feedback: 'Het verschil zit in je vraag. Je rooster en je cijfers beantwoorden wanneer iets is en hoe je ervoor staat, de ELO wat je moet maken en waar je het inlevert.'
       },
       {
         prompt: 'Hoe laat je zien dat je een opdracht echt gemaakt hebt, zonder je scherm aan je docent te laten zien?',
@@ -303,9 +309,9 @@ export default {
           { text: 'Je zegt tegen je docent dat het gelukt is.', correct: false, misconception: 'Denkt dat vertellen hetzelfde is als bewijs leveren.' },
           { text: 'Je slaat het bestand op het bureaublad op en laat het daar staan.', correct: false, misconception: 'Denkt dat opslaan op de computer waar je toevallig zit al inleveren is.' },
           { text: 'Je maakt met je telefoon een foto van je scherm en stuurt die in een appgroep.', correct: false, misconception: 'Kiest een omweg buiten de schoolomgeving om, met slecht leesbaar resultaat.' },
-          { text: 'Je maakt een screenshot en levert die in via ItsLearning.', correct: true, explanation: 'Een screenshot laat precies zien wat er op jouw scherm stond, en via ItsLearning komt het op de juiste plek terecht.' }
+          { text: 'Je maakt een screenshot en levert die in via de ELO van SOMtoday.', correct: true, explanation: 'Een screenshot laat precies zien wat er op jouw scherm stond, en via de ELO komt het op de juiste plek terecht.' }
         ],
-        feedback: 'Een screenshot is bewijs dat je docent kan bekijken wanneer het hem uitkomt, en ItsLearning zorgt dat het bij de goede opdracht belandt.'
+        feedback: 'Een screenshot is bewijs dat je docent kan bekijken wanneer het hem uitkomt, en de ELO van SOMtoday zorgt dat het bij de goede opdracht belandt.'
       },
       {
         prompt: 'Welke toetsen druk je op Windows tegelijk in om een deel van je scherm te knippen?',
@@ -723,17 +729,17 @@ export default {
         feedback: 'Netwerk kiezen, Verbinden, invullen wat gevraagd wordt, certificaat accepteren: die volgorde is overal hetzelfde. Bij DaCapo zijn dat je schoolgegevens, maar draait jouw locatie een aparte wificode, vraag die dan even aan je docent.'
       },
       {
-        prompt: 'In ItsLearning lever je opdrachten in en vind je het lesmateriaal dat je docent deelt.',
+        prompt: 'In de ELO van SOMtoday lever je opdrachten in en vind je het lesmateriaal dat je docent deelt.',
         type: 'waar-niet-waar',
         options: [
-          { text: 'Waar', correct: true, explanation: 'Klopt: ItsLearning is de ELO van DaCapo, waar docenten materiaal delen en jij je werk inlevert.' },
-          { text: 'Niet waar', correct: false, misconception: 'Haalt ItsLearning en SOMtoday door elkaar en zoekt opdrachten dus bij de cijferadministratie.' }
+          { text: 'Waar', correct: true, explanation: 'Klopt: de ELO is de leeromgeving binnen SOMtoday, waar docenten materiaal delen en jij je werk inlevert.' },
+          { text: 'Niet waar', correct: false, misconception: 'Haalt de ELO en het cijferoverzicht door elkaar en zoekt opdrachten dus bij de cijferadministratie.' }
         ],
         leerdoel: LD_1_1[1],
         denkniveau: 'herkennen',
         niveau: 'basis',
         rol: 'zelf_proberen',
-        feedback: 'Klopt. ItsLearning is de elektronische leeromgeving van DaCapo: docenten delen er materiaal en jij levert er je werk in.'
+        feedback: 'Klopt. De ELO is de elektronische leeromgeving binnen SOMtoday: docenten delen er materiaal en jij levert er je werk in.'
       },
       {
         prompt: 'Waar zet je aan dat je een melding krijgt zodra er een nieuw cijfer is ingevoerd?',
@@ -742,9 +748,9 @@ export default {
         niveau: 'plus',
         rol: 'zelf_proberen',
         options: [
-          { text: 'In ItsLearning, bij de instellingen van het vak waar het cijfer voor telt.', correct: false, misconception: 'Zoekt cijfers in de leeromgeving in plaats van in de administratie.' },
+          { text: 'In de ELO, bij de instellingen van het vak waar het cijfer voor telt.', correct: false, misconception: 'Zoekt cijfers in de leeromgeving in plaats van in de administratie.' },
           { text: 'In OneDrive, bij de instellingen van je map.', correct: false, misconception: 'Denkt dat een opslagplek ook je cijfers bijhoudt.' },
-          { text: 'In SOMtoday, bij je eigen instellingen, onder het kopje Meldingen.', correct: true, explanation: 'SOMtoday houdt cijfers en rooster bij, dus daar staan ook de schuifjes voor meldingen.' },
+          { text: 'Bij je eigen instellingen in SOMtoday, onder het kopje Meldingen.', correct: true, explanation: 'Meldingen horen bij jouw eigen instellingen, want jij bepaalt waarover jij bericht wilt krijgen.' },
           { text: 'Dat kan niet; je docent moet het je zelf laten weten.', correct: false, misconception: 'Weet niet dat je meldingen zelf kunt instellen en wacht daarom af.' }
         ],
         feedback: 'Meldingen staan niet vanzelf aan, dus daar moet je zelf één keer iets voor doen. Je zet ze aan in SOMtoday, apart voor nieuwe cijfers en apart voor roosterwijzigingen. Ziet jouw menu er anders uit, zoek dan op het woord Meldingen; dat staat er altijd.'
@@ -939,10 +945,10 @@ export default {
         options: [
           { text: 'Je kiest gewoon de bovenste regel, want die stelt Outlook zelf als eerste aan jou voor.', correct: false, misconception: 'Denkt dat de bovenste suggestie altijd de juiste persoon is.' },
           { text: 'Je stuurt de mail naar alle drie, dan komt hij zeker aan.', correct: false, misconception: 'Lost twijfel op door twee onbekenden mee te laten lezen.' },
-          { text: 'Je kijkt welke voorletter en welk adres bij jouw docent horen en klikt die regel aan.', correct: true, explanation: 'In SOMtoday of ItsLearning zie je de voorletter van je eigen docent, en daarmee kies je de goede.' },
+          { text: 'Je kijkt welke voorletter en welk adres bij jouw docent horen en klikt die regel aan.', correct: true, explanation: 'In SOMtoday zie je de voorletter van je eigen docent, en daarmee kies je de goede.' },
           { text: 'Je typt het adres dan maar zelf helemaal uit.', correct: false, misconception: 'Kiest juist de weg waarop een typefout ontstaat, terwijl het adresboek klaarstaat.' }
         ],
-        feedback: 'Op een grote school werken vaker meer mensen met precies dezelfde achternaam naast elkaar. De voorletter uit SOMtoday of ItsLearning wijst je de goede persoon vanzelf aan.'
+        feedback: 'Op een grote school werken vaker meer mensen met precies dezelfde achternaam naast elkaar. De voorletter uit SOMtoday wijst je de goede persoon vanzelf aan.'
       },
       {
         prompt: 'Leg in je eigen woorden uit wat digitale geletterdheid betekent en noem twee redenen waarom je het leert.',
@@ -1048,10 +1054,10 @@ export default {
         denkniveau: 'maken_controleren',
         niveau: 'verdieping',
         rol: 'bewijs_leveren',
-        modelAnswer: 'Eerst probeer ik het rustig nog een keer, voor het geval ik me vertypte. Lukt het dan nog niet, dan ga ik naar het wachtwoordportaal van school om zelf een nieuw wachtwoord in te stellen; kom ik daar niet uit, dan meld ik het bij mijn docent of bij de ICT-helpdesk. Daarna log ik in met mijn nieuwe wachtwoord en zet ik het meteen in mijn wachtwoordkluis. Vervolgens open ik ItsLearning, zoek ik de opdracht op en lever ik mijn bestand daar in. Als bewijs maak ik een schermafdruk van het ingeleverde werk.',
+        modelAnswer: 'Eerst probeer ik het rustig nog een keer, voor het geval ik me vertypte. Lukt het dan nog niet, dan ga ik naar het wachtwoordportaal van school om zelf een nieuw wachtwoord in te stellen; kom ik daar niet uit, dan meld ik het bij mijn docent of bij de ICT-helpdesk. Daarna log ik in met mijn nieuwe wachtwoord en zet ik het meteen in mijn wachtwoordkluis. Vervolgens open ik in SOMtoday de ELO, zoek ik de opdracht op en lever ik mijn bestand daar in. Als bewijs maak ik een schermafdruk van het ingeleverde werk.',
         nakijkpunten: [
           'Noemt de herstelroute: wachtwoordportaal, docent of ICT-helpdesk.',
-          'Noemt het inleveren via ItsLearning en het veilig bewaren van het nieuwe wachtwoord.',
+          'Noemt het inleveren via de ELO van SOMtoday en het veilig bewaren van het nieuwe wachtwoord.',
           'De stappen staan in een logische volgorde en het account van een ander wordt nergens gebruikt.'
         ],
         feedback: 'De route loopt via het wachtwoordportaal of de helpdesk, dan inloggen, en dan pas inleveren. Wachten tot morgen of het account van een ander lenen staan niet in die route.'

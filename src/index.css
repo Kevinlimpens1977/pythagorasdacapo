@@ -1218,6 +1218,16 @@ input[type=number] {
   box-shadow: var(--helix-focus);
 }
 
+/* Scrollen zonder balk: de navigatie mag op een smal scherm opzij schuiven,
+   maar een zichtbare scrollbalk hoort nooit in de header. */
+.nav-scroll-onzichtbaar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nav-scroll-onzichtbaar::-webkit-scrollbar {
+  display: none;
+}
+
 .admin-nav-tab {
   border: 2px solid transparent;
   background:

@@ -50,7 +50,7 @@
 //   adres opzoeken op achternaam      -> 1.3 theorie B, oefenblok zelf, quiz 1.3
 //   SOMtoday: rooster, cijfers,
 //     meldingen instellen             -> 1.1 theorie B en deel 4 van de opdracht
-//   ItsLearning: ELO, materiaal delen
+//   de ELO: materiaal delen
 //     en opdrachten inleveren         -> 1.1 theorie B en deel 5 van de opdracht
 //   opdracht 6: screenshot maken,
 //     elke les opnieuw kunnen         -> 1.1 theorie B, de sneltoetstekening en
@@ -78,15 +78,21 @@
 //     (wikiwijs 8287245)              -> de vier vragen staan in de quiz van 1.4
 //                                        en de link staat in de opdracht
 //
+// LET OP - BEWUSTE AFWIJKING VAN DE BRON (geen dekkingsfout)
+//   De bron (Wikiwijs les 0) behandelt ItsLearning als losse ELO naast
+//   SOMtoday. DaCapo College gebruikt dat systeem in schooljaar 2026-2027 niet
+//   meer: opdrachten en inleveren lopen nu via de ELO van SOMtoday. Alle stof
+//   over de losse ELO is daarom bewust omgezet naar de ELO van SOMtoday.
+//
 // LET OP - INGEVULD, DUS CONTROLEER HET VOOR JE HET KLASSIKAAL DRAAIT
 //   De bron kondigt vier instructies aan die er zelf niet in staan: de
 //   wifi-stappen, het menupad naar de meldingen in SOMtoday, de inleverflow van
-//   ItsLearning en het maken van een screenshot. Ze staan hier uitgeschreven,
+//   de ELO en het maken van een screenshot. Ze staan hier uitgeschreven,
 //   want de praktijkopdracht van 1.1 vraagt ze alle vier. De menupaden zijn
 //   ingevuld op wat gangbaar is; in de tekst staat er een slag om de arm bij
 //   ("heet een knop bij jou anders, vraag het dan even"). Klopt een pad niet met
 //   wat DaCapo draait, pas dan drie plekken aan: 1.1 theorie A (wifi), 1.1
-//   theorie B (SOMtoday en ItsLearning) en de praktijkopdracht van 1.1.
+//   theorie B (SOMtoday en de ELO) en de praktijkopdracht van 1.1.
 //
 // VORM: DIT IS DE HARDE EIS VAN DEZE LEERWEG
 // ------------------------------------------
@@ -107,7 +113,7 @@
 //
 // DE ZES FIGUREN
 // --------------
-// Schermafdrukken van Windows, Outlook, SOMtoday en ItsLearning zijn niet vrij
+// Schermafdrukken van Windows, Outlook en SOMtoday zijn niet vrij
 // te gebruiken. Ze zijn hier NAGETEKEND als SVG en als data-URI in de theorie
 // gezet: rechtenvrij, en het laadt zonder externe host. Omdat een <img> een
 // enkele tag is, telt geen woord uit deze tekeningen mee als theoriezin. De
@@ -132,7 +138,7 @@ import { p, checkpoint, media } from '../helpers.mjs';
 
 const LD_1_1 = [
   'Je kunt inloggen op je schoolaccount, het wifi-netwerk van school en Office 365.',
-  'Je weet waarvoor SOMtoday en ItsLearning zijn en waar je je rooster, cijfers en opdrachten vindt.',
+  'Je weet waar in SOMtoday je rooster, cijfers en opdrachten staan.',
   'Je kunt een screenshot maken en die inleveren bij je docent.'
 ];
 
@@ -212,10 +218,10 @@ const SVG_SNELTOETS = `
 const SVG_SYSTEMEN = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240" width="900" height="240" role="img">
   <rect width="900" height="240" fill="#f3f5f9"/>
-  <text x="20" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="700" fill="#16233c">Twee systemen, twee soorten vragen</text>
+  <text x="20" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="21" font-weight="700" fill="#16233c">SOMtoday: twee soorten vragen</text>
   <rect x="20" y="52" width="410" height="170" rx="12" fill="#ffffff" stroke="#2b579a" stroke-width="3"/>
   <rect x="20" y="52" width="410" height="44" rx="12" fill="#2b579a"/>
-  <text x="40" y="82" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#ffffff">SOMtoday</text>
+  <text x="40" y="82" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#ffffff">Rooster en cijfers</text>
   <g font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#16233c">
     <text x="40" y="126">Je rooster</text>
     <text x="40" y="154">Je cijfers</text>
@@ -224,7 +230,7 @@ const SVG_SYSTEMEN = `
   </g>
   <rect x="470" y="52" width="410" height="170" rx="12" fill="#ffffff" stroke="#498205" stroke-width="3"/>
   <rect x="470" y="52" width="410" height="44" rx="12" fill="#498205"/>
-  <text x="490" y="82" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#ffffff">ItsLearning</text>
+  <text x="490" y="82" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#ffffff">De ELO</text>
   <g font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#16233c">
     <text x="490" y="126">Je opdrachten</text>
     <text x="490" y="154">Het lesmateriaal</text>
@@ -314,7 +320,7 @@ const SVG_VIER_STUKKEN = `
 
 const FIG_INLOGSCHERM = svgFiguur(SVG_INLOGSCHERM, 'Tekening van een inlogscherm. In het bovenste vak staat 204871, in het onderste vak zes stippen voor het wachtwoord.');
 const FIG_SNELTOETS = svgFiguur(SVG_SNELTOETS, 'Tekening van drie toetsen naast elkaar: de Windows-toets, Shift en S, met plustekens ertussen.');
-const FIG_SYSTEMEN = svgFiguur(SVG_SYSTEMEN, 'Twee kaders naast elkaar. Links SOMtoday met rooster en cijfers, rechts ItsLearning met opdrachten en inleveren.');
+const FIG_SYSTEMEN = svgFiguur(SVG_SYSTEMEN, 'Twee kaders naast elkaar in SOMtoday. Links het rooster met de cijfers, rechts de ELO met opdrachten en inleveren.');
 const FIG_WACHTWOORDMETER = svgFiguur(SVG_WACHTWOORDMETER, 'Twee balken. Bij Fluffy2013! is de balk kort en rood, bij paarse trein eet zeep is hij lang en groen.');
 const FIG_MAIL = svgFiguur(SVG_MAIL, 'Tekening van een mail met zes genummerde onderdelen: adres, onderwerp, aanhef, wie je bent, boodschap en afsluiting.');
 const FIG_VIER_STUKKEN = svgFiguur(SVG_VIER_STUKKEN, 'Vier gekleurde kaders naast elkaar met de vier stukken van digitale geletterdheid, elk met een voorbeeld eronder.');
@@ -327,8 +333,8 @@ export default {
     p('1.1', 'De digitale systemen van school', ['21A'], 'screenshotdocument met bewijs van je eerste inlogronde', 100, 'Inlog Escape',
       ['Eén account, veel deuren',
         `Op school krijg je één eigen account. Dat heet je schoolaccount. Daarmee open je heel veel deuren. Je logt ermee in op de computers. Je komt er ook mee op het wifi.</p><p>Soms werk je op een laptop. Soms zit je in het computerlokaal. Daar staan vaste computers klaar. Op al die apparaten log je hetzelfde in. Je hoeft dus maar één sleutel te onthouden.</p><p>Kijk mee met Sam uit klas 1A. Op zijn pasje staat 204871@dacapocollege.nl. Bij gebruikersnaam typt Sam alleen 204871. Dat is het deel vóór de @. Daaronder typt hij zijn eigen wachtwoord. ${FIG_INLOGSCHERM}</p><p>Doe dit nu even. Pak je schoolpas erbij. Zoek jouw leerlingnummer op. Zeg het hardop tegen je buurman of buurvrouw. Lukt dat? Dan ken je je gebruikersnaam.</p><p>Nu het wifi van school. Dat gaat in vier stappen.</p><ol><li>Open de wifi-instellingen van je laptop.</li><li>Kies in de lijst het netwerk van DaCapo College.</li><li>Klik op Verbinden en wacht rustig af.</li><li>Typ je leerlingnummer en je eigen wachtwoord.</li></ol><p>Soms vraagt je laptop nog om een certificaat. Een certificaat is een digitaal bewijsje. Daarmee laat het netwerk zien dat het echt van school is. Klik dan op Verbinden of op Accepteren. Heet een knop bij jou anders? Vraag het dan even aan je docent.</p><p>Daarna ga je naar Office 365. Dat doe je in je browser. Daar zitten Word, PowerPoint en Outlook in. Je logt in met dezelfde twee gegevens. Lukt dat niet? Kijk dan naar de hoofdletters.</p><p>Let ook op de nul en de o. Die lijken op elkaar. Blijft het misgaan? Vraag hulp aan je docent. Of ga naar de ICT-helpdesk van school.</p><p>Nog één regel. Het account van een klasgenoot leen je nooit. Alles wat jij daar doet, komt op zijn naam. Ook een foutje van jou. Gebruik dus altijd je eigen account.`],
-      ['SOMtoday, ItsLearning en je screenshot',
-        `Je weet nu hoe je binnenkomt. Maar waar kom je dan terecht? School werkt met twee systemen. Ze heten SOMtoday en ItsLearning. Ze doen allebei iets anders. ${FIG_SYSTEMEN}</p><p>In SOMtoday staat je rooster. Daar zie je ook je cijfers. Je kunt er zelf meldingen aanzetten. Ga naar het menu, dan Instellingen, dan Meldingen. Zet een schuifje aan bij een nieuw cijfer. Zet er ook een aan bij een roosterwijziging.</p><p>ItsLearning is de ELO van school. ELO betekent elektronische leeromgeving. Daar staan al je vakken naast elkaar. Je docent zet er lesmateriaal in. Jij levert er je opdrachten in.</p><p>Inleveren gaat in vijf stappen.</p><ol><li>Open je vak in de lijst.</li><li>Klik de opdracht van vandaag aan.</li><li>Klik op de knop Inleveren.</li><li>Sleep je bestand in het vak.</li><li>Bevestig pas als de naam klopt.</li></ol><p>Je ziet daarna een bevestiging in beeld. Daar staan de datum en de tijd bij. Dat is je bewijs dat je op tijd was. Van dat scherm maak je een screenshot. Een screenshot is een foto van je scherm.</p><p>Op Windows druk je drie toetsen samen in. Dat zijn de Windows-toets, Shift en S. Je scherm wordt dan even grijs. Sleep nu een vak om het stuk dat je wilt. Plakken doe je daarna met Ctrl en V. ${FIG_SNELTOETS}</p><p>Doe dit nu even. Maak een screenshot van je eigen bureaublad. Plak hem in een leeg Word-bestand. Lukt dat in één keer? Mooi, dan heb je het te pakken.</p><p>Werk je op een Chromebook? Zoek dan de vensterwisseltoets. Die toets heeft een rechthoekje met twee streepjes. Druk Ctrl, Shift en die toets samen in. Op een Mac gebruik je Command, Shift en 4.</p><p>Zorg dat je elke les een screenshot kunt maken. Je hebt hem dit jaar vaak nodig. Weet je het niet meer? Open dan gewoon deze paragraaf opnieuw.</p><p>Je bestanden bewaar je in OneDrive. Dat is de opslagplek van school. Thuis open je dan hetzelfde bestand. Wat een cloud precies is, lees je in 1.4. Kun je dit alles? Dan ben je digitaal startklaar.`],
+      ['SOMtoday, de ELO en je screenshot',
+        `Je weet nu hoe je binnenkomt. Maar waar kom je dan terecht? School werkt met SOMtoday. Dat is één systeem met twee delen. Elk deel doet iets anders. ${FIG_SYSTEMEN}</p><p>In SOMtoday staat je rooster. Daar zie je ook je cijfers. Je kunt er zelf meldingen aanzetten. Ga naar het menu, dan Instellingen, dan Meldingen. Zet een schuifje aan bij een nieuw cijfer. Zet er ook een aan bij een roosterwijziging.</p><p>Het tweede deel is de ELO. ELO betekent elektronische leeromgeving. De ELO zit gewoon in SOMtoday. Daar staan al je vakken naast elkaar. Je docent zet er lesmateriaal in. Jij levert er je opdrachten in.</p><p>Inleveren gaat in vijf stappen.</p><ol><li>Open je vak in de lijst.</li><li>Klik de opdracht van vandaag aan.</li><li>Klik op de knop Inleveren.</li><li>Sleep je bestand in het vak.</li><li>Bevestig pas als de naam klopt.</li></ol><p>Je ziet daarna een bevestiging in beeld. Daar staan de datum en de tijd bij. Dat is je bewijs dat je op tijd was. Van dat scherm maak je een screenshot. Een screenshot is een foto van je scherm.</p><p>Op Windows druk je drie toetsen samen in. Dat zijn de Windows-toets, Shift en S. Je scherm wordt dan even grijs. Sleep nu een vak om het stuk dat je wilt. Plakken doe je daarna met Ctrl en V. ${FIG_SNELTOETS}</p><p>Doe dit nu even. Maak een screenshot van je eigen bureaublad. Plak hem in een leeg Word-bestand. Lukt dat in één keer? Mooi, dan heb je het te pakken.</p><p>Werk je op een Chromebook? Zoek dan de vensterwisseltoets. Die toets heeft een rechthoekje met twee streepjes. Druk Ctrl, Shift en die toets samen in. Op een Mac gebruik je Command, Shift en 4.</p><p>Zorg dat je elke les een screenshot kunt maken. Je hebt hem dit jaar vaak nodig. Weet je het niet meer? Open dan gewoon deze paragraaf opnieuw.</p><p>Je bestanden bewaar je in OneDrive. Dat is de opslagplek van school. Thuis open je dan hetzelfde bestand. Wat een cloud precies is, lees je in 1.4. Kun je dit alles? Dan ben je digitaal startklaar.`],
       [
         media('https://www.youtube.com/embed/HtrwCy-CX78', 'Video: zo maak je een screenshot in Windows', 'Kijk wat er met het scherm gebeurt na de sneltoets. Schrijf het in één zin op.'),
         media('https://support.microsoft.com/nl-nl/windows/schermafbeeldingen-maken-met-het-knipprogramma-a35ac9ff-4a58-24c9-3253-f12bac9f9d44', 'Microsoft: alles over het Knipprogramma', 'Zoek op deze pagina één manier die niet in de theorie staat. Schrijf hem op.'),
@@ -343,9 +349,9 @@ export default {
         },
         {
           leerdoel: LD_1_1[1],
-          vraag: 'School heeft SOMtoday en ItsLearning. Waar zou jij je rooster zoeken? En de opdracht van vandaag?',
-          antwoord: 'Je rooster en je cijfers staan in SOMtoday. Je opdrachten staan in ItsLearning.',
-          uitleg: 'Vraag je steeds af waar het over gaat. Gaat het over tijd of cijfers? Dan is het SOMtoday.'
+          vraag: 'SOMtoday heeft twee delen. Waar zou jij je rooster zoeken? En de opdracht van vandaag?',
+          antwoord: 'Je rooster en je cijfers staan bij het rooster. Je opdrachten staan in de ELO.',
+          uitleg: 'Vraag je steeds af waar het over gaat. Gaat het over tijd of cijfers? Dan kijk je bij je rooster.'
         },
         {
           leerdoel: LD_1_1[2],
@@ -360,18 +366,18 @@ export default {
           "<p><strong>Deel 2. Wifi. (3 minuten)</strong> Doe dit op je eigen laptop. Open de wifi-instellingen. Kies het netwerk van DaCapo College. Klik op Verbinden. Typ je leerlingnummer en je wachtwoord. Accepteer het certificaat. Werk je vandaag alleen in het lokaal? Doe deze stap dan thuis.</p>\n" +
           "<p><strong>Deel 3. Office 365. (2 minuten)</strong> Open Office 365 in je browser. Log in met dezelfde twee gegevens. Start daarna Word. Maak een screenshot van het lege document.</p>\n" +
           "<p><strong>Deel 4. SOMtoday. (3 minuten)</strong> Ga naar SOMtoday. Bekijk je rooster. Ga naar het menu, dan Instellingen, dan Meldingen. Zet een melding aan bij een nieuw cijfer. Zet er ook een aan bij een roosterwijziging.</p>\n" +
-          "<p><strong>Deel 5. ItsLearning. (3 minuten)</strong> Open ItsLearning. Zoek de opdracht van vandaag. Klik op Inleveren. Lever een klein testbestand in. Maak een screenshot van de bevestiging.</p>\n" +
+          "<p><strong>Deel 5. De ELO. (3 minuten)</strong> Open in SOMtoday de ELO. Zoek de opdracht van vandaag. Klik op Inleveren. Lever een klein testbestand in. Maak een screenshot van de bevestiging.</p>\n" +
           "<p><strong>Deel 6. OneDrive. (2 minuten)</strong> Sla datzelfde testbestand op in OneDrive. Dan kun je er thuis ook bij. Zet nu je zes screenshots onder elkaar in één Word-bestand. Zet je naam en je klas bovenaan. Lever het bestand in bij je docent. Heette een knop bij jou anders? Schrijf dat er dan bij.",
         label: 'Lever in: één Word-bestand met zes screenshots op volgorde, met je naam en je klas bovenaan.',
-        modelAnswer: 'Mijn bestand heet inlogronde-Sam-1A en staat in OneDrive. Screenshot 1 is mijn bureaublad na het inloggen met 204871. Screenshot 2 laat zien dat mijn laptop op het netwerk van DaCapo College zit. Screenshot 3 is een leeg Word-document in Office 365, met mijn naam rechtsboven. Screenshot 4 is mijn rooster in SOMtoday. Daarnaast staan de twee meldingen aan. Screenshot 5 is de bevestiging in ItsLearning, met datum en tijd. Screenshot 6 laat mijn testbestand in OneDrive zien. Bij deel 4 heette de knop bij mij Instellingen en niet Meldingen. Ik heb toen op het woord Meldingen gezocht.',
+        modelAnswer: 'Mijn bestand heet inlogronde-Sam-1A en staat in OneDrive. Screenshot 1 is mijn bureaublad na het inloggen met 204871. Screenshot 2 laat zien dat mijn laptop op het netwerk van DaCapo College zit. Screenshot 3 is een leeg Word-document in Office 365, met mijn naam rechtsboven. Screenshot 4 is mijn rooster in SOMtoday. Daarnaast staan de twee meldingen aan. Screenshot 5 is de inleverbevestiging in de ELO van SOMtoday, met datum en tijd. Screenshot 6 laat mijn testbestand in OneDrive zien. Bij deel 4 heette de knop bij mij Instellingen en niet Meldingen. Ik heb toen op het woord Meldingen gezocht.',
         nakijkpunten: [
           'Er zitten zes screenshots in één bestand, op volgorde. Je naam en je klas staan erboven.',
           'Op het screenshot van SOMtoday staan het rooster en de twee aangezette meldingen.',
-          'Het screenshot van ItsLearning laat de bevestiging met datum en tijd zien, niet alleen de opdracht.',
+          'Het screenshot van de ELO van SOMtoday laat de inleverbevestiging met datum en tijd zien, niet alleen de opdracht.',
           'Op geen enkel screenshot is een wachtwoord te lezen.'
         ]
       },
-      ['Wat typ je bij gebruikersnaam?', 'Waar vind je je rooster?', 'Waarvoor is ItsLearning?', 'Welke drie toetsen maken een screenshot?', 'Wat doe je als inloggen niet lukt?', 'Waarom leen je het account van een ander nooit?'],
+      ['Wat typ je bij gebruikersnaam?', 'Waar vind je je rooster?', 'Waarvoor is de ELO?', 'Welke drie toetsen maken een screenshot?', 'Wat doe je als inloggen niet lukt?', 'Waarom leen je het account van een ander nooit?'],
       'Escapegame met vier kamers: inloggen, wifi, rooster vinden en een opdracht inleveren.',
       {
         oefenen: [
@@ -385,9 +391,9 @@ export default {
           {
             groep: 'samen',
             leerdoel: LD_1_1[1],
-            vraag: 'Kies samen A, B of C. Je wilt je cijfer van de eerste toets zien. A: ItsLearning. B: SOMtoday. C: OneDrive.',
+            vraag: 'Kies samen A, B of C. Je wilt je cijfer van de eerste toets zien. A: Office 365. B: SOMtoday. C: OneDrive.',
             antwoord: 'Antwoord B, SOMtoday. Daar staan je rooster en je cijfers bij elkaar.',
-            uitleg: 'OneDrive is alleen een opslagplek voor bestanden. ItsLearning gaat over de lessen zelf en over inleveren.'
+            uitleg: 'OneDrive is alleen een opslagplek voor bestanden. In Office 365 maak je documenten, zoals in Word.'
           },
           {
             groep: 'samen',
@@ -428,8 +434,8 @@ export default {
             groep: 'plus',
             leerdoel: LD_1_1[1],
             vraag: 'Je bent een week ziek geweest. Waar zoek je je gemiste cijfers? En waar de gemiste opdracht?',
-            antwoord: 'De cijfers zoek je in SOMtoday. De opdracht staat in ItsLearning.',
-            uitleg: 'Splits je vraag altijd in tweeën. Tijd en cijfers zijn SOMtoday. De les en inleveren zijn ItsLearning.'
+            antwoord: 'De cijfers zoek je bij je cijfers in SOMtoday. De opdracht staat in de ELO.',
+            uitleg: 'Splits je vraag altijd in tweeën. Tijd en cijfers staan bij je rooster. De les en inleveren zitten in de ELO.'
           }
         ]
       }),
@@ -734,9 +740,9 @@ export default {
           {
             groep: 'zelf',
             leerdoel: LD_1_1[1],
-            vraag: 'Deeltoets vraag 2. Noem twee dingen die je in SOMtoday doet en twee die je in ItsLearning doet.',
-            antwoord: 'In SOMtoday: je rooster bekijken en je cijfers volgen. In ItsLearning: opdrachten vinden en inleveren.',
-            uitleg: 'Twijfel je? Vraag je af waar de vraag over gaat. Tijd en cijfers is SOMtoday. Les en inleveren is ItsLearning.'
+            vraag: 'Deeltoets vraag 2. Noem twee dingen die je bij je rooster doet en twee die je in de ELO doet.',
+            antwoord: 'Bij je rooster: je rooster bekijken en je cijfers volgen. In de ELO: opdrachten vinden en inleveren.',
+            uitleg: 'Twijfel je? Vraag je af waar de vraag over gaat. Tijd en cijfers is het rooster. Les en inleveren is de ELO.'
           },
           {
             groep: 'zelf',
@@ -827,7 +833,7 @@ export default {
 
     checkpoint('1.5', 'Checkpoint: klaar voor het digitale schooljaar', ['21A', '23A', '23C'], 'checkpointmap met het bewijs van hoofdstuk 1 en een terugblik van vijf regels', 120, 'Startklaar Challenge',
       ['Wat je nu zelf kunt',
-        `In de zomer kon je dit nog niet. Nu wel. Je logt in op je schoolaccount. Je komt op het wifi van school. Je vindt je rooster en je cijfers.</p><p>Je maakt een sterk wachtwoord. Je bewaart het op een veilige plek. Je schrijft een nette mail aan je docent. En je levert je werk in via ItsLearning.</p><p>Dat lijkt weinig. Maar het is de bodem onder alle lessen van dit jaar. Zonder inloggen kom je nergens. Zonder inleveren ziet niemand je werk.</p><p>In 1.4 las je over de vier stukken van dit vak. Haal ze nog één keer op. Eén: de knoppen, de ict-basisvaardigheden. Twee: zoeken en bronnen, de informatievaardigheden.</p><p>Drie: mediawijsheid, over delen en omgaan met elkaar. Vier: computational thinking, stap voor stap denken. Met je poster raakte je ze alle vier even aan.</p><p>Test jezelf hier even. Zeg bij elk van de vier stukken één opdracht uit dit hoofdstuk. Lukt dat bij drie van de vier? Dan zit je goed.</p><p>Zelf kunnen betekent niet dat alles meteen lukt. Dat lukt niemand. Het betekent dat je weet waar je moet zijn. En dat je op tijd hulp vraagt.`],
+        `In de zomer kon je dit nog niet. Nu wel. Je logt in op je schoolaccount. Je komt op het wifi van school. Je vindt je rooster en je cijfers.</p><p>Je maakt een sterk wachtwoord. Je bewaart het op een veilige plek. Je schrijft een nette mail aan je docent. En je levert je werk in via de ELO.</p><p>Dat lijkt weinig. Maar het is de bodem onder alle lessen van dit jaar. Zonder inloggen kom je nergens. Zonder inleveren ziet niemand je werk.</p><p>In 1.4 las je over de vier stukken van dit vak. Haal ze nog één keer op. Eén: de knoppen, de ict-basisvaardigheden. Twee: zoeken en bronnen, de informatievaardigheden.</p><p>Drie: mediawijsheid, over delen en omgaan met elkaar. Vier: computational thinking, stap voor stap denken. Met je poster raakte je ze alle vier even aan.</p><p>Test jezelf hier even. Zeg bij elk van de vier stukken één opdracht uit dit hoofdstuk. Lukt dat bij drie van de vier? Dan zit je goed.</p><p>Zelf kunnen betekent niet dat alles meteen lukt. Dat lukt niemand. Het betekent dat je weet waar je moet zijn. En dat je op tijd hulp vraagt.`],
       ['Zo lever je je bewijs in',
         `Dit checkpoint vraagt om bewijs. Bewijs is meer dan zeggen dat het gelukt is. Het is iets wat je docent zelf kan bekijken. Ook als jij er niet bij bent.</p><p>Denk aan een screenshot. Denk aan een ingeleverd bestand. Denk aan een verstuurde mail in je mailbox. Zeggen dat het gelukt is, kan niemand nakijken.</p><p>Loop de vier paragrafen langs met een lijstje. Vink af wat je al klaar hebt. Mist er iets? Doe die stap dan alsnog. Dat kost meestal maar een paar minuten.</p><p>Maak in OneDrive één map. Noem die map Checkpoint hoofdstuk 1. Zet daar al je bewijs in. Let ook op je bestandsnamen. Vier keer document1 kan je docent niet nakijken.</p><p>Doe dan eerst de diagnose in het oefenblok. Daar staat één vraag per leerdoel. Ging een vraag mis? Lees dan die paragraaf terug. Ging alles goed? Doe dan de plusopgaven.</p><p>Daarna maak je de toets. Die maak je helemaal zelf. De Digidocent staat daarbij uit. Je krijgt dus geen hints. De toets vraagt over elk leerdoel iets.`],
       media('https://www.mediawijsheid.nl/digitale-geletterdheid/', 'De vier onderdelen van digitale geletterdheid', 'Zoek de vier onderdelen op deze pagina. Schrijf bij elk onderdeel een opdracht uit dit hoofdstuk.'),
@@ -851,7 +857,7 @@ export default {
           "<p><strong>Stap 2. Je bewijs. (6 minuten)</strong> Zet er vier bewijsstukken in. Eén: je screenshotdocument uit 1.1. Twee: je wachtwoordkaart uit 1.2, zonder je echte wachtwoord. Drie: het screenshot van je verstuurde mail uit 1.3. Vier: een foto van je poster uit 1.4.</p>\n" +
           "<p><strong>Stap 3. Namen nakijken. (2 minuten)</strong> Kijk elke bestandsnaam na. Ziet je docent eraan wat het is en van wie? Zo niet, gebruik Naam wijzigen.</p>\n" +
           "<p><strong>Stap 4. De diagnose. (12 minuten)</strong> Maak de veertien diagnosevragen in het oefenblok. Schrijf per vraag op of het goed ging. Dat lijstje is je leerplan.</p>\n" +
-          "<p><strong>Stap 5. Je terugblik. (5 minuten)</strong> Schrijf vijf regels in Word. Wat ging goed? Wat moest je opzoeken? En wat betekent digitale geletterdheid voor jou? Zet het bestand in dezelfde map. Lever de map daarna in via ItsLearning.",
+          "<p><strong>Stap 5. Je terugblik. (5 minuten)</strong> Schrijf vijf regels in Word. Wat ging goed? Wat moest je opzoeken? En wat betekent digitale geletterdheid voor jou? Zet het bestand in dezelfde map. Lever de map daarna in via de ELO van SOMtoday.",
         label: 'Lever in: je map Checkpoint hoofdstuk 1 met vier bewijsstukken, je diagnoselijstje en je terugblik van vijf regels.',
         modelAnswer: 'In mijn map staan vier bestanden. Ze heten h1-inlogronde-sam-1a, h1-wachtwoordkaart-sam-1a, h1-mail-sam-1a en h1-poster-sam-1a. Op mijn wachtwoordkaart staat mijn echte wachtwoord nergens. Bij de diagnose gingen negen van de elf vragen goed. Vraag 4 over de wachtwoordkluis ging mis. Ik dacht dat een notitie op je telefoon ook veilig was. Vraag 7 over de aanhef ging ook mis. Ik was de komma vergeten. Ik heb 1.2 en 1.3 teruggelezen. In mijn terugblik schrijf ik dat het inloggen en mailen goed gingen. De meldingen in SOMtoday moest ik opzoeken. Digitale geletterdheid betekent voor mij dat ik mijn eigen account veilig hou. Ik vraag nu ook eerder hulp dan in de zomer.',
         nakijkpunten: [
@@ -861,7 +867,7 @@ export default {
           'De terugblik telt vijf regels en beantwoordt alle drie de vragen, met een eigen voorbeeld.'
         ]
       },
-      ['Wat typ je bij gebruikersnaam?', 'Waar staat je rooster?', 'Waarvoor gebruik je ItsLearning?', 'Welke drie toetsen maken een screenshot?', 'Wat maakt een wachtwoord sterk?', 'Waar bewaar je je wachtwoord?', 'Geef je je wachtwoord aan een vriend?', 'Hoe begin je een mail aan je docent?', 'Wat hoort onderaan een schoolmail?', 'Hoe zoek je het adres van je docent op?', 'Wat betekent digitale geletterdheid?', 'Wat is een omgangsregel?', 'Wanneer noem je een bron?', 'Wat is een cloud?', 'Uit welke vier stukken bestaat dit vak?'],
+      ['Wat typ je bij gebruikersnaam?', 'Waar staat je rooster?', 'Waarvoor gebruik je de ELO?', 'Welke drie toetsen maken een screenshot?', 'Wat maakt een wachtwoord sterk?', 'Waar bewaar je je wachtwoord?', 'Geef je je wachtwoord aan een vriend?', 'Hoe begin je een mail aan je docent?', 'Wat hoort onderaan een schoolmail?', 'Hoe zoek je het adres van je docent op?', 'Wat betekent digitale geletterdheid?', 'Wat is een omgangsregel?', 'Wanneer noem je een bron?', 'Wat is een cloud?', 'Uit welke vier stukken bestaat dit vak?'],
       'Vijf kamers, elke kamer één bewijsactie uit hoofdstuk 1: inloggen, wachtwoord bouwen, mailen, inleveren en je poster tonen.',
       false,
       {
@@ -896,8 +902,8 @@ export default {
             groep: 'zelf',
             leerdoel: LD_1_1[1],
             vraag: 'Diagnose 2 van 14, over 1.1. Waar zoek je je rooster? En waar de opdracht van vandaag?',
-            antwoord: 'Je rooster staat in SOMtoday. De opdracht staat in ItsLearning.',
-            uitleg: 'Ging dit mis? Kijk dan naar de tekening met de twee kaders in 1.1. Tijd is SOMtoday, les is ItsLearning.'
+            antwoord: 'Je rooster staat bij het rooster in SOMtoday. De opdracht staat in de ELO.',
+            uitleg: 'Ging dit mis? Kijk dan naar de tekening met de twee kaders in 1.1. Tijd is het rooster, les is de ELO.'
           },
           {
             groep: 'zelf',
@@ -946,7 +952,7 @@ export default {
             leerdoel: LD_1_3[2],
             vraag: 'Diagnose 9 van 14, over 1.3. Er staan drie mensen met de achternaam De Vries in de lijst. Wat doe je?',
             antwoord: 'Je kijkt welke voorletter bij jouw docent hoort en klikt precies die regel aan.',
-            uitleg: 'De bovenste naam is niet vanzelf de goede. Twijfel je? Controleer de naam in SOMtoday of ItsLearning.'
+            uitleg: 'De bovenste naam is niet vanzelf de goede. Twijfel je? Controleer de naam in SOMtoday.'
           },
           {
             groep: 'zelf',

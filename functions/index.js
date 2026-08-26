@@ -1040,12 +1040,34 @@ async function assessOpenAnswerCore({
   }
 
   const { firstName } = await assertSignedInUserProfile({ auth, db });
+
+  // Het modelantwoord komt van de server, niet van de client. Een leerling
+  // stuurt blockId en fieldId mee; het antwoord en de uitleg staan in het
+  // private lesblok (exercise.fields) en gaan pas in de response terug NADAT
+  // hier beoordeeld is. Zo staat de uitwerking nooit vooraf in de browser.
+  // De client-parameter modelAnswer blijft bestaan voor gegenereerde opdrachten
+  // (uitdaging en herstel aan het paragraafeinde) die geen lesblokveld hebben.
+  let modelAnswer = String(data?.modelAnswer || "");
+  let explanation = "";
+  const fieldId = String(data?.fieldId || "").trim();
+  const blockIdForField = String(data?.blockId || "").trim();
+  if (fieldId && blockIdForField) {
+    const blockDoc = await getRequiredDoc(db.doc(`contentBlocks/${blockIdForField}`), "Lesblok");
+    const fields = blockDoc.data?.content?.exercise?.fields || [];
+    const field = fields.find((entry) => String(entry?.id || "") === fieldId);
+    if (!field) {
+      throw new HttpsError("not-found", "Deze opgave bestaat niet (meer) in het lesblok.");
+    }
+    modelAnswer = String(field.modelAnswer || "");
+    explanation = String(field.explanation || "");
+  }
+
   const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
   const aiTutorRules = await getAiTutorRulesRuntime(db);
   const messages = buildOpenAnswerAssessmentMessages({
     questionTitle: data?.questionTitle,
     questionPrompt: data?.questionPrompt,
-    modelAnswer: data?.modelAnswer,
+    modelAnswer,
     studentAnswer,
     firstName,
     rules: aiTutorRules,
@@ -1080,6 +1102,9 @@ async function assessOpenAnswerCore({
     return {
       success: true,
       ...normalizeOpenAnswerAssessment(extractJsonObject(content)),
+      // Na de beoordeling mag de uitwerking mee terug: de leerling heeft dan
+      // ingeleverd en gaat zichzelf ermee vergelijken en beoordelen.
+      ...(fieldId ? { modelAnswer, explanation } : {}),
     };
   } catch {
     console.error("Open answer assessment returned non-JSON content.");

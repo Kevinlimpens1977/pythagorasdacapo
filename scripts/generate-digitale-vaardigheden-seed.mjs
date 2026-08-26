@@ -448,18 +448,13 @@ const leesOpgave = (entry, label) => {
   return { vraag, antwoord, uitleg, leerdoel: String(entry.leerdoel || '').trim(), groep };
 };
 
-// De uitleg staat in een <details>: dichtgeklapt tot de leerling hem zelf
-// opent. Zo staat het antwoord wel in het blok, maar leest niemand het per
-// ongeluk voordat hij zelf iets bedacht heeft.
-const opgaveHtml = (opgave, nummer, opengeklaptLabel) => {
-  const kop = `<p><strong>${nummer}. ${escapeHtml(opgave.vraag)}</strong></p>`;
-  if (!opgave.antwoord) return kop;
-  return (
-    `${kop}<details><summary>${opengeklaptLabel}</summary>` +
-    `<p><strong>Antwoord.</strong> ${escapeHtml(opgave.antwoord)}</p>` +
-    `<p>${escapeHtml(opgave.uitleg)}</p></details>`
-  );
-};
+// De uitwerking staat NIET meer in de html. Vroeger stond hij in een
+// <details> die de leerling zelf openklapte, maar dan is elk antwoord te
+// lezen voordat er iets geprobeerd is, en staat hij bovendien letterlijk in
+// de browser. Het modelantwoord leeft alleen in exercise.fields (private
+// collectie); de server geeft hem pas terug nadat de leerling heeft
+// ingeleverd, en de leerling beoordeelt zichzelf daarna.
+const opgaveHtml = (opgave, nummer) => `<p><strong>${nummer}. ${escapeHtml(opgave.vraag)}</strong></p>`;
 
 const opgaveVeld = (opgave, index) => ({
   id: `check-${index + 1}`,
@@ -779,11 +774,11 @@ const buildNiveau = ({ niveau, chapters, enrichment }) => {
         const stukken = [
           `<p><strong>${GROEP_KOPPEN[groep]}</strong></p>`,
           metHulp
-            ? '<p>Hier oefen je met wat je net gelezen hebt. De Digidocent mag met je meedenken. Werk elke opgave eerst zelf uit en klap daarna de uitwerking open.</p>'
-            : '<p>Dit deel doe je zonder hulp: de Digidocent staat hier uit. Maak elke opgave eerst helemaal zelf en klap de uitwerking pas daarna open. Fout antwoorden mag; je ziet meteen waar je nog moet oefenen.</p>'
+            ? '<p>Hier oefen je met wat je net gelezen hebt. De Digidocent mag met je meedenken. Werk elke opgave zelf uit; na het inleveren zie je de uitwerking en geef je jezelf een oordeel.</p>'
+            : '<p>Dit deel doe je zonder hulp: de Digidocent staat hier uit. Maak elke opgave helemaal zelf; de uitwerking verschijnt pas na het inleveren. Fout antwoorden mag; je ziet meteen waar je nog moet oefenen.</p>'
         ];
         opgaven.forEach((opgave, index) => {
-          stukken.push(opgaveHtml(opgave, index + 1, 'Uitwerking — pas openklappen na je eigen poging'));
+          stukken.push(opgaveHtml(opgave, index + 1));
         });
 
         const tokens = tokenBasis + (tokenRest > 0 ? 1 : 0);

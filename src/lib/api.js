@@ -23,6 +23,10 @@ export const askAiTutorCall = async (message, contextHeading, previousMessages, 
 
 export const assessOpenAnswerCall = async ({
   blockId = '',
+  // Oefenopgave in een lesblok: de server zoekt met blockId + fieldId zelf het
+  // modelantwoord en de uitleg op en geeft die pas NA de beoordeling terug.
+  // Voor die opgaven stuurt de client dus geen modelAnswer meer mee.
+  fieldId = '',
   questionTitle = '',
   questionPrompt = '',
   modelAnswer = '',
@@ -32,6 +36,7 @@ export const assessOpenAnswerCall = async ({
     const assessOpenAnswer = httpsCallable(functions, 'assessOpenAnswer');
     const result = await assessOpenAnswer({
       blockId,
+      fieldId,
       questionTitle,
       questionPrompt,
       modelAnswer,

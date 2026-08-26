@@ -399,3 +399,28 @@ test('summarizeAssessmentItemProgress rolls items up to the state of the block',
   });
   assert.equal(failed.resultTier, 'failed');
 });
+
+test('buildContentBlockVoortgangUpdate bewaart zelfbeoordeling en houdt bestaande records vast', () => {
+  const records = [
+    { fieldId: 'veld-1', zelfoordeel: 'goed', aiCorrect: true, denktijdMs: 30000 }
+  ];
+
+  const update = buildContentBlockVoortgangUpdate({
+    ...base,
+    data: { completed: true, isCorrect: true, zelfbeoordeling: records }
+  });
+  assert.deepEqual(update.zelfbeoordeling, records);
+
+  // Zonder nieuwe records blijft de bestaande zelfbeoordeling staan.
+  const behouden = buildContentBlockVoortgangUpdate({
+    ...base,
+    data: { completed: true },
+    existingData: { zelfbeoordeling: records }
+  });
+  assert.deepEqual(behouden.zelfbeoordeling, records);
+
+  // Zonder enige zelfbeoordeling is het veld een lege lijst, geen undefined:
+  // Firestore weigert undefined.
+  const leeg = buildContentBlockVoortgangUpdate({ ...base, data: { completed: true } });
+  assert.deepEqual(leeg.zelfbeoordeling, []);
+});

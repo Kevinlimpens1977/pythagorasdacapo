@@ -1,7 +1,49 @@
 import { STAP_STATUS, getStatusPresentatie } from '../../lib/klasVoortgangOverzicht';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { relatieveTijd } from '../../lib/relatieveTijd';
+import { ZELFOORDELEN, berekenSerieusSignalen } from '../../lib/zelfbeoordeling';
 import BeoordeelActies from './BeoordeelActies';
+
+/**
+ * De zelfbeoordeling van een oefenblok: per opgave het eigen oordeel van de
+ * leerling met de denktijd, plus een oranje "Controleer"-badge zodra de
+ * serieus-signalen daar reden toe geven (doorklikken, te snel, te kaal).
+ */
+function ZelfbeoordelingBadges({ records = [] }) {
+  if (!Array.isArray(records) || !records.length) return null;
+
+  const signalen = berekenSerieusSignalen(records);
+
+  return (
+    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+      {records.map((record, index) => {
+        const oordeel = ZELFOORDELEN[record?.zelfoordeel] || null;
+        const denktijdSec = Math.round((record?.denktijdMs || 0) / 1000);
+        return (
+          <span
+            key={record?.fieldId || index}
+            title={`Opgave ${index + 1}: ${oordeel ? oordeel.label : 'geen zelfoordeel (Digidocent faalde)'} - denktijd ${denktijdSec}s`}
+            className="inline-flex items-center gap-1 rounded-full border border-transparent px-2 py-0.5 text-[10px] font-black"
+            style={oordeel
+              ? { color: oordeel.kleur, backgroundColor: oordeel.achtergrond }
+              : { color: 'var(--helix-muted)', backgroundColor: 'var(--helix-surface-soft)' }}
+          >
+            {oordeel ? oordeel.label : 'Geen oordeel'}
+            <span className="font-bold opacity-80">{denktijdSec}s</span>
+          </span>
+        );
+      })}
+      {!signalen.serieus && (
+        <span
+          title={`Signalen: ${signalen.vlaggen.map((vlag) => vlag.reden).join('; ')}`}
+          className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800"
+        >
+          Controleer
+        </span>
+      )}
+    </div>
+  );
+}
 
 /** De negen (of hoeveel dan ook) stappen van een paragraaf als spoor. */
 export function StappenSpoor({ stappen = [], actieveStapId = '', onSelectStap }) {
@@ -102,6 +144,8 @@ export default function LeerlingStappen({
                 )}
               </div>
             )}
+
+            {record && <ZelfbeoordelingBadges records={record.zelfbeoordeling} />}
 
             {record?.teacherReview?.besluit && (
               <p className="mt-1.5 text-[11px] font-bold text-[var(--helix-muted)]">
