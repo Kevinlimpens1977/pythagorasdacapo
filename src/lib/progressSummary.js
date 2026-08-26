@@ -21,8 +21,11 @@ export const buildStudentProgressSummary = (
   let completedQuestions = 0;
 
   sortedParagrafen.forEach((paragraaf) => {
-    const questions = paragraaf.vragen || [];
-    const paragraafTotal = questions.length;
+    // De teller is het aantal stappen (lesblokken) van de paragraaf: dat is
+    // waar de voortgangsrecords bij horen. `vragen` blijft als terugval voor
+    // oude paragrafen die nog losse vraagdocumenten hadden.
+    const stappen = paragraaf.stappen || paragraaf.vragen || [];
+    const paragraafTotal = stappen.length;
     const paragraafCompleted = getCompletedQuestionCount(voortgangMap[paragraaf.id] || []);
     // Een vrijwillige plusparagraaf staat wel in de lijst, maar telt niet mee in
     // het percentage dat een leerling af moet hebben.

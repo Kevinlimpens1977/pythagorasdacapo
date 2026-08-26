@@ -92,10 +92,13 @@ export default function StudentProfilePage() {
         );
         const paragrafenWithQuestions = await Promise.all(
           validParagrafen.map(async (paragraaf) => {
-            const vragen = await cmsService.getPublicVragen(paragraaf.id).catch(() => []);
+            // De stappenteller: gepubliceerde lesblokken, dezelfde eenheid als
+            // de voortgangsrecords. De oude vraagdocumenten bestaan in de
+            // nieuwe lesstof niet meer, waardoor het totaal hier op 0 stond.
+            const blocks = await cmsService.getPublicContentBlocks(paragraaf.id).catch(() => []);
             return {
               ...paragraaf,
-              vragen: vragen || []
+              stappen: blocks || []
             };
           })
         );
@@ -325,7 +328,7 @@ export default function StudentProfilePage() {
                   <ProgressBar value={summary.progressPercent} tone="green" />
                   <div className="mt-3 flex items-center justify-between text-sm font-semibold text-[var(--helix-muted)]">
                     <span>{summary.completedQuestions} afgerond</span>
-                    <span>{summary.totalQuestions} vragen totaal</span>
+                    <span>{summary.totalQuestions} stappen totaal</span>
                   </div>
                 </div>
               </div>
@@ -353,7 +356,7 @@ export default function StudentProfilePage() {
                         {chapter.title || (chapter.number ? `Hoofdstuk ${chapter.number}` : 'Hoofdstuk')}
                       </h2>
                       <p className="mt-1 text-sm text-slate-500">
-                        {chapter.completedQuestions} van {chapter.totalQuestions} vragen afgerond
+                        {chapter.completedQuestions} van {chapter.totalQuestions} stappen afgerond
                       </p>
                     </div>
                     <div className="min-w-40">
@@ -400,7 +403,7 @@ export default function StudentProfilePage() {
                                 )}
                               </h3>
                               <p className="text-sm text-slate-500">
-                                {paragraaf.completedQuestions} / {paragraaf.totalQuestions} vragen
+                                {paragraaf.completedQuestions} / {paragraaf.totalQuestions} stappen
                                 {paragraaf.optioneel && ' - telt niet mee voor je hoofdstuk'}
                               </p>
                             </div>
