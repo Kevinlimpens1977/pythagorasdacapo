@@ -1,7 +1,7 @@
 {
   "meta": {
     "seedId": "digitale-vaardigheden-vmbo1",
-    "generatedAt": "2026-08-26T16:48:08.519Z",
+    "generatedAt": "2026-08-26T18:19:26.029Z",
     "status": "published",
     "sourceDocuments": [
       "docs/LessenserieDigitaleVaardigheden30Lessen.md",
@@ -47,8 +47,8 @@
       "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
       "leerweg": "bb",
       "label": "Basisberoepsgerichte leerweg",
-      "name": "Basisberoepsgerichte leerweg",
-      "description": "Basisberoepsgerichte leerweg van Digitale vaardigheden, VMBO leerjaar 1.",
+      "name": "Blauwe route",
+      "description": "Blauwe route (Basisberoepsgerichte leerweg) van Digitale vaardigheden, VMBO leerjaar 1.",
       "order": 1,
       "isActive": true
     },
@@ -58,8 +58,8 @@
       "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
       "leerweg": "kb",
       "label": "Kaderberoepsgerichte leerweg",
-      "name": "Kaderberoepsgerichte leerweg",
-      "description": "Kaderberoepsgerichte leerweg van Digitale vaardigheden, VMBO leerjaar 1.",
+      "name": "Groene route",
+      "description": "Groene route (Kaderberoepsgerichte leerweg) van Digitale vaardigheden, VMBO leerjaar 1.",
       "order": 2,
       "isActive": true
     },
@@ -69,8 +69,8 @@
       "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
       "leerweg": "tl",
       "label": "Theoretische leerweg",
-      "name": "Theoretische leerweg",
-      "description": "Theoretische leerweg van Digitale vaardigheden, VMBO leerjaar 1.",
+      "name": "Paarse route",
+      "description": "Paarse route (Theoretische leerweg) van Digitale vaardigheden, VMBO leerjaar 1.",
       "order": 3,
       "isActive": true
     }

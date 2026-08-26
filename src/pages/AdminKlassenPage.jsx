@@ -426,7 +426,7 @@ export default function AdminKlassenPage() {
                         <div key={vakId} className="helix-card-subtle overflow-hidden">
                           {/* Vak Header */}
                           <div className="border-b border-[var(--helix-border)] bg-white/80 px-4 py-3 font-black text-[var(--helix-navy)]">
-                            {vakData.vak?.title || 'Vak'}
+                            {vakData.vak?.title || vakData.vak?.name || 'Vak'}
                           </div>
 
                           {/* Leerjaren */}
@@ -435,7 +435,7 @@ export default function AdminKlassenPage() {
                               <div key={leerjaargId} className="px-4 py-3">
                                 <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--helix-navy)]">
                                   <BookOpenCheck size={16} className="text-[var(--helix-purple)]" />
-                                  {leerjaargData.leerjaar?.title || `Leerjaar ${leerjaargData.leerjaar?.year}`}
+                                  {leerjaargData.leerjaar?.title || leerjaargData.leerjaar?.name || `Leerjaar ${leerjaargData.leerjaar?.year}`}
                                 </div>
 
                                 {/* Niveaus */}
@@ -443,7 +443,7 @@ export default function AdminKlassenPage() {
                                   {Object.entries(leerjaargData.niveaus).map(([niveauId, niveauData]) => (
                                     <div key={niveauId}>
                                       <div className="mb-2 text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
-                                        {niveauData.niveau?.title || 'Niveau'}
+                                        {niveauData.niveau?.title || niveauData.niveau?.name || 'Niveau'}
                                       </div>
 
                                       {/* Hoofdstukken */}

@@ -8,6 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, GraduationCap, LogIn, UserPlus } from 'lucide-react';
 import { auth } from '../../services/firebase';
+import { DOMEIN_FOUTMELDING, isToegestaanSchoolEmail } from '../../lib/allowedEmailDomains';
 import { useFinishGoogleRedirect, useRedirectWhenAuthenticated } from './loginFlow';
 
 const MERKPUNTEN = ['Stap voor stap', 'Directe hulp', 'Tokens'];
@@ -37,6 +38,10 @@ export default function LoginScreen() {
       if (isSignUp) {
         if (!firstName || !lastName) {
           setError('Vul je voornaam en achternaam in.');
+          return;
+        }
+        if (!isToegestaanSchoolEmail(email)) {
+          setError(DOMEIN_FOUTMELDING);
           return;
         }
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);

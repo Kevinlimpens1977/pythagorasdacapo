@@ -50,11 +50,14 @@ test('progress dashboard uses calm signal styling with selectable signal rows', 
   assert.doesNotMatch(classOverview, /\$\{card\.tone === 'warning' \? 'helix-alert'/);
 });
 
-test('actieve navigatietab is gevuld in de merkkleur', () => {
+test('actieve navigatietab is lavendel met paarse tekst, geen gevulde pill', () => {
+  // Ontwerpkeuze 26-08-2026 (mockup HELIX Beheerknoppen): de gevulde paarse
+  // pill was te schreeuwerig naast de rest van de beheerpagina.
   const activeRule = getCssRule('.admin-nav-tab-active');
 
-  assert.match(activeRule, /background:\s*var\(--helix-purple\)/);
-  assert.match(activeRule, /color:\s*#ffffff/);
+  assert.match(activeRule, /background:\s*var\(--helix-soft-lavender\)/);
+  assert.match(activeRule, /color:\s*var\(--helix-purple-dark\)/);
+  assert.doesNotMatch(activeRule, /box-shadow/);
   assert.doesNotMatch(activeRule, /padding-box/);
 });
 

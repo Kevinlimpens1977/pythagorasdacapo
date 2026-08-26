@@ -1195,6 +1195,29 @@ input[type=number] {
   box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
 }
 
+/* Rustige gereedschapsknop: wit met zachte rand, paars alleen als icoonaccent.
+   Zelfde taal als de rijknoppen (Wachtwoord) in het leerlingoverzicht. */
+.btn-tool {
+  border: 1px solid var(--helix-border);
+  background: #ffffff;
+  color: var(--helix-navy);
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl text-sm font-extrabold transition-colors focus:outline-none active:scale-95;
+}
+
+.btn-tool svg {
+  color: var(--helix-purple);
+}
+
+.btn-tool:hover {
+  border-color: var(--helix-purple);
+  color: var(--helix-purple-dark);
+}
+
+.btn-tool:focus-visible {
+  box-shadow: var(--helix-focus);
+}
+
 .admin-nav-tab {
   border: 2px solid transparent;
   background:
@@ -1213,9 +1236,8 @@ input[type=number] {
 
 .admin-nav-tab-active {
   border: 2px solid transparent;
-  background: var(--helix-purple);
-  color: #ffffff;
-  box-shadow: 0 8px 18px oklch(0.52 0.19 300 / 0.26);
+  background: var(--helix-soft-lavender);
+  color: var(--helix-purple-dark);
 }
 
 .admin-nav-alert {

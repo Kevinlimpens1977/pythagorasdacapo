@@ -1855,6 +1855,46 @@ async function importStudentNumberAccountsCore({ auth, data, db, authAdmin, now 
   };
 }
 
+// Verwijdert een gearchiveerde leerling definitief: voortgang, het
+// users-document en het Auth-account. Alleen voor gearchiveerde leerlingen,
+// zodat een tikfout in het beheer nooit direct een actieve leerling wist.
+async function deleteStudentAccountCore({ auth, data, db, authAdmin }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om een leerling te verwijderen.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  const callerRole = caller.data?.role;
+  if (callerRole !== "admin" && callerRole !== "supervisor" && !isConfiguredAdminEmail(caller.data?.email)) {
+    throw new HttpsError("permission-denied", "Alleen admins en supervisors mogen leerlingen verwijderen.");
+  }
+
+  const studentUid = requireString(data?.studentUid, "studentUid");
+  const studentDoc = await getRequiredDoc(db.doc(`users/${studentUid}`), "Leerling");
+
+  if (studentDoc.data.role !== "student") {
+    throw new HttpsError("failed-precondition", "Deze gebruiker is geen leerling.");
+  }
+  if (studentDoc.data.isArchived !== true) {
+    throw new HttpsError("failed-precondition", "Archiveer de leerling eerst; alleen gearchiveerde leerlingen kunnen definitief verwijderd worden.");
+  }
+
+  const deletedProgress = await deleteStudentProgress(db, [studentUid]);
+  await studentDoc.ref.delete();
+
+  let authDeleted = false;
+  try {
+    await authAdmin.deleteUser(studentUid);
+    authDeleted = true;
+  } catch (error) {
+    if (error?.code !== "auth/user-not-found") {
+      throw error;
+    }
+  }
+
+  return { success: true, studentUid, deletedProgress, authDeleted };
+}
+
 async function resetStudentPasswordCore({ auth, data, db, authAdmin, now }) {
   if (!auth?.uid) {
     throw new HttpsError("unauthenticated", "Log in om een leerlingwachtwoord te resetten.");
@@ -2799,6 +2839,17 @@ exports.importStudentNumberAccounts = onCall({
   region: REGION,
 }, async (request) => {
   return importStudentNumberAccountsCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    authAdmin: getAuth(),
+  });
+});
+
+exports.deleteStudentAccount = onCall({
+  region: REGION,
+}, async (request) => {
+  return deleteStudentAccountCore({
     auth: request.auth,
     data: request.data || {},
     db: getFirestore(),

@@ -3,7 +3,9 @@ import { AlertCircle, KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { changeCurrentUserPassword, DEFAULT_STUDENT_PASSWORD } from '../../services/studentPasswordService';
 
 export default function RequiredPasswordChange({ currentUser, displayName = 'Leerling' }) {
-  const [currentPassword, setCurrentPassword] = useState(DEFAULT_STUDENT_PASSWORD);
+  // Niet voorvullen met het standaardwachtwoord: als de beheerder een eigen
+  // tijdelijk wachtwoord koos, stond hier stilletjes het verkeerde klaar.
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -35,7 +37,13 @@ export default function RequiredPasswordChange({ currentUser, displayName = 'Lee
       });
     } catch (err) {
       console.error('Wachtwoord wijzigen mislukt:', err);
-      setError('Wachtwoord wijzigen lukt niet. Controleer je huidige wachtwoord en probeer opnieuw.');
+      if (err?.code === 'auth/invalid-credential' || err?.code === 'auth/wrong-password') {
+        setError('Je huidige (tijdelijke) wachtwoord klopt niet. Typ precies het wachtwoord dat je van je docent kreeg.');
+      } else if (err?.code === 'auth/weak-password') {
+        setError('Kies een sterker wachtwoord van minimaal 6 tekens.');
+      } else {
+        setError('Wachtwoord wijzigen lukt niet. Probeer het opnieuw of vraag je docent om hulp.');
+      }
     } finally {
       setSaving(false);
     }

@@ -24,9 +24,17 @@ export const changeCurrentUserPassword = async ({ user, currentPassword, newPass
     throw new Error('Geen ingelogde gebruiker gevonden.');
   }
 
-  const credential = EmailAuthProvider.credential(user.email, currentPassword);
-  await reauthenticateWithCredential(user, credential);
-  await updatePassword(user, newPassword);
+  // De leerling is net ingelogd, dus meestal kan het nieuwe wachtwoord direct
+  // gezet worden. Alleen als Firebase een recente login eist, vragen we het
+  // huidige wachtwoord echt — dan is een fout daarin ook pas relevant.
+  try {
+    await updatePassword(user, newPassword);
+  } catch (err) {
+    if (err?.code !== 'auth/requires-recent-login') throw err;
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+    await updatePassword(user, newPassword);
+  }
   await setDoc(doc(db, 'users', user.uid), {
     mustChangePassword: false,
     passwordStatus: 'changed',

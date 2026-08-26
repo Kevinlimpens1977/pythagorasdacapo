@@ -18,6 +18,7 @@
 export const NIVEAUS = [
   {
     id: "bb",
+    routeNaam: "Blauwe route",
     niveauId: "niveau-dv-vmbo1-bb",
     label: "Basisberoepsgerichte leerweg",
     omvang: "alle paragrafen behalve 2.4, 4.4, 6.1 en 7.4",
@@ -26,6 +27,7 @@ export const NIVEAUS = [
   },
   {
     id: "kb",
+    routeNaam: "Groene route",
     niveauId: "niveau-dv-vmbo1-kb",
     label: "Kaderberoepsgerichte leerweg",
     omvang: "alle paragrafen",
@@ -34,6 +36,7 @@ export const NIVEAUS = [
   },
   {
     id: "tl",
+    routeNaam: "Paarse route",
     niveauId: "niveau-dv-vmbo1-tl",
     label: "Theoretische leerweg",
     omvang: "alle paragrafen",

@@ -30,6 +30,15 @@ service cloud.firestore {
       return isAdmin() || isSupervisor();
     }
 
+    // Zelf een account aanmaken mag alleen met schoolmail. Dezelfde lijst staat
+    // in src/lib/allowedEmailDomains.js; houd beide gelijk.
+    function heeftSchoolEmail() {
+      return signedIn() && (
+        string(request.auth.token.email).lower().matches('.*@leerling[.]dacapo-college[.]nl') ||
+        string(request.auth.token.email).lower().matches('.*@stichtinglvo[.]nl')
+      );
+    }
+
     function isOwner(userId) {
       return signedIn() && request.auth.uid == userId;
     }
@@ -117,9 +126,11 @@ service cloud.firestore {
 
     // Gebruikers
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create, update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
+      allow read: if isOwner(userId) || isAdminOrSupervisor();
+      // Een nieuw eigen account vereist schoolmail; beheerders mogen altijd.
+      allow create: if (isOwner(userId) && heeftSchoolEmail()) || isAdminOrSupervisor();
+      allow update: if isOwner(userId) || isAdminOrSupervisor();
+      allow delete: if isAdminOrSupervisor();
     }
 
     // Antwoorden

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Camera, Coins, FileSpreadsheet, KeyRound, Loader2, Save, Search, Users, Users2, X } from 'lucide-react';
+import { AlertCircle, Archive, ArchiveRestore, Camera, Coins, FileSpreadsheet, KeyRound, Loader2, Save, Search, Trash2, Users, Users2, X } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import * as klasService from '../services/klasService';
@@ -14,6 +14,8 @@ import StudentAvatar from '../components/common/StudentAvatar';
 import StudentPhotoImportWizard from '../components/admin/StudentPhotoImportWizard';
 import StudentNumberImportPanel from '../components/admin/StudentNumberImportPanel';
 import { DEFAULT_STUDENT_PASSWORD, resetStudentPassword, syncAllStudentAuthAccounts } from '../services/studentPasswordService';
+import { archiveStudent, deleteArchivedStudent, restoreStudent } from '../services/studentArchiveService';
+import { splitArchivedStudents } from '../lib/studentArchiveUtils';
 
 const formatLastActive = (value) => {
   if (!value) return 'Onbekend';
@@ -39,6 +41,8 @@ export default function AdminLeerlingenPage() {
   const [passwordStudent, setPasswordStudent] = useState(null);
   const [passwordMessage, setPasswordMessage] = useState('');
   const [syncingAuthAccounts, setSyncingAuthAccounts] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
+  const [busyStudentUid, setBusyStudentUid] = useState(null);
 
   const loadStudents = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -71,13 +75,72 @@ export default function AdminLeerlingenPage() {
     loadStudents();
   }, [loadStudents]);
 
-  const filteredStudents = useMemo(
-    () => filterStudentAccounts(students, queryText),
-    [students, queryText]
+  const { actief: activeStudents, archief: archivedStudents } = useMemo(
+    () => splitArchivedStudents(students),
+    [students]
   );
 
-  const withoutClassCount = students.filter((student) => !student.klasId).length;
-  const photoCounts = countStudentPhotos(students);
+  const filteredStudents = useMemo(
+    () => filterStudentAccounts(showArchive ? archivedStudents : activeStudents, queryText),
+    [showArchive, archivedStudents, activeStudents, queryText]
+  );
+
+  const withoutClassCount = activeStudents.filter((student) => !student.klasId).length;
+  const photoCounts = countStudentPhotos(activeStudents);
+
+  const handleArchiveStudent = async (student) => {
+    setBusyStudentUid(student.uid);
+    setError(null);
+    setPasswordMessage('');
+    try {
+      await archiveStudent({ studentUid: student.uid, archivedBy: currentUser?.uid });
+      setPasswordMessage(`${student.displayName || student.email} staat nu in het archief.`);
+      await loadStudents({ silent: true });
+    } catch (err) {
+      console.error('Archiveren mislukt:', err);
+      setError('Deze leerling kon niet gearchiveerd worden.');
+    } finally {
+      setBusyStudentUid(null);
+    }
+  };
+
+  const handleRestoreStudent = async (student) => {
+    setBusyStudentUid(student.uid);
+    setError(null);
+    setPasswordMessage('');
+    try {
+      await restoreStudent({ studentUid: student.uid });
+      setPasswordMessage(`${student.displayName || student.email} is teruggezet uit het archief.`);
+      await loadStudents({ silent: true });
+    } catch (err) {
+      console.error('Terugzetten mislukt:', err);
+      setError('Deze leerling kon niet teruggezet worden.');
+    } finally {
+      setBusyStudentUid(null);
+    }
+  };
+
+  const handleDeleteStudent = async (student) => {
+    const naam = student.displayName || student.email || 'deze leerling';
+    const confirmed = window.confirm(
+      `${naam} definitief verwijderen? Dit wist het account, het wachtwoord en alle voortgang. Dit kan niet ongedaan gemaakt worden.`
+    );
+    if (!confirmed) return;
+
+    setBusyStudentUid(student.uid);
+    setError(null);
+    setPasswordMessage('');
+    try {
+      await deleteArchivedStudent({ studentUid: student.uid });
+      setPasswordMessage(`${naam} is definitief verwijderd.`);
+      await loadStudents({ silent: true });
+    } catch (err) {
+      console.error('Definitief verwijderen mislukt:', err);
+      setError('Definitief verwijderen is mislukt. Staat de leerling wel in het archief?');
+    } finally {
+      setBusyStudentUid(null);
+    }
+  };
 
   const handleSyncAuthAccounts = async () => {
     const confirmed = window.confirm(
@@ -124,14 +187,14 @@ export default function AdminLeerlingenPage() {
             )}
             <Link
               to="/admin/klassen"
-              className="btn-primary min-h-12 px-5 text-sm"
+              className="btn-tool min-h-12 px-5 text-sm"
             >
               <Users2 size={18} />
               Klassen beheren
             </Link>
             <Link
               to="/admin/tokenbeheer"
-              className="btn-primary min-h-12 px-5 text-sm"
+              className="btn-tool min-h-12 px-5 text-sm"
             >
               <Coins size={18} />
               Tokenbeheer
@@ -140,7 +203,7 @@ export default function AdminLeerlingenPage() {
               type="button"
               onClick={handleSyncAuthAccounts}
               disabled={syncingAuthAccounts}
-              className="btn-primary min-h-12 px-5 text-sm"
+              className="btn-tool min-h-12 px-5 text-sm"
             >
               {syncingAuthAccounts ? <Loader2 size={18} className="animate-spin" /> : <KeyRound size={18} />}
               Auth synchroniseren
@@ -151,7 +214,7 @@ export default function AdminLeerlingenPage() {
                 setShowNumberImport((value) => !value);
                 setShowPhotoImport(false);
               }}
-              className="btn-primary min-h-12 px-5 text-sm"
+              className="btn-tool min-h-12 px-5 text-sm"
             >
               <FileSpreadsheet size={18} />
               Leerlingnummers koppelen
@@ -162,16 +225,24 @@ export default function AdminLeerlingenPage() {
                 setShowPhotoImport((value) => !value);
                 setShowNumberImport(false);
               }}
-              className="btn-primary min-h-12 px-5 text-sm"
+              className="btn-tool min-h-12 px-5 text-sm"
             >
               <Camera size={18} />
               Foto's importeren
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowArchive((value) => !value)}
+              className="btn-tool min-h-12 px-5 text-sm"
+            >
+              <Archive size={18} />
+              {showArchive ? 'Terug naar leerlingen' : `Archief (${archivedStudents.length})`}
             </button>
           </div>
         </div>
 
         <section className="mt-8 grid gap-4 md:grid-cols-5">
-          <StatCard label="Leerlingen" value={students.length} description="Accounts met leerlingrol" />
+          <StatCard label="Leerlingen" value={activeStudents.length} description="Accounts met leerlingrol" />
           <StatCard label="Zonder klas" value={withoutClassCount} description="Nog niet gekoppeld aan klas" />
           <StatCard label="Gefilterd" value={filteredStudents.length} description="Zichtbaar in dit overzicht" />
           <StatCard label="Met foto" value={photoCounts.withPhoto} description="Avatar gekoppeld" />
@@ -218,8 +289,14 @@ export default function AdminLeerlingenPage() {
           ) : filteredStudents.length === 0 ? (
             <div className="p-10 text-center">
               <Users size={36} className="mx-auto text-[var(--helix-purple)]/40" />
-              <p className="mt-3 font-black text-[var(--helix-navy)]">Geen leerlingen gevonden</p>
-              <p className="helix-muted mt-1 text-sm">Pas je zoekterm aan of laat leerlingen eerst een account maken.</p>
+              <p className="mt-3 font-black text-[var(--helix-navy)]">
+                {showArchive ? 'Het archief is leeg' : 'Geen leerlingen gevonden'}
+              </p>
+              <p className="helix-muted mt-1 text-sm">
+                {showArchive
+                  ? 'Gearchiveerde leerlingen verschijnen hier en kunnen dan definitief verwijderd worden.'
+                  : 'Pas je zoekterm aan of laat leerlingen eerst een account maken.'}
+              </p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
@@ -245,19 +322,53 @@ export default function AdminLeerlingenPage() {
                     <p className="text-xs font-black uppercase tracking-wide text-slate-400">Laatst actief</p>
                     <p className="mt-1 text-sm font-bold text-[var(--helix-navy)]">{formatLastActive(student.lastActive)}</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPasswordMessage('');
-                      setPasswordStudent(student);
-                    }}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
-                  >
-                    <KeyRound size={15} />
-                    Wachtwoord
-                  </button>
+                  {showArchive ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleRestoreStudent(student)}
+                        disabled={busyStudentUid === student.uid}
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] disabled:opacity-50"
+                      >
+                        {busyStudentUid === student.uid ? <Loader2 size={15} className="animate-spin" /> : <ArchiveRestore size={15} />}
+                        Terugzetten
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteStudent(student)}
+                        disabled={busyStudentUid === student.uid}
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-red-200 bg-white px-3 text-xs font-black text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        <Trash2 size={15} />
+                        Definitief verwijderen
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPasswordMessage('');
+                          setPasswordStudent(student);
+                        }}
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
+                      >
+                        <KeyRound size={15} />
+                        Wachtwoord
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleArchiveStudent(student)}
+                        disabled={busyStudentUid === student.uid}
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] disabled:opacity-50"
+                      >
+                        {busyStudentUid === student.uid ? <Loader2 size={15} className="animate-spin" /> : <Archive size={15} />}
+                        Archiveren
+                      </button>
+                    </div>
+                  )}
                   <span className="helix-badge">
-                    Leerling
+                    {showArchive ? 'Archief' : 'Leerling'}
                   </span>
                 </div>
               ))}

@@ -1162,9 +1162,10 @@ const seed = {
     vakId: VAK_ID,
     leerjaarId: LEERJAAR_ID,
     leerweg: niveau.id,
+    // routeNaam is wat leerlingen en docenten zien; label blijft de leerwegnaam.
     label: niveau.label,
-    name: niveau.label,
-    description: `${niveau.label} van Digitale vaardigheden, VMBO leerjaar 1.`,
+    name: niveau.routeNaam || niveau.label,
+    description: `${niveau.routeNaam || niveau.label} (${niveau.label}) van Digitale vaardigheden, VMBO leerjaar 1.`,
     order: index + 1,
     isActive: true
   })),
