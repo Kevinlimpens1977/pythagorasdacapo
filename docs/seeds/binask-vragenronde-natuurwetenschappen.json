@@ -5,41 +5,231 @@
     "leerdoel": "Het onderscheid herkennen tussen biologie, natuurkunde en scheikunde",
     "intro": "<p>Bij elke situatie kies je het vak dat erbij hoort. Onthoud: <strong>biologie</strong> gaat over de levende natuur. <strong>Scheikunde</strong> gaat over stoffen die met elkaar reageren: na afloop heb je andere stoffen dan ervoor. <strong>Natuurkunde</strong> gaat over verschijnselen zoals licht, warmte, geluid, krachten en magnetisme: na afloop heb je precies dezelfde stoffen als ervoor.</p>",
     "categorieen": {
-      "biologie": { "label": "Biologie", "regel": "Biologie gaat over de levende natuur: alles wat groeit en bloeit." },
-      "natuurkunde": { "label": "Natuurkunde", "regel": "Natuurkunde gaat over verschijnselen in de levenloze natuur, zoals licht, warmte, geluid, krachten en magnetisme. Na afloop heb je precies dezelfde stoffen als ervoor." },
-      "scheikunde": { "label": "Scheikunde", "regel": "Scheikunde gaat over stoffen die met elkaar reageren. Na afloop heb je andere stoffen dan ervoor." }
-    }
+      "biologie": {
+        "label": "Biologie",
+        "regel": "Biologie gaat over de levende natuur: alles wat groeit en bloeit."
+      },
+      "natuurkunde": {
+        "label": "Natuurkunde",
+        "regel": "Natuurkunde gaat over verschijnselen in de levenloze natuur, zoals licht, warmte, geluid, krachten en magnetisme. Na afloop heb je precies dezelfde stoffen als ervoor."
+      },
+      "scheikunde": {
+        "label": "Scheikunde",
+        "regel": "Scheikunde gaat over stoffen die met elkaar reageren. Na afloop heb je andere stoffen dan ervoor."
+      }
+    },
+    "volgorde": "Vaste willekeurige volgorde (seed 20260903), zodat het juiste vak niet uit de positie af te lezen is; nr verwijst naar het item in het oorspronkelijke oefenspel."
   },
   "vragen": [
-    { "nr": 1, "categorie": "biologie", "titel": "De groeiende tulp", "vraag": "Een tulp groeit nog een beetje door in een vaas met water. Welk vak hoort hierbij?", "uitleg": "Een tulp behoort tot de levende natuur. Omdat het gaat over een plant die groeit en bloeit, bestudeert de biologie dit verschijnsel." },
-    { "nr": 2, "categorie": "biologie", "titel": "De kip en het ei", "vraag": "Een kip legt een ei in het nest. Welk vak hoort hierbij?", "uitleg": "De kip is een levend dier en behoort tot de levende natuur. Het leggen van een ei is een biologisch proces van voortplanting." },
-    { "nr": 3, "categorie": "biologie", "titel": "Herfstbladeren die verkleuren", "vraag": "Een groen blad aan de boom verandert in de herfst van kleur. Welk vak hoort hierbij?", "uitleg": "De boom is een levend organisme (levende natuur). De verandering van kleur in de herfst is een biologisch proces waarbij de boom zich voorbereidt op de winter." },
-    { "nr": 4, "categorie": "biologie", "titel": "Een hijgende hond", "vraag": "Een hond rent door het park en begint flink te hijgen om af te koelen. Welk vak hoort hierbij?", "uitleg": "De hond behoort tot de levende natuur. Het hijgen is een biologische reactie van het lichaam van het dier om overtollige warmte kwijt te raken." },
-    { "nr": 5, "categorie": "biologie", "titel": "De transformatie van een rups", "vraag": "Een rups verandert in een pop en daarna in een vlinder. Welk vak hoort hierbij?", "uitleg": "Zowel de rups als de vlinder zijn levende wezens (levende natuur). Deze gedaanteverwisseling (metamorfose) is een kernonderwerp binnen de biologie." },
-    { "nr": 6, "categorie": "biologie", "titel": "Schimmel op brood", "vraag": "Er groeit na een paar dagen groenige schimmel op een vergeten boterham. Welk vak hoort hierbij?", "uitleg": "Hoewel het brood levenloos is, is de schimmel zelf een levend organisme. Omdat de schimmel groeit en zich voedt, hoort dit bij de biologie." },
-    { "nr": 7, "categorie": "biologie", "titel": "De bij en de bloem", "vraag": "Een bij vliegt van bloem naar bloem om nectar te verzamelen. Welk vak hoort hierbij?", "uitleg": "Dit gaat over de interactie tussen twee levende organismen (een insect en een plant). Omdat beide horen bij de levende natuur die groeit en bloeit, is dit biologie." },
-    { "nr": 8, "categorie": "biologie", "titel": "De hartslag van een sporter", "vraag": "Tijdens een sprint gaat je hart sneller kloppen om je spieren van zuurstof te voorzien. Welk vak hoort hierbij?", "uitleg": "Dit gaat over de werking van het menselijk lichaam. Mensen behoren tot de levende natuur, en de werking van organen zoals het hart is pure biologie." },
-    { "nr": 9, "categorie": "biologie", "titel": "Een ontkiemend zaadje", "vraag": "Een klein zaadje in de grond ontkiemt en krijgt zijn eerste wortels. Welk vak hoort hierbij?", "uitleg": "Het ontkiemen is de start van het leven van een nieuwe plant. Dit proces van groei en ontwikkeling binnen de levende natuur hoort bij de biologie." },
-    { "nr": 10, "categorie": "biologie", "titel": "Een kat met kittens", "vraag": "Een moederkat voedt haar pasgeboren kittens met melk. Welk vak hoort hierbij?", "uitleg": "Dit gaat over zoogdieren, voortplanting en de zorg voor nakomelingen binnen de levende natuur. Dit is een klassiek biologisch onderwerp." },
-    { "nr": 11, "categorie": "scheikunde", "titel": "De geroeste spijker", "vraag": "Een ijzeren spijker ligt buiten in de regen en begint te roesten. Welk vak hoort hierbij?", "uitleg": "Dit gaat over de levenloze natuur. Het ijzer reageert chemisch met water en zuurstof uit de lucht. Er ontstaat een heel nieuwe stof met andere eigenschappen: ijzeroxide (roest). Na dit proces heb je andere stoffen dan ervoor." },
-    { "nr": 12, "categorie": "scheikunde", "titel": "De oprokende sigaret", "vraag": "Een brandende sigaret wordt opgerookt en verandert in as en rook. Welk vak hoort hierbij?", "uitleg": "Dit is een verbrandingsreactie. Door het vuur reageren de tabaksstoffen met zuurstof. Je houdt na afloop andere stoffen over (grijze as en gasvormige rook) dan de vaste tabak waar je mee begon." },
-    { "nr": 13, "categorie": "scheikunde", "titel": "Een ei bakken", "vraag": "Een vloeibaar, doorzichtig ei verandert in een stevig wit gebakken ei in de pan. Welk vak hoort hierbij?", "uitleg": "Door de warmte van de pan veranderen de eiwitten permanent van structuur (denaturatie). Er ontstaan nieuwe stoffen met andere eigenschappen. Je kunt het gestolde eiwit nooit meer vloeibaar en doorzichtig maken." },
-    { "nr": 14, "categorie": "scheikunde", "titel": "Het kampvuur", "vraag": "Houtblokken verbranden in een kampvuur tot er alleen as overblijft. Welk vak hoort hierbij?", "uitleg": "Dit is een chemische reactie (verbranding). De oorspronkelijke stoffen in het hout reageren met zuurstof en veranderen permanent in nieuwe stoffen: koolstof (as), koolzuurgas (rook) en waterdamp." },
-    { "nr": 15, "categorie": "scheikunde", "titel": "De bruistablet", "vraag": "Een bruistablet wordt in een glas water gegooid en begint hevig te borrelen en gas te maken. Welk vak hoort hierbij?", "uitleg": "Zodra de tablet in contact komt met water, reageren de vaste stoffen in de tablet met elkaar. Hierbij ontstaat een nieuwe stof in de vorm van een gas (koolzuurgas), wat de opstijgende bellen veroorzaakt." },
-    { "nr": 16, "categorie": "scheikunde", "titel": "Bakpoeder en azijn", "vraag": "Je mengt wit bakpoeder met zuur azijn en er ontstaat direct een wild bruisend schuim. Welk vak hoort hierbij?", "uitleg": "Dit is een actieve zuur-basereactie. De stoffen reageren met elkaar en vormen nieuwe stoffen, waaronder koolstofdioxidegas dat het wilde bruisen en schuimen veroorzaakt." },
-    { "nr": 17, "categorie": "scheikunde", "titel": "Een cake bakken", "vraag": "Vloeibaar cakebeslag verandert in de hete oven in een luchtige, stevige cake. Welk vak hoort hierbij?", "uitleg": "In de oven treden door de hitte verschillende chemische reacties op tussen het meel, de eieren en het bakpoeder. Er ontstaan nieuwe stoffen (zoals gasbelletjes die de cake luchtig maken en smaakstoffen). Je kunt de cake niet meer terugveranderen in beslag." },
-    { "nr": 18, "categorie": "scheikunde", "titel": "De zwart wordende lepel", "vraag": "Een glanzende zilveren lepel wordt na maanden in de la liggen dof en zwart. Welk vak hoort hierbij?", "uitleg": "Het zilver reageert heel langzaam met minieme hoeveelheden zwavelverbindingen in de lucht. Hierdoor ontstaat een nieuwe, zwarte stof op het oppervlak: zilversulfide." },
-    { "nr": 19, "categorie": "scheikunde", "titel": "Vuurwerkontploffing", "vraag": "Een vuurwerkpijl explodeert met een harde knal en laat kleurrijk licht en rook achter. Welk vak hoort hierbij?", "uitleg": "Dit is een zeer snelle, explosieve chemische reactie van buskruit en metaalzouten met zuurstof. Het kruit verandert permanent in nieuwe stoffen: gassen, rookdeeltjes en lichtgevende oxiden." },
-    { "nr": 20, "categorie": "scheikunde", "titel": "Een vlek bleken", "vraag": "Een donkere vlek op een shirt verdwijnt als je er een druppel chloor op doet. Welk vak hoort hierbij?", "uitleg": "Het bleekmiddel reageert chemisch met de kleurstoffen (pigmenten) van de vlek. De moleculen van de kleurstof worden afgebroken en veranderen in nieuwe, kleurloze stoffen." },
-    { "nr": 21, "categorie": "natuurkunde", "titel": "Het smeltende ijsklontje", "vraag": "Een ijsklontje smelt op een schoteltje tot een plasje water. Welk vak hoort hierbij?", "uitleg": "Dit gaat over de levenloze natuur. Smelten is een faseovergang (van vast naar vloeibaar) door warmte. Het is natuurkunde omdat de stof precies hetzelfde blijft: voor en na het smelten is het gewoon water (H₂O). Er zijn geen nieuwe stoffen gemaakt." },
-    { "nr": 22, "categorie": "natuurkunde", "titel": "De gitaarsnaar", "vraag": "Een trillende gitaarsnaar maakt een hard geluid. Welk vak hoort hierbij?", "uitleg": "Dit gaat over het verschijnsel geluid (trillingen en golven). Omdat de gitaarsnaar van exact dezelfde stof gemaakt blijft en er geen chemische verandering optreedt, bestudeert de natuurkunde dit." },
-    { "nr": 23, "categorie": "natuurkunde", "titel": "Drijvend ei in zout water", "vraag": "Een rauw ei zinkt in kraanwater, maar blijft drijven in zout water. Welk vak hoort hierbij?", "uitleg": "Dit is een mechanisch verschijnsel dat te maken heeft met krachten en dichtheid (opwaartse kracht van vloeistoffen). Er treden geen chemische reacties op en de stoffen (het ei en het water) veranderen niet van samenstelling." },
-    { "nr": 24, "categorie": "natuurkunde", "titel": "De kompasnaald", "vraag": "De metalen naald van een kompas draait altijd naar het noorden. Welk vak hoort hierbij?", "uitleg": "Dit gaat over het verschijnsel magnetisme. De naald reageert op het magnetisch veld van de aarde. Er veranderen geen stoffen, dus dit is een natuurkundig verschijnsel." },
-    { "nr": 25, "categorie": "natuurkunde", "titel": "De brandende lamp", "vraag": "Je zet een schakelaar om en de lamp begint fel licht te geven. Welk vak hoort hierbij?", "uitleg": "Dit gaat over de verschijnselen elektriciteit (stroom door de draden) en licht (straling). De koperen draden en de gloeidraad blijven van exact dezelfde stof gemaakt; er treden geen blijvende stofveranderingen op." },
-    { "nr": 26, "categorie": "natuurkunde", "titel": "De regenboog", "vraag": "Na een regenbui verschijnt er een kleurrijke regenboog in de lucht. Welk vak hoort hierbij?", "uitleg": "Dit is een optisch verschijnsel: de breking en weerkaatsing van licht in waterdruppels. Er ontstaan hierbij geen nieuwe stoffen; het water blijft gewoon water en het licht blijft licht." },
-    { "nr": 27, "categorie": "natuurkunde", "titel": "Magneten en paperclips", "vraag": "Een sterke magneet trekt ijzeren paperclips aan zonder ze aan te raken. Welk vak hoort hierbij?", "uitleg": "Dit draait om de magnetische kracht die voorwerpen op afstand kan beïnvloeden. Omdat de magneet en de paperclips niet chemisch reageren en dezelfde stoffen blijven, is dit natuurkunde." },
-    { "nr": 28, "categorie": "natuurkunde", "titel": "De vallende bal", "vraag": "Als je een bal loslaat, valt deze direct met een versnelling naar de grond. Welk vak hoort hierbij?", "uitleg": "Dit wordt veroorzaakt door de zwaartekracht (een kracht die massa's aantrekt). Beweging en krachten vallen onder de natuurkunde. De bal blijft tijdens de val van dezelfde stof gemaakt." },
-    { "nr": 29, "categorie": "natuurkunde", "titel": "Het spiegelbeeld", "vraag": "Je kijkt in de spiegel en ziet een perfecte reflectie van jezelf. Welk vak hoort hierbij?", "uitleg": "Dit gaat over de terugkaatsing van lichtstralen op een glad oppervlak. Licht en spiegeling zijn natuurkundige verschijnselen. Er treden geen chemische reacties op bij het spiegelen." },
-    { "nr": 30, "categorie": "natuurkunde", "titel": "Remmende fietser en wrijving", "vraag": "Een fietser remt hard en de remblokjes worden heel warm door de wrijving. Welk vak hoort hierbij?", "uitleg": "Dit gaat over krachten (wrijvingskracht) en de omzetting van bewegingsenergie in warmte (energie). Dit zijn kernbegrippen binnen de natuurkunde, waarbij de remblokjes en de banden van dezelfde stof blijven (ze verbranden niet)." }
+    {
+      "nr": 6,
+      "categorie": "biologie",
+      "titel": "Schimmel op brood",
+      "vraag": "Er groeit na een paar dagen groenige schimmel op een vergeten boterham. Welk vak hoort hierbij?",
+      "uitleg": "Hoewel het brood levenloos is, is de schimmel zelf een levend organisme. Omdat de schimmel groeit en zich voedt, hoort dit bij de biologie."
+    },
+    {
+      "nr": 10,
+      "categorie": "biologie",
+      "titel": "Een kat met kittens",
+      "vraag": "Een moederkat voedt haar pasgeboren kittens met melk. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over zoogdieren, voortplanting en de zorg voor nakomelingen binnen de levende natuur. Dit is een klassiek biologisch onderwerp."
+    },
+    {
+      "nr": 2,
+      "categorie": "biologie",
+      "titel": "De kip en het ei",
+      "vraag": "Een kip legt een ei in het nest. Welk vak hoort hierbij?",
+      "uitleg": "De kip is een levend dier en behoort tot de levende natuur. Het leggen van een ei is een biologisch proces van voortplanting."
+    },
+    {
+      "nr": 22,
+      "categorie": "natuurkunde",
+      "titel": "De gitaarsnaar",
+      "vraag": "Een trillende gitaarsnaar maakt een hard geluid. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over het verschijnsel geluid (trillingen en golven). Omdat de gitaarsnaar van exact dezelfde stof gemaakt blijft en er geen chemische verandering optreedt, bestudeert de natuurkunde dit."
+    },
+    {
+      "nr": 28,
+      "categorie": "natuurkunde",
+      "titel": "De vallende bal",
+      "vraag": "Als je een bal loslaat, valt deze direct met een versnelling naar de grond. Welk vak hoort hierbij?",
+      "uitleg": "Dit wordt veroorzaakt door de zwaartekracht (een kracht die massa's aantrekt). Beweging en krachten vallen onder de natuurkunde. De bal blijft tijdens de val van dezelfde stof gemaakt."
+    },
+    {
+      "nr": 3,
+      "categorie": "biologie",
+      "titel": "Herfstbladeren die verkleuren",
+      "vraag": "Een groen blad aan de boom verandert in de herfst van kleur. Welk vak hoort hierbij?",
+      "uitleg": "De boom is een levend organisme (levende natuur). De verandering van kleur in de herfst is een biologisch proces waarbij de boom zich voorbereidt op de winter."
+    },
+    {
+      "nr": 23,
+      "categorie": "natuurkunde",
+      "titel": "Drijvend ei in zout water",
+      "vraag": "Een rauw ei zinkt in kraanwater, maar blijft drijven in zout water. Welk vak hoort hierbij?",
+      "uitleg": "Dit is een mechanisch verschijnsel dat te maken heeft met krachten en dichtheid (opwaartse kracht van vloeistoffen). Er treden geen chemische reacties op en de stoffen (het ei en het water) veranderen niet van samenstelling."
+    },
+    {
+      "nr": 19,
+      "categorie": "scheikunde",
+      "titel": "Vuurwerkontploffing",
+      "vraag": "Een vuurwerkpijl explodeert met een harde knal en laat kleurrijk licht en rook achter. Welk vak hoort hierbij?",
+      "uitleg": "Dit is een zeer snelle, explosieve chemische reactie van buskruit en metaalzouten met zuurstof. Het kruit verandert permanent in nieuwe stoffen: gassen, rookdeeltjes en lichtgevende oxiden."
+    },
+    {
+      "nr": 1,
+      "categorie": "biologie",
+      "titel": "De groeiende tulp",
+      "vraag": "Een tulp groeit nog een beetje door in een vaas met water. Welk vak hoort hierbij?",
+      "uitleg": "Een tulp behoort tot de levende natuur. Omdat het gaat over een plant die groeit en bloeit, bestudeert de biologie dit verschijnsel."
+    },
+    {
+      "nr": 7,
+      "categorie": "biologie",
+      "titel": "De bij en de bloem",
+      "vraag": "Een bij vliegt van bloem naar bloem om nectar te verzamelen. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over de interactie tussen twee levende organismen (een insect en een plant). Omdat beide horen bij de levende natuur die groeit en bloeit, is dit biologie."
+    },
+    {
+      "nr": 13,
+      "categorie": "scheikunde",
+      "titel": "Een ei bakken",
+      "vraag": "Een vloeibaar, doorzichtig ei verandert in een stevig wit gebakken ei in de pan. Welk vak hoort hierbij?",
+      "uitleg": "Door de warmte van de pan veranderen de eiwitten permanent van structuur (denaturatie). Er ontstaan nieuwe stoffen met andere eigenschappen. Je kunt het gestolde eiwit nooit meer vloeibaar en doorzichtig maken."
+    },
+    {
+      "nr": 14,
+      "categorie": "scheikunde",
+      "titel": "Het kampvuur",
+      "vraag": "Houtblokken verbranden in een kampvuur tot er alleen as overblijft. Welk vak hoort hierbij?",
+      "uitleg": "Dit is een chemische reactie (verbranding). De oorspronkelijke stoffen in het hout reageren met zuurstof en veranderen permanent in nieuwe stoffen: koolstof (as), koolzuurgas (rook) en waterdamp."
+    },
+    {
+      "nr": 30,
+      "categorie": "natuurkunde",
+      "titel": "Remmende fietser en wrijving",
+      "vraag": "Een fietser remt hard en de remblokjes worden heel warm door de wrijving. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over krachten (wrijvingskracht) en de omzetting van bewegingsenergie in warmte (energie). Dit zijn kernbegrippen binnen de natuurkunde, waarbij de remblokjes en de banden van dezelfde stof blijven (ze verbranden niet)."
+    },
+    {
+      "nr": 24,
+      "categorie": "natuurkunde",
+      "titel": "De kompasnaald",
+      "vraag": "De metalen naald van een kompas draait altijd naar het noorden. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over het verschijnsel magnetisme. De naald reageert op het magnetisch veld van de aarde. Er veranderen geen stoffen, dus dit is een natuurkundig verschijnsel."
+    },
+    {
+      "nr": 20,
+      "categorie": "scheikunde",
+      "titel": "Een vlek bleken",
+      "vraag": "Een donkere vlek op een shirt verdwijnt als je er een druppel chloor op doet. Welk vak hoort hierbij?",
+      "uitleg": "Het bleekmiddel reageert chemisch met de kleurstoffen (pigmenten) van de vlek. De moleculen van de kleurstof worden afgebroken en veranderen in nieuwe, kleurloze stoffen."
+    },
+    {
+      "nr": 4,
+      "categorie": "biologie",
+      "titel": "Een hijgende hond",
+      "vraag": "Een hond rent door het park en begint flink te hijgen om af te koelen. Welk vak hoort hierbij?",
+      "uitleg": "De hond behoort tot de levende natuur. Het hijgen is een biologische reactie van het lichaam van het dier om overtollige warmte kwijt te raken."
+    },
+    {
+      "nr": 18,
+      "categorie": "scheikunde",
+      "titel": "De zwart wordende lepel",
+      "vraag": "Een glanzende zilveren lepel wordt na maanden in de la liggen dof en zwart. Welk vak hoort hierbij?",
+      "uitleg": "Het zilver reageert heel langzaam met minieme hoeveelheden zwavelverbindingen in de lucht. Hierdoor ontstaat een nieuwe, zwarte stof op het oppervlak: zilversulfide."
+    },
+    {
+      "nr": 17,
+      "categorie": "scheikunde",
+      "titel": "Een cake bakken",
+      "vraag": "Vloeibaar cakebeslag verandert in de hete oven in een luchtige, stevige cake. Welk vak hoort hierbij?",
+      "uitleg": "In de oven treden door de hitte verschillende chemische reacties op tussen het meel, de eieren en het bakpoeder. Er ontstaan nieuwe stoffen (zoals gasbelletjes die de cake luchtig maken en smaakstoffen). Je kunt de cake niet meer terugveranderen in beslag."
+    },
+    {
+      "nr": 27,
+      "categorie": "natuurkunde",
+      "titel": "Magneten en paperclips",
+      "vraag": "Een sterke magneet trekt ijzeren paperclips aan zonder ze aan te raken. Welk vak hoort hierbij?",
+      "uitleg": "Dit draait om de magnetische kracht die voorwerpen op afstand kan beïnvloeden. Omdat de magneet en de paperclips niet chemisch reageren en dezelfde stoffen blijven, is dit natuurkunde."
+    },
+    {
+      "nr": 11,
+      "categorie": "scheikunde",
+      "titel": "De geroeste spijker",
+      "vraag": "Een ijzeren spijker ligt buiten in de regen en begint te roesten. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over de levenloze natuur. Het ijzer reageert chemisch met water en zuurstof uit de lucht. Er ontstaat een heel nieuwe stof met andere eigenschappen: ijzeroxide (roest). Na dit proces heb je andere stoffen dan ervoor."
+    },
+    {
+      "nr": 29,
+      "categorie": "natuurkunde",
+      "titel": "Het spiegelbeeld",
+      "vraag": "Je kijkt in de spiegel en ziet een perfecte reflectie van jezelf. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over de terugkaatsing van lichtstralen op een glad oppervlak. Licht en spiegeling zijn natuurkundige verschijnselen. Er treden geen chemische reacties op bij het spiegelen."
+    },
+    {
+      "nr": 25,
+      "categorie": "natuurkunde",
+      "titel": "De brandende lamp",
+      "vraag": "Je zet een schakelaar om en de lamp begint fel licht te geven. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over de verschijnselen elektriciteit (stroom door de draden) en licht (straling). De koperen draden en de gloeidraad blijven van exact dezelfde stof gemaakt; er treden geen blijvende stofveranderingen op."
+    },
+    {
+      "nr": 12,
+      "categorie": "scheikunde",
+      "titel": "De oprokende sigaret",
+      "vraag": "Een brandende sigaret wordt opgerookt en verandert in as en rook. Welk vak hoort hierbij?",
+      "uitleg": "Dit is een verbrandingsreactie. Door het vuur reageren de tabaksstoffen met zuurstof. Je houdt na afloop andere stoffen over (grijze as en gasvormige rook) dan de vaste tabak waar je mee begon."
+    },
+    {
+      "nr": 16,
+      "categorie": "scheikunde",
+      "titel": "Bakpoeder en azijn",
+      "vraag": "Je mengt wit bakpoeder met zuur azijn en er ontstaat direct een wild bruisend schuim. Welk vak hoort hierbij?",
+      "uitleg": "Dit is een actieve zuur-basereactie. De stoffen reageren met elkaar en vormen nieuwe stoffen, waaronder koolstofdioxidegas dat het wilde bruisen en schuimen veroorzaakt."
+    },
+    {
+      "nr": 8,
+      "categorie": "biologie",
+      "titel": "De hartslag van een sporter",
+      "vraag": "Tijdens een sprint gaat je hart sneller kloppen om je spieren van zuurstof te voorzien. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over de werking van het menselijk lichaam. Mensen behoren tot de levende natuur, en de werking van organen zoals het hart is pure biologie."
+    },
+    {
+      "nr": 21,
+      "categorie": "natuurkunde",
+      "titel": "Het smeltende ijsklontje",
+      "vraag": "Een ijsklontje smelt op een schoteltje tot een plasje water. Welk vak hoort hierbij?",
+      "uitleg": "Dit gaat over de levenloze natuur. Smelten is een faseovergang (van vast naar vloeibaar) door warmte. Het is natuurkunde omdat de stof precies hetzelfde blijft: voor en na het smelten is het gewoon water (H₂O). Er zijn geen nieuwe stoffen gemaakt."
+    },
+    {
+      "nr": 5,
+      "categorie": "biologie",
+      "titel": "De transformatie van een rups",
+      "vraag": "Een rups verandert in een pop en daarna in een vlinder. Welk vak hoort hierbij?",
+      "uitleg": "Zowel de rups als de vlinder zijn levende wezens (levende natuur). Deze gedaanteverwisseling (metamorfose) is een kernonderwerp binnen de biologie."
+    },
+    {
+      "nr": 9,
+      "categorie": "biologie",
+      "titel": "Een ontkiemend zaadje",
+      "vraag": "Een klein zaadje in de grond ontkiemt en krijgt zijn eerste wortels. Welk vak hoort hierbij?",
+      "uitleg": "Het ontkiemen is de start van het leven van een nieuwe plant. Dit proces van groei en ontwikkeling binnen de levende natuur hoort bij de biologie."
+    },
+    {
+      "nr": 15,
+      "categorie": "scheikunde",
+      "titel": "De bruistablet",
+      "vraag": "Een bruistablet wordt in een glas water gegooid en begint hevig te borrelen en gas te maken. Welk vak hoort hierbij?",
+      "uitleg": "Zodra de tablet in contact komt met water, reageren de vaste stoffen in de tablet met elkaar. Hierbij ontstaat een nieuwe stof in de vorm van een gas (koolzuurgas), wat de opstijgende bellen veroorzaakt."
+    },
+    {
+      "nr": 26,
+      "categorie": "natuurkunde",
+      "titel": "De regenboog",
+      "vraag": "Na een regenbui verschijnt er een kleurrijke regenboog in de lucht. Welk vak hoort hierbij?",
+      "uitleg": "Dit is een optisch verschijnsel: de breking en weerkaatsing van licht in waterdruppels. Er ontstaan hierbij geen nieuwe stoffen; het water blijft gewoon water en het licht blijft licht."
+    }
   ]
 }
