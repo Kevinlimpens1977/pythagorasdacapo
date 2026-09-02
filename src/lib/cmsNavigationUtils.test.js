@@ -85,6 +85,10 @@ test('getCmsItemLabel uses text fields and readable fallbacks for the content hi
   assert.equal(getCmsItemLabel('leerjaar', {}), 'Leerjaar');
   assert.equal(getCmsItemLabel('niveau', { label: 'VMBO-GT', name: 'VMBO-GT' }), 'VMBO-GT');
   assert.equal(getCmsItemLabel('niveau', { label: 'VMBO-GT', name: 'Gemengd theoretisch' }), 'VMBO-GT - Gemengd theoretisch');
+  // Naam bevat het label al (Binask-seed): niet nog eens voorvoegen, ook niet
+  // als een boomknoop met het samengestelde label een tweede keer langskomt.
+  assert.equal(getCmsItemLabel('niveau', { label: 'Leerroute 3', name: 'Leerroute 3 - leerjaar 1' }), 'Leerroute 3 - leerjaar 1');
+  assert.equal(getCmsItemLabel('niveau', { label: 'Leerroute 3 - leerjaar 1', name: 'Leerroute 3 - leerjaar 1' }), 'Leerroute 3 - leerjaar 1');
   assert.equal(getCmsItemLabel('niveau', {}), 'Niveau');
   assert.equal(getCmsItemLabel('hoofdstuk', { title: 'H1 Inleiding' }), 'H1 Inleiding');
   assert.equal(getCmsItemLabel('hoofdstuk', { number: 2 }), 'Hoofdstuk 2');

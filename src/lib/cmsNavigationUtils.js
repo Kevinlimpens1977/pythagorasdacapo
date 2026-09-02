@@ -15,7 +15,12 @@ export const getCmsItemLabel = (type, item = {}) => {
   if (type === 'vak') return item.name || item.naam || 'Vak zonder naam';
   if (type === 'leerjaar') return item.label || item.name || (item.year ? `Jaar ${item.year}` : 'Leerjaar');
   if (type === 'niveau') {
-    if (item.label && item.name && item.label !== item.name) return `${item.label} - ${item.name}`;
+    // Een naam die het label al bevat ("Leerroute 3 - leerjaar 1") niet nog
+    // eens voorvoegen; boomknopen krijgen dit label als `label` en komen hier
+    // soms een tweede keer langs.
+    if (item.label && item.name && item.label !== item.name) {
+      return item.name.startsWith(item.label) ? item.name : `${item.label} - ${item.name}`;
+    }
     return item.label || item.name || 'Niveau';
   }
   if (type === 'hoofdstuk') return item.title || item.name || (item.number ? `Hoofdstuk ${item.number}` : 'Hoofdstuk zonder naam');
