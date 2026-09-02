@@ -55,8 +55,8 @@ const BELSTIJL = `
 }
 @keyframes helix-meldbel-puls {
   0%   { box-shadow: 0 0 0 0 rgba(8, 126, 181, 0.45), 0 0 14px 2px rgba(8, 126, 181, 0.3); }
-  70%  { box-shadow: 0 0 0 12px oklch(0.52 0.19 300 / 0), 0 0 24px 8px rgba(8, 126, 181, 0.45); }
-  100% { box-shadow: 0 0 0 0 oklch(0.52 0.19 300 / 0), 0 0 14px 2px rgba(8, 126, 181, 0.3); }
+  70%  { box-shadow: 0 0 0 12px rgba(8, 126, 181, 0), 0 0 24px 8px rgba(8, 126, 181, 0.45); }
+  100% { box-shadow: 0 0 0 0 rgba(8, 126, 181, 0), 0 0 14px 2px rgba(8, 126, 181, 0.3); }
 }
 @media (prefers-reduced-motion: reduce) {
   .helix-meldbel--antwoord::after { animation: none; }
