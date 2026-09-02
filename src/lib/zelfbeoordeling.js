@@ -11,9 +11,9 @@
  */
 
 export const ZELFOORDELEN = {
-  goed: { label: 'Goed', kleur: '#166534', achtergrond: '#dcfce7' },
-  bijna: { label: 'Bijna', kleur: '#b45309', achtergrond: '#fef3c7' },
-  nog_niet: { label: 'Nog niet', kleur: '#b91c1c', achtergrond: '#fee2e2' }
+  goed: { label: 'Goed', kleur: '#266745', achtergrond: '#DFF2E7' },
+  bijna: { label: 'Bijna', kleur: '#B4520E', achtergrond: '#FFF0B8' },
+  nog_niet: { label: 'Nog niet', kleur: '#B42F25', achtergrond: '#FADDDA' }
 };
 
 export const isGeldigZelfoordeel = (waarde) =>

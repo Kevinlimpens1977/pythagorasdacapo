@@ -110,12 +110,12 @@ const PANEL_CATEGORIES = new Set(['pen', 'highlighter', 'eraser', 'text', 'objec
 const DRAWING_CATEGORIES = new Set(['pen', 'highlighter', 'eraser']);
 
 const penColors = [
-  { label: 'Zwart', value: '#111827' },
-  { label: 'Blauw', value: '#2563eb' },
-  { label: 'Rood', value: '#dc2626' },
-  { label: 'Groen', value: '#16a34a' },
-  { label: 'Oranje', value: '#ea580c' },
-  { label: 'Paars', value: '#7c3aed' }
+  { label: 'Zwart', value: '#0B0D0F' },
+  { label: 'Blauw', value: '#087EB5' },
+  { label: 'Rood', value: '#B42F25' },
+  { label: 'Groen', value: '#237A4D' },
+  { label: 'Oranje', value: '#B4520E' },
+  { label: 'Paars', value: '#087EB5' }
 ];
 
 const penWidths = [
@@ -126,11 +126,11 @@ const penWidths = [
 ];
 
 const highlighterColors = [
-  { label: 'Geel', value: '#facc15' },
+  { label: 'Geel', value: '#FFD33D' },
   { label: 'Oranje', value: '#fb923c' },
   { label: 'Mint', value: '#5eead4' },
   { label: 'Roze', value: '#f9a8d4' },
-  { label: 'Lavendel', value: '#c4b5fd' }
+  { label: 'Lavendel', value: '#BED8EA' }
 ];
 
 const highlighterWidths = [
@@ -140,11 +140,11 @@ const highlighterWidths = [
 ];
 
 const textColors = [
-  { label: 'Zwart', value: '#111827' },
-  { label: 'Blauw', value: '#2563eb' },
-  { label: 'Rood', value: '#dc2626' },
-  { label: 'Groen', value: '#16a34a' },
-  { label: 'Paars', value: '#7c3aed' }
+  { label: 'Zwart', value: '#0B0D0F' },
+  { label: 'Blauw', value: '#087EB5' },
+  { label: 'Rood', value: '#B42F25' },
+  { label: 'Groen', value: '#237A4D' },
+  { label: 'Paars', value: '#087EB5' }
 ];
 
 const textSizes = [
@@ -227,7 +227,7 @@ export default function PresenterToolbar({
   open = false,
   pinned = false,
   background = { kind: 'white', gridSize: 96 },
-  penStyle = { color: '#111827', width: 6 },
+  penStyle = { color: '#0B0D0F', width: 6 },
   onTogglePinned,
   onOpen,
   onClosePanel,
@@ -382,7 +382,7 @@ export default function PresenterToolbar({
     onAction?.();
   };
 
-  const penColor = penStyle?.color || '#111827';
+  const penColor = penStyle?.color || '#0B0D0F';
   const penWidth = Number.isFinite(penStyle?.width) && penStyle.width > 0 ? penStyle.width : 6;
   const isHighlighter = activeCategory === 'highlighter';
   const drawingCategory = isHighlighter ? 'highlighter' : 'pen';
@@ -394,7 +394,7 @@ export default function PresenterToolbar({
   const activeTextStyle = {
     bold: Boolean(textStyle.bold),
     italic: Boolean(textStyle.italic),
-    color: textStyle.color || '#111827',
+    color: textStyle.color || '#0B0D0F',
     fontSize: Number.isFinite(textStyle.fontSize) && textStyle.fontSize > 0 ? textStyle.fontSize : 48,
     fontFamily: textStyle.fontFamily || 'helix',
     align: textStyle.align || 'left'

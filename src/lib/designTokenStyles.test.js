@@ -50,7 +50,7 @@ test('progress dashboard uses calm signal styling with selectable signal rows', 
   assert.doesNotMatch(classOverview, /\$\{card\.tone === 'warning' \? 'helix-alert'/);
 });
 
-test('actieve navigatietab is lavendel met paarse tekst, geen gevulde pill', () => {
+test('actieve navigatietab is een zachte tint met actiekleur-tekst, geen gevulde pill', () => {
   // Ontwerpkeuze 26-08-2026 (mockup HELIX Beheerknoppen): de gevulde paarse
   // pill was te schreeuwerig naast de rest van de beheerpagina.
   const activeRule = getCssRule('.admin-nav-tab-active');
@@ -72,9 +72,10 @@ test('Helix page background is drawn once on the document canvas', () => {
   const bodyRule = getCssRule('body');
   const pageRule = getCssRule('.helix-page');
 
-  assert.match(css, /--helix-page-background:/);
-  // Eén rustige merkgloed rechtsboven; de oude perzik- en lavendelvlekken zijn weg.
-  assert.match(css, /radial-gradient\(circle at 78% -6%,\s*oklch\(0\.52 0\.19 300 \/ 0\.07\),\s*transparent 32rem\)/);
+  assert.match(css, /--helix-page-background:\s*var\(--helix-bg\)/);
+  // Design system v2 (3 sep 2026): effen paper-canvas #FFF7E8, geen merkgloed of vlekken meer.
+  assert.match(css, /--helix-bg:\s*#FFF7E8/i);
+  assert.doesNotMatch(css, /radial-gradient\(circle at 78% -6%/);
   assert.doesNotMatch(css, /rgba\(255,\s*233,\s*220,\s*0\.72\)/);
   assert.match(htmlRule, /background:\s*var\(--helix-page-background\)/);
   assert.match(htmlRule, /background-attachment:\s*fixed/);
@@ -90,7 +91,7 @@ test('clickable action cards show the Border Signal gradient only on interaction
   const focusRule = getCssRule('.helix-action-card:focus-visible');
 
   assert.match(cardRule, /border:\s*2px solid transparent/);
-  assert.match(cardRule, /linear-gradient\(#dfe5ee,\s*#dfe5ee\) border-box/);
+  assert.match(cardRule, /linear-gradient\(#E8DCC3,\s*#E8DCC3\) border-box/);
   assert.match(cardRule, /color:\s*var\(--helix-navy\)/);
   assert.doesNotMatch(cardRule, /var\(--helix-gradient-border\) border-box/);
   assert.match(hoverRule, /var\(--helix-gradient-border\) border-box/);
@@ -114,7 +115,7 @@ test('lesblok studio toolbar controls use compact outline states instead of fill
   const hoverRule = getCssRule('.studio-toolbar-control:hover');
 
   assert.match(controlRule, /border:\s*2px solid transparent/);
-  assert.match(controlRule, /linear-gradient\(#dfe5ee,\s*#dfe5ee\) border-box/);
+  assert.match(controlRule, /linear-gradient\(#E8DCC3,\s*#E8DCC3\) border-box/);
   assert.doesNotMatch(controlRule, /var\(--helix-gradient-border\) border-box/);
   assert.match(activeRule, /var\(--helix-gradient-border\) border-box/);
   assert.match(activeRule, /color:\s*var\(--helix-navy\)/);
@@ -126,9 +127,10 @@ test('lesblok studio toolbar controls use compact outline states instead of fill
 test('presenter chrome uses the shared soft toolbar surface', () => {
   const chromeRule = getCssRule('.presenter-chrome-surface');
 
-  assert.match(chromeRule, /rgba\(255,\s*233,\s*220,\s*0\.92\)/);
-  assert.match(chromeRule, /rgba\(255,\s*230,\s*242,\s*0\.72\)/);
-  assert.match(chromeRule, /rgba\(241,\s*233,\s*255,\s*0\.92\)/);
+  // DS v2: paper-tinten (paper-2, paper, blue-soft) in plaats van perzik/roze/lavendel.
+  assert.match(chromeRule, /rgba\(251,\s*235,\s*208,\s*0\.92\)/);
+  assert.match(chromeRule, /rgba\(255,\s*247,\s*232,\s*0\.72\)/);
+  assert.match(chromeRule, /rgba\(225,\s*240,\s*248,\s*0\.92\)/);
   assert.match(chromeRule, /color:\s*var\(--helix-navy\)/);
 });
 

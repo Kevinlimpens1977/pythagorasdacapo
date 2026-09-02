@@ -44,7 +44,7 @@ const getObjectFrame = (object) => ({
 
 const getObjectStyle = (object) => ({
   fill: object?.fill || object?.style?.fill || 'rgba(255,255,255,0.78)',
-  stroke: object?.stroke || object?.style?.stroke || '#334155',
+  stroke: object?.stroke || object?.style?.stroke || '#433F36',
   strokeWidth: isFinitePositiveNumber(object?.strokeWidth) ? object.strokeWidth : 7
 });
 
@@ -82,7 +82,7 @@ function ThumbnailBackground({ background, width, height }) {
   const columns = Array.from({ length: columnCount }, (_, index) => (index + 1) * columnStep);
 
   return (
-    <g stroke="#cbd5e1" strokeWidth={3} vectorEffect="non-scaling-stroke">
+    <g stroke="#D3C7AE" strokeWidth={3} vectorEffect="non-scaling-stroke">
       {background.kind === 'grid'
         ? columns.map((x) => <line key={`grid-x-${x}`} x1={x} x2={x} y1={0} y2={height} />)
         : null}
@@ -131,8 +131,8 @@ function ThumbnailObject({ object }) {
 
   const renderShape = () => {
     if (importedKind) {
-      const fill = importedKind === 'question' ? '#eff6ff' : '#f8fafc';
-      const stroke = importedKind === 'question' ? '#2563eb' : '#64748b';
+      const fill = importedKind === 'question' ? '#eff6ff' : '#FBF5E8';
+      const stroke = importedKind === 'question' ? '#087EB5' : '#7C7664';
 
       return (
         <>
@@ -240,7 +240,7 @@ export default function PresenterPageThumbnail({ page, pageNumber, active = fals
       }`}
     >
       <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${width} ${height}`}>
-        <rect fill="#f8fafc" height={height} width={width} />
+        <rect fill="#FBF5E8" height={height} width={width} />
         <ThumbnailBackground background={page?.background} height={height} width={width} />
         {visibleObjects.map((object, index) => (
           <ThumbnailObject key={object?.id || `${object?.type || 'object'}-${index}`} object={object} />

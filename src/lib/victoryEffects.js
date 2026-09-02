@@ -33,7 +33,7 @@ export const resolveActiveVictoryEffect = ({ loadout = {}, items = [] } = {}) =>
     id: activeItem.id || activeItem.itemId || '',
     title: activeItem.title || 'Victory effect',
     effect: VICTORY_EFFECT_KEYS.includes(effect) ? effect : VICTORY_EFFECT_KEYS[0],
-    accent: activeItem.previewStyle?.accent || '#7a3cff'
+    accent: activeItem.previewStyle?.accent || '#087EB5'
   };
 };
 
@@ -45,7 +45,7 @@ export const buildVictoryEffectPlayback = ({ effectItem, trigger, streakCount = 
   const isFull = trigger === 'paragraphEnd';
   return {
     effect: effectItem.effect,
-    accent: effectItem.accent || '#7a3cff',
+    accent: effectItem.accent || '#087EB5',
     title: effectItem.title || '',
     variant: isFull ? 'full' : 'subtle',
     durationMs: isFull ? 3000 : 1800,

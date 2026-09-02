@@ -118,7 +118,7 @@ export default function LoginScreen() {
           </div>
 
           <div className="relative">
-            <h2 className="font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-balance">
+            <h2 className="ds-display text-5xl leading-[1.05] text-balance">
               Jouw lessen.<br />Jouw tempo.
             </h2>
             <p className="mt-5 max-w-sm text-lg leading-relaxed text-white/85">
@@ -147,7 +147,7 @@ export default function LoginScreen() {
               <span className="font-display text-xl font-extrabold text-[var(--helix-navy)]">HELIX</span>
             </div>
 
-            <h1 className="font-display text-4xl font-extrabold tracking-tight text-[var(--helix-navy)]">
+            <h1 className="ds-display text-4xl text-[var(--helix-navy)]">
               {isSignUp ? 'Maak je account' : 'Hoi! Log in'}
             </h1>
             <p className="mt-2.5 mb-8 text-[var(--helix-muted)]">

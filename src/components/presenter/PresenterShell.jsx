@@ -61,7 +61,7 @@ const MAX_SESSION_HISTORY_ITEMS = 80;
 const DEFAULT_TEXT_TOOL_STYLE = {
   bold: false,
   italic: false,
-  color: '#111827',
+  color: '#0B0D0F',
   fontSize: 48,
   fontFamily: 'helix',
   align: 'left'
@@ -403,11 +403,11 @@ export default function PresenterShell() {
   const activeIndex = useMemo(() => getPresenterPageIndex(session), [session]);
   const pageLabel = pages.length > 0 ? `Pagina ${activeIndex + 1}/${pages.length}` : 'Pagina 0/0';
   const toolStyles = session.toolStyles || {};
-  const penTool = toolStyles.pen || { id: 'pen', variant: 'pen', color: '#111827', width: 6 };
+  const penTool = toolStyles.pen || { id: 'pen', variant: 'pen', color: '#0B0D0F', width: 6 };
   const highlighterTool = toolStyles.highlighter || {
     id: 'highlighter',
     variant: 'highlighter',
-    color: '#facc15',
+    color: '#FFD33D',
     width: 24
   };
   const activeDrawingTool = activeCategory === 'highlighter' ? highlighterTool : penTool;
@@ -415,7 +415,7 @@ export default function PresenterShell() {
     ? {
         id: activeCategory,
         variant: activeCategory === 'pen' && penMode === 'line' ? 'geometry-pen' : activeCategory,
-        color: activeDrawingTool.color || (activeCategory === 'highlighter' ? '#facc15' : '#111827'),
+        color: activeDrawingTool.color || (activeCategory === 'highlighter' ? '#FFD33D' : '#0B0D0F'),
         width: Number.isFinite(activeDrawingTool.width) && activeDrawingTool.width > 0
           ? activeDrawingTool.width
           : activeCategory === 'highlighter'
@@ -689,11 +689,11 @@ export default function PresenterShell() {
     const strokeId = createObjectId().replace('object-', 'stroke-');
 
     updateActivePageWithHistory((currentSession) => {
-      const penStyle = currentSession.toolStyles?.pen || { color: '#111827', width: 6 };
+      const penStyle = currentSession.toolStyles?.pen || { color: '#0B0D0F', width: 6 };
       const stroke = {
         id: strokeId,
         variant: 'pen',
-        color: penStyle.color || '#111827',
+        color: penStyle.color || '#0B0D0F',
         width: Number.isFinite(penStyle.width) && penStyle.width > 0 ? penStyle.width : 6,
         points
       };
@@ -885,7 +885,7 @@ export default function PresenterShell() {
         rotation: shape.rotation || 0,
         ...(Array.isArray(shape.points) ? { points: shape.points } : {}),
         fill: 'none',
-        stroke: stroke?.color || '#111827',
+        stroke: stroke?.color || '#0B0D0F',
         strokeWidth: Number.isFinite(stroke?.width) && stroke.width > 0 ? stroke.width : 6
       });
 

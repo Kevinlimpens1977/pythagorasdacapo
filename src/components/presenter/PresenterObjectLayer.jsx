@@ -9,10 +9,10 @@ import PresenterAngleShape from './PresenterAngleShape';
 
 const DEFAULT_PAGE_WIDTH = 1920;
 const DEFAULT_PAGE_HEIGHT = 1400;
-const DEFAULT_STROKE = '#111827';
+const DEFAULT_STROKE = '#0B0D0F';
 const DEFAULT_FILL = 'rgba(255, 255, 255, 0.72)';
-const SELECTION_COLOR = '#2563eb';
-const DELETE_COLOR = '#dc2626';
+const SELECTION_COLOR = '#087EB5';
+const DELETE_COLOR = '#B42F25';
 const MIN_TOUCH_STROKE_WIDTH = 44;
 
 const isFiniteNumber = (value) => Number.isFinite(value);

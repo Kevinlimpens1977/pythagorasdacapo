@@ -110,7 +110,7 @@ test('createPresenterObject creates V1B text object defaults', () => {
   assert.deepEqual(object.textStyle, {
     bold: false,
     italic: false,
-    color: '#111827',
+    color: '#0B0D0F',
     fontSize: 48,
     fontFamily: 'helix',
     align: 'left'

@@ -1,62 +1,373 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+/* ==========================================================================
+   HELIX DESIGN SYSTEM V2 - Helix Slide Design System (2 september 2026)
+   Doorgevoerd op 3 september 2026. Laag 1: primitieven (p.6) en fonts (p.7).
+   Laag 2: de bestaande --helix-* tokens wijzen naar deze primitieven, zodat
+   elk scherm meekleurt zonder dat losse componenten herschreven hoeven te worden.
+   Regel uit het DS: geel-zwart is het anker, blauw is de actiekleur, paars
+   alleen voor Helix-context; wijzig eerst tokens, niet losse schermen (p.24).
+   ========================================================================== */
+@import "@fontsource/bangers/400.css";
+@import "@fontsource-variable/atkinson-hyperlegible-next/wght.css";
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: oklch(0.97 0.012 300);
-  --color-primary-100: oklch(0.95 0.02 300);
-  --color-primary-500: oklch(0.52 0.19 300);
-  --color-primary-600: oklch(0.46 0.19 300);
-  
-  --color-success-50: #f0fdf4;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
+  /* Primitieven, exact p.6 */
+  --color-ink: #0B0D0F;
+  --color-paper: #FFF7E8;
+  --color-helix-yellow: #FFD33D;
+  --color-helix-blue: #087EB5;
+  --color-helix-teal: #0D8F93;
+  --color-helix-orange: #F47A20;
+  --color-helix-red: #D83A2E;
+  --color-helix-green: #2E9D63;
+  --color-helix-purple: #793AC7;
 
-  --color-error-50: #fef2f2;
-  --color-error-500: #ef4444;
-  --color-error-600: #dc2626;
+  /* Componentlaag: -ink voor tekst op paper/wit (>= 4,5:1), -soft als vlaktint */
+  --color-blue-ink: #066A99;
+  --color-teal-ink: #0A6F72;
+  --color-orange-ink: #B4520E;
+  --color-red-ink: #B42F25;
+  --color-green-ink: #237A4D;
+  --color-purple-ink: #5F2C9E;
+  --color-blue-soft: #E1F0F8;
+  --color-teal-soft: #DCF1F1;
+  --color-orange-soft: #FDE7D6;
+  --color-red-soft: #FADDDA;
+  --color-green-soft: #DFF2E7;
+  --color-purple-soft: #ECE3F8;
+  --color-yellow-soft: #FFF0B8;
+  --color-paper-2: #FBEBD0;
+  --color-line-soft: #E8DCC3;
+  --color-ink-muted: #5B5648;
 
-  --color-warning-50: #ffe9dc;
-  --color-warning-500: #f97316;
-  --color-warning-600: #ff7a00;
+  /* Semantische Tailwind-namen die de app al gebruikt (bg-primary-*, text-success-*, ...) */
+  --color-primary-50: #E1F0F8;
+  --color-primary-100: #CDE5F2;
+  --color-primary-500: #087EB5;
+  --color-primary-600: #066A99;
 
-  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-display: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --color-success-50: #DFF2E7;
+  --color-success-500: #2E9D63;
+  --color-success-600: #237A4D;
+
+  --color-error-50: #FADDDA;
+  --color-error-500: #D83A2E;
+  --color-error-600: #B42F25;
+
+  --color-warning-50: #FDE7D6;
+  --color-warning-500: #F47A20;
+  --color-warning-600: #B4520E;
+
+  /* Precies twee families (p.7): Bangers voor korte koppen, Atkinson voor alle leestekst.
+     --font-display blijft het leesfont in vet: Bangers alleen via .ds-display, op koppen >= 22 px. */
+  --font-sans: 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible', Arial, Aptos, system-ui, sans-serif;
+  --font-display: 'Atkinson Hyperlegible Next Variable', 'Atkinson Hyperlegible', Arial, Aptos, system-ui, sans-serif;
+  --font-comic: 'Bangers', Anton, Impact, 'Arial Narrow Bold', sans-serif;
+
+  /* Tailwind-kleurfamilies opnieuw ingekleurd naar het Helix Slide Design System v2 (p.6).
+     500 = DS-primitief, 600 = ink-variant (tekst op wit/paper); lichter = mengen met wit,
+     donkerder = mengen met ink. Gegenereerd; wijzig basiskleuren, niet losse stappen. */
+  /* slate */
+  --color-slate-50: #fbf5e8;
+  --color-slate-100: #f5eddb;
+  --color-slate-200: #e8dcc3;
+  --color-slate-300: #d3c7ae;
+  --color-slate-400: #a8a08c;
+  --color-slate-500: #7c7664;
+  --color-slate-600: #5b5648;
+  --color-slate-700: #433f36;
+  --color-slate-800: #2b2925;
+  --color-slate-900: #18191b;
+  --color-slate-950: #0b0d0f;
+  /* gray */
+  --color-gray-50: #fbf5e8;
+  --color-gray-100: #f5eddb;
+  --color-gray-200: #e8dcc3;
+  --color-gray-300: #d3c7ae;
+  --color-gray-400: #a8a08c;
+  --color-gray-500: #7c7664;
+  --color-gray-600: #5b5648;
+  --color-gray-700: #433f36;
+  --color-gray-800: #2b2925;
+  --color-gray-900: #18191b;
+  --color-gray-950: #0b0d0f;
+  /* zinc */
+  --color-zinc-50: #fbf5e8;
+  --color-zinc-100: #f5eddb;
+  --color-zinc-200: #e8dcc3;
+  --color-zinc-300: #d3c7ae;
+  --color-zinc-400: #a8a08c;
+  --color-zinc-500: #7c7664;
+  --color-zinc-600: #5b5648;
+  --color-zinc-700: #433f36;
+  --color-zinc-800: #2b2925;
+  --color-zinc-900: #18191b;
+  --color-zinc-950: #0b0d0f;
+  /* neutral */
+  --color-neutral-50: #fbf5e8;
+  --color-neutral-100: #f5eddb;
+  --color-neutral-200: #e8dcc3;
+  --color-neutral-300: #d3c7ae;
+  --color-neutral-400: #a8a08c;
+  --color-neutral-500: #7c7664;
+  --color-neutral-600: #5b5648;
+  --color-neutral-700: #433f36;
+  --color-neutral-800: #2b2925;
+  --color-neutral-900: #18191b;
+  --color-neutral-950: #0b0d0f;
+  /* stone */
+  --color-stone-50: #fbf5e8;
+  --color-stone-100: #f5eddb;
+  --color-stone-200: #e8dcc3;
+  --color-stone-300: #d3c7ae;
+  --color-stone-400: #a8a08c;
+  --color-stone-500: #7c7664;
+  --color-stone-600: #5b5648;
+  --color-stone-700: #433f36;
+  --color-stone-800: #2b2925;
+  --color-stone-900: #18191b;
+  --color-stone-950: #0b0d0f;
+  /* blue */
+  --color-blue-50: #eef5f9;
+  --color-blue-100: #dceaf4;
+  --color-blue-200: #bed8ea;
+  --color-blue-300: #93bedb;
+  --color-blue-400: #5c9ec9;
+  --color-blue-500: #087EB5;
+  --color-blue-600: #136893;
+  --color-blue-700: #175477;
+  --color-blue-800: #17425b;
+  --color-blue-900: #153244;
+  --color-blue-950: #132531;
+  /* sky */
+  --color-sky-50: #eef5f9;
+  --color-sky-100: #dceaf4;
+  --color-sky-200: #bed8ea;
+  --color-sky-300: #93bedb;
+  --color-sky-400: #5c9ec9;
+  --color-sky-500: #087EB5;
+  --color-sky-600: #136893;
+  --color-sky-700: #175477;
+  --color-sky-800: #17425b;
+  --color-sky-900: #153244;
+  --color-sky-950: #132531;
+  /* indigo */
+  --color-indigo-50: #eef5f9;
+  --color-indigo-100: #dceaf4;
+  --color-indigo-200: #bed8ea;
+  --color-indigo-300: #93bedb;
+  --color-indigo-400: #5c9ec9;
+  --color-indigo-500: #087EB5;
+  --color-indigo-600: #136893;
+  --color-indigo-700: #175477;
+  --color-indigo-800: #17425b;
+  --color-indigo-900: #153244;
+  --color-indigo-950: #132531;
+  /* violet */
+  --color-violet-50: #eef5f9;
+  --color-violet-100: #dceaf4;
+  --color-violet-200: #bed8ea;
+  --color-violet-300: #93bedb;
+  --color-violet-400: #5c9ec9;
+  --color-violet-500: #087EB5;
+  --color-violet-600: #136893;
+  --color-violet-700: #175477;
+  --color-violet-800: #17425b;
+  --color-violet-900: #153244;
+  --color-violet-950: #132531;
+  /* purple */
+  --color-purple-50: #f3f0fc;
+  --color-purple-100: #e8e1f8;
+  --color-purple-200: #d4c6f2;
+  --color-purple-300: #b8a0e7;
+  --color-purple-400: #9770d8;
+  --color-purple-500: #793AC7;
+  --color-purple-600: #6333a2;
+  --color-purple-700: #502d82;
+  --color-purple-800: #3e2664;
+  --color-purple-900: #2e204a;
+  --color-purple-950: #221a35;
+  /* fuchsia */
+  --color-fuchsia-50: #eef6f6;
+  --color-fuchsia-100: #deeded;
+  --color-fuchsia-200: #c1ddde;
+  --color-fuchsia-300: #98c7c8;
+  --color-fuchsia-400: #61abad;
+  --color-fuchsia-500: #0D8F93;
+  --color-fuchsia-600: #177578;
+  --color-fuchsia-700: #1a5e62;
+  --color-fuchsia-800: #19494c;
+  --color-fuchsia-900: #17373a;
+  --color-fuchsia-950: #14282b;
+  /* teal */
+  --color-teal-50: #eef6f6;
+  --color-teal-100: #deeded;
+  --color-teal-200: #c1ddde;
+  --color-teal-300: #98c7c8;
+  --color-teal-400: #61abad;
+  --color-teal-500: #0D8F93;
+  --color-teal-600: #177578;
+  --color-teal-700: #1a5e62;
+  --color-teal-800: #19494c;
+  --color-teal-900: #17373a;
+  --color-teal-950: #14282b;
+  /* cyan */
+  --color-cyan-50: #eef6f6;
+  --color-cyan-100: #deeded;
+  --color-cyan-200: #c1ddde;
+  --color-cyan-300: #98c7c8;
+  --color-cyan-400: #61abad;
+  --color-cyan-500: #0D8F93;
+  --color-cyan-600: #177578;
+  --color-cyan-700: #1a5e62;
+  --color-cyan-800: #19494c;
+  --color-cyan-900: #17373a;
+  --color-cyan-950: #14282b;
+  /* amber */
+  --color-amber-50: #fff5ef;
+  --color-amber-100: #ffebdf;
+  --color-amber-200: #ffd9c3;
+  --color-amber-300: #ffbf9b;
+  --color-amber-400: #fa9e67;
+  --color-amber-500: #F47A20;
+  --color-amber-600: #c56524;
+  --color-amber-700: #9c5324;
+  --color-amber-800: #754122;
+  --color-amber-900: #55321e;
+  --color-amber-950: #3b251a;
+  /* orange */
+  --color-orange-50: #fff5ef;
+  --color-orange-100: #ffebdf;
+  --color-orange-200: #ffd9c3;
+  --color-orange-300: #ffbf9b;
+  --color-orange-400: #fa9e67;
+  --color-orange-500: #F47A20;
+  --color-orange-600: #c56524;
+  --color-orange-700: #9c5324;
+  --color-orange-800: #754122;
+  --color-orange-900: #55321e;
+  --color-orange-950: #3b251a;
+  /* yellow */
+  --color-yellow-50: #fffcf2;
+  --color-yellow-100: #fff9e5;
+  --color-yellow-200: #fff3cf;
+  --color-yellow-300: #ffeaad;
+  --color-yellow-400: #ffdf7d;
+  --color-yellow-500: #FFD33D;
+  --color-yellow-600: #cdab3a;
+  --color-yellow-700: #a28835;
+  --color-yellow-800: #79672e;
+  --color-yellow-900: #574c27;
+  --color-yellow-950: #3c3620;
+  /* emerald */
+  --color-emerald-50: #f0f7f2;
+  --color-emerald-100: #e0efe5;
+  --color-emerald-200: #c5e2cf;
+  --color-emerald-300: #9fceaf;
+  --color-emerald-400: #6cb689;
+  --color-emerald-500: #2E9D63;
+  --color-emerald-600: #2a8053;
+  --color-emerald-700: #266745;
+  --color-emerald-800: #214f37;
+  --color-emerald-900: #1c3b2b;
+  --color-emerald-950: #172b22;
+  /* green */
+  --color-green-50: #f0f7f2;
+  --color-green-100: #e0efe5;
+  --color-green-200: #c5e2cf;
+  --color-green-300: #9fceaf;
+  --color-green-400: #6cb689;
+  --color-green-500: #2E9D63;
+  --color-green-600: #2a8053;
+  --color-green-700: #266745;
+  --color-green-800: #214f37;
+  --color-green-900: #1c3b2b;
+  --color-green-950: #172b22;
+  /* lime */
+  --color-lime-50: #f0f7f2;
+  --color-lime-100: #e0efe5;
+  --color-lime-200: #c5e2cf;
+  --color-lime-300: #9fceaf;
+  --color-lime-400: #6cb689;
+  --color-lime-500: #2E9D63;
+  --color-lime-600: #2a8053;
+  --color-lime-700: #266745;
+  --color-lime-800: #214f37;
+  --color-lime-900: #1c3b2b;
+  --color-lime-950: #172b22;
+  /* red */
+  --color-red-50: #fff0ee;
+  --color-red-100: #fee2dd;
+  --color-red-200: #fbc8c0;
+  --color-red-300: #f4a397;
+  --color-red-400: #e87364;
+  --color-red-500: #D83A2E;
+  --color-red-600: #af342a;
+  --color-red-700: #8c2f26;
+  --color-red-800: #6a2822;
+  --color-red-900: #4e211d;
+  --color-red-950: #371b19;
+  /* rose */
+  --color-rose-50: #fff0ee;
+  --color-rose-100: #fee2dd;
+  --color-rose-200: #fbc8c0;
+  --color-rose-300: #f4a397;
+  --color-rose-400: #e87364;
+  --color-rose-500: #D83A2E;
+  --color-rose-600: #af342a;
+  --color-rose-700: #8c2f26;
+  --color-rose-800: #6a2822;
+  --color-rose-900: #4e211d;
+  --color-rose-950: #371b19;
+  /* pink */
+  --color-pink-50: #fff0ee;
+  --color-pink-100: #fee2dd;
+  --color-pink-200: #fbc8c0;
+  --color-pink-300: #f4a397;
+  --color-pink-400: #e87364;
+  --color-pink-500: #D83A2E;
+  --color-pink-600: #af342a;
+  --color-pink-700: #8c2f26;
+  --color-pink-800: #6a2822;
+  --color-pink-900: #4e211d;
+  --color-pink-950: #371b19;
 }
 
 @layer base {
   :root {
-    --helix-orange: oklch(0.72 0.15 75);
-    --helix-pink: oklch(0.6 0.17 25);
-    --helix-purple: oklch(0.52 0.19 300);
-    --helix-purple-dark: oklch(0.46 0.19 300);
-    --helix-navy: oklch(0.2 0.03 300);
-    --helix-bg: oklch(0.97 0.012 300);
+    /* Laag 2: bestaande HELIX-tokens, nu op de DS-primitieven */
+    --helix-orange: #F47A20;
+    --helix-pink: #0D8F93;
+    --helix-purple: #087EB5;
+    --helix-purple-dark: #066A99;
+    --helix-brand: #793AC7;
+    --helix-navy: #0B0D0F;
+    --helix-bg: #FFF7E8;
     --helix-surface: #ffffff;
-    --helix-surface-soft: oklch(0.985 0.006 300);
-    --helix-border: oklch(0.92 0.012 300);
-    --helix-muted: oklch(0.5 0.02 300);
-    --helix-text: oklch(0.2 0.03 300);
-    --helix-soft-peach: oklch(0.96 0.06 75);
-    --helix-soft-lavender: oklch(0.95 0.02 300);
-    --helix-soft-pink: oklch(0.96 0.05 25);
-    --helix-success: oklch(0.6 0.14 150);
-    --helix-warning: oklch(0.72 0.15 75);
-    --helix-danger: oklch(0.58 0.19 25);
-    --helix-info: oklch(0.52 0.19 300);
-    --helix-gradient: linear-gradient(135deg, oklch(0.52 0.19 300) 0%, oklch(0.46 0.19 300) 100%);
-    --helix-gradient-border: linear-gradient(135deg, oklch(0.52 0.19 300), oklch(0.46 0.19 300));
-    --helix-gradient-soft: linear-gradient(135deg, oklch(0.52 0.19 300 / 0.1), oklch(0.6 0.17 25 / 0.08));
-    --helix-page-background:
-      radial-gradient(circle at 78% -6%, oklch(0.52 0.19 300 / 0.07), transparent 32rem),
-      var(--helix-bg);
-    --helix-radius-sm: 12px;
-    --helix-radius-md: 16px;
-    --helix-radius-lg: 22px;
-    --helix-radius-xl: 28px;
-    --helix-shadow-soft: 0 14px 44px rgba(11, 19, 43, 0.08);
-    --helix-shadow-card: 0 12px 34px rgba(11, 19, 43, 0.07);
-    --helix-shadow-glow: 0 12px 26px oklch(0.52 0.19 300 / 0.3);
-    --helix-focus: 0 0 0 4px oklch(0.52 0.19 300 / 0.16);
+    --helix-surface-soft: #FBF3E1;
+    --helix-border: #E8DCC3;
+    --helix-muted: #5B5648;
+    --helix-text: #0B0D0F;
+    --helix-soft-peach: #FDE7D6;
+    --helix-soft-lavender: #E1F0F8;
+    --helix-soft-pink: #FFF0B8;
+    --helix-yellow: #FFD33D;
+    --helix-success: #2E9D63;
+    --helix-warning: #F47A20;
+    --helix-danger: #D83A2E;
+    --helix-info: #087EB5;
+    --helix-gradient: linear-gradient(135deg, #087EB5 0%, #066A99 100%);
+    --helix-gradient-border: linear-gradient(135deg, #087EB5, #066A99);
+    --helix-gradient-soft: linear-gradient(135deg, rgba(8, 126, 181, 0.1), rgba(13, 143, 147, 0.08));
+    --helix-page-background: var(--helix-bg);
+    --helix-radius-sm: 8px;
+    --helix-radius-md: 12px;
+    --helix-radius-lg: 16px;
+    --helix-radius-xl: 20px;
+    --helix-shadow-soft: 0 10px 30px rgba(11, 13, 15, 0.08);
+    --helix-shadow-card: 0 8px 24px rgba(11, 13, 15, 0.07);
+    --helix-shadow-glow: 0 10px 22px rgba(8, 126, 181, 0.28);
+    --helix-focus: 0 0 0 3px #FFF7E8, 0 0 0 6px #087EB5;
   }
 }
 
@@ -71,7 +382,7 @@ body {
   min-height: 100dvh;
   background: transparent;
   color: var(--helix-text);
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-sans);
   @apply antialiased overflow-x-hidden;
   text-rendering: geometricPrecision;
 }
@@ -85,7 +396,23 @@ h2,
 h3,
 h4,
 .font-display {
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
+}
+
+/* Bangers alleen voor korte, grote koppen (DS p.7: max zes woorden, >= 22 px). */
+.ds-display {
+  font-family: var(--font-comic);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.02;
+}
+
+/* Gele titelzone met zwarte lijn (DS p.4, p.8): het navigatieanker. */
+.ds-anchor {
+  background: var(--helix-yellow);
+  color: var(--helix-navy);
+  border-bottom: 3px solid var(--helix-navy);
 }
 
 a {
@@ -113,12 +440,12 @@ textarea {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(91, 100, 120, 0.22);
+  background: rgba(91, 86, 72, 0.22);
   @apply rounded-full transition-colors;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(91, 100, 120, 0.34);
+  background: rgba(91, 86, 72, 0.34);
 }
 
 /* Chrome, Safari, Edge, Opera */
@@ -170,7 +497,7 @@ input[type=number] {
 }
 
 .helix-card-subtle {
-  background: rgba(250, 251, 255, 0.82);
+  background: rgba(255, 251, 242, 0.82);
   border: 1px solid var(--helix-border);
   border-radius: var(--helix-radius-lg);
 }
@@ -178,8 +505,8 @@ input[type=number] {
 .helix-action-card {
   border: 2px solid transparent;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    linear-gradient(#dfe5ee, #dfe5ee) border-box;
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 251, 242, 0.96)) padding-box,
+    linear-gradient(#E8DCC3, #E8DCC3) border-box;
   color: var(--helix-navy);
   box-shadow: var(--helix-shadow-card);
   @apply rounded-[var(--helix-radius-lg)] transition-all focus:outline-none active:scale-[0.99] hover:-translate-y-0.5;
@@ -187,41 +514,41 @@ input[type=number] {
 
 .helix-action-card:hover {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 251, 242, 0.98)) padding-box,
     var(--helix-gradient-border) border-box;
   box-shadow: var(--helix-shadow-soft);
 }
 
 .helix-action-card:focus-visible {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 251, 242, 0.96)) padding-box,
     var(--helix-gradient-border) border-box;
   color: var(--helix-navy);
-  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+  box-shadow: 0 10px 22px rgba(11, 13, 15, 0.08);
 }
 
 .helix-action-card-active {
   border-color: var(--helix-purple);
   background: var(--helix-surface);
   color: var(--helix-navy);
-  box-shadow: 0 10px 22px oklch(0.52 0.19 300 / 0.14);
+  box-shadow: 0 10px 22px rgba(8, 126, 181, 0.14);
 }
 
 .helix-eyebrow {
   color: var(--helix-purple);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply text-xs font-extrabold uppercase tracking-[0.18em];
 }
 
 .helix-heading-xl {
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply text-4xl font-extrabold tracking-tight md:text-5xl;
 }
 
 .helix-heading-lg {
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply text-2xl font-extrabold tracking-tight md:text-4xl;
 }
 
@@ -250,12 +577,12 @@ input[type=number] {
   overflow: hidden;
   color: var(--helix-navy);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 251, 255, 0.92) 46%, rgba(244, 239, 255, 0.86)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 251, 242, 0.92) 46%, rgba(244, 239, 255, 0.86)),
     var(--helix-surface);
   border: 1px solid rgba(231, 235, 242, 0.9);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.86),
-    0 18px 42px rgba(11, 19, 43, 0.06);
+    0 18px 42px rgba(11, 13, 15, 0.06);
 }
 
 .helix-brand-banner-inner {
@@ -277,7 +604,7 @@ input[type=number] {
   border-radius: var(--helix-radius-lg);
   background: rgba(255, 255, 255, 0.94);
   border: 1px solid rgba(231, 235, 242, 0.78);
-  box-shadow: 0 18px 38px rgba(11, 19, 43, 0.12);
+  box-shadow: 0 18px 38px rgba(11, 13, 15, 0.12);
 }
 
 .helix-brand-banner-content {
@@ -320,19 +647,19 @@ input[type=number] {
 .helix-login-visual-bg {
   background:
     radial-gradient(circle at 24% 20%, rgba(255, 122, 0, 0.32), transparent 22rem),
-    radial-gradient(circle at 78% 34%, rgba(255, 45, 141, 0.32), transparent 24rem),
+    radial-gradient(circle at 78% 34%, rgba(244, 122, 32, 0.32), transparent 24rem),
     radial-gradient(circle at 60% 90%, rgba(122, 60, 255, 0.34), transparent 26rem);
 }
 
 .helix-ai-chip {
-  background: linear-gradient(135deg, rgba(241, 233, 255, 0.94), rgba(255, 230, 242, 0.86));
+  background: linear-gradient(135deg, rgba(225, 240, 248, 0.94), rgba(255, 247, 232, 0.86));
   color: var(--helix-navy);
   border: 1px solid rgba(122, 60, 255, 0.16);
   @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-extrabold;
 }
 
 .helix-progress-track {
-  background: #edf0f6;
+  background: #F5EDDB;
   @apply overflow-hidden rounded-full;
 }
 
@@ -349,18 +676,18 @@ input[type=number] {
 }
 
 .helix-badge-success {
-  background: rgba(34, 197, 94, 0.12);
-  color: #15803d;
+  background: rgba(46, 157, 99, 0.12);
+  color: #237A4D;
 }
 
 .helix-badge-warning {
   background: rgba(249, 115, 22, 0.12);
-  color: #c2410c;
+  color: #B4520E;
 }
 
 .helix-badge-danger {
   background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  color: #B42F25;
 }
 
 .token-shop-card {
@@ -371,7 +698,7 @@ input[type=number] {
 .token-shop-card:hover {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--token-avatar-accent, var(--helix-purple)) 46%, var(--helix-border));
-  box-shadow: 0 18px 42px rgba(11, 19, 43, 0.1);
+  box-shadow: 0 18px 42px rgba(11, 13, 15, 0.1);
 }
 
 .token-shop-media {
@@ -430,9 +757,9 @@ input[type=number] {
   opacity: 0.9;
   background:
     radial-gradient(circle at 16% 24%, #ffffff 0 2px, transparent 3px),
-    radial-gradient(circle at 32% 68%, #d7e2f2 0 2px, transparent 3px),
-    radial-gradient(circle at 70% 18%, #f7fbff 0 2.5px, transparent 4px),
-    radial-gradient(circle at 84% 74%, #b8c7ff 0 2px, transparent 3px);
+    radial-gradient(circle at 32% 68%, #E1F0F8 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 18%, #FFFFFF 0 2.5px, transparent 4px),
+    radial-gradient(circle at 84% 74%, #9CC7E0 0 2px, transparent 3px);
   animation: token-platinum-sparkle 2.4s ease-in-out infinite;
 }
 
@@ -446,9 +773,9 @@ input[type=number] {
   opacity: 0.95;
   background:
     radial-gradient(circle at 18% 24%, #ffffff 0 2px, transparent 3px),
-    radial-gradient(circle at 72% 18%, #ffd166 0 2.5px, transparent 4px),
-    radial-gradient(circle at 82% 74%, #ff7a00 0 2px, transparent 3px),
-    radial-gradient(circle at 38% 78%, #ff2d8d 0 2px, transparent 3px);
+    radial-gradient(circle at 72% 18%, #FFD33D 0 2.5px, transparent 4px),
+    radial-gradient(circle at 82% 74%, #F47A20 0 2px, transparent 3px),
+    radial-gradient(circle at 38% 78%, #F47A20 0 2px, transparent 3px);
 }
 
 .token-shop-motion-pulse .token-shop-avatar-image {
@@ -566,8 +893,8 @@ input[type=number] {
   position: absolute;
   top: -4vh;
   font-size: 22px;
-  color: var(--victory-accent, #f59e0b);
-  text-shadow: 0 0 12px color-mix(in srgb, var(--victory-accent, #f59e0b) 70%, white);
+  color: var(--victory-accent, #FFD33D);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--victory-accent, #FFD33D) 70%, white);
   opacity: 0;
   animation-name: victory-star-fall;
   animation-timing-function: ease-in;
@@ -580,9 +907,9 @@ input[type=number] {
   background: linear-gradient(
     115deg,
     transparent 18%,
-    color-mix(in srgb, var(--victory-accent, #22d3ee) 26%, transparent) 36%,
-    color-mix(in srgb, #a855f7 20%, transparent) 52%,
-    color-mix(in srgb, var(--victory-accent, #22d3ee) 24%, transparent) 66%,
+    color-mix(in srgb, var(--victory-accent, #0D8F93) 26%, transparent) 36%,
+    color-mix(in srgb, #793AC7 20%, transparent) 52%,
+    color-mix(in srgb, var(--victory-accent, #0D8F93) 24%, transparent) 66%,
     transparent 84%
   );
   filter: blur(34px);
@@ -616,7 +943,7 @@ input[type=number] {
   background: white;
   border: 2px solid color-mix(in srgb, var(--victory-accent, var(--helix-purple)) 55%, white);
   box-shadow:
-    0 18px 44px -18px rgba(11, 19, 43, 0.4),
+    0 18px 44px -18px rgba(11, 13, 15, 0.4),
     0 0 0 6px color-mix(in srgb, var(--victory-accent, var(--helix-purple)) 12%, transparent);
   animation: victory-chip-pop 0.5s cubic-bezier(0.22, 1.4, 0.36, 1) both;
 }
@@ -624,7 +951,7 @@ input[type=number] {
 .victory-chip-heading {
   font-weight: 900;
   font-size: 1.05rem;
-  color: var(--helix-navy, #0b132b);
+  color: var(--helix-navy, #0B0D0F);
 }
 
 .victory-chip-title {
@@ -731,7 +1058,7 @@ input[type=number] {
 }
 
 .helix-alert {
-  background: linear-gradient(135deg, rgba(255, 233, 220, 0.82), rgba(255, 230, 242, 0.46));
+  background: linear-gradient(135deg, rgba(251, 235, 208, 0.82), rgba(255, 247, 232, 0.46));
   border: 1px solid rgba(255, 122, 0, 0.18);
   color: var(--helix-navy);
   border-radius: var(--helix-radius-lg);
@@ -752,8 +1079,8 @@ input[type=number] {
 }
 
 .helix-btn-solid:disabled {
-  background: #eef2f7;
-  color: #94a3b8;
+  background: #F5EDDB;
+  color: #A8A08C;
   box-shadow: none;
   @apply cursor-not-allowed hover:translate-y-0;
 }
@@ -787,7 +1114,7 @@ input[type=number] {
 
 .lesson-prose :where(h1, h2, h3, h4, h5, h6) {
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.35;
@@ -1000,15 +1327,15 @@ input[type=number] {
 /* Uitgewerkt voorbeeld binnen de leeskaart: een eigen, rustig getint vak met een
    duidelijk labeltje. Links de uitwerking, rechts de figuur. */
 .study-example {
-  background: #f5faff;
-  border: 1px solid #dbeafe;
+  background: #FFFFFF;
+  border: 1px solid #E1F0F8;
   border-radius: var(--helix-radius-lg);
   @apply p-5 sm:p-6;
 }
 
 .study-example-label {
-  background: #e0f2fe;
-  color: #0c4a6e;
+  background: #E1F0F8;
+  color: #066A99;
   @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em];
 }
 
@@ -1018,7 +1345,7 @@ input[type=number] {
 
 .study-surface {
   background:
-    radial-gradient(circle at 16% -6%, rgba(241, 233, 255, 0.6), transparent 26rem),
+    radial-gradient(circle at 16% -6%, rgba(225, 240, 248, 0.6), transparent 26rem),
     var(--helix-bg);
 }
 
@@ -1095,14 +1422,14 @@ input[type=number] {
 }
 
 .study-step-check {
-  background: rgba(34, 197, 94, 0.16);
-  color: #15803d;
+  background: rgba(46, 157, 99, 0.16);
+  color: #237A4D;
   @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full;
 }
 
 .study-step-active .study-step-check {
   background: rgba(255, 255, 255, 0.92);
-  color: #15803d;
+  color: #237A4D;
 }
 
 @keyframes study-confirm-rise {
@@ -1131,7 +1458,7 @@ input[type=number] {
   border: 2px solid transparent;
   background: var(--helix-purple);
   color: #ffffff;
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   box-shadow: var(--helix-shadow-glow);
   @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 font-bold rounded-[var(--helix-radius-md)] transition-all active:scale-[0.985] focus:outline-none;
 }
@@ -1141,9 +1468,9 @@ input[type=number] {
 }
 
 .btn-primary:disabled {
-  background: #eef2f7;
-  border-color: #dfe5ee;
-  color: #94a3b8;
+  background: #F5EDDB;
+  border-color: #E8DCC3;
+  color: #A8A08C;
   box-shadow: none;
   @apply cursor-not-allowed opacity-70 hover:translate-y-0;
 }
@@ -1153,7 +1480,7 @@ input[type=number] {
   border: 2px solid transparent;
   background: var(--helix-purple);
   color: #ffffff;
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   box-shadow: var(--helix-shadow-glow);
   @apply w-full py-4 font-bold rounded-[var(--helix-radius-md)] transition-all focus:outline-none flex items-center justify-center gap-2 active:scale-[0.985];
 }
@@ -1163,9 +1490,9 @@ input[type=number] {
 }
 
 .btn-primary-lg:disabled {
-  background: #eef2f7;
-  border-color: #dfe5ee;
-  color: #94a3b8;
+  background: #F5EDDB;
+  border-color: #E8DCC3;
+  color: #A8A08C;
   box-shadow: none;
   @apply cursor-not-allowed opacity-70 hover:shadow-none;
 }
@@ -1173,26 +1500,26 @@ input[type=number] {
 .dashboard-lens-tab {
   border: 2px solid transparent;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    linear-gradient(#dfe5ee, #dfe5ee) border-box;
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 251, 242, 0.96)) padding-box,
+    linear-gradient(#E8DCC3, #E8DCC3) border-box;
   color: var(--helix-navy);
   @apply rounded-xl px-4 py-2 text-sm font-black transition-all focus:outline-none active:scale-95;
 }
 
 .dashboard-lens-tab:hover {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
-    linear-gradient(#cbd5e1, #cbd5e1) border-box;
-  box-shadow: 0 8px 18px rgba(11, 19, 43, 0.06);
+    linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 251, 242, 0.98)) padding-box,
+    linear-gradient(#D3C7AE, #D3C7AE) border-box;
+  box-shadow: 0 8px 18px rgba(11, 13, 15, 0.06);
 }
 
 .dashboard-lens-tab-active {
   border: 2px solid transparent;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 251, 242, 0.96)) padding-box,
     var(--helix-gradient-border) border-box;
   color: var(--helix-navy);
-  box-shadow: 0 10px 22px rgba(11, 19, 43, 0.08);
+  box-shadow: 0 10px 22px rgba(11, 13, 15, 0.08);
 }
 
 /* Rustige gereedschapsknop: wit met zachte rand, paars alleen als icoonaccent.
@@ -1201,7 +1528,7 @@ input[type=number] {
   border: 1px solid var(--helix-border);
   background: #ffffff;
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply inline-flex items-center justify-center gap-2 rounded-xl text-sm font-extrabold transition-colors focus:outline-none active:scale-95;
 }
 
@@ -1239,8 +1566,8 @@ input[type=number] {
 
 .admin-nav-tab:hover {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    linear-gradient(#dfe5ee, #dfe5ee) border-box;
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 251, 242, 0.96)) padding-box,
+    linear-gradient(#E8DCC3, #E8DCC3) border-box;
   color: var(--helix-navy);
 }
 
@@ -1274,9 +1601,9 @@ input[type=number] {
   border-color: rgba(122, 60, 255, 0.14);
   background: linear-gradient(
     135deg,
-    rgba(255, 233, 220, 0.92),
-    rgba(255, 230, 242, 0.72),
-    rgba(241, 233, 255, 0.92)
+    rgba(251, 235, 208, 0.92),
+    rgba(255, 247, 232, 0.72),
+    rgba(225, 240, 248, 0.92)
   );
   color: var(--helix-navy);
   box-shadow: 0 16px 36px rgba(122, 60, 255, 0.11);
@@ -1322,8 +1649,8 @@ input[type=number] {
 }
 
 .project-kompas-document pre {
-  background: #0b132b;
-  color: #f8fafc;
+  background: #0B0D0F;
+  color: #FBF5E8;
   @apply my-5 overflow-auto rounded-2xl p-5 text-sm leading-7 shadow-inner;
 }
 
@@ -1339,7 +1666,7 @@ input[type=number] {
   border: 2px solid var(--helix-border);
   background: var(--helix-surface);
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply inline-flex w-full items-center justify-center gap-2 py-3.5 rounded-[var(--helix-radius-md)] font-bold transition-all focus:outline-none;
 }
 
@@ -1350,14 +1677,14 @@ input[type=number] {
 
 .btn-secondary:focus-visible {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 251, 242, 0.98)) padding-box,
     var(--helix-gradient-border) border-box;
 }
 
 .btn-secondary:disabled {
-  background: #eef2f7;
-  border-color: #dfe5ee;
-  color: #94a3b8;
+  background: #F5EDDB;
+  border-color: #E8DCC3;
+  color: #A8A08C;
   box-shadow: none;
   @apply cursor-not-allowed opacity-70 hover:translate-y-0;
 }
@@ -1365,27 +1692,27 @@ input[type=number] {
 .studio-toolbar-control {
   border: 2px solid transparent;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.98), rgba(250, 251, 255, 0.96)) padding-box,
-    linear-gradient(#dfe5ee, #dfe5ee) border-box;
+    linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 251, 242, 0.96)) padding-box,
+    linear-gradient(#E8DCC3, #E8DCC3) border-box;
   color: var(--helix-navy);
   @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-extrabold transition-all focus:outline-none;
 }
 
 .studio-toolbar-control:hover {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 251, 242, 0.98)) padding-box,
     var(--helix-gradient-border) border-box;
 }
 
 .studio-toolbar-control:focus-visible {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 251, 242, 0.98)) padding-box,
     var(--helix-gradient-border) border-box;
 }
 
 .studio-toolbar-control-active {
   background:
-    linear-gradient(rgba(255, 255, 255, 0.99), rgba(250, 251, 255, 0.98)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 251, 242, 0.98)) padding-box,
     var(--helix-gradient-border) border-box;
   color: var(--helix-navy);
 }
@@ -1467,19 +1794,19 @@ input[type=number] {
 /* Typography Standards */
 .heading-xl {
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight;
 }
 
 .heading-lg {
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply text-3xl md:text-4xl font-extrabold tracking-tight;
 }
 
 .heading-md {
   color: var(--helix-navy);
-  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: var(--font-display);
   @apply text-2xl md:text-3xl font-bold;
 }
 
@@ -1523,7 +1850,7 @@ input[type=number] {
 }
 
 .text-tertiary {
-  color: rgba(91, 100, 120, 0.82);
+  color: rgba(91, 86, 72, 0.82);
 }
 
 /* Presenter: zachte paginawissel */

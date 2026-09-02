@@ -66,7 +66,7 @@ export const STARTER_AVATAR_ITEM = {
   ownedByDefault: true,
   imageUrl: avatarImage(1),
   previewStyle: {
-    accent: '#7a3cff',
+    accent: '#087EB5',
     motion: 'starter',
     sparkle: 'soft'
   }
@@ -93,7 +93,7 @@ export const DEFAULT_AVATAR_ITEMS = [
     rarity: 'common',
     sortOrder: 30,
     imageUrl: avatarImage(3),
-    previewStyle: { accent: '#94a3b8', motion: 'twinkle', sparkle: 'silver' }
+    previewStyle: { accent: '#A8A08C', motion: 'twinkle', sparkle: 'silver' }
   },
   {
     itemId: 'avatar-4',
@@ -104,7 +104,7 @@ export const DEFAULT_AVATAR_ITEMS = [
     rarity: 'rare',
     sortOrder: 40,
     imageUrl: avatarImage(4),
-    previewStyle: { accent: '#2563eb', motion: 'pulse', sparkle: 'blue' }
+    previewStyle: { accent: '#087EB5', motion: 'pulse', sparkle: 'blue' }
   },
   {
     itemId: 'avatar-5',
@@ -137,7 +137,7 @@ export const DEFAULT_AVATAR_ITEMS = [
     rarity: 'legendary',
     sortOrder: 70,
     imageUrl: avatarImage(7),
-    previewStyle: { accent: '#7c3aed', motion: 'orbit', sparkle: 'violet' }
+    previewStyle: { accent: '#087EB5', motion: 'orbit', sparkle: 'violet' }
   },
   {
     itemId: 'avatar-8',
@@ -148,7 +148,7 @@ export const DEFAULT_AVATAR_ITEMS = [
     rarity: 'platinum',
     sortOrder: 80,
     imageUrl: avatarImage(8),
-    previewStyle: { accent: '#2563eb', motion: 'orbit', sparkle: 'blue' }
+    previewStyle: { accent: '#087EB5', motion: 'orbit', sparkle: 'blue' }
   },
   {
     itemId: 'avatar-9',
@@ -195,7 +195,7 @@ export const DEFAULT_FRAME_ITEMS = [
     rarity: 'rare',
     sortOrder: 220,
     imageUrl: shopImage('frame-smaragd'),
-    previewStyle: { accent: '#10b981', motion: 'twinkle', sparkle: 'green' }
+    previewStyle: { accent: '#2E9D63', motion: 'twinkle', sparkle: 'green' }
   },
   {
     itemId: 'frame-zonnegoud',
@@ -206,7 +206,7 @@ export const DEFAULT_FRAME_ITEMS = [
     rarity: 'epic',
     sortOrder: 230,
     imageUrl: shopImage('frame-zonnegoud'),
-    previewStyle: { accent: '#f59e0b', motion: 'shine', sparkle: 'gold' }
+    previewStyle: { accent: '#F47A20', motion: 'shine', sparkle: 'gold' }
   },
   {
     itemId: 'frame-robijn',
@@ -217,7 +217,7 @@ export const DEFAULT_FRAME_ITEMS = [
     rarity: 'platinum',
     sortOrder: 240,
     imageUrl: shopImage('frame-robijn'),
-    previewStyle: { accent: '#e11d48', motion: 'pulse', sparkle: 'platinum' }
+    previewStyle: { accent: '#D83A2E', motion: 'pulse', sparkle: 'platinum' }
   },
   {
     itemId: 'frame-prisma',
@@ -228,7 +228,7 @@ export const DEFAULT_FRAME_ITEMS = [
     rarity: 'legendary',
     sortOrder: 250,
     imageUrl: shopImage('frame-prisma'),
-    previewStyle: { accent: '#a855f7', motion: 'orbit', sparkle: 'violet' }
+    previewStyle: { accent: '#793AC7', motion: 'orbit', sparkle: 'violet' }
   }
 ];
 
@@ -242,7 +242,7 @@ export const DEFAULT_PIN_ITEMS = [
     rarity: 'common',
     sortOrder: 310,
     imageUrl: shopImage('pin-superster'),
-    previewStyle: { accent: '#f59e0b', motion: 'twinkle', sparkle: 'gold', shortLabel: 'STER' }
+    previewStyle: { accent: '#F47A20', motion: 'twinkle', sparkle: 'gold', shortLabel: 'STER' }
   },
   {
     itemId: 'pin-bliksem',
@@ -253,7 +253,7 @@ export const DEFAULT_PIN_ITEMS = [
     rarity: 'common',
     sortOrder: 320,
     imageUrl: shopImage('pin-bliksem'),
-    previewStyle: { accent: '#0ea5e9', motion: 'twinkle', sparkle: 'blue', shortLabel: 'ZAP' }
+    previewStyle: { accent: '#0D8F93', motion: 'twinkle', sparkle: 'blue', shortLabel: 'ZAP' }
   },
   {
     itemId: 'pin-breinbaas',
@@ -264,7 +264,7 @@ export const DEFAULT_PIN_ITEMS = [
     rarity: 'common',
     sortOrder: 330,
     imageUrl: shopImage('pin-breinbaas'),
-    previewStyle: { accent: '#8b5cf6', motion: 'twinkle', sparkle: 'violet', shortLabel: 'BREIN' }
+    previewStyle: { accent: '#087EB5', motion: 'twinkle', sparkle: 'violet', shortLabel: 'BREIN' }
   },
   {
     itemId: 'pin-op-dreef',
@@ -297,7 +297,7 @@ export const DEFAULT_PIN_ITEMS = [
     rarity: 'epic',
     sortOrder: 360,
     imageUrl: shopImage('pin-ninja'),
-    previewStyle: { accent: '#10b981', motion: 'twinkle', sparkle: 'green', shortLabel: 'NINJA' }
+    previewStyle: { accent: '#2E9D63', motion: 'twinkle', sparkle: 'green', shortLabel: 'NINJA' }
   },
   {
     itemId: 'pin-kosmos',
@@ -308,7 +308,7 @@ export const DEFAULT_PIN_ITEMS = [
     rarity: 'platinum',
     sortOrder: 370,
     imageUrl: shopImage('pin-kosmos'),
-    previewStyle: { accent: '#3b82f6', motion: 'orbit', sparkle: 'blue', shortLabel: 'KOSMOS' }
+    previewStyle: { accent: '#087EB5', motion: 'orbit', sparkle: 'blue', shortLabel: 'KOSMOS' }
   },
   {
     itemId: 'pin-legende',
@@ -333,7 +333,7 @@ export const DEFAULT_BANNER_ITEMS = [
     rarity: 'common',
     sortOrder: 410,
     imageUrl: shopImage('banner-oceaan'),
-    previewStyle: { accent: '#0ea5e9', motion: 'shine', sparkle: 'blue' }
+    previewStyle: { accent: '#0D8F93', motion: 'shine', sparkle: 'blue' }
   },
   {
     itemId: 'banner-zonsondergang',
@@ -380,7 +380,7 @@ export const DEFAULT_TITLE_ITEMS = [
     rarity: 'common',
     sortOrder: 510,
     imageUrl: shopImage('titel-topper'),
-    previewStyle: { accent: '#8b5cf6', motion: 'shine', sparkle: 'violet' }
+    previewStyle: { accent: '#087EB5', motion: 'shine', sparkle: 'violet' }
   },
   {
     itemId: 'titel-doorzetter',
@@ -391,7 +391,7 @@ export const DEFAULT_TITLE_ITEMS = [
     rarity: 'common',
     sortOrder: 520,
     imageUrl: shopImage('titel-doorzetter'),
-    previewStyle: { accent: '#0ea5e9', motion: 'shine', sparkle: 'blue' }
+    previewStyle: { accent: '#0D8F93', motion: 'shine', sparkle: 'blue' }
   },
   {
     itemId: 'titel-leerheld',
@@ -402,7 +402,7 @@ export const DEFAULT_TITLE_ITEMS = [
     rarity: 'rare',
     sortOrder: 530,
     imageUrl: shopImage('titel-leerheld'),
-    previewStyle: { accent: '#10b981', motion: 'shine', sparkle: 'green' }
+    previewStyle: { accent: '#2E9D63', motion: 'shine', sparkle: 'green' }
   },
   {
     itemId: 'titel-meesterspaarder',
@@ -413,7 +413,7 @@ export const DEFAULT_TITLE_ITEMS = [
     rarity: 'epic',
     sortOrder: 540,
     imageUrl: shopImage('titel-meesterspaarder'),
-    previewStyle: { accent: '#f59e0b', motion: 'shine', sparkle: 'gold' }
+    previewStyle: { accent: '#F47A20', motion: 'shine', sparkle: 'gold' }
   },
   {
     itemId: 'titel-klaskampioen',
@@ -424,7 +424,7 @@ export const DEFAULT_TITLE_ITEMS = [
     rarity: 'platinum',
     sortOrder: 550,
     imageUrl: shopImage('titel-klaskampioen'),
-    previewStyle: { accent: '#e11d48', motion: 'pulse', sparkle: 'platinum' }
+    previewStyle: { accent: '#D83A2E', motion: 'pulse', sparkle: 'platinum' }
   },
   {
     itemId: 'titel-legende-van-helix',
@@ -435,7 +435,7 @@ export const DEFAULT_TITLE_ITEMS = [
     rarity: 'legendary',
     sortOrder: 560,
     imageUrl: shopImage('titel-legende-van-helix'),
-    previewStyle: { accent: '#7c3aed', motion: 'orbit', sparkle: 'violet' }
+    previewStyle: { accent: '#087EB5', motion: 'orbit', sparkle: 'violet' }
   }
 ];
 
@@ -449,7 +449,7 @@ export const DEFAULT_VICTORY_EFFECT_ITEMS = [
     rarity: 'rare',
     sortOrder: 610,
     imageUrl: shopImage('effect-confetti'),
-    previewStyle: { accent: '#f43f5e', motion: 'pulse', sparkle: 'gold', effect: 'confetti' }
+    previewStyle: { accent: '#D83A2E', motion: 'pulse', sparkle: 'gold', effect: 'confetti' }
   },
   {
     itemId: 'effect-sterrenregen',
@@ -460,7 +460,7 @@ export const DEFAULT_VICTORY_EFFECT_ITEMS = [
     rarity: 'epic',
     sortOrder: 620,
     imageUrl: shopImage('effect-sterrenregen'),
-    previewStyle: { accent: '#f59e0b', motion: 'twinkle', sparkle: 'gold', effect: 'starfall' }
+    previewStyle: { accent: '#F47A20', motion: 'twinkle', sparkle: 'gold', effect: 'starfall' }
   },
   {
     itemId: 'effect-aurora',

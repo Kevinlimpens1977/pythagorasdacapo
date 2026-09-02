@@ -123,10 +123,10 @@ export const buildSlidedeckHtmlExport = (deckPackage = {}, options = {}) => {
   <style>
     body { font-family: Arial, sans-serif; color: #172033; margin: 40px; line-height: 1.5; }
     h1, h2 { margin-bottom: 0.35rem; }
-    section { border-top: 1px solid #d8dee9; padding-top: 1rem; margin-top: 1.5rem; }
+    section { border-top: 1px solid #D3C7AE; padding-top: 1rem; margin-top: 1.5rem; }
     dt { font-weight: 700; margin-top: 0.7rem; }
     dd { margin-left: 0; }
-    pre { white-space: pre-wrap; background: #f6f8fb; border: 1px solid #d8dee9; padding: 1rem; border-radius: 8px; }
+    pre { white-space: pre-wrap; background: #f6f8fb; border: 1px solid #D3C7AE; padding: 1rem; border-radius: 8px; }
     a { color: #1d4ed8; font-weight: 700; }
   </style>
 </head>

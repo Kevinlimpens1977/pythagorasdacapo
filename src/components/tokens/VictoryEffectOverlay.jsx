@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-const CONFETTI_COLORS = ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#a855f7', '#facc15'];
+const CONFETTI_COLORS = ['#D83A2E', '#F47A20', '#2E9D63', '#087EB5', '#793AC7', '#FFD33D'];
 
 // Vaste pseudo-random spreiding zodat het effect rustig en reproduceerbaar blijft.
 const buildPieces = (variant) => {

@@ -565,7 +565,7 @@ function OutlineRow({
           <span
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
               isDone
-                ? 'bg-[rgba(34,197,94,0.14)] text-[#15803d]'
+                ? 'bg-[rgba(34,197,94,0.14)] text-[#237A4D]'
                 : optioneel
                   ? 'bg-white text-[var(--helix-purple)] ring-1 ring-[rgba(122,60,255,0.35)]'
                   : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
@@ -699,7 +699,7 @@ function ParagraphPanel({ row, onStart, onCopyLink }) {
                 <span
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
                     onderdeel.isDone
-                      ? 'bg-[rgba(34,197,94,0.14)] text-[#15803d]'
+                      ? 'bg-[rgba(34,197,94,0.14)] text-[#237A4D]'
                       : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
                   }`}
                 >
@@ -770,7 +770,7 @@ function AssessmentRow({ rowId, label, icon, rows, expanded, onToggle, onStart, 
             <span
               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
                 row.isDone
-                  ? 'bg-[rgba(34,197,94,0.14)] text-[#15803d]'
+                  ? 'bg-[rgba(34,197,94,0.14)] text-[#237A4D]'
                   : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
               }`}
             >

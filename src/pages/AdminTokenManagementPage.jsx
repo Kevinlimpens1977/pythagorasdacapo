@@ -39,7 +39,7 @@ const emptyItem = {
   enabled: true,
   repeatable: false,
   sortOrder: 0,
-  accent: '#7a3cff',
+  accent: '#087EB5',
   motion: 'shine',
   shortLabel: '',
   effect: 'confetti',
@@ -152,7 +152,7 @@ export default function AdminTokenManagementPage() {
       enabled: item.enabled !== false,
       repeatable: item.repeatable === true,
       sortOrder: Number(item.sortOrder) || 0,
-      accent: previewStyle.accent || '#7a3cff',
+      accent: previewStyle.accent || '#087EB5',
       motion: previewStyle.motion || 'shine',
       shortLabel: previewStyle.shortLabel || '',
       effect: previewStyle.effect || 'confetti',
@@ -163,7 +163,7 @@ export default function AdminTokenManagementPage() {
 
   const buildPreviewStylePayload = (draft) => {
     const previewStyle = {
-      accent: draft.accent || '#7a3cff',
+      accent: draft.accent || '#087EB5',
       motion: draft.motion || 'shine'
     };
     if (draft.sparkle) previewStyle.sparkle = draft.sparkle;

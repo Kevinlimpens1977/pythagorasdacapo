@@ -9,8 +9,8 @@ const isFinitePositiveNumber = (value) => Number.isFinite(value) && value > 0;
 // In de donkere bordmodus worden donkere inktkleuren automatisch licht,
 // zodat bestaand werk leesbaar blijft.
 const DARK_THEME_COLOR_MAP = {
-  '#111827': '#f1f5f9',
-  '#0b132b': '#f1f5f9'
+  '#0B0D0F': '#F5EDDB',
+  '#0b132b': '#F5EDDB'
 };
 
 const resolveStrokeColor = (color, theme) =>

@@ -116,18 +116,18 @@ const TreeNode = ({
         className={[
           'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
           isActiveParagraaf
-            ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[#f5edff] text-[var(--helix-navy)]'
+            ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[#F5EDDB] text-[var(--helix-navy)]'
             : isActivePath
               ? isChapterBand
-                ? 'border-y-[#eadcff] border-r-[#eadcff] border-l-[var(--helix-purple)] bg-[#f7f0ff] text-[var(--helix-navy)]'
+                ? 'border-y-[#E1F0F8] border-r-[#E1F0F8] border-l-[var(--helix-purple)] bg-[#FBF5E8] text-[var(--helix-navy)]'
                 : 'border-y-[var(--helix-border)] border-r-[var(--helix-border)] border-l-transparent bg-white text-[var(--helix-navy)]'
               : isChapterBand
                 ? [
-                    'border-y-[#eadcff] border-r-[#eadcff] bg-[#fbf7ff] text-[var(--helix-navy)] hover:bg-[#f7f0ff]',
+                    'border-y-[#E1F0F8] border-r-[#E1F0F8] bg-[#FBF5E8] text-[var(--helix-navy)] hover:bg-[#FBF5E8]',
                     hasActiveChapterRail ? 'border-l-[var(--helix-purple)]' : 'border-l-transparent'
                   ].join(' ')
                 : node.type === 'paragraaf'
-                  ? 'border-y-[#f1edfb] border-r-[#f1edfb] border-l-transparent bg-[#fbfaff] text-[var(--helix-muted)] hover:border-y-[#eadcff] hover:border-r-[#eadcff] hover:bg-[#f7f0ff] hover:text-[var(--helix-navy)]'
+                  ? 'border-y-[#F5EDDB] border-r-[#F5EDDB] border-l-transparent bg-[#fbfaff] text-[var(--helix-muted)] hover:border-y-[#E1F0F8] hover:border-r-[#E1F0F8] hover:bg-[#FBF5E8] hover:text-[var(--helix-navy)]'
                   : 'border-y-transparent border-r-transparent border-l-transparent text-[var(--helix-muted)] hover:border-y-[var(--helix-border)] hover:border-r-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
           ,
           isArchived ? 'opacity-55 grayscale' : ''

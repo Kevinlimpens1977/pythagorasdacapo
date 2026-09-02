@@ -144,7 +144,7 @@ test('addStrokeToPresenterPage appends a stroke to the target page and marks dir
   const stroke = {
     id: 'stroke-1',
     variant: 'pen',
-    color: '#111827',
+    color: '#0B0D0F',
     width: 5,
     points: [{ x: 10, y: 20 }]
   };

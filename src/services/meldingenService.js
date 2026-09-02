@@ -26,9 +26,9 @@ const MELDINGEN_COLLECTIE = 'meldingen';
 
 export const MELDING_STATUSSEN = {
   nieuw: { label: 'Nieuw', kleur: '#2860E0', achtergrond: '#EBF1FF' },
-  opgepakt: { label: 'Wordt aan gewerkt', kleur: '#b45309', achtergrond: '#fef3c7' },
-  opgelost: { label: 'Opgelost', kleur: '#166534', achtergrond: '#dcfce7' },
-  afgewezen: { label: 'Afgehandeld', kleur: '#64748b', achtergrond: '#f1f5f9' }
+  opgepakt: { label: 'Wordt aan gewerkt', kleur: '#B4520E', achtergrond: '#FFF0B8' },
+  opgelost: { label: 'Opgelost', kleur: '#266745', achtergrond: '#DFF2E7' },
+  afgewezen: { label: 'Afgehandeld', kleur: '#7C7664', achtergrond: '#F5EDDB' }
 };
 
 const mapMeldingen = (snapshot) => snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));

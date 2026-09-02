@@ -228,7 +228,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
               height: 20,
               padding: '0 5px',
               borderRadius: 999,
-              background: '#dc2626',
+              background: '#B42F25',
               color: '#ffffff',
               fontSize: 12,
               fontWeight: 700,
@@ -276,7 +276,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
                   padding: '12px 8px',
                   border: 'none',
                   background: tab === sleutel ? 'var(--helix-soft-lavender)' : 'transparent',
-                  color: tab === sleutel ? 'var(--helix-purple-dark)' : '#64748b',
+                  color: tab === sleutel ? 'var(--helix-purple-dark)' : '#7C7664',
                   fontWeight: 700,
                   fontSize: 13,
                   cursor: 'pointer'
@@ -290,7 +290,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
           <div style={{ padding: 16, overflowY: 'auto' }}>
             {tab === 'melden' && !klaar && (
               <>
-                <p style={{ margin: '0 0 10px', color: '#4b5563', lineHeight: 1.5 }}>
+                <p style={{ margin: '0 0 10px', color: '#5B5648', lineHeight: 1.5 }}>
                   Wat ging er mis? Een of twee zinnen is genoeg — wat je deed en wat je verwachtte.
                 </p>
                 <textarea
@@ -317,7 +317,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
                     gap: 8,
                     alignItems: 'flex-start',
                     margin: '10px 0',
-                    color: '#4b5563',
+                    color: '#5B5648',
                     cursor: afbeelding ? 'pointer' : 'default'
                   }}
                 >
@@ -343,7 +343,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
                   />
                 )}
 
-                {fout && <p style={{ margin: '0 0 10px', color: '#dc2626', fontWeight: 600 }}>{fout}</p>}
+                {fout && <p style={{ margin: '0 0 10px', color: '#B42F25', fontWeight: 600 }}>{fout}</p>}
 
                 <button
                   type="button"
@@ -354,8 +354,8 @@ export default function Meldbel({ user, rol = 'leerling' }) {
                     padding: '10px 16px',
                     borderRadius: 999,
                     border: 'none',
-                    background: !tekst.trim() || bezig ? '#e2e8f0' : 'var(--helix-purple)',
-                    color: !tekst.trim() || bezig ? '#94a3b8' : '#ffffff',
+                    background: !tekst.trim() || bezig ? '#E8DCC3' : 'var(--helix-purple)',
+                    color: !tekst.trim() || bezig ? '#A8A08C' : '#ffffff',
                     fontWeight: 700,
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -373,7 +373,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
               <div style={{ textAlign: 'center', padding: '12px 0' }}>
                 <CheckCircle2 size={40} style={{ color: 'var(--helix-purple)', margin: '0 auto' }} />
                 <p style={{ margin: '8px 0 4px', fontWeight: 700 }}>Bedankt, hij staat genoteerd</p>
-                <p style={{ margin: 0, color: '#4b5563', lineHeight: 1.5 }}>
+                <p style={{ margin: 0, color: '#5B5648', lineHeight: 1.5 }}>
                   Zodra er iets mee gebeurt zie je dat hier terug, en verschijnt er een rood bolletje op de bel.
                 </p>
                 <button
@@ -396,7 +396,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
 
             {tab === 'mijn' && (
               eigenMeldingen.length === 0 ? (
-                <p style={{ margin: 0, color: '#64748b', lineHeight: 1.5 }}>
+                <p style={{ margin: 0, color: '#7C7664', lineHeight: 1.5 }}>
                   Je hebt nog niets gemeld. Kom je iets tegen dat niet klopt, dan horen we het graag — ook als het klein is.
                 </p>
               ) : (
@@ -411,7 +411,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
                           border: '1px solid var(--helix-border)',
                           borderRadius: 12,
                           padding: 12,
-                          background: m.gelezenDoorMelder === false ? '#fffbeb' : '#ffffff'
+                          background: m.gelezenDoorMelder === false ? '#FFF8E1' : '#ffffff'
                         }}
                       >
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
@@ -427,7 +427,7 @@ export default function Meldbel({ user, rol = 'leerling' }) {
                           >
                             {s.label}
                           </span>
-                          <span style={{ fontSize: 11, color: '#94a3b8' }}>{datumLabel(m.aangemaakt)}</span>
+                          <span style={{ fontSize: 11, color: '#A8A08C' }}>{datumLabel(m.aangemaakt)}</span>
                         </div>
                         <p style={{ margin: 0, lineHeight: 1.45 }}>{m.tekst}</p>
                         {m.reactie ? (

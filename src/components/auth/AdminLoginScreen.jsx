@@ -166,7 +166,7 @@ export default function AdminLoginScreen() {
           </div>
 
           <div className="relative">
-            <h2 className="font-display text-4xl font-extrabold leading-tight tracking-tight text-balance">
+            <h2 className="ds-display text-4xl leading-tight text-balance">
               De werkplek achter de lessen.
             </h2>
             <p className="mt-4 max-w-xs leading-relaxed text-white/75">
@@ -191,7 +191,7 @@ export default function AdminLoginScreen() {
               Beheerder
             </span>
 
-            <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-[var(--helix-navy)]">
+            <h1 className="mt-4 ds-display text-3xl text-[var(--helix-navy)]">
               Inloggen op beheer
             </h1>
             <p className="mt-2.5 mb-7 text-[var(--helix-muted)]">

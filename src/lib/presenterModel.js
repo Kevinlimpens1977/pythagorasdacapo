@@ -24,13 +24,13 @@ const TOOL_DEFAULTS = {
   pen: {
     id: 'pen',
     variant: 'pen',
-    color: '#111827',
+    color: '#0B0D0F',
     width: 6
   },
   highlighter: {
     id: 'highlighter',
     variant: 'highlighter',
-    color: '#facc15',
+    color: '#FFD33D',
     width: 24
   }
 };
@@ -284,7 +284,7 @@ export const createPresenterSession = () => {
     pages: [firstPage],
     tool: {
       id: 'pen',
-      color: '#111827',
+      color: '#0B0D0F',
       width: 6,
       variant: 'pen'
     },

@@ -988,7 +988,7 @@ export default function PresenterBoard({
     const stroke = {
       id: createStrokeId(),
       variant: tool?.variant || tool?.id || 'pen',
-      color: tool?.color || '#111827',
+      color: tool?.color || '#0B0D0F',
       width: Number.isFinite(tool?.width) && tool.width > 0 ? tool.width : 5,
       pointerType,
       // Langs een instrumentrand is de streek per definitie kaarsrecht; die

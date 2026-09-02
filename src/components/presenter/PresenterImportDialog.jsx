@@ -213,10 +213,10 @@ export default function PresenterImportDialog({
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
       <section
         aria-modal="true"
-        className="flex h-[min(48rem,calc(100dvh-2rem))] w-[min(76rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-[#eadcff] bg-white shadow-2xl"
+        className="flex h-[min(48rem,calc(100dvh-2rem))] w-[min(76rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-[#E1F0F8] bg-white shadow-2xl"
         role="dialog"
       >
-        <header className="flex items-center justify-between gap-4 border-b border-[#eadcff] bg-[#fbf7ff] px-5 py-4">
+        <header className="flex items-center justify-between gap-4 border-b border-[#E1F0F8] bg-[#FBF5E8] px-5 py-4">
           <div className="min-w-0">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">
               Lesstof importeren
@@ -227,7 +227,7 @@ export default function PresenterImportDialog({
           </div>
           <button
             type="button"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#eadcff] bg-white text-[var(--helix-navy)] transition hover:bg-[#f7f0ff]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#E1F0F8] bg-white text-[var(--helix-navy)] transition hover:bg-[#FBF5E8]"
             onClick={onClose}
             disabled={importing}
             aria-label="Importvenster sluiten"
@@ -245,7 +245,7 @@ export default function PresenterImportDialog({
 
         {importPreview ? (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="border-b border-[#eadcff] bg-[#fbf7ff] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
+            <div className="border-b border-[#E1F0F8] bg-[#FBF5E8] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
               Deze import maakt {selectedBlockIds.length} {selectedBlockIds.length === 1 ? 'pagina' : "pagina's"}
               {' '}van {getParagraphLabel(importPreview.paragraaf)}. Vink blokken uit die je niet op het bord wilt.
             </div>
@@ -260,8 +260,8 @@ export default function PresenterImportDialog({
                       className={[
                         'flex w-full cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 text-left transition',
                         checked
-                          ? 'border-[#d9c3ff] bg-[#f5edff] text-[var(--helix-navy)]'
-                          : 'border-[#f1edfb] bg-white text-[var(--helix-muted)] hover:border-[#eadcff]'
+                          ? 'border-[#BED8EA] bg-[#F5EDDB] text-[var(--helix-navy)]'
+                          : 'border-[#F5EDDB] bg-white text-[var(--helix-muted)] hover:border-[#E1F0F8]'
                       ].join(' ')}
                     >
                       <input
@@ -270,7 +270,7 @@ export default function PresenterImportDialog({
                         onChange={() => toggleBlockSelection(block.id)}
                         className="h-4 w-4 shrink-0 accent-[var(--helix-purple)]"
                       />
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-[var(--helix-purple)] ring-1 ring-[#eadcff]">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-[var(--helix-purple)] ring-1 ring-[#E1F0F8]">
                         {index + 1}
                       </span>
                       <span className="min-w-0">
@@ -289,8 +289,8 @@ export default function PresenterImportDialog({
           </div>
         ) : (
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 overflow-hidden md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <div className="flex min-h-0 flex-col border-r border-[#eadcff]">
-            <div className="flex items-center gap-2 border-b border-[#eadcff] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
+          <div className="flex min-h-0 flex-col border-r border-[#E1F0F8]">
+            <div className="flex items-center gap-2 border-b border-[#E1F0F8] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
               <BookOpen size={18} className="text-[var(--helix-purple)]" />
               Hoofdstukken
             </div>
@@ -301,7 +301,7 @@ export default function PresenterImportDialog({
                   CMS-inhoud laden
                 </div>
               ) : chapterRows.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-[#eadcff] p-5 text-center text-sm font-bold text-[var(--helix-muted)]">
+                <div className="rounded-lg border border-dashed border-[#E1F0F8] p-5 text-center text-sm font-bold text-[var(--helix-muted)]">
                   Geen hoofdstukken gevonden.
                 </div>
               ) : (
@@ -316,8 +316,8 @@ export default function PresenterImportDialog({
                         className={[
                           'grid w-full grid-cols-[2.25rem_minmax(0,1fr)_1.5rem] items-center gap-3 rounded-lg border px-3 py-3 text-left transition',
                           isSelected
-                            ? 'border-[#d9c3ff] bg-[#f5edff] text-[var(--helix-navy)]'
-                            : 'border-[#f1edfb] bg-white text-[var(--helix-navy)] hover:border-[#eadcff] hover:bg-[#fbf7ff]'
+                            ? 'border-[#BED8EA] bg-[#F5EDDB] text-[var(--helix-navy)]'
+                            : 'border-[#F5EDDB] bg-white text-[var(--helix-navy)] hover:border-[#E1F0F8] hover:bg-[#FBF5E8]'
                         ].join(' ')}
                         onClick={() => {
                           setSelectedHoofdstukId(chapter.id);
@@ -327,7 +327,7 @@ export default function PresenterImportDialog({
                           );
                         }}
                       >
-                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[var(--helix-purple)] ring-1 ring-[#eadcff]">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[var(--helix-purple)] ring-1 ring-[#E1F0F8]">
                           <Layers3 size={17} />
                         </span>
                         <span className="min-w-0">
@@ -348,13 +348,13 @@ export default function PresenterImportDialog({
           </div>
 
           <div className="flex min-h-0 flex-col">
-            <div className="flex items-center gap-2 border-b border-[#eadcff] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
+            <div className="flex items-center gap-2 border-b border-[#E1F0F8] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
               <FileText size={18} className="text-[var(--helix-purple)]" />
               Paragrafen
             </div>
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4">
               {loadingTree ? null : paragraphRows.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-[#eadcff] p-5 text-center text-sm font-bold text-[var(--helix-muted)]">
+                <div className="rounded-lg border border-dashed border-[#E1F0F8] p-5 text-center text-sm font-bold text-[var(--helix-muted)]">
                   Selecteer een hoofdstuk met paragrafen.
                 </div>
               ) : (
@@ -369,12 +369,12 @@ export default function PresenterImportDialog({
                         className={[
                           'grid w-full grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-3 rounded-lg border px-3 py-3 text-left transition',
                           isSelected
-                            ? 'border-[#d9c3ff] bg-[#f5edff] text-[var(--helix-navy)]'
-                            : 'border-[#f1edfb] bg-white text-[var(--helix-navy)] hover:border-[#eadcff] hover:bg-[#fbf7ff]'
+                            ? 'border-[#BED8EA] bg-[#F5EDDB] text-[var(--helix-navy)]'
+                            : 'border-[#F5EDDB] bg-white text-[var(--helix-navy)] hover:border-[#E1F0F8] hover:bg-[#FBF5E8]'
                         ].join(' ')}
                         onClick={() => setSelectedParagraafId(paragraph.id)}
                       >
-                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-xs font-black text-[var(--helix-purple)] ring-1 ring-[#eadcff]">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-xs font-black text-[var(--helix-purple)] ring-1 ring-[#E1F0F8]">
                           {paragraph.code || paragraph.number || 'P'}
                         </span>
                         <span className="min-w-0">
@@ -395,7 +395,7 @@ export default function PresenterImportDialog({
         </div>
         )}
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#eadcff] bg-white px-5 py-4">
+        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E1F0F8] bg-white px-5 py-4">
           <div className="min-w-0 text-sm font-bold text-[var(--helix-muted)]">
             {importPreview ? (
               <span className="flex min-w-0 items-center gap-2">
@@ -416,7 +416,7 @@ export default function PresenterImportDialog({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="rounded-md border border-[#eadcff] bg-white px-4 py-2 text-sm font-black text-[var(--helix-navy)] transition hover:bg-[#fbf7ff]"
+              className="rounded-md border border-[#E1F0F8] bg-white px-4 py-2 text-sm font-black text-[var(--helix-navy)] transition hover:bg-[#FBF5E8]"
               onClick={importPreview ? handleBackToSelection : onClose}
               disabled={importing}
             >
@@ -425,7 +425,7 @@ export default function PresenterImportDialog({
             {importPreview ? (
               <button
                 type="button"
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5f2c84] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5F2C9E] disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handleConfirmImport}
                 disabled={selectedBlockIds.length === 0}
               >
@@ -434,7 +434,7 @@ export default function PresenterImportDialog({
             ) : (
               <button
                 type="button"
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5f2c84] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5F2C9E] disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handlePrepareImport}
                 disabled={!selectedParagraph || importing || loadingTree}
               >

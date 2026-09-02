@@ -1305,7 +1305,7 @@ function ReadingBlockCompletion({ isCompleted, actionLabel, hintLabel, onConfirm
     return (
       <div className="flex justify-end border-t border-[var(--helix-border)] pt-5">
         <span className="inline-flex items-center gap-2 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-5 py-3 text-sm font-black text-[var(--helix-muted)]">
-          <Check size={18} strokeWidth={3.2} className="text-[#15803d]" />
+          <Check size={18} strokeWidth={3.2} className="text-[#237A4D]" />
           Afgevinkt
         </span>
       </div>
@@ -3900,7 +3900,7 @@ function ExerciseLearningBlock({ block, bodyHtml, progressRecord, onSaveProgress
 
               {flow.fase === OEFEN_FASEN.BEOORDEELD && !aiMislukt && huidigRecord && ZELFOORDELEN[huidigRecord.zelfoordeel] && (
                 <p className="inline-flex items-center gap-2 text-sm font-bold text-[var(--helix-navy)]">
-                  <Check size={16} strokeWidth={3.2} className="text-[#15803d]" />
+                  <Check size={16} strokeWidth={3.2} className="text-[#237A4D]" />
                   Jouw oordeel:
                   <span
                     className="rounded-full px-2.5 py-0.5 text-[11px] font-black"

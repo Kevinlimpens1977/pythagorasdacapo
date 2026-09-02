@@ -259,7 +259,7 @@ export default function CropSelectionOverlay({
     const y = topLeft.y;
     const width = bottomRight.x - topLeft.x;
     const height = bottomRight.y - topLeft.y;
-    const color = selection.type === 'text' ? '#3b82f6' : '#10b981';
+    const color = selection.type === 'text' ? '#087EB5' : '#2E9D63';
     const isActive = activeSelectionId === selection.id;
 
     return (
@@ -345,7 +345,7 @@ export default function CropSelectionOverlay({
           width={currentRectangle.width}
           height={currentRectangle.height}
           fill="rgba(16, 185, 129, 0.1)"
-          stroke="#10b981"
+          stroke="#2E9D63"
           strokeWidth={2}
           strokeDasharray="5,5"
         />

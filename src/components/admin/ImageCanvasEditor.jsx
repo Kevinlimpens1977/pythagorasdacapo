@@ -319,7 +319,7 @@ export default function ImageCanvasEditor({
     >
       {/* Background grid pattern */}
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(90deg, #e5e7eb 1px, transparent 1px), linear-gradient(#e5e7eb 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(90deg, #E8DCC3 1px, transparent 1px), linear-gradient(#E8DCC3 1px, transparent 1px)',
         backgroundSize: '40px 40px'
       }} />
 
