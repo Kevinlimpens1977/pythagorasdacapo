@@ -45,18 +45,18 @@ const BELSTIJL = `
   transition: box-shadow 200ms ease-out;
 }
 .helix-meldbel--antwoord::after {
-  box-shadow: 0 0 0 4px oklch(0.52 0.19 300 / 0.28), 0 0 18px 4px oklch(0.52 0.19 300 / 0.4);
+  box-shadow: 0 0 0 4px rgba(8, 126, 181, 0.28), 0 0 18px 4px rgba(8, 126, 181, 0.4);
   animation: helix-meldbel-puls 2200ms ease-in-out infinite;
 }
 .helix-meldbel:hover::after,
 .helix-meldbel:focus-visible::after {
   animation: none;
-  box-shadow: 0 0 0 4px oklch(0.52 0.19 300 / 0.25), 0 0 20px 5px oklch(0.52 0.19 300 / 0.45);
+  box-shadow: 0 0 0 4px rgba(8, 126, 181, 0.25), 0 0 20px 5px rgba(8, 126, 181, 0.45);
 }
 @keyframes helix-meldbel-puls {
-  0%   { box-shadow: 0 0 0 0 oklch(0.52 0.19 300 / 0.45), 0 0 14px 2px oklch(0.52 0.19 300 / 0.3); }
-  70%  { box-shadow: 0 0 0 12px oklch(0.52 0.19 300 / 0), 0 0 24px 8px oklch(0.52 0.19 300 / 0.45); }
-  100% { box-shadow: 0 0 0 0 oklch(0.52 0.19 300 / 0), 0 0 14px 2px oklch(0.52 0.19 300 / 0.3); }
+  0%   { box-shadow: 0 0 0 0 rgba(8, 126, 181, 0.45), 0 0 14px 2px rgba(8, 126, 181, 0.3); }
+  70%  { box-shadow: 0 0 0 12px oklch(0.52 0.19 300 / 0), 0 0 24px 8px rgba(8, 126, 181, 0.45); }
+  100% { box-shadow: 0 0 0 0 oklch(0.52 0.19 300 / 0), 0 0 14px 2px rgba(8, 126, 181, 0.3); }
 }
 @media (prefers-reduced-motion: reduce) {
   .helix-meldbel--antwoord::after { animation: none; }

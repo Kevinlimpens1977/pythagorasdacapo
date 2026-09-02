@@ -149,12 +149,12 @@ export default function AdminLoginScreen() {
     <div className="helix-page flex min-h-screen items-center justify-center p-4 sm:p-8">
       <div className="grid w-full max-w-6xl gap-7 lg:grid-cols-[0.8fr_1fr]">
 
-        <div className="relative hidden overflow-hidden rounded-[var(--helix-radius-xl)] bg-[oklch(0.24_0.045_300)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="relative hidden overflow-hidden rounded-[var(--helix-radius-xl)] bg-[var(--helix-navy)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="pointer-events-none absolute -bottom-16 -right-20 h-60 w-60 rounded-full bg-white/[0.06]" />
 
           <div className="relative flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-[var(--helix-radius-sm)] bg-white">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="oklch(0.24 0.045 300)" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B0D0F" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 3c0 6 12 12 12 18" />
                 <path d="M18 3c0 6-12 12-12 18" />
               </svg>
