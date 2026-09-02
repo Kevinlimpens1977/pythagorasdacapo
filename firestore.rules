@@ -125,11 +125,26 @@ service cloud.firestore {
     }
 
     // Gebruikers
+    // De rol van een account mag de eigenaar zelf nooit veranderen; anders kan
+    // elke ingelogde leerling zichzelf tot admin maken. Beheerders houden hun
+    // rechten. Het vaste admin-e-mailadres mag zijn eigen rol wel gelijktrekken,
+    // omdat de app die na het inloggen naar 'admin' synchroniseert.
+    function rolBlijftGelijk() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
+    }
+
+    function nieuweRolIsStudent() {
+      return request.resource.data.get('role', 'student') == 'student';
+    }
+
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdminOrSupervisor();
-      // Een nieuw eigen account vereist schoolmail; beheerders mogen altijd.
-      allow create: if (isOwner(userId) && heeftSchoolEmail()) || isAdminOrSupervisor();
-      allow update: if isOwner(userId) || isAdminOrSupervisor();
+      // Een nieuw eigen account vereist schoolmail en start altijd als leerling;
+      // beheerders mogen altijd.
+      allow create: if (isOwner(userId) && heeftSchoolEmail() && nieuweRolIsStudent())
+        || isAdminOrSupervisor();
+      allow update: if (isOwner(userId) && (rolBlijftGelijk() || isAdminEmail()))
+        || isAdminOrSupervisor();
       allow delete: if isAdminOrSupervisor();
     }
 
