@@ -35,6 +35,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 
+import { normalizeAssessmentItems } from '../src/lib/assessmentBlockUtils.js';
 import { normalizeContentBlockSettings } from '../src/lib/contentBlockUtils.js';
 import { validateContentBlockReadiness } from '../src/lib/contentReadiness.js';
 import { buildPublicContentBlockSnapshot } from '../src/lib/publicContentBlockView.js';
@@ -79,6 +80,11 @@ const LEESOPDRACHTEN = [
     instructie: '<p>Lees deze presentatie rustig door. Je hebt hem nodig bij de volgende les.</p>'
   }
 ];
+
+// Vragenronde als laatste blok in elk leerjaar: 30 meerkeuzevragen uit het
+// oefenspel "Biologie, Natuurkunde of Scheikunde?". Resultaten gaan per vraag
+// naar de voortgang van de docent; Digidocent staat uit (allowAiHelp: false).
+const VRAGENRONDE = JSON.parse(fs.readFileSync(path.resolve('docs/seeds/binask-vragenronde-natuurwetenschappen.json'), 'utf8'));
 
 const seed = JSON.parse(fs.readFileSync(path.resolve('docs/seeds/binask-eoa.seed.json'), 'utf8'));
 const vak = seed.vakken[0];
@@ -271,6 +277,69 @@ const bouwLeesopdrachtBlok = (paragraaf, opdracht, volgnummer, pdfReferentie) =>
 const leesopdrachtenVoor = (paragraaf) =>
   LEESOPDRACHTEN.filter((opdracht) => opdracht.leerjaar === leerjaarKort(paragraaf));
 
+// Vaste optievolgorde, zodat het juiste antwoord niet uit de positie te lezen is.
+const VAKKEN = ['biologie', 'natuurkunde', 'scheikunde'];
+
+const bouwVragenrondeItems = () => {
+  const { categorieen, leerdoel } = VRAGENRONDE.meta;
+  return VRAGENRONDE.vragen.map((vraag) => {
+    const juist = categorieen[vraag.categorie];
+    return {
+      id: `nw-${String(vraag.nr).padStart(2, '0')}`,
+      type: 'meerkeuze',
+      prompt: vraag.vraag,
+      answer: {
+        type: 'meerkeuze',
+        options: VAKKEN.map((vak) => {
+          const isJuist = vak === vraag.categorie;
+          return {
+            id: `nw-${String(vraag.nr).padStart(2, '0')}-${vak}`,
+            text: categorieen[vak].label,
+            correct: isJuist,
+            explanation: isJuist ? vraag.uitleg : `Niet ${categorieen[vak].label.toLowerCase()}. ${juist.regel}`,
+            misconception: ''
+          };
+        })
+      },
+      feedback: vraag.uitleg,
+      tokens: 0,
+      taxonomy: {
+        learningGoal: leerdoel,
+        cognitiveSkill: 'herkennen',
+        masteryLevel: 'basis',
+        scaffoldingRole: 'zelf_proberen'
+      }
+    };
+  });
+};
+
+const bouwVragenrondeBlok = (paragraaf, volgnummer) => ({
+  id: blokId(paragraaf, 'quiz', volgnummer),
+  vakId: paragraaf.vakId,
+  leerjaarId: paragraaf.leerjaarId,
+  niveauId: paragraaf.niveauId,
+  hoofdstukId: paragraaf.hoofdstukId,
+  paragraafId: paragraaf.id,
+  type: 'quiz',
+  order: volgnummer,
+  title: VRAGENRONDE.meta.titel,
+  status: 'published',
+  content: {
+    html: VRAGENRONDE.meta.intro,
+    assessmentType: 'quiz',
+    items: normalizeAssessmentItems(bouwVragenrondeItems()),
+    attemptPolicy: { maxAttempts: null, scoring: 'best', allowTeacherReset: true },
+    tokenConfig: { enabled: true, totalTokens: 15 },
+    sourceBasis: [],
+    sourceNotes: VRAGENRONDE.meta.bron,
+    crops: []
+  },
+  settings: normalizeContentBlockSettings({ allowAiHelp: false }, 'quiz'),
+  linkedVraagId: null,
+  createdBy: maker,
+  isArchived: false
+});
+
 const bouwPlan = (pdfReferenties, nu) => {
   const pakketten = DECKS.map((deck) => bouwPakket(deck, deck.bestandInfo, pdfReferenties[deck.sleutel], nu));
   const blokken = [];
@@ -292,6 +361,8 @@ const bouwPlan = (pdfReferenties, nu) => {
       uploads.push({ bestand: opdracht.bestand, bestandInfo: opdracht.bestandInfo, storagePath, token });
       blokken.push({ paragraaf, blok: bouwLeesopdrachtBlok(paragraaf, opdracht, volgnummer, referentie) });
     });
+    const laatsteVolgnummer = DECKS.length + leesopdrachtenVoor(paragraaf).length + 1;
+    blokken.push({ paragraaf, blok: bouwVragenrondeBlok(paragraaf, laatsteVolgnummer) });
   });
   const snapshots = blokken.map(({ blok }) => buildPublicContentBlockSnapshot(blok));
   return { pakketten, blokken, snapshots, uploads };
