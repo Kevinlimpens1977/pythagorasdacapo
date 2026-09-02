@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HELIX design system v2 — beheerpagina's oud/nieuw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BEOORDELINGSPAGINA (de schil om de schermen heen)
+   ============================================================ */
+:root{
+  --ink:#0B0D0F; --paper:#FFF7E8; --yellow:#FFD33D; --blue:#087EB5; --teal:#0D8F93;
+  --orange:#F47A20; --red:#D83A2E; --green:#2E9D63; --purple:#793AC7;
+  --screen-w:1360px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;overflow-x:hidden}
+body{background:#e9e4dc;color:var(--ink);font-family:"Atkinson Hyperlegible",Arial,sans-serif;font-size:15px;line-height:1.5}
+.review-top{position:sticky;top:0;z-index:50;background:var(--yellow);border-bottom:5px solid var(--ink);padding:16px 32px;display:flex;flex-wrap:wrap;align-items:center;gap:16px 32px}
+.review-top h1{font-family:Bangers,Impact,"Arial Narrow Bold",sans-serif;font-size:34px;letter-spacing:.02em;margin:0;text-transform:uppercase;font-weight:400}
+.review-top .sub{font-size:14px;margin:0}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{border:0;background:transparent;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;color:var(--ink)}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--yellow)}
+.review-top label{font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+.review-top select{font:inherit;border:2px solid var(--ink);border-radius:6px;padding:6px 8px;background:#fff}
+.review-top nav{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+.review-top nav a{font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;border:2px solid var(--ink);border-radius:6px;padding:3px 10px;background:#fff}
+.review-top nav a:hover{background:var(--ink);color:var(--yellow)}
+main{padding:24px 32px 96px;max-width:1440px;margin:0 auto}
+.intro{background:#fff;border:3px solid var(--ink);border-radius:12px;padding:20px 24px;margin-bottom:32px;box-shadow:5px 5px 0 var(--ink)}
+.intro h2{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:26px;margin:0 0 8px;letter-spacing:.02em}
+.intro ul{margin:8px 0 0;padding-left:20px}
+.intro li{margin:4px 0}
+.intro .tokens{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.intro .tokens span{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700;background:#fff}
+.intro .tokens i{width:16px;height:16px;border:2px solid var(--ink);border-radius:4px;display:inline-block}
+section.scherm{margin-bottom:56px}
+section.scherm>h2{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:30px;letter-spacing:.02em;margin:0 0 4px;border-bottom:4px solid var(--ink);padding-bottom:4px}
+section.scherm>.eyebrow{color:var(--blue);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.notitie{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:12px 16px;margin:12px 0 16px;font-size:14px}
+.notitie strong{color:var(--blue)}
+.notitie ol{margin:4px 0 0;padding-left:20px}
+.notitie li{margin:2px 0}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+body[data-view="oud"] .compare,body[data-view="nieuw"] .compare{grid-template-columns:1fr}
+body[data-view="oud"] .pane.nieuw,body[data-view="nieuw"] .pane.oud{display:none}
+.pane{min-width:0}
+.pane .label{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em}
+.pane .label i{width:14px;height:14px;border:2px solid var(--ink);border-radius:3px;display:inline-block}
+.pane.oud .label i{background:#7a3cff}
+.pane.nieuw .label i{background:var(--yellow)}
+.frame{overflow:auto;border:2px solid var(--ink);border-radius:8px;background:#cfc9bf;max-height:1600px}
+.screen{width:var(--screen-w);min-height:600px;zoom:var(--z,1);position:relative}
+.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ic.s{width:14px;height:14px}
+.ic.l{width:22px;height:22px}
+.avatar{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.avatar svg{width:60%;height:60%;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ============================================================
+   OUD — nagebouwd uit src/index.css + Tailwind-klassen in de componenten
+   ============================================================ */
+.o{--o-bg:#f5f2f8;--o-surface:#fff;--o-border:#e7e2ee;--o-muted:#6d6579;--o-navy:#1f1a30;--o-purple:#7a3cff;--o-purple-dark:#6b2fe6;--o-lav:#f1ebfa;--o-peach:#fdebd8;--o-soft:#fbfaff;
+  font-family:"Plus Jakarta Sans","Segoe UI",system-ui,sans-serif;color:var(--o-navy);font-size:14px;line-height:1.5;
+  background:radial-gradient(circle at 78% -6%, rgba(122,60,255,.09), transparent 32rem),var(--o-bg)}
+.o *{font-family:inherit}
+.o-header{height:80px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 40px;background:rgba(255,255,255,.86);border-bottom:1px solid var(--o-border);box-shadow:0 14px 34px -28px rgba(11,19,43,.45)}
+.o-header>div:first-child{min-width:0;flex:1 1 auto}
+.o-header .o-kompas,.o-header .o-hdr-right{flex-shrink:0}
+.o-logo{width:176px;height:64px;border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:22px;color:var(--o-purple)}
+.o-logo b{display:inline-block;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#7a3cff,#e0518f)}
+.o-nav{display:flex;gap:4px;padding:4px;border:1px solid var(--o-border);border-radius:16px;background:rgba(251,250,255,.82);margin-left:24px;min-width:0;overflow:hidden}
+.o-nav-tab{display:flex;align-items:center;gap:8px;padding:8px 12px;white-space:nowrap;border-radius:12px;font-weight:800;font-size:14px;color:var(--o-muted);border:2px solid transparent;position:relative}
+.o-nav-tab.active{background:var(--o-lav);color:var(--o-purple-dark)}
+.o-nav-alert{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;display:flex;align-items:center;justify-content:center}
+.o-kompas{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:16px;border:1px solid var(--o-border);background:rgba(255,255,255,.92);font-weight:900;font-size:14px;box-shadow:0 12px 34px rgba(11,19,43,.07)}
+.o-hdr-right{display:flex;align-items:center;gap:16px}
+.o-tooltiny{border:1px solid transparent;border-radius:12px;padding:8px 10px;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--o-muted);display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.o-hdr-right{flex-shrink:0}
+.o-user{display:flex;flex-direction:column;align-items:flex-end;margin-right:8px}
+.o-user b{font-size:14px}
+.o-user span{background:var(--o-peach);color:#c2410c;border-radius:999px;padding:0 8px;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.o-container{max-width:1280px;margin:0 auto;padding:40px 32px 48px}
+.o-eyebrow{color:var(--o-purple);font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;margin:0}
+.o-h1{font-size:44px;font-weight:800;letter-spacing:-.02em;margin:8px 0 0;line-height:1.1}
+.o-lead{color:var(--o-muted);font-size:18px;line-height:1.7;margin:12px 0 0;max-width:640px}
+.o-surface{background:rgba(255,255,255,.88);border:1px solid var(--o-border);border-radius:28px;box-shadow:0 14px 44px rgba(11,19,43,.08)}
+.o-card{background:rgba(255,255,255,.92);border:1px solid var(--o-border);border-radius:22px;box-shadow:0 12px 34px rgba(11,19,43,.07)}
+.o-card-subtle{background:rgba(250,251,255,.82);border:1px solid var(--o-border);border-radius:22px}
+.o-btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--o-purple);color:#fff;border:2px solid transparent;border-radius:16px;padding:10px 20px;font-weight:700;font-size:14px;box-shadow:0 12px 26px rgba(122,60,255,.3)}
+.o-btn-tool{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#fff;border:1px solid var(--o-border);border-radius:12px;padding:0 20px;min-height:48px;font-weight:800;font-size:14px;color:var(--o-navy)}
+.o-btn-tool.sm{min-height:40px;padding:0 16px}
+.o-btn-tool.active{border-color:var(--o-purple);color:var(--o-purple-dark)}
+.o-btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--o-border);border-radius:16px;padding:8px 16px;font-weight:700;font-size:13px;color:var(--o-navy)}
+.o-btn-ghost{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--o-border);border-radius:16px;padding:8px 12px;font-weight:700;font-size:14px;color:var(--o-muted)}
+.o-btn-fuchsia{display:inline-flex;align-items:center;gap:8px;background:#fdf4ff;border:1px solid #f5d0fe;border-radius:16px;padding:8px 12px;font-weight:700;font-size:14px;color:#a21caf}
+.o-btn-red{display:inline-flex;align-items:center;gap:6px;background:#fef2f2;border:1px solid #fee2e2;border-radius:8px;padding:8px;color:#dc2626}
+.o-badge{display:inline-flex;align-items:center;background:var(--o-soft);color:var(--o-muted);border:1px solid var(--o-border);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.o-badge.success{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+.o-badge.warning{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.o-input{background:var(--o-soft);border:2px solid var(--o-border);border-radius:16px;padding:12px 16px;color:var(--o-navy);font-size:14px;width:100%}
+.o-input.sm{padding:8px 10px;border-radius:12px;border-width:1px;font-weight:700}
+.o-label{display:block;font-size:14px;font-weight:700;color:#334155;margin-bottom:8px}
+.o-label.caps{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8}
+.o-muted{color:var(--o-muted)}
+.o-stat{background:rgba(255,255,255,.92);border:1px solid var(--o-border);border-radius:22px;box-shadow:0 12px 34px rgba(11,19,43,.07);padding:20px}
+.o-stat p{margin:0}
+.o-stat .v{font-size:30px;font-weight:900;margin-top:8px}
+.o-stat .d{color:var(--o-muted);font-size:14px;margin-top:16px}
+.o-lens{display:inline-flex;align-items:center;gap:4px;padding:8px 16px;border-radius:12px;font-weight:900;font-size:14px;border:2px solid #dfe5ee;background:#fff;color:var(--o-navy)}
+.o-lens.active{border-color:var(--o-purple);box-shadow:0 10px 22px rgba(11,19,43,.08)}
+.o-lens .cnt{border-radius:999px;padding:2px 6px;font-size:10px;font-weight:900;margin-left:4px}
+.o-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:900}
+.o-chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.o-chip.af{border-color:#059669;background:#ecfdf5;color:#065f46}.o-chip.af i{background:#059669}
+.o-chip.na{border-color:#f97316;background:#fffbeb;color:#92400e}.o-chip.na i{background:#f97316}
+.o-chip.vast{border-color:#e11d48;background:#fff1f2;color:#9f1239}.o-chip.vast i{background:#e11d48}
+.o-chip.bezig{border-color:var(--o-purple);background:var(--o-lav);color:var(--o-navy)}.o-chip.bezig i{background:var(--o-purple)}
+.o-chip.niet{border-color:var(--o-border);background:#fff;color:var(--o-muted)}.o-chip.niet i{background:#cbd5e1}
+.o-chip.plus{border-color:var(--o-purple);background:var(--o-lav);color:var(--o-purple);font-size:10px;text-transform:uppercase}
+.o-cell{display:inline-flex;align-items:center;justify-content:center;height:36px;width:56px;border:1px solid;border-radius:8px;font-size:12px;font-weight:900}
+.o-avatar{background:var(--o-lav);color:var(--o-purple);border-radius:50%;width:36px;height:36px}
+.o-avatar.sq{border-radius:12px;width:44px;height:44px}
+.o-table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
+.o-table th{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#64748b;background:#f8fafc;padding:16px 24px}
+.o-table td{padding:16px 24px;border-top:1px solid #f1f5f9;vertical-align:top}
+.o-tbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-weight:900;font-size:13px;color:#334155;background:#fff}
+.o-tbtn.blue{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
+.o-tbtn.on{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
+.o-pill{display:inline-flex;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.o-pill.green{background:#f0fdf4;color:#15803d}.o-pill.amber{background:#fffbeb;color:#b45309}
+.o-alert{background:linear-gradient(135deg,rgba(255,233,220,.82),rgba(255,230,242,.46));border:1px solid rgba(255,122,0,.18);border-radius:22px;padding:16px}
+/* CMS oud */
+.o-cms{display:flex;min-height:960px;background:var(--o-bg)}
+.o-side{width:400px;flex-shrink:0;background:rgba(255,255,255,.95);border-right:1px solid var(--o-border);display:flex;flex-direction:column}
+.o-side-head{padding:16px;border-bottom:1px solid var(--o-border);background:#fff}
+.o-side-head h3{margin:0;font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px}
+.o-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.o-mini div{border:1px solid var(--o-border);background:var(--o-soft);border-radius:12px;padding:8px;text-align:center}
+.o-mini b{display:block;font-size:14px;font-weight:900}
+.o-mini span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--o-muted)}
+.o-search{display:flex;align-items:center;gap:8px;border:1px solid var(--o-border);background:var(--o-soft);border-radius:12px;padding:8px 12px;margin-top:16px;color:#94a3b8;font-weight:500}
+.o-tree{padding:12px;overflow:auto;flex:1}
+.o-node{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:42px;padding:8px;border-radius:8px;border:1px solid transparent;border-left:4px solid transparent;font-size:14px;font-weight:600;color:var(--o-muted);margin-top:2px}
+.o-node .cnt{display:inline-flex;justify-content:center;width:88px;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:800;background:var(--o-soft);color:var(--o-muted)}
+.o-node .ib{width:28px;height:28px;border:1px solid var(--o-border);border-radius:8px;background:#fff;display:inline-flex;align-items:center;justify-content:center;color:var(--o-purple);margin-left:4px}
+.o-node.path{background:#fff;border-color:var(--o-border);color:var(--o-navy)}
+.o-node.chapter{background:#fbf7ff;border-color:#eadcff;color:var(--o-navy);margin-top:8px}
+.o-node.chapter.on{border-left-color:var(--o-purple);background:#f7f0ff}
+.o-node.chapter .cnt{background:rgba(255,255,255,.85);color:var(--o-purple)}
+.o-node.par{background:#fbfaff;border-color:#f1edfb}
+.o-node.par.on{background:#f5edff;border-color:#f5d0fe;border-left-color:var(--o-purple);color:var(--o-navy)}
+.o-node.par.on .cnt{background:#fff;color:var(--o-purple)}
+.o-node small{display:block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#94a3b8;margin-top:2px}
+.o-node.par.on small{color:var(--o-purple)}
+.o-work{flex:1;min-width:0;padding:24px}
+.o-blok{background:rgba(255,255,255,.92);border:1px solid var(--o-border);border-radius:22px;box-shadow:0 12px 34px rgba(11,19,43,.07);padding:20px;display:flex;justify-content:space-between;gap:16px;margin-top:16px}
+.o-blok .ico{width:44px;height:44px;border-radius:16px;background:var(--o-lav);color:var(--o-purple);display:flex;align-items:center;justify-content:center}
+.o-blok h3{margin:8px 0 0;font-size:18px;font-weight:800}
+.o-blok .ctl{width:36px;height:44px;border:1px solid var(--o-border);border-radius:16px;background:#fff;display:inline-flex;align-items:center;justify-content:center;color:var(--o-muted)}
+.o-type{border:2px solid #dfe5ee;background:#fff;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;font-weight:800;font-size:13px}
+.o-type .ico{width:36px;height:36px;border-radius:12px;background:var(--o-lav);color:var(--o-purple);display:flex;align-items:center;justify-content:center}
+.o-melding{background:rgba(255,255,255,.88);border:1px solid var(--o-border);border-radius:28px;box-shadow:0 14px 44px rgba(11,19,43,.08);overflow:hidden}
+.o-melding.new{border-color:rgba(122,60,255,.4)}
+.o-status{border-radius:999px;padding:2px 10px;font-size:11px;font-weight:900}
+.o-banner{background:linear-gradient(135deg,rgba(122,60,255,.06),rgba(224,81,143,.05)),#fff;border:1px solid var(--o-border);border-radius:28px;padding:24px 28px;box-shadow:0 14px 44px rgba(11,19,43,.08)}
+
+/* ============================================================
+   NIEUW — Helix Slide Design System v2, vertaald naar een docentwerkplek
+   ============================================================ */
+.n{background:var(--paper);color:var(--ink);font-family:"Atkinson Hyperlegible",Arial,sans-serif;font-size:15px;line-height:1.45}
+.n *{font-family:inherit}
+.n-header{height:72px;background:var(--yellow);border-bottom:4px solid var(--ink);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 32px}
+.n-header>div:first-child{min-width:0;flex:1 1 auto}
+.n-nav{min-width:0;overflow:hidden}
+.n-nav-tab{white-space:nowrap}
+.n-hdr-right{flex-shrink:0}
+.n-brand{font-family:Bangers,Impact,sans-serif;font-size:34px;letter-spacing:.03em;display:flex;align-items:center;gap:10px;font-weight:400}
+.n-brand i{width:30px;height:30px;border:3px solid var(--ink);border-radius:50%;display:inline-block;background:#fff;position:relative}
+.n-brand i::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--ink)}
+.n-nav{display:flex;gap:4px;margin-left:32px}
+.n-nav-tab{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;font-weight:700;font-size:15px;color:var(--ink);border:2px solid transparent;position:relative}
+.n-nav-tab.active{background:var(--ink);color:var(--yellow);border-color:var(--ink)}
+.n-nav-tab .dot{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:10px;background:var(--orange);color:#fff;border:2px solid var(--ink);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.n-hdr-right{display:flex;align-items:center;gap:16px}
+.n-hdr-right .who{text-align:right;line-height:1.2}
+.n-hdr-right .who b{display:block;font-size:14px}
+.n-hdr-right .who span{font-size:12px}
+.n-container{max-width:1280px;margin:0 auto;padding:32px 32px 48px}
+.n-eyebrow{color:var(--blue);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.n-title{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:40px;letter-spacing:.02em;text-transform:uppercase;margin:0;line-height:1;border-bottom:4px solid var(--ink);padding-bottom:6px}
+.n-title.sm{font-size:28px;border:0;padding:0}
+.n-lead{margin:12px 0 0;max-width:640px;font-size:15px}
+.n-titlebar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.n-card{background:#fff;border:2px solid var(--ink);border-radius:12px}
+.n-card.lift{box-shadow:4px 4px 0 var(--ink)}
+.n-card-head{background:var(--yellow);border-bottom:2px solid var(--ink);border-radius:10px 10px 0 0;padding:8px 16px;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.n-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 14px;border:2px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);font-weight:700;font-size:14px;white-space:nowrap}
+.n-btn.primary{background:var(--blue);color:#fff}
+.n-btn.danger{color:var(--red);border-color:var(--red)}
+.n-btn.ghost{border-color:transparent;background:transparent}
+.n-btn.icon{width:40px;padding:0}
+.n-btn.sm{min-height:32px;padding:0 10px;font-size:13px}
+.n-btn.sm.icon{width:32px}
+.n-btn[disabled]{opacity:.4}
+.n-seg{display:inline-flex;border:2px solid var(--ink);border-radius:8px;overflow:hidden;background:#fff}
+.n-seg>span{padding:8px 16px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.n-seg>span+span{border-left:2px solid var(--ink)}
+.n-seg>span.active{background:var(--yellow)}
+.n-seg .cnt{min-width:20px;height:20px;border-radius:10px;border:2px solid var(--ink);font-size:11px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;background:#fff}
+.n-seg .cnt.o{background:var(--orange);color:#fff}.n-seg .cnt.r{background:var(--red);color:#fff}
+.n-input{border:2px solid var(--ink);border-radius:8px;background:#fff;padding:8px 12px;font-size:14px;width:100%;color:var(--ink)}
+.n-input.sm{padding:5px 8px;font-size:13px}
+.n-label{display:block;font-weight:700;font-size:13px;margin-bottom:4px}
+.n-meta{font-size:13px}
+.n-chip{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;background:#fff;color:var(--ink);white-space:nowrap}
+.n-chip i{width:10px;height:10px;border:2px solid var(--ink);border-radius:2px;display:inline-block;background:#fff}
+.n-chip.green{border-color:var(--green);color:#1f6b45;background:#e8f5ee}.n-chip.green i{background:var(--green);border-color:var(--green)}
+.n-chip.blue{border-color:var(--blue);color:#075f88;background:#e6f2f8}.n-chip.blue i{background:var(--blue);border-color:var(--blue)}
+.n-chip.orange{border-color:var(--orange);color:#9a4a0f;background:#fdeee1}.n-chip.orange i{background:var(--orange);border-color:var(--orange)}
+.n-chip.red{border-color:var(--red);color:#a12a21;background:#fbe9e7}.n-chip.red i{background:var(--red);border-color:var(--red)}
+.n-chip.purple{border-color:var(--purple);color:#5c2b99;background:#f0e8fa}.n-chip.purple i{background:var(--purple);border-color:var(--purple)}
+.n-chip.ink{background:#fff}.n-chip.ink i{background:#fff}
+.n-chip.solid-yellow{background:var(--yellow)}
+.n-kv{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px}
+.n-kv b{font-weight:700}
+.n-avatar{width:36px;height:36px;border:2px solid var(--ink);border-radius:50%;background:#fff}
+.n-avatar.sq{border-radius:8px;width:44px;height:44px}
+.n-table{width:100%;border-collapse:collapse;font-size:14px;text-align:left}
+.n-table th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:10px 12px;border-bottom:3px solid var(--ink);background:#fff}
+.n-table td{padding:10px 12px;border-bottom:1px solid var(--ink);vertical-align:middle}
+.n-table td.acts{white-space:nowrap;text-align:right}
+.n-table tr:last-child td{border-bottom:0}
+.n-cell{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:34px;width:60px;border:2px solid;border-radius:6px;font-size:12px;font-weight:700}
+.n-cell.af{border-color:var(--green);background:#e8f5ee;color:#1f6b45}
+.n-cell.na{border-color:var(--orange);background:#fdeee1;color:#9a4a0f}
+.n-cell.vast{border-color:var(--red);background:#fbe9e7;color:#a12a21}
+.n-cell.bezig{border-color:var(--blue);background:#e6f2f8;color:#075f88}
+.n-cell.niet{border-color:var(--ink);background:#fff;color:var(--ink);opacity:.6}
+.n-cell.nvt{border-style:dashed;border-color:#8a847a;color:#8a847a;background:transparent}
+.n-bar{height:8px;width:64px;border:2px solid var(--ink);border-radius:4px;background:#fff;overflow:hidden;display:inline-block;vertical-align:middle}
+.n-bar i{display:block;height:100%;background:var(--ink)}
+.n-stat{border:2px solid var(--ink);border-radius:12px;background:#fff;padding:16px 20px}
+.n-stat .v{font-size:30px;font-weight:700;line-height:1;margin-top:4px}
+.n-stat .d{font-size:13px;margin-top:8px}
+.n-stat.att{border-left-width:8px;border-left-color:var(--orange)}
+.n-strip{display:flex;flex-wrap:wrap;gap:8px 24px;padding:10px 16px;border:2px solid var(--ink);border-radius:8px;background:#fff;font-size:14px}
+.n-strip b{font-size:18px;margin-right:4px}
+.n-hint{font-size:13px;border-left:4px solid var(--orange);padding:4px 12px;background:#fff}
+/* CMS nieuw */
+.n-cms{display:flex;min-height:960px}
+.n-side{width:340px;flex-shrink:0;border-right:3px solid var(--ink);background:#fff;display:flex;flex-direction:column}
+.n-side-head{padding:16px;border-bottom:2px solid var(--ink)}
+.n-side-head h3{margin:0 0 10px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between}
+.n-tree{padding:8px;overflow:auto;flex:1}
+.n-node{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:6px;min-height:36px;padding:4px 8px;border-radius:6px;border:2px solid transparent;font-size:14px;color:var(--ink)}
+.n-node .cnt{font-size:12px;white-space:nowrap}
+.n-node.path{font-weight:700}
+.n-node.chapter{border-color:var(--ink);background:#fff;margin-top:6px;font-weight:700}
+.n-node.par{padding-left:8px}
+.n-node.par.on{background:var(--yellow);border-color:var(--ink);font-weight:700}
+.n-node small{display:block;font-size:12px;font-weight:400}
+.n-work{flex:1;min-width:0;padding:24px}
+.n-blok{border:2px solid var(--ink);border-radius:10px;background:#fff;display:grid;grid-template-columns:auto auto 1fr auto;gap:16px;align-items:center;padding:12px 16px;margin-top:8px}
+.n-blok .nr{width:36px;height:36px;border:2px solid var(--ink);border-radius:8px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:700}
+.n-blok h3{margin:0;font-size:16px;font-weight:700}
+.n-blok p{margin:2px 0 0;font-size:13px}
+.n-fold{border:2px solid var(--ink);border-radius:8px;background:#fff;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
+.n-fold span.r{font-weight:400;font-size:13px}
+.n-typebtn{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--ink);border-radius:6px;background:#fff;padding:5px 10px;font-size:13px;font-weight:700}
+.n-melding{border:2px solid var(--ink);border-radius:10px;background:#fff;overflow:hidden}
+.n-melding.unread{border-left-width:8px;border-left-color:var(--orange)}
+.n-melding .row{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:start;padding:12px 16px}
+.n-melding .row p{margin:4px 0 0}
+.n-shot{height:160px;border:2px dashed var(--ink);border-radius:8px;background:repeating-linear-gradient(45deg,#fff,#fff 10px,#f6efe0 10px,#f6efe0 20px);display:flex;align-items:center;justify-content:center;font-size:13px}
+.n-check{display:inline-flex;align-items:center;gap:8px;font-size:13px}
+.n-check i{width:16px;height:16px;border:2px solid var(--ink);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;background:#fff}
+.n-check i.on{background:var(--ink)}
+.n-check i.on::after{content:"";width:8px;height:4px;border-left:2px solid var(--yellow);border-bottom:2px solid var(--yellow);transform:rotate(-45deg) translate(1px,-1px)}
+.n-list{margin:0;padding:0;list-style:none}
+.n-list li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:8px 12px;border:2px solid var(--ink);border-radius:8px;background:#fff;margin-top:6px;border-left-width:8px}
+.n-list li.vast{border-left-color:var(--red)}.n-list li.na{border-left-color:var(--orange)}.n-list li.stil{border-left-color:var(--ink)}
+.n-list li b{display:block;font-size:14px}
+.n-list li span{font-size:13px}
+.n-pdfpane{border:2px solid var(--ink);border-radius:8px;background:#fff;height:150px;display:flex;flex-direction:column}
+.n-pdfpane>div:first-child{border-bottom:2px solid var(--ink);padding:4px 10px;font-size:12px;font-weight:700;background:var(--yellow)}
+.n-pdfpane>div:last-child{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;background:repeating-linear-gradient(0deg,#fff,#fff 12px,#f6efe0 12px,#f6efe0 14px)}
+.o-pdfpane{border:1px solid #e2e8f0;border-radius:8px;background:#fff;height:150px;display:flex;flex-direction:column}
+.o-pdfpane>div:first-child{border-bottom:1px solid #e2e8f0;padding:6px 10px;font-size:11px;font-weight:900;text-transform:uppercase;color:#64748b}
+.o-pdfpane>div:last-child{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#94a3b8;background:#f8fafc}
+</style>
+</head>
+<body data-view="naast">
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-game" viewBox="0 0 24 24"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></symbol>
+  <symbol id="i-pres" viewBox="0 0 24 24"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+  <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+  <symbol id="i-dn" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><polyline points="9 14 11 16 15 12"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+  <symbol id="i-csq" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M5 19l.7 1.8L7.5 21.5 5.7 22.2 5 24"/></symbol>
+  <symbol id="i-reply" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-coins" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/></symbol>
+  <symbol id="i-sheet" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/><path d="M5 17V9a2 2 0 0 1 2-2h10a2 2 0 0 0 2-2"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="8" cy="10" r="1"/><circle cx="12" cy="7" r="1"/><circle cx="16" cy="10" r="1"/><path d="M12 22a3 3 0 0 0 0-6h-1a2 2 0 0 1 0-4h5a6 6 0 0 0 6-6"/></symbol>
+  <symbol id="i-tdown" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></symbol>
+</svg>
+
+<header class="review-top">
+  <div>
+    <h1>Beheerpagina's — oud / nieuw</h1>
+    <p class="sub">Helix Slide Design System v2 vertaald naar de docentkant. Tijdelijk beoordelingsbestand, niets in <code>src/</code> gewijzigd.</p>
+  </div>
+  <div class="seg" role="group" aria-label="Weergave">
+    <button type="button" data-view="naast" aria-pressed="true">Naast elkaar</button>
+    <button type="button" data-view="oud" aria-pressed="false">Alleen oud</button>
+    <button type="button" data-view="nieuw" aria-pressed="false">Alleen nieuw</button>
+  </div>
+  <label>Schaal
+    <select id="zoom">
+      <option value="fit" selected>Passend in kader</option>
+      <option value="1">100 %</option>
+      <option value="0.75">75 %</option>
+      <option value="0.6">60 %</option>
+      <option value="0.5">50 %</option>
+    </select>
+  </label>
+  <nav aria-label="Schermen">
+    <a href="#s-lesstof">1 Lesstof (CMS)</a>
+    <a href="#s-voortgang">2 Voortgang</a>
+    <a href="#s-leerlingen">3 Leerlingen</a>
+    <a href="#s-klassen">4 Klassen</a>
+    <a href="#s-slidedecks">5 Slidedecks</a>
+    <a href="#s-meldingen">6 Meldingen</a>
+    <a href="#vertaling">Vertaalkeuzes</a>
+  </nav>
+</header>
+
+<main>
+
+<div class="intro" id="vertaling">
+  <h2>Vertaalkeuzes voor de docentkant</h2>
+  <p style="margin:0">Het design system is geschreven voor projector-first slidedecks voor leerlingen. Een beheerscherm is dicht, informatierijk en wordt uren per dag gebruikt. Daarom is bewust vertaald, niet gekopieerd:</p>
+  <ul>
+    <li><strong>Tokens gelden onverkort.</strong> Canvas PAPER, tekst en kaders INK, geel-zwart als navigatieanker (kop en tabbalk), BLUE voor de primaire actie. Oud paars-lavendel, gradients, glow-schaduwen en 28 px-radii vervallen (DS p. 5: geen contour-op-contour-op-gloed).</li>
+    <li><strong>Bangers alleen op de paginatitel</strong> (max. zes woorden, uppercase). Tabellen, formulieren, boom en kaarten staan volledig in Atkinson Hyperlegible, links uitgelijnd, geen cursief, geen volledige kapitalen in leestekst (DS p. 7). Korte uppercase labels van 1-3 woorden (kolomkoppen, eyebrow) volgen het DS zelf.</li>
+    <li><strong>Eén lijndikte per component:</strong> kaarten en invoervelden 2 px, paginakader en titelrule 3-4 px. Geen schaduw behalve een harde offset op één "getild" element per scherm (DS p. 4: zwarte lijnvoering).</li>
+    <li><strong>Maatvoering vertaald naar desktop:</strong> 20 pt projector-minimum wordt 13 px scherm-minimum, leestekst 14-15 px. Ruimteschaal 8/16/24/32/48 px (DS p. 8) vervangt de losse Tailwind-afstanden.</li>
+    <li><strong>Kleursemantiek is data, geen decor.</strong> UI-chrome blijft geel-zwart + blauw. Statussen volgen de vaste betekenis (rood fout/stop, groen succes, oranje hulp/aandacht, blauw actie/info, paars Helix-context) en dragen altijd tekst + vorm, zodat de grijswaardentest slaagt (DS p. 17, 19). Per scherm staat in de notitie welke twee functionele accenten de UI gebruikt.</li>
+    <li><strong>Comic-energie blijft weg</strong> uit tabellen en formulieren; geen bursts, speedlines of mascottes zonder functie (DS p. 5). Minder chrome vóór de inhoud waar de audit dat vroeg, maar zonder nieuwe functionaliteit.</li>
+    <li><em>Let op:</em> de oude weergave gebruikt de fallback-fontstack (Segoe UI) omdat alleen Bangers en Atkinson extern geladen mogen worden; Outfit/Plus Jakarta Sans zijn dus benaderd, niet exact.</li>
+  </ul>
+  <div class="tokens">
+    <span><i style="background:#0B0D0F"></i>INK #0B0D0F</span>
+    <span><i style="background:#FFF7E8"></i>PAPER #FFF7E8</span>
+    <span><i style="background:#FFD33D"></i>YELLOW #FFD33D</span>
+    <span><i style="background:#087EB5"></i>BLUE #087EB5</span>
+    <span><i style="background:#0D8F93"></i>TEAL #0D8F93</span>
+    <span><i style="background:#F47A20"></i>ORANGE #F47A20</span>
+    <span><i style="background:#D83A2E"></i>RED #D83A2E</span>
+    <span><i style="background:#2E9D63"></i>GREEN #2E9D63</span>
+    <span><i style="background:#793AC7"></i>PURPLE #793AC7</span>
+  </div>
+</div>
+
+<!-- ====================================================================
+     SCHERM 1: LESSTOF (CMS)
+     ==================================================================== -->
+<section class="scherm" id="s-lesstof">
+  <p class="eyebrow">Scherm 1 · /admin/cms · CmsShell + NavigationTree + ContentBlockBuilder</p>
+  <h2>Lesstof — CMS-werkplek</h2>
+  <div class="notitie">
+    <strong>Wat verandert en waarom.</strong>
+    <ol>
+      <li>De vier staltegels, het lavendel-breadcrumbvlak en de 22-28 px-kaarten worden één inktkader per element; alleen de gekozen paragraaf krijgt geel (DS p. 4: geel titelanker, één lijndikte).</li>
+      <li>Paragraaftitel in Bangers als enige displaykop; boom, statusregel en lesblokken in Atkinson (DS p. 7: expressief boven, rustig in de taak).</li>
+      <li>Routekwaliteit, routepatroon en het 9-tegels-grid "Lesblok toevoegen" zijn ingeklapte regels; de lesroute begint binnen ~330 px in plaats van ~1200 px (audit-bevinding; geen nieuwe functies, alleen volgorde en opvouwen).</li>
+      <li>Accenten: BLUE voor "Nieuwe paragraaf"/"Open studio", GREEN voor Gepubliceerd. Concept is inkt-outline, archiveren rood outline-icoon (DS p. 6: max. twee functionele accenten).</li>
+    </ol>
+  </div>
+  <div class="compare">
+    <div class="pane oud"><p class="label"><i></i>Oud — huidige stijl</p>
+      <div class="frame"><div class="screen o">
+        <div class="o-header">
+          <div style="display:flex;align-items:center">
+            <div class="o-logo"><b></b>HELIX</div>
+            <nav class="o-nav">
+              <span class="o-nav-tab active"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="o-nav-alert"><svg class="ic s" style="width:11px;height:11px"><use href="#i-bell"/></svg></span></span>
+            </nav>
+          </div>
+          <span class="o-kompas"><svg class="ic"><use href="#i-compass"/></svg>Projectkompas</span>
+          <div class="o-hdr-right">
+            <span class="o-tooltiny"><svg class="ic s"><use href="#i-trash"/></svg>Wis leerlingen</span>
+            <span class="o-tooltiny"><svg class="ic s"><use href="#i-trash"/></svg>Reset CMS</span>
+            <div class="o-user"><b>Docent Voorbeeld</b><span>Administrator</span></div>
+            <svg class="ic l o-muted"><use href="#i-logout"/></svg>
+          </div>
+        </div>
+        <div class="o-cms">
+          <aside class="o-side">
+            <div class="o-side-head">
+              <h3><svg class="ic"><use href="#i-book"/></svg>Inhoud <span style="margin-left:auto;width:36px;height:36px;border-radius:12px;background:var(--o-lav);color:var(--o-purple);display:inline-flex;align-items:center;justify-content:center;border:1px solid #f5d0fe"><svg class="ic"><use href="#i-plus"/></svg></span></h3>
+              <div class="o-mini"><div><b>2</b><span>vakken</span></div><div><b>3</b><span>paragrafen</span></div><div><b>30</b><span>vragen</span></div><div><b>9</b><span>blokken</span></div></div>
+              <div class="o-search"><svg class="ic"><use href="#i-search"/></svg>Zoek lesmateriaal...</div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;align-items:center">
+                <span style="width:32px;height:32px;border:1px solid var(--o-border);border-radius:12px;background:var(--o-soft);display:inline-flex;align-items:center;justify-content:center;color:var(--o-muted)"><svg class="ic"><use href="#i-panel"/></svg></span>
+                <span style="border-radius:999px;background:var(--o-soft);padding:4px 10px;font-size:12px;font-weight:900;color:#64748b">Archief tonen</span>
+              </div>
+            </div>
+            <div class="o-tree">
+              <div class="o-node path"><svg class="ic s"><use href="#i-down"/></svg><span>Binask</span><span><span class="cnt">2 jaren</span><span class="ib"><svg class="ic s"><use href="#i-plus"/></svg></span><span class="ib" style="color:var(--o-muted)"><svg class="ic s"><use href="#i-more"/></svg></span></span></div>
+              <div class="o-node" style="padding-left:16px"><svg class="ic s"><use href="#i-right"/></svg><span>Leerjaar 1</span><span><span class="cnt">1 niveau</span><span class="ib"><svg class="ic s"><use href="#i-plus"/></svg></span><span class="ib" style="color:var(--o-muted)"><svg class="ic s"><use href="#i-more"/></svg></span></span></div>
+              <div class="o-node path" style="padding-left:16px"><svg class="ic s"><use href="#i-down"/></svg><span>Leerjaar 2</span><span><span class="cnt">1 niveau</span><span class="ib"><svg class="ic s"><use href="#i-plus"/></svg></span><span class="ib" style="color:var(--o-muted)"><svg class="ic s"><use href="#i-more"/></svg></span></span></div>
+              <div class="o-node path" style="padding-left:22px"><svg class="ic s"><use href="#i-down"/></svg><span>Leerroute 3</span><span><span class="cnt">1 hoofdstuk</span><span class="ib"><svg class="ic s"><use href="#i-plus"/></svg></span><span class="ib" style="color:var(--o-muted)"><svg class="ic s"><use href="#i-more"/></svg></span></span></div>
+              <div class="o-node chapter on" style="padding-left:26px"><svg class="ic s"><use href="#i-down"/></svg><span>Welkom in Helix</span><span><span class="cnt">1 paragraaf</span><span class="ib"><svg class="ic s"><use href="#i-plus"/></svg></span><span class="ib" style="color:var(--o-muted)"><svg class="ic s"><use href="#i-more"/></svg></span></span></div>
+              <div class="o-node par on" style="padding-left:30px"><span></span><span>Ga van start...<small>S3 &nbsp; M1 &nbsp; Q1</small></span><span><span class="cnt">5 blokken</span><span class="ib" style="color:var(--o-muted)"><svg class="ic s"><use href="#i-more"/></svg></span></span></div>
+              <div class="o-node" style="margin-top:8px"><svg class="ic s"><use href="#i-right"/></svg><span>Digitale vaardigheden</span><span><span class="cnt">1 jaar</span><span class="ib"><svg class="ic s"><use href="#i-plus"/></svg></span><span class="ib" style="color:var(--o-muted)"><svg class="ic s"><use href="#i-more"/></svg></span></span></div>
+            </div>
+          </aside>
+          <div class="o-work">
+            <div class="o-surface" style="padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div class="o-muted" style="font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center">Binask <svg class="ic s" style="color:#cbd5e1"><use href="#i-right"/></svg> Jaar 2 <svg class="ic s" style="color:#cbd5e1"><use href="#i-right"/></svg> Leerroute 3 <svg class="ic s" style="color:#cbd5e1"><use href="#i-right"/></svg> Welkom in Helix</div>
+                <h2 style="margin:4px 0 0;font-size:20px;font-weight:800">Ga van start...</h2>
+                <div style="display:flex;gap:8px;margin-top:8px"><span class="o-badge" style="text-transform:none;letter-spacing:0">2 vakken</span><span class="o-badge" style="text-transform:none;letter-spacing:0">1 paragrafen</span><span class="o-badge" style="text-transform:none;letter-spacing:0">30 vragen</span><span class="o-badge" style="text-transform:none;letter-spacing:0">5 lesblokken</span></div>
+              </div>
+              <div style="display:flex;gap:8px"><span class="o-btn-ghost"><svg class="ic s"><use href="#i-eye"/></svg>Gepubliceerd</span><span class="o-btn-fuchsia"><svg class="ic s"><use href="#i-eye"/></svg>Conceptpreview</span><span class="o-btn-primary" style="padding:8px 12px"><svg class="ic s"><use href="#i-plus"/></svg>Nieuwe paragraaf</span></div>
+            </div>
+            <div class="o-surface" style="padding:24px">
+              <div style="display:flex;justify-content:space-between;gap:16px">
+                <div><p class="o-eyebrow">Lesroute</p><h2 style="margin:8px 0 0;font-size:24px;font-weight:800">Ga van start...</h2><p class="o-muted" style="margin:8px 0 0;max-width:520px">Bouw de leerlingroute in volgorde. Elk blok open je als studio met eigen tekst, media, crops en OCR.</p></div>
+                <div style="background:var(--o-soft);border-radius:16px;padding:12px 16px;min-width:368px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><p style="margin:0;font-size:24px;font-weight:800">5</p><p class="o-label caps" style="margin:0">lesblokken</p></div><p class="o-label caps" style="margin:0">Publicatie</p></div>
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px">
+                    <div style="border:1px solid var(--o-border);background:#fff;border-radius:12px;padding:6px 10px"><b>1</b><br><span class="o-label caps" style="font-size:10px;margin:0">Concept</span></div>
+                    <div style="border:1px solid var(--o-border);background:#fff;border-radius:12px;padding:6px 10px"><b>0</b><br><span class="o-label caps" style="font-size:10px;margin:0">Klaar</span></div>
+                    <div style="border:1px solid var(--o-border);background:#fff;border-radius:12px;padding:6px 10px"><b>0</b><br><span class="o-label caps" style="font-size:10px;margin:0">Review</span></div>
+                    <div style="border:1px solid var(--o-border);background:#fff;border-radius:12px;padding:6px 10px"><b>4</b><br><span class="o-label caps" style="font-size:10px;margin:0">Gepubliceerd</span></div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:24px;border:1px solid var(--o-border);background:var(--o-soft);border-radius:16px;padding:20px">
+                <p class="o-eyebrow">Routekwaliteit</p><h3 style="margin:4px 0 0;font-size:20px;font-weight:800">Leerdoelen en bewijsproduct</h3>
+                <p class="o-muted" style="margin:8px 0 16px;max-width:640px">Leg vast wat leerlingen aan het eind kunnen en waarmee ze dat laten zien. Deze velden bepalen of de paragraaf klaar is voor gebruik.</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div><label class="o-label">Leerdoelen</label><div class="o-input" style="min-height:72px;color:#94a3b8">Een leerdoel per regel</div></div>
+                  <div><label class="o-label">Bewijsproduct / eindprestatie</label><div class="o-input" style="min-height:72px;color:#94a3b8">Bijv. quiz met 8 van 10 goed</div></div>
+                  <div><label class="o-label">Kerndoel / SLO-koppeling</label><div class="o-input" style="min-height:48px;color:#94a3b8">Een kerndoel per regel</div></div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div><label class="o-label">Doelgroep</label><div class="o-input">Leerjaar 2</div></div><div><label class="o-label">Minuten</label><div class="o-input">45</div></div><div><label class="o-label">Reviewstatus</label><div class="o-input">Concept</div></div></div>
+                </div>
+                <div style="margin-top:16px"><span class="o-btn-secondary">Routekwaliteit opslaan</span></div>
+              </div>
+              <div style="margin-top:20px;border:1px solid var(--o-border);background:#fff;border-radius:16px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+                <label style="font-weight:900;display:flex;gap:12px;align-items:center"><span style="width:16px;height:16px;border:1px solid #cbd5e1;border-radius:4px;display:inline-block"></span>Selecteer alle lesblokken</label>
+                <div style="display:flex;gap:8px"><span class="o-btn-secondary" style="opacity:.5">Publiceer</span><span class="o-btn-secondary" style="opacity:.5"><svg class="ic s"><use href="#i-up"/></svg>Omhoog</span><span class="o-btn-secondary" style="opacity:.5"><svg class="ic s"><use href="#i-dn"/></svg>Omlaag</span><span class="o-btn-secondary" style="opacity:.5"><svg class="ic s"><use href="#i-copy"/></svg>Dupliceer</span><span class="o-btn-secondary" style="opacity:.5"><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></div>
+              </div>
+              <div style="margin-top:24px;border:1px solid var(--o-border);background:var(--o-soft);border-radius:32px;padding:16px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><p class="o-eyebrow">Routepatroon</p><h3 style="margin:2px 0 0;font-size:18px;font-weight:800">Start vanuit template</h3></div><span class="o-btn-secondary">Template kiezen</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px;margin-bottom:12px"><div><p class="o-eyebrow">Toevoegen</p><h3 style="margin:2px 0 0;font-size:18px;font-weight:800">Lesblok toevoegen</h3></div><span class="o-label caps" style="margin:0">9 types</span></div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-book"/></svg></span>Theorie</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-bulb"/></svg></span>Voorbeeld</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-help"/></svg></span>Vraag</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-clip"/></svg></span>Quiz</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-csq"/></svg></span>Toets</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-image"/></svg></span>Media</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-list"/></svg></span>Samenvatting</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-game"/></svg></span>Game</div>
+                  <div class="o-type"><span class="ico"><svg class="ic"><use href="#i-pres"/></svg></span>Slidedeck</div>
+                </div>
+              </div>
+            </div>
+            <!-- lesblokken -->
+            <div class="o-blok" style="margin-top:24px"><div style="display:flex;gap:12px;align-items:flex-start"><span class="ctl" style="width:32px;height:32px;border-radius:12px"><span style="width:14px;height:14px;border:1px solid #cbd5e1;border-radius:3px"></span></span><span class="ctl"><svg class="ic"><use href="#i-grip"/></svg></span><span class="ico"><svg class="ic l"><use href="#i-pres"/></svg></span><div><span class="o-badge">Slidedeck</span> <span class="o-badge success">Gepubliceerd</span><h3>Inleiding Binask</h3><p class="o-muted" style="margin:2px 0 0">Stap 1</p><p class="o-muted" style="margin:6px 0 0;font-size:13px">NotebookLM-deck "Inleiding Binask" (goedgekeurd), 14 dia's.</p></div></div><div style="display:flex;gap:8px;align-items:center"><span class="ctl" style="opacity:.3"><svg class="ic"><use href="#i-up"/></svg></span><span class="ctl"><svg class="ic"><use href="#i-dn"/></svg></span><span class="o-btn-secondary">Open studio</span><span class="o-btn-red"><svg class="ic"><use href="#i-trash"/></svg></span></div></div>
+            <div class="o-blok"><div style="display:flex;gap:12px;align-items:flex-start"><span class="ctl" style="width:32px;height:32px;border-radius:12px"><span style="width:14px;height:14px;border:1px solid #cbd5e1;border-radius:3px"></span></span><span class="ctl"><svg class="ic"><use href="#i-grip"/></svg></span><span class="ico"><svg class="ic l"><use href="#i-pres"/></svg></span><div><span class="o-badge">Slidedeck</span> <span class="o-badge success">Gepubliceerd</span><h3>Bi na sk deel 1</h3><p class="o-muted" style="margin:2px 0 0">Stap 2</p><p class="o-muted" style="margin:6px 0 0;font-size:13px">NotebookLM-deck "Bi na sk deel 1" (review nodig), 18 dia's.</p></div></div><div style="display:flex;gap:8px;align-items:center"><span class="ctl"><svg class="ic"><use href="#i-up"/></svg></span><span class="ctl"><svg class="ic"><use href="#i-dn"/></svg></span><span class="o-btn-secondary">Open studio</span><span class="o-btn-red"><svg class="ic"><use href="#i-trash"/></svg></span></div></div>
+            <div class="o-blok"><div style="display:flex;gap:12px;align-items:flex-start"><span class="ctl" style="width:32px;height:32px;border-radius:12px"><span style="width:14px;height:14px;border:1px solid #cbd5e1;border-radius:3px"></span></span><span class="ctl"><svg class="ic"><use href="#i-grip"/></svg></span><span class="ico"><svg class="ic l"><use href="#i-pres"/></svg></span><div><span class="o-badge">Slidedeck</span> <span class="o-badge success">Gepubliceerd</span><h3>Bi na sk deel 2</h3><p class="o-muted" style="margin:2px 0 0">Stap 3</p><p class="o-muted" style="margin:6px 0 0;font-size:13px">NotebookLM-deck "Bi na sk deel 2" (review nodig), 16 dia's.</p></div></div><div style="display:flex;gap:8px;align-items:center"><span class="ctl"><svg class="ic"><use href="#i-up"/></svg></span><span class="ctl"><svg class="ic"><use href="#i-dn"/></svg></span><span class="o-btn-secondary">Open studio</span><span class="o-btn-red"><svg class="ic"><use href="#i-trash"/></svg></span></div></div>
+            <div class="o-blok"><div style="display:flex;gap:12px;align-items:flex-start"><span class="ctl" style="width:32px;height:32px;border-radius:12px"><span style="width:14px;height:14px;border:1px solid #cbd5e1;border-radius:3px"></span></span><span class="ctl"><svg class="ic"><use href="#i-grip"/></svg></span><span class="ico"><svg class="ic l"><use href="#i-image"/></svg></span><div><span class="o-badge">Media</span> <span class="o-badge success">Gepubliceerd</span><h3>Lees door: Introductie Binask deel 2</h3><p class="o-muted" style="margin:2px 0 0">Stap 4</p><p class="o-muted" style="margin:6px 0 0;font-size:13px">PDF "inleiding binask.pdf", 6 pagina's. Alleen leerjaar 2.</p></div></div><div style="display:flex;gap:8px;align-items:center"><span class="ctl"><svg class="ic"><use href="#i-up"/></svg></span><span class="ctl"><svg class="ic"><use href="#i-dn"/></svg></span><span class="o-btn-secondary">Open studio</span><span class="o-btn-red"><svg class="ic"><use href="#i-trash"/></svg></span></div></div>
+            <div class="o-blok"><div style="display:flex;gap:12px;align-items:flex-start"><span class="ctl" style="width:32px;height:32px;border-radius:12px"><span style="width:14px;height:14px;border:1px solid #cbd5e1;border-radius:3px"></span></span><span class="ctl"><svg class="ic"><use href="#i-grip"/></svg></span><span class="ico"><svg class="ic l"><use href="#i-clip"/></svg></span><div><span class="o-badge">Quiz</span> <span class="o-badge warning">Concept</span><h3>Vragenronde: Biologie, Natuurkunde of Scheikunde?</h3><p class="o-muted" style="margin:2px 0 0">Stap 5</p><p class="o-muted" style="margin:6px 0 0;font-size:13px">30 vragen, meerkeuze. Sluit de paragraaf af.</p></div></div><div style="display:flex;gap:8px;align-items:center"><span class="ctl"><svg class="ic"><use href="#i-up"/></svg></span><span class="ctl" style="opacity:.3"><svg class="ic"><use href="#i-dn"/></svg></span><span class="o-btn-secondary">Open studio</span><span class="o-btn-red"><svg class="ic"><use href="#i-trash"/></svg></span></div></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="pane nieuw"><p class="label"><i></i>Nieuw — design system v2</p>
+      <div class="frame"><div class="screen n">
+        <div class="n-header">
+          <div style="display:flex;align-items:center">
+            <div class="n-brand"><i></i>HELIX</div>
+            <nav class="n-nav">
+              <span class="n-nav-tab active"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="dot">3</span></span>
+            </nav>
+          </div>
+          <div class="n-hdr-right">
+            <span class="n-btn sm"><svg class="ic s"><use href="#i-compass"/></svg>Projectkompas</span>
+            <div class="who"><b>Docent Voorbeeld</b><span>Beheer</span></div>
+            <span class="n-btn sm icon ghost" title="Uitloggen"><svg class="ic"><use href="#i-logout"/></svg></span>
+          </div>
+        </div>
+        <div class="n-cms">
+          <aside class="n-side">
+            <div class="n-side-head">
+              <h3>Inhoud <span class="n-btn sm icon" title="Nieuw vak"><svg class="ic s"><use href="#i-plus"/></svg></span></h3>
+              <div style="display:flex;gap:8px;align-items:center"><div class="n-input sm" style="display:flex;align-items:center;gap:8px;color:#6b665d"><svg class="ic s"><use href="#i-search"/></svg>Zoek lesmateriaal</div><span class="n-btn sm icon" title="Inhoud verbergen"><svg class="ic s"><use href="#i-panel"/></svg></span></div>
+              <p class="n-meta" style="margin:8px 0 0">2 vakken · 3 paragrafen · 9 lesblokken · 30 vragen · <u>Archief tonen</u></p>
+            </div>
+            <div class="n-tree">
+              <div class="n-node path"><svg class="ic s"><use href="#i-down"/></svg><span>Binask</span><span class="cnt">2 jaren</span></div>
+              <div class="n-node" style="padding-left:20px"><svg class="ic s"><use href="#i-right"/></svg><span>Leerjaar 1</span><span class="cnt">1 route</span></div>
+              <div class="n-node path" style="padding-left:20px"><svg class="ic s"><use href="#i-down"/></svg><span>Leerjaar 2</span><span class="cnt">1 route</span></div>
+              <div class="n-node path" style="padding-left:32px"><svg class="ic s"><use href="#i-down"/></svg><span>Leerroute 3</span><span class="cnt">1 hoofdstuk</span></div>
+              <div class="n-node chapter" style="margin-left:44px"><svg class="ic s"><use href="#i-down"/></svg><span>Welkom in Helix</span><span class="cnt">1 paragraaf</span></div>
+              <div class="n-node par on" style="margin-left:44px"><span></span><span>Ga van start...<small>3 slidedecks · 1 media · 1 quiz</small></span><span class="cnt">5 blokken</span></div>
+              <div class="n-node" style="margin-top:8px"><svg class="ic s"><use href="#i-right"/></svg><span>Digitale vaardigheden</span><span class="cnt">1 jaar</span></div>
+            </div>
+          </aside>
+          <div class="n-work">
+            <p class="n-eyebrow">Binask · Leerjaar 2 · Leerroute 3 · Welkom in Helix</p>
+            <div class="n-titlebar" style="margin-top:4px">
+              <h2 class="n-title" style="border:0;padding:0">Ga van start...</h2>
+              <div style="display:flex;gap:8px"><span class="n-btn"><svg class="ic s"><use href="#i-eye"/></svg>Gepubliceerd</span><span class="n-btn"><svg class="ic s"><use href="#i-eye"/></svg>Conceptpreview</span><span class="n-btn primary"><svg class="ic s"><use href="#i-plus"/></svg>Nieuwe paragraaf</span></div>
+            </div>
+            <div style="border-top:4px solid var(--ink);margin-top:8px;padding-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span class="n-meta"><b>5 lesblokken</b></span>
+              <span class="n-chip green"><i></i>4 gepubliceerd</span>
+              <span class="n-chip ink"><i></i>1 concept</span>
+              <span class="n-chip ink" style="opacity:.5"><i></i>0 klaar</span>
+              <span class="n-chip ink" style="opacity:.5"><i></i>0 review</span>
+              <span class="n-meta" style="margin-left:auto">Leerjaar 2 · 45 min · reviewstatus concept</span>
+            </div>
+            <div style="display:grid;gap:6px;margin-top:16px">
+              <div class="n-fold"><span><svg class="ic s" style="vertical-align:-2px"><use href="#i-right"/></svg> Routekwaliteit: leerdoelen en bewijsproduct</span><span class="r">nog leeg · <u>invullen</u></span></div>
+              <div class="n-fold"><span><svg class="ic s" style="vertical-align:-2px"><use href="#i-right"/></svg> Routepatroon: start vanuit template</span><span class="r"><u>template kiezen</u></span></div>
+            </div>
+            <div class="n-card" style="margin-top:16px;padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <b style="font-size:13px;margin-right:4px">Lesblok toevoegen</b>
+              <span class="n-typebtn"><svg class="ic s"><use href="#i-book"/></svg>Theorie</span><span class="n-typebtn"><svg class="ic s"><use href="#i-bulb"/></svg>Voorbeeld</span><span class="n-typebtn"><svg class="ic s"><use href="#i-help"/></svg>Vraag</span><span class="n-typebtn"><svg class="ic s"><use href="#i-clip"/></svg>Quiz</span><span class="n-typebtn"><svg class="ic s"><use href="#i-csq"/></svg>Toets</span><span class="n-typebtn"><svg class="ic s"><use href="#i-image"/></svg>Media</span><span class="n-typebtn"><svg class="ic s"><use href="#i-list"/></svg>Samenvatting</span><span class="n-typebtn"><svg class="ic s"><use href="#i-game"/></svg>Game</span><span class="n-typebtn"><svg class="ic s"><use href="#i-pres"/></svg>Slidedeck</span>
+            </div>
+            <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center">
+              <span class="n-check"><i></i>Selecteer alle lesblokken</span>
+              <div style="display:flex;gap:6px"><span class="n-btn sm" disabled>Publiceer</span><span class="n-btn sm" disabled><svg class="ic s"><use href="#i-up"/></svg>Omhoog</span><span class="n-btn sm" disabled><svg class="ic s"><use href="#i-dn"/></svg>Omlaag</span><span class="n-btn sm" disabled><svg class="ic s"><use href="#i-copy"/></svg>Dupliceer</span><span class="n-btn sm" disabled><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></div>
+            </div>
+            <div class="n-blok"><span class="n-check"><i></i></span><span class="nr">1</span><div><div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="n-chip"><svg class="ic s"><use href="#i-pres"/></svg>Slidedeck</span><span class="n-chip green"><i></i>Gepubliceerd</span></div><h3>Inleiding Binask</h3><p>NotebookLM-deck "Inleiding Binask" (goedgekeurd), 14 dia's.</p></div><div style="display:flex;gap:6px;align-items:center"><span class="n-btn sm icon ghost"><svg class="ic s"><use href="#i-grip"/></svg></span><span class="n-btn sm icon" disabled><svg class="ic s"><use href="#i-up"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-dn"/></svg></span><span class="n-btn sm primary">Open studio</span><span class="n-btn sm icon danger" title="Archiveer"><svg class="ic s"><use href="#i-archive"/></svg></span></div></div>
+            <div class="n-blok"><span class="n-check"><i></i></span><span class="nr">2</span><div><div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="n-chip"><svg class="ic s"><use href="#i-pres"/></svg>Slidedeck</span><span class="n-chip green"><i></i>Gepubliceerd</span></div><h3>Bi na sk deel 1</h3><p>NotebookLM-deck "Bi na sk deel 1" (review nodig), 18 dia's.</p></div><div style="display:flex;gap:6px;align-items:center"><span class="n-btn sm icon ghost"><svg class="ic s"><use href="#i-grip"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-up"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-dn"/></svg></span><span class="n-btn sm primary">Open studio</span><span class="n-btn sm icon danger"><svg class="ic s"><use href="#i-archive"/></svg></span></div></div>
+            <div class="n-blok"><span class="n-check"><i></i></span><span class="nr">3</span><div><div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="n-chip"><svg class="ic s"><use href="#i-pres"/></svg>Slidedeck</span><span class="n-chip green"><i></i>Gepubliceerd</span></div><h3>Bi na sk deel 2</h3><p>NotebookLM-deck "Bi na sk deel 2" (review nodig), 16 dia's.</p></div><div style="display:flex;gap:6px;align-items:center"><span class="n-btn sm icon ghost"><svg class="ic s"><use href="#i-grip"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-up"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-dn"/></svg></span><span class="n-btn sm primary">Open studio</span><span class="n-btn sm icon danger"><svg class="ic s"><use href="#i-archive"/></svg></span></div></div>
+            <div class="n-blok"><span class="n-check"><i></i></span><span class="nr">4</span><div><div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="n-chip"><svg class="ic s"><use href="#i-image"/></svg>Media</span><span class="n-chip green"><i></i>Gepubliceerd</span></div><h3>Lees door: Introductie Binask deel 2</h3><p>PDF "inleiding binask.pdf", 6 pagina's. Alleen leerjaar 2.</p></div><div style="display:flex;gap:6px;align-items:center"><span class="n-btn sm icon ghost"><svg class="ic s"><use href="#i-grip"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-up"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-dn"/></svg></span><span class="n-btn sm primary">Open studio</span><span class="n-btn sm icon danger"><svg class="ic s"><use href="#i-archive"/></svg></span></div></div>
+            <div class="n-blok"><span class="n-check"><i></i></span><span class="nr">5</span><div><div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="n-chip"><svg class="ic s"><use href="#i-clip"/></svg>Quiz</span><span class="n-chip ink"><i></i>Concept</span></div><h3>Vragenronde: Biologie, Natuurkunde of Scheikunde?</h3><p>30 vragen, meerkeuze. Sluit de paragraaf af.</p></div><div style="display:flex;gap:6px;align-items:center"><span class="n-btn sm icon ghost"><svg class="ic s"><use href="#i-grip"/></svg></span><span class="n-btn sm icon"><svg class="ic s"><use href="#i-up"/></svg></span><span class="n-btn sm icon" disabled><svg class="ic s"><use href="#i-dn"/></svg></span><span class="n-btn sm primary">Open studio</span><span class="n-btn sm icon danger"><svg class="ic s"><use href="#i-archive"/></svg></span></div></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCHERM 2 t/m 6 volgen -->
+<!-- ====================================================================
+     SCHERM 2: VOORTGANG (klasdashboard, lens Klas)
+     ==================================================================== -->
+<section class="scherm" id="s-voortgang">
+  <p class="eyebrow">Scherm 2 · /dashboard · ClassOverview + KlasVoortgangMatrix + AandachtsLijst</p>
+  <h2>Voortgang — klasdashboard</h2>
+  <div class="notitie">
+    <strong>Wat verandert en waarom.</strong>
+    <ol>
+      <li>Merkbanner met gradient en "Klas Dashboard" in bold sans wordt een Bangers-titel VOORTGANG met inktrule; de lenzen Klas/Signalen/Nakijken/Paragraaf/Leerling worden één inktgerande segmentknop met geel voor de actieve lens (DS p. 4: geel titelanker, statusroute zichtbaar).</li>
+      <li>De drie KPI-kaarten houden hun getallen in inkt; alleen "Nu aandacht" krijgt een oranje rand (hulp/aandacht). Paars, emerald en oranje cijfers vervallen (DS p. 6: max. twee UI-accenten).</li>
+      <li>Statuscellen in de matrix volgen de vaste kleursemantiek (groen afgerond, blauw bezig, oranje wacht op nakijken, rood vastgelopen) en dragen altijd een letterkort, zodat betekenis zonder kleur intact blijft (DS p. 19: grijswaardentest).</li>
+      <li>De aandachtslijst gebruikt een 8 px-linkerrand in dezelfde semantiek in plaats van paars voor "stil" en "achterstand"; die twee zijn inkt (geen paars zonder Helix-context, DS p. 6).</li>
+    </ol>
+  </div>
+  <div class="compare">
+    <div class="pane oud"><p class="label"><i></i>Oud — huidige stijl</p>
+      <div class="frame"><div class="screen o">
+        <div class="o-header">
+          <div style="display:flex;align-items:center">
+            <div class="o-logo"><b></b>HELIX</div>
+            <nav class="o-nav">
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span>
+              <span class="o-nav-tab active"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="o-nav-alert"><svg class="ic s" style="width:11px;height:11px"><use href="#i-bell"/></svg></span></span>
+            </nav>
+          </div>
+          <span class="o-kompas"><svg class="ic"><use href="#i-compass"/></svg>Projectkompas</span>
+          <div class="o-hdr-right"><div class="o-user"><b>Docent Voorbeeld</b><span>Administrator</span></div><svg class="ic l o-muted"><use href="#i-logout"/></svg></div>
+        </div>
+        <div class="o-container">
+          <div class="o-banner" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px">
+            <div><h1 style="margin:0;font-size:24px;font-weight:700;display:flex;align-items:center;gap:8px"><svg class="ic l" style="color:var(--o-purple)"><use href="#i-users"/></svg>Klas Dashboard</h1><p class="o-muted" style="margin:4px 0 0">Real-time overzicht van je leerlingen</p></div>
+            <span style="border:1px solid #a7f3d0;background:#ecfdf5;color:#047857;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:900">Nu actief: 4/9</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+            <div style="display:flex;gap:12px;align-items:flex-end">
+              <div style="display:flex;gap:8px"><span class="o-lens active">Klas</span><span class="o-lens">Signalen<span class="cnt" style="background:#fee2e2;color:#b91c1c">5</span></span><span class="o-lens">Nakijken<span class="cnt" style="background:#fef3c7;color:#92400e">2</span></span><span class="o-lens">Paragraaf</span><span class="o-lens">Leerling</span></div>
+              <div style="min-width:224px"><label class="o-label caps" style="margin-bottom:4px">Klas</label><div class="o-input" style="padding:8px 16px;font-weight:900">ER3L1A (9) ▾</div></div>
+            </div>
+            <p class="o-muted" style="font-weight:700;margin:0">Toont klasdata voor ER3L1A.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:32px">
+            <div class="o-card" style="padding:24px;border-color:#ffedd5;background:rgba(255,247,237,.45)"><div style="display:flex;gap:8px;align-items:center;color:#c2410c;font-weight:500"><svg class="ic s"><use href="#i-alert"/></svg>Nu aandacht</div><div style="font-size:30px;font-weight:800;color:#c2410c;margin-top:8px">3</div><div class="o-muted" style="font-size:12px;font-weight:700;margin-top:8px">2 vastgelopen, 1 wacht op nakijken</div></div>
+            <div class="o-card" style="padding:24px"><div class="o-muted" style="font-weight:500">Klasbeheersing</div><div style="font-size:30px;font-weight:800;color:#047857;margin-top:8px">6/9</div><div class="o-muted" style="font-size:12px;font-weight:700;margin-top:8px">2 met Digidocent, 5 signalen</div></div>
+            <div class="o-card" style="padding:24px"><div class="o-muted" style="font-weight:500">Lesvoortgang</div><div style="font-size:30px;font-weight:800;color:var(--o-purple);margin-top:8px">62%</div><div class="o-muted" style="font-size:12px;font-weight:700;margin-top:8px">Gem. 58%, 2 onder 40%</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:24px">
+            <section class="o-surface" style="padding:20px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px">
+                <div><h2 style="margin:0;font-size:18px;font-weight:800">Klasoverzicht per paragraaf</h2><p class="o-muted" style="margin:0;font-weight:600">Elk vakje toont afgeronde stappen van die paragraaf. Klik door naar de leerling.</p></div>
+                <div style="width:288px"><label class="o-label caps" style="margin-bottom:4px">Hoofdstuk</label><div class="o-input" style="padding:8px 16px;font-weight:700">Welkom in Helix (1) ▾</div></div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap"><span class="o-chip af"><i></i>3 afgerond</span><span class="o-chip bezig"><i></i>2 bezig</span><span class="o-chip vast"><i></i>2 vastgelopen</span><span class="o-chip na"><i></i>1 nakijken</span><span class="o-chip niet"><i></i>1 niet gestart</span><span class="o-muted" style="margin-left:auto;font-size:12px;font-weight:700">Mediaan 62% van dit hoofdstuk</span></div>
+              <div style="border:1px solid var(--o-border);border-radius:22px;overflow:hidden;background:#fff">
+                <table class="o-table" style="font-size:13px">
+                  <thead><tr><th style="padding:12px 16px">Leerling</th><th style="padding:12px">Dit hoofdstuk</th><th style="padding:12px 8px;text-align:center;color:var(--o-navy);text-transform:none;letter-spacing:0">Ga van start...<br><span style="font-size:10px;color:#94a3b8;letter-spacing:.06em">PARAGRAAF</span></th></tr></thead>
+                  <tbody>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Noor Bakker</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Stap 5: Vragenronde</span></div><span style="margin-left:auto;width:10px;height:10px;border-radius:50%;background:#e11d48"></span></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:80%;height:100%;background:#e11d48"></span></span><b style="font-size:12px">80%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">4/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:#e11d48;background:#fff1f2;color:#9f1239">4/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Sem de Vries</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Afgerond</span></div></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:100%;height:100%;background:#059669"></span></span><b style="font-size:12px">100%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">5/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:#059669;background:#ecfdf5;color:#065f46">5/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Lina Jansen</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Stap 3: Bi na sk deel 2</span></div></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:40%;height:100%;background:var(--o-purple)"></span></span><b style="font-size:12px">40%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">2/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:var(--o-purple);background:var(--o-lav);color:var(--o-navy)">2/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Milan Visser</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Stap 5: Vragenronde</span></div><span style="margin-left:auto;width:10px;height:10px;border-radius:50%;background:#e11d48"></span></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:80%;height:100%;background:#f97316"></span></span><b style="font-size:12px">80%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">4/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:#f97316;background:#fffbeb;color:#92400e">4/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Yara Smit</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Afgerond</span></div></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:100%;height:100%;background:#059669"></span></span><b style="font-size:12px">100%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">5/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:#059669;background:#ecfdf5;color:#065f46">5/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Daan Mulder</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Stap 4: Vragenronde</span></div><span style="margin-left:auto;width:10px;height:10px;border-radius:50%;background:#e11d48"></span></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:60%;height:100%;background:#e11d48"></span></span><b style="font-size:12px">60%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">3/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:#e11d48;background:#fff1f2;color:#9f1239">3/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Fenna Bos</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Stap 2: Bi na sk deel 1</span></div></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:20%;height:100%;background:var(--o-purple)"></span></span><b style="font-size:12px">20%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">1/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:var(--o-purple);background:var(--o-lav);color:var(--o-navy)">1/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Jesse Vos</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Afgerond</span></div></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"><span style="display:block;width:100%;height:100%;background:#059669"></span></span><b style="font-size:12px">100%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">5/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:#059669;background:#ecfdf5;color:#065f46">5/5</span></td></tr>
+                    <tr><td style="padding:12px 16px"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar"><svg><use href="#i-person"/></svg></span><div><b>Sara Peters</b><br><span class="o-muted" style="font-size:11px;font-weight:600">Niet gestart</span></div></div></td><td style="padding:12px"><div style="display:flex;gap:8px;align-items:center"><span style="width:64px;height:8px;border-radius:4px;background:#f1f5f9;overflow:hidden;display:inline-block"></span><b style="font-size:12px">0%</b></div><span class="o-muted" style="font-size:10px;font-weight:600">0/5 stappen</span></td><td style="text-align:center;padding:12px 8px"><span class="o-cell" style="border-color:var(--o-border);background:#fff;color:var(--o-muted)">0/5</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="display:flex;gap:12px;margin-top:16px;font-size:12px;font-weight:700" class="o-muted"><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#059669;margin-right:4px"></i>Afgerond</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--o-purple);margin-right:4px"></i>Bezig</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e11d48;margin-right:4px"></i>Vastgelopen</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f97316;margin-right:4px"></i>Wacht op nakijken</span><span><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#cbd5e1;margin-right:4px"></i>Niet gestart</span></div>
+            </section>
+            <div>
+              <div class="o-card" style="padding:20px">
+                <h3 style="margin:0;font-size:18px;font-weight:800">Nu aandacht nodig</h3><p class="o-muted" style="margin:0 0 16px;font-weight:600">3 van 9 leerlingen, dringendste eerst</p>
+                <div style="border:1px solid var(--o-border);border-left:4px solid #e11d48;border-radius:16px;padding:12px 16px;display:flex;gap:12px;align-items:center;background:#fff"><span class="avatar o-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span><div style="flex:1"><b>Noor Bakker</b> <span class="o-muted" style="font-size:12px;font-weight:900"><svg class="ic s" style="vertical-align:-3px"><use href="#i-alert"/></svg> Vastgelopen</span><br><span class="o-muted" style="font-size:13px;font-weight:600">Vragenronde: 3 pogingen zonder afronding</span></div><svg class="ic s o-muted"><use href="#i-right"/></svg></div>
+                <div style="border:1px solid var(--o-border);border-left:4px solid #e11d48;border-radius:16px;padding:12px 16px;display:flex;gap:12px;align-items:center;background:#fff;margin-top:8px"><span class="avatar o-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span><div style="flex:1"><b>Daan Mulder</b> <span class="o-muted" style="font-size:12px;font-weight:900"><svg class="ic s" style="vertical-align:-3px"><use href="#i-alert"/></svg> Vastgelopen</span><br><span class="o-muted" style="font-size:13px;font-weight:600">Bi na sk deel 2: 4 pogingen</span></div><svg class="ic s o-muted"><use href="#i-right"/></svg></div>
+                <div style="border:1px solid var(--o-border);border-left:4px solid #f97316;border-radius:16px;padding:12px 16px;display:flex;gap:12px;align-items:center;background:#fff;margin-top:8px"><span class="avatar o-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span><div style="flex:1"><b>Milan Visser</b> <span class="o-muted" style="font-size:12px;font-weight:900"><svg class="ic s" style="vertical-align:-3px"><use href="#i-clip"/></svg> Wacht op nakijken</span> <span style="border:1px solid #f97316;background:#fffbeb;color:#92400e;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:900">2 na te kijken</span><br><span class="o-muted" style="font-size:13px;font-weight:600">Vragenronde: open antwoord ingeleverd</span></div><svg class="ic s o-muted"><use href="#i-right"/></svg></div>
+              </div>
+              <div class="o-card" style="padding:20px;margin-top:24px">
+                <h3 style="margin:0;font-size:18px;font-weight:800;display:flex;gap:8px;align-items:center"><svg class="ic" style="color:var(--o-purple)"><use href="#i-star"/></svg>Plusstof</h3><p class="o-muted" style="margin:0;font-weight:600">Geen plusparagrafen in dit hoofdstuk.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="pane nieuw"><p class="label"><i></i>Nieuw — design system v2</p>
+      <div class="frame"><div class="screen n">
+        <div class="n-header">
+          <div style="display:flex;align-items:center">
+            <div class="n-brand"><i></i>HELIX</div>
+            <nav class="n-nav">
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span>
+              <span class="n-nav-tab active"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="dot">3</span></span>
+            </nav>
+          </div>
+          <div class="n-hdr-right"><span class="n-btn sm"><svg class="ic s"><use href="#i-compass"/></svg>Projectkompas</span><div class="who"><b>Docent Voorbeeld</b><span>Beheer</span></div><span class="n-btn sm icon ghost"><svg class="ic"><use href="#i-logout"/></svg></span></div>
+        </div>
+        <div class="n-container">
+          <p class="n-eyebrow">Klas ER3L1A · 9 leerlingen · 4 nu actief</p>
+          <div class="n-titlebar" style="margin-top:4px">
+            <h1 class="n-title" style="border:0;padding:0">Voortgang</h1>
+            <div style="display:flex;gap:16px;align-items:flex-end">
+              <div class="n-seg"><span class="active">Klas</span><span>Signalen <span class="cnt r">5</span></span><span>Nakijken <span class="cnt o">2</span></span><span>Paragraaf</span><span>Leerling</span></div>
+              <div style="min-width:200px"><label class="n-label">Klas</label><div class="n-input">ER3L1A (9) ▾</div></div>
+            </div>
+          </div>
+          <div style="border-top:4px solid var(--ink);margin-top:8px"></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px">
+            <div class="n-stat att"><div class="n-meta" style="display:flex;gap:6px;align-items:center;font-weight:700"><svg class="ic s" style="color:var(--orange)"><use href="#i-alert"/></svg>Nu aandacht</div><div class="v">3</div><div class="d">2 vastgelopen, 1 wacht op nakijken</div></div>
+            <div class="n-stat"><div class="n-meta" style="font-weight:700">Klasbeheersing</div><div class="v">6/9</div><div class="d">2 met Digidocent, 5 signalen</div></div>
+            <div class="n-stat"><div class="n-meta" style="font-weight:700">Lesvoortgang</div><div class="v">62%</div><div class="d">Gem. 58%, 2 onder 40%</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;margin-top:24px">
+            <section class="n-card">
+              <div class="n-card-head"><span>Klasoverzicht per paragraaf</span><span style="font-weight:400">Hoofdstuk: <b>Welkom in Helix (1)</b> ▾</span></div>
+              <div style="padding:12px 16px">
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><span class="n-chip green"><i></i>3 afgerond</span><span class="n-chip blue"><i></i>2 bezig</span><span class="n-chip red"><i></i>2 vastgelopen</span><span class="n-chip orange"><i></i>1 nakijken</span><span class="n-chip ink"><i></i>1 niet gestart</span><span class="n-meta" style="margin-left:auto">Mediaan 62% van dit hoofdstuk</span></div>
+                <table class="n-table">
+                  <thead><tr><th>Leerling</th><th>Dit hoofdstuk</th><th style="text-align:center;text-transform:none;letter-spacing:0">Ga van start...<br><span style="font-weight:400;font-size:11px">paragraaf</span></th></tr></thead>
+                  <tbody>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Noor Bakker</b><br><span class="n-meta">Stap 5: Vragenronde</span></div><span class="n-chip red" style="margin-left:auto;padding:0 5px"><svg class="ic s" style="width:12px;height:12px"><use href="#i-alert"/></svg></span></div></td><td><span class="n-bar"><i style="width:80%"></i></span> <b style="font-size:13px">80%</b><br><span class="n-meta">4/5 stappen</span></td><td style="text-align:center"><span class="n-cell vast">4/5 <b>V</b></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Sem de Vries</b><br><span class="n-meta">Afgerond</span></div></div></td><td><span class="n-bar"><i style="width:100%"></i></span> <b style="font-size:13px">100%</b><br><span class="n-meta">5/5 stappen</span></td><td style="text-align:center"><span class="n-cell af">5/5 <svg class="ic s" style="width:12px;height:12px"><use href="#i-check"/></svg></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Lina Jansen</b><br><span class="n-meta">Stap 3: Bi na sk deel 2</span></div></div></td><td><span class="n-bar"><i style="width:40%"></i></span> <b style="font-size:13px">40%</b><br><span class="n-meta">2/5 stappen</span></td><td style="text-align:center"><span class="n-cell bezig">2/5 <b>B</b></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Milan Visser</b><br><span class="n-meta">Stap 5: Vragenronde</span></div><span class="n-chip orange" style="margin-left:auto;padding:0 5px"><svg class="ic s" style="width:12px;height:12px"><use href="#i-clip"/></svg></span></div></td><td><span class="n-bar"><i style="width:80%"></i></span> <b style="font-size:13px">80%</b><br><span class="n-meta">4/5 stappen</span></td><td style="text-align:center"><span class="n-cell na">4/5 <b>N</b></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Yara Smit</b><br><span class="n-meta">Afgerond</span></div></div></td><td><span class="n-bar"><i style="width:100%"></i></span> <b style="font-size:13px">100%</b><br><span class="n-meta">5/5 stappen</span></td><td style="text-align:center"><span class="n-cell af">5/5 <svg class="ic s" style="width:12px;height:12px"><use href="#i-check"/></svg></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Daan Mulder</b><br><span class="n-meta">Stap 4: Vragenronde</span></div><span class="n-chip red" style="margin-left:auto;padding:0 5px"><svg class="ic s" style="width:12px;height:12px"><use href="#i-alert"/></svg></span></div></td><td><span class="n-bar"><i style="width:60%"></i></span> <b style="font-size:13px">60%</b><br><span class="n-meta">3/5 stappen</span></td><td style="text-align:center"><span class="n-cell vast">3/5 <b>V</b></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Fenna Bos</b><br><span class="n-meta">Stap 2: Bi na sk deel 1</span></div></div></td><td><span class="n-bar"><i style="width:20%"></i></span> <b style="font-size:13px">20%</b><br><span class="n-meta">1/5 stappen</span></td><td style="text-align:center"><span class="n-cell bezig">1/5 <b>B</b></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Jesse Vos</b><br><span class="n-meta">Afgerond</span></div></div></td><td><span class="n-bar"><i style="width:100%"></i></span> <b style="font-size:13px">100%</b><br><span class="n-meta">5/5 stappen</span></td><td style="text-align:center"><span class="n-cell af">5/5 <svg class="ic s" style="width:12px;height:12px"><use href="#i-check"/></svg></span></td></tr>
+                    <tr><td><div style="display:flex;gap:10px;align-items:center"><span class="avatar n-avatar"><svg><use href="#i-person"/></svg></span><div><b>Sara Peters</b><br><span class="n-meta">Niet gestart</span></div></div></td><td><span class="n-bar"><i style="width:0"></i></span> <b style="font-size:13px">0%</b><br><span class="n-meta">0/5 stappen</span></td><td style="text-align:center"><span class="n-cell niet">0/5 –</span></td></tr>
+                  </tbody>
+                </table>
+                <p class="n-meta" style="margin:12px 0 0">Legenda: <b>✓</b> afgerond · <b>B</b> bezig · <b>V</b> vastgelopen · <b>N</b> wacht op nakijken · <b>–</b> niet gestart. Kleur is extra, de letter is de drager.</p>
+              </div>
+            </section>
+            <div>
+              <div class="n-card lift">
+                <div class="n-card-head"><span>Nu aandacht nodig</span><span style="font-weight:400">3 van 9</span></div>
+                <ul class="n-list" style="padding:8px 10px 10px">
+                  <li class="vast"><span class="avatar n-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span><div><b>Noor Bakker</b><span>Vastgelopen · Vragenronde, 3 pogingen zonder afronding</span></div><svg class="ic s"><use href="#i-right"/></svg></li>
+                  <li class="vast"><span class="avatar n-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span><div><b>Daan Mulder</b><span>Vastgelopen · Bi na sk deel 2, 4 pogingen</span></div><svg class="ic s"><use href="#i-right"/></svg></li>
+                  <li class="na"><span class="avatar n-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span><div><b>Milan Visser</b><span>Wacht op nakijken · 2 open antwoorden</span></div><svg class="ic s"><use href="#i-right"/></svg></li>
+                </ul>
+              </div>
+              <div class="n-card" style="margin-top:16px;padding:12px 16px"><b style="display:flex;gap:6px;align-items:center"><svg class="ic s" style="color:var(--purple)"><use href="#i-star"/></svg>Plusstof</b><p class="n-meta" style="margin:4px 0 0">Geen plusparagrafen in dit hoofdstuk.</p></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     SCHERM 3: LEERLINGEN
+     ==================================================================== -->
+<section class="scherm" id="s-leerlingen">
+  <p class="eyebrow">Scherm 3 · /admin/leerlingen · AdminLeerlingenPage</p>
+  <h2>Leerlingen — accountoverzicht</h2>
+  <div class="notitie">
+    <strong>Wat verandert en waarom.</strong>
+    <ol>
+      <li>Zes losse toolknoppen naast de kop blijven bestaan maar worden inktgerande knoppen op één rij; de twee navigatielinks (Klassen, Tokenbeheer) staan apart van de vier acties (DS p. 12: werkwoord vooraan, rustige regie).</li>
+      <li>Vijf stat-kaarten met schaduw worden één statistiekstrook; de getallen blijven leesbaar, het scherm wint ~120 px hoogte (DS p. 8: rustige ruimte rond de taak).</li>
+      <li>De leerlinglijst is een echte tabel met inktlijnen en kolomkoppen; e-mail en leerlingnummer staan onder de naam, de foto is een neutrale placeholder met inktcontour (DS p. 4: heldere silhouetten).</li>
+      <li>Accenten: BLUE voor "Wachtwoord" (actie), verder alleen inkt. "Leerling"-badge vervalt als decor; archiefstatus wordt tekst in de statuskolom (DS p. 5: geen semantiekloze pillen).</li>
+    </ol>
+  </div>
+  <div class="compare">
+    <div class="pane oud"><p class="label"><i></i>Oud — huidige stijl</p>
+      <div class="frame"><div class="screen o">
+        <div class="o-header">
+          <div style="display:flex;align-items:center">
+            <div class="o-logo"><b></b>HELIX</div>
+            <nav class="o-nav">
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span>
+              <span class="o-nav-tab active"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span>
+              <span class="o-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="o-nav-alert"><svg class="ic s" style="width:11px;height:11px"><use href="#i-bell"/></svg></span></span>
+            </nav>
+          </div>
+          <span class="o-kompas"><svg class="ic"><use href="#i-compass"/></svg>Projectkompas</span>
+          <div class="o-hdr-right"><div class="o-user"><b>Docent Voorbeeld</b><span>Administrator</span></div><svg class="ic l o-muted"><use href="#i-logout"/></svg></div>
+        </div>
+        <div class="o-container">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+            <div><p class="o-eyebrow">Werkplek</p><h1 class="o-h1">Leerlingen</h1><p class="o-lead">Bekijk leerlingaccounts, gekoppelde klassen, accountstatus en wachtwoordbeheer.</p></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;max-width:640px"><span class="o-btn-tool"><svg class="ic"><use href="#i-users"/></svg>Klassen beheren</span><span class="o-btn-tool"><svg class="ic"><use href="#i-coins"/></svg>Tokenbeheer</span><span class="o-btn-tool"><svg class="ic"><use href="#i-key"/></svg>Auth synchroniseren</span><span class="o-btn-tool"><svg class="ic"><use href="#i-sheet"/></svg>Leerlingnummers koppelen</span><span class="o-btn-tool"><svg class="ic"><use href="#i-camera"/></svg>Foto's importeren</span><span class="o-btn-tool"><svg class="ic"><use href="#i-archive"/></svg>Archief (2)</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:32px">
+            <div class="o-stat"><p class="o-muted" style="font-weight:700">Leerlingen</p><p class="v">18</p><p class="d">Accounts met leerlingrol</p></div>
+            <div class="o-stat"><p class="o-muted" style="font-weight:700">Zonder klas</p><p class="v">2</p><p class="d">Nog niet gekoppeld aan klas</p></div>
+            <div class="o-stat"><p class="o-muted" style="font-weight:700">Gefilterd</p><p class="v">18</p><p class="d">Zichtbaar in dit overzicht</p></div>
+            <div class="o-stat"><p class="o-muted" style="font-weight:700">Met foto</p><p class="v">15</p><p class="d">Avatar gekoppeld</p></div>
+            <div class="o-stat"><p class="o-muted" style="font-weight:700">Zonder foto</p><p class="v">3</p><p class="d">Nog importeren</p></div>
+          </div>
+          <section class="o-surface" style="margin-top:32px;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--o-border)"><div class="o-search" style="margin:0;border-radius:16px">
+              <svg class="ic"><use href="#i-search"/></svg>Zoek op naam, e-mail of klas...</div></div>
+            <div>
+              <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:16px;padding:16px 20px;align-items:center;border-bottom:1px solid #f1f5f9"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar sq" style="background:#e2e8f0;color:#64748b"><svg><use href="#i-person"/></svg></span><div><b>Noor Bakker</b><br><span class="o-muted">n.bakker@voorbeeld.school</span><br><span class="o-muted" style="font-size:12px">Leerlingnummer: 2026001</span></div></div><div><span class="o-label caps" style="margin:0">Klas</span><div class="o-input sm" style="margin-top:4px">ER3L1A ▾</div></div><div><span class="o-label caps" style="margin:0">Laatst actief</span><br><b>12 min geleden</b></div><div style="display:flex;gap:8px"><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-archive"/></svg>Archiveren</span></div><span class="o-badge">Leerling</span></div>
+              <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:16px;padding:16px 20px;align-items:center;border-bottom:1px solid #f1f5f9"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar sq" style="background:#e2e8f0;color:#64748b"><svg><use href="#i-person"/></svg></span><div><b>Sem de Vries</b><br><span class="o-muted">s.devries@voorbeeld.school</span><br><span class="o-muted" style="font-size:12px">Leerlingnummer: 2026002</span></div></div><div><span class="o-label caps" style="margin:0">Klas</span><div class="o-input sm" style="margin-top:4px">ER3L1A ▾</div></div><div><span class="o-label caps" style="margin:0">Laatst actief</span><br><b>Vandaag 09:40</b></div><div style="display:flex;gap:8px"><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-archive"/></svg>Archiveren</span></div><span class="o-badge">Leerling</span></div>
+              <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:16px;padding:16px 20px;align-items:center;border-bottom:1px solid #f1f5f9"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar sq" style="background:#e2e8f0;color:#64748b"><svg><use href="#i-person"/></svg></span><div><b>Lina Jansen</b><br><span class="o-muted">l.jansen@voorbeeld.school</span><br><span class="o-muted" style="font-size:12px">Leerlingnummer: 2026003</span></div></div><div><span class="o-label caps" style="margin:0">Klas</span><div class="o-input sm" style="margin-top:4px">ER3L2A ▾</div></div><div><span class="o-label caps" style="margin:0">Laatst actief</span><br><b>Gisteren</b></div><div style="display:flex;gap:8px"><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-archive"/></svg>Archiveren</span></div><span class="o-badge">Leerling</span></div>
+              <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:16px;padding:16px 20px;align-items:center;border-bottom:1px solid #f1f5f9"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar sq" style="background:var(--o-lav);color:var(--o-purple)"><b style="font-size:16px">M</b></span><div><b>Milan Visser</b><br><span class="o-muted">m.visser@voorbeeld.school</span><br><span class="o-muted" style="font-size:12px">Leerlingnummer ontbreekt</span></div></div><div><span class="o-label caps" style="margin:0">Klas</span><div class="o-input sm" style="margin-top:4px">Geen klas ▾</div></div><div><span class="o-label caps" style="margin:0">Laatst actief</span><br><b>Nog niet</b></div><div style="display:flex;gap:8px"><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-archive"/></svg>Archiveren</span></div><span class="o-badge">Leerling</span></div>
+              <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:16px;padding:16px 20px;align-items:center;border-bottom:1px solid #f1f5f9"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar sq" style="background:#e2e8f0;color:#64748b"><svg><use href="#i-person"/></svg></span><div><b>Yara Smit</b><br><span class="o-muted">y.smit@voorbeeld.school</span><br><span class="o-muted" style="font-size:12px">Leerlingnummer: 2026005</span></div></div><div><span class="o-label caps" style="margin:0">Klas</span><div class="o-input sm" style="margin-top:4px">ER3L1A ▾</div></div><div><span class="o-label caps" style="margin:0">Laatst actief</span><br><b>2 uur geleden</b></div><div style="display:flex;gap:8px"><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-archive"/></svg>Archiveren</span></div><span class="o-badge">Leerling</span></div>
+              <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr auto auto;gap:16px;padding:16px 20px;align-items:center"><div style="display:flex;gap:12px;align-items:center"><span class="avatar o-avatar sq" style="background:#e2e8f0;color:#64748b"><svg><use href="#i-person"/></svg></span><div><b>Daan Mulder</b><br><span class="o-muted">d.mulder@voorbeeld.school</span><br><span class="o-muted" style="font-size:12px">Leerlingnummer: 2026006</span></div></div><div><span class="o-label caps" style="margin:0">Klas</span><div class="o-input sm" style="margin-top:4px">ER3L2A ▾</div></div><div><span class="o-label caps" style="margin:0">Laatst actief</span><br><b>3 dagen geleden</b></div><div style="display:flex;gap:8px"><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span><span class="o-btn-tool sm" style="font-size:12px"><svg class="ic s"><use href="#i-archive"/></svg>Archiveren</span></div><span class="o-badge">Leerling</span></div>
+            </div>
+          </section>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="pane nieuw"><p class="label"><i></i>Nieuw — design system v2</p>
+      <div class="frame"><div class="screen n">
+        <div class="n-header">
+          <div style="display:flex;align-items:center">
+            <div class="n-brand"><i></i>HELIX</div>
+            <nav class="n-nav">
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span>
+              <span class="n-nav-tab active"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span>
+              <span class="n-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="dot">3</span></span>
+            </nav>
+          </div>
+          <div class="n-hdr-right"><span class="n-btn sm"><svg class="ic s"><use href="#i-compass"/></svg>Projectkompas</span><div class="who"><b>Docent Voorbeeld</b><span>Beheer</span></div><span class="n-btn sm icon ghost"><svg class="ic"><use href="#i-logout"/></svg></span></div>
+        </div>
+        <div class="n-container">
+          <p class="n-eyebrow">Werkplek</p>
+          <div class="n-titlebar" style="margin-top:4px">
+            <div><h1 class="n-title" style="border:0;padding:0">Leerlingen</h1><p class="n-lead" style="margin-top:6px">Accounts, klassen, activiteit en wachtwoordbeheer.</p></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+              <span class="n-btn"><svg class="ic s"><use href="#i-users"/></svg>Klassen</span><span class="n-btn"><svg class="ic s"><use href="#i-coins"/></svg>Tokenbeheer</span>
+              <span style="width:2px;background:var(--ink);margin:0 4px"></span>
+              <span class="n-btn"><svg class="ic s"><use href="#i-key"/></svg>Synchroniseer auth</span><span class="n-btn"><svg class="ic s"><use href="#i-sheet"/></svg>Koppel leerlingnummers</span><span class="n-btn"><svg class="ic s"><use href="#i-camera"/></svg>Importeer foto's</span><span class="n-btn"><svg class="ic s"><use href="#i-archive"/></svg>Archief (2)</span>
+            </div>
+          </div>
+          <div style="border-top:4px solid var(--ink);margin-top:8px"></div>
+          <div class="n-strip" style="margin-top:16px"><span><b>18</b> leerlingen</span><span><b>2</b> zonder klas</span><span><b>18</b> gefilterd</span><span><b>15</b> met foto</span><span><b>3</b> zonder foto</span></div>
+          <section class="n-card" style="margin-top:16px">
+            <div style="padding:10px 12px;border-bottom:2px solid var(--ink);display:flex;gap:8px;align-items:center"><div class="n-input sm" style="display:flex;align-items:center;gap:8px;color:#6b665d;max-width:420px"><svg class="ic s"><use href="#i-search"/></svg>Zoek op naam, e-mail of klas</div><span class="n-meta" style="margin-left:auto">Gesorteerd op naam</span></div>
+            <table class="n-table">
+              <thead><tr><th style="width:44px">Foto</th><th>Leerling</th><th style="width:160px">Klas</th><th style="width:140px">Laatst actief</th><th style="width:90px">Status</th><th style="width:270px;text-align:right;white-space:nowrap">Acties</th></tr></thead>
+              <tbody>
+                <tr><td><span class="avatar n-avatar sq" style="width:40px;height:40px"><svg><use href="#i-person"/></svg></span></td><td><b>Noor Bakker</b><br><span class="n-meta">n.bakker@voorbeeld.school · nr. 2026001</span></td><td><div class="n-input sm">ER3L1A ▾</div></td><td>12 min geleden</td><td>Actief</td><td class="acts"><span class="n-btn sm primary"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></td></tr>
+                <tr><td><span class="avatar n-avatar sq" style="width:40px;height:40px"><svg><use href="#i-person"/></svg></span></td><td><b>Sem de Vries</b><br><span class="n-meta">s.devries@voorbeeld.school · nr. 2026002</span></td><td><div class="n-input sm">ER3L1A ▾</div></td><td>Vandaag 09:40</td><td>Actief</td><td class="acts"><span class="n-btn sm primary"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></td></tr>
+                <tr><td><span class="avatar n-avatar sq" style="width:40px;height:40px"><svg><use href="#i-person"/></svg></span></td><td><b>Lina Jansen</b><br><span class="n-meta">l.jansen@voorbeeld.school · nr. 2026003</span></td><td><div class="n-input sm">ER3L2A ▾</div></td><td>Gisteren</td><td>Actief</td><td class="acts"><span class="n-btn sm primary"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></td></tr>
+                <tr><td><span class="avatar n-avatar sq" style="width:40px;height:40px;border-style:dashed"><b>M</b></span></td><td><b>Milan Visser</b><br><span class="n-meta">m.visser@voorbeeld.school · <span style="border-bottom:2px solid var(--orange)">nummer ontbreekt</span></span></td><td><div class="n-input sm">Geen klas ▾</div></td><td>Nog niet</td><td>Nieuw</td><td class="acts"><span class="n-btn sm primary"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></td></tr>
+                <tr><td><span class="avatar n-avatar sq" style="width:40px;height:40px"><svg><use href="#i-person"/></svg></span></td><td><b>Yara Smit</b><br><span class="n-meta">y.smit@voorbeeld.school · nr. 2026005</span></td><td><div class="n-input sm">ER3L1A ▾</div></td><td>2 uur geleden</td><td>Actief</td><td class="acts"><span class="n-btn sm primary"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></td></tr>
+                <tr><td><span class="avatar n-avatar sq" style="width:40px;height:40px"><svg><use href="#i-person"/></svg></span></td><td><b>Daan Mulder</b><br><span class="n-meta">d.mulder@voorbeeld.school · nr. 2026006</span></td><td><div class="n-input sm">ER3L2A ▾</div></td><td>3 dagen geleden</td><td>Actief</td><td class="acts"><span class="n-btn sm primary"><svg class="ic s"><use href="#i-key"/></svg>Wachtwoord</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-archive"/></svg>Archiveer</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+<!-- ====================================================================
+     SCHERM 4: KLASSEN
+     ==================================================================== -->
+<section class="scherm" id="s-klassen">
+  <p class="eyebrow">Scherm 4 · /admin/klassen · AdminKlassenPage</p>
+  <h2>Klassen — beheer per klas</h2>
+  <div class="notitie">
+    <strong>Wat verandert en waarom.</strong>
+    <ol>
+      <li>Klassenlijst links: gradient-border tabs worden inktgerande regels; de gekozen klas is geel, net als de actieve paragraaf in de CMS-boom (DS p. 4: één consistent anker voor "hier ben je").</li>
+      <li>Rechts wordt de klaskaart een kaart met gele kopstrook (klasnaam + code) en inktscheidingen tussen Instellingen, Leerroute, Lesstof toewijzing en Leerlingen (DS p. 8: vaste titelzone, gutters op de 8/16/24-schaal).</li>
+      <li>Checkboxes zijn inktvierkanten met gele vink; de paarse accent-checkbox en de "Deels"-amberpil vervallen — "deels" wordt tekst (DS p. 19: betekenis zonder kleur).</li>
+      <li>Accenten: BLUE voor "Aanmaken", RED alleen voor "Klas verwijderen" als outline-icoon (rood = stop, DS p. 6).</li>
+    </ol>
+  </div>
+  <div class="compare">
+    <div class="pane oud"><p class="label"><i></i>Oud — huidige stijl</p>
+      <div class="frame"><div class="screen o">
+        <div class="o-header">
+          <div style="display:flex;align-items:center"><div class="o-logo"><b></b>HELIX</div>
+            <nav class="o-nav"><span class="o-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span><span class="o-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span><span class="o-nav-tab active"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span><span class="o-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span><span class="o-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span><span class="o-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="o-nav-alert"><svg class="ic s" style="width:11px;height:11px"><use href="#i-bell"/></svg></span></span></nav></div>
+          <span class="o-kompas"><svg class="ic"><use href="#i-compass"/></svg>Projectkompas</span>
+          <div class="o-hdr-right"><div class="o-user"><b>Docent Voorbeeld</b><span>Administrator</span></div><svg class="ic l o-muted"><use href="#i-logout"/></svg></div>
+        </div>
+        <div class="o-container">
+          <header style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px">
+            <div><p class="o-eyebrow">Leerlingen</p><h1 class="o-h1">Klassen beheren</h1><p class="o-lead">Beheer klassen, leerlingkoppelingen, lesmateriaal en instellingen per klas.</p></div>
+            <span style="display:inline-flex;gap:12px;align-items:center;border:1px solid var(--o-border);background:rgba(255,255,255,.8);border-radius:16px;padding:12px 16px;font-weight:900;box-shadow:0 1px 3px rgba(0,0,0,.06)"><svg class="ic l" style="color:var(--o-purple)"><use href="#i-users"/></svg>2 klassen</span>
+          </header>
+          <section class="o-card" style="padding:20px;margin-bottom:32px">
+            <h2 style="margin:0 0 16px;font-size:18px;font-weight:900;display:flex;gap:8px;align-items:center"><svg class="ic l" style="color:var(--o-purple)"><use href="#i-plus"/></svg>Nieuwe klas aanmaken</h2>
+            <div style="display:flex;gap:12px"><div class="o-input" style="flex:1;color:#94a3b8">Bijv. VMBO 1A</div><span class="o-btn-secondary" style="padding:12px 20px;opacity:.5">Aanmaken</span></div>
+          </section>
+          <div style="display:grid;grid-template-columns:352px minmax(0,1fr);gap:24px">
+            <aside><div class="o-card" style="padding:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px;margin-bottom:12px"><b>Klassen (2)</b><svg class="ic o-muted"><use href="#i-users"/></svg></div>
+              <div class="o-lens active" style="width:100%;justify-content:flex-start;padding:12px 16px;display:flex;flex-direction:column;align-items:flex-start"><div>ER3L1A</div><div class="o-muted" style="font-size:12px;font-weight:700">9 leerlingen · Leerroute 3</div></div>
+              <div class="o-lens" style="width:100%;justify-content:flex-start;padding:12px 16px;display:flex;flex-direction:column;align-items:flex-start;margin-top:8px"><div>ER3L2A</div><div class="o-muted" style="font-size:12px;font-weight:700">9 leerlingen · Leerroute 3</div></div>
+            </div></aside>
+            <main><div class="o-card" style="overflow:hidden">
+              <div style="border-bottom:1px solid var(--o-border);background:var(--o-soft);padding:20px 24px;display:flex;justify-content:space-between;align-items:center"><div><h3 style="margin:0;font-size:20px;font-weight:900">ER3L1A</h3><p class="o-muted" style="margin:4px 0 0;font-weight:500">Code: 7KQ2ZD</p></div><span class="o-btn-red"><svg class="ic l"><use href="#i-trash"/></svg></span></div>
+              <div style="border-bottom:1px solid var(--o-border);padding:24px">
+                <h4 class="o-label caps" style="margin:0 0 16px;display:flex;gap:8px;align-items:center;color:var(--o-muted)"><svg class="ic s"><use href="#i-gear"/></svg>Instellingen</h4>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+                  <label style="border:2px solid #dfe5ee;border-radius:22px;background:#fff;padding:16px;display:flex;gap:12px;box-shadow:0 12px 34px rgba(11,19,43,.07)"><span style="width:20px;height:20px;border-radius:4px;background:var(--o-purple);flex-shrink:0;margin-top:4px;display:flex;align-items:center;justify-content:center;color:#fff"><svg class="ic s"><use href="#i-check"/></svg></span><div><b style="display:flex;gap:8px;align-items:center"><svg class="ic" style="color:var(--o-purple)"><use href="#i-bulb"/></svg>Hints</b><span class="o-muted" style="font-size:13px">Leerlingen kunnen hints zien tijdens het werken.</span></div></label>
+                  <label style="border:2px solid #dfe5ee;border-radius:22px;background:#fff;padding:16px;display:flex;gap:12px;box-shadow:0 12px 34px rgba(11,19,43,.07)"><span style="width:20px;height:20px;border-radius:4px;border:1px solid #cbd5e1;flex-shrink:0;margin-top:4px"></span><div><b style="display:flex;gap:8px;align-items:center"><svg class="ic" style="color:var(--o-purple)"><use href="#i-spark"/></svg>Digidocent</b><span class="o-muted" style="font-size:13px">Leerlingen kunnen AI-hulp gebruiken binnen de afgesproken kaders.</span></div></label>
+                  <label style="border:2px solid #dfe5ee;border-radius:22px;background:#fff;padding:16px;display:flex;gap:12px;box-shadow:0 12px 34px rgba(11,19,43,.07)"><span style="width:20px;height:20px;border-radius:4px;background:var(--o-purple);flex-shrink:0;margin-top:4px;display:flex;align-items:center;justify-content:center;color:#fff"><svg class="ic s"><use href="#i-check"/></svg></span><div><b style="display:flex;gap:8px;align-items:center"><svg class="ic" style="color:var(--o-purple)"><use href="#i-game"/></svg>Spellen</b><span class="o-muted" style="font-size:13px">Spellen als paragraafafsluiting zijn speelbaar.</span></div></label>
+                </div>
+                <div style="margin-top:16px;max-width:448px"><b style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><svg class="ic" style="color:var(--o-purple)"><use href="#i-route"/></svg>Leerroute</b><div class="o-input">Binask · Leerjaar 1 · Leerroute 3 ▾</div><p class="o-muted" style="margin:4px 0 0;font-size:13px">Met een route ziet deze klas alleen de hoofdstukken en paragrafen van dat niveau. Zonder route blijft alle toegewezen lesstof zichtbaar.</p></div>
+              </div>
+              <div style="border-bottom:1px solid var(--o-border);padding:24px">
+                <h4 class="o-label caps" style="margin:0 0 16px;display:flex;gap:8px;align-items:center;color:var(--o-muted)"><svg class="ic s"><use href="#i-book"/></svg>Lesstof toewijzing</h4>
+                <div class="o-card-subtle" style="overflow:hidden">
+                  <div style="border-bottom:1px solid var(--o-border);background:rgba(255,255,255,.8);padding:12px 16px;font-weight:900">Binask</div>
+                  <div style="padding:12px 16px"><div style="display:flex;gap:8px;align-items:center;font-weight:900;margin-bottom:12px"><svg class="ic s" style="color:var(--o-purple)"><use href="#i-csq"/></svg>Leerjaar 1</div>
+                    <div style="margin-left:16px"><div class="o-label caps" style="margin-bottom:8px">Leerroute 3</div>
+                      <div style="margin-left:12px;border:1px solid var(--o-border);background:#fff;border-radius:12px;padding:8px 12px">
+                        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px"><svg class="ic s o-muted"><use href="#i-down"/></svg><span style="width:16px;height:16px;border-radius:3px;background:var(--o-purple);display:inline-flex;align-items:center;justify-content:center;color:#fff"><svg class="ic s" style="width:11px;height:11px"><use href="#i-check"/></svg></span><b>Welkom in Helix</b></div>
+                        <div style="margin-left:24px;margin-bottom:8px;display:flex;gap:8px;align-items:center;padding:4px 8px"><span style="width:16px;height:16px;border-radius:3px;background:var(--o-purple);display:inline-flex;align-items:center;justify-content:center;color:#fff"><svg class="ic s" style="width:11px;height:11px"><use href="#i-check"/></svg></span><span class="o-muted">Ga van start...</span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="border-top:1px solid var(--o-border);background:rgba(255,255,255,.8);padding:12px 16px;font-weight:900">Digitale vaardigheden</div>
+                  <div style="padding:12px 16px"><div style="display:flex;gap:8px;align-items:center;font-weight:900;margin-bottom:12px"><svg class="ic s" style="color:var(--o-purple)"><use href="#i-csq"/></svg>Leerjaar 1</div>
+                    <div style="margin-left:16px"><div class="o-label caps" style="margin-bottom:8px">Basis</div>
+                      <div style="margin-left:12px;border:1px solid var(--o-border);background:#fff;border-radius:12px;padding:8px 12px"><div style="display:flex;gap:8px;align-items:center"><svg class="ic s o-muted"><use href="#i-right"/></svg><span style="width:16px;height:16px;border-radius:3px;border:1px solid #cbd5e1"></span><b>Start je digitale hoofdkwartier</b><span style="background:#fffbeb;color:#b45309;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:900">Deels</span></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:24px">
+                <h4 class="o-label caps" style="margin:0 0 16px;display:flex;gap:8px;align-items:center;color:var(--o-muted)"><svg class="ic s"><use href="#i-users"/></svg>Leerlingen (9)</h4>
+                <div style="display:grid;gap:8px">
+                  <div class="o-lens" style="justify-content:space-between;padding:12px;display:flex"><div><b>Noor Bakker</b><br><span class="o-muted" style="font-size:12px;font-weight:500">n.bakker@voorbeeld.school</span></div><svg class="ic o-muted"><use href="#i-check"/></svg></div>
+                  <div class="o-lens" style="justify-content:space-between;padding:12px;display:flex"><div><b>Sem de Vries</b><br><span class="o-muted" style="font-size:12px;font-weight:500">s.devries@voorbeeld.school</span></div><svg class="ic o-muted"><use href="#i-check"/></svg></div>
+                  <div class="o-lens" style="justify-content:space-between;padding:12px;display:flex"><div><b>Yara Smit</b><br><span class="o-muted" style="font-size:12px;font-weight:500">y.smit@voorbeeld.school</span></div><svg class="ic o-muted"><use href="#i-check"/></svg></div>
+                  <p class="o-muted" style="margin:0;font-size:13px">… en 6 anderen</p>
+                </div>
+              </div>
+            </div></main>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="pane nieuw"><p class="label"><i></i>Nieuw — design system v2</p>
+      <div class="frame"><div class="screen n">
+        <div class="n-header">
+          <div style="display:flex;align-items:center"><div class="n-brand"><i></i>HELIX</div>
+            <nav class="n-nav"><span class="n-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span><span class="n-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span><span class="n-nav-tab active"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span><span class="n-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span><span class="n-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span><span class="n-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="dot">3</span></span></nav></div>
+          <div class="n-hdr-right"><span class="n-btn sm"><svg class="ic s"><use href="#i-compass"/></svg>Projectkompas</span><div class="who"><b>Docent Voorbeeld</b><span>Beheer</span></div><span class="n-btn sm icon ghost"><svg class="ic"><use href="#i-logout"/></svg></span></div>
+        </div>
+        <div class="n-container">
+          <p class="n-eyebrow">Leerlingen · 2 klassen</p>
+          <div class="n-titlebar" style="margin-top:4px">
+            <div><h1 class="n-title" style="border:0;padding:0">Klassen</h1><p class="n-lead" style="margin-top:6px">Leerlingkoppelingen, lesstof en instellingen per klas.</p></div>
+            <div style="display:flex;gap:8px;align-items:center"><label class="n-label" style="margin:0">Nieuwe klas</label><div class="n-input" style="width:220px;color:#6b665d">Bijv. VMBO 1A</div><span class="n-btn primary"><svg class="ic s"><use href="#i-plus"/></svg>Aanmaken</span></div>
+          </div>
+          <div style="border-top:4px solid var(--ink);margin-top:8px"></div>
+          <div style="display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;margin-top:24px">
+            <aside class="n-card" style="align-self:start">
+              <div class="n-card-head"><span>Klassen (2)</span></div>
+              <div style="padding:8px">
+                <div style="border:2px solid var(--ink);border-radius:6px;background:var(--yellow);padding:8px 12px"><b>ER3L1A</b><br><span class="n-meta">9 leerlingen · Binask leerroute 3</span></div>
+                <div style="border:2px solid transparent;border-radius:6px;padding:8px 12px;margin-top:4px"><b>ER3L2A</b><br><span class="n-meta">9 leerlingen · Binask leerroute 3</span></div>
+              </div>
+            </aside>
+            <main class="n-card lift">
+              <div class="n-card-head" style="padding:12px 16px"><span style="font-size:18px">ER3L1A <span style="font-weight:400;font-size:13px;margin-left:8px">code 7KQ2ZD</span></span><span class="n-btn sm icon danger" title="Klas verwijderen"><svg class="ic s"><use href="#i-trash"/></svg></span></div>
+              <div style="padding:16px;border-bottom:2px solid var(--ink)">
+                <b style="font-size:13px;text-transform:uppercase;letter-spacing:.04em">Instellingen</b>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px">
+                  <label class="n-check" style="align-items:flex-start;border:2px solid var(--ink);border-radius:8px;padding:10px 12px"><i class="on" style="margin-top:2px"></i><span><b>Hints</b><br><span class="n-meta">Leerlingen zien hints tijdens het werken.</span></span></label>
+                  <label class="n-check" style="align-items:flex-start;border:2px solid var(--ink);border-radius:8px;padding:10px 12px"><i style="margin-top:2px"></i><span><b>Digidocent</b><br><span class="n-meta">AI-hulp binnen de afgesproken kaders.</span></span></label>
+                  <label class="n-check" style="align-items:flex-start;border:2px solid var(--ink);border-radius:8px;padding:10px 12px"><i class="on" style="margin-top:2px"></i><span><b>Spellen</b><br><span class="n-meta">Spel als paragraafafsluiting is speelbaar.</span></span></label>
+                </div>
+                <div style="margin-top:16px;max-width:420px"><label class="n-label">Leerroute</label><div class="n-input">Binask · Leerjaar 1 · Leerroute 3 ▾</div><p class="n-meta" style="margin:4px 0 0">Met een route ziet deze klas alleen de hoofdstukken van dat niveau.</p></div>
+              </div>
+              <div style="padding:16px;border-bottom:2px solid var(--ink)">
+                <b style="font-size:13px;text-transform:uppercase;letter-spacing:.04em">Lesstof toewijzing</b>
+                <div style="border:2px solid var(--ink);border-radius:8px;margin-top:8px;overflow:hidden">
+                  <div style="padding:6px 12px;font-weight:700;border-bottom:2px solid var(--ink)">Binask · Leerjaar 1 · Leerroute 3</div>
+                  <div style="padding:6px 12px 6px 24px;display:flex;gap:8px;align-items:center"><svg class="ic s"><use href="#i-down"/></svg><span class="n-check"><i class="on"></i><b>Welkom in Helix</b></span><span class="n-meta">1 van 1 paragraaf</span></div>
+                  <div style="padding:2px 12px 8px 60px"><span class="n-check"><i class="on"></i>Ga van start...</span></div>
+                  <div style="padding:6px 12px;font-weight:700;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)">Digitale vaardigheden · Leerjaar 1 · Basis</div>
+                  <div style="padding:6px 12px 8px 24px;display:flex;gap:8px;align-items:center"><svg class="ic s"><use href="#i-right"/></svg><span class="n-check"><i></i><b>Start je digitale hoofdkwartier</b></span><span class="n-meta">deels: 2 van 4 paragrafen</span></div>
+                </div>
+              </div>
+              <div style="padding:16px">
+                <b style="font-size:13px;text-transform:uppercase;letter-spacing:.04em">Leerlingen (9)</b>
+                <table class="n-table" style="margin-top:8px">
+                  <tbody>
+                    <tr><td style="width:44px"><span class="avatar n-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span></td><td><b>Noor Bakker</b> <span class="n-meta">· n.bakker@voorbeeld.school</span></td><td style="text-align:right"><span class="n-btn sm">Extra taken</span></td></tr>
+                    <tr><td><span class="avatar n-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span></td><td><b>Sem de Vries</b> <span class="n-meta">· s.devries@voorbeeld.school</span></td><td style="text-align:right"><span class="n-btn sm">Extra taken</span></td></tr>
+                    <tr><td><span class="avatar n-avatar" style="width:32px;height:32px"><svg><use href="#i-person"/></svg></span></td><td><b>Yara Smit</b> <span class="n-meta">· y.smit@voorbeeld.school</span></td><td style="text-align:right"><span class="n-btn sm">Extra taken</span></td></tr>
+                    <tr><td colspan="3" class="n-meta">… en 6 anderen</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     SCHERM 5: SLIDEDECKS
+     ==================================================================== -->
+<section class="scherm" id="s-slidedecks">
+  <p class="eyebrow">Scherm 5 · /admin/slidedecks · AdminSlidedecksPage</p>
+  <h2>Slidedecks — NotebookLM-pakketten</h2>
+  <div class="notitie">
+    <strong>Wat verandert en waarom.</strong>
+    <ol>
+      <li>Het formulier "Nieuw NotebookLM-pakket" blijft bovenaan (zelfde velden), maar met inktgerande velden en één blauwe primaire knop; de slate/blue-mix van Tailwind vervalt (DS p. 20: vaste geel-zwarte UI-laag, één actiekleur).</li>
+      <li>De bibliotheek wordt een inkttabel; per rij één reviewstatuschip met vaste semantiek: Goedgekeurd groen, Review nodig oranje, Afgewezen rood, Docentbesluit paars (Helix-context, DS p. 6). De reviewchecklist volgt de QA-scorecard-stijl van DS p. 23 (ronde vinkjes in een inktkader).</li>
+      <li>Bron-PDF en NotebookLM-PDF krijgen een gele kopstrook als "bewijs"-vlak, niet als decor (DS p. 13: screenshots zijn bewijs en bediening).</li>
+      <li>Accenten in de UI-laag: BLUE (download/upload/kopieer) + GREEN (goedgekeurd). Oranje/rood/paars zijn statusdata.</li>
+    </ol>
+  </div>
+  <div class="compare">
+    <div class="pane oud"><p class="label"><i></i>Oud — huidige stijl</p>
+      <div class="frame"><div class="screen o">
+        <div class="o-header">
+          <div style="display:flex;align-items:center"><div class="o-logo"><b></b>HELIX</div>
+            <nav class="o-nav"><span class="o-nav-tab active"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span><span class="o-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span><span class="o-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span><span class="o-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span><span class="o-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span><span class="o-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="o-nav-alert"><svg class="ic s" style="width:11px;height:11px"><use href="#i-bell"/></svg></span></span></nav></div>
+          <span class="o-kompas"><svg class="ic"><use href="#i-compass"/></svg>Projectkompas</span>
+          <div class="o-hdr-right"><div class="o-user"><b>Docent Voorbeeld</b><span>Administrator</span></div><svg class="ic l o-muted"><use href="#i-logout"/></svg></div>
+        </div>
+        <div class="o-container">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><p class="o-eyebrow">NotebookLM workflow</p><h1 class="o-h1">Slidedeckcreator</h1><p class="o-lead" style="font-size:16px">Maak bron-PDF's en prompt-snapshots voor NotebookLM. Upload daarna de gegenereerde presentatie-PDF terug naar Helix.</p></div>
+            <span class="o-btn-fuchsia" style="background:#fff;padding:12px 16px;color:var(--o-purple);font-weight:900"><svg class="ic s"><use href="#i-plus"/></svg>Prompttemplate</span>
+          </div>
+          <section class="o-surface" style="margin-top:24px;overflow:hidden">
+            <div style="padding:20px 24px;border-bottom:1px solid var(--o-border);display:flex;gap:12px;align-items:center"><span style="width:44px;height:44px;border-radius:16px;background:var(--o-lav);color:var(--o-purple);display:flex;align-items:center;justify-content:center"><svg class="ic l"><use href="#i-file"/></svg></span><div><h2 style="margin:0;font-size:20px;font-weight:800">Nieuw NotebookLM-pakket</h2><p class="o-muted" style="margin:0">Vul de bronbasis in. Afbeeldingen kun je uploaden of direct plakken.</p></div></div>
+            <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:24px;padding:24px">
+              <div style="display:grid;gap:16px">
+                <div><label class="o-label">Onderwerp / titel</label><div class="o-input" style="color:#94a3b8">Bijvoorbeeld: Wat zijn digitale vaardigheden</div></div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px"><div><label class="o-label caps">Vak</label><div class="o-input">Binask ▾</div></div><div><label class="o-label caps">Leerjaar</label><div class="o-input">Jaar 1 ▾</div></div><div><label class="o-label caps">Niveau</label><div class="o-input">Leerroute 3 ▾</div></div><div><label class="o-label caps">Hoofdstuk</label><div class="o-input">Welkom in Helix ▾</div></div><div><label class="o-label caps">Paragraaf</label><div class="o-input">Ga van start... ▾</div></div></div>
+                <p style="margin:0;font-size:12px;font-weight:700;color:#64748b">Deze koppeling hoort bij de lesstofstructuur. Klassen krijgen lesstof later via taken/toewijzingen.</p>
+                <div><label class="o-label">Leerdoelen</label><div class="o-input" style="min-height:96px;color:#94a3b8">Een leerdoel per regel</div></div>
+                <div><label class="o-label">Brontekst / lesinhoud</label><div class="o-input" style="min-height:140px;color:#94a3b8">Plak of typ theorie, opdrachten, voorbeeldmateriaal en docentnotities.</div></div>
+              </div>
+              <div style="display:grid;gap:16px;align-content:start">
+                <div style="border:1px solid #e2e8f0;background:#f8fafc;border-radius:8px;padding:16px"><div style="display:flex;justify-content:space-between;align-items:center"><div><b style="color:#0f172a">Prompttemplate</b><p class="o-muted" style="margin:0;font-size:13px">Elke export bewaart de prompt als snapshot.</p></div><span style="background:#0f172a;color:#fff;border-radius:8px;padding:8px 16px;font-weight:900;font-size:13px">Bekijk prompt</span></div><div class="o-input" style="margin-top:12px">Helix Quest — standaard ▾</div></div>
+                <div style="border:1px dashed #cbd5e1;background:#fff;border-radius:8px;padding:16px"><div style="display:flex;justify-content:space-between;align-items:center"><div><b style="color:#0f172a">Afbeeldingen</b><p class="o-muted" style="margin:0;font-size:13px">Upload of plak afbeeldingen vanuit je klembord.</p></div><span class="o-tbtn blue"><svg class="ic s"><use href="#i-image"/></svg>Upload</span></div><div style="margin-top:16px;background:#f8fafc;border-radius:8px;padding:24px;text-align:center;color:#94a3b8;font-weight:700;font-size:13px">Klik upload of plak een afbeelding met Ctrl+V.</div></div>
+                <span class="o-btn-primary" style="justify-content:center;padding:16px"><svg class="ic"><use href="#i-file"/></svg>Maak NotebookLM-bestanden</span>
+              </div>
+            </div>
+          </section>
+          <section class="o-surface" style="margin-top:32px;overflow:hidden">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--o-border)"><div><p class="o-eyebrow">Bibliotheek</p><h2 style="margin:0;font-size:20px;font-weight:800">NotebookLM-pakketten</h2></div><svg class="ic l" style="color:#94a3b8"><use href="#i-book"/></svg></div>
+            <table class="o-table">
+              <thead><tr><th>Datum</th><th>Onderwerp</th><th>Prompt</th><th>Bronbestand</th><th>Exportcontract</th><th>NotebookLM deck</th></tr></thead>
+              <tbody>
+                <tr><td class="o-muted">28 aug 2026</td><td><b style="color:#0f172a">Inleiding Binask</b><br><span style="font-size:12px;color:#64748b">Binask &gt; Ga van start...</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span></td><td><span class="o-tbtn blue"><svg class="ic s"><use href="#i-download"/></svg>Download</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>JSON</span> <span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>HTML</span></td>
+                  <td style="min-width:420px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-pill green">Deck geupload</span><span class="o-pill amber">Goedgekeurd</span><a style="color:#1d4ed8;font-weight:900;text-decoration:underline">Open PDF</a></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr .8fr;gap:12px;margin-top:12px"><div class="o-pdfpane"><div>Bron-PDF</div><div>PDF-voorbeeld</div></div><div class="o-pdfpane"><div>NotebookLM-PDF</div><div>PDF-voorbeeld</div></div><div style="border:1px solid #e2e8f0;border-radius:8px;background:#fff;padding:12px"><p class="o-label caps" style="margin:0 0 8px">Reviewchecklist</p><div style="font-size:12px;font-weight:700;color:#334155;display:grid;gap:6px"><span>☑ Brongetrouw</span><span>☑ Voorbeelden en antwoorden gecontroleerd</span><span>☑ Taalniveau passend</span><span>☑ Geen persoonsgegevens</span></div><p style="margin:12px 0 0;background:#f0fdf4;color:#15803d;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:900">Checklist compleet</p></div></div>
+                    <div class="o-input" style="margin-top:12px;min-height:60px;font-size:12px">Bron gecontroleerd tegen "inleiding binask.pdf"; dia 9 aangepast.</div>
+                    <div style="display:flex;gap:8px;margin-top:12px"><span class="o-tbtn">Review nodig</span><span class="o-tbtn on">Goedgekeurd</span><span class="o-tbtn">Docentbesluit</span><span class="o-tbtn">Afgewezen</span></div></td></tr>
+                <tr><td class="o-muted">28 aug 2026</td><td><b style="color:#0f172a">Bi na sk deel 1</b><br><span style="font-size:12px;color:#64748b">Binask &gt; Ga van start...</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span></td><td><span class="o-tbtn blue"><svg class="ic s"><use href="#i-download"/></svg>Download</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>JSON</span> <span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>HTML</span></td><td><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-pill green">Deck geupload</span><span class="o-pill amber">Review nodig</span><a style="color:#1d4ed8;font-weight:900;text-decoration:underline">Open PDF</a></div><p class="o-muted" style="margin:8px 0 0;font-size:12px">(reviewpaneel ingeklapt in deze preview)</p></td></tr>
+                <tr><td class="o-muted">29 aug 2026</td><td><b style="color:#0f172a">Bi na sk deel 2</b><br><span style="font-size:12px;color:#64748b">Binask &gt; Ga van start...</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span></td><td><span class="o-tbtn blue"><svg class="ic s"><use href="#i-download"/></svg>Download</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>JSON</span> <span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>HTML</span></td><td><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-pill green">Deck geupload</span><span class="o-pill amber">Review nodig</span><a style="color:#1d4ed8;font-weight:900;text-decoration:underline">Open PDF</a></div></td></tr>
+                <tr><td class="o-muted">1 sep 2026</td><td><b style="color:#0f172a">Wat zijn digitale vaardigheden</b><br><span style="font-size:12px;color:#64748b">Digitale vaardigheden &gt; Start je digitale hoofdkwartier</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span></td><td><span class="o-tbtn blue"><svg class="ic s"><use href="#i-download"/></svg>Download</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>JSON</span> <span class="o-tbtn"><svg class="ic s"><use href="#i-file"/></svg>HTML</span></td><td><span class="o-tbtn"><svg class="ic s"><use href="#i-upload"/></svg>Upload deck</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="pane nieuw"><p class="label"><i></i>Nieuw — design system v2</p>
+      <div class="frame"><div class="screen n">
+        <div class="n-header">
+          <div style="display:flex;align-items:center"><div class="n-brand"><i></i>HELIX</div>
+            <nav class="n-nav"><span class="n-nav-tab active"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span><span class="n-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span><span class="n-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span><span class="n-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span><span class="n-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span><span class="n-nav-tab"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="dot">3</span></span></nav></div>
+          <div class="n-hdr-right"><span class="n-btn sm"><svg class="ic s"><use href="#i-compass"/></svg>Projectkompas</span><div class="who"><b>Docent Voorbeeld</b><span>Beheer</span></div><span class="n-btn sm icon ghost"><svg class="ic"><use href="#i-logout"/></svg></span></div>
+        </div>
+        <div class="n-container">
+          <p class="n-eyebrow">Lesstof · NotebookLM-workflow</p>
+          <div class="n-titlebar" style="margin-top:4px">
+            <div><h1 class="n-title" style="border:0;padding:0">Slidedecks</h1><p class="n-lead" style="margin-top:6px">Maak bron-PDF en prompt voor NotebookLM. Upload daarna het gegenereerde deck en beoordeel het.</p></div>
+            <span class="n-btn"><svg class="ic s"><use href="#i-plus"/></svg>Prompttemplate</span>
+          </div>
+          <div style="border-top:4px solid var(--ink);margin-top:8px"></div>
+          <section class="n-card" style="margin-top:24px">
+            <div class="n-card-head"><span>Nieuw NotebookLM-pakket</span><span style="font-weight:400">Afbeeldingen: upload of plak met Ctrl+V</span></div>
+            <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:24px;padding:16px">
+              <div style="display:grid;gap:12px">
+                <div><label class="n-label">Onderwerp / titel</label><div class="n-input" style="color:#6b665d">Bijvoorbeeld: Wat zijn digitale vaardigheden</div></div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><div><label class="n-label">Vak</label><div class="n-input sm">Binask ▾</div></div><div><label class="n-label">Leerjaar</label><div class="n-input sm">Jaar 1 ▾</div></div><div><label class="n-label">Niveau</label><div class="n-input sm">Leerroute 3 ▾</div></div><div><label class="n-label">Hoofdstuk</label><div class="n-input sm">Welkom in Helix ▾</div></div><div><label class="n-label">Paragraaf</label><div class="n-input sm">Ga van start... ▾</div></div></div>
+                <p class="n-meta" style="margin:0">Deze koppeling hoort bij de lesstofstructuur; klassen krijgen lesstof via toewijzingen.</p>
+                <div><label class="n-label">Leerdoelen</label><div class="n-input" style="min-height:72px;color:#6b665d">Een leerdoel per regel</div></div>
+                <div><label class="n-label">Brontekst / lesinhoud</label><div class="n-input" style="min-height:110px;color:#6b665d">Plak of typ theorie, opdrachten, voorbeeldmateriaal en docentnotities.</div></div>
+              </div>
+              <div style="display:grid;gap:12px;align-content:start">
+                <div style="border:2px solid var(--ink);border-radius:8px;padding:12px"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>Prompttemplate</b><p class="n-meta" style="margin:0">Elke export bewaart de prompt als snapshot.</p></div><span class="n-btn sm">Bekijk prompt</span></div><div class="n-input sm" style="margin-top:8px">Helix Quest — standaard ▾</div></div>
+                <div style="border:2px dashed var(--ink);border-radius:8px;padding:12px"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>Afbeeldingen</b><p class="n-meta" style="margin:0">Nog geen afbeeldingen.</p></div><span class="n-btn sm"><svg class="ic s"><use href="#i-image"/></svg>Upload</span></div></div>
+                <span class="n-btn primary" style="min-height:48px"><svg class="ic s"><use href="#i-file"/></svg>Maak NotebookLM-bestanden</span>
+              </div>
+            </div>
+          </section>
+          <section class="n-card lift" style="margin-top:24px">
+            <div class="n-card-head"><span>Bibliotheek · 4 pakketten</span><span style="font-weight:400">Nieuwste eerst</span></div>
+            <table class="n-table">
+              <thead><tr><th style="width:110px">Datum</th><th>Onderwerp</th><th style="width:150px">Reviewstatus</th><th style="width:330px">Bestanden</th><th style="width:130px">Deck</th></tr></thead>
+              <tbody>
+                <tr><td>1 sep 2026</td><td><b>Wat zijn digitale vaardigheden</b><br><span class="n-meta">Digitale vaardigheden · Start je digitale hoofdkwartier</span></td><td><span class="n-chip ink"><i></i>Geen deck</span></td><td style="white-space:nowrap"><span class="n-btn sm"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-download"/></svg>Bron</span> <span class="n-btn sm">JSON</span> <span class="n-btn sm">HTML</span></td><td><span class="n-btn sm primary"><svg class="ic s"><use href="#i-upload"/></svg>Upload deck</span></td></tr>
+                <tr><td>29 aug 2026</td><td><b>Bi na sk deel 2</b><br><span class="n-meta">Binask · Ga van start...</span></td><td><span class="n-chip orange"><i></i>Review nodig</span></td><td style="white-space:nowrap"><span class="n-btn sm"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-download"/></svg>Bron</span> <span class="n-btn sm">JSON</span> <span class="n-btn sm">HTML</span></td><td><span class="n-btn sm"><svg class="ic s"><use href="#i-eye"/></svg>Beoordeel</span></td></tr>
+                <tr><td>28 aug 2026</td><td><b>Bi na sk deel 1</b><br><span class="n-meta">Binask · Ga van start...</span></td><td><span class="n-chip orange"><i></i>Review nodig</span></td><td style="white-space:nowrap"><span class="n-btn sm"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-download"/></svg>Bron</span> <span class="n-btn sm">JSON</span> <span class="n-btn sm">HTML</span></td><td><span class="n-btn sm"><svg class="ic s"><use href="#i-eye"/></svg>Beoordeel</span></td></tr>
+                <tr style="background:var(--paper)"><td>28 aug 2026</td><td><b>Inleiding Binask</b><br><span class="n-meta">Binask · Ga van start...</span></td><td><span class="n-chip green"><i></i>Goedgekeurd</span></td><td style="white-space:nowrap"><span class="n-btn sm"><svg class="ic s"><use href="#i-copy"/></svg>Prompt</span> <span class="n-btn sm"><svg class="ic s"><use href="#i-download"/></svg>Bron</span> <span class="n-btn sm">JSON</span> <span class="n-btn sm">HTML</span></td><td><span class="n-btn sm" style="background:var(--yellow)"><svg class="ic s"><use href="#i-up"/></svg>Sluit</span></td></tr>
+                <tr style="background:var(--paper)"><td colspan="5" style="padding:0 12px 16px">
+                  <div style="display:grid;grid-template-columns:1fr 1fr 300px;gap:12px">
+                    <div class="n-pdfpane"><div>Bron-PDF · inleiding binask.pdf</div><div>PDF-voorbeeld</div></div>
+                    <div class="n-pdfpane"><div>NotebookLM-PDF · 14 dia's</div><div>PDF-voorbeeld</div></div>
+                    <div style="border:2px solid var(--ink);border-radius:8px;background:#fff;padding:10px 12px"><b style="font-size:13px">Reviewchecklist 4/4</b><div style="display:grid;gap:4px;margin-top:6px"><span class="n-check"><i class="on"></i>Brongetrouw</span><span class="n-check"><i class="on"></i>Voorbeelden en antwoorden gecontroleerd</span><span class="n-check"><i class="on"></i>Taalniveau passend</span><span class="n-check"><i class="on"></i>Geen persoonsgegevens</span></div></div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:12px;align-items:end">
+                    <div><label class="n-label">Reviewnotitie / onderbouwing</label><div class="n-input sm">Bron gecontroleerd tegen "inleiding binask.pdf"; dia 9 aangepast.</div></div>
+                    <div class="n-seg"><span>Review nodig</span><span class="active">Goedgekeurd</span><span>Docentbesluit</span><span>Afgewezen</span></div>
+                  </div>
+                </td></tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     SCHERM 6: MELDINGEN
+     ==================================================================== -->
+<section class="scherm" id="s-meldingen">
+  <p class="eyebrow">Scherm 6 · /admin/meldingen · AdminMeldingenPage (onder Instellingen)</p>
+  <h2>Meldingen — de meldbel</h2>
+  <div class="notitie">
+    <strong>Wat verandert en waarom.</strong> Statuslabels zijn de echte uit <code>meldingenService.js</code>: Nieuw / Wordt aan gewerkt / Opgelost / Afgehandeld.
+    <ol>
+      <li>Filters Open/Alles/Afgerond worden één segmentknop; "3 nieuwe sinds je laatste bezoek" wordt een oranje aandachtsregel in plaats van een lavendelbanner (oranje = hulp/aandacht, DS p. 6).</li>
+      <li>Statuschips volgen de vaste semantiek: Nieuw blauw (info), Wordt aan gewerkt oranje, Opgelost groen, Afgehandeld inkt-outline; de paarse "Nieuw binnen"-pil wordt een oranje linkerrand op de kaart (ongelezen).</li>
+      <li>Geopende melding: schermafbeelding groot en onbedekt in een inktkader (DS p. 13: bewijs, geen decor), daaronder Status, Antwoord aan de melder en één blauwe "Opslaan".</li>
+      <li>Accenten: BLUE (actie/info) + ORANGE (aandacht); groen alleen op afgeronde status.</li>
+    </ol>
+  </div>
+  <div class="compare">
+    <div class="pane oud"><p class="label"><i></i>Oud — huidige stijl</p>
+      <div class="frame"><div class="screen o">
+        <div class="o-header">
+          <div style="display:flex;align-items:center"><div class="o-logo"><b></b>HELIX</div>
+            <nav class="o-nav"><span class="o-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span><span class="o-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span><span class="o-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span><span class="o-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span><span class="o-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span><span class="o-nav-tab active"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="o-nav-alert"><svg class="ic s" style="width:11px;height:11px"><use href="#i-bell"/></svg></span></span></nav></div>
+          <span class="o-kompas"><svg class="ic"><use href="#i-compass"/></svg>Projectkompas</span>
+          <div class="o-hdr-right"><div class="o-user"><b>Docent Voorbeeld</b><span>Administrator</span></div><svg class="ic l o-muted"><use href="#i-logout"/></svg></div>
+        </div>
+        <div class="o-container">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end">
+            <div><p class="o-eyebrow">Meldingen</p><h1 class="o-h1">Meldbel</h1><p class="o-lead">Alles wat via de bel rechtsonder is gemeld. Je antwoord komt bij de melder terug in diezelfde bel.</p></div>
+            <div style="display:flex;gap:8px"><span class="o-btn-tool sm">Open</span><span class="o-btn-tool sm active">Alles</span><span class="o-btn-tool sm">Afgerond</span></div>
+          </div>
+          <p style="margin:24px 0 0;border:1px solid var(--o-border);background:var(--o-lav);border-radius:16px;padding:12px 16px;font-weight:700;color:var(--o-purple-dark)">3 nieuwe meldingen sinds je laatste bezoek.</p>
+          <div style="display:grid;gap:16px;margin-top:32px">
+            <article class="o-melding new">
+              <div style="padding:16px 20px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-status" style="color:#2860E0;background:#EBF1FF">Nieuw</span><span class="o-status" style="background:var(--o-purple);color:#fff">Nieuw binnen</span><span style="font-size:12px;color:#94a3b8">3 sep, 09:12</span><span class="o-muted" style="font-size:12px;font-weight:700">Noor Bakker (leerling)</span></div><p style="margin:8px 0 0;font-weight:700">De quiz bij Vragenronde springt terug naar vraag 1 als ik op Volgende klik.</p><p class="o-muted" style="margin:4px 0 0;font-size:12px">Pagina: /chapter/paragraaf-binask-start · Venster: 1366×768</p></div>
+              <div style="border-top:1px solid var(--o-border);padding:16px 20px">
+                <div style="height:200px;border:1px solid var(--o-border);border-radius:16px;background:repeating-linear-gradient(45deg,#fff,#fff 10px,#f3f0f8 10px,#f3f0f8 20px);display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px">schermafbeelding (placeholder)</div>
+                <span style="display:inline-flex;gap:4px;align-items:center;margin-top:4px;color:var(--o-purple);font-size:12px;font-weight:700"><svg class="ic s" style="width:12px;height:12px"><use href="#i-ext"/></svg>Groot bekijken</span>
+                <div style="display:grid;grid-template-columns:220px 1fr auto;gap:12px;align-items:end;margin-top:16px"><div><span class="o-label caps">Status</span><div class="o-input" style="margin-top:4px">Nieuw ▾</div></div><div><span class="o-label caps"><svg class="ic s" style="width:12px;height:12px;vertical-align:-2px"><use href="#i-reply"/></svg> Antwoord aan de melder</span><div class="o-input" style="margin-top:4px;color:#94a3b8">Bijv: gevonden en opgelost, dank voor het melden!</div></div><span class="o-btn-tool sm" style="min-height:44px"><svg class="ic s"><use href="#i-save"/></svg>Opslaan</span></div>
+              </div>
+            </article>
+            <article class="o-melding new"><div style="padding:16px 20px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-status" style="color:#2860E0;background:#EBF1FF">Nieuw</span><span class="o-status" style="background:var(--o-purple);color:#fff">Nieuw binnen</span><span style="font-size:12px;color:#94a3b8">2 sep, 11:05</span><span class="o-muted" style="font-size:12px;font-weight:700">R. de Groot (beheer)</span></div><p style="margin:8px 0 0;font-weight:700">Kan geen tweede leerroute toevoegen onder Leerjaar 2; de knop doet niets.</p><p class="o-muted" style="margin:4px 0 0;font-size:12px">Pagina: /admin/cms · Venster: 1920×1080</p></div></article>
+            <article class="o-melding"><div style="padding:16px 20px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-status" style="color:#b45309;background:#fef3c7">Wordt aan gewerkt</span><span style="font-size:12px;color:#94a3b8">2 sep, 14:40</span><span class="o-muted" style="font-size:12px;font-weight:700">Sem de Vries (leerling)</span></div><p style="margin:8px 0 0;font-weight:700">De PDF van deel 2 laadt niet op mijn laptop, alleen een wit vlak.</p><p class="o-muted" style="margin:4px 0 0;font-size:12px">Pagina: /chapter/paragraaf-binask-start · Venster: 1280×720</p></div></article>
+            <article class="o-melding"><div style="padding:16px 20px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-status" style="color:#166534;background:#dcfce7">Opgelost</span><span style="font-size:12px;color:#94a3b8">31 aug, 10:20</span><span class="o-muted" style="font-size:12px;font-weight:700">Lina Jansen (leerling)</span></div><p style="margin:8px 0 0;font-weight:700">Ik kon geen account maken, hij bleef laden.</p><p class="o-muted" style="margin:4px 0 0;font-size:12px">Pagina: /login · Venster: 1366×768</p></div></article>
+            <article class="o-melding"><div style="padding:16px 20px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="o-status" style="color:#64748b;background:#f1f5f9">Afgehandeld</span><span style="font-size:12px;color:#94a3b8">28 aug, 13:02</span><span class="o-muted" style="font-size:12px;font-weight:700">Milan Visser (leerling)</span></div><p style="margin:8px 0 0;font-weight:700">Kan ik meer tokens krijgen voor Turbo Typen?</p><p class="o-muted" style="margin:4px 0 0;font-size:12px">Pagina: /spellen · Venster: 1536×864</p></div></article>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="pane nieuw"><p class="label"><i></i>Nieuw — design system v2</p>
+      <div class="frame"><div class="screen n">
+        <div class="n-header">
+          <div style="display:flex;align-items:center"><div class="n-brand"><i></i>HELIX</div>
+            <nav class="n-nav"><span class="n-nav-tab"><svg class="ic"><use href="#i-book"/></svg>Lesstof</span><span class="n-nav-tab"><svg class="ic"><use href="#i-chart"/></svg>Voortgang</span><span class="n-nav-tab"><svg class="ic"><use href="#i-users"/></svg>Leerlingen</span><span class="n-nav-tab"><svg class="ic"><use href="#i-game"/></svg>Spellen</span><span class="n-nav-tab"><svg class="ic"><use href="#i-pres"/></svg>Presenter</span><span class="n-nav-tab active"><svg class="ic"><use href="#i-gear"/></svg>Instellingen<span class="dot">3</span></span></nav></div>
+          <div class="n-hdr-right"><span class="n-btn sm"><svg class="ic s"><use href="#i-compass"/></svg>Projectkompas</span><div class="who"><b>Docent Voorbeeld</b><span>Beheer</span></div><span class="n-btn sm icon ghost"><svg class="ic"><use href="#i-logout"/></svg></span></div>
+        </div>
+        <div class="n-container">
+          <p class="n-eyebrow">Instellingen · Meldbel</p>
+          <div class="n-titlebar" style="margin-top:4px">
+            <div><h1 class="n-title" style="border:0;padding:0">Meldingen</h1><p class="n-lead" style="margin-top:6px">Alles wat via de bel rechtsonder is gemeld. Je antwoord komt bij de melder terug in diezelfde bel.</p></div>
+            <div class="n-seg"><span>Open <span class="cnt">3</span></span><span class="active">Alles</span><span>Afgerond</span></div>
+          </div>
+          <div style="border-top:4px solid var(--ink);margin-top:8px"></div>
+          <p class="n-hint" style="margin:16px 0 0"><b>3 nieuwe meldingen</b> sinds je laatste bezoek. Kaarten met oranje rand zijn nog niet bekeken.</p>
+          <div style="display:grid;gap:12px;margin-top:16px">
+            <article class="n-melding unread">
+              <div class="row"><span class="n-chip blue"><i></i>Nieuw</span><div><b>De quiz bij Vragenronde springt terug naar vraag 1 als ik op Volgende klik.</b><p class="n-meta">Noor Bakker (leerling) · 3 sep, 09:12 · /chapter/paragraaf-binask-start · 1366×768</p></div><span class="n-btn sm" style="background:var(--yellow)"><svg class="ic s"><use href="#i-up"/></svg>Sluit</span></div>
+              <div style="border-top:2px solid var(--ink);padding:12px 16px 16px">
+                <div class="n-shot">schermafbeelding (placeholder) · <u style="margin-left:6px">groot bekijken</u></div>
+                <div style="display:grid;grid-template-columns:220px 1fr auto;gap:12px;align-items:end;margin-top:12px"><div><label class="n-label">Status</label><div class="n-input">Nieuw ▾</div></div><div><label class="n-label">Antwoord aan de melder</label><div class="n-input" style="color:#6b665d">Bijv.: gevonden en opgelost, dank voor het melden.</div></div><span class="n-btn primary"><svg class="ic s"><use href="#i-save"/></svg>Opslaan</span></div>
+              </div>
+            </article>
+            <article class="n-melding unread"><div class="row"><span class="n-chip blue"><i></i>Nieuw</span><div><b>Kan geen tweede leerroute toevoegen onder Leerjaar 2; de knop doet niets.</b><p class="n-meta">R. de Groot (beheer) · 2 sep, 11:05 · /admin/cms · 1920×1080</p></div><span class="n-btn sm"><svg class="ic s"><use href="#i-down"/></svg>Open</span></div></article>
+            <article class="n-melding"><div class="row"><span class="n-chip orange"><i></i>Wordt aan gewerkt</span><div><b>De PDF van deel 2 laadt niet op mijn laptop, alleen een wit vlak.</b><p class="n-meta">Sem de Vries (leerling) · 2 sep, 14:40 · /chapter/paragraaf-binask-start · 1280×720</p></div><span class="n-btn sm"><svg class="ic s"><use href="#i-down"/></svg>Open</span></div></article>
+            <article class="n-melding"><div class="row"><span class="n-chip green"><i></i>Opgelost</span><div><b>Ik kon geen account maken, hij bleef laden.</b><p class="n-meta">Lina Jansen (leerling) · 31 aug, 10:20 · /login · 1366×768</p></div><span class="n-btn sm"><svg class="ic s"><use href="#i-down"/></svg>Open</span></div></article>
+            <article class="n-melding"><div class="row"><span class="n-chip ink"><i></i>Afgehandeld</span><div><b>Kan ik meer tokens krijgen voor Turbo Typen?</b><p class="n-meta">Milan Visser (leerling) · 28 aug, 13:02 · /spellen · 1536×864</p></div><span class="n-btn sm"><svg class="ic s"><use href="#i-down"/></svg>Open</span></div></article>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<div class="intro" style="margin-top:16px">
+  <h2>Open vragen voor de beoordeling</h2>
+  <ul>
+    <li><strong>Statuskleuren vs. twee-accentenregel.</strong> Voortgang, Slidedecks en Meldingen tonen vier semantische statussen. Voorstel: statussen gelden als data (zoals inhoudsbeelden in het DS) en tellen niet als UI-accent, mits altijd met tekst of letterkort. Akkoord, of moeten statussen naar inkt-only met alleen rood/groen?</li>
+    <li><strong>Bangers op werkvlaktitels.</strong> In de CMS is de paragraaftitel ("Ga van start...") nu in Bangers gezet als paginatitel van het werkvlak. Alternatief: Bangers alleen op "LESSTOF" en de paragraaftitel in Atkinson bold.</li>
+    <li><strong>Geel als "hier ben je".</strong> Geel is gebruikt voor de actieve navigatietab (inkt-op-geel), de gekozen paragraaf in de boom, de gekozen klas en kopstroken van kaarten. Is dat te veel geel voor een scherm dat uren open staat, of precies het anker?</li>
+    <li><strong>Ingeklapte CMS-secties.</strong> Routekwaliteit, routepatroon en het lesbloktype-grid staan in "nieuw" ingeklapt/compact om het lesblok eerder in beeld te krijgen. Dit is een layoutkeuze, geen nieuwe functie; moet de standaardstand open blijven?</li>
+    <li><strong>Header-tools.</strong> "Leerlingen wissen" en "CMS reset" (rode knoppen in de oude header) zijn in "nieuw" weggelaten uit de kop; voorstel is die onder Instellingen te laten wonen. Akkoord?</li>
+  </ul>
+</div>
+
+
+
+</main>
+
+<script>
+(function(){
+  var body=document.body, zoomSel=document.getElementById('zoom');
+  function fit(){
+    var mode=zoomSel.value;
+    document.querySelectorAll('.frame').forEach(function(f){
+      var s=f.querySelector('.screen'); if(!s) return;
+      var z = mode==='fit' ? Math.min(1,(f.clientWidth-4)/1360) : parseFloat(mode);
+      s.style.setProperty('--z', z.toFixed(3));
+    });
+  }
+  document.querySelectorAll('.seg button[data-view]').forEach(function(b){
+    b.addEventListener('click',function(){
+      body.setAttribute('data-view',b.getAttribute('data-view'));
+      document.querySelectorAll('.seg button[data-view]').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+      fit();
+    });
+  });
+  zoomSel.addEventListener('change',fit);
+  window.addEventListener('resize',fit);
+  fit();
+})();
+</script>
+</body>
+</html>
