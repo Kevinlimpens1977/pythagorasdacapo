@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slidedecks oud vs nieuw – Helix Slide Design System v2 (tijdelijke preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TIJDELIJKE PREVIEW – oppervlak 05: de slidedecks zelf
+   Alles inline. Enige externe bron: Google Fonts (Bangers + Atkinson Hyperlegible).
+   Elke dia is ontworpen op 1920×1080 en wordt met CSS geschaald,
+   zodat de maten uit het design system letterlijk kloppen.
+   ============================================================ */
+:root{
+  --ink:#0B0D0F; --paper:#FFF7E8; --yellow:#FFD33D; --blue:#087EB5; --teal:#0D8F93;
+  --orange:#F47A20; --red:#D83A2E; --green:#2E9D63; --purple:#793AC7;
+  --display:'Bangers', Impact, 'Arial Narrow Bold', sans-serif;
+  --text:'Atkinson Hyperlegible', Arial, Helvetica, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#E9E3D6;color:#1a1a1a;font-family:var(--text);font-size:15px;line-height:1.45;overflow-x:hidden}
+
+/* ---------- pagina-chrome ---------- */
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:3px solid var(--ink);padding:12px 24px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.top h1{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.5px;margin:0}
+.top h1 small{font-family:var(--text);font-size:13px;letter-spacing:0;color:#666;margin-left:10px}
+.switch{display:inline-flex;border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.switch button{border:0;background:#fff;padding:8px 16px;font:700 14px var(--text);cursor:pointer;color:var(--ink)}
+.switch button+button{border-left:2px solid var(--ink)}
+.switch button[aria-pressed="true"]{background:var(--yellow)}
+.top .hint{font-size:13px;color:#555}
+main{max-width:1400px;margin:0 auto;padding:24px 24px 80px}
+.intro{background:#fff;border:2px solid var(--ink);border-radius:12px;padding:16px 20px;margin-bottom:28px}
+.intro h2{margin:0 0 8px}
+.intro p{margin:6px 0}
+.intro .sw{display:inline-block;width:14px;height:14px;border:1px solid #0003;border-radius:3px;vertical-align:-2px;margin-right:4px}
+section{margin-bottom:56px}
+section>h2{font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.5px;margin:0 0 4px;border-bottom:3px solid var(--ink);padding-bottom:4px}
+section>p.lead{margin:8px 0 20px;color:#444;max-width:900px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:40px;align-items:start}
+.pair.tall .col.nieuw{display:grid;gap:16px}
+.col .tag{display:inline-block;font:700 12px/1 var(--text);letter-spacing:1.5px;text-transform:uppercase;padding:6px 10px;border-radius:6px;margin-bottom:8px}
+.col.oud .tag{background:#9a9a9a;color:#fff}
+.col.nieuw .tag{background:var(--ink);color:var(--yellow)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.note{font-size:13px;line-height:1.45;margin-top:8px;background:#fff;padding:10px 12px;border-left:5px solid var(--yellow);border-radius:0 8px 8px 0}
+.note b{color:var(--ink)}
+.col.oud .note{border-left-color:#9a9a9a}
+body.mode-oud .col.nieuw, body.mode-oud #deelB, body.mode-oud #deelC{display:none !important}
+body.mode-nieuw .col.oud{display:none !important}
+body.mode-oud .pair, body.mode-nieuw .pair{grid-template-columns:1fr;max-width:1000px}
+.modemsg{display:none;background:#fff;border:2px dashed #999;padding:12px 16px;border-radius:10px;color:#555}
+body.mode-oud .modemsg{display:block}
+
+/* ---------- 16:9-kader + schaling ---------- */
+.frame{container-type:inline-size;width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;box-shadow:0 3px 14px rgba(0,0,0,.18);background:#000;border-radius:4px}
+.slide{position:absolute;top:0;left:0;width:1920px;height:1080px;transform-origin:0 0;transform:scale(.35);overflow:hidden}
+.frame.small{width:480px;max-width:100%}
+.frame.grijs .slide{filter:grayscale(1)}
+
+/* ============================================================
+   OUD – nabouw van de huidige NotebookLM/Gemini-stijl
+   (bewust: wisselende pil-kleuren, wisselende fonts, kleine tekst,
+   watermerk, AI-tekstfouten overgenomen zoals ze op de dia staan)
+   ============================================================ */
+.o{background:#FBF4E3;color:#111;font-family:Roboto, Arial, Helvetica, sans-serif}
+.o .band{position:absolute;top:0;left:0;right:0;height:86px;background:#F6C949;border-bottom:4px solid #111;display:flex;align-items:center;padding:0 40px;gap:26px}
+.o .band.center{justify-content:center;border-bottom:0;height:92px}
+.o .pill{font-weight:700;font-size:28px;padding:8px 22px;border-radius:12px;border:3px solid #111;color:#fff}
+.o .pill.blauw{background:#2B7CD3}
+.o .pill.blauw2{background:#2E86D6;border:0;border-radius:24px;font-size:30px;padding:12px 32px}
+.o .ttl{font-weight:700;font-size:34px}
+.o .img{position:absolute;border:5px solid #111;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+.o .img .lab{font-style:italic;font-size:26px;color:#fff;background:rgba(0,0,0,.55);padding:10px 18px;border-radius:8px;max-width:88%;line-height:1.3}
+.o .img.neon{background:radial-gradient(circle at 30% 30%,#2fd3c6 0,#1a4d6e 35%,#0e1f3a 100%)}
+.o .img.neon::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 60px,rgba(0,255,220,.12) 60px 62px),repeating-linear-gradient(0deg,transparent 0 60px,rgba(255,180,0,.12) 60px 62px)}
+.o .img.split2{background:linear-gradient(90deg,#8ac3a1 0 50%,#6fa9c4 50% 100%)}
+.o .img.donker{background:linear-gradient(160deg,#0f3f46,#1f6b73 60%,#d8b25c)}
+.o .img.kast{background:linear-gradient(180deg,#e9dcc0,#b98e5a)}
+.o .box{position:absolute;border:4px solid #111;background:#F3EEDD;padding:32px 36px;font-size:40px;font-weight:700;line-height:1.15;box-shadow:10px 10px 0 #111}
+.o .white{position:absolute;background:#fff;padding:60px 56px}
+.o .white h3{color:#2C6FB5;font-size:44px;margin:0 0 30px;line-height:1.15}
+.o .white ul{margin:0;padding-left:40px;font-size:36px;line-height:1.25}
+.o .white li{margin-bottom:28px}
+.o .white li::marker{color:#2C6FB5}
+.o .dense{position:absolute;border:4px solid #111;background:#F7F1E0;padding:22px 30px;font-size:27px;line-height:1.25}
+.o .dense h4{font-size:30px;margin:0 0 10px}
+.o .dense ul{margin:4px 0 12px;padding-left:34px}
+.o .dense li{margin-bottom:2px}
+.o .dense p{margin:0 0 6px}
+.o .lbl{position:absolute;top:14px;left:40px;font-size:20px;color:#555;letter-spacing:1px}
+.o .wm{position:absolute;right:22px;bottom:14px;font-size:20px;color:#666;background:#eee;padding:4px 12px;border-radius:6px}
+
+/* ============================================================
+   NIEUW – Helix Slide Design System v2
+   Tokens: paper canvas, gele titelzone 120 px met ink-lijn,
+   Bangers voor koppen (max 6 woorden), Atkinson voor leestekst.
+   Raster: marge 96, gutter 24, 12 kolommen (kolom = 122 px).
+   ============================================================ */
+.n{background:var(--paper);color:var(--ink);font-family:var(--text)}
+.n .band{position:absolute;top:0;left:0;right:0;height:120px;background:var(--yellow);border-bottom:8px solid var(--ink);display:flex;align-items:center;padding:0 96px;gap:32px}
+.n .fase{font-family:var(--display);font-size:32px;line-height:1;background:var(--ink);color:var(--yellow);padding:12px 22px 10px;border-radius:10px;letter-spacing:1.5px;white-space:nowrap}
+.n .fase.hulp{background:var(--orange);color:var(--ink)}
+.n .fase.klaar{background:var(--green);color:#fff}
+.n .fase.ghost{background:transparent;color:var(--ink);border:4px solid var(--ink);padding:8px 18px 6px}
+.n h1{font-family:var(--display);font-weight:400;font-size:46px;line-height:1;margin:0;letter-spacing:1px;text-transform:uppercase}
+.n h1.deck{font-size:66px}
+.n .timer{position:absolute;right:96px;top:24px;width:360px;height:72px;background:var(--ink);color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border:4px solid var(--paper);outline:4px solid var(--ink)}
+.n .timer .lbl{font-size:22px;letter-spacing:3px;text-transform:uppercase;font-weight:700}
+.n .timer .val{font-family:var(--display);font-size:40px;letter-spacing:3px;line-height:1}
+.n .body{position:absolute;top:128px;left:0;right:0;bottom:0;padding:40px 96px 48px}
+.n .instr{font-size:32px;line-height:1.3;margin:0}
+.n .instr b{font-weight:700}
+.n .label{font-size:26px;line-height:1.3}
+.n .meta{font-size:20px;color:#3b3b3b}
+.n .succes{display:inline-flex;gap:18px;align-items:center;border:4px solid var(--ink);border-radius:14px;padding:12px 24px 12px 14px;font-size:28px;line-height:1.2;background:#fff}
+.n .succes .chip{background:var(--green);color:#fff;font-family:var(--display);padding:8px 16px 6px;border-radius:8px;font-size:28px;letter-spacing:1px;line-height:1;white-space:nowrap}
+.n .succes .chip::before{content:"✓ "}
+.n .hulpchip{display:inline-flex;gap:14px;align-items:center;font-size:24px;color:var(--ink)}
+.n .hulpchip .c{background:var(--orange);color:var(--ink);font-family:var(--display);padding:6px 12px 4px;border-radius:8px;font-size:22px;letter-spacing:1px}
+/* placeholders voor vakbeelden: renderrecept = warme keylight + koele teal fill, zwarte contour */
+.ph{border:6px solid var(--ink);border-radius:18px;background:linear-gradient(135deg,#FFE7A3 0%,#FFF1CF 45%,#BFE5E3 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;position:relative;overflow:hidden}
+.ph svg{height:52%;width:auto;max-width:70%}
+.ph .cap{font-size:24px;line-height:1.25;color:var(--ink);background:rgba(255,255,255,.88);border:2px solid var(--ink);padding:8px 18px;border-radius:10px;text-align:center;max-width:82%}
+.ph .cap small{display:block;font-size:20px;color:#444}
+.ph.marker::after{content:"";position:absolute;width:150px;height:150px;border:12px solid var(--yellow);outline:6px solid var(--ink);border-radius:50%;right:16%;top:22%;pointer-events:none}
+/* route-strip KIJK → DOE → CHECK → KLAAR */
+.route{display:flex;align-items:center;gap:16px}
+.route .st{font-family:var(--display);font-size:32px;letter-spacing:1.5px;border:4px solid var(--ink);border-radius:10px;padding:10px 24px 8px;background:#fff;line-height:1}
+.route .st.act{background:var(--yellow)}
+.route .ar{font-size:36px;font-weight:700}
+/* multipanel */
+.panels{display:grid;gap:24px}
+.panel{border:6px solid var(--ink);border-radius:18px;background:#fff;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:56px 24px 24px;text-align:center}
+.panel .abc{position:absolute;top:-4px;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:var(--yellow);border:5px solid var(--ink);font-family:var(--display);font-size:34px;display:flex;align-items:center;justify-content:center;line-height:1;padding-top:3px}
+.panel .pt{font-family:var(--display);font-size:38px;letter-spacing:1px;line-height:1}
+.panel .ps{font-size:26px;line-height:1.3;color:#333}
+.panel svg{height:150px;width:auto}
+.panel.goed{border-color:var(--green);box-shadow:0 0 0 10px var(--green) inset;background:#EEF8F1}
+.panel.goed .abc{background:var(--green);color:#fff}
+.panel .juist{position:absolute;right:14px;top:10px;font-family:var(--display);font-size:30px;color:var(--green)}
+.panel.dim{opacity:.55}
+/* procedure-stappen */
+.steps{display:grid;gap:20px}
+.step{display:flex;gap:20px;align-items:flex-start;font-size:32px;line-height:1.3}
+.step .num{flex:0 0 64px;height:64px;border-radius:50%;background:var(--ink);color:var(--yellow);font-family:var(--display);font-size:36px;display:flex;align-items:center;justify-content:center;padding-top:3px;line-height:1}
+/* burst (max één per dia, alleen aan de rand) */
+.burst{position:absolute;pointer-events:none}
+.n .kader{border:4px solid var(--ink);border-radius:14px;background:#fff;padding:20px 26px}
+</style>
+</head>
+<body class="mode-side">
+
+<header class="top">
+  <h1>05 · Slidedecks <small>Helix Slide Design System v2 – tijdelijke beoordelingspagina, niets is doorgevoerd</small></h1>
+  <div class="switch" role="group" aria-label="Weergave">
+    <button type="button" data-mode="side" aria-pressed="true">Naast elkaar</button>
+    <button type="button" data-mode="oud" aria-pressed="false">Alleen oud</button>
+    <button type="button" data-mode="nieuw" aria-pressed="false">Alleen nieuw</button>
+  </div>
+  <span class="hint">Elke dia is op 1920×1080 ontworpen en met CSS geschaald; maten in de notities zijn canvasmaten.</span>
+</header>
+
+<main>
+  <div class="intro">
+    <h2>Wat je hier ziet</h2>
+    <p><b>OUD</b> = nabouw in HTML van de huidige Binask-decks uit NotebookLM (Gemini Notebook). Eerlijk samengevat: crème canvas met (meestal) een gele bovenbalk, maar de fase-pil wisselt per dia van kleur en vorm; koppen wisselen tussen comic-font, vette ronde sans en gewone sans; beeldstijlen lopen van neon-cyberlab tot bijna-foto; tekstvlakken variëren van 8 tot ruim 80 woorden; antwoorddia's dragen het antwoord met kleur (groen/blauw/paars); AI-tekstfouten zitten ingebakken; overal een watermerk; nergens een succescriterium, HULP of KLAAR.</p>
+    <p><b>NIEUW</b> = dezelfde inhoud volgens het design system v2. Vakbeelden en screenshots zijn hier SVG-placeholders met een label; in de echte dia komt daar het 3D-comic-beeld (renderrecept p.14) of de exacte screenshot.</p>
+    <p>Tokens: <span class="sw" style="background:#0B0D0F"></span>INK <span class="sw" style="background:#FFF7E8"></span>PAPER <span class="sw" style="background:#FFD33D"></span>YELLOW <span class="sw" style="background:#087EB5"></span>BLUE <span class="sw" style="background:#0D8F93"></span>TEAL <span class="sw" style="background:#F47A20"></span>ORANGE <span class="sw" style="background:#D83A2E"></span>RED <span class="sw" style="background:#2E9D63"></span>GREEN <span class="sw" style="background:#793AC7"></span>PURPLE · Fonts: Bangers (koppen) + Atkinson Hyperlegible (leestekst).</p>
+    <p class="modemsg">Weergave "alleen oud": deel B en C bevatten uitsluitend nieuwe dia's en zijn daarom verborgen.</p>
+  </div>
+
+  <!-- ============================================================ DEEL A -->
+  <section id="deelA">
+    <h2>Deel A · Oud versus nieuw (drie Binask-dia's)</h2>
+    <p class="lead">Drie dia's uit de huidige decks: een titeldia, een uitlegdia met beeld en een dia met veel tekst. Links de nabouw van wat er nu staat, rechts dezelfde inhoud in de juiste slidefamilie.</p>
+
+    <!-- A1: titeldia -->
+    <div class="pair">
+      <div class="col oud">
+        <span class="tag">Oud · inleiding binask, dia 1</span>
+        <div class="frame"><div class="slide o">
+          <div class="band"><span class="pill blauw">FASE: KIJK</span><span class="ttl">Introductie en Par 1</span></div>
+          <div class="img split2" style="left:30px;top:130px;width:1250px;height:910px">
+            <div class="lab">AI-beeld, tweeluik: varen op een blok aarde | kristalcluster (comic-lijnstijl, koele tinten)</div>
+          </div>
+          <div class="box" style="left:1310px;top:130px;width:580px;height:910px">
+            Onze samenleving zou niet bestaan zonder zonder natuurwetenschappen
+            <div style="display:flex;gap:80px;margin-top:70px"><span>levende<br>natuur</span><span>levenloze<br>natuur</span></div>
+          </div>
+          <div class="wm">Gemini Notebook</div>
+        </div></div>
+        <div class="note"><b>Wat er nu staat.</b> Een KIJK-pil (blauw, met kader) plus een neutrale titel "Introductie en Par 1"; het tweeluik is 65% van de dia, de tekstkolom is vet 40 px in een kader met harde slagschaduw. AI-tekstfout ("zonder zonder") is ingebakken in het beeld en niet te corrigeren. Geen doel, geen route, geen benodigdheden. Watermerk rechtsonder. 15 woorden.</div>
+      </div>
+      <div class="col nieuw">
+        <span class="tag">Nieuw · ROUTE/START · STATUS</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">START</span><h1 class="deck">Bi, NaSk1 en NaSk2</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:876px 1fr;gap:24px;align-items:stretch">
+            <div class="ph" style="height:100%">
+              <svg viewBox="0 0 200 120" fill="none" stroke="#0B0D0F" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"><rect x="10" y="80" width="80" height="30" fill="#c58b4a"/><path d="M50 80 V45 M50 60 C30 55 25 40 28 30 C40 32 50 45 50 60 M50 50 C70 45 75 30 72 22 C60 24 50 38 50 50" fill="#7cc46b"/><path d="M120 110 L110 70 L135 40 L150 60 L160 30 L185 75 L190 110 Z" fill="#9fd9e6"/><path d="M135 40 L145 110 M160 30 L170 110" /></svg>
+              <div class="cap">3D-comic: plant op een blok aarde naast een kristal<small>levende natuur | levenloze natuur – zonder tekst gerenderd</small></div>
+            </div>
+            <div style="display:grid;grid-template-rows:auto auto 1fr auto;gap:24px">
+              <div class="kader"><div class="meta" style="font-weight:700;letter-spacing:2px">DOEL</div><p class="instr" style="margin-top:6px">Je weet welk vak hoort bij levende en bij levenloze natuur.</p></div>
+              <div class="kader"><div class="meta" style="font-weight:700;letter-spacing:2px">NODIG</div><p class="instr" style="margin-top:6px">Wisbordje en stift.</p></div>
+              <div></div>
+              <div><div class="meta" style="font-weight:700;letter-spacing:2px;margin-bottom:10px">ROUTE</div>
+                <div class="route"><span class="st act">Kijk</span><span class="ar">→</span><span class="st">Doe</span><span class="ar">→</span><span class="st">Check</span><span class="ar">→</span><span class="st">Klaar</span></div></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> KIJK (start) · <b>familie</b> ROUTE/START · <b>kernlayout</b> STATUS (centraal bewijs + korte boodschap) · 23 woorden.<br>Decktitel Bangers 66 px (binnen 54-72), titelzone 120 px, marge 96, beeld 7 van 12 kolommen. Doel, benodigdheden en route als drie rustige tokens; de leerroute KIJK→DOE→CHECK→KLAAR is zichtbaar vanaf dia 1. De AI-tekstfout verdwijnt omdat tekst nooit meer in het beeld zit.</div>
+      </div>
+    </div>
+
+    <!-- A2: uitlegdia met beeld -->
+    <div class="pair">
+      <div class="col oud">
+        <span class="tag">Oud · inleiding binask, dia 5</span>
+        <div class="frame"><div class="slide o">
+          <div class="band center"><span class="pill blauw2">FASE: KIJK</span></div>
+          <div class="img donker" style="left:0;top:92px;width:960px;height:988px;border:0">
+            <div class="lab">AI-beeld: batterij 4,5 V, snoeren en brandend lampje op een houten tafel (teal/geel gloed)</div>
+          </div>
+          <div class="white" style="left:960px;top:92px;width:960px;height:988px">
+            <h3>NaSk1(Natuurkunde): gaat over levenloze natuur</h3>
+            <ul>
+              <li>Over verschijnselen (iets dat je waarneemt), zoals:</li>
+              <li>licht, warmte, energie, elektriciteit, krachten, magnetisme, geluid enz.</li>
+              <li>Na een natuurkundeproefje houd je precies dezelfde stoffen over dan ervoor!</li>
+            </ul>
+          </div>
+          <div class="wm">Gemini Notebook</div>
+        </div></div>
+        <div class="note"><b>Wat er nu staat.</b> Zelfde deck, andere pil: nu een ronde blauwe pil gecentreerd, zonder titel. Beeld en tekst ieder 50%, dus het beeld is geen primair beeld meer. Blauwe kop 44 px, bullets 36 px, 31 woorden, één uitroepteken, "dan ervoor" (taalfout). Beeldstijl (donker, gloed) wijkt af van dia 1 en 3 van hetzelfde deck.</div>
+      </div>
+      <div class="col nieuw">
+        <span class="tag">Nieuw · KIJK · SPLIT</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">KIJK</span><h1>Natuurkunde: levenloze natuur</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:1144px 1fr;gap:24px">
+            <div class="ph" style="height:100%">
+              <svg viewBox="0 0 220 120" fill="none" stroke="#0B0D0F" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"><rect x="20" y="60" width="70" height="45" rx="6" fill="#F47A20"/><rect x="35" y="50" width="12" height="10" fill="#0B0D0F"/><rect x="63" y="50" width="12" height="10" fill="#0B0D0F"/><path d="M41 50 C40 20 120 10 150 30" /><path d="M69 50 C80 30 140 60 150 60"/><circle cx="160" cy="40" r="22" fill="#FFD33D"/><rect x="150" y="60" width="20" height="12" fill="#9aa"/><path d="M130 15 L120 5 M190 15 L200 5 M160 8 V0"/></svg>
+              <div class="cap">3D-comic: batterij 4,5 V, snoeren en brandend lampje op tafel<small>warme keylight, teal fill, één silhouet – zonder tekst gerenderd</small></div>
+            </div>
+            <div style="display:grid;grid-template-rows:1fr auto;gap:24px">
+              <div class="kader" style="display:flex;flex-direction:column;justify-content:center;gap:28px">
+                <p class="instr">Kijk: natuurkunde gaat over wat je waarneemt. Licht, warmte, elektriciteit, magnetisme en geluid.</p>
+                <p class="instr">Na de proef heb je nog precies dezelfde stoffen.</p>
+              </div>
+              <div class="meta">Voorbeeld: het lampje brandt, de stoffen blijven gelijk.</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> KIJK · <b>familie</b> KIJK (voorbeeld / juiste toestand) · <b>kernlayout</b> SPLIT, beeld 8 van 12 kolommen (67% breedte) · 22 woorden op de dia + 3-woords kop.<br>Kop max zes woorden in Bangers 46 px; leestekst Atkinson 32 px, links uitgelijnd, geen uitroepteken, twee tekstblokken van elk max drie regels. Fase-chip altijd zwart-op-geel, dus geen kleurroulette meer. Watermerk vervalt.</div>
+      </div>
+    </div>
+
+    <!-- A3: dia met veel tekst -> gesplitst -->
+    <div class="pair tall">
+      <div class="col oud">
+        <span class="tag">Oud · introductie binask deel 2, dia 4</span>
+        <div class="frame"><div class="slide o">
+          <div class="lbl">KIJK / SPLIT</div>
+          <div class="img kast" style="left:30px;top:50px;width:860px;height:990px">
+            <div class="lab" style="color:#222;background:rgba(255,255,255,.7)">AI-beeld: metalen stellingkast met brood, fruit, potten, schoonmaakmiddelen en jerrycans (comic-stijl, warm)</div>
+          </div>
+          <div class="dense" style="left:920px;top:50px;width:970px;height:990px">
+            <h4>Stoffen ordenen (sorteren)</h4>
+            <p>Je herkent stoffen aan hun stofeigenschappen:</p>
+            <ul>
+              <li><b>Geur</b>: bv. alcohol en terpentine</li>
+              <li><b>Kleur</b>: koper is rood-oranje, goud is geel, lood is grijs</li>
+              <li><b>Smaak</b>: suiker smaakt zoet, keukenzout smaakt zout</li>
+              <li><b>Brandbaarheid</b>: benzine is brandbaar, water niet</li>
+            </ul>
+            <p><b>Je mag niet zomaar stoffen bij elkaar in de kast zetten.</b><br>Je maakt groepen stoffen en let op de toepassing:</p>
+            <ul>
+              <li>voedingsmiddelen</li><li>medicijnen</li><li>schoonmaakmiddelen</li><li>brandstoffen</li>
+            </ul>
+          </div>
+          <div class="wm">Gemini Notebook</div>
+        </div></div>
+        <div class="note"><b>Wat er nu staat.</b> Geen gele titelzone, alleen een klein grijs label "KIJK / SPLIT" (20 px, vanaf de achterwand onleesbaar). Rechts 62 woorden in 27 px, twee lijsten, twee cognitieve opdrachten (herkennen én sorteren) op één dia. Beeld 45%, tekst 50%. Kop in gewone sans, geen Bangers.</div>
+      </div>
+      <div class="col nieuw">
+        <div>
+        <span class="tag">Nieuw 1 van 2 · KIJK · MULTIPANEL (FOCUS)</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">KIJK</span><h1>Zo herken je een stof</h1></div>
+          <div class="body" style="display:grid;grid-template-rows:auto 1fr;gap:32px">
+            <p class="instr">Kijk: elke stof heeft eigenschappen waaraan je hem herkent.</p>
+            <div class="panels" style="grid-template-columns:repeat(4,1fr)">
+              <div class="panel"><span class="abc">A</span><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linecap="round"><path d="M50 90 C30 90 25 70 35 60 L40 30 H60 L65 60 C75 70 70 90 50 90Z" fill="#BFE5E3"/><path d="M30 20 C35 10 40 20 45 10 M55 20 C60 10 65 20 70 10"/></svg><div class="pt">Geur</div><div class="ps">alcohol, terpentine</div></div>
+              <div class="panel"><span class="abc">B</span><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5"><rect x="10" y="25" width="24" height="50" fill="#F47A20"/><rect x="38" y="25" width="24" height="50" fill="#FFD33D"/><rect x="66" y="25" width="24" height="50" fill="#9aa0a6"/></svg><div class="pt">Kleur</div><div class="ps">koper rood-oranje, goud geel, lood grijs</div></div>
+              <div class="panel"><span class="abc">C</span><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linecap="round"><path d="M20 40 C20 80 80 80 80 40 Z" fill="#F0A0A8"/><path d="M50 40 V70"/><circle cx="30" cy="20" r="6" fill="#fff"/><circle cx="70" cy="20" r="6" fill="#fff"/></svg><div class="pt">Smaak</div><div class="ps">suiker zoet, zout zout</div></div>
+              <div class="panel"><span class="abc">D</span><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round"><path d="M50 90 C25 90 20 65 35 50 C35 65 45 65 45 55 C45 40 55 30 55 15 C70 30 85 50 80 70 C78 82 65 90 50 90Z" fill="#F47A20"/><path d="M50 90 C40 88 38 75 45 68 C45 78 55 78 55 68 C62 75 60 88 50 90Z" fill="#FFD33D"/></svg><div class="pt">Brandbaarheid</div><div class="ps">benzine wel, water niet</div></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> KIJK · <b>familie</b> MULTIPANEL · <b>kernlayout</b> FOCUS · 9 woorden instructie + 4 labels + 17 woorden panel-tekst = 30.<br>Regel toegepast: "kort in of splits de dia; verklein nooit onder de minimummaat". De oude dia wordt twee dia's. Vier gelijkwaardige panelen (zelfde maat, zelfde gewicht) met vaste A-D-labels; leesrichting links→rechts; kleur in de panelen is vakinhoud (koper, goud, lood), niet UI-semantiek.</div>
+        </div>
+        <div>
+        <span class="tag">Nieuw 2 van 2 · DOE · SPLIT</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">DOE</span><h1>Sorteer de kast</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:1144px 1fr;gap:24px">
+            <div class="ph" style="height:100%">
+              <svg viewBox="0 0 200 130" fill="none" stroke="#0B0D0F" stroke-width="6" stroke-linejoin="round"><rect x="20" y="5" width="160" height="120" fill="#e9d5b0"/><path d="M20 35 H180 M20 65 H180 M20 95 H180"/><rect x="30" y="15" width="18" height="18" fill="#7cc46b"/><rect x="55" y="12" width="14" height="21" fill="#FFD33D"/><rect x="30" y="45" width="14" height="18" fill="#fff"/><rect x="50" y="45" width="14" height="18" fill="#fff"/><rect x="30" y="75" width="18" height="18" fill="#087EB5"/><rect x="55" y="75" width="18" height="18" fill="#0D8F93"/><rect x="30" y="105" width="22" height="18" fill="#D83A2E"/><rect x="60" y="105" width="22" height="18" fill="#D83A2E"/></svg>
+              <div class="cap">3D-comic: stellingkast met vier lege planken en een krat stoffen ervoor<small>frontal standpunt, rustige negatieve ruimte rechts</small></div>
+            </div>
+            <div style="display:grid;grid-template-rows:1fr auto;gap:24px">
+              <div class="kader" style="display:flex;align-items:center">
+                <p class="instr">Zet stoffen met dezelfde toepassing bij elkaar: voedingsmiddelen, medicijnen, schoonmaakmiddelen, brandstoffen.</p>
+              </div>
+              <div class="succes"><span class="chip">Gelukt</span><span>als benzine niet naast de suiker staat.</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> DOE · <b>familie</b> DOE (één handeling) · <b>kernlayout</b> SPLIT, beeld 67% breedte · 12 woorden instructie + 8 woorden succes = 20 (+ kop 3).<br>Werkwoord vooraan ("Zet"), één observeerbare actie, verplicht succescriterium in de vaste "Gelukt als…"-vorm; groen is hier het enige functionele accent en draagt niet het antwoord (vinkje + tekst blijven in grijswaarden leesbaar).</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ DEEL B -->
+  <section id="deelB">
+    <h2>Deel B · De familie compleet (negen dia's, één mini-les)</h2>
+    <p class="lead">Eén voorbeelddia per slidefamilie, verdeeld over de drie kernlayouts: FOCUS (WACHT, DOE, MULTIPANEL), SPLIT (KIJK, KORTE PROCEDURE, HULP) en STATUS (ROUTE/START, CHECK, KLAAR). Onderwerp: de Binask-quizvraag "Een ijzeren spijker begint te roesten: biologie, natuurkunde of scheikunde?" plus twee onderzoeksvaardigheden uit paragraaf 2. Alleen MULTIPANEL heeft een timer; die loopt af naar CHECK.</p>
+    <div class="grid">
+
+      <!-- B1 ROUTE/START -->
+      <div class="col nieuw">
+        <span class="tag">1 · ROUTE/START · STATUS</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">START</span><h1 class="deck">Welk vak hoort erbij?</h1></div>
+          <div class="body" style="display:grid;grid-template-rows:1fr auto;gap:32px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:stretch">
+              <div class="ph" style="grid-column:span 1"><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linecap="round"><path d="M50 95 V40 M50 60 C30 55 25 40 28 30 C40 32 50 45 50 60 M50 50 C70 45 75 30 72 22 C60 24 50 38 50 50" fill="#7cc46b"/></svg><div class="cap">Biologie</div></div>
+              <div class="ph"><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5"><circle cx="50" cy="40" r="22" fill="#FFD33D"/><rect x="40" y="62" width="20" height="14" fill="#9aa"/><path d="M20 20 L28 28 M80 20 L72 28 M50 5 V14"/></svg><div class="cap">Natuurkunde</div></div>
+              <div class="ph"><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round"><path d="M40 10 H60 V40 L85 85 H15 L40 40 Z" fill="#BFE5E3"/><path d="M25 70 H75" /></svg><div class="cap">Scheikunde</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:24px;align-items:center">
+              <div class="kader"><div class="meta" style="font-weight:700;letter-spacing:2px">DOEL</div><p class="label" style="margin:4px 0 0">Je herkent of een verandering biologie, natuurkunde of scheikunde is.</p></div>
+              <div class="kader"><div class="meta" style="font-weight:700;letter-spacing:2px">NODIG</div><p class="label" style="margin:4px 0 0">Wisbordje en stift.</p></div>
+              <div class="route"><span class="st act">Kijk</span><span class="ar">→</span><span class="st">Doe</span><span class="ar">→</span><span class="st">Check</span><span class="ar">→</span><span class="st">Klaar</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> KIJK (start) · <b>familie</b> ROUTE/START · <b>kernlayout</b> STATUS · 4-woords decktitel (66 px) + 10 + 3 woorden + route = 21.<br>Drie vakken als drie gelijkwaardige beelden (geen A-C-labels: dit is nog geen opgave). Doel, benodigdheden en route in één rustige onderrand.</div>
+      </div>
+
+      <!-- B2 WACHT -->
+      <div class="col nieuw">
+        <span class="tag">2 · WACHT (KIJK-variant) · FOCUS</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">KIJK</span><span class="fase ghost">WACHT</span><h1>Wacht op het startsein</h1></div>
+          <div class="body" style="display:grid;grid-template-rows:1fr auto;gap:28px">
+            <div class="ph">
+              <svg viewBox="0 0 120 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M35 95 V55 C35 40 45 40 45 55 V30 C45 20 55 20 55 30 V50 V22 C55 12 65 12 65 22 V50 V30 C65 20 75 20 75 30 V60 L85 45 C90 38 98 44 94 52 L78 85 C74 92 65 95 55 95 Z" fill="#FFF7E8"/></svg>
+              <div class="cap">3D-comic: klas met dichte wisbordjes op tafel, docent voor het bord<small>hand-pictogram in ink, geen rood (geen derde accent)</small></div>
+              <svg class="burst" style="right:-40px;top:-40px;width:260px" viewBox="0 0 100 100"><polygon points="50,0 60,32 95,20 70,45 100,60 65,60 75,95 50,70 25,95 35,60 0,60 30,45 5,20 40,32" fill="#FFD33D" stroke="#0B0D0F" stroke-width="3"/></svg>
+            </div>
+            <p class="instr" style="text-align:center">Kijk mee, nog niet schrijven. Houd je wisbordje dicht. <b>De docent geeft het startsein.</b></p>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> KIJK · <b>variant</b> WACHT · <b>kernlayout</b> FOCUS, beeld ca. 62% van de dia · 14 woorden.<br>Bevat wat de leerling wél doet (kijken), níet doet (schrijven) en wie het startsein geeft. Eén losse burst, alleen in de hoek. WACHT staat als tweede chip naast de fase, niet als vijfde leerfase.</div>
+      </div>
+
+      <!-- B3 KIJK -->
+      <div class="col nieuw">
+        <span class="tag">3 · KIJK · SPLIT</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">KIJK</span><h1>Zo herken je scheikunde</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:1144px 1fr;gap:24px">
+            <div class="ph marker" style="height:100%">
+              <svg viewBox="0 0 100 130" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round"><rect x="30" y="50" width="40" height="75" rx="4" fill="#FFF1CF"/><path d="M30 60 C40 70 45 55 55 65 C62 72 66 58 70 62" /><path d="M50 50 V38"/><path d="M50 38 C38 28 42 12 50 5 C58 12 62 28 50 38Z" fill="#F47A20"/><path d="M50 32 C46 26 48 20 50 16 C52 20 54 26 50 32Z" fill="#FFD33D"/></svg>
+              <div class="cap">3D-comic: brandende kaars op een schoteltje, close-up<small>één primaire marker (gele halo) naast de vlam, niet erover</small></div>
+            </div>
+            <div class="kader" style="display:flex;flex-direction:column;justify-content:center;gap:28px">
+              <p class="instr">Kijk: de kaars brandt. Kaarsvet en zuurstof worden koolstofdioxide en waterdamp.</p>
+              <p class="instr"><b>Er ontstaat een nieuwe stof.</b> Dat is scheikunde.</p>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> KIJK · <b>familie</b> KIJK (voorbeeld) · <b>kernlayout</b> SPLIT, beeld 67% breedte · 20 woorden + 4-woords kop.<br>Eén primaire marker (halo) buiten de functionele pixels; het kenmerk "nieuwe stof" is vet, zodat CHECK en HULP er later op kunnen terugvallen.</div>
+      </div>
+
+      <!-- B4 DOE -->
+      <div class="col nieuw">
+        <span class="tag">4 · DOE · FOCUS</span>
+        <div class="frame"><div class="slide n" id="doe-bron">
+          <div class="band"><span class="fase">DOE</span><h1>Lees de thermometer af</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:1fr 560px;gap:24px">
+            <div class="ph marker" style="height:100%">
+              <svg viewBox="0 0 160 130" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M40 40 H120 V110 Q120 120 110 120 H50 Q40 120 40 110 Z" fill="#BFE5E3"/><path d="M40 75 H120" /><circle cx="60" cy="90" r="4" fill="#fff"/><circle cx="90" cy="100" r="4" fill="#fff"/><circle cx="75" cy="85" r="3" fill="#fff"/><rect x="96" y="10" width="14" height="95" rx="7" fill="#fff"/><rect x="99" y="45" width="8" height="57" fill="#D83A2E"/><circle cx="103" cy="106" r="9" fill="#D83A2E"/><path d="M80 125 H80 M60 128 H100"/><path d="M75 128 C70 140 90 140 85 128" fill="#F47A20"/></svg>
+              <div class="cap">3D-comic: bekerglas met kokend water op brander, thermometer erin<small>gele halo naast de schaal van de thermometer</small></div>
+            </div>
+            <div style="display:grid;grid-template-rows:1fr auto;gap:24px">
+              <div class="kader" style="display:flex;align-items:center">
+                <p class="instr">Lees de temperatuur af zodra het water kookt. Schrijf het getal in °C op je wisbordje.</p>
+              </div>
+              <div class="succes" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="chip">Gelukt</span><span>als er een getal met °C op je bordje staat.</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> DOE · <b>familie</b> DOE (één handeling + groot bewijsbeeld) · <b>kernlayout</b> FOCUS, beeld ca. 60% van de dia · 16 woorden instructie + 10 woorden succes = 26 (+ kop 4).<br>Geen timer: bij meten is snelheid geen leerdoel (p.16). Deze dia komt terug in deel C als achterwandtest.</div>
+      </div>
+
+      <!-- B5 KORTE PROCEDURE -->
+      <div class="col nieuw">
+        <span class="tag">5 · KORTE PROCEDURE · SPLIT</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">DOE</span><h1>Ruiken doe je zo</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:1144px 1fr;gap:24px">
+            <div class="ph" style="height:100%">
+              <svg viewBox="0 0 160 120" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><circle cx="40" cy="45" r="25" fill="#FFF1CF"/><path d="M15 115 C15 85 65 85 65 115" fill="#087EB5"/><rect x="100" y="55" width="30" height="50" rx="4" fill="#BFE5E3"/><path d="M95 45 C100 35 110 45 115 35 M85 55 C90 45 100 55 105 45"/><path d="M75 70 C80 60 90 75 95 65" stroke-width="4"/></svg>
+              <div class="cap">3D-comic: leerling met bril wuift geur van een bekerglas naar de neus<small>glas op armlengte, handeling centraal</small></div>
+            </div>
+            <div style="display:grid;grid-template-rows:1fr auto;gap:24px">
+              <div class="kader steps" style="align-content:center">
+                <div class="step"><span class="num">1</span><span>Houd het glas op afstand.</span></div>
+                <div class="step"><span class="num">2</span><span>Wuif de geur naar je neus.</span></div>
+                <div class="step"><span class="num">3</span><span>Snuif kort en voorzichtig.</span></div>
+              </div>
+              <div class="succes" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="chip">Gelukt</span><span>als je neus niet boven het glas komt.</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> DOE · <b>familie</b> KORTE PROCEDURE (2-3 onlosmakelijke microstappen) · <b>kernlayout</b> SPLIT · 15 woorden stappen + 9 woorden succes = 24.<br>Drie genummerde stappen, elk één regel, werkwoord vooraan; het beeld blijft dominant. Meer dan drie stappen zou een splitsing vereisen.</div>
+      </div>
+
+      <!-- B6 MULTIPANEL + timer -->
+      <div class="col nieuw">
+        <span class="tag">6 · MULTIPANEL · FOCUS · met timerzone</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">DOE</span><h1>Welk vak hoort erbij?</h1></div>
+          <div class="timer"><span class="lbl">Tijd</span><span class="val">00:45</span></div>
+          <div class="body" style="display:grid;grid-template-rows:auto 1fr auto;gap:24px">
+            <p class="instr"><b>Een ijzeren spijker begint te roesten.</b> Schrijf A, B of C op je wisbordje.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="ph" style="grid-column:1">
+                <svg viewBox="0 0 120 120" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M30 20 H60 V28 H52 L48 100 L42 100 L38 28 H30 Z" fill="#c9773a"/><path d="M40 45 C44 48 46 55 42 60 M46 70 C50 72 50 80 46 84" stroke="#8a4a1c"/><path d="M85 15 L82 30 M100 25 L97 40 M90 45 L87 60 M105 55 L102 70 M15 60 L12 75"/><path d="M0 110 H120" /></svg>
+                <div class="cap">3D-comic: roestige spijker in de regen op een houten plank</div>
+              </div>
+              <div class="panels" style="grid-template-rows:repeat(3,1fr)">
+                <div class="panel" style="flex-direction:row;padding:20px 24px 20px 90px;justify-content:flex-start"><span class="abc" style="left:36px;top:50%;transform:translate(0,-50%)">A</span><div class="pt">Biologie</div></div>
+                <div class="panel" style="flex-direction:row;padding:20px 24px 20px 90px;justify-content:flex-start"><span class="abc" style="left:36px;top:50%;transform:translate(0,-50%)">B</span><div class="pt">Natuurkunde</div></div>
+                <div class="panel" style="flex-direction:row;padding:20px 24px 20px 90px;justify-content:flex-start"><span class="abc" style="left:36px;top:50%;transform:translate(0,-50%)">C</span><div class="pt">Scheikunde</div></div>
+              </div>
+            </div>
+            <div class="meta">Bij 00:00 volgt CHECK.</div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> DOE · <b>familie</b> MULTIPANEL (3 opties, A-C) · <b>kernlayout</b> FOCUS · 14 woorden instructie + 3 labels + 4 woorden meta = 21.<br>Timertoken rechtsboven, 360×72 px, waarde 40 px, label 22 px, mm:ss; start pas na de instructie en loopt af naar CHECK. De drie opties zijn gelijk in maat, kleur en gewicht: niets verraadt het antwoord. Het bewijsbeeld staat links, buiten de titel- en timerzone.</div>
+      </div>
+
+      <!-- B7 CHECK -->
+      <div class="col nieuw">
+        <span class="tag">7 · CHECK · STATUS</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">CHECK</span><h1>Klopt jouw antwoord?</h1></div>
+          <div class="body" style="display:grid;grid-template-rows:1fr auto;gap:28px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="ph">
+                <svg viewBox="0 0 120 120" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M30 20 H60 V28 H52 L48 100 L42 100 L38 28 H30 Z" fill="#c9773a"/><path d="M40 45 C44 48 46 55 42 60 M46 70 C50 72 50 80 46 84" stroke="#8a4a1c"/><path d="M0 110 H120"/></svg>
+                <div class="cap">Zelfde beeld als bij DOE: roestige spijker</div>
+              </div>
+              <div class="panels" style="grid-template-rows:repeat(3,1fr)">
+                <div class="panel dim" style="flex-direction:row;padding:20px 24px 20px 90px;justify-content:flex-start"><span class="abc" style="left:36px;top:50%;transform:translate(0,-50%)">A</span><div class="pt">Biologie</div></div>
+                <div class="panel dim" style="flex-direction:row;padding:20px 24px 20px 90px;justify-content:flex-start"><span class="abc" style="left:36px;top:50%;transform:translate(0,-50%)">B</span><div class="pt">Natuurkunde</div></div>
+                <div class="panel goed" style="flex-direction:row;padding:20px 24px 20px 90px;justify-content:flex-start"><span class="abc" style="left:36px;top:50%;transform:translate(0,-50%)">C</span><div class="pt">Scheikunde</div><span class="juist">✓ Juist</span></div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center">
+              <p class="instr" style="margin:0"><b>C – Scheikunde.</b> IJzer, zuurstof en water worden roest: een nieuwe stof.</p>
+              <div class="succes"><span class="chip">Gelukt</span><span>als er een C op je bordje staat.</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> CHECK · <b>familie</b> CHECK (verwachte toestand + controlevraag) · <b>kernlayout</b> STATUS · 12 + 9 woorden = 21 (+ kop 3).<br>CHECK herhaalt exact dezelfde panelen en labels als de MULTIPANEL en toont pas nu de relatie. Groen is succes-accent, maar het antwoord wordt óók gedragen door het vinkje, de tekst "Juist" en het dimmen van A en B: in grijswaarden blijft het leesbaar.</div>
+      </div>
+
+      <!-- B8 HULP -->
+      <div class="col nieuw">
+        <span class="tag">8 · HULP (conditionele vlag) · SPLIT</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase">CHECK</span><span class="fase hulp">HULP</span><h1>Twijfel je tussen B en C?</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:1144px 1fr;gap:24px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="ph"><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5"><rect x="15" y="60" width="70" height="30" fill="#BFE5E3"/><rect x="25" y="30" width="50" height="30" fill="#e6f4f9"/></svg><div class="cap">IJsklontje smelt: zelfde stof</div></div>
+              <div class="ph"><svg viewBox="0 0 100 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round"><path d="M30 20 H60 V28 H52 L48 90 L42 90 L38 28 H30 Z" fill="#c9773a"/></svg><div class="cap">Spijker roest: nieuwe stof</div></div>
+            </div>
+            <div class="kader" style="display:flex;flex-direction:column;justify-content:center;gap:24px">
+              <p class="instr">Vraag jezelf: <b>ontstaat er een nieuwe stof?</b></p>
+              <p class="instr">Ja → scheikunde.<br>Nee → natuurkunde.</p>
+              <div class="hulpchip"><span class="c">DAN</span><span>Nog steeds twijfel? Steek je hand op.</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> CHECK · <b>variant</b> HULP · <b>kernlayout</b> SPLIT · 7 + 4 + 7 = 18 woorden (+ kop 6, de maximumlengte).<br>Symptoom (twijfel) → eerste veilige zelfcheck (nieuwe stof?) → escalatie (hand opsteken). Oranje is het tweede en laatste functionele accent van dit deck (naast groen). De hoofdtaak wordt niet verplaatst: de fase blijft CHECK.</div>
+      </div>
+
+      <!-- B9 KLAAR -->
+      <div class="col nieuw">
+        <span class="tag">9 · KLAAR · STATUS</span>
+        <div class="frame"><div class="slide n">
+          <div class="band"><span class="fase klaar">KLAAR</span><h1>Je herkent de vakken</h1></div>
+          <div class="body" style="display:grid;grid-template-rows:1fr auto;gap:28px;justify-items:center">
+            <div class="ph" style="width:1000px">
+              <svg viewBox="0 0 140 100" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><rect x="10" y="10" width="120" height="80" rx="8" fill="#fff"/><path d="M45 52 L62 68 L98 32" stroke="#2E9D63" stroke-width="10"/></svg>
+              <div class="cap">Bewijs: wisbordje met een groot vinkje<small>centraal bewijs, rustige ruimte eromheen</small></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;width:100%">
+              <p class="instr" style="margin:0">Je kunt biologie, natuurkunde en scheikunde uit elkaar houden.</p>
+              <div class="succes"><span class="chip" style="background:var(--ink);color:var(--yellow)">Volgende</span><span>Pak je schrift. Maak opdracht 3 en 4.</span></div>
+            </div>
+            <div class="route" style="position:absolute;right:96px;top:-96px;transform:scale(.62);transform-origin:right top"><span class="st">Kijk</span><span class="ar">→</span><span class="st">Doe</span><span class="ar">→</span><span class="st">Check</span><span class="ar">→</span><span class="st act">Klaar</span></div>
+          </div>
+        </div></div>
+        <div class="note"><b>Fase</b> KLAAR · <b>familie</b> KLAAR (bewijs van succes + één volgende stap) · <b>kernlayout</b> STATUS · 9 + 8 woorden = 17 (+ kop 4).<br>Groene fase-chip als afsluiting van de route; precies één volgende stap ("Pak je schrift"), zonder bonusdruk. De route-strip rechtsboven (verkleind, in de titelzone) sluit de cirkel met dia 1.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ DEEL C -->
+  <section id="deelC">
+    <h2>Deel C · Achterwandtest</h2>
+    <p class="lead">De DOE-dia uit deel B op 25% (480 px breed, ongeveer wat een leerling op 6-8 meter van het bord ziet) en in grijswaarden. Vraag: zijn fase, kop, actie en succescriterium nog aan te wijzen zonder kleur?</p>
+    <div class="pair" style="grid-template-columns:auto 1fr;align-items:start">
+      <div class="col nieuw">
+        <span class="tag">DOE · FOCUS · 25% · grijswaarden</span>
+        <div class="frame small grijs"><div class="slide n">
+          <div class="band"><span class="fase">DOE</span><h1>Lees de thermometer af</h1></div>
+          <div class="body" style="display:grid;grid-template-columns:1fr 560px;gap:24px">
+            <div class="ph marker" style="height:100%">
+              <svg viewBox="0 0 160 130" fill="none" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"><path d="M40 40 H120 V110 Q120 120 110 120 H50 Q40 120 40 110 Z" fill="#BFE5E3"/><path d="M40 75 H120" /><circle cx="60" cy="90" r="4" fill="#fff"/><circle cx="90" cy="100" r="4" fill="#fff"/><circle cx="75" cy="85" r="3" fill="#fff"/><rect x="96" y="10" width="14" height="95" rx="7" fill="#fff"/><rect x="99" y="45" width="8" height="57" fill="#D83A2E"/><circle cx="103" cy="106" r="9" fill="#D83A2E"/><path d="M60 128 H100"/><path d="M75 128 C70 140 90 140 85 128" fill="#F47A20"/></svg>
+              <div class="cap">3D-comic: bekerglas met kokend water op brander, thermometer erin<small>gele halo naast de schaal van de thermometer</small></div>
+            </div>
+            <div style="display:grid;grid-template-rows:1fr auto;gap:24px">
+              <div class="kader" style="display:flex;align-items:center">
+                <p class="instr">Lees de temperatuur af zodra het water kookt. Schrijf het getal in °C op je wisbordje.</p>
+              </div>
+              <div class="succes" style="flex-direction:column;align-items:flex-start;gap:8px"><span class="chip">Gelukt</span><span>als er een getal met °C op je bordje staat.</span></div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="note" style="margin-top:32px">
+        <b>Wat de test laat zien.</b> Op 25% zijn de fase-chip (32 px Bangers), de kop (46 px) en het woord "Gelukt" (28 px) nog te onderscheiden; de instructie (32 px Atkinson) is op 480 px net leesbaar, de metadata-regel (20 px) niet meer, en dat is conform het systeem (metadata is geen achterwandtekst). Zonder kleur blijft de betekenis intact: fase via positie en zwart-op-geel, succes via vinkje + woord, marker via dikke ring. De gele halo verliest in grijs wel contrast tegen de warme achtergrond; als het echte 3D-beeld licht is, moet de ring een ink-buitenlijn houden (die zit er nu in als outline).
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open vragen voor de beoordeling</h2>
+    <div class="intro">
+      <ol style="margin:0;padding-left:20px">
+        <li>Het design system geeft maten in <b>pt</b> op een 1920×1080-canvas; hier is 1 pt = 1 px genomen. Als de decks via PowerPoint/Slides (13,33"×7,5") worden gemaakt, zijn dezelfde pt-waarden feitelijk 1,5× kleiner. Welke interpretatie geldt?</li>
+        <li>Maximaal <b>twee functionele UI-accenten per deck</b>: in dit deck zijn dat groen (succes) en oranje (HULP). Daardoor is de timer in ink/paper uitgevoerd in plaats van blauw zoals op de referentie (p.16), en WACHT heeft geen rode hand. Akkoord, of hoort de timer altijd blauw te zijn (en telt die dan niet als accent)?</li>
+        <li>De fase-chip staat nu <b>altijd zwart-op-geel</b> (KLAAR groen, HULP oranje). De huidige decks gebruiken per dia een andere pil-kleur; het systeem verbiedt dat impliciet. Bevestigen als vaste regel?</li>
+        <li>De oude "veel tekst"-dia is bewust <b>gesplitst in twee dia's</b> (regel: splits, verklein nooit). Dat verhoogt het aantal dia's per deck met naar schatting 30-50%. Is dat acceptabel voor de lesduur?</li>
+        <li>NotebookLM rendert tekst nu in het beeld (met fouten). Het systeem eist tekst als aparte laag. Dat vraagt om een andere productieketen (beeld genereren zonder tekst, UI-laag er in HELIX overheen) of om een aangepaste NotebookLM-prompt (p.22). Welke route wil je eerst verkennen?</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var body=document.body, btns=document.querySelectorAll('.switch button');
+  function setMode(m){
+    body.className='mode-'+m;
+    btns.forEach(function(b){b.setAttribute('aria-pressed', b.dataset.mode===m ? 'true':'false');});
+    try{localStorage.setItem('ds2-05-mode',m);}catch(e){}
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.mode);});});
+  try{var s=localStorage.getItem('ds2-05-mode'); if(s) setMode(s);}catch(e){}
+  // Schaling: elk 1920×1080-canvas wordt naar de breedte van zijn kader geschaald.
+  function fit(f){var sl=f.querySelector('.slide'); if(sl) sl.style.transform='scale('+(f.clientWidth/1920)+')';}
+  var frames=document.querySelectorAll('.frame');
+  frames.forEach(fit);
+  if(window.ResizeObserver){
+    var ro=new ResizeObserver(function(es){es.forEach(function(e){fit(e.target);});});
+    frames.forEach(function(f){ro.observe(f);});
+  } else { window.addEventListener('resize',function(){frames.forEach(fit);}); }
+  // Bij een weergavewissel veranderen de kaderbreedtes: opnieuw passen.
+  btns.forEach(function(b){b.addEventListener('click',function(){requestAnimationFrame(function(){frames.forEach(fit);});});});
+})();
+</script>
+</body>
+</html>

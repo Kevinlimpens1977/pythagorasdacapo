@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HELIX design system v2 — oud/nieuw-beoordeling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0B0D0F; --paper: #FFF7E8; --yellow: #FFD33D; --blue: #087EB5;
+    --teal: #0D8F93; --orange: #F47A20; --red: #D83A2E; --green: #2E9D63; --purple: #793AC7;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Atkinson Hyperlegible", Arial, sans-serif; line-height: 1.5; }
+  header { background: var(--yellow); border-bottom: 6px solid var(--ink); padding: 32px 48px; }
+  h1 { font-family: Bangers, Anton, Impact, sans-serif; font-size: 56px; letter-spacing: 0.02em; margin: 0; text-transform: uppercase; }
+  header p { margin: 8px 0 0; font-size: 18px; max-width: 70ch; }
+  main { padding: 32px 48px 64px; max-width: 1100px; }
+  ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; }
+  li a { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: center; padding: 16px 24px; background: #fff; border: 3px solid var(--ink); border-radius: 12px; text-decoration: none; color: inherit; box-shadow: 4px 4px 0 var(--ink); }
+  li a:hover { background: #fff2c4; }
+  .nr { font-family: Bangers, Anton, Impact, sans-serif; font-size: 40px; text-align: center; }
+  .titel { font-weight: 700; font-size: 20px; }
+  .uitleg { font-size: 15px; color: #3a3d42; }
+  .tag { display: inline-block; margin-top: 4px; padding: 2px 10px; border: 2px solid var(--ink); border-radius: 999px; font-size: 13px; font-weight: 700; }
+  .tag.plan { background: var(--blue); color: #fff; }
+  section.leeswijzer { margin-top: 40px; padding: 24px; border: 3px solid var(--ink); border-radius: 12px; background: #fff; }
+  section.leeswijzer h2 { font-family: Bangers, Anton, Impact, sans-serif; font-size: 32px; margin: 0 0 8px; }
+  code { background: #f1e9d6; padding: 1px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Design system v2 beoordelen</h1>
+  <p>Tijdelijke voorbeeldpagina's: per oppervlak staat de huidige stijl (oud) naast dezelfde inhoud in het Helix Slide Design System v2 (nieuw). Niets hiervan staat in de code; dit is alleen om te kijken en te kiezen.</p>
+</header>
+<main>
+  <ol>
+    <li><a href="01-inlogschermen.html"><span class="nr">01</span><span><span class="titel">Inlogschermen</span><br><span class="uitleg">Leerlinglogin, beheerlogin op /login/beheer, naam-instelmodal, mobiel.</span></span></a></li>
+    <li><a href="02-leerlingpaginas.html"><span class="nr">02</span><span><span class="titel">Leerlingpagina's</span><br><span class="uitleg">Startpagina, lesroute met slidedeck en quiz, voortgangsblokjes, tokenshop, mobiel.</span></span></a></li>
+    <li><a href="03-beheerpaginas.html"><span class="nr">03</span><span><span class="titel">Beheer en admin</span><br><span class="uitleg">Lesstof (CMS), Voortgang, Leerlingen, Klassen, Slidedecks, Meldingen.</span></span></a></li>
+    <li><a href="04-presenter-digibord.html"><span class="nr">04</span><span><span class="titel">Presenter en digibord</span><br><span class="uitleg">Slidedeckweergave, bordmodus, vraagregie, digibordblok, achterwandtest.</span></span></a></li>
+    <li><a href="05-slidedecks.html"><span class="nr">05</span><span><span class="titel">Slidedecks</span><br><span class="uitleg">Binask-dia's oud/nieuw, alle acht slidefamilies, timer, achterwandtest.</span></span></a></li>
+    <li><a href="../../docs/DESIGN-SYSTEM-V2-ONDERZOEK-EN-IMPLEMENTATIEPLAN.md"><span class="nr">06</span><span><span class="titel">Onderzoek en implementatieplan</span><br><span class="uitleg">Alle onderdelen van het systeem, vertaling naar de app, tokenvoorstel, fasen en beslispunten.</span><br><span class="tag plan">markdown in docs/</span></span></a></li>
+  </ol>
+  <section class="leeswijzer">
+    <h2>Leeswijzer</h2>
+    <p>Elke pagina heeft bovenaan een schakelaar: naast elkaar, alleen oud of alleen nieuw. Per scherm staat een korte notitie met wat er verandert en welke regel uit het design system daarachter zit. Zet opmerkingen per scherm in de chat; dan worden ze verwerkt in het implementatieplan voordat er iets in <code>src/</code> wordt aangepast.</p>
+    <p>Bron: <code>Helix_Slide_Design_System_v2.pdf</code> (2 september 2026). De bestanden <code>Helix_Slide_Design_System.pdf</code> en <code>designsystem_helix.pdf</code> bevatten dezelfde 25 pagina's in een andere export.</p>
+  </section>
+</main>
+</body>
+</html>

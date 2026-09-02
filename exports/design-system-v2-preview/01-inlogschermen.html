@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inlogschermen – oud vs. nieuw (Helix Slide Design System v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bangers&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   0. TOKENS
+   ===================================================================== */
+:root {
+  /* Design system v2 (p.6) */
+  --ink: #0B0D0F;
+  --paper: #FFF7E8;
+  --yellow: #FFD33D;
+  --blue: #087EB5;
+  --teal: #0D8F93;
+  --orange: #F47A20;
+  --red: #D83A2E;
+  --green: #2E9D63;
+  --purple: #793AC7;
+  --ink-muted: #4a4e54;      /* afgeleid: leestekst met minder nadruk, contrast > 7:1 op papier */
+  --red-tint: #FBE3E0;       /* afgeleid: 12% rood op wit, alleen als vlakvulling achter een foutmelding */
+  --ds-display: 'Bangers', 'Impact', 'Anton', 'Arial Black', sans-serif;
+  --ds-text: 'Atkinson Hyperlegible', 'Arial', 'Aptos', system-ui, sans-serif;
+
+  /* Huidige stijl (src/index.css) */
+  --o-purple: oklch(0.52 0.19 300);
+  --o-purple-dark: oklch(0.46 0.19 300);
+  --o-navy: oklch(0.2 0.03 300);
+  --o-bg: oklch(0.97 0.012 300);
+  --o-surface-soft: oklch(0.985 0.006 300);
+  --o-border: oklch(0.92 0.012 300);
+  --o-muted: oklch(0.5 0.02 300);
+  --o-text: oklch(0.2 0.03 300);
+  --o-soft-lavender: oklch(0.95 0.02 300);
+  --o-soft-pink: oklch(0.96 0.05 25);
+  --o-success: oklch(0.6 0.14 150);
+  --o-danger: oklch(0.58 0.19 25);
+  --o-pink: oklch(0.6 0.17 25);
+  --o-display: 'Outfit', 'Plus Jakarta Sans', system-ui, 'Segoe UI', sans-serif;
+  --o-sans: 'Plus Jakarta Sans', system-ui, 'Segoe UI', sans-serif;
+
+  /* Beoordelingspagina zelf (neutraal, hoort bij geen van beide) */
+  --pg-bg: #e9ebef;
+  --pg-fg: #1c1f24;
+  --pg-muted: #5b616b;
+  --pg-line: #cfd3da;
+}
+
+/* =====================================================================
+   1. BEOORDELINGSPAGINA (chrome)
+   ===================================================================== */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--pg-bg);
+  color: var(--pg-fg);
+  font: 15px/1.5 system-ui, 'Segoe UI', Arial, sans-serif;
+  overflow-x: hidden;
+}
+.pg-header {
+  position: sticky; top: 0; z-index: 50;
+  background: #fff; border-bottom: 1px solid var(--pg-line);
+  padding: 12px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.pg-header h1 { font-size: 16px; margin: 0; font-weight: 700; }
+.pg-header h1 small { font-weight: 400; color: var(--pg-muted); margin-left: 8px; }
+.pg-modes { display: inline-flex; border: 1px solid var(--pg-line); border-radius: 8px; overflow: hidden; }
+.pg-modes label { padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: 14px; user-select: none; }
+.pg-modes label:has(input:checked) { background: var(--pg-fg); color: #fff; }
+.pg-modes input { position: absolute; opacity: 0; pointer-events: none; }
+.pg-nav { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.pg-nav a { color: var(--pg-fg); text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--pg-line); background: #fff; }
+.pg-nav a:hover { background: var(--pg-bg); }
+.pg-main { max-width: 1400px; margin: 0 auto; padding: 24px 20px 96px; }
+.pg-intro { background: #fff; border: 1px solid var(--pg-line); border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; }
+.pg-intro h2 { margin: 0 0 8px; font-size: 18px; }
+.pg-intro p { margin: 0 0 8px; color: var(--pg-muted); max-width: 90ch; }
+.pg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+.pg-cols h3 { font-size: 14px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .06em; color: var(--pg-muted); }
+.pg-cols ul { margin: 0; padding-left: 18px; }
+.pg-cols li { margin-bottom: 4px; }
+.pg-cols li b { font-weight: 700; }
+.pg-swatches { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 4px; }
+.pg-swatch { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; border: 1px solid var(--pg-line); border-radius: 999px; padding: 3px 10px 3px 4px; background: #fff; }
+.pg-swatch i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,.15); display: inline-block; }
+.pg-warn { font-size: 13px; color: var(--pg-muted); border-left: 3px solid var(--pg-line); padding-left: 10px; margin-top: 12px; }
+
+.screen { margin-bottom: 56px; }
+.screen > h2 { font-size: 20px; margin: 0 0 4px; }
+.screen > .sub { margin: 0 0 16px; color: var(--pg-muted); }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+body.mode-old .compare, body.mode-new .compare { grid-template-columns: 1fr; }
+body.mode-old .col-new, body.mode-new .col-old { display: none; }
+.col { min-width: 0; }
+.col-label { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 6px; margin-bottom: 8px; }
+.col-old .col-label { background: #d9dce3; color: #2b2f36; }
+.col-new .col-label { background: var(--yellow); color: var(--ink); border: 1px solid var(--ink); }
+.viewport { position: relative; overflow: hidden; border: 1px solid var(--pg-line); border-radius: 8px; background: #fff; }
+.viewport > .frame { transform-origin: 0 0; }
+.note { margin-top: 12px; background: #fff; border: 1px solid var(--pg-line); border-radius: 8px; padding: 12px 16px; font-size: 14px; }
+.note h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--pg-muted); }
+.note ul { margin: 0; padding-left: 18px; }
+.note li { margin-bottom: 3px; }
+.note .ref { color: var(--pg-muted); font-size: 12px; }
+.phones { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+body.mode-old .phones, body.mode-new .phones { grid-template-columns: 1fr; }
+.phone-wrap { display: flex; justify-content: center; }
+.phone { width: 395px; border: 10px solid #1f2430; border-radius: 40px; overflow: hidden; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,.18); }
+.phone .statusbar { height: 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 12px; font-weight: 600; }
+
+/* =====================================================================
+   2. OUD – nagebouwd uit LoginScreen.jsx / AdminLoginScreen.jsx /
+      NameSetupModal.jsx en de utilities in src/index.css
+   ===================================================================== */
+.o-page {
+  width: 1216px; min-height: 760px; padding: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 78% -6%, oklch(0.52 0.19 300 / 0.07), transparent 32rem), var(--o-bg);
+  font-family: var(--o-sans); font-size: 16px; line-height: 1.5; color: var(--o-text);
+  -webkit-font-smoothing: antialiased;
+}
+.o-grid { display: grid; grid-template-columns: 0.85fr 1fr; gap: 28px; width: 100%; max-width: 1152px; }
+.o-grid--admin { grid-template-columns: 0.8fr 1fr; }
+.o-hero {
+  position: relative; overflow: hidden; border-radius: 28px; padding: 40px; color: #fff;
+  background: var(--o-purple); display: flex; flex-direction: column; justify-content: space-between;
+}
+.o-hero--admin { background: oklch(0.24 0.045 300); }
+.o-hero .c1 { position: absolute; right: -64px; top: -64px; width: 256px; height: 256px; border-radius: 50%; background: rgba(255,255,255,.10); pointer-events: none; }
+.o-hero .c2 { position: absolute; right: 40px; bottom: -96px; width: 208px; height: 208px; border-radius: 50%; background: oklch(0.6 0.17 25 / 0.45); pointer-events: none; }
+.o-hero .c3 { position: absolute; right: -80px; bottom: -64px; width: 240px; height: 240px; border-radius: 50%; background: rgba(255,255,255,.06); pointer-events: none; }
+.o-hero > * { position: relative; }
+.o-logo { display: flex; align-items: center; gap: 12px; }
+.o-logo-box { width: 40px; height: 40px; border-radius: 12px; background: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.o-logo-box--purple { background: var(--o-purple); }
+.o-wordmark { font-family: var(--o-display); font-weight: 800; font-size: 24px; letter-spacing: -0.025em; line-height: 1; }
+.o-wordmark--sm { font-size: 20px; }
+.o-wordmark-sub { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.6); margin-top: 2px; }
+.o-hero h2 { margin: 0; font-family: var(--o-display); font-weight: 800; font-size: 48px; line-height: 1.05; letter-spacing: -0.025em; }
+.o-hero--admin h2 { font-size: 36px; line-height: 1.25; }
+.o-hero p { margin: 20px 0 0; max-width: 384px; font-size: 18px; line-height: 1.625; color: rgba(255,255,255,.85); }
+.o-hero--admin p { margin-top: 16px; max-width: 320px; font-size: 16px; color: rgba(255,255,255,.75); }
+.o-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.o-chip { border-radius: 999px; background: rgba(255,255,255,.2); padding: 8px 16px; font-size: 14px; font-weight: 600; }
+.o-werkplek { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid rgba(255,255,255,.15); padding-top: 24px; }
+.o-werkplek span { display: flex; align-items: center; gap: 12px; font-size: 14px; color: rgba(255,255,255,.8); }
+.o-surface {
+  background: rgba(255,255,255,.88); border: 1px solid var(--o-border); border-radius: 28px;
+  box-shadow: 0 14px 44px rgba(11,19,43,.08); padding: 48px;
+  display: flex; align-items: center; justify-content: center;
+}
+.o-form { width: 100%; max-width: 448px; }
+.o-form h1 { margin: 0; font-family: var(--o-display); font-weight: 800; font-size: 36px; line-height: 1.1; letter-spacing: -0.025em; color: var(--o-navy); }
+.o-form h1.h-admin { font-size: 30px; margin-top: 16px; }
+.o-form .lead { margin: 10px 0 32px; color: var(--o-muted); }
+.o-form .lead--admin { margin-bottom: 28px; }
+.o-alert { margin-bottom: 20px; border-radius: 16px; border: 1px solid oklch(0.58 0.19 25 / 0.35); background: var(--o-soft-pink); padding: 16px; font-size: 14px; font-weight: 600; color: var(--o-danger); }
+.o-fields { display: flex; flex-direction: column; gap: 16px; }
+.o-fields--tight { gap: 12px; }
+.o-label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--o-navy); }
+.o-input {
+  width: 100%; padding: 16px; border-radius: 16px; border: 2px solid var(--o-border);
+  background: var(--o-surface-soft); color: var(--o-text); font: inherit; font-size: 16px; outline: none;
+}
+.o-input::placeholder { color: var(--o-text); opacity: .5; }
+.o-input--lg { font-size: 18px; }
+.o-pw { position: relative; }
+.o-pw .o-input { padding-right: 56px; }
+.o-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); padding: 8px; border: 0; background: transparent; color: var(--o-muted); border-radius: 12px; display: grid; place-items: center; }
+.o-btn {
+  width: 100%; padding: 16px; border-radius: 16px; border: 2px solid transparent; cursor: pointer;
+  background: var(--o-purple); color: #fff; font-family: var(--o-display); font-weight: 700; font-size: 16px;
+  box-shadow: 0 12px 26px oklch(0.52 0.19 300 / 0.3); display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.o-btn--navy { background: var(--o-navy); box-shadow: none; gap: 12px; }
+.o-btn--secondary { background: #fff; color: var(--o-navy); border-color: var(--o-border); box-shadow: none; padding: 14px; }
+.o-btn--modal { padding: 12px; font-size: 18px; }
+.o-links { margin-top: 16px; display: flex; justify-content: space-between; gap: 16px; font-size: 14px; font-weight: 600; color: var(--o-purple); }
+.o-link { color: var(--o-purple); font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+.o-docent { margin-top: 36px; display: flex; align-items: center; gap: 14px; border-radius: 22px; background: var(--o-surface-soft); padding: 16px; text-align: left; width: 100%; }
+.o-docent .ico { width: 40px; height: 40px; border-radius: 12px; background: #fff; color: var(--o-purple); display: grid; place-items: center; flex-shrink: 0; }
+.o-docent b { display: block; font-size: 14px; font-weight: 700; color: var(--o-navy); }
+.o-docent span { display: block; font-size: 14px; color: var(--o-muted); }
+.o-pill { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; background: var(--o-soft-lavender); padding: 6px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--o-purple); }
+.o-divider { margin: 24px 0; display: flex; align-items: center; gap: 14px; }
+.o-divider i { flex: 1; height: 1px; background: var(--o-border); }
+.o-divider span { font-size: 12px; font-weight: 600; color: var(--o-muted); }
+.o-back { margin-top: 32px; border-top: 1px solid var(--o-border); padding-top: 20px; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--o-muted); }
+/* modal (Tailwind slate-waarden uit NameSetupModal.jsx) */
+.o-modal-stage { position: relative; width: 1216px; height: 720px; overflow: hidden; background: radial-gradient(circle at 78% -6%, oklch(0.52 0.19 300 / 0.07), transparent 32rem), var(--o-bg); font-family: var(--o-sans); }
+.o-app-skel { position: absolute; inset: 0; padding: 32px 48px; display: grid; grid-template-rows: 64px 1fr; gap: 24px; }
+.o-app-skel .bar { background: rgba(255,255,255,.92); border: 1px solid var(--o-border); border-radius: 22px; }
+.o-app-skel .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-content: start; }
+.o-app-skel .card { height: 200px; background: rgba(255,255,255,.92); border: 1px solid var(--o-border); border-radius: 22px; }
+.o-overlay { position: absolute; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+.o-modal { width: 100%; max-width: 448px; margin: 0 16px; background: #fff; border-radius: 24px; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,.25); }
+.o-modal .head { text-align: center; margin-bottom: 32px; }
+.o-modal h2 { margin: 0 0 8px; font-size: 30px; font-weight: 900; color: #0f172a; font-family: var(--o-display); }
+.o-modal .head p { margin: 0; color: #475569; }
+.o-modal .o-label { color: #334155; }
+.o-modal .fields { display: flex; flex-direction: column; gap: 16px; }
+.o-modal .mail { margin: 24px 0 0; text-align: center; font-size: 12px; color: #64748b; }
+/* mobiel */
+.o-mobile { width: 375px; padding: 16px; background: radial-gradient(circle at 78% -6%, oklch(0.52 0.19 300 / 0.07), transparent 32rem), var(--o-bg); font-family: var(--o-sans); font-size: 16px; line-height: 1.5; color: var(--o-text); }
+.o-mobile .o-surface { padding: 28px; display: block; }
+.o-mobile .o-logo { margin-bottom: 32px; }
+.o-mobile .o-wordmark { color: var(--o-navy); }
+
+/* =====================================================================
+   3. NIEUW – Helix Slide Design System v2, vertaald naar app-scherm
+   ===================================================================== */
+.n-page {
+  position: relative; width: 1216px; min-height: 760px; padding: 32px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--paper); color: var(--ink);
+  font-family: var(--ds-text); font-size: 17px; line-height: 1.5;
+}
+/* comicdecoratie alleen aan randen: halftoon in twee hoeken (p.5) */
+.n-page::before, .n-page::after {
+  content: ""; position: absolute; width: 360px; height: 360px; pointer-events: none;
+  background: radial-gradient(circle, rgba(11,13,15,.16) 1.6px, transparent 1.9px) 0 0 / 11px 11px;
+}
+.n-page::before { left: -20px; top: -20px; -webkit-mask-image: radial-gradient(circle at 0 0, #000 0, transparent 70%); mask-image: radial-gradient(circle at 0 0, #000 0, transparent 70%); }
+.n-page::after { right: -20px; bottom: -20px; -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0, transparent 70%); mask-image: radial-gradient(circle at 100% 100%, #000 0, transparent 70%); }
+.n-card {
+  position: relative; width: 100%; max-width: 1152px; background: #fff;
+  border: 3px solid var(--ink); border-radius: 16px; box-shadow: 8px 8px 0 var(--ink); overflow: hidden;
+}
+.n-banner {
+  background: var(--yellow); border-bottom: 3px solid var(--ink);
+  padding: 16px 32px; min-height: 80px; display: flex; align-items: center; gap: 24px;
+}
+.n-brand { display: flex; align-items: center; gap: 12px; }
+.n-logo { width: 40px; height: 40px; border: 3px solid var(--ink); border-radius: 8px; background: var(--purple); display: grid; place-items: center; flex-shrink: 0; }
+.n-brand-name { font-family: var(--ds-display); font-size: 28px; line-height: 1; letter-spacing: .03em; }
+.n-title { font-family: var(--ds-display); font-size: 40px; line-height: 1; letter-spacing: .02em; text-transform: uppercase; margin: 0; }
+.n-banner .n-title { margin-left: 8px; padding-left: 24px; border-left: 3px solid var(--ink); }
+.n-tag { margin-left: auto; background: var(--ink); color: var(--yellow); font-family: var(--ds-display); font-size: 20px; letter-spacing: .06em; padding: 6px 14px; border-radius: 6px; line-height: 1; }
+.n-body { display: grid; grid-template-columns: 0.85fr 1fr; }
+.n-side {
+  padding: 48px; border-right: 3px solid var(--ink); background: var(--paper);
+  display: flex; flex-direction: column; justify-content: space-between; gap: 48px;
+}
+.n-side--ink { background: var(--ink); color: var(--paper); }
+.n-side h2 { margin: 0; font-family: var(--ds-display); font-size: 56px; line-height: 1.15; letter-spacing: .02em; text-transform: uppercase; }
+.n-side--ink h2 { font-size: 48px; color: var(--yellow); }
+.n-mark { background: var(--yellow); padding: 0 10px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.n-side p { margin: 24px 0 0; max-width: 380px; font-size: 18px; }
+.n-side--ink p { color: rgba(255,247,232,.88); }
+.n-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.n-tags span { border: 2px solid var(--ink); border-radius: 999px; padding: 6px 14px; font-size: 15px; font-weight: 700; background: #fff; }
+.n-werkplek { display: flex; flex-direction: column; gap: 12px; border-top: 2px solid rgba(255,247,232,.35); padding-top: 24px; }
+.n-werkplek span { display: flex; align-items: center; gap: 12px; font-size: 16px; }
+.n-werkplek svg { color: var(--yellow); }
+.n-form { padding: 48px; width: 100%; max-width: 560px; }
+.n-form .lead { margin: 0 0 32px; font-size: 18px; }
+.n-fields { display: flex; flex-direction: column; gap: 24px; }
+.n-fields--tight { gap: 16px; }
+.n-label { display: block; margin-bottom: 8px; font-size: 16px; font-weight: 700; }
+.n-input {
+  width: 100%; padding: 13px 16px; border: 3px solid var(--ink); border-radius: 10px; background: #fff;
+  color: var(--ink); font: inherit; font-size: 18px; line-height: 1.3;
+}
+.n-input::placeholder { color: var(--ink-muted); opacity: 1; }
+.n-input:focus { outline: 3px solid var(--blue); outline-offset: 2px; }
+.n-pw { position: relative; }
+.n-pw .n-input { padding-right: 56px; }
+.n-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border: 0; background: transparent; color: var(--ink); display: grid; place-items: center; border-radius: 6px; }
+.n-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; cursor: pointer;
+  padding: 14px 16px; border: 3px solid var(--ink); border-radius: 10px; background: var(--blue); color: #fff;
+  font-family: var(--ds-text); font-weight: 700; font-size: 18px; line-height: 1.3; box-shadow: 4px 4px 0 var(--ink);
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.n-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(--ink); }
+.n-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
+.n-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+.n-btn--paper { background: #fff; color: var(--ink); }
+.n-google-g { width: 28px; height: 28px; background: #fff; border-radius: 4px; display: grid; place-items: center; flex-shrink: 0; }
+.n-succes { margin: 16px 0 0; display: flex; align-items: flex-start; gap: 8px; font-size: 15px; color: var(--ink-muted); }
+.n-succes svg { flex-shrink: 0; margin-top: 2px; }
+.n-links { margin-top: 24px; display: flex; justify-content: space-between; gap: 16px; }
+.n-link { color: var(--blue); font-weight: 700; font-size: 16px; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; display: inline-flex; align-items: center; gap: 8px; }
+.n-link--ink { color: var(--ink); }
+.n-docent { margin-top: 32px; display: flex; align-items: center; gap: 16px; border: 3px solid var(--ink); border-radius: 12px; background: var(--paper); padding: 16px; width: 100%; text-align: left; }
+.n-docent .ico { width: 40px; height: 40px; border: 3px solid var(--ink); border-radius: 8px; background: var(--yellow); display: grid; place-items: center; flex-shrink: 0; }
+.n-docent b { display: block; font-size: 16px; font-weight: 700; }
+.n-docent span { display: block; font-size: 15px; color: var(--ink-muted); }
+.n-docent .arrow { margin-left: auto; flex-shrink: 0; }
+.n-alert {
+  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px;
+  border: 3px solid var(--ink); border-radius: 12px; background: var(--red-tint); padding: 12px 16px 12px 12px;
+}
+.n-alert .ico { width: 36px; height: 36px; border-radius: 6px; background: var(--red); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.n-alert p { margin: 0; font-weight: 700; font-size: 16px; line-height: 1.4; padding-top: 6px; }
+.n-divider { margin: 24px 0; display: flex; align-items: center; gap: 12px; }
+.n-divider i { flex: 1; height: 2px; background: var(--ink); }
+.n-divider span { font-size: 15px; font-weight: 700; color: var(--ink-muted); }
+.n-back { margin-top: 32px; border-top: 2px solid var(--ink); padding-top: 20px; }
+/* modal */
+.n-modal-stage { position: relative; width: 1216px; height: 720px; overflow: hidden; background: var(--paper); font-family: var(--ds-text); color: var(--ink); }
+.n-app-skel { position: absolute; inset: 0; padding: 32px 48px; display: grid; grid-template-rows: 64px 1fr; gap: 24px; }
+.n-app-skel .bar { background: var(--yellow); border: 3px solid var(--ink); border-radius: 8px; }
+.n-app-skel .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-content: start; }
+.n-app-skel .card { height: 200px; background: #fff; border: 3px solid var(--ink); border-radius: 8px; }
+.n-overlay { position: absolute; inset: 0; background: rgba(11,13,15,.7); display: flex; align-items: center; justify-content: center; }
+.n-modal { width: 100%; max-width: 480px; margin: 0 16px; background: #fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 8px 8px 0 var(--ink); overflow: hidden; }
+.n-modal .n-banner { padding: 14px 24px; min-height: 64px; }
+.n-modal .n-banner .n-title { margin-left: 0; padding-left: 0; border-left: 0; font-size: 32px; }
+.n-modal .inner { padding: 24px; }
+.n-modal .lead { margin: 0 0 24px; font-size: 17px; }
+.n-modal .mail { margin: 24px 0 0; font-size: 15px; color: var(--ink-muted); }
+/* mobiel */
+.n-mobile { position: relative; overflow: hidden; width: 375px; padding: 16px; background: var(--paper); color: var(--ink); font-family: var(--ds-text); font-size: 17px; line-height: 1.5; }
+.n-mobile::before { content: ""; position: absolute; right: -30px; bottom: -30px; width: 200px; height: 200px; pointer-events: none; background: radial-gradient(circle, rgba(11,13,15,.16) 1.4px, transparent 1.7px) 0 0 / 10px 10px; -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0, transparent 70%); mask-image: radial-gradient(circle at 100% 100%, #000 0, transparent 70%); }
+.n-mobile .n-card { box-shadow: 6px 6px 0 var(--ink); }
+.n-mobile .n-banner { flex-direction: column; align-items: stretch; gap: 12px; padding: 16px 20px; }
+.n-mobile .n-banner .row { display: flex; align-items: center; gap: 12px; }
+.n-mobile .n-banner .n-tag { font-size: 18px; }
+.n-mobile .n-banner .n-title { margin: 0; padding: 0; border: 0; font-size: 34px; }
+.n-mobile .n-form { padding: 20px; max-width: none; }
+.n-mobile .n-form .lead { margin-bottom: 24px; font-size: 17px; }
+.n-mobile .n-fields { gap: 20px; }
+.n-mobile .n-links { flex-direction: column; gap: 12px; margin-top: 20px; }
+.n-mobile .n-docent { margin-top: 24px; padding: 12px; gap: 12px; }
+.n-mobile .n-docent .arrow { display: none; }
+
+/* focus-visible op de beoordelingspagina zelf */
+:focus-visible { outline: 2px solid #1c1f24; outline-offset: 2px; }
+</style>
+</head>
+<body class="mode-side">
+
+<header class="pg-header">
+  <h1>01 · Inlogschermen <small>Helix Slide Design System v2 — oud vs. nieuw (tijdelijke preview, niets in src/ gewijzigd)</small></h1>
+  <div class="pg-modes" role="radiogroup" aria-label="Weergave">
+    <label><input type="radio" name="mode" value="side" checked> Naast elkaar</label>
+    <label><input type="radio" name="mode" value="old"> Alleen oud</label>
+    <label><input type="radio" name="mode" value="new"> Alleen nieuw</label>
+  </div>
+  <nav class="pg-nav" aria-label="Schermen">
+    <a href="#s1">1 Leerling · rust</a>
+    <a href="#s2">2 Leerling · fout</a>
+    <a href="#s3">3 Beheer</a>
+    <a href="#s4">4 Naam-modal</a>
+    <a href="#s5">5 Mobiel 375</a>
+  </nav>
+</header>
+
+<main class="pg-main">
+
+<section class="pg-intro">
+  <h2>Vertaalkeuzes: van projector-deck naar app-scherm</h2>
+  <p>Het design system (v1.0, 2 sept 2026) is geschreven voor 1920×1080-slides. Hieronder staat wat letterlijk is overgenomen en wat is vertaald. Schermen zijn op ware grootte (1216 px breed) gebouwd en schalen mee met de kolom; kies <b>Alleen oud</b> of <b>Alleen nieuw</b> om ze op 100% te zien.</p>
+  <div class="pg-swatches">
+    <span class="pg-swatch"><i style="background:#0B0D0F"></i>INK tekst/kader</span>
+    <span class="pg-swatch"><i style="background:#FFF7E8"></i>PAPER canvas</span>
+    <span class="pg-swatch"><i style="background:#FFD33D"></i>YELLOW navigatie/kop</span>
+    <span class="pg-swatch"><i style="background:#087EB5"></i>BLUE actie/info</span>
+    <span class="pg-swatch"><i style="background:#0D8F93"></i>TEAL ondersteuning</span>
+    <span class="pg-swatch"><i style="background:#F47A20"></i>ORANGE hulp</span>
+    <span class="pg-swatch"><i style="background:#D83A2E"></i>RED stop/fout</span>
+    <span class="pg-swatch"><i style="background:#2E9D63"></i>GREEN succes</span>
+    <span class="pg-swatch"><i style="background:#793AC7"></i>PURPLE Helix-context</span>
+  </div>
+  <div class="pg-cols">
+    <div>
+      <h3>Letterlijk overgenomen</h3>
+      <ul>
+        <li><b>Kleurtokens en semantiek</b> (p.6): geel-zwart als anker; blauw = actie, rood = fout, paars = Helix-context. Geen andere kleurbetekenissen.</li>
+        <li><b>Twee fonts</b> (p.7): Bangers alleen voor koppen van max. zes woorden (uppercase mag); Atkinson Hyperlegible voor alles wat je leest — links uitgelijnd, geen cursief, geen outline, geen volledige kapitalen.</li>
+        <li><b>Zwarte lijnvoering</b> (p.4): één lijndikte per component — 3 px op kaarten, velden en knoppen; 2 px op labels/pills en scheidingslijnen.</li>
+        <li><b>Geel titelvaandel</b> (p.4) als vaste bovenste zone van elke kaart: kop + rol-label (LEERLING / BEHEER).</li>
+        <li><b>Ruimteschaal</b> 8/16/24/32/48 (p.8) en <b>begrenzingen</b> (p.5): geen gloed, geen contour-op-contour, halftoon alleen in hoeken, geen burst.</li>
+        <li><b>Tone of voice</b> (p.12): max. één uitroepteken, observeerbaar succescriterium, rustige herstelroute.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Aangepast voor een app-scherm</h3>
+      <ul>
+        <li><b>Tekstmaten</b>: projectormaten (instructie 28–32 pt) worden 17–18 px leestekst, 16 px labels, 18 px in velden (voorkomt zoom op iOS), koppen 32–56 px.</li>
+        <li><b>Kernlayout SPLIT</b> (p.9) → zijpaneel + formulier op desktop; op mobiel valt het zijpaneel weg en blijft één focus over (FOCUS).</li>
+        <li><b>"Max. twee accenten"</b>: vaste accenten zijn blauw (actie) en paars (alleen het logoblok). Rood en groen tellen als toestand, net als HULP een conditionele vlag is (p.11) — ze verschijnen alleen bij een fout of bericht.</li>
+        <li><b>Interactie</b>: hover/active als verschuiving van de harde schaduw; focus als blauwe ring 2–3 px buiten de contour (één ring, geen gloed).</li>
+        <li><b>3D-comicbeeld</b> (p.14) is niet toegepast: er is geen bronbeeld voor inloggen, en een gegenereerd beeld naast een formulier concurreert met de taak (p.13). Halftoonhoeken zijn de enige decoratie.</li>
+        <li><b>Radius</b>: 28 px zachte hoeken → 16 px op kaarten en 10–12 px op velden/knoppen, zoals de kaarten op p.4 en p.7.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="pg-warn">Let op bij "oud": de huidige site laadt Outfit en Plus Jakarta Sans via Google Fonts. Dit bestand mag alleen Bangers en Atkinson laden, dus "oud" toont de systeemfallback (Segoe UI) tenzij die fonts lokaal staan. Kleuren, maten, radius en schaduwen komen wél exact uit src/index.css. Iconen zijn nagetekend uit Lucide.</p>
+</section>
+
+<!-- =====================================================================
+     SCHERM 1: LEERLINGLOGIN – RUST
+     ===================================================================== -->
+<section class="screen" id="s1">
+  <h2>1. Leerlinglogin — rusttoestand</h2>
+  <p class="sub">Route <code>/login</code> · src/components/auth/LoginScreen.jsx · desktop ≥ 1024 px</p>
+  <div class="compare">
+
+    <div class="col col-old">
+      <span class="col-label">Oud — huidige stijl</span>
+      <div class="viewport"><div class="frame">
+        <div class="o-page">
+          <div class="o-grid">
+            <div class="o-hero">
+              <div class="c1"></div><div class="c2"></div>
+              <div class="o-logo">
+                <span class="o-logo-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="oklch(0.52 0.19 300)" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+                <span class="o-wordmark">HELIX</span>
+              </div>
+              <div>
+                <h2>Jouw lessen.<br>Jouw tempo.</h2>
+                <p>Stap voor stap door de les, met hulp wanneer je vastloopt en tokens als je iets goed doet.</p>
+              </div>
+              <div class="o-chips"><span class="o-chip">Stap voor stap</span><span class="o-chip">Directe hulp</span><span class="o-chip">Tokens</span></div>
+            </div>
+            <div class="o-surface">
+              <div class="o-form">
+                <h1>Hoi! Log in</h1>
+                <p class="lead">Ga verder met je lessen.</p>
+                <div class="o-fields">
+                  <div>
+                    <label class="o-label">Leerlingnummer of e-mailadres</label>
+                    <input class="o-input" type="text" placeholder="Leerlingnummer of naam@school.nl">
+                  </div>
+                  <div>
+                    <label class="o-label">Wachtwoord</label>
+                    <div class="o-pw">
+                      <input class="o-input" type="password" placeholder="Je wachtwoord">
+                      <button class="o-eye" type="button" aria-label="Wachtwoord tonen"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div>
+                  </div>
+                  <button class="o-btn" type="button"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>Inloggen</button>
+                </div>
+                <div class="o-links"><span>Wachtwoord vergeten?</span><span>Account aanmaken</span></div>
+                <div class="o-docent">
+                  <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+                  <span><b>Docent of beheerder?</b><span>Je logt in op een eigen scherm.</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Huidige opbouw</h4>
+        <ul>
+          <li>Paars hero-vlak (28 px radius, twee zachte cirkels) naast een witte kaart met 1 px rand en zachte schaduw.</li>
+          <li>Outfit-koppen, paarse knop met paarse gloed-schaduw, velden 16 px radius met 2 px lichte rand.</li>
+          <li>Paars is tegelijk merk, actie (knop), link en decoratie.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col col-new">
+      <span class="col-label">Nieuw — design system v2</span>
+      <div class="viewport"><div class="frame">
+        <div class="n-page">
+          <div class="n-card">
+            <div class="n-banner">
+              <div class="n-brand">
+                <span class="n-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+                <span class="n-brand-name">HELIX</span>
+              </div>
+              <h1 class="n-title">Hoi! Log in</h1>
+              <span class="n-tag">LEERLING</span>
+            </div>
+            <div class="n-body">
+              <div class="n-side">
+                <div>
+                  <h2><span class="n-mark">Jouw lessen.</span><br><span class="n-mark">Jouw tempo.</span></h2>
+                  <p>Stap voor stap door de les, met hulp wanneer je vastloopt en tokens als je iets goed doet.</p>
+                </div>
+                <div class="n-tags"><span>Stap voor stap</span><span>Directe hulp</span><span>Tokens</span></div>
+              </div>
+              <div class="n-form">
+                <p class="lead">Ga verder met je lessen.</p>
+                <div class="n-fields">
+                  <div>
+                    <label class="n-label">Leerlingnummer of e-mailadres</label>
+                    <input class="n-input" type="text" placeholder="Leerlingnummer of naam@school.nl">
+                  </div>
+                  <div>
+                    <label class="n-label">Wachtwoord</label>
+                    <div class="n-pw">
+                      <input class="n-input" type="password" placeholder="Je wachtwoord">
+                      <button class="n-eye" type="button" aria-label="Wachtwoord tonen"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div>
+                  </div>
+                  <button class="n-btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>Inloggen</button>
+                </div>
+                <p class="n-succes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gelukt als je je lessenoverzicht ziet.</p>
+                <div class="n-links"><span class="n-link">Wachtwoord vergeten?</span><span class="n-link">Account aanmaken</span></div>
+                <div class="n-docent">
+                  <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+                  <span><b>Docent of beheerder?</b><span>Je logt in op een eigen scherm.</span></span>
+                  <svg class="arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Wat is veranderd en waarom</h4>
+        <ul>
+          <li>Geel vaandel draagt kop <b>HOI! LOG IN</b> (Bangers, 3 woorden) en het rol-label LEERLING; de kop staat niet meer los in het formulier. <span class="ref">p.4 geel titelanker</span></li>
+          <li>Paars hero-vlak → crème zijpaneel met gele markeerkop; paars blijft alleen in het logoblok als Helix-context, zodat het formulier de enige focus is. <span class="ref">p.6, p.4 één focus</span></li>
+          <li>Eén actiekleur: blauw voor knop en links. Gloed-schaduw en 28 px radius → harde 8 px schaduw en 3 px contour. <span class="ref">p.5 begrenzen</span></li>
+          <li>Nieuw regeltje onder de knop: observeerbaar succescriterium (optioneel). <span class="ref">p.12 tone of voice</span></li>
+          <li>Outfit/Plus Jakarta → Bangers + Atkinson; leestekst 17–18 px, links uitgelijnd. <span class="ref">p.7</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================================
+     SCHERM 2: LEERLINGLOGIN – FOUTSTAAT
+     ===================================================================== -->
+<section class="screen" id="s2">
+  <h2>2. Leerlinglogin — foutstaat</h2>
+  <p class="sub">Zelfde scherm na een mislukte poging: <code>error = 'Inloggen lukte niet. Controleer je gegevens.'</code>, velden blijven gevuld.</p>
+  <div class="compare">
+
+    <div class="col col-old">
+      <span class="col-label">Oud — huidige stijl</span>
+      <div class="viewport"><div class="frame">
+        <div class="o-page">
+          <div class="o-grid">
+            <div class="o-hero">
+              <div class="c1"></div><div class="c2"></div>
+              <div class="o-logo">
+                <span class="o-logo-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="oklch(0.52 0.19 300)" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+                <span class="o-wordmark">HELIX</span>
+              </div>
+              <div>
+                <h2>Jouw lessen.<br>Jouw tempo.</h2>
+                <p>Stap voor stap door de les, met hulp wanneer je vastloopt en tokens als je iets goed doet.</p>
+              </div>
+              <div class="o-chips"><span class="o-chip">Stap voor stap</span><span class="o-chip">Directe hulp</span><span class="o-chip">Tokens</span></div>
+            </div>
+            <div class="o-surface">
+              <div class="o-form">
+                <h1>Hoi! Log in</h1>
+                <p class="lead">Ga verder met je lessen.</p>
+                <div class="o-alert">Inloggen lukte niet. Controleer je gegevens.</div>
+                <div class="o-fields">
+                  <div>
+                    <label class="o-label">Leerlingnummer of e-mailadres</label>
+                    <input class="o-input" type="text" value="123456">
+                  </div>
+                  <div>
+                    <label class="o-label">Wachtwoord</label>
+                    <div class="o-pw">
+                      <input class="o-input" type="password" value="wachtwoord">
+                      <button class="o-eye" type="button" aria-label="Wachtwoord tonen"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div>
+                  </div>
+                  <button class="o-btn" type="button"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>Inloggen</button>
+                </div>
+                <div class="o-links"><span>Wachtwoord vergeten?</span><span>Account aanmaken</span></div>
+                <div class="o-docent">
+                  <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+                  <span><b>Docent of beheerder?</b><span>Je logt in op een eigen scherm.</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Huidige opbouw</h4>
+        <ul>
+          <li>Rozige melding met 1 px rand op 35% rood, 14 px rode tekst; schudt kort (animate-shake).</li>
+          <li>Betekenis hangt volledig aan kleur; geen icoon.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col col-new">
+      <span class="col-label">Nieuw — design system v2</span>
+      <div class="viewport"><div class="frame">
+        <div class="n-page">
+          <div class="n-card">
+            <div class="n-banner">
+              <div class="n-brand">
+                <span class="n-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+                <span class="n-brand-name">HELIX</span>
+              </div>
+              <h1 class="n-title">Hoi! Log in</h1>
+              <span class="n-tag">LEERLING</span>
+            </div>
+            <div class="n-body">
+              <div class="n-side">
+                <div>
+                  <h2><span class="n-mark">Jouw lessen.</span><br><span class="n-mark">Jouw tempo.</span></h2>
+                  <p>Stap voor stap door de les, met hulp wanneer je vastloopt en tokens als je iets goed doet.</p>
+                </div>
+                <div class="n-tags"><span>Stap voor stap</span><span>Directe hulp</span><span>Tokens</span></div>
+              </div>
+              <div class="n-form">
+                <p class="lead">Ga verder met je lessen.</p>
+                <div class="n-alert" role="alert">
+                  <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>
+                  <p>Inloggen lukte niet. Controleer je gegevens.</p>
+                </div>
+                <div class="n-fields">
+                  <div>
+                    <label class="n-label">Leerlingnummer of e-mailadres</label>
+                    <input class="n-input" type="text" value="123456">
+                  </div>
+                  <div>
+                    <label class="n-label">Wachtwoord</label>
+                    <div class="n-pw">
+                      <input class="n-input" type="password" value="wachtwoord">
+                      <button class="n-eye" type="button" aria-label="Wachtwoord tonen"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div>
+                  </div>
+                  <button class="n-btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>Inloggen</button>
+                </div>
+                <p class="n-succes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gelukt als je je lessenoverzicht ziet.</p>
+                <div class="n-links"><span class="n-link">Wachtwoord vergeten?</span><span class="n-link">Account aanmaken</span></div>
+                <div class="n-docent">
+                  <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+                  <span><b>Docent of beheerder?</b><span>Je logt in op een eigen scherm.</span></span>
+                  <svg class="arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Wat is veranderd en waarom</h4>
+        <ul>
+          <li>Rood alleen als toestand: rood icoonblok in een vlak met inkt-contour en inkt-tekst; het icoon draagt de betekenis ook zonder kleur. <span class="ref">p.6 rood = stop/fout · p.19 grijswaardentest</span></li>
+          <li>Eén contour, geen gloed of gekleurde rand-op-rand; de schud-animatie mag blijven (gedrag, geen stijl). <span class="ref">p.5</span></li>
+          <li>Herstelroute blijft direct onder de melding: velden opnieuw invullen, daarna "Wachtwoord vergeten?". <span class="ref">p.11 HULP: symptoom → zelfcheck → hulpbron</span></li>
+          <li>Tekst ongewijzigd: één zin, geen uitroepteken, geen schuldtaal. <span class="ref">p.12</span></li>
+          <li>Groene berichten (herstelmail verstuurd) volgen hetzelfde patroon met GREEN als toestandkleur.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================================
+     SCHERM 3: BEHEERLOGIN
+     ===================================================================== -->
+<section class="screen" id="s3">
+  <h2>3. Beheerlogin</h2>
+  <p class="sub">Route <code>/login/beheer</code> · src/components/auth/AdminLoginScreen.jsx · het "Alleen lokaal"-blok verschijnt niet in productie en is weggelaten.</p>
+  <div class="compare">
+
+    <div class="col col-old">
+      <span class="col-label">Oud — huidige stijl</span>
+      <div class="viewport"><div class="frame">
+        <div class="o-page">
+          <div class="o-grid o-grid--admin">
+            <div class="o-hero o-hero--admin">
+              <div class="c3"></div>
+              <div class="o-logo">
+                <span class="o-logo-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="oklch(0.24 0.045 300)" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+                <span><span class="o-wordmark o-wordmark--sm">HELIX</span><span class="o-wordmark-sub">Beheer</span></span>
+              </div>
+              <div>
+                <h2>De werkplek achter de lessen.</h2>
+                <p>Lesstof bouwen, klassen klaarzetten en zien wie er vastloopt.</p>
+              </div>
+              <div class="o-werkplek">
+                <span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>Lesstof en planning</span>
+                <span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>Inzichten en resultaten</span>
+                <span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Leerlingen en klassen</span>
+              </div>
+            </div>
+            <div class="o-surface">
+              <div class="o-form">
+                <span class="o-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Beheerder</span>
+                <h1 class="h-admin">Inloggen op beheer</h1>
+                <p class="lead lead--admin">Gebruik je schoolaccount.</p>
+                <button class="o-btn o-btn--navy" type="button">
+                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 24c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 21.53 7.7 24 12 24z"/><path fill="#FBBC05" d="M5.84 15.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V8.06H2.18C1.43 9.55 1 11.22 1 13s.43 3.45 1.18 4.94l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 8.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                  Inloggen met schoolaccount
+                </button>
+                <div class="o-divider"><i></i><span>of met e-mail</span><i></i></div>
+                <div class="o-fields o-fields--tight">
+                  <input class="o-input" type="email" placeholder="E-mailadres">
+                  <input class="o-input" type="password" placeholder="Wachtwoord">
+                  <button class="o-btn o-btn--secondary" type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>Inloggen met e-mail</button>
+                </div>
+                <div style="margin-top:12px"><span class="o-link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18v3h3l7.5-7.5a6 6 0 1 0-3-3L2 18z"/><circle cx="16.5" cy="7.5" r="1.5"/></svg>Wachtwoordlink sturen</span></div>
+                <div class="o-back"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>Ben je leerling? Naar het leerlingscherm</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Huidige opbouw</h4>
+        <ul>
+          <li>Donker paars-navy zijpaneel, lavendel "Beheerder"-pill, navy Google-knop, witte contourknop voor e-mail.</li>
+          <li>E-mailvelden hebben alleen placeholders, geen zichtbare labels.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col col-new">
+      <span class="col-label">Nieuw — design system v2</span>
+      <div class="viewport"><div class="frame">
+        <div class="n-page">
+          <div class="n-card">
+            <div class="n-banner">
+              <div class="n-brand">
+                <span class="n-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+                <span class="n-brand-name">HELIX</span>
+              </div>
+              <h1 class="n-title">Inloggen op beheer</h1>
+              <span class="n-tag">BEHEER</span>
+            </div>
+            <div class="n-body" style="grid-template-columns:0.8fr 1fr">
+              <div class="n-side n-side--ink">
+                <div>
+                  <h2>De werkplek achter de lessen.</h2>
+                  <p>Lesstof bouwen, klassen klaarzetten en zien wie er vastloopt.</p>
+                </div>
+                <div class="n-werkplek">
+                  <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>Lesstof en planning</span>
+                  <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>Inzichten en resultaten</span>
+                  <span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Leerlingen en klassen</span>
+                </div>
+              </div>
+              <div class="n-form">
+                <p class="lead">Gebruik je schoolaccount.</p>
+                <button class="n-btn" type="button">
+                  <span class="n-google-g"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 24c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 21.53 7.7 24 12 24z"/><path fill="#FBBC05" d="M5.84 15.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V8.06H2.18C1.43 9.55 1 11.22 1 13s.43 3.45 1.18 4.94l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 8.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg></span>
+                  Inloggen met schoolaccount
+                </button>
+                <div class="n-divider"><i></i><span>of met e-mail</span><i></i></div>
+                <div class="n-fields n-fields--tight">
+                  <div>
+                    <label class="n-label">E-mailadres</label>
+                    <input class="n-input" type="email" placeholder="naam@school.nl">
+                  </div>
+                  <div>
+                    <label class="n-label">Wachtwoord</label>
+                    <input class="n-input" type="password" placeholder="Je wachtwoord">
+                  </div>
+                  <button class="n-btn n-btn--paper" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>Inloggen met e-mail</button>
+                </div>
+                <div style="margin-top:16px"><span class="n-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18v3h3l7.5-7.5a6 6 0 1 0-3-3L2 18z"/><circle cx="16.5" cy="7.5" r="1.5"/></svg>Wachtwoordlink sturen</span></div>
+                <div class="n-back"><span class="n-link n-link--ink"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>Ben je leerling? Naar het leerlingscherm</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Wat is veranderd en waarom</h4>
+        <ul>
+          <li>Zijpaneel in inkt met gele Bangers-kop (5 woorden): geel-zwart blijft het anker, ook voor docenten; het rol-label BEHEER in het vaandel vervangt de lavendel-pill. <span class="ref">p.4 familie-DNA</span></li>
+          <li>Schoolaccount-knop wordt de blauwe actieknop (was navy); e-mailvariant als contourknop op wit — hiërarchie volgt kleursemantiek. <span class="ref">p.6</span></li>
+          <li>Voorstel: zichtbare labels boven de velden in plaats van alleen placeholders. <span class="ref">p.2 leerbaarheid wint van stijl</span></li>
+          <li>Google-G in wit blokje op blauw: merklogo blijft intact, systeemkleuren blijven semantisch. <span class="ref">p.6 inhoudsbeelden imiteren de semantiek niet</span></li>
+          <li>Terug-link in inkt met onderstreping (geen derde accent). <span class="ref">p.6 max. twee accenten</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================================
+     SCHERM 4: NAAM-INSTELMODAL
+     ===================================================================== -->
+<section class="screen" id="s4">
+  <h2>4. Naam-instelmodal</h2>
+  <p class="sub">src/components/auth/NameSetupModal.jsx · verschijnt na de eerste login als <code>needsNameSetup</code> waar is; de app erachter is als skelet aangeduid.</p>
+  <div class="compare">
+
+    <div class="col col-old">
+      <span class="col-label">Oud — huidige stijl</span>
+      <div class="viewport"><div class="frame">
+        <div class="o-modal-stage">
+          <div class="o-app-skel"><div class="bar"></div><div class="cards"><div class="card"></div><div class="card"></div><div class="card"></div></div></div>
+          <div class="o-overlay">
+            <div class="o-modal">
+              <div class="head"><h2>Welkom! 👋</h2><p>Voer je volledige naam in om te beginnen</p></div>
+              <div class="fields">
+                <div><label class="o-label">Voornaam</label><input class="o-input o-input--lg" type="text" placeholder="Bijv. Jan"></div>
+                <div><label class="o-label">Achternaam</label><input class="o-input o-input--lg" type="text" placeholder="Bijv. Jansen"></div>
+                <button class="o-btn o-btn--modal" type="button">Verder</button>
+              </div>
+              <p class="mail">l000000@leerling.dacapo-college.nl</p>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Huidige opbouw</h4>
+        <ul>
+          <li>Overlay slate-900 op 50% met blur; witte kaart 24 px radius, shadow-2xl, alles gecentreerd, emoji in de kop.</li>
+          <li>Gebruikt losse Tailwind-slate-kleuren, niet de helix-tokens.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col col-new">
+      <span class="col-label">Nieuw — design system v2</span>
+      <div class="viewport"><div class="frame">
+        <div class="n-modal-stage">
+          <div class="n-app-skel"><div class="bar"></div><div class="cards"><div class="card"></div><div class="card"></div><div class="card"></div></div></div>
+          <div class="n-overlay">
+            <div class="n-modal" role="dialog" aria-labelledby="n-modal-title">
+              <div class="n-banner"><h2 class="n-title" id="n-modal-title">Welkom!</h2></div>
+              <div class="inner">
+                <p class="lead">Voer je volledige naam in om te beginnen.</p>
+                <div class="n-fields n-fields--tight">
+                  <div><label class="n-label">Voornaam</label><input class="n-input" type="text" placeholder="Bijv. Jan"></div>
+                  <div><label class="n-label">Achternaam</label><input class="n-input" type="text" placeholder="Bijv. Jansen"></div>
+                  <button class="n-btn" type="button">Verder<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+                </div>
+                <p class="n-succes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Daarna zie je je lessen.</p>
+                <p class="mail">Ingelogd als l000000@leerling.dacapo-college.nl</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Wat is veranderd en waarom</h4>
+        <ul>
+          <li>Kop WELKOM! in het gele vaandel (Bangers); leestekst links uitgelijnd, emoji vervalt. <span class="ref">p.7 links uitlijnen · p.12 max. één uitroepteken</span></li>
+          <li>Overlay in inkt op 70% zonder blur; kaart met 3 px contour en harde 8 px schaduw in plaats van shadow-2xl en 24 px radius. <span class="ref">p.5 begrenzen</span></li>
+          <li>Blauwe actieknop met pijl: één handeling, één actiekleur. <span class="ref">p.6 · p.4 één focus</span></li>
+          <li>Succescriterium onder de knop: "Daarna zie je je lessen." <span class="ref">p.12</span></li>
+          <li>E-mailregel blijft als metadata, 15 px, links; niet kleiner dan leesbaar. <span class="ref">p.7 metadata-minimum vertaald</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================================
+     SCHERM 5: MOBIELE LEERLINGLOGIN (375 px)
+     ===================================================================== -->
+<section class="screen" id="s5">
+  <h2>5. Leerlinglogin — mobiel (375 px)</h2>
+  <p class="sub">Zelfde component onder 1024 px: het zijpaneel is verborgen (<code>hidden lg:flex</code>) en het logo schuift boven het formulier.</p>
+  <div class="phones">
+
+    <div class="col col-old">
+      <span class="col-label">Oud — huidige stijl</span>
+      <div class="phone-wrap"><div class="phone">
+        <div class="statusbar" style="background:var(--o-bg);color:var(--o-navy)"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="o-mobile">
+          <div class="o-surface">
+            <div class="o-logo">
+              <span class="o-logo-box o-logo-box--purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+              <span class="o-wordmark o-wordmark--sm">HELIX</span>
+            </div>
+            <div class="o-form">
+              <h1>Hoi! Log in</h1>
+              <p class="lead">Ga verder met je lessen.</p>
+              <div class="o-fields">
+                <div><label class="o-label">Leerlingnummer of e-mailadres</label><input class="o-input" type="text" placeholder="Leerlingnummer of naam@school.nl"></div>
+                <div><label class="o-label">Wachtwoord</label>
+                  <div class="o-pw"><input class="o-input" type="password" placeholder="Je wachtwoord"><button class="o-eye" type="button" aria-label="Wachtwoord tonen"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+                </div>
+                <button class="o-btn" type="button"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>Inloggen</button>
+              </div>
+              <div class="o-links"><span>Wachtwoord vergeten?</span><span>Account aanmaken</span></div>
+              <div class="o-docent">
+                <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+                <span><b>Docent of beheerder?</b><span>Je logt in op een eigen scherm.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Huidige opbouw</h4>
+        <ul>
+          <li>Kaart met 28 px padding en 28 px radius op de lichte pagina; paars logoblok boven de kop.</li>
+          <li>Velden 16 px tekst, knop 16 px; links op één regel naast elkaar.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col col-new">
+      <span class="col-label">Nieuw — design system v2</span>
+      <div class="phone-wrap"><div class="phone">
+        <div class="statusbar" style="background:var(--paper);color:var(--ink)"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="n-mobile">
+          <div class="n-card">
+            <div class="n-banner">
+              <div class="row">
+                <span class="n-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 3c0 6 12 12 12 18"/><path d="M18 3c0 6-12 12-12 18"/></svg></span>
+                <span class="n-brand-name">HELIX</span>
+                <span class="n-tag">LEERLING</span>
+              </div>
+              <h1 class="n-title">Hoi! Log in</h1>
+            </div>
+            <div class="n-form">
+              <p class="lead">Ga verder met je lessen.</p>
+              <div class="n-fields">
+                <div><label class="n-label">Leerlingnummer of e-mailadres</label><input class="n-input" type="text" placeholder="Leerlingnummer of naam@school.nl"></div>
+                <div><label class="n-label">Wachtwoord</label>
+                  <div class="n-pw"><input class="n-input" type="password" placeholder="Je wachtwoord"><button class="n-eye" type="button" aria-label="Wachtwoord tonen"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+                </div>
+                <button class="n-btn" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>Inloggen</button>
+              </div>
+              <p class="n-succes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Gelukt als je je lessenoverzicht ziet.</p>
+              <div class="n-links"><span class="n-link">Wachtwoord vergeten?</span><span class="n-link">Account aanmaken</span></div>
+              <div class="n-docent">
+                <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+                <span><b>Docent of beheerder?</b><span>Je logt in op een eigen scherm.</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="note">
+        <h4>Wat is veranderd en waarom</h4>
+        <ul>
+          <li>Zijpaneel vervalt; vaandel stapelt (logo + label boven, kop 34 px eronder) zodat één focus overblijft. <span class="ref">p.9 FOCUS-layout</span></li>
+          <li>Velden 18 px tekst en ±52 px hoog, knop 18 px: grotere targets voor jongere leerlingen en geen iOS-zoom. <span class="ref">p.18 grotere targets</span></li>
+          <li>Links onder elkaar (16 px, onderstreept) in plaats van twee kleine links op één regel. <span class="ref">p.19 achterwand → duim</span></li>
+          <li>Ruimteschaal 16/20/24 binnen de kaart; harde schaduw 6 px zodat de kaart niet aan de schermrand plakt. <span class="ref">p.8</span></li>
+          <li>Halftoon alleen rechtsonder, buiten de kaart. <span class="ref">p.5 decoratie aan randen</span></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  function fit() {
+    document.querySelectorAll('.viewport').forEach(function (vp) {
+      var frame = vp.firstElementChild;
+      if (!frame || vp.clientWidth === 0) return;
+      var w = frame.scrollWidth || frame.offsetWidth;
+      var s = Math.min(1, vp.clientWidth / w);
+      frame.style.transform = 'scale(' + s + ')';
+      vp.style.height = Math.round(frame.offsetHeight * s) + 'px';
+    });
+  }
+  document.querySelectorAll('input[name="mode"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      document.body.className = 'mode-' + r.value;
+      fit();
+    });
+  });
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  fit();
+})();
+</script>
+</body>
+</html>

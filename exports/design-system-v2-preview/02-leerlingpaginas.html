@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HELIX design system v2 · preview 02 · leerlingpagina's (oud vs nieuw)</title>
+<!--
+  TIJDELIJK BEOORDELINGSBESTAND. Niets hiervan staat in src/.
+  Links: OUD = de huidige stijl, nagebouwd uit src/index.css, AppShell.jsx,
+  StudyStepRail.jsx, StudentLessonPage.jsx, TableOfContents.jsx en
+  StudentTokenShopPage.jsx. Rechts: NIEUW = dezelfde inhoud in het
+  "Helix Slide Design System v2", vertaald naar een app-scherm.
+  Enige externe bron: Google Fonts. Bangers + Atkinson Hyperlegible zijn het
+  nieuwe systeem; Outfit + Plus Jakarta Sans staan erbij zodat OUD er ook echt
+  uitziet zoals nu (zelfde bron, zelfde request). Haal ze uit de link als je
+  strikt alleen de nieuwe fonts wilt laden.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Atkinson+Hyperlegible:wght@400;700&family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   0. BEOORDELINGSPAGINA (de schil om de vergelijking heen, neutraal grijs)
+   ===================================================================== */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#2a2c31;color:#e8e8ea;font:15px/1.5 "Atkinson Hyperlegible",Arial,sans-serif;overflow-x:hidden}
+.review-bar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:12px 24px;background:#16171a;border-bottom:1px solid #3a3c42}
+.review-bar h1{margin:0;font:700 17px/1.2 "Atkinson Hyperlegible",Arial,sans-serif;color:#fff}
+.review-bar h1 span{color:#9a9ca4;font-weight:400}
+.modes{display:flex;gap:4px;margin-left:auto;background:#26282e;padding:4px;border-radius:8px}
+.modes button{border:0;background:transparent;color:#c8c9ce;font:700 13px "Atkinson Hyperlegible",Arial,sans-serif;padding:8px 14px;border-radius:6px;cursor:pointer}
+.modes button[aria-pressed="true"]{background:#FFD33D;color:#0B0D0F}
+.review-wrap{max-width:1400px;margin:0 auto;padding:24px}
+.intro{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-bottom:32px}
+.intro .box{background:#1f2126;border:1px solid #3a3c42;border-radius:10px;padding:20px 24px}
+.intro h2{margin:0 0 8px;font:700 15px "Atkinson Hyperlegible",Arial,sans-serif;color:#FFD33D;text-transform:uppercase;letter-spacing:.06em}
+.intro ol,.intro ul{margin:0;padding-left:20px}
+.intro li{margin:0 0 6px}
+.intro b{color:#fff}
+.swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.sw{display:flex;align-items:center;gap:6px;font-size:12px;color:#c8c9ce}
+.sw i{display:inline-block;width:18px;height:18px;border-radius:4px;border:1px solid #000}
+.screen{margin:0 0 56px}
+.screen-head{display:flex;align-items:baseline;gap:14px;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #3a3c42}
+.screen-head .nr{font:400 26px "Bangers",Impact,sans-serif;color:#FFD33D;letter-spacing:.03em}
+.screen-head h2{margin:0;font:700 18px "Atkinson Hyperlegible",Arial,sans-serif;color:#fff}
+.screen-head p{margin:0;color:#9a9ca4;font-size:13px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.pane{min-width:0}
+.pane-label{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:4px;font:700 12px/1.4 "Atkinson Hyperlegible",Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.pane.old .pane-label{background:#5b4a8a;color:#fff}
+.pane.new .pane-label{background:#FFD33D;color:#0B0D0F}
+/* De mock wordt op desktopbreedte (ongeveer 850 px) opgemaakt en met zoom
+   verkleind, zodat de verhoudingen van een 1440-scherm behouden blijven en de
+   tekst scherp blijft. In "alleen oud/nieuw" is de zoom 1. */
+.mock{border-radius:8px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.45);zoom:.78}
+body[data-mode="oud"] .mock,body[data-mode="nieuw"] .mock{zoom:1}
+.note{margin:12px 0 0;padding:12px 16px;background:#1f2126;border-left:4px solid #FFD33D;border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.5;color:#d6d7db}
+.note b{color:#fff}
+.note small{display:block;color:#9a9ca4;margin-top:4px}
+body[data-mode="oud"] .pane.new,body[data-mode="nieuw"] .pane.old{display:none}
+body[data-mode="oud"] .compare,body[data-mode="nieuw"] .compare{grid-template-columns:1fr;max-width:920px}
+body[data-mode="oud"] .compare .pane,body[data-mode="nieuw"] .compare .pane{width:100%}
+.open-vragen{background:#1f2126;border:1px solid #3a3c42;border-radius:10px;padding:20px 24px;margin-top:16px}
+.open-vragen h2{margin:0 0 8px;font:700 15px "Atkinson Hyperlegible",Arial,sans-serif;color:#FFD33D;text-transform:uppercase;letter-spacing:.06em}
+.open-vragen li{margin-bottom:6px}
+svg.ic{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.12em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* =====================================================================
+   1. OUD - huidige HELIX-stijl (src/index.css, nagebouwd)
+   ===================================================================== */
+.o{--purple:#7a3cff;--purple-dark:#6a2fe6;--navy:#1f1a2e;--muted:#6e6980;--border:#e6e2ec;--bg:#f5f3f9;--soft:#f9f8fc;--lav:#f0ebfa;--peach:#fde9d6;--success:#22c55e;--danger:#e0443d;--warning:#f97316;
+  background:radial-gradient(circle at 78% -6%,rgba(122,60,255,.08),transparent 32rem),var(--bg);color:var(--navy);font:15px/1.5 "Plus Jakarta Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.o h1,.o h2,.o h3,.o .disp{font-family:"Outfit","Plus Jakarta Sans",system-ui,sans-serif}
+.o *{margin:0}
+.o-header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px;padding:8px 16px;flex-wrap:wrap;background:rgba(255,255,255,.86);border-bottom:1px solid var(--border);box-shadow:0 14px 34px -28px rgba(11,19,43,.45);backdrop-filter:blur(20px)}
+.o-logo{display:flex;align-items:center;justify-content:center;height:48px;width:120px;border-radius:12px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.06);font:800 20px "Outfit",sans-serif;color:var(--purple);letter-spacing:.04em}
+.o-logo i{display:inline-block;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#ff7a00);margin-right:8px}
+.o-nav{display:flex;gap:4px;padding:4px;border:1px solid var(--border);background:rgba(249,248,252,.82);border-radius:16px}
+.o-tab{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;font-weight:800;font-size:14px;color:var(--muted);border:2px solid transparent}
+.o-tab.active{background:var(--lav);color:var(--purple-dark)}
+.o-hright{display:flex;align-items:center;gap:10px}
+.o-iconbtn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:16px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:18px}
+.o-tokenpill{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border-radius:16px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;font-weight:800;font-size:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.o-profile{display:flex;align-items:center;gap:10px;padding:6px 12px;border-radius:16px}
+.o-avatar{width:36px;height:36px;border-radius:50%;border:2px solid var(--purple);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--purple);font-size:18px}
+.o-profile .nm{font-weight:700;font-size:14px;line-height:1.2;text-align:right}
+.o-profile .tt{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--purple);text-align:right}
+.o-logout{color:var(--muted);font-size:20px;padding:8px}
+.o-container{padding:28px 24px}
+.o-surface{background:rgba(255,255,255,.88);border:1px solid var(--border);border-radius:28px;box-shadow:0 14px 44px rgba(11,19,43,.08)}
+.o-eyebrow{color:var(--purple);font:800 12px/1.3 "Outfit",sans-serif;letter-spacing:.18em;text-transform:uppercase}
+.o-banner{display:flex;align-items:center;gap:20px;padding:22px 26px;background:linear-gradient(120deg,#fff 0%,#f6f1ff 60%,#fff0e8 100%)}
+.o-banner .lg{width:64px;height:64px;border-radius:18px;background:#fff;box-shadow:0 10px 24px rgba(122,60,255,.14);display:flex;align-items:center;justify-content:center;font:800 13px "Outfit",sans-serif;color:var(--purple)}
+.o-banner h1{font-size:24px;font-weight:800;letter-spacing:-.01em;margin-top:2px}
+.o-banner p.sub{color:var(--muted);font-weight:600;font-size:14px;margin-top:4px}
+.o-grid{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:20px;align-items:start;margin-top:20px}
+.o-chapter{padding:22px}
+.o-chapter header{display:flex;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.o-chapter h2{font-size:22px;font-weight:800;letter-spacing:-.01em;margin-top:2px}
+.o-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--soft);color:var(--muted);font-size:12px;font-weight:800}
+.o-progress{width:180px}
+.o-progress .lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.o-track{height:8px;border-radius:999px;background:#edf0f6;overflow:hidden}
+.o-fill{height:100%;border-radius:999px;background:linear-gradient(135deg,var(--purple),var(--purple-dark))}
+.o-rows{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.o-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:22px;background:rgba(255,255,255,.7)}
+.o-row.open{border-color:rgba(122,60,255,.32);background:#fff;flex-wrap:wrap}
+.o-row .chev{color:var(--muted);font-size:14px}
+.o-row .ico{width:40px;height:40px;border-radius:16px;background:var(--lav);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.o-row .ico.done{background:rgba(34,197,94,.14);color:#15803d}
+.o-row .t{flex:1;min-width:0}
+.o-row .t b{display:block;font:800 15px "Outfit",sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.o-row .t b span{color:var(--purple)}
+.o-row .t small{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.o-row .pr{display:flex;flex-direction:column;align-items:flex-end;font-size:12px;font-weight:700;color:var(--muted);gap:4px}
+.o-row .pr .o-track{width:80px}
+.o-startbtn{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:#fff;font-weight:800;font-size:12px;color:var(--navy)}
+.o-panel{flex-basis:100%;border-top:1px solid var(--border);padding-top:14px;margin-top:4px}
+.o-goals{border:1px solid rgba(122,60,255,.18);background:rgba(240,235,250,.6);border-radius:16px;padding:14px}
+.o-goals ul{list-style:none;padding:0;margin-top:8px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+.o-goals li::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--purple);margin-right:10px;vertical-align:middle}
+.o-parts{list-style:none;padding:0;margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.o-parts li{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.8);font-size:14px;font-weight:700}
+.o-parts .n{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;background:var(--lav);color:var(--purple);flex:none}
+.o-parts .n.done{background:rgba(34,197,94,.14);color:#15803d}
+.o-parts small{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+.o-anchor{padding:16px;position:sticky;top:12px}
+.o-anchor p{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.o-anchor a{display:block;padding:8px 10px;border-radius:12px;font-size:13px;font-weight:700;color:var(--navy);text-decoration:none}
+.o-anchor a.active{background:var(--lav);color:var(--purple)}
+.o-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:16px;border:2px solid transparent;background:var(--purple);color:#fff;font:700 14px "Outfit",sans-serif;box-shadow:0 12px 26px rgba(122,60,255,.3)}
+.o-btn.ghost{background:#fff;color:var(--muted);border-color:var(--border);box-shadow:none}
+.o-btn.sm{padding:8px 14px;font-size:13px}
+.o-btn.dis{background:#eef2f7;border-color:#dfe5ee;color:#94a3b8;box-shadow:none}
+/* studeerweergave */
+.o-study{display:flex;min-height:560px;background:radial-gradient(circle at 16% -6%,rgba(241,233,255,.6),transparent 26rem),var(--bg)}
+.o-rail{width:244px;flex:none;background:rgba(255,255,255,.94);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.o-rail .top{padding:16px;border-bottom:1px solid var(--border)}
+.o-rail h2{font-size:16px;font-weight:800;line-height:1.3;margin-top:4px}
+.o-rail .hs{font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+.o-rail .cnt{font-size:12px;font-weight:700;color:var(--muted);margin-top:8px}
+.o-steps{list-style:none;padding:10px;display:flex;flex-direction:column;gap:6px;flex:1}
+.o-step{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:16px;color:var(--muted)}
+.o-step .ico{width:34px;height:34px;border-radius:12px;background:var(--lav);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.o-step .t{flex:1;min-width:0}
+.o-step .t b{display:block;font-size:13px;font-weight:900;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.o-step .t small{display:block;font-size:11px;font-weight:700;color:var(--muted)}
+.o-step .chk{width:22px;height:22px;border-radius:50%;background:rgba(34,197,94,.16);color:#15803d;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.o-step .todo{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);margin:4px;flex:none}
+.o-step.active{background:var(--purple);color:#fff}
+.o-step.active .ico{background:rgba(255,255,255,.18);color:#fff}
+.o-step.active .t b,.o-step.active .t small{color:#fff}
+.o-step.active .todo{border-color:rgba(255,255,255,.55)}
+.o-rail .exit{margin:10px;padding:10px;border:1px solid var(--border);border-radius:16px;background:#fff;text-align:center;font-weight:900;font-size:13px;color:var(--muted)}
+.o-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.o-topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.86)}
+.o-topbar .ico{width:40px;height:40px;border-radius:16px;background:var(--lav);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.o-topbar .t{flex:1;min-width:0}
+.o-topbar .t b{display:block;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.o-topbar .t small{display:block;font-size:11px;font-weight:700;color:var(--muted)}
+.o-topbar .pct{font-size:12px;font-weight:900;color:var(--muted)}
+.o-content{flex:1;padding:24px 20px}
+.o-block{background:#fff;border:1px solid var(--border);border-radius:28px;box-shadow:0 12px 34px rgba(11,19,43,.07);padding:24px}
+.o-subpanel{border:1px solid #efe4ff;background:rgba(240,235,250,.7);border-radius:22px;padding:20px}
+.o-subpanel h3{font-size:22px;font-weight:800;margin-top:6px}
+.o-subpanel p{color:var(--muted);font-size:14px;line-height:1.55;margin-top:10px;max-width:46ch}
+.o-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-top:1px solid var(--border);background:rgba(255,255,255,.86)}
+.o-footer .mid{font-size:12px;font-weight:700;color:var(--muted)}
+/* Meldbel.jsx: fixed rechtsonder (20/20), 48 px, wit met paars icoon. In de
+   mock absolute, zodat hij binnen het paneel blijft. */
+.o-bell{position:absolute;right:20px;bottom:20px;width:48px;height:48px;border-radius:50%;background:#fff;border:1px solid var(--border);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 6px 20px rgba(15,23,42,.12)}
+/* quizvraag (AssessmentItemLearningCard) */
+.o-qintro{border:1px solid #d1fae5;background:#ecfdf5;color:#064e3b;border-radius:22px;padding:18px 20px}
+.o-qintro h3{font-size:20px;font-weight:800;margin-top:6px}
+.o-qintro p{font-size:13px;font-weight:700;margin-top:8px}
+.o-q{background:#fff;border:2px solid var(--border);border-radius:16px;padding:16px;margin-top:12px}
+.o-q .meta{display:flex;gap:6px;font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--purple)}
+.o-q .prompt{font-size:15px;font-weight:700;line-height:1.55;margin-top:8px}
+.o-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.o-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--soft);color:var(--muted);font-size:14px;font-weight:700}
+.o-opt i{width:16px;height:16px;border-radius:50%;border:1.5px solid #9993a8;background:#fff;flex:none;position:relative}
+.o-opt i.on{border-color:var(--purple);background:var(--purple);box-shadow:inset 0 0 0 3px #fff}
+.o-q .act{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.o-tone{padding:8px 12px;border-radius:12px;font-size:14px;font-weight:900}
+.o-q.good{border-color:#047857;background:#fff}.o-q.good .o-tone{background:#d1fae5}
+.o-q.bad{border-color:#cbd5e1}.o-q.bad .o-tone{background:#fff;border:1px solid #cbd5e1}
+.o-q.guided{border-color:#047857;outline:2px dotted #f43f5e;outline-offset:2px}
+.o-fb{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:14px;font-weight:600;line-height:1.5}
+.o-fb .ex{border-top:1px solid rgba(110,105,128,.25);margin-top:8px;padding-top:8px}
+/* voortgangsblokjes */
+.o-blocks{display:flex;gap:16px;flex-wrap:wrap;padding:24px}
+.o-blk{width:112px;text-align:center}
+.o-blk .sq{width:56px;height:56px;border-radius:14px;margin:0 auto;border:2px solid transparent}
+.o-blk small{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-top:8px;line-height:1.3}
+.o-blk .sq.good{background:#d1fae5;border-color:#047857}
+.o-blk .sq.guided{background:#d1fae5;border-color:#047857;outline:2px dotted #f43f5e;outline-offset:2px}
+.o-blk .sq.failed{background:#fee2e2;border-color:#b91c1c}
+.o-blk .sq.pending{background:#fef3c7;border-color:#f59e0b}
+.o-blk .sq.open{background:#fff;border-color:#cbd5e1}
+.o-blk .sq.idle{background:#fff;border:2px dashed #cbd5e1}
+/* tokenshop */
+.o-shophead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.o-shophead h1{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-top:6px}
+.o-shophead p.lead{color:var(--muted);font-size:15px;margin-top:8px;max-width:44ch}
+.o-saldo{border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:22px;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.o-saldo .c{font-size:26px}
+.o-saldo small{display:block;font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+.o-saldo b{font-size:26px;font-weight:900;white-space:nowrap}
+.o-shophead .o-saldo{flex:none}
+.o-tabs{display:flex;gap:6px;padding:6px;border:1px solid var(--border);background:rgba(249,248,252,.82);border-radius:16px;margin-top:20px;overflow-x:auto;scrollbar-width:none}
+.o-tabs span{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;font-size:13px;font-weight:900;color:var(--muted);white-space:nowrap}
+.o-tabs span.active{background:#fff;color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.o-tabs span i{font-style:normal;padding:1px 7px;border-radius:999px;background:rgba(255,255,255,.8);font-size:11px}
+.o-tabs span.active i{background:var(--lav);color:var(--purple)}
+.o-shop{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:16px;margin-top:16px}
+.o-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.o-card{background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:22px;box-shadow:0 12px 34px rgba(11,19,43,.07);overflow:hidden}
+.o-media{aspect-ratio:16/10;background:radial-gradient(circle at 28% 22%,rgba(122,60,255,.18),transparent 14rem),linear-gradient(135deg,#fff,#f5f7fb);display:flex;align-items:center;justify-content:center;position:relative}
+.o-media.teal{background:radial-gradient(circle at 28% 22%,rgba(13,143,147,.22),transparent 14rem),linear-gradient(135deg,#fff,#f5f7fb)}
+.o-media::after{content:"";position:absolute;left:14%;right:14%;bottom:10%;height:16%;border-radius:999px;background:rgba(122,60,255,.24);filter:blur(18px);opacity:.54}
+.o-card .body{padding:14px}
+.o-card .badges{display:flex;gap:6px;flex-wrap:wrap}
+.o-card h2{font-size:18px;font-weight:900;margin-top:10px}
+.o-card p{color:var(--muted);font-size:13px;line-height:1.5;margin-top:6px}
+.o-price{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:#fffbeb;color:#b45309;font-size:13px;font-weight:900;white-space:nowrap}
+.o-aside{display:flex;flex-direction:column;gap:12px}
+.o-aside .o-surface{padding:14px}
+.o-aside h2{font-size:14px;font-weight:900}
+.o-aside .row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:12px;background:var(--soft);font-size:13px;font-weight:800;margin-top:8px}
+.o-aside .row small{display:block;font-weight:600;color:var(--muted);font-size:11px}
+.o-aside .plus{color:#047857}.o-aside .min{color:#dc2626}
+/* mobiel */
+.phone{width:375px;margin:0 auto;border:10px solid #111;border-radius:36px;overflow:hidden;background:#fff;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.phone .scr{height:720px;overflow:hidden;position:relative}
+.o-mtop{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.9)}
+.o-mtop .stp{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 10px;border:1px solid var(--border);border-radius:16px;background:#fff;font-size:12px;font-weight:900;color:var(--muted)}
+
+/* =====================================================================
+   2. NIEUW - Helix Slide Design System v2, vertaald naar app-scherm
+   Tokens letterlijk. Contour: 3 px INK op kaarten en knoppen, 2 px op
+   chips; zachte grijze offset-schaduw zoals in het DS-document zelf (geen
+   gloed). Radius: kaarten 16 px, vaandel 12 px, knoppen 10 px, chips pil.
+   Fasekleuren exact volgens pagina 11: KIJK geel, DOE blauw, CHECK teal,
+   KLAAR groen; HULP oranje.
+   Ruimte: 8 / 16 / 24 / 32 / 48. Tekst: Atkinson 17 px desktop, 16 px
+   mobiel; Bangers alleen voor koppen van max zes woorden.
+   ===================================================================== */
+.n{--ink:#0B0D0F;--paper:#FFF7E8;--yellow:#FFD33D;--blue:#087EB5;--teal:#0D8F93;--orange:#F47A20;--red:#D83A2E;--green:#2E9D63;--purple:#793AC7;--card:#FFFFFF;--shadow:4px 5px 0 rgba(11,13,15,.16);
+  background:var(--paper);color:var(--ink);font:17px/1.5 "Atkinson Hyperlegible",Arial,sans-serif}
+.n *{margin:0}
+.n .bang{font-family:"Bangers","Impact",sans-serif;font-weight:400;letter-spacing:.03em;text-transform:uppercase;line-height:1}
+.n-header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:72px;padding:8px 16px;background:var(--yellow);border-bottom:3px solid var(--ink);flex-wrap:wrap}
+.n-header>div:first-child{gap:12px!important}
+.n-logo{display:flex;align-items:center;gap:8px;font-size:30px;color:var(--ink)}
+.n-logo i{display:inline-block;width:28px;height:28px;border:3px solid var(--ink);border-radius:50%;background:var(--card);position:relative}
+.n-logo i::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--purple)}
+.n-nav{display:flex;gap:8px}
+.n-tab{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--card);font-weight:700;font-size:15px}
+.n-tab.active{background:var(--ink);color:var(--yellow)}
+.n-hright{display:flex;align-items:center;gap:8px}
+.n-iconbtn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:2px solid var(--ink);border-radius:10px;background:var(--card);font-size:20px}
+.n-tokens{display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 12px;border:2px solid var(--ink);border-radius:999px;background:var(--purple);color:#fff;font-weight:700;font-size:15px}
+.n-profile{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 12px 0 6px;border:2px solid var(--ink);border-radius:999px;background:var(--card)}
+.n-avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--ink);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px}
+.n-profile b{font-size:14px;line-height:1.1}
+.n-profile small{display:block;font-size:12px;color:var(--purple);font-weight:700}
+.n-container{padding:24px}
+.n-band{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;background:var(--yellow);border:3px solid var(--ink);border-radius:12px;box-shadow:var(--shadow)}
+.n-band h1,.n-band h2{font-size:30px;color:var(--ink)}
+.n-band .sub{font-size:15px;font-weight:700;text-align:right;line-height:1.3}
+.n-card{background:var(--card);border:3px solid var(--ink);border-radius:16px;box-shadow:var(--shadow)}
+.n-card.flat{box-shadow:none}
+.n-phase{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);color:var(--ink);font-family:"Bangers",Impact,sans-serif;font-size:17px;letter-spacing:.05em;white-space:nowrap;line-height:1}
+.n-phase.lg{height:36px;font-size:22px;padding:0 14px}
+.n-phase.kijk{background:var(--yellow);color:var(--ink)}
+.n-phase.doe{background:var(--blue);color:#fff}
+.n-phase.check{background:var(--teal);color:#fff}
+.n-phase.klaar{background:var(--green);color:#fff}
+.n-phase.hulp{background:var(--orange);color:var(--ink)}
+.n-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border:3px solid var(--ink);border-radius:10px;background:var(--blue);color:#fff;font:700 16px "Atkinson Hyperlegible",Arial,sans-serif;box-shadow:var(--shadow);cursor:pointer}
+.n-btn.ghost{background:var(--card);color:var(--ink)}
+.n-btn.sm{min-height:36px;padding:0 12px;font-size:14px;border-width:2px;box-shadow:2px 3px 0 rgba(11,13,15,.16)}
+.n-btn.dis{background:var(--paper);color:#6b6b6b;box-shadow:none;border-color:#6b6b6b}
+.n-grid{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:24px;align-items:start;margin-top:24px}
+.n-chapter{padding:20px}
+.n-chapter header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:16px;border-bottom:3px solid var(--ink)}
+.n-chapter h2{font-size:28px}
+.n-chapter .kicker{font-size:14px;font-weight:700;color:var(--ink)}
+.n-segs{display:flex;gap:3px;margin-top:6px}
+.n-segs i{width:22px;height:12px;border:2px solid var(--ink);border-radius:3px;background:var(--card)}
+.n-segs i.on{background:var(--green)}
+.n-segs i.now{background:var(--yellow)}
+.n-rows{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.n-row{display:flex;align-items:center;gap:12px;padding:12px;border:2px solid var(--ink);border-radius:12px;background:var(--card);flex-wrap:wrap}
+.n-row.now{background:var(--yellow)}
+.n-status{display:inline-flex;align-items:center;gap:6px;width:112px;flex:none;font-weight:700;font-size:14px}
+.n-status i{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:2px solid var(--ink);border-radius:8px;background:var(--card);font-size:14px;font-style:normal}
+.n-status.done i{background:var(--green);color:#fff}
+.n-status.now i{background:var(--ink);color:var(--yellow)}
+.n-row .t{flex:1;min-width:0}
+.n-row .t b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-row .t small{display:block;font-size:14px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-panel{flex-basis:100%;border-top:2px solid var(--ink);padding-top:12px;margin-top:4px}
+.n-route{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px}
+.n-route li{display:flex;align-items:center;gap:10px;padding:6px 8px;border:2px solid var(--ink);border-radius:10px;background:var(--card);font-size:15px;font-weight:700}
+.n-route li.now{background:var(--yellow)}
+.n-route .nr{width:26px;height:26px;border:2px solid var(--ink);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none;background:var(--card)}
+.n-route .nr.done{background:var(--ink);color:var(--yellow)}
+.n-route .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-route small{margin-left:auto;font-weight:400;font-size:14px;white-space:nowrap;flex:none}
+.n-anchor{padding:12px;position:sticky;top:12px}
+.n-anchor p{font-size:15px;margin-bottom:8px;color:var(--ink)}
+.n-anchor a{display:block;padding:6px 8px;border:2px solid transparent;border-radius:6px;font-size:15px;font-weight:700;color:var(--ink);text-decoration:none}
+.n-anchor a.active{border-color:var(--ink);background:var(--yellow)}
+/* studeerweergave */
+.n-study{display:flex;min-height:560px;background:var(--paper);position:relative}
+.n-rail{width:244px;flex:none;background:var(--card);border-right:3px solid var(--ink);display:flex;flex-direction:column}
+.n-rail .top{padding:16px;border-bottom:3px solid var(--ink)}
+.n-rail h2{font-size:22px;margin-top:4px}
+.n-rail .hs{font-size:14px;font-weight:700;margin-top:4px}
+.n-rail .cnt{font-size:14px;margin-top:8px}
+.n-steps{list-style:none;padding:8px;display:flex;flex-direction:column;gap:6px;flex:1}
+.n-step{display:flex;align-items:center;gap:8px;padding:6px 8px;border:2px solid var(--ink);border-radius:10px;background:var(--card)}
+.n-step.active{background:var(--yellow)}
+.n-step .nr{width:26px;height:26px;border:2px solid var(--ink);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none;background:var(--card)}
+.n-step .nr.done{background:var(--ink);color:var(--yellow)}
+.n-step .t{flex:1;min-width:0}
+.n-step .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-step .t small{display:block;font-size:12px}
+.n-step .ph{font-family:"Bangers",Impact,sans-serif;font-size:13px;letter-spacing:.05em;padding:3px 7px;flex:none;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);line-height:1}
+.n-step .ph.doe{background:var(--blue);color:#fff}
+.n-rail .exit{margin:8px;padding:10px;border:2px solid var(--ink);border-radius:6px;background:var(--card);text-align:center;font-weight:700;font-size:14px}
+.n-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.n-topband{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--yellow);border-bottom:3px solid var(--ink)}
+.n-topband h1{font-size:24px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-topband small{font-size:14px;font-weight:700;white-space:nowrap}
+.n-content{flex:1;padding:24px 20px 72px}
+.n-block{padding:20px}
+.n-block .instr{font-size:19px;font-weight:700;line-height:1.4;margin-top:16px;max-width:38ch}
+.n-block .succes{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:16px;max-width:44ch}
+.n-block .succes i{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;background:var(--green);color:#fff;font-size:12px;font-style:normal;flex:none;margin-top:2px}
+.n-slide{margin-top:16px;border:3px solid var(--ink);border-radius:12px;overflow:hidden;background:#fff;aspect-ratio:16/9;position:relative}
+.n-slide .ttl{position:absolute;left:0;right:0;top:0;padding:8px 14px;background:var(--yellow);border-bottom:3px solid var(--ink);font-family:"Bangers",Impact,sans-serif;font-size:22px;letter-spacing:.04em;text-transform:uppercase}
+.n-slide svg.art{position:absolute;inset:0;width:100%;height:100%}
+.n-slide .pg{position:absolute;right:10px;bottom:8px;padding:2px 8px;border:2px solid var(--ink);border-radius:4px;background:var(--card);font-size:13px;font-weight:700}
+.n-hulp{display:flex;align-items:center;gap:10px;margin-top:16px;padding:8px 12px;border:2px solid var(--ink);border-left:10px solid var(--orange);border-radius:10px;background:var(--card);font-size:14px}
+.n-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-top:3px solid var(--ink);background:var(--card)}
+.n-footer .mid{font-size:14px;font-weight:700}
+.n-bell{position:absolute;right:18px;bottom:76px;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 10px;border:3px solid var(--ink);border-radius:999px;background:var(--orange);color:var(--ink);font-weight:700;font-size:14px;box-shadow:var(--shadow)}
+/* quizvraag */
+.n-qintro{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.n-qintro h3{font-size:26px}
+.n-qintro p{font-size:14px;font-weight:700}
+.n-q{padding:16px;margin-top:12px}
+.n-q .meta{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700}
+.n-q .prompt{font-size:18px;font-weight:700;line-height:1.45;margin-top:10px;max-width:46ch}
+.n-q .taak{font-size:15px;margin-top:6px}
+.n-opts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.n-opt{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 10px 6px 6px;border:3px solid var(--ink);border-radius:10px;background:var(--card);font-size:16px;font-weight:700;text-align:left}
+.n-opt .lt{width:32px;height:32px;border:2px solid var(--ink);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:"Bangers",Impact,sans-serif;font-size:19px;background:var(--card);flex:none}
+.n-opt.sel{border-color:var(--blue);box-shadow:inset 0 0 0 2px var(--blue)}
+.n-opt.sel .lt{background:var(--blue);color:#fff;border-color:var(--blue)}
+.n-opt.good{border-color:var(--green);box-shadow:inset 0 0 0 2px var(--green)}
+.n-opt.good .lt{background:var(--green);color:#fff;border-color:var(--green)}
+.n-opt.wrong{border-color:var(--red);box-shadow:inset 0 0 0 2px var(--red)}
+.n-opt.wrong .lt{background:var(--red);color:#fff;border-color:var(--red)}
+.n-opt .mark{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:14px}
+.n-q .act{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+.n-result{display:flex;gap:12px;margin-top:16px;padding:12px 14px;border:3px solid var(--ink);border-radius:12px;background:var(--card)}
+.n-result .ic-wrap{width:40px;height:40px;border:3px solid var(--ink);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex:none}
+.n-result.good{border-color:var(--green)}.n-result.good .ic-wrap{background:var(--green);border-color:var(--green)}
+.n-result.bad{border-color:var(--red)}.n-result.bad .ic-wrap{background:var(--red);border-color:var(--red)}
+.n-result h4{font-family:"Bangers",Impact,sans-serif;font-size:24px;letter-spacing:.04em;font-weight:400}
+.n-result p{font-size:15px;line-height:1.45;margin-top:4px}
+.n-result p.ex{margin-top:8px;padding-top:8px;border-top:2px solid var(--ink)}
+/* voortgangsblokjes */
+.n-blocks{display:flex;gap:16px;flex-wrap:wrap;padding:24px}
+.n-blk{width:112px;text-align:center}
+.n-blk .sq{width:56px;height:56px;border:3px solid var(--ink);border-radius:12px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;position:relative;background:var(--card)}
+.n-blk .sq.good{background:var(--green)}
+.n-blk .sq.guided{background:var(--green)}
+.n-blk .sq.guided::after{content:"";position:absolute;right:-10px;top:-10px;width:22px;height:22px;border:3px solid var(--ink);border-radius:50%;background:var(--orange)}
+.n-blk .sq.failed{background:var(--red)}
+.n-blk .sq.pending{background:var(--blue)}
+.n-blk .sq.open{color:var(--ink);font-size:16px;font-weight:700}
+.n-blk .sq.idle{border-style:dashed;color:var(--ink);font-size:16px;font-weight:700;background:transparent}
+.n-blk .sq.klaar{background:var(--green)}
+.n-blk small{display:block;font-size:14px;font-weight:700;margin-top:8px;line-height:1.3;color:var(--ink)}
+.n-blk .sq.guided .hnd{position:absolute;right:-6px;top:-6px;width:14px;height:14px;color:var(--ink);z-index:1}
+/* tokenshop */
+.n-shophead{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.n-shophead p.lead{font-size:17px;margin-top:12px;max-width:44ch}
+.n-saldo{display:inline-flex;align-items:center;gap:10px;padding:8px 18px;border:3px solid var(--ink);border-radius:999px;background:var(--purple);color:#fff;font-weight:700;font-size:17px;white-space:nowrap}
+.n-saldo b{font-size:24px}
+.n-tabs{display:flex;gap:8px;margin-top:20px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.n-tabs span{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:2px solid var(--ink);border-radius:999px;background:var(--card);font-size:14px;font-weight:700;white-space:nowrap}
+.n-tabs span.active{background:var(--ink);color:var(--yellow)}
+.n-tabs span i{font-style:normal;font-weight:400}
+.n-shop{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:16px;margin-top:16px}
+.n-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.n-scard{overflow:hidden}
+.n-scard .media{aspect-ratio:16/10;border-bottom:3px solid var(--ink);background:#fff;display:flex;align-items:center;justify-content:center;position:relative}
+.n-scard .body{padding:12px 14px 14px}
+.n-scard .type{font-size:13px;font-weight:700}
+.n-scard h2{font-size:26px;margin-top:4px}
+.n-scard p{font-size:14px;line-height:1.45;margin-top:6px}
+.n-scard .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
+.n-price{display:inline-flex;align-items:center;gap:4px;font-weight:700;color:var(--purple);font-size:16px;white-space:nowrap}
+.n-own{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border:2px solid var(--ink);border-radius:999px;background:var(--green);color:#fff;font-weight:700;font-size:14px}
+.n-aside{display:flex;flex-direction:column;gap:12px}
+.n-aside .n-card{padding:12px}
+.n-aside h2{font-size:20px}
+.n-aside .row{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 8px;border:2px solid var(--ink);border-radius:6px;font-size:13px;font-weight:700;margin-top:8px;background:var(--card)}
+.n-aside .row small{display:block;font-weight:400;font-size:12px}
+.n-aside .plus{color:var(--green)}.n-aside .min{color:var(--red)}
+/* mobiel */
+.n-mtop{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--yellow);border-bottom:3px solid var(--ink)}
+.n-mtop h1{font-size:22px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-mtop .stp{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid var(--ink);border-radius:10px;background:var(--card);font-size:18px}
+.n .mob{font-size:16px}
+.n .mob .n-opt{font-size:16px}
+.n .mob .n-q .prompt{font-size:17px}
+@media (max-width:1100px){.compare,.intro{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-mode="naast">
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-chl" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-chr" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-chd" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l5.5-3.5z"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h8"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-max" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-game" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v4M5 13h4M15 12h.01M18 14h.01"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5a1.5 1.5 0 0 1 3 0v6M11 11V4a1.5 1.5 0 0 1 3 0v7M14 11V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-3l-2-4a1.5 1.5 0 0 1 2.6-1.5L8 13"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-pres" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M12 16v4M8 20h8"/></symbol>
+  <symbol id="i-door" viewBox="0 0 24 24"><path d="M4 21h16M6 21V4h9v17M12 12h.01"/></symbol>
+  <symbol id="i-arr" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.8 5.8 6.2.9-4.5 4.4 1.1 6.3L12 17.5 6.4 20.4l1.1-6.3L3 9.7l6.2-.9z"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4"/><path d="M5 12v9h14v-9M12 8v13M12 8s-3-5-5-3 5 3 5 3zm0 0s3-5 5-3-5 3-5 3z"/></symbol>
+  <symbol id="i-rec" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></symbol>
+  <symbol id="i-question" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"/></symbol>
+</svg>
+
+<header class="review-bar">
+  <h1>HELIX design system v2 · preview 02 <span>· leerlingpagina's · oud vs nieuw · tijdelijk beoordelingsbestand, niets in src/ veranderd</span></h1>
+  <div class="modes" role="group" aria-label="Weergave">
+    <button type="button" data-set="naast" aria-pressed="true">Naast elkaar</button>
+    <button type="button" data-set="oud" aria-pressed="false">Alleen oud</button>
+    <button type="button" data-set="nieuw" aria-pressed="false">Alleen nieuw</button>
+  </div>
+</header>
+
+<div class="review-wrap">
+
+<section class="intro">
+  <div class="box">
+    <h2>Vertaalkeuzes: van projector-slide naar app-scherm</h2>
+    <ol>
+      <li><b>Letterlijk overgenomen:</b> de negen kleurtokens, de twee fonts (Bangers alleen voor koppen van max zes woorden, Atkinson Hyperlegible voor alle leestekst, links uitgelijnd, geen cursief, geen outline, geen volledige kapitalen in leestekst), het gele titelvaandel bovenaan, zwarte contouren met één dikte per component, het crème canvas, de kleursemantiek (rood fout, groen succes, blauw actie, oranje hulp, paars Helix-context) en de leerroute KIJK-DOE-CHECK-KLAAR.</li>
+      <li><b>Aangepast aan het scherm:</b> tekstmaten zijn app-maten in plaats van projectormaten: kop 26-30 px, instructie 18-19 px, leestekst 17 px (16 px op een telefoon), labels nooit onder 13 px. Ruimteschaal 8/16/24/32/48 blijft. Contour 3 px op kaarten en knoppen, 2 px op chips; witte kaarten met 16 px hoeken en een zachte grijze offset-schaduw, precies zoals de kaarten in het DS-document zelf (pagina 7, 11, 19); geen gloed.</li>
+      <li><b>Leerroute op de lesroute:</b> theorie, slidedeck en PDF = KIJK; vraag of quiz = DOE; nakijken = CHECK; afgerond = KLAAR. De fasekleuren komen letterlijk van pagina 11: KIJK geel, DOE blauw, CHECK teal, KLAAR groen. HULP is geen fase maar een oranje vlag die pas verschijnt als het nodig is (Digidocent, meldbel, herstel).</li>
+      <li><b>Geel-zwart + max twee accenten per scherm:</b> naast de fasechip draagt een lespagina hoogstens blauw (de ene actie) en groen (succes); rood verschijnt alleen in de foutstaat en vervangt dan groen. Tokenshop = blauw (actie) + paars (tokens). Navigatie (stappenbalk, tabs, afgeronde stappen) blijft zwart-geel: een afgeronde stap is een zwart vinkje, geen groen bolletje, zodat groen alleen echt succes betekent.</li>
+      <li><b>Kleur nooit als enige drager:</b> elke status heeft kleur + pictogram + woord. Antwoordopties krijgen vaste A-B-C-labels (multipanel-regel). Comic-energie blijft beperkt tot het gele vaandel en één KLAAR-moment; geen bursts, sterren of halftone in de taakzone.</li>
+    </ol>
+    <div class="swatches">
+      <span class="sw"><i style="background:#0B0D0F"></i>INK</span><span class="sw"><i style="background:#FFF7E8"></i>PAPER</span><span class="sw"><i style="background:#FFD33D"></i>YELLOW</span><span class="sw"><i style="background:#087EB5"></i>BLUE actie</span><span class="sw"><i style="background:#0D8F93"></i>TEAL steun</span><span class="sw"><i style="background:#F47A20"></i>ORANGE hulp</span><span class="sw"><i style="background:#D83A2E"></i>RED fout</span><span class="sw"><i style="background:#2E9D63"></i>GREEN succes</span><span class="sw"><i style="background:#793AC7"></i>PURPLE Helix</span>
+    </div>
+  </div>
+  <div class="box">
+    <h2>Hoe je dit bestand leest</h2>
+    <ul>
+      <li>Zes schermen, telkens <b>links OUD</b> (huidige stijl, nagebouwd uit de echte componenten) en <b>rechts NIEUW</b> (zelfde inhoud in het design system). Bovenaan schakel je naar alleen oud of alleen nieuw.</li>
+      <li>De inhoud is echt lesmateriaal: vak Binask, paragraaf "Ga van start...", drie slidedecks, een PDF-leesopdracht en de quiz "Vragenronde: Biologie, Natuurkunde of Scheikunde?" (30 meerkeuzevragen).</li>
+      <li>Namen zijn verzonnen (Leerling Demo, klas 1B). Afbeeldingen zijn placeholders; in het echt komen daar de 3D-comicbeelden en de slide-PDF's.</li>
+      <li>Onder elk scherm staat een korte notitie: wat is veranderd, waarom, en welke regel uit het design system dat draagt.</li>
+      <li>Naast elkaar zijn de schermen op ongeveer 850 px opgemaakt en iets verkleind weergegeven; kies "Alleen oud" of "Alleen nieuw" om ze op ware grootte te zien. De telefoonschermen zijn altijd echte 375 px.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCHERM 1: LEERLINGSTARTPAGINA MET LESROUTE-OVERZICHT
+     ============================================================ -->
+<section class="screen" id="s1">
+  <div class="screen-head"><span class="nr">01</span><h2>Leerlingstartpagina met lesroute-overzicht</h2><p>/ (TableOfContents.jsx binnen AppShell.jsx)</p></div>
+  <div class="compare">
+
+    <div class="pane old"><span class="pane-label">Oud · huidige stijl</span>
+      <div class="mock o">
+        <div class="o-header">
+          <div style="display:flex;align-items:center;gap:16px">
+            <div class="o-logo"><i></i>HELIX</div>
+            <nav class="o-nav"><span class="o-tab active"><svg class="ic"><use href="#i-book"/></svg>Lesmateriaal</span></nav>
+          </div>
+          <div class="o-hright">
+            <span class="o-iconbtn"><svg class="ic"><use href="#i-game"/></svg></span>
+            <span class="o-tokenpill"><svg class="ic"><use href="#i-bag"/></svg>120 tokens</span>
+            <span class="o-profile"><span class="o-avatar"><svg class="ic"><use href="#i-user"/></svg></span><span><span class="nm">Leerling Demo</span><span class="tt">Leerling</span></span></span>
+            <span class="o-logout"><svg class="ic"><use href="#i-out"/></svg></span>
+          </div>
+        </div>
+        <div class="o-container">
+          <section class="o-surface" style="overflow:hidden">
+            <div class="o-banner">
+              <div class="lg">HELIX</div>
+              <div><p class="o-eyebrow">Lesstof</p><h1>Jouw lesstof</h1><p class="sub">1 hoofdstuk · 2 van 6 onderdelen af</p></div>
+            </div>
+          </section>
+          <div class="o-grid">
+            <div>
+              <section class="o-surface o-chapter">
+                <header>
+                  <div><p class="o-eyebrow">Hoofdstuk 1</p><h2>Binask: bio, nask en sk</h2>
+                    <div style="display:flex;gap:6px;margin-top:8px"><span class="o-badge">2 paragrafen</span><span class="o-badge"><svg class="ic"><use href="#i-clock"/></svg>&nbsp;± 90 min</span></div></div>
+                  <div class="o-progress"><div class="lbl"><span>Voortgang</span><span>2 / 6</span></div><div class="o-track"><div class="o-fill" style="width:33%"></div></div></div>
+                </header>
+                <div class="o-rows">
+                  <div class="o-row"><span class="chev"><svg class="ic"><use href="#i-chr"/></svg></span><span class="ico done"><svg class="ic"><use href="#i-check"/></svg></span><span class="t"><b>Introductie</b><small>Wat ga je leren in dit hoofdstuk?</small></span><span class="o-startbtn">Opnieuw bekijken <svg class="ic"><use href="#i-arr"/></svg></span></div>
+                  <div class="o-row open"><span class="chev"><svg class="ic"><use href="#i-chd"/></svg></span><span class="ico"><svg class="ic"><use href="#i-book"/></svg></span><span class="t"><b><span>§1</span> Ga van start...</b><small>5 onderdelen · ± 45 min</small></span>
+                    <span class="pr"><span>2 / 5</span><span class="o-track"><span class="o-fill" style="display:block;width:40%"></span></span></span>
+                    <span class="o-startbtn">Ga verder <svg class="ic"><use href="#i-arr"/></svg></span>
+                    <div class="o-panel">
+                      <div class="o-goals"><p class="o-eyebrow"><svg class="ic"><use href="#i-target"/></svg>&nbsp;Leerdoelen</p><ul><li>Je weet wat biologie, natuurkunde en scheikunde onderzoeken.</li><li>Je kunt een voorbeeld uit het dagelijks leven bij het juiste vak zetten.</li></ul></div>
+                      <p class="o-eyebrow" style="margin-top:14px">Onderdelen</p>
+                      <ul class="o-parts">
+                        <li><span class="n done"><svg class="ic"><use href="#i-check"/></svg></span>Inleiding Binask<small>Presentatie</small></li>
+                        <li><span class="n done"><svg class="ic"><use href="#i-check"/></svg></span>Bi na sk deel 1<small>Presentatie</small></li>
+                        <li><span class="n">3</span>Bi na sk deel 2<small>Presentatie</small></li>
+                        <li><span class="n">4</span>Leesopdracht: drie vakken<small>PDF</small></li>
+                        <li><span class="n">5</span>Vragenronde: Biologie, Natuurkunde of Scheikunde?<small>Quiz · 30 vragen</small></li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="o-row"><span class="chev"><svg class="ic"><use href="#i-chr"/></svg></span><span class="ico"><svg class="ic"><use href="#i-book"/></svg></span><span class="t"><b><span>§2</span> Stoffen om je heen</b><small>4 onderdelen · ± 40 min</small></span><span class="pr"><span>0 / 4</span><span class="o-track"><span class="o-fill" style="display:block;width:0"></span></span></span><span class="o-startbtn">Start <svg class="ic"><use href="#i-arr"/></svg></span></div>
+                  <div class="o-row"><span class="chev"><svg class="ic"><use href="#i-chr"/></svg></span><span class="ico"><svg class="ic"><use href="#i-file"/></svg></span><span class="t"><b>Oefentoets hoofdstuk 1</b><small>Oefentoetsen</small></span><span class="o-startbtn">Openen <svg class="ic"><use href="#i-arr"/></svg></span></div>
+                </div>
+              </section>
+            </div>
+            <aside class="o-surface o-anchor"><p>Op deze pagina</p><a class="active" href="#s1">Hoofdstuk 1</a><a href="#s1">Oefentoetsen</a></aside>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane new"><span class="pane-label">Nieuw · design system v2</span>
+      <div class="mock n">
+        <div class="n-header">
+          <div style="display:flex;align-items:center;gap:20px">
+            <div class="n-logo bang"><i></i>Helix</div>
+            <nav class="n-nav"><span class="n-tab active"><svg class="ic"><use href="#i-book"/></svg>Lesmateriaal</span><span class="n-tab" title="Spellen"><svg class="ic"><use href="#i-game"/></svg></span></nav>
+          </div>
+          <div class="n-hright">
+            <span class="n-tokens"><svg class="ic"><use href="#i-coin"/></svg>120 tokens</span>
+            <span class="n-profile"><span class="n-avatar"><svg class="ic"><use href="#i-user"/></svg></span><span><b>Leerling Demo</b><small>Leerling · 1B</small></span></span>
+            <span class="n-iconbtn" title="Uitloggen"><svg class="ic"><use href="#i-out"/></svg></span>
+          </div>
+        </div>
+        <div class="n-container">
+          <div class="n-band"><h1 class="bang">Jouw lesstof</h1><span class="sub">1 hoofdstuk<br>2 van 6 onderdelen af</span></div>
+          <div class="n-grid">
+            <div>
+              <section class="n-card n-chapter">
+                <header>
+                  <div><p class="kicker">Hoofdstuk 1 · 2 paragrafen · ongeveer 90 minuten</p><h2 class="bang">Binask: bio, nask en sk</h2></div>
+                  <div style="text-align:right"><p class="kicker">2 van 6 af</p><div class="n-segs"><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i></div></div>
+                </header>
+                <div class="n-rows">
+                  <div class="n-row"><span class="n-status done"><i><svg class="ic"><use href="#i-check"/></svg></i>Klaar</span><span class="t"><b>Introductie</b><small>Wat ga je leren in dit hoofdstuk?</small></span><span class="n-btn ghost sm">Bekijk opnieuw</span></div>
+                  <div class="n-row now"><span class="n-status now"><i><svg class="ic"><use href="#i-arr"/></svg></i>Bezig</span><span class="t"><b>§1 Ga van start...</b><small>Stap 3 van 5 · nog ongeveer 25 minuten</small></span><span class="n-btn sm">Ga verder <svg class="ic"><use href="#i-arr"/></svg></span>
+                    <div class="n-panel">
+                      <p style="font-size:14px;font-weight:700;margin-bottom:6px">Jouw route in deze paragraaf</p>
+                      <ol class="n-route">
+                        <li><span class="nr done"><svg class="ic"><use href="#i-check"/></svg></span><span class="n-phase kijk">Kijk</span><span class="tt">Inleiding Binask</span><small>Presentatie · klaar</small></li>
+                        <li><span class="nr done"><svg class="ic"><use href="#i-check"/></svg></span><span class="n-phase kijk">Kijk</span><span class="tt">Bi na sk deel 1</span><small>Presentatie · klaar</small></li>
+                        <li class="now"><span class="nr">3</span><span class="n-phase kijk">Kijk</span><span class="tt">Bi na sk deel 2</span><small>Presentatie · nu</small></li>
+                        <li><span class="nr">4</span><span class="n-phase kijk">Kijk</span><span class="tt">Leesopdracht: drie vakken</span><small>PDF</small></li>
+                        <li><span class="nr">5</span><span class="n-phase doe">Doe</span><span class="tt">Vragenronde: Bio, Nask of Sk?</span><small>Quiz · 30 vragen</small></li>
+                      </ol>
+                      <p style="font-size:14px;margin-top:10px">Gelukt als alle vijf stappen een vinkje hebben. Daarna volgt de paragraafafsluiting.</p>
+                    </div>
+                  </div>
+                  <div class="n-row"><span class="n-status"><i>2</i>Nog niet</span><span class="t"><b>§2 Stoffen om je heen</b><small>4 onderdelen · ongeveer 40 minuten</small></span><span class="n-btn ghost sm">Start</span></div>
+                  <div class="n-row"><span class="n-status"><i><svg class="ic"><use href="#i-file"/></svg></i>Toets</span><span class="t"><b>Oefentoets hoofdstuk 1</b><small>Oefentoetsen</small></span><span class="n-btn ghost sm">Open</span></div>
+                </div>
+              </section>
+            </div>
+            <aside class="n-card flat n-anchor"><p class="bang">Op deze pagina</p><a class="active" href="#s1">Hoofdstuk 1</a><a href="#s1">Oefentoetsen</a></aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note"><b>Wat verandert:</b> de paarse gradient-header wordt het gele titelvaandel met zwarte contour (Familie-DNA 01 "Geel titelanker"); de zachte glazen kaarten worden kaarten met 3 px zwarte lijn en harde schaduw (02 "Zwarte lijnvoering", begrenzen: geen gloed). De voortgangsbalk met gradient wordt een gesegmenteerde balk plus tekst "2 van 6 af", en elke paragraaf krijgt een statusblok met pictogram én woord (Toegankelijkheid: "Grijswaarden: blijft betekenis intact zonder kleur?"). Het uitgeklapte overzicht toont de route met fasechips KIJK/DOE (pagina 11, Leerroute) en een succescriterium (Tone of voice: "Je bent klaar als...").<small>Knoppen: blauw = de ene actie die je nu doet (Ga verder); alle andere knoppen zijn contourknoppen. Tokens paars = Helix-context. Accenten op dit scherm: blauw + groen.</small></p>
+</section>
+
+<!-- ============================================================
+     SCHERM 2: LESPAGINA MET SLIDEDECKBLOK
+     ============================================================ -->
+<section class="screen" id="s2">
+  <div class="screen-head"><span class="nr">02</span><h2>Lespagina met een slidedeckblok (KIJK)</h2><p>/chapter/:id · StudentLessonPage.jsx + StudyStepRail.jsx + SlidedeckBlock</p></div>
+  <div class="compare">
+
+    <div class="pane old"><span class="pane-label">Oud · huidige stijl</span>
+      <div class="mock o"><div class="o-study" style="position:relative">
+        <aside class="o-rail">
+          <div class="top"><p class="o-eyebrow">Paragraaf</p><h2>Ga van start...</h2><p class="hs">Hoofdstuk 1 · Binask</p><div class="o-track" style="margin-top:14px"><div class="o-fill" style="width:40%"></div></div><p class="cnt">2 van 5 stappen af</p></div>
+          <ul class="o-steps">
+            <li class="o-step"><span class="ico"><svg class="ic"><use href="#i-target"/></svg></span><span class="t"><b>Leerdoelen</b></span><span class="chk"><svg class="ic"><use href="#i-check"/></svg></span></li>
+            <li class="o-step"><span class="ico"><svg class="ic"><use href="#i-pres"/></svg></span><span class="t"><b>Inleiding Binask</b><small>Afgerond</small></span><span class="chk"><svg class="ic"><use href="#i-check"/></svg></span></li>
+            <li class="o-step"><span class="ico"><svg class="ic"><use href="#i-pres"/></svg></span><span class="t"><b>Bi na sk deel 1</b><small>Afgerond</small></span><span class="chk"><svg class="ic"><use href="#i-check"/></svg></span></li>
+            <li class="o-step active"><span class="ico"><svg class="ic"><use href="#i-pres"/></svg></span><span class="t"><b>Bi na sk deel 2</b></span><span class="todo"></span></li>
+            <li class="o-step"><span class="ico"><svg class="ic"><use href="#i-file"/></svg></span><span class="t"><b>Leesopdracht: drie vakken</b></span><span class="todo"></span></li>
+            <li class="o-step"><span class="ico"><svg class="ic"><use href="#i-list"/></svg></span><span class="t"><b>Vragenronde: Biologie, Natuurkunde of Scheikunde?</b></span><span class="todo"></span></li>
+          </ul>
+          <div class="exit"><svg class="ic"><use href="#i-door"/></svg> Stop met oefenen</div>
+        </aside>
+        <section class="o-main">
+          <div class="o-topbar"><span class="ico"><svg class="ic"><use href="#i-pres"/></svg></span><span class="t"><b>Bi na sk deel 2</b><small>Stap 3 van 5 · Presentatie</small></span><span class="pct">40%</span><span class="o-iconbtn"><svg class="ic"><use href="#i-target"/></svg></span><span class="o-iconbtn"><svg class="ic"><use href="#i-max"/></svg></span></div>
+          <div class="o-content"><div class="o-block"><div class="o-subpanel">
+            <p class="o-eyebrow">Presentatie</p><h3>Bi na sk deel 2</h3>
+            <p>Bekijk deze presentatie als losse slides. Gebruik vorige/volgende of fullscreen voor digibordweergave.</p>
+            <p>In deel 2 kijk je naar scheikunde en natuurkunde: wat gebeurt er met stoffen, en wat gebeurt er met energie en beweging?</p>
+            <div style="margin-top:20px"><span class="o-btn"><svg class="ic"><use href="#i-play"/></svg>Presentatie openen</span></div>
+          </div></div></div>
+          <footer class="o-footer"><span class="o-btn ghost"><svg class="ic"><use href="#i-chl"/></svg>Vorige</span><span class="mid">Stap 3 van 5</span><span class="o-btn">Volgende<svg class="ic"><use href="#i-chr"/></svg></span></footer>
+        </section>
+        <span class="o-bell"><svg class="ic"><use href="#i-bell"/></svg></span>
+      </div></div>
+    </div>
+
+    <div class="pane new"><span class="pane-label">Nieuw · design system v2</span>
+      <div class="mock n"><div class="n-study">
+        <aside class="n-rail">
+          <div class="top"><p style="font-size:13px;font-weight:700">Hoofdstuk 1 · Binask</p><h2 class="bang">Ga van start...</h2><div class="n-segs" style="margin-top:12px"><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i></div><p class="cnt">2 van 5 stappen af</p></div>
+          <ol class="n-steps">
+            <li class="n-step"><span class="nr done"><svg class="ic"><use href="#i-check"/></svg></span><span class="t"><b>Inleiding Binask</b><small>Klaar</small></span><span class="ph">Kijk</span></li>
+            <li class="n-step"><span class="nr done"><svg class="ic"><use href="#i-check"/></svg></span><span class="t"><b>Bi na sk deel 1</b><small>Klaar</small></span><span class="ph">Kijk</span></li>
+            <li class="n-step active"><span class="nr">3</span><span class="t"><b>Bi na sk deel 2</b><small>Nu</small></span><span class="ph">Kijk</span></li>
+            <li class="n-step"><span class="nr">4</span><span class="t"><b>Leesopdracht: drie vakken</b><small>PDF</small></span><span class="ph">Kijk</span></li>
+            <li class="n-step"><span class="nr">5</span><span class="t"><b>Vragenronde: Bio, Nask of Sk?</b><small>30 vragen</small></span><span class="ph doe">Doe</span></li>
+          </ol>
+          <div class="exit"><svg class="ic"><use href="#i-door"/></svg> Stop met oefenen</div>
+        </aside>
+        <section class="n-main">
+          <div class="n-topband"><span class="n-phase lg kijk" style="background:#FFFFFF"><svg class="ic"><use href="#i-eye"/></svg>Kijk</span><h1 class="bang">Stap 3: Bi na sk deel 2</h1><small>3 van 5</small><span class="n-iconbtn" title="Leerdoelen"><svg class="ic"><use href="#i-target"/></svg></span><span class="n-iconbtn" title="Volledig scherm"><svg class="ic"><use href="#i-max"/></svg></span></div>
+          <div class="n-content"><div class="n-card n-block">
+            <p style="font-size:14px;font-weight:700">Presentatie · 12 slides</p>
+            <div class="n-slide">
+              <svg class="art" viewBox="0 0 640 360" aria-hidden="true"><rect width="640" height="360" fill="#FFF7E8"/><circle cx="470" cy="215" r="80" fill="#0D8F93" stroke="#0B0D0F" stroke-width="5"/><rect x="120" y="150" width="180" height="130" rx="8" fill="#FFD33D" stroke="#0B0D0F" stroke-width="5"/><path d="M150 280l60-90 60 90" fill="#087EB5" stroke="#0B0D0F" stroke-width="5" stroke-linejoin="round"/><circle cx="215" cy="185" r="14" fill="#F47A20" stroke="#0B0D0F" stroke-width="4"/><text x="320" y="330" text-anchor="middle" font-family="Atkinson Hyperlegible, Arial" font-size="15" fill="#0B0D0F">placeholder: slide 1 van het PDF-deck</text></svg>
+              <div class="ttl">Bi na sk deel 2</div><span class="pg">1 / 12</span>
+            </div>
+            <p class="instr">Open de presentatie en bekijk alle 12 slides.</p>
+            <p class="succes"><i><svg class="ic"><use href="#i-check"/></svg></i>Gelukt als je de laatste slide hebt gezien. Dan wordt deze stap vanzelf afgevinkt.</p>
+            <div style="margin-top:16px"><span class="n-btn"><svg class="ic"><use href="#i-play"/></svg>Open de presentatie</span></div>
+            <div class="n-hulp"><span class="n-phase hulp" style="height:24px;font-size:15px">Hulp</span>Zie je geen slides? Ververs eerst de pagina. Lukt het dan nog niet, meld het met de bel rechtsonder.</div>
+          </div></div>
+          <footer class="n-footer"><span class="n-btn ghost sm"><svg class="ic"><use href="#i-chl"/></svg>Vorige</span><span class="mid">Stap 3 van 5</span><span class="n-btn sm">Volgende<svg class="ic"><use href="#i-chr"/></svg></span></footer>
+        </section>
+        <span class="n-bell"><svg class="ic"><use href="#i-bell"/></svg>Meld een fout</span>
+      </div></div>
+    </div>
+  </div>
+  <p class="note"><b>Wat verandert:</b> de stap krijgt een fase (KIJK) in het gele vaandel met een kop van vier woorden in Bangers (Typografie: max zes woorden). Het slide-beeld wordt het primaire beeld en staat groot en onbedekt in het blok (Raster: primair beeld 55-78%; Screenshots: "bewijs, geen decor"). De uitleg wordt één instructie met werkwoord vooraan plus een zichtbaar succescriterium (Tone of voice, QA "Succescriterium verplicht"). De stappenbalk verruilt de paarse actieve regel voor geel-zwart en toont per stap de fase in de vaste fasekleur (KIJK geel, DOE blauw; pagina 11); afgeronde stappen zijn zwarte vinkjes, zodat groen vrij blijft voor echt succes. De zwevende witte meldbel (die nu rechtsonder over de knop Volgende hangt) wordt een oranje HULP-knop met tekst, boven de voet (pagina 11: HULP als conditionele vlag; pagina 18: "pictogram naast tekst, nooit in plaats van tekst"; pagina 19: occlusietest).<small>De hulpregel volgt het patroon symptoom → eerste zelfcheck → hulpbron en verplaatst de hoofdtaak niet.</small></p>
+</section>
+
+<!-- ============================================================
+     SCHERM 3: QUIZVRAAG IN DRIE STATEN
+     ============================================================ -->
+<section class="screen" id="s3">
+  <div class="screen-head"><span class="nr">03</span><h2>Lespagina met een quizvraag: onbeantwoord, goed, fout met uitleg (DOE → CHECK)</h2><p>AssessmentLearningBlock + AssessmentItemLearningCard, quiz "Vragenronde: Biologie, Natuurkunde of Scheikunde?"</p></div>
+  <div class="compare">
+
+    <div class="pane old"><span class="pane-label">Oud · huidige stijl</span>
+      <div class="mock o" style="padding:20px">
+        <div class="o-block">
+          <div class="o-qintro"><p class="o-eyebrow" style="color:#047857">Quiz</p><h3>Vragenronde: Biologie, Natuurkunde of Scheikunde?</h3><p>30 vragen - 30 tokens - Oefenfeedback beschikbaar</p><p>6 van 30 afgerond - 6 van 6 punten</p></div>
+
+          <!-- staat 1: onbeantwoord -->
+          <div class="o-q">
+            <div class="meta"><span>Vraag 7</span><span>- meerkeuze</span><span>- 1 tokens</span></div>
+            <p class="prompt">Een ijzeren spijker ligt buiten in de regen en begint te roesten. Welk vak hoort hierbij?</p>
+            <div class="o-opts"><span class="o-opt"><i></i>Biologie</span><span class="o-opt"><i></i>Natuurkunde</span><span class="o-opt"><i></i>Scheikunde</span></div>
+            <div class="act"><span class="o-btn sm dis">Controleer antwoord</span></div>
+          </div>
+
+          <!-- staat 2: goed -->
+          <div class="o-q good">
+            <div class="meta"><span>Vraag 8</span><span>- meerkeuze</span><span>- 1 tokens</span><span>- poging 1 van 4</span></div>
+            <p class="prompt">Een plant groeit naar het raam toe omdat daar licht vandaan komt. Welk vak hoort hierbij?</p>
+            <div class="o-opts"><span class="o-opt"><i class="on"></i>Biologie</span><span class="o-opt"><i></i>Natuurkunde</span><span class="o-opt"><i></i>Scheikunde</span></div>
+            <div class="act"><span class="o-btn sm dis">Controleer antwoord</span><span class="o-tone">Zelfstandig goed</span></div>
+            <div class="o-fb">Goed gedaan.<div class="ex">Biologie onderzoekt levende organismen, zoals planten die op licht reageren.</div></div>
+          </div>
+
+          <!-- staat 3: fout met uitleg -->
+          <div class="o-q bad">
+            <div class="meta"><span>Vraag 9</span><span>- meerkeuze</span><span>- 1 tokens</span><span>- poging 1 van 4</span></div>
+            <p class="prompt">Een fietslamp gaat branden als je trapt, door de dynamo. Welk vak hoort hierbij?</p>
+            <div class="o-opts"><span class="o-opt"><i></i>Biologie</span><span class="o-opt"><i></i>Natuurkunde</span><span class="o-opt"><i class="on"></i>Scheikunde</span></div>
+            <div class="act"><span class="o-btn sm">Controleer antwoord</span><span class="o-tone">Nog niet goed</span></div>
+            <div class="o-fb">Nog niet goed. Probeer het nog een keer.<div class="ex">Scheikunde gaat over stoffen die veranderen. Bij een dynamo verandert er geen stof; er wordt beweging omgezet in elektriciteit.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane new"><span class="pane-label">Nieuw · design system v2</span>
+      <div class="mock n" style="padding:20px">
+        <div class="n-band" style="margin-bottom:16px"><div style="display:flex;align-items:center;gap:12px"><span class="n-phase lg doe"><svg class="ic"><use href="#i-hand"/></svg>Doe</span><h2 class="bang" style="font-size:26px">Vragenronde: bio, nask of sk?</h2></div><span class="sub">30 vragen · 30 tokens<br>6 van 30 klaar</span></div>
+
+        <!-- staat 1: onbeantwoord -->
+        <div class="n-card n-q">
+          <div class="meta"><span class="n-phase doe">Doe</span><span>Vraag 7 van 30</span><span>· 1 token</span></div>
+          <p class="prompt">Een ijzeren spijker ligt buiten in de regen en begint te roesten. Welk vak hoort hierbij?</p>
+          <p class="taak">Kies één vak. Gelukt als je antwoord groen wordt.</p>
+          <div class="n-opts"><span class="n-opt"><span class="lt">A</span>Biologie</span><span class="n-opt"><span class="lt">B</span>Natuurkunde</span><span class="n-opt"><span class="lt">C</span>Scheikunde</span></div>
+          <div class="act"><span class="n-btn dis">Controleer antwoord</span><span style="font-size:14px">Kies eerst een antwoord.</span></div>
+        </div>
+
+        <!-- staat 2: goed -->
+        <div class="n-card n-q">
+          <div class="meta"><span class="n-phase check">Check</span><span>Vraag 8 van 30</span><span>· 1 token</span><span>· poging 1 van 4</span></div>
+          <p class="prompt">Een plant groeit naar het raam toe omdat daar licht vandaan komt. Welk vak hoort hierbij?</p>
+          <div class="n-opts"><span class="n-opt good"><span class="lt">A</span>Biologie<span class="mark"><svg class="ic"><use href="#i-check"/></svg>jouw antwoord</span></span><span class="n-opt"><span class="lt">B</span>Natuurkunde</span><span class="n-opt"><span class="lt">C</span>Scheikunde</span></div>
+          <div class="n-result good"><span class="ic-wrap"><svg class="ic"><use href="#i-check"/></svg></span><div><h4>Goed</h4><p>Zelfstandig goed, 1 token verdiend.</p><p class="ex">Biologie onderzoekt levende organismen, zoals planten die op licht reageren.</p></div></div>
+          <div class="act"><span class="n-btn">Volgende vraag<svg class="ic"><use href="#i-chr"/></svg></span></div>
+        </div>
+
+        <!-- staat 3: fout met uitleg -->
+        <div class="n-card n-q">
+          <div class="meta"><span class="n-phase check">Check</span><span>Vraag 9 van 30</span><span>· 1 token</span><span>· poging 1 van 4</span></div>
+          <p class="prompt">Een fietslamp gaat branden als je trapt, door de dynamo. Welk vak hoort hierbij?</p>
+          <div class="n-opts"><span class="n-opt"><span class="lt">A</span>Biologie</span><span class="n-opt"><span class="lt">B</span>Natuurkunde</span><span class="n-opt wrong"><span class="lt">C</span>Scheikunde<span class="mark"><svg class="ic"><use href="#i-x"/></svg>jouw antwoord</span></span></div>
+          <div class="n-result bad"><span class="ic-wrap"><svg class="ic"><use href="#i-x"/></svg></span><div><h4>Nog niet goed</h4><p>Je hebt nog 3 pogingen. Lees de uitleg en kies opnieuw.</p><p class="ex">Scheikunde gaat over stoffen die veranderen. Bij een dynamo verandert er geen stof; er wordt beweging omgezet in elektriciteit.</p></div></div>
+          <div class="act"><span class="n-btn">Probeer opnieuw</span><span class="n-phase hulp"><svg class="ic"><use href="#i-hand"/></svg>Hulp</span><span style="font-size:14px">Vraag Digidocent om een hint.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note"><b>Wat verandert:</b> de opties krijgen vaste A-B-C-labels in gelijke, grote vlakken in één leesrichting (Multipanel: "vaste A-E-labels, gelijke schaal en visuele zwaarte") en staan onder elkaar in plaats van in een twee-kolomsraster, zodat het zwaartepunt bij één cognitieve opdracht ligt. De fase wisselt zichtbaar van DOE (blauw) naar CHECK (teal) na het nakijken (Leerroute, pagina 11: "procesfase is niet hetzelfde als probleemstatus"; het oordeel goed/fout staat los van de fase). Goed/fout wordt gedragen door kleur én pictogram én woord in een resultaatband met Bangers-kop van één of drie woorden; de gekozen optie zelf krijgt hetzelfde vinkje of kruis (Beeldinhoud valideren: "kleur nooit als enige antwoorddrager"). Het juiste antwoord wordt bij een fout niet verklapt; wel staat er hoeveel pogingen er nog zijn en verschijnt de HULP-vlag (oranje) pas nu (pagina 18: "HULP expliciet bij beginners").<small>De uitlegtekst is ongewijzigd; alleen de toon rond de uitleg volgt de tone-of-voice-regels (werkwoord vooraan, geen schuldtaal, één volgende stap).</small></p>
+</section>
+
+<!-- ============================================================
+     SCHERM 4: VOORTGANGSBLOKJES
+     ============================================================ -->
+<section class="screen" id="s4">
+  <div class="screen-head"><span class="nr">04</span><h2>Voortgangsblokjes (status van vraagblokken)</h2><p>getLearningResultTone in src/lib/learningResultUtils.js; PROJECTKOMPAS: groen / groen met rood stippellijntje / rood / amber</p></div>
+  <div class="compare">
+
+    <div class="pane old"><span class="pane-label">Oud · huidige stijl</span>
+      <div class="mock o">
+        <div class="o-blocks">
+          <div class="o-blk"><div class="sq good"></div><small>Zelfstandig goed</small></div>
+          <div class="o-blk"><div class="sq guided"></div><small>Goed met Digidocent-hulp</small></div>
+          <div class="o-blk"><div class="sq failed"></div><small>Geparkeerd voor herstel (na 4 fouten)</small></div>
+          <div class="o-blk"><div class="sq pending"></div><small>Docentbeoordeling nodig</small></div>
+          <div class="o-blk"><div class="sq open"></div><small>Nog niet goed / bezig</small></div>
+          <div class="o-blk"><div class="sq idle"></div><small>Niet gestart</small></div>
+        </div>
+        <div style="padding:0 24px 24px">
+          <p class="o-eyebrow">Zo staat het nu in de vragenronde</p>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+            <span class="o-blk" style="width:auto"><span class="sq good" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq good" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq guided" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq good" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq failed" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq pending" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq open" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq idle" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq idle" style="width:32px;height:32px;border-radius:8px"></span></span>
+            <span class="o-blk" style="width:auto"><span class="sq idle" style="width:32px;height:32px;border-radius:8px"></span></span>
+          </div>
+          <p style="font-size:12px;color:#6e6980;margin-top:8px;font-weight:600">De onderschriften hierboven staan er voor de beoordeling bij; in de app draagt het blokje alleen kleur (plus een label in de vraagkaart zelf).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane new"><span class="pane-label">Nieuw · design system v2</span>
+      <div class="mock n">
+        <div class="n-blocks">
+          <div class="n-blk"><div class="sq good"><svg class="ic"><use href="#i-check"/></svg></div><small>Goed</small></div>
+          <div class="n-blk"><div class="sq guided"><svg class="ic"><use href="#i-check"/></svg></div><small>Goed met hulp</small></div>
+          <div class="n-blk"><div class="sq failed"><svg class="ic"><use href="#i-x"/></svg></div><small>Geparkeerd, herstel volgt</small></div>
+          <div class="n-blk"><div class="sq pending"><svg class="ic"><use href="#i-clock"/></svg></div><small>Docent kijkt na</small></div>
+          <div class="n-blk"><div class="sq open">2/4</div><small>Bezig, poging 2 van 4</small></div>
+          <div class="n-blk"><div class="sq idle">8</div><small>Nog niet gedaan</small></div>
+        </div>
+        <div style="padding:0 24px 24px">
+          <p class="bang" style="font-size:22px">Zo staat het in de vragenronde</p>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+            <span class="n-blk" style="width:auto"><span class="sq good" style="width:36px;height:36px;font-size:16px"><svg class="ic"><use href="#i-check"/></svg></span></span>
+            <span class="n-blk" style="width:auto"><span class="sq good" style="width:36px;height:36px;font-size:16px"><svg class="ic"><use href="#i-check"/></svg></span></span>
+            <span class="n-blk" style="width:auto;margin-right:6px"><span class="sq guided" style="width:36px;height:36px;font-size:16px"><svg class="ic"><use href="#i-check"/></svg></span></span>
+            <span class="n-blk" style="width:auto"><span class="sq good" style="width:36px;height:36px;font-size:16px"><svg class="ic"><use href="#i-check"/></svg></span></span>
+            <span class="n-blk" style="width:auto"><span class="sq failed" style="width:36px;height:36px;font-size:16px"><svg class="ic"><use href="#i-x"/></svg></span></span>
+            <span class="n-blk" style="width:auto"><span class="sq pending" style="width:36px;height:36px;font-size:16px"><svg class="ic"><use href="#i-clock"/></svg></span></span>
+            <span class="n-blk" style="width:auto"><span class="sq open" style="width:36px;height:36px;font-size:12px">2/4</span></span>
+            <span class="n-blk" style="width:auto"><span class="sq idle" style="width:36px;height:36px;font-size:13px">8</span></span>
+            <span class="n-blk" style="width:auto"><span class="sq idle" style="width:36px;height:36px;font-size:13px">9</span></span>
+            <span class="n-blk" style="width:auto"><span class="sq idle" style="width:36px;height:36px;font-size:13px">10</span></span>
+          </div>
+          <p style="font-size:14px;margin-top:10px">4 goed · 1 geparkeerd · 1 bij de docent · 1 bezig · 3 nog te doen</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note"><b>Wat verandert:</b> elk blokje krijgt een pictogram of getal in het vlak en een woord eronder; kleur is nooit meer de enige drager (pagina 17 "Gebruik kleur nooit als enige antwoorddrager"; pagina 19 grijswaardentest). Het rode stippellijntje om "goed met hulp" verdwijnt: rood betekent in het systeem fout/stop (Kleurtokens), dus hulp wordt een oranje HULP-stip op de hoek (oranje = hulp/aandacht). Amber "beoordeling faalde" wordt blauw met een klok: voor de leerling is dit informatie, geen fout en geen hulpvraag (blauw = actie/info). Tinten (emerald-100, red-100) worden de volle tokens met zwarte contour, zodat de blokjes op een projector en in grijswaarden overeind blijven.<small>Zie open vraag 2: de docentweergave gebruikt dezelfde tonen en moet dan meebewegen.</small></p>
+</section>
+
+<!-- ============================================================
+     SCHERM 5: TOKENSHOP
+     ============================================================ -->
+<section class="screen" id="s5">
+  <div class="screen-head"><span class="nr">05</span><h2>Tokenshop</h2><p>/tokenshop · StudentTokenShopPage.jsx</p></div>
+  <div class="compare">
+
+    <div class="pane old"><span class="pane-label">Oud · huidige stijl</span>
+      <div class="mock o">
+        <div class="o-container">
+          <div class="o-shophead">
+            <div><p class="o-eyebrow">Tokenshop</p><h1>Sparen en uitgeven</h1><p class="lead">Verdien tokens met lesstappen en spellen. Ruil ze hier in voor avatars, frames, pins en meer.</p></div>
+            <div class="o-saldo"><span class="c"><svg class="ic"><use href="#i-coin"/></svg></span><span><small>Actueel saldo</small><b>120 tokens</b></span></div>
+          </div>
+          <div class="o-tabs"><span class="active">Alles <i>12</i></span><span>Avatars <i>4</i></span><span>Frames <i>2</i></span><span>Pins <i>3</i></span><span>Banners <i>1</i></span><span>Effects <i>1</i></span><span>Titels <i>1</i></span></div>
+          <div class="o-shop">
+            <div class="o-cards">
+              <div class="o-card"><div class="o-media"><svg width="90" height="90" viewBox="0 0 90 90" aria-hidden="true"><circle cx="45" cy="45" r="40" fill="#e9defc"/><circle cx="45" cy="36" r="14" fill="#7a3cff"/><path d="M18 76a27 27 0 0 1 54 0z" fill="#7a3cff"/></svg></div>
+                <div class="body"><div class="badges"><span class="o-badge">Avatar</span><span class="o-badge" style="background:#f0ebfa;color:#7a3cff">Zeldzaam</span></div><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2>Leerheld</h2><p>Een avatar voor wie elke stap afmaakt.</p></div><span class="o-price">40 tokens</span></div><span class="o-btn" style="width:100%;margin-top:14px;padding:10px"><svg class="ic"><use href="#i-bag"/></svg>Kopen</span></div></div>
+              <div class="o-card"><div class="o-media teal"><svg width="110" height="70" viewBox="0 0 110 70" aria-hidden="true"><rect x="5" y="5" width="100" height="60" rx="12" fill="none" stroke="#0D8F93" stroke-width="8"/></svg></div>
+                <div class="body"><div class="badges"><span class="o-badge">Frame</span><span class="o-badge" style="background:#f0ebfa;color:#7a3cff">Gewoon</span><span class="o-badge" style="background:rgba(34,197,94,.12);color:#15803d;border-color:transparent">Actief</span></div><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2>Teal kader</h2><p>Een rustig kader om je avatar.</p></div><span class="o-price">25 tokens</span></div><span class="o-btn" style="width:100%;margin-top:14px;padding:10px"><svg class="ic"><use href="#i-check"/></svg>Actief</span></div></div>
+            </div>
+            <aside class="o-aside">
+              <section class="o-surface"><p class="o-eyebrow" style="color:#6e6980">Mijn profiel</p><h2>Leerling Demo</h2><p style="font-size:12px;color:#6e6980">Starter Avatar</p><div class="row"><span>Nog geen actieve pins</span></div></section>
+              <section class="o-surface"><h2><svg class="ic" style="color:#7a3cff"><use href="#i-gift"/></svg> Mijn spullen</h2><div class="row"><span>Teal kader<small>Frame</small></span><span style="color:#7a3cff">Actief</span></div></section>
+              <section class="o-surface"><h2><svg class="ic" style="color:#7a3cff"><use href="#i-rec"/></svg> Recente geschiedenis</h2><div class="row"><span>Vragenronde<small>02 sep, 10:14</small></span><span class="plus">+6</span></div><div class="row"><span>Teal kader<small>01 sep, 14:02</small></span><span class="min">-25</span></div></section>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane new"><span class="pane-label">Nieuw · design system v2</span>
+      <div class="mock n">
+        <div class="n-container">
+          <div class="n-band"><h1 class="bang">Tokenshop</h1><span class="n-saldo"><svg class="ic"><use href="#i-coin"/></svg><b>120</b> tokens</span></div>
+          <p class="lead" style="font-size:16px;margin-top:16px;max-width:52ch">Verdien tokens met lesstappen en spellen. Ruil ze hier in voor avatars, frames, pins en meer.</p>
+          <div class="n-tabs"><span class="active">Alles <i>12</i></span><span>Avatars <i>4</i></span><span>Frames <i>2</i></span><span>Pins <i>3</i></span><span>Banners <i>1</i></span><span>Effects <i>1</i></span><span>Titels <i>1</i></span></div>
+          <div class="n-shop">
+            <div class="n-cards">
+              <div class="n-card n-scard"><div class="media"><svg width="100" height="100" viewBox="0 0 90 90" aria-hidden="true"><circle cx="45" cy="45" r="40" fill="#FFD33D" stroke="#0B0D0F" stroke-width="4"/><circle cx="45" cy="36" r="14" fill="#793AC7" stroke="#0B0D0F" stroke-width="4"/><path d="M18 76a27 27 0 0 1 54 0z" fill="#793AC7" stroke="#0B0D0F" stroke-width="4"/></svg></div>
+                <div class="body"><p class="type">Avatar · zeldzaam</p><h2 class="bang">Leerheld</h2><p>Een avatar voor wie elke stap afmaakt.</p><div class="foot"><span class="n-price"><svg class="ic"><use href="#i-coin"/></svg>40 tokens</span><span class="n-btn sm"><svg class="ic"><use href="#i-bag"/></svg>Koop</span></div></div></div>
+              <div class="n-card n-scard"><div class="media"><svg width="120" height="80" viewBox="0 0 110 70" aria-hidden="true"><rect x="8" y="8" width="94" height="54" rx="6" fill="none" stroke="#0D8F93" stroke-width="10"/><rect x="8" y="8" width="94" height="54" rx="6" fill="none" stroke="#0B0D0F" stroke-width="3"/></svg></div>
+                <div class="body"><p class="type">Frame · gewoon</p><h2 class="bang">Teal kader</h2><p>Een rustig kader om je avatar.</p><div class="foot"><span class="n-price"><svg class="ic"><use href="#i-coin"/></svg>25 tokens</span><span class="n-own"><svg class="ic"><use href="#i-check"/></svg>Actief</span></div></div></div>
+            </div>
+            <aside class="n-aside">
+              <section class="n-card flat"><h2 class="bang">Mijn profiel</h2><p style="font-size:14px;font-weight:700;margin-top:4px">Leerling Demo</p><p style="font-size:13px">Starter Avatar · geen pins</p></section>
+              <section class="n-card flat"><h2 class="bang">Mijn spullen</h2><div class="row"><span>Teal kader<small>Frame</small></span><span class="n-own" style="height:28px;font-size:12px"><svg class="ic"><use href="#i-check"/></svg>Actief</span></div></section>
+              <section class="n-card flat"><h2 class="bang">Geschiedenis</h2><div class="row"><span>Vragenronde<small>02 sep, 10:14</small></span><span class="plus">+6</span></div><div class="row"><span>Teal kader<small>01 sep, 14:02</small></span><span class="min">-25</span></div></section>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note"><b>Wat verandert:</b> het amber saldo-kaartje wordt een paars saldoblok (paars = Helix-context, de tokeneconomie is eigen aan HELIX) en de shine/sparkle-lagen, gradient-media en zeldzaamheidskleuren verdwijnen (Begrenzen: "geen semantiekloze regenboog in de UI-laag", "geen bonus zonder didactische functie"). Zeldzaamheid staat alleen nog als woord bij het type. Tabs worden zwart-gele chips (navigatieanker), itemtitels mogen in Bangers omdat ze kort zijn, en er is per kaart één actie in blauw ("Koop") of een groene "Actief"-status met vinkje. Accenten op dit scherm: blauw + paars; groen alleen als bevestigde status.<small>De inhoudsbeelden (avatars, frames) mogen rijker kleuren dan de UI, zolang ze de systeemkleuren niet imiteren (Kleurtokens, laatste regel).</small></p>
+</section>
+
+<!-- ============================================================
+     SCHERM 6: MOBIELE LESPAGINA (375 px)
+     ============================================================ -->
+<section class="screen" id="s6">
+  <div class="screen-head"><span class="nr">06</span><h2>Mobiele lespagina, 375 px breed (quizstap)</h2><p>Zelfde StudentLessonPage; de stappenbalk zit achter de knop "Stappen"</p></div>
+  <div class="compare">
+
+    <div class="pane old"><span class="pane-label">Oud · huidige stijl</span>
+      <div class="phone"><div class="scr o" style="display:flex;flex-direction:column;position:relative">
+        <div class="o-mtop"><span class="stp"><svg class="ic"><use href="#i-list"/></svg>Stappen</span><span class="t" style="flex:1;min-width:0"><b style="display:block;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Vragenronde: Biologie, Natuurkunde of Scheikunde?</b><small style="display:block;font-size:11px;font-weight:700;color:#6e6980">Stap 5 van 5 · Quiz</small></span><span class="o-iconbtn" style="width:40px;height:40px;flex:none"><svg class="ic"><use href="#i-max"/></svg></span></div>
+        <div style="flex:1;padding:14px;overflow:hidden">
+          <div class="o-block" style="padding:14px">
+            <div class="o-qintro" style="padding:12px 14px"><p class="o-eyebrow" style="color:#047857">Quiz</p><h3 style="font-size:17px">Vragenronde: Biologie, Natuurkunde of Scheikunde?</h3><p style="font-size:12px">30 vragen - 30 tokens - Oefenfeedback beschikbaar</p></div>
+            <div class="o-q" style="padding:12px">
+              <div class="meta"><span>Vraag 7</span><span>- meerkeuze</span><span>- 1 tokens</span></div>
+              <p class="prompt" style="font-size:14px">Een ijzeren spijker ligt buiten in de regen en begint te roesten. Welk vak hoort hierbij?</p>
+              <div class="o-opts" style="grid-template-columns:1fr"><span class="o-opt"><i></i>Biologie</span><span class="o-opt"><i></i>Natuurkunde</span><span class="o-opt"><i class="on"></i>Scheikunde</span></div>
+              <div class="act"><span class="o-btn sm">Controleer antwoord</span></div>
+            </div>
+          </div>
+        </div>
+        <footer class="o-footer" style="flex-direction:column;align-items:stretch;gap:8px;padding:10px 12px"><span class="o-btn ghost" style="justify-content:center"><svg class="ic"><use href="#i-chl"/></svg>Vorige</span><span class="mid" style="text-align:center">Stap 5 van 5</span><span class="o-btn" style="justify-content:center">Les afronden<svg class="ic"><use href="#i-chr"/></svg></span></footer>
+        <span class="o-bell" style="right:14px;bottom:14px"><svg class="ic"><use href="#i-bell"/></svg></span>
+      </div></div>
+    </div>
+
+    <div class="pane new"><span class="pane-label">Nieuw · design system v2</span>
+      <div class="phone"><div class="scr n mob" style="display:flex;flex-direction:column;position:relative">
+        <div class="n-mtop"><span class="stp" title="Stappen"><svg class="ic"><use href="#i-list"/></svg></span><span class="n-phase doe" style="height:26px;font-size:16px"><svg class="ic"><use href="#i-hand"/></svg>Doe</span><h1 class="bang">Stap 5: Vragenronde</h1><span class="stp" title="Volledig scherm"><svg class="ic"><use href="#i-max"/></svg></span></div>
+        <div style="padding:8px 12px;border-bottom:2px solid #0B0D0F;background:#FFFDF7;display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Vraag 7 van 30 · 1 token</span><span>6 klaar</span></div>
+        <div style="flex:1;padding:12px;overflow:hidden">
+          <div class="n-card n-q" style="margin-top:0;padding:14px">
+            <p class="prompt">Een ijzeren spijker ligt buiten in de regen en begint te roesten. Welk vak hoort hierbij?</p>
+            <p class="taak" style="font-size:14px">Kies één vak. Gelukt als je antwoord groen wordt.</p>
+            <div class="n-opts"><span class="n-opt"><span class="lt">A</span>Biologie</span><span class="n-opt"><span class="lt">B</span>Natuurkunde</span><span class="n-opt sel"><span class="lt">C</span>Scheikunde<span class="mark">gekozen</span></span></div>
+            <div class="act"><span class="n-btn" style="width:100%">Controleer antwoord</span></div>
+          </div>
+        </div>
+        <footer class="n-footer" style="padding:8px 12px"><span class="n-btn ghost sm"><svg class="ic"><use href="#i-chl"/></svg>Vorige</span><span class="mid">5 / 5</span><span class="n-btn ghost sm">Verder<svg class="ic"><use href="#i-chr"/></svg></span></footer>
+        <span class="n-bell" style="right:12px;bottom:72px;height:40px;padding:0 10px;font-size:13px"><svg class="ic"><use href="#i-bell"/></svg>Meld</span>
+      </div></div>
+    </div>
+  </div>
+  <p class="note"><b>Wat verandert:</b> op een telefoon blijft het gele vaandel het anker, met de fase (DOE) en een korte kop; de lange quiztitel wordt niet meer afgekapt maar vervangen door "Stap 5: Vragenronde" (Typografie: kort in of splits, verklein nooit onder de minimummaat; leestekst 16 px, labels 13 px). De opties zijn minimaal 48 px hoog en staan onder elkaar met A-B-C (pagina 18: "grotere targets"). Er is één blauwe knop in beeld: de actie van deze stap; de navigatie eronder is contour (Eén focus, pagina 4). De meldbel wordt een oranje knop met woord en staat boven de voet, niet over de knop heen (Occlusie-test, pagina 19).<small>Het rekenvoorbeeld hier is de geselecteerde-maar-nog-niet-gecontroleerde staat: blauw = gekozen, nog geen oordeel.</small></p>
+</section>
+
+<section class="open-vragen">
+  <h2>Open vragen voor de beoordeling</h2>
+  <ol>
+    <li><b>Hoe hard is "geel-zwart + twee accenten" voor een app?</b> Een slide toont één moment; een app-scherm toont navigatie, actie en status tegelijk. Voorstel hierboven: de fasechip (geel/blauw/teal/groen volgens pagina 11) telt als navigatie; daarnaast blauw (actie) + groen (succes), rood alleen in de foutstaat, paars alleen bij tokens. Op de CHECK-kaart staan dan teal (fase), blauw (knop) en groen of rood (oordeel) tegelijk. Akkoord, of moet de fasechip op een CHECK-kaart neutraal (geel) blijven?</li>
+    <li><b>Voortgangsblokjes en de docentkant.</b> "Goed met Digidocent-hulp" verliest zijn rode stippellijn (rood = fout) en krijgt een oranje hulpstip; "beoordeling faalde" wordt blauw met klok in plaats van amber. De docentmatrix gebruikt dezelfde tonen (learningResultUtils.js, klasVoortgangOverzicht.js). Meebewegen, of docent en leerling verschillend laten?</li>
+    <li><b>Bangers op een telefoon.</b> De displayfont is smal en luid; op 375 px staan koppen op 22 px. Is dat nog leesbaar genoeg voor dyslectische leerlingen, of houden we op mobiel alleen het gele vaandel en zetten we koppen in Atkinson bold?</li>
+    <li><b>Hoekronding en schaduw.</b> De voorbeelddia's (pagina 1, 3) zijn hoekig met zware contouren zonder schaduw; het DS-document zelf gebruikt witte kaarten met ronde hoeken en een zachte grijze offset-schaduw. Hier is het document gevolgd. Voorkeur voor de app: rond en zacht (zoals nu) of hoekig en hard (zoals de dia's)?</li>
+    <li><b>Comic-energie.</b> Bewust nul bursts, sterren en halftone in de leerlingschermen, ook niet bij KLAAR. Wil je één begrensd KLAAR-moment (paragraafafsluiting, tokens verdiend) met een burst, of blijft de app helemaal rustig en horen bursts alleen bij slides?</li>
+    <li><b>Profiel en spellenpagina</b> staan niet in deze preview; ze volgen dezelfde bouwstenen (vaandel, kaart, chips). Apart preview maken, of meenemen bij de bouw?</li>
+  </ol>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var body=document.body, buttons=document.querySelectorAll('.modes button');
+  function setMode(m){body.setAttribute('data-mode',m);buttons.forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-set')===m));});try{localStorage.setItem('helix-ds-preview-mode',m);}catch(e){}}
+  buttons.forEach(function(b){b.addEventListener('click',function(){setMode(b.getAttribute('data-set'));});});
+  try{var saved=localStorage.getItem('helix-ds-preview-mode');if(saved==='oud'||saved==='nieuw'||saved==='naast')setMode(saved);}catch(e){}
+})();
+</script>
+</body>
+</html>

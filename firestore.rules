@@ -133,6 +133,12 @@ service cloud.firestore {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
     }
 
+    // Een oud document zonder rol mag door de app zelf op 'student' gezet
+    // worden (AuthProvider synchroniseert de rol na het inloggen).
+    function rolWordtStudentIngevuld() {
+      return !('role' in resource.data) && request.resource.data.role == 'student';
+    }
+
     function nieuweRolIsStudent() {
       return request.resource.data.get('role', 'student') == 'student';
     }
@@ -143,7 +149,7 @@ service cloud.firestore {
       // beheerders mogen altijd.
       allow create: if (isOwner(userId) && heeftSchoolEmail() && nieuweRolIsStudent())
         || isAdminOrSupervisor();
-      allow update: if (isOwner(userId) && (rolBlijftGelijk() || isAdminEmail()))
+      allow update: if (isOwner(userId) && (rolBlijftGelijk() || rolWordtStudentIngevuld() || isAdminEmail()))
         || isAdminOrSupervisor();
       allow delete: if isAdminOrSupervisor();
     }
