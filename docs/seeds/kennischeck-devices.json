@@ -1,0 +1,186 @@
+{
+  "meta": {
+    "slug": "kennischeck-devices",
+    "titel": "Devices, software en hardware — Kennischeck",
+    "paragraafCode": "2.2",
+    "bron": "Wikiwijs-arrangement Digitale Geletterdheid (DaCapo College), les 2 'Devices, software en hardware'; video Srp2vvn38q8. Inhoud technisch gecontroleerd en herschreven voor HELIX.",
+    "leerdoel": "Devices, hardware en software herkennen en uit elkaar houden",
+    "pogingen": 2,
+    "tokens": true,
+    "intro": "<p>Je hebt geleerd wat een device is, wat hardware en software zijn en wat Windows doet. In deze kennischeck laat je zien dat je het begrijpt. Lees elke vraag rustig. Bij sommige vragen zijn meerdere antwoorden goed.</p><p><strong>Bij vraag 1</strong> kijk je naar deze apparaten:</p><figure class=\"kennischeck-figuur\"><img src=\"__DEVICES_SVG__\" alt=\"Zes apparaten op een rij: een laptop, een smartphone, een tablet, een desktop-pc met beeldscherm, een boek en een koptelefoon. Elk apparaat heeft een naam eronder.\" style=\"max-width:100%;height:auto\"></figure><p><strong>Bij vraag 7</strong> kijk je naar deze drie foto's van onderdelen uit een computer:</p><figure class=\"kennischeck-figuur\"><img src=\"__HARDWARE_SVG__\" alt=\"Drie foto's met de letters A, B en C: een groene printplaat met een rond zilverkleurig ventilatordeksel (A), een vierkante chip met een metalen deksel (B) en een uitbreidingskaart met een ventilator (C).\" style=\"max-width:100%;height:auto\"></figure>"
+  },
+  "vragen": [
+    {
+      "nr": 1,
+      "type": "meerkeuze",
+      "meerdere": true,
+      "vraag": "Kijk naar de zes apparaten in het plaatje boven deze kennischeck. Welke apparaten zijn devices? Kies alle goede antwoorden.",
+      "opties": [
+        { "tekst": "Laptop", "juist": true, "uitleg": "Een laptop is een device: een elektronisch apparaat waarmee je digitale informatie kunt gebruiken." },
+        { "tekst": "Smartphone", "juist": true, "uitleg": "Een smartphone is een device: je gebruikt er apps, internet en berichten mee." },
+        { "tekst": "Tablet", "juist": true, "uitleg": "Een tablet is een device, net als een laptop maar dan met een aanraakscherm." },
+        { "tekst": "Desktop-pc", "juist": true, "uitleg": "Een desktop-pc is een device dat meestal op één plek staat." },
+        { "tekst": "Boek", "juist": false, "uitleg": "Een boek is geen device. Het is niet elektronisch en verwerkt geen digitale informatie." },
+        { "tekst": "Koptelefoon", "juist": false, "uitleg": "Een koptelefoon is een accessoire dat je aan een device koppelt. Zelf verwerkt hij geen digitale informatie." }
+      ],
+      "uitleg": "Devices zijn elektronische apparaten waarmee je digitale informatie kunt gebruiken en verwerken, zoals een laptop, smartphone, tablet of desktop-pc.",
+      "vaardigheid": "herkennen"
+    },
+    {
+      "nr": 2,
+      "type": "meerkeuze",
+      "vraag": "Je wilt je computer iedere dag meenemen van huis naar school. Welke computer is daarvoor het handigst?",
+      "opties": [
+        { "tekst": "Een laptop", "juist": true, "uitleg": "Een laptop heeft een batterij en is gemaakt om mee te nemen." },
+        { "tekst": "Een vaste pc", "juist": false, "uitleg": "Een vaste pc staat meestal op één plek, met een los beeldscherm en een stroomkabel." },
+        { "tekst": "Een server", "juist": false, "uitleg": "Een server is een computer die andere computers bedient, vaak in een speciale ruimte. Die neem je niet mee." }
+      ],
+      "uitleg": "Een laptop heeft een batterij en is gemaakt om makkelijk mee te nemen. Een vaste pc staat meestal op één plek.",
+      "vaardigheid": "begrijpen"
+    },
+    {
+      "nr": 3,
+      "type": "meerkeuze",
+      "meerdere": true,
+      "vraag": "Hardware zijn de onderdelen die je kunt vastpakken. Software zijn programma's. Welke van deze zijn hardware? Kies alle goede antwoorden.",
+      "opties": [
+        { "tekst": "Toetsenbord", "juist": true, "uitleg": "Een toetsenbord is hardware: je kunt het vastpakken." },
+        { "tekst": "Word", "juist": false, "uitleg": "Word is software: een programma waarmee je teksten maakt." },
+        { "tekst": "Processor", "juist": true, "uitleg": "Een processor is hardware: een fysiek onderdeel in de computer." },
+        { "tekst": "PowerPoint", "juist": false, "uitleg": "PowerPoint is software: een programma voor presentaties." },
+        { "tekst": "Grafische kaart", "juist": true, "uitleg": "Een grafische kaart is hardware: een onderdeel dat beeld berekent." },
+        { "tekst": "Windows", "juist": false, "uitleg": "Windows is software: het besturingssysteem." },
+        { "tekst": "Muis", "juist": true, "uitleg": "Een muis is hardware: je houdt hem in je hand." }
+      ],
+      "uitleg": "Hardware zijn de fysieke onderdelen van een apparaat, zoals het toetsenbord, de muis, de processor en de grafische kaart. Software zijn programma's die op het apparaat draaien, zoals Word, PowerPoint en Windows.",
+      "vaardigheid": "begrijpen"
+    },
+    {
+      "nr": 4,
+      "type": "meerkeuze",
+      "vraag": "Wat is Windows?",
+      "opties": [
+        { "tekst": "Een besturingssysteem", "juist": true, "uitleg": "Windows is een besturingssysteem: het laat programma's en hardware samenwerken." },
+        { "tekst": "Een onderdeel dat afbeeldingen berekent", "juist": false, "uitleg": "Dat is de grafische kaart, een stuk hardware." },
+        { "tekst": "Een programma waarmee je alleen teksten schrijft", "juist": false, "uitleg": "Dat is een tekstverwerker zoals Word. Windows doet veel meer." },
+        { "tekst": "Een onderdeel waarin bestanden worden opgeslagen", "juist": false, "uitleg": "Dat is de opslag, zoals een SSD of harde schijf." }
+      ],
+      "uitleg": "Windows is een besturingssysteem. Het zorgt ervoor dat programma's en hardware samen kunnen werken en dat jij de computer kunt bedienen.",
+      "vaardigheid": "herkennen"
+    },
+    {
+      "nr": 5,
+      "type": "koppelen",
+      "vraag": "Koppel elk onderdeel van Windows aan de juiste omschrijving.",
+      "paren": [
+        { "links": "Bureaublad", "rechts": "Het hoofdscherm waarop je snelkoppelingen en bestanden ziet" },
+        { "links": "Taakbalk", "rechts": "De balk waarmee je geopende en vastgemaakte programma's bereikt" },
+        { "links": "Start", "rechts": "Het menu waarmee je programma's, instellingen en zoeken bereikt" },
+        { "links": "Touchpad", "rechts": "Het aanraakvlak op een laptop waarmee je de muisaanwijzer bedient" }
+      ],
+      "uitleg": "Het bureaublad is je hoofdscherm, de taakbalk staat onderaan met je programma's, Start opent het menu en met het touchpad bedien je de muisaanwijzer op een laptop.",
+      "vaardigheid": "herkennen"
+    },
+    {
+      "nr": 6,
+      "type": "koppelen",
+      "vraag": "Welk programma gebruik je? Koppel elke situatie aan het juiste programma.",
+      "paren": [
+        { "links": "Ik wil een verslag schrijven.", "rechts": "Word" },
+        { "links": "Ik wil een presentatie maken.", "rechts": "PowerPoint" },
+        { "links": "Ik wil gegevens in een tabel zetten en ermee rekenen.", "rechts": "Excel" }
+      ],
+      "uitleg": "Word is voor teksten, PowerPoint voor presentaties en Excel voor tabellen en rekenen. Alle drie zijn software: programma's die op je device draaien.",
+      "vaardigheid": "toepassen"
+    },
+    {
+      "nr": 7,
+      "type": "koppelen",
+      "vraag": "Kijk naar de foto's A, B en C boven deze kennischeck. Koppel elke foto aan de juiste naam van het onderdeel.",
+      "paren": [
+        { "links": "Foto A", "rechts": "Geluidskaart" },
+        { "links": "Foto B", "rechts": "Processor (CPU)" },
+        { "links": "Foto C", "rechts": "Grafische kaart (GPU)" }
+      ],
+      "uitleg": "Foto A is een geluidskaart (een printplaat met aansluitingen voor geluid), foto B een processor (een vierkante chip met een metalen deksel) en foto C een grafische kaart (een grote kaart met een ventilator).",
+      "vaardigheid": "herkennen"
+    },
+    {
+      "nr": 8,
+      "type": "koppelen",
+      "vraag": "Wat doet het onderdeel? Koppel elk onderdeel aan zijn belangrijkste taak.",
+      "paren": [
+        { "links": "Processor (CPU)", "rechts": "Verwerkt instructies en berekeningen" },
+        { "links": "Grafische kaart (GPU)", "rechts": "Verwerkt beeld" },
+        { "links": "Geluidskaart", "rechts": "Verwerkt geluid" },
+        { "links": "Opslag", "rechts": "Bewaart bestanden en gegevens" }
+      ],
+      "uitleg": "De processor rekent, de grafische kaart maakt beeld, de geluidskaart regelt geluid en de opslag bewaart je bestanden.",
+      "vaardigheid": "begrijpen"
+    },
+    {
+      "nr": 9,
+      "type": "meerkeuze",
+      "meerdere": true,
+      "vraag": "Waarom is het verstandig om je computer en programma's regelmatig te updaten? Kies alle goede redenen.",
+      "opties": [
+        { "tekst": "Fouten in de software kunnen worden opgelost", "juist": true, "uitleg": "Klopt: updates repareren fouten die na de vorige versie zijn gevonden." },
+        { "tekst": "De beveiliging kan beter worden", "juist": true, "uitleg": "Klopt: updates dichten lekken waar kwaadwillenden misbruik van kunnen maken." },
+        { "tekst": "Er kunnen nieuwe functies bij komen", "juist": true, "uitleg": "Klopt: soms brengt een update nieuwe mogelijkheden." },
+        { "tekst": "Je computer wordt er automatisch sneller van", "juist": false, "uitleg": "Niet per se. Een update maakt je computer niet vanzelf sneller." },
+        { "tekst": "Zonder update stopt je computer meteen met werken", "juist": false, "uitleg": "Nee. Zonder update werkt je computer meestal gewoon, maar hij is minder veilig en mist verbeteringen." }
+      ],
+      "uitleg": "Updates houden software actueel. Ze kunnen problemen oplossen, de beveiliging verbeteren en soms nieuwe functies toevoegen.",
+      "vaardigheid": "begrijpen"
+    },
+    {
+      "nr": 10,
+      "type": "meerkeuze",
+      "vraag": "Tijdens het surfen verschijnt ineens een melding: 'Installeer dit programma NU om je computer sneller te maken.' Je kent het programma niet. Wat doe je?",
+      "opties": [
+        { "tekst": "Ik installeer het meteen, want sneller is altijd beter", "juist": false, "uitleg": "Onbekende programma's kunnen schadelijk zijn. Installeer nooit zomaar iets uit een pop-up." },
+        { "tekst": "Ik installeer het niet zomaar. Ik controleer eerst of het betrouwbaar en nodig is, en bij twijfel vraag ik hulp", "juist": true, "uitleg": "Goed: eerst controleren, bij twijfel hulp vragen, en anders de melding sluiten." },
+        { "tekst": "Ik klik op 'Installeren' om te kijken wat er gebeurt", "juist": false, "uitleg": "Zo'n klik kan al genoeg zijn om ongewenste software binnen te halen." },
+        { "tekst": "Ik geef mijn e-mailadres op zodat ze me meer informatie sturen", "juist": false, "uitleg": "Geef geen gegevens aan een onbekende melding. Sluit hem en vraag hulp als je twijfelt." }
+      ],
+      "uitleg": "Download of installeer niet zomaar iets. Controleer eerst of het betrouwbaar en nodig is, en vraag bij twijfel hulp aan een docent of ouder.",
+      "vaardigheid": "toepassen"
+    },
+    {
+      "nr": 11,
+      "type": "waar-niet-waar",
+      "vraag": "Je beste vriend vraagt om het wachtwoord van je schoolaccount, zodat hij even iets voor je kan controleren. Klopt dit: 'Aan een goede vriend mag je je wachtwoord wel geven'?",
+      "juist": false,
+      "uitleg": "Een wachtwoord is persoonlijk. Ook vrienden hoeven jouw wachtwoord niet te weten. Wil je hulp, doe het dan samen terwijl jij zelf inlogt.",
+      "vaardigheid": "toepassen"
+    },
+    {
+      "nr": 12,
+      "type": "meerkeuze",
+      "vraag": "Welke aanpassing kun je normaal gesproken veilig zelf doen?",
+      "opties": [
+        { "tekst": "De helderheid van je scherm aanpassen", "juist": true, "uitleg": "Helderheid en tekstgrootte zijn gewone instellingen die je zelf mag veranderen." },
+        { "tekst": "Willekeurige geavanceerde systeeminstellingen veranderen", "juist": false, "uitleg": "Geavanceerde systeeminstellingen kunnen je computer ontregelen. Verander ze niet zomaar." },
+        { "tekst": "Onbekende stuurprogramma's verwijderen", "juist": false, "uitleg": "Een stuurprogramma stuurt een stuk hardware aan. Verwijder je het, dan werkt dat onderdeel misschien niet meer." },
+        { "tekst": "Beveiligingsinstellingen uitschakelen", "juist": false, "uitleg": "Beveiliging uitzetten maakt je computer kwetsbaar." }
+      ],
+      "uitleg": "Instellingen zoals helderheid en tekstgrootte kun je zelf aanpassen. Verander niet zomaar geavanceerde systeeminstellingen als je niet weet wat ze doen.",
+      "vaardigheid": "toepassen"
+    },
+    {
+      "nr": 13,
+      "type": "meerkeuze",
+      "meerdere": true,
+      "vraag": "Noah maakt op zijn laptop in Word een verslag. Welke uitspraken kloppen? Kies alle goede antwoorden.",
+      "opties": [
+        { "tekst": "De laptop is een device", "juist": true, "uitleg": "Klopt: een laptop is een elektronisch apparaat waarmee je digitale informatie verwerkt." },
+        { "tekst": "Word is software", "juist": true, "uitleg": "Klopt: Word is een programma." },
+        { "tekst": "Het toetsenbord is hardware", "juist": true, "uitleg": "Klopt: het toetsenbord kun je vastpakken." },
+        { "tekst": "Windows kan het besturingssysteem van de laptop zijn", "juist": true, "uitleg": "Klopt: Windows is een besturingssysteem dat op veel laptops draait." },
+        { "tekst": "Word is een onderdeel van de hardware", "juist": false, "uitleg": "Nee: Word is software, geen fysiek onderdeel." }
+      ],
+      "uitleg": "De laptop is het device, Word is software, het toetsenbord is hardware en Windows is het besturingssysteem dat alles laat samenwerken.",
+      "vaardigheid": "toepassen"
+    }
+  ]
+}

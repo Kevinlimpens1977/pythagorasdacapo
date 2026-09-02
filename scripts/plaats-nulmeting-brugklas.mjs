@@ -8,9 +8,8 @@
  * paragraaf toegewezen aan elke klas waarvan de naam met H1 begint; een klas
  * zonder route krijgt de kb-variant.
  *
- * De vragen staan in docs/seeds/nulmeting-brugklas.json. Toegestane types per
- * vraag: meerkeuze, waar-niet-waar, numeriek, invullen, koppelen, volgorde, open.
- * Zie de `bouwItem`-functie voor de velden per type.
+ * De vragen staan in docs/seeds/nulmeting-brugklas.json; de velden per
+ * vraagtype staan in scripts/lib/toetsitems-uit-seed.mjs.
  *
  * Vaste id's: opnieuw draaien overschrijft, verdubbelt niet.
  *
@@ -23,10 +22,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 
-import { normalizeAssessmentItems } from '../src/lib/assessmentBlockUtils.js';
 import { normalizeContentBlockSettings } from '../src/lib/contentBlockUtils.js';
 import { validateContentBlockReadiness } from '../src/lib/contentReadiness.js';
 import { buildPublicContentBlockSnapshot } from '../src/lib/publicContentBlockView.js';
+import { bouwToetsitems, telTypes } from './lib/toetsitems-uit-seed.mjs';
 
 const PROJECT_ID = 'pythagoras-eoa';
 const SCRIPT_NAAM = 'scripts/plaats-nulmeting-brugklas.mjs';
@@ -68,87 +67,6 @@ const cleanForFirestore = (value) => {
     );
   }
   return value;
-};
-
-/* ---------- vragen naar toetsitems ---------- */
-
-const itemId = (vraag, index) => `${slug}-${String(vraag.nr ?? index + 1).padStart(2, '0')}`;
-
-// Invultekst: "De hoofdstad van Nederland is [Amsterdam|amsterdam]." -> segmenten + gaten.
-const bouwInvullen = (id, tekst) => {
-  const segments = [];
-  const gaps = [];
-  const regex = /\[([^\]]+)\]/g;
-  let laatste = 0;
-  let match;
-  while ((match = regex.exec(tekst)) !== null) {
-    if (match.index > laatste) segments.push({ type: 'text', text: tekst.slice(laatste, match.index) });
-    const [antwoord, ...alternatieven] = match[1].split('|').map((s) => s.trim());
-    const gapId = `${id}-gap-${gaps.length + 1}`;
-    gaps.push({ id: gapId, answer: antwoord, alternatives: alternatieven });
-    segments.push({ type: 'gap', id: gapId });
-    laatste = regex.lastIndex;
-  }
-  if (laatste < tekst.length) segments.push({ type: 'text', text: tekst.slice(laatste) });
-  return { type: 'invullen', text: tekst.replace(regex, '___'), segments, gaps };
-};
-
-const bouwAntwoord = (vraag, id) => {
-  const type = vraag.type;
-  if (type === 'meerkeuze') {
-    return {
-      type: 'meerkeuze',
-      options: vraag.opties.map((optie, index) => ({
-        id: `${id}-${String.fromCharCode(97 + index)}`,
-        text: typeof optie === 'string' ? optie : optie.tekst,
-        correct: typeof optie === 'string' ? index === vraag.juist : optie.juist === true,
-        explanation: (typeof optie === 'object' && optie.uitleg) || '',
-        misconception: ''
-      }))
-    };
-  }
-  if (type === 'waar-niet-waar') {
-    return {
-      type: 'meerkeuze',
-      options: [
-        { id: `${id}-waar`, text: 'Waar', correct: vraag.juist === true, explanation: vraag.juist === true ? vraag.uitleg || '' : '', misconception: '' },
-        { id: `${id}-niet-waar`, text: 'Niet waar', correct: vraag.juist === false, explanation: vraag.juist === false ? vraag.uitleg || '' : '', misconception: '' }
-      ]
-    };
-  }
-  if (type === 'numeriek') {
-    return { type: 'numeriek', expected: vraag.antwoord, tolerance: vraag.tolerantie ?? 0, unit: vraag.eenheid || '', hintBijFout: vraag.hint || '' };
-  }
-  if (type === 'invullen') return bouwInvullen(id, vraag.tekst);
-  if (type === 'koppelen') {
-    return { type: 'koppelen', pairs: vraag.paren.map((paar, index) => ({ id: `${id}-pair-${index + 1}`, left: paar.links, right: paar.rechts })) };
-  }
-  if (type === 'volgorde') {
-    return { type: 'volgorde', items: vraag.stappen.map((stap, index) => ({ id: `${id}-stap-${index + 1}`, text: stap })) };
-  }
-  if (type === 'open') {
-    return { type: 'open', modelAnswer: vraag.modelantwoord || '', rubric: vraag.rubric || '', teacherNotes: vraag.docentnotitie || '' };
-  }
-  throw new Error(`Onbekend vraagtype "${type}" bij vraag ${id}`);
-};
-
-const bouwItem = (vraag, index) => {
-  const id = itemId(vraag, index);
-  const type = vraag.type === 'waar-niet-waar' ? 'waar-niet-waar' : vraag.type;
-  return {
-    id,
-    type,
-    prompt: vraag.vraag,
-    answer: bouwAntwoord(vraag, id),
-    feedback: vraag.uitleg || '',
-    tokens: 0,
-    taxonomy: {
-      learningGoal: vraag.leerdoel || meta.leerdoel || '',
-      cognitiveSkill: vraag.vaardigheid || 'herkennen',
-      masteryLevel: vraag.niveau || 'basis',
-      scaffoldingRole: 'bewijs_leveren'
-    }
-  };
 };
 
 /* ---------- paragraaf en blok ---------- */
@@ -204,7 +122,7 @@ const bouwBlok = (route, items) => ({
 });
 
 const nu = new Date().toISOString();
-const items = normalizeAssessmentItems(seed.vragen.map(bouwItem));
+const items = bouwToetsitems(seed.vragen, { slug, leerdoel: meta.leerdoel || '' });
 const plan = ROUTES.map((route) => ({ route, paragraaf: bouwParagraaf(route, nu), blok: bouwBlok(route, items) }));
 plan.forEach((stap) => { stap.snapshot = buildPublicContentBlockSnapshot(stap.blok); });
 
@@ -213,11 +131,10 @@ plan.forEach(({ blok }) => {
   const readiness = validateContentBlockReadiness(blok);
   if (readiness.errors.length > 0) fouten.push(`${blok.id}: ${readiness.errors.map((issue) => issue.message).join(' ')}`);
 });
-const typeTelling = items.reduce((acc, item) => ({ ...acc, [item.type]: (acc[item.type] || 0) + 1 }), {});
 
 console.log(`Nulmeting brugklas plaatsen (${toonPlan ? 'TOON PLAN' : apply ? 'APPLY' : 'DRY RUN'})`);
 console.log(`Seed: ${seedPad}`);
-console.log(`Vragen: ${items.length} (${Object.entries(typeTelling).map(([t, n]) => `${n}x ${t}`).join(', ')})`);
+console.log(`Vragen: ${items.length} (${telTypes(items)})`);
 console.log(`Pogingen: ${meta.pogingen ?? 1}, tokens: ${meta.tokens === true ? 'aan' : 'uit'}, Digidocent: uit`);
 if (fouten.length > 0) {
   console.error('Readiness-controle faalt:');
