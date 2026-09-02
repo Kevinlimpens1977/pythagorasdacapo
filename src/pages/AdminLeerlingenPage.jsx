@@ -88,6 +88,31 @@ export default function AdminLeerlingenPage() {
   const withoutClassCount = activeStudents.filter((student) => !student.klasId).length;
   const photoCounts = countStudentPhotos(activeStudents);
 
+  const handleMoveStudent = async (student, naarKlasId) => {
+    const doelKlasId = naarKlasId || null;
+    if ((student.klasId || null) === doelKlasId) return;
+
+    setBusyStudentUid(student.uid);
+    setError(null);
+    setPasswordMessage('');
+    try {
+      await klasService.verplaatsLeerlingNaarKlas({
+        studentUid: student.uid,
+        vanKlasId: student.klasId || null,
+        naarKlasId: doelKlasId
+      });
+      const naam = student.displayName || student.email || 'Deze leerling';
+      const doelNaam = klassen.find((klas) => klas.id === doelKlasId)?.name;
+      setPasswordMessage(doelNaam ? `${naam} zit nu in ${doelNaam}.` : `${naam} zit nu in geen klas.`);
+      await loadStudents({ silent: true });
+    } catch (err) {
+      console.error('Verplaatsen mislukt:', err);
+      setError('Deze leerling kon niet naar een andere klas verplaatst worden.');
+    } finally {
+      setBusyStudentUid(null);
+    }
+  };
+
   const handleArchiveStudent = async (student) => {
     setBusyStudentUid(student.uid);
     setError(null);
@@ -316,7 +341,22 @@ export default function AdminLeerlingenPage() {
                   </div>
                   <div>
                     <p className="text-xs font-black uppercase tracking-wide text-slate-400">Klas</p>
-                    <p className="mt-1 text-sm font-bold text-[var(--helix-navy)]">{student.klasName}</p>
+                    {showArchive ? (
+                      <p className="mt-1 text-sm font-bold text-[var(--helix-navy)]">{student.klasName}</p>
+                    ) : (
+                      <select
+                        value={student.klasId || ''}
+                        onChange={(event) => handleMoveStudent(student, event.target.value)}
+                        disabled={busyStudentUid === student.uid}
+                        aria-label={`Klas van ${student.displayName || student.email || 'leerling'}`}
+                        className="mt-1 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-2 py-1.5 text-sm font-bold text-[var(--helix-navy)] focus:border-[var(--helix-purple)] focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)] disabled:opacity-50"
+                      >
+                        <option value="">Geen klas</option>
+                        {klassen.map((klas) => (
+                          <option key={klas.id} value={klas.id}>{klas.name}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs font-black uppercase tracking-wide text-slate-400">Laatst actief</p>

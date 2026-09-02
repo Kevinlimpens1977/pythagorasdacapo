@@ -41,7 +41,13 @@ export default function LoginScreen() {
           setError('Vul je voornaam en achternaam in.');
           return;
         }
-        const aanmeldEmail = naarInlogEmail(email);
+        // Bij aanmelden vragen we het volledige adres: een kaal leerlingnummer
+        // aanvullen zou een account op een geraden adres aanmaken.
+        const aanmeldEmail = String(email).trim().toLowerCase();
+        if (!aanmeldEmail.includes('@')) {
+          setError('Vul je hele e-mailadres in, dus inclusief het @-teken.');
+          return;
+        }
         if (!isToegestaanSchoolEmail(aanmeldEmail)) {
           setError(DOMEIN_FOUTMELDING);
           return;
@@ -62,6 +68,11 @@ export default function LoginScreen() {
         setError('Kies een wachtwoord van minstens 6 tekens.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Dit lijkt geen geldig e-mailadres. Controleer het even.');
+      } else if (err.code === 'auth/too-many-requests') {
+        // Firebase remt een schoolnetwerk af als een hele klas tegelijk aanmeldt.
+        setError('Te veel pogingen vanaf het schoolnetwerk. Wacht een kwartier en probeer het opnieuw.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Aanmelden staat nu uit. Vraag je docent om dit te melden.');
       } else {
         setError(isSignUp ? 'Account maken lukte niet.' : 'Inloggen lukte niet. Controleer je gegevens.');
       }
@@ -184,15 +195,17 @@ export default function LoginScreen() {
               )}
 
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">Leerlingnummer of e-mailadres</label>
+                <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">
+                  {isSignUp ? 'E-mailadres' : 'Leerlingnummer of e-mailadres'}
+                </label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-auth"
-                  placeholder="naam@school.nl"
-                  autoComplete="username"
+                  placeholder={isSignUp ? 'naam@leerling.dacapo-college.nl' : 'Leerlingnummer of naam@school.nl'}
+                  autoComplete={isSignUp ? 'email' : 'username'}
                 />
               </div>
 

@@ -424,6 +424,41 @@ export const subscribeToKlas = (klasId, callback) => {
   );
 };
 
+/**
+ * Verplaats een leerling naar een andere klas (of haal hem uit zijn klas).
+ * De klaskoppeling staat op het leerlingdocument; de per-leerling overrides
+ * staan in het klasdocument en horen dus mee te verhuizen (lees: te verdwijnen).
+ * @param {Object} params
+ * @param {string} params.studentUid
+ * @param {string|null} params.vanKlasId - Huidige klas, mag leeg zijn
+ * @param {string|null} params.naarKlasId - Nieuwe klas, of leeg voor "geen klas"
+ * @returns {Promise<void>}
+ */
+export const verplaatsLeerlingNaarKlas = async ({ studentUid, vanKlasId = null, naarKlasId = null }) => {
+  if (!studentUid) {
+    throw new Error('studentUid is required');
+  }
+
+  const doelKlasId = naarKlasId || null;
+  if ((vanKlasId || null) === doelKlasId) return;
+
+  const userRef = doc(db, 'users', studentUid);
+  await updateDoc(userRef, {
+    klasId: doelKlasId,
+    joinedKlasAt: doelKlasId ? serverTimestamp() : null
+  });
+
+  // De oude klas houdt anders een override over voor een leerling die er niet
+  // meer zit. Mislukt dit (klas verwijderd), dan is de verplaatsing al gelukt.
+  if (vanKlasId) {
+    try {
+      await removeStudentOverride(vanKlasId, studentUid);
+    } catch (error) {
+      console.warn('Oude klas-override kon niet opgeruimd worden:', error);
+    }
+  }
+};
+
 export default {
   createKlas,
   getAvailableKlassen,
@@ -440,6 +475,7 @@ export default {
   setStudentOverride,
   setStudentContentBlockOverride,
   removeStudentOverride,
+  verplaatsLeerlingNaarKlas,
   getStudentEffectiveParagrafen,
   subscribeToKlas
 };
