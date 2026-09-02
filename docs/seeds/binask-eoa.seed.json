@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "seedId": "binask-eoa",
+    "generatedAt": "2026-09-02T19:30:00.000Z",
+    "status": "published",
+    "beschrijving": "Kale startstructuur voor Binask (EOA), leerjaar 1 en 2, leerroute 3. Bevat bewust geen contentblocks: de docent vult de paragraaf zelf.",
+    "leerwegen": ["lr3"],
+    "klasRoutes": [
+      { "klasNaam": "ER3L1A", "niveauId": "niveau-binask-eoa-1-lr3" },
+      { "klasNaam": "ER3L2A", "niveauId": "niveau-binask-eoa-2-lr3" }
+    ]
+  },
+  "vakken": [
+    {
+      "id": "vak-binask-eoa",
+      "name": "Binask",
+      "code": "BINASK",
+      "description": "Biologie en natuur- en scheikunde voor EOA.",
+      "order": 98,
+      "isActive": true,
+      "color": "#0d9488",
+      "emoji": "BN"
+    }
+  ],
+  "leerjaren": [
+    {
+      "id": "leerjaar-binask-eoa-1",
+      "vakId": "vak-binask-eoa",
+      "year": 1,
+      "label": "Leerjaar 1",
+      "order": 1,
+      "isActive": true
+    },
+    {
+      "id": "leerjaar-binask-eoa-2",
+      "vakId": "vak-binask-eoa",
+      "year": 2,
+      "label": "Leerjaar 2",
+      "order": 2,
+      "isActive": true
+    }
+  ],
+  "niveaus": [
+    {
+      "id": "niveau-binask-eoa-1-lr3",
+      "vakId": "vak-binask-eoa",
+      "leerjaarId": "leerjaar-binask-eoa-1",
+      "leerweg": "lr3",
+      "label": "Leerroute 3",
+      "name": "Leerroute 3 - leerjaar 1",
+      "description": "Leerroute 3 van Binask, EOA leerjaar 1.",
+      "order": 1,
+      "isActive": true
+    },
+    {
+      "id": "niveau-binask-eoa-2-lr3",
+      "vakId": "vak-binask-eoa",
+      "leerjaarId": "leerjaar-binask-eoa-2",
+      "leerweg": "lr3",
+      "label": "Leerroute 3",
+      "name": "Leerroute 3 - leerjaar 2",
+      "description": "Leerroute 3 van Binask, EOA leerjaar 2.",
+      "order": 1,
+      "isActive": true
+    }
+  ],
+  "hoofdstukken": [
+    {
+      "id": "hoofdstuk-binask-eoa-1-h1",
+      "vakId": "vak-binask-eoa",
+      "leerjaarId": "leerjaar-binask-eoa-1",
+      "niveauId": "niveau-binask-eoa-1-lr3",
+      "number": 1,
+      "title": "Welkom in Helix",
+      "description": "Kennismakingshoofdstuk: wegwijs raken in Helix.",
+      "order": 1,
+      "published": true,
+      "isArchived": false
+    },
+    {
+      "id": "hoofdstuk-binask-eoa-2-h1",
+      "vakId": "vak-binask-eoa",
+      "leerjaarId": "leerjaar-binask-eoa-2",
+      "niveauId": "niveau-binask-eoa-2-lr3",
+      "number": 1,
+      "title": "Welkom in Helix",
+      "description": "Kennismakingshoofdstuk: wegwijs raken in Helix.",
+      "order": 1,
+      "published": true,
+      "isArchived": false
+    }
+  ],
+  "paragrafen": [
+    {
+      "id": "paragraaf-binask-eoa-1-1-1",
+      "vakId": "vak-binask-eoa",
+      "leerjaarId": "leerjaar-binask-eoa-1",
+      "niveauId": "niveau-binask-eoa-1-lr3",
+      "hoofdstukId": "hoofdstuk-binask-eoa-1-h1",
+      "code": "1.1",
+      "title": "Ga van start...",
+      "beschrijving": "",
+      "order": 1,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [],
+      "leerdoelen": []
+    },
+    {
+      "id": "paragraaf-binask-eoa-2-1-1",
+      "vakId": "vak-binask-eoa",
+      "leerjaarId": "leerjaar-binask-eoa-2",
+      "niveauId": "niveau-binask-eoa-2-lr3",
+      "hoofdstukId": "hoofdstuk-binask-eoa-2-h1",
+      "code": "1.1",
+      "title": "Ga van start...",
+      "beschrijving": "",
+      "order": 1,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [],
+      "leerdoelen": []
+    }
+  ],
+  "contentBlocks": []
+}
