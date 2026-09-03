@@ -1455,7 +1455,8 @@ export default function ClassOverview() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="font-bold text-slate-700 text-lg flex items-center gap-2">
-                  📏 Pythagoras Metingen (BC-lengte)
+                  <ClipboardCheck size={18} aria-hidden="true" />
+                  Pythagoras Metingen (BC-lengte)
                 </h2>
                 <p className="text-slate-500 text-sm mt-1">Live updates van leerlingen</p>
               </div>
@@ -1715,7 +1716,7 @@ export default function ClassOverview() {
                       Presentatie
                     </th>
                     <th className="py-4 px-6 font-medium text-slate-500 text-sm">
-                      📋 Evaluatie
+                      Evaluatie
                     </th>
                   </>
                 )}
@@ -1754,7 +1755,9 @@ export default function ClassOverview() {
                           />
                           <div className="flex flex-col">
                             <span className={`font-medium ${!student.displayName ? 'text-amber-600 italic' : 'text-slate-800'}`}>
-                              {student.displayName && student.displayName.trim() ? student.displayName : '⚠️ Naam ontbreekt'}
+                              {student.displayName && student.displayName.trim() ? student.displayName : (
+                                <span className="inline-flex items-center gap-1"><AlertTriangle size={14} aria-hidden="true" /> Naam ontbreekt</span>
+                              )}
                             </span>
                             <span className="text-[10px] text-slate-400 truncate max-w-[150px]">{student.email}</span>
                           </div>

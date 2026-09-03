@@ -7,7 +7,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Eye, PanelLeftOpen, Palette, Plus, Trash2 } from 'lucide-react';
+import { BarChart3, BookMarked, BookOpen, CalendarDays, ChevronRight, Eye, HelpCircle, PanelLeftOpen, Palette, Pencil, Plus, Trash2 } from 'lucide-react';
 import NavigationTree from './NavigationTree';
 import DualPanelEditor from './DualPanelEditor';
 import CreateContentModal from './CreateContentModal';
@@ -379,7 +379,7 @@ export default function CmsShell() {
             <div className="max-w-2xl">
               <div className="helix-surface p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <span className="text-3xl">{cms.currentVak.emoji || '📚'}</span>
+                  <span className="text-3xl">{cms.currentVak.emoji || <BookOpen size={30} aria-hidden="true" />}</span>
                   <h2 className="text-3xl font-bold text-gray-900">{cms.currentVak.name}</h2>
                   <button
                     onClick={() => setEditingColor({ type: 'vak', id: cms.selectedVakId })}
@@ -428,7 +428,7 @@ export default function CmsShell() {
             <div className="max-w-2xl">
               <div className="helix-surface p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <span className="text-3xl">{cms.currentLeerjaar.emoji || '📅'}</span>
+                  <span className="text-3xl">{cms.currentLeerjaar.emoji || <CalendarDays size={30} aria-hidden="true" />}</span>
                   <h2 className="text-3xl font-bold text-gray-900">Jaar {cms.currentLeerjaar.year}</h2>
                   <button
                     onClick={() => setEditingColor({ type: 'leerjaar', id: cms.selectedLeerjaarId })}
@@ -477,7 +477,7 @@ export default function CmsShell() {
             <div className="max-w-2xl">
               <div className="helix-surface p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <span className="text-3xl">{cms.currentNiveau.emoji || '📊'}</span>
+                  <span className="text-3xl">{cms.currentNiveau.emoji || <BarChart3 size={30} aria-hidden="true" />}</span>
                   <h2 className="text-3xl font-bold text-gray-900">{cms.currentNiveau.label}</h2>
                   <button
                     onClick={() => setEditingColor({ type: 'niveau', id: cms.selectedNiveauId })}
@@ -526,7 +526,7 @@ export default function CmsShell() {
             <div className="max-w-2xl">
               <div className="helix-surface p-8">
                 <div className="flex items-start gap-3 mb-6">
-                  <span className="text-3xl">{cms.currentHoofdstuk.emoji || '📖'}</span>
+                  <span className="text-3xl">{cms.currentHoofdstuk.emoji || <BookMarked size={30} aria-hidden="true" />}</span>
                   <InlineEdit
                     value={cms.currentHoofdstuk.title}
                     onSave={async (newValue) => {
@@ -644,7 +644,7 @@ export default function CmsShell() {
                     <p className="text-sm text-gray-600">Questions in this paragraph</p>
                     <p className="text-2xl font-bold text-gray-900">{cms.vragen.length}</p>
                   </div>
-                  <div className="text-4xl text-gray-300">❓</div>
+                  <div className="text-gray-300"><HelpCircle size={40} aria-hidden="true" /></div>
                 </div>
 
                 <div>
@@ -720,7 +720,7 @@ export default function CmsShell() {
                         <div>
                           <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Calculator</p>
                           <p className="text-sm font-medium text-gray-900">
-                            {cms.currentVraag.vraagMetadata.showCalculator ? '✓ Enabled' : '✗ Disabled'}
+                            {cms.currentVraag.vraagMetadata.showCalculator ? 'Aan' : 'Uit'}
                           </p>
                         </div>
                         {cms.currentVraag.vraagMetadata.hints?.length > 0 && (
@@ -737,7 +737,7 @@ export default function CmsShell() {
                     <button
                       onClick={() => setIsEditing(true)}
                       className="btn-primary px-6 py-2 text-sm">
-                      ✏️ Edit Question
+                      <Pencil size={16} aria-hidden="true" /> Vraag bewerken
                     </button>
                   </div>
                   </div>

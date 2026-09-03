@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Hand } from 'lucide-react';
 import { updateProfile } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
@@ -53,7 +54,10 @@ export default function NameSetupModal({ onComplete }) {
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
       <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 animate-in zoom-in-95 duration-300">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-black text-slate-900 mb-2">Welkom! 👋</h2>
+          <h2 className="text-3xl font-black text-slate-900 mb-2 inline-flex items-center justify-center gap-3">
+            Welkom!
+            <Hand size={30} strokeWidth={2.5} className="text-[var(--helix-purple)]" aria-hidden="true" />
+          </h2>
           <p className="text-slate-600">Voer je volledige naam in om te beginnen</p>
         </div>
 

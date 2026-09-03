@@ -4200,7 +4200,7 @@ function GameBlock({ block, gameRewardRules = {}, playCount = 0, lastResult = nu
         />
       ) : (
         <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-6 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-2xl">🎯</span>
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"><Target size={26} aria-hidden="true" /></span>
           <h3 className="mt-4 text-xl font-black text-[var(--helix-navy)]">Je hebt dit spel uitgespeeld</h3>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--helix-muted)]">
             Je hebt {block.content?.gameTitle || 'dit spel'} {access.limit} keer gespeeld. Je tokens zijn al toegekend.
