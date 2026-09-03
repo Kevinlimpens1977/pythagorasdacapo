@@ -5,7 +5,9 @@ import {
   Calculator,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
+  ChevronUp,
   ChevronRight,
   FileText,
   Gamepad2,
@@ -3212,11 +3214,48 @@ function AssessmentLearningBlock({
     berekenEigenNulmetingProfiel().catch(() => {});
   }, [nulmetingDeel, progressSummary.completed, studentId]);
 
+  // Eén vraag per scherm: zodra de leerling bezig is, klapt de inleiding in
+  // tot één regel. Zo staat de vraag bovenaan en is Verder zonder scrollen te
+  // bereiken. De leerling kan de inleiding altijd weer openklappen.
+  const introKanInklappen = presentationMode === 'een-voor-een' && items.length > 0;
+  const introStandaardIngeklapt = introKanInklappen && progressSummary.itemsAnswered > 0 && !progressSummary.completed;
+  const [introKeuze, setIntroKeuze] = useState(null);
+  const introIngeklapt = introKanInklappen && (introKeuze === null ? introStandaardIngeklapt : !introKeuze);
+  const panelKleur = isToets ? 'border-blue-100 bg-blue-50 text-blue-950' : 'border-emerald-100 bg-emerald-50 text-emerald-950';
+
   return (
     <div className="space-y-6">
-      <div className={`study-panel ${isToets ? 'border-blue-100 bg-blue-50 text-blue-950' : 'border-emerald-100 bg-emerald-50 text-emerald-950'}`}>
-        <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
-        <h3 className="mt-2 font-display text-2xl font-extrabold">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
+      {introIngeklapt ? (
+        <div className={`study-panel flex flex-wrap items-center justify-between gap-3 py-3 ${panelKleur}`}>
+          <div className="min-w-0">
+            <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
+            <h3 className="mt-1 truncate font-display text-xl font-extrabold">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIntroKeuze(true)}
+            className="btn-secondary inline-flex items-center gap-2 px-3 py-2 text-sm"
+          >
+            <ChevronDown size={16} aria-hidden="true" /> Inleiding tonen
+          </button>
+        </div>
+      ) : (
+      <div className={`study-panel ${panelKleur}`}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
+            <h3 className="mt-2 font-display text-2xl font-extrabold">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
+          </div>
+          {introKanInklappen && (
+            <button
+              type="button"
+              onClick={() => setIntroKeuze(false)}
+              className="btn-secondary inline-flex items-center gap-2 px-3 py-2 text-sm"
+            >
+              <ChevronUp size={16} aria-hidden="true" /> Inleiding inklappen
+            </button>
+          )}
+        </div>
         {bodyHtml && (
           <div className="lesson-prose mt-4" dangerouslySetInnerHTML={htmlValue(bodyHtml)} />
         )}
@@ -3238,6 +3277,7 @@ function AssessmentLearningBlock({
           </p>
         )}
       </div>
+      )}
 
       {items.length > 0 && presentationMode === 'een-voor-een' ? (
         <AssessmentStepper
