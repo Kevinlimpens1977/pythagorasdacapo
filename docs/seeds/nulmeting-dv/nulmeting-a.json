@@ -88,7 +88,7 @@
     {
       "nr": 4,
       "type": "meerkeuze",
-      "vraag": "Welke toepassing gebruikt waarschijnlijk AI?",
+      "vraag": "Welk apparaat of welke app werkt met kunstmatige intelligentie (AI)?",
       "opties": [
         {
           "tekst": "Een app die gezichten op foto’s herkent",
