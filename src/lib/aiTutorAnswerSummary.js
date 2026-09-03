@@ -54,6 +54,45 @@ const summarizeMultipleChoiceAnswer = ({ vraag = {}, previewAnswers = {} }) => {
   ].join('\n');
 };
 
+/**
+ * Samenvatting van een fout beantwoorde toets- of quizvraag voor Digidocent in
+ * de herkansingsronde. De leerlingbrowser kent de sleutel niet, dus hier staat
+ * alleen wat de leerling koos en dat dat onjuist was; de server voegt de
+ * foutdiagnose toe uit de vraagdefinitie. De vaste regels ("Gekozen optie(s):",
+ * "Antwoordstatus:") zijn dezelfde die de server herkent als echte poging.
+ */
+export const buildAssessmentItemTutorSummary = ({ item = {}, answer = null } = {}) => {
+  const type = item.type || item.vraagtype || 'open';
+  const prompt = stripHtml(item.prompt || '');
+  const waarde = answer && typeof answer === 'object' && !Array.isArray(answer) && 'value' in answer ? answer.value : answer;
+
+  if (type === 'meerkeuze' || type === 'waar-niet-waar') {
+    const options = Array.isArray(item.answer?.options) && item.answer.options.length ? item.answer.options : (item.options || []);
+    const gekozen = (Array.isArray(waarde) ? waarde : [waarde]).filter(Boolean);
+    const gekozenTekst = options
+      .map((option, index) => ({ label: optionLabelForIndex(index), text: String(option.text || '').trim(), id: option.id }))
+      .filter((option) => gekozen.includes(option.id))
+      .map((option) => `${option.label}: ${option.text} (onjuist)`)
+      .join(', ');
+
+    return [
+      prompt ? `Vraag: ${prompt}` : '',
+      'Vraagtype: meerkeuze',
+      gekozenTekst ? `Gekozen optie(s): ${gekozenTekst}` : 'Leerling heeft nog geen optie gekozen.',
+      'Antwoordstatus: gekozen antwoord is onjuist (eerste ronde), de leerling herkanst nu.',
+      'Docentinstructie: verklap het juiste antwoord niet; help de leerling zien waarom de gekozen optie niet klopt.'
+    ].filter(Boolean).join('\n');
+  }
+
+  return [
+    prompt ? `Vraag: ${prompt}` : '',
+    `Vraagtype: ${type}`,
+    `Leerlingpoging: ${JSON.stringify(waarde ?? '')}`,
+    'Antwoordstatus: gekozen antwoord is onjuist (eerste ronde), de leerling herkanst nu.',
+    'Docentinstructie: verklap het juiste antwoord niet; stel een denkstapvraag over de gemaakte fout.'
+  ].filter(Boolean).join('\n');
+};
+
 export const buildAiTutorStudentAnswerSummary = ({
   vraag = {},
   preview = {},

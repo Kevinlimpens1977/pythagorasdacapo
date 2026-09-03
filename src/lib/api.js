@@ -10,10 +10,22 @@ if (window.location.hostname === 'localhost') {
   // connectFunctionsEmulator(functions, 'localhost', 5001);
 }
 
-export const askAiTutorCall = async (message, contextHeading, previousMessages, hints = [], studentAnswer = '', blockId = '', lessonContext = '') => {
+export const askAiTutorCall = async (message, contextHeading, previousMessages, hints = [], studentAnswer = '', blockId = '', lessonContext = '', retryItem = null) => {
   try {
     const askTutor = httpsCallable(functions, 'askAiTutor');
-    const result = await askTutor({ message, contextHeading, previousMessages, hints, studentAnswer, blockId, lessonContext });
+    // Herkansing van een toets- of quizvraag: met itemId en het gegeven
+    // antwoord zoekt de server zelf de foutdiagnose op in de vraagdefinitie.
+    const itemId = String(retryItem?.itemId || '').trim();
+    const result = await askTutor({
+      message,
+      contextHeading,
+      previousMessages,
+      hints,
+      studentAnswer,
+      blockId,
+      lessonContext,
+      ...(itemId ? { itemId, itemAnswer: retryItem?.itemAnswer ?? null } : {})
+    });
     return result.data;
   } catch (error) {
     console.error("Digidocent API Error:", error);

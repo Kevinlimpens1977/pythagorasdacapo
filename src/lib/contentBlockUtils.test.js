@@ -277,6 +277,10 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
       enabled: true,
       totalTokens: 15
     },
+    retryPolicy: {
+      enabled: true,
+      aiHelp: true
+    },
     sourceBasis: [],
     sourceNotes: '',
     crops: []
@@ -294,6 +298,10 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
     tokenConfig: {
       enabled: true,
       totalTokens: 25
+    },
+    retryPolicy: {
+      enabled: true,
+      aiHelp: true
     },
     sourceBasis: [],
     sourceNotes: '',

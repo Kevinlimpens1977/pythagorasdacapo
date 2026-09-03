@@ -1966,6 +1966,26 @@ const LessonBlockStudio = ({
                   <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Handig als een leerling opnieuw mag proberen.</span>
                 </span>
               </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-3">
+                <input
+                  type="checkbox"
+                  checked={content.retryPolicy?.enabled !== false}
+                  onChange={(event) => updateContent({
+                    retryPolicy: {
+                      ...(content.retryPolicy || {}),
+                      enabled: event.target.checked,
+                      aiHelp: content.retryPolicy?.aiHelp !== false
+                    }
+                  })}
+                  className="mt-1 h-4 w-4 accent-[var(--helix-purple)]"
+                />
+                <span>
+                  <span className="block text-sm font-black text-slate-900">Herkansing met Digidocent</span>
+                  <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+                    Na de eerste ronde krijgt de leerling de foute vragen nog een keer, met hints op de fout. De eerste score en de score na herkansing worden apart bewaard; tokens alleen in de eerste ronde.
+                  </span>
+                </span>
+              </label>
               {publicationOverridePanel}
               <BlockSettingsPanel settings={settings} onChange={setSettings} />
             </div>

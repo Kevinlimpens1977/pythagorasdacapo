@@ -96,6 +96,18 @@ function VragenPerItem({ items = [] }) {
               </div>
               {gemaaktItem && (
                 <div className="mt-1 flex flex-wrap gap-3 pl-7 font-semibold text-[var(--helix-muted)]">
+                  {item.record?.herkansing && (
+                    <span className="text-[var(--helix-navy)]">
+                      1e ronde: {item.record.ronde1?.isCorrect ? 'goed' : 'fout'}
+                      {' - herkansing: '}
+                      {item.record.herkansing.completed
+                        ? (item.record.herkansing.isCorrect ? 'goed' : 'fout')
+                        : 'bezig'}
+                      {` (${item.record.herkansing.attempts || 0} ${item.record.herkansing.attempts === 1 ? 'poging' : 'pogingen'}`}
+                      {item.record.herkansing.aiHelpCount > 0 ? `, ${item.record.herkansing.aiHelpCount}x Digidocent` : ''}
+                      {')'}
+                    </span>
+                  )}
                   <span>Pogingen: {item.pogingen}</span>
                   {item.aiHulp > 0 && <span>Digidocent-hulp: {item.aiHulp}</span>}
                   {item.maxScore > 0 && <span>Score: {item.score}/{item.maxScore}</span>}
@@ -203,8 +215,20 @@ export default function LeerlingStappen({
               <div className="mt-1.5 flex flex-wrap gap-3 text-[11px] font-semibold text-[var(--helix-muted)]">
                 <span>Pogingen: {stap.pogingen}</span>
                 <span>Digidocent-hulp: {stap.aiHulp}</span>
-                {Number(record.itemCount || 0) > 0 && (
+                {Number(record.itemCount || 0) > 0 && !record.herkansing && (
                   <span>Vragen: {record.itemsCorrect || 0}/{record.itemCount} goed</span>
+                )}
+                {Number(record.itemCount || 0) > 0 && record.herkansing && (
+                  <>
+                    <span>Eerste ronde: {record.eersteScore?.itemsCorrect ?? '?'}/{record.itemCount} goed</span>
+                    <span className="text-[var(--helix-navy)]">
+                      Na herkansing: {record.itemsCorrect || 0}/{record.itemCount} goed
+                      {record.herkansing.itemsHerkanst ? ` (${record.herkansing.itemsGoed || 0} van ${record.herkansing.itemsHerkanst} herkanst goed` : ''}
+                      {record.herkansing.itemsHerkanst && record.herkansing.aiHelpCount > 0 ? `, ${record.herkansing.aiHelpCount}x Digidocent` : ''}
+                      {record.herkansing.itemsHerkanst ? ')' : ''}
+                      {record.herkansing.completed === false ? ' - loopt nog' : ''}
+                    </span>
+                  </>
                 )}
                 {record.lastAnswer != null && (
                   <span className="max-w-full truncate">

@@ -183,6 +183,10 @@ const sanitizeContent = (block = {}) => {
       tokenConfig: {
         enabled: content.tokenConfig?.enabled !== false,
         totalTokens: Math.max(0, Math.round(Number(content.tokenConfig?.totalTokens || block.tokenTotal || 0)))
+      },
+      retryPolicy: {
+        enabled: content.retryPolicy?.enabled !== false,
+        aiHelp: content.retryPolicy?.aiHelp !== false
       }
     };
   }

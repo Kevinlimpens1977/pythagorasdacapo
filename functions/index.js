@@ -646,14 +646,126 @@ async function assertSignedInUserProfile({ auth, db }) {
   return { user: callerData, firstName: getFirstName(callerData) };
 }
 
-async function assertAiTutorBlockAllowed({ db, blockId }) {
+async function assertAiTutorBlockAllowed({ db, blockId, itemId = "" }) {
   const cleanBlockId = String(blockId || "").trim();
-  if (!cleanBlockId) return;
+  if (!cleanBlockId) return null;
 
   const block = await getRequiredDoc(db.doc(`contentBlocks/${cleanBlockId}`), "Lesblok");
-  if (block.data?.settings?.allowAiHelp !== true) {
+  const blockData = block.data || {};
+  const cleanItemId = String(itemId || "").trim();
+
+  // Herkansing van een toets- of quizvraag: Digidocent mag helpen zodra de
+  // herkansingsronde van het blok aanstaat, ook als de gewone Digidocent-hulp
+  // op het blok uit staat (die geldt voor de eerste ronde).
+  if (cleanItemId && (blockData.type === "quiz" || blockData.type === "toets")) {
+    const retryPolicy = blockData.content?.retryPolicy || {};
+    if (retryPolicy.enabled === false || retryPolicy.aiHelp === false) {
+      throw new HttpsError("permission-denied", "Digidocent staat uit bij de herkansing van dit lesblok.");
+    }
+    const items = Array.isArray(blockData.content?.items) ? blockData.content.items : [];
+    const item = items.find((entry) => String(entry?.id || "") === cleanItemId) || null;
+    if (!item) {
+      throw new HttpsError("invalid-argument", "Deze toetsvraag bestaat niet in dit lesblok.");
+    }
+    return { block: blockData, item };
+  }
+
+  if (blockData.settings?.allowAiHelp !== true) {
     throw new HttpsError("permission-denied", "Digidocent staat uit voor dit lesblok.");
   }
+  return { block: blockData, item: null };
+}
+
+/**
+ * Foutdiagnose voor de herkansing van een toets- of quizvraag, uit de
+ * VOLLEDIGE vraagdefinitie (met sleutel) die alleen hier op de server ligt.
+ * Levert de richting voor Digidocent ("de leerling koos X, daar zit de
+ * denkfout") en de teksten van de juiste opties, zodat het antwoord van het
+ * model daarop gefilterd kan worden.
+ */
+function buildAssessmentRetryDiagnosis({ item = null, itemAnswer = null } = {}) {
+  if (!item) return null;
+  const type = String(item.type || item.vraagtype || item.answer?.type || "").trim();
+  const answer = item.answer || {};
+  const clean = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  const chosen = Array.isArray(itemAnswer) ? itemAnswer : (itemAnswer === null || itemAnswer === undefined ? [] : [itemAnswer]);
+  const lines = [];
+  const correctTexts = [];
+
+  if (type === "meerkeuze" || type === "waar-niet-waar") {
+    const options = Array.isArray(answer.options) && answer.options.length ? answer.options : (item.options || []);
+    options.forEach((option) => {
+      if (option?.correct === true && clean(option.text)) correctTexts.push(clean(option.text));
+    });
+    const gekozen = options.filter((option) => chosen.map(String).includes(String(option?.id || "")));
+    gekozen.forEach((option) => {
+      const status = option.correct === true ? "die optie was op zich juist" : "die optie is onjuist";
+      const note = clean(option.explanation || option.misconception);
+      lines.push(`De leerling koos "${clean(option.text)}" (${status}).${note ? ` Docentnotitie bij die keuze: ${note}` : ""}`);
+    });
+    const gemist = options.filter((option) => option?.correct === true && !chosen.map(String).includes(String(option?.id || "")));
+    if (gemist.length && gekozen.length && gekozen.every((option) => option.correct === true)) {
+      lines.push("De gekozen optie(s) klopten, maar er ontbraken nog juiste opties. Laat de leerling de andere opties opnieuw langslopen.");
+    }
+  } else if (type === "koppelen") {
+    const pairs = Array.isArray(answer.pairs) ? answer.pairs : [];
+    const submitted = itemAnswer && typeof itemAnswer === "object" && !Array.isArray(itemAnswer) ? itemAnswer : {};
+    pairs.forEach((pair) => {
+      const keuze = submitted[pair.id];
+      const gekozenTekst = clean(typeof keuze === "object" ? keuze?.text : keuze);
+      if (gekozenTekst && gekozenTekst !== clean(pair.right)) {
+        lines.push(`Bij "${clean(pair.left)}" koos de leerling "${gekozenTekst}"; dat hoort er niet bij.`);
+      }
+      if (clean(pair.right)) correctTexts.push(clean(pair.right));
+    });
+  } else if (type === "volgorde") {
+    lines.push("De leerling zette de stappen in een verkeerde volgorde. Laat de leerling per stap benoemen wat er eerst moet gebeuren en waarom.");
+  } else if (type === "numeriek") {
+    lines.push(`De leerling gaf ${clean(chosen[0])} als getal; dat wijkt af van het verwachte antwoord${answer.unit ? ` (eenheid: ${clean(answer.unit)})` : ""}. Laat de leerling de berekening stap voor stap uitspreken.`);
+    if (answer.expected !== undefined) correctTexts.push(clean(answer.expected));
+  } else if (type === "invullen") {
+    lines.push("Een of meer invulwoorden klopten niet. Laat de leerling de zin hardop lezen en per gat bedenken welk begrip uit de les erin past.");
+    (Array.isArray(answer.gaps) ? answer.gaps : []).forEach((gap) => {
+      if (clean(gap.answer)) correctTexts.push(clean(gap.answer));
+    });
+  }
+
+  const feedback = clean(item.feedback);
+  if (feedback) {
+    lines.push(`Docentuitleg bij deze vraag (kan het antwoord bevatten, gebruik alleen de redenering): ${feedback}`);
+  }
+
+  if (!lines.length) return null;
+
+  return {
+    promptText: [
+      "Dit is een herkansing: de leerling had deze vraag in de eerste ronde fout.",
+      ...lines,
+      "Gebruik deze diagnose om precies één gerichte denkvraag of hint te geven over de gemaakte fout.",
+      "Noem NOOIT de tekst van de juiste optie of het juiste antwoord, ook niet omschreven; de leerling moet het zelf vinden."
+    ].join("\n"),
+    correctTexts: [...new Set(correctTexts.filter((text) => text.length >= 3))],
+  };
+}
+
+/**
+ * Laatste slot op de deur: als het model toch de tekst van een juiste optie
+ * noemt, vervangt die zin een neutrale denkvraag. Korte woorden (< 3 tekens)
+ * en getallen die ook in de vraag staan worden bewust niet gefilterd.
+ */
+function stripAssessmentAnswerLeaks(content = "", correctTexts = []) {
+  const text = String(content || "");
+  if (!text || !correctTexts.length) return text;
+  const sentences = text.split(/(?<=[.!?])\s+/u);
+  let leaked = false;
+  const kept = sentences.filter((sentence) => {
+    const hit = correctTexts.some((correct) => correct && sentence.toLowerCase().includes(correct.toLowerCase()));
+    if (hit) leaked = true;
+    return !hit;
+  });
+  if (!leaked) return text;
+  const rest = kept.join(" ").trim();
+  return `${rest ? `${rest} ` : ""}Kijk nog eens goed naar wat de vraag precies vraagt: welke keuze past daar het beste bij, en waarom?`.trim();
 }
 
 function buildAiTutorRuleSections(rules = {}) {
@@ -683,10 +795,11 @@ function buildAiTutorSystemPrompt({
   studentAnswer = "",
   lessonContext = "",
   rules = {},
+  retryDiagnosis = null,
 } = {}) {
   const answerText = String(studentAnswer || "").trim();
   const lessonContextText = String(lessonContext || "").trim().slice(0, 6000);
-  const diagnosis = buildAiTutorMistakeDiagnosis({ studentAnswer: answerText });
+  const diagnosis = retryDiagnosis || buildAiTutorMistakeDiagnosis({ studentAnswer: answerText });
   return `${buildAiTutorRuleSections(rules)}
 
 ## Actuele lescontext
@@ -1197,7 +1310,7 @@ async function askAiTutorCore({
   }
 
   const { firstName } = await assertAiTutorAllowed({ auth, db });
-  await assertAiTutorBlockAllowed({ db, blockId: data?.blockId });
+  const blockAccess = await assertAiTutorBlockAllowed({ db, blockId: data?.blockId, itemId: data?.itemId });
   const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
   const contextHeading = String(data?.contextHeading || "deze vraag").trim();
   const previousMessages = Array.isArray(data?.previousMessages) ? data.previousMessages : [];
@@ -1205,8 +1318,13 @@ async function askAiTutorCore({
   const studentAnswer = data?.studentAnswer || "";
   const lessonContext = data?.lessonContext || "";
   const aiTutorRules = await getAiTutorRulesRuntime(db);
+  // Herkansing van een toetsvraag: de foutdiagnose komt uit de vraagdefinitie
+  // met sleutel, die alleen hier ligt.
+  const retryDiagnosis = blockAccess?.item
+    ? buildAssessmentRetryDiagnosis({ item: blockAccess.item, itemAnswer: data?.itemAnswer ?? null })
+    : null;
 
-  if (!hasMeaningfulAiTutorStudentAttempt(studentAnswer)) {
+  if (!retryDiagnosis && !hasMeaningfulAiTutorStudentAttempt(studentAnswer)) {
     return {
       success: true,
       content: buildAiTutorTryFirstHint({ firstName }),
@@ -1214,7 +1332,14 @@ async function askAiTutorCore({
     };
   }
 
-  const systemPrompt = buildAiTutorSystemPrompt({ contextHeading, firstName, studentAnswer, lessonContext, rules: aiTutorRules });
+  const systemPrompt = buildAiTutorSystemPrompt({
+    contextHeading,
+    firstName,
+    studentAnswer,
+    lessonContext,
+    rules: aiTutorRules,
+    retryDiagnosis,
+  });
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -1249,9 +1374,10 @@ async function askAiTutorCore({
   }
 
   const responseData = await response.json();
+  const normalized = normalizeAiTutorContent(responseData.choices?.[0]?.message?.content, { firstName, studentAnswer, lessonContext });
   return {
     success: true,
-    content: normalizeAiTutorContent(responseData.choices?.[0]?.message?.content, { firstName, studentAnswer, lessonContext }),
+    content: retryDiagnosis ? stripAssessmentAnswerLeaks(normalized, retryDiagnosis.correctTexts) : normalized,
     helpCounted: true,
   };
 }
@@ -3044,6 +3170,8 @@ exports.__test = {
   uploadTokenShopItemImageCore,
   buildAiTutorSystemPrompt,
   buildAiTutorMistakeDiagnosis,
+  buildAssessmentRetryDiagnosis,
+  stripAssessmentAnswerLeaks,
   normalizeReadableMathText,
   normalizeAiTutorContent,
   buildOpenAnswerAssessmentMessages,

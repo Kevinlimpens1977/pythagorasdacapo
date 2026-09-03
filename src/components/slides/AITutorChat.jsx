@@ -11,6 +11,9 @@ export default function AITutorChat({
   studentAnswer = '',
   blockId = '',
   lessonContext = '',
+  // Alleen bij de herkansing van een toets- of quizvraag: de server haalt er
+  // de foutdiagnose bij (zie askAiTutorCall).
+  retryItem = null,
   messages,
   onMessagesChange,
   onUserMessageSent,
@@ -64,7 +67,7 @@ export default function AITutorChat({
 
     try {
       const previousMessages = buildAiTutorPreviousMessages(currentMessages);
-      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints, studentAnswer, blockId, lessonContext);
+      const response = await askAiTutorCall(userMsg.content, contextHeading, previousMessages, hints, studentAnswer, blockId, lessonContext, retryItem);
 
       if (response?.success) {
         commitMessages([...currentMessages, { role: 'assistant', content: response.content }]);

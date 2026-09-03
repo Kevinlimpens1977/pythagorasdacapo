@@ -139,6 +139,11 @@ export const buildContentBlockVoortgangUpdate = ({
     itemCount: data.itemCount ?? existingData.itemCount ?? 0,
     itemsCompleted: data.itemsCompleted ?? existingData.itemsCompleted ?? 0,
     itemsCorrect: data.itemsCorrect ?? existingData.itemsCorrect ?? 0,
+    // Eerste ronde en herkansing van een toets of quiz (assessmentRetryRound.js).
+    // De eerste score wordt eenmalig vastgezet; de bovenste velden volgen de
+    // laatste stand, dus na een herkansing de score na hulp.
+    eersteScore: existingData.eersteScore ?? data.eersteScore ?? null,
+    herkansing: data.herkansing ?? existingData.herkansing ?? null,
     // Pogingen worden geteld EN gelogd: `attempts` is het getal, dit is het
     // verhaal erachter. Alleen aanvullen bij een echte nakijkbeurt.
     attemptHistory: appendAttemptHistory(existingData.attemptHistory, data.attemptEntry || null),
@@ -214,8 +219,10 @@ export const buildAssessmentItemVoortgangUpdate = ({
     // heeft de toetsinhoud niet bij de hand.
     modelAnswer: data.modelAnswer ?? existingData.modelAnswer ?? '',
     rubric: data.rubric ?? existingData.rubric ?? '',
-    completed: data.completed || false,
-    isCorrect: data.isCorrect || false,
+    // Een lopende herkansing stuurt geen completed/isCorrect mee: dan blijft
+    // de stand van ronde 1 staan tot de herkansing van deze vraag klaar is.
+    completed: data.completed ?? existingData.completed ?? false,
+    isCorrect: data.isCorrect ?? existingData.isCorrect ?? false,
     attempts: data.attempts ?? existingData.attempts ?? 0,
     maxAttempts: data.maxAttempts ?? existingData.maxAttempts ?? null,
     attemptStatus: data.attemptStatus ?? existingData.attemptStatus ?? (data.completed ? 'completed' : 'open'),
@@ -229,6 +236,9 @@ export const buildAssessmentItemVoortgangUpdate = ({
     maxScore: partScore.maxScore,
     attemptHistory: appendAttemptHistory(existingData.attemptHistory, data.attemptEntry || null),
     tokens: normalizeCount(data.tokens ?? existingData.tokens, 0),
+    // Herkansingsronde (assessmentRetryRound.js): de stand van de tweede ronde
+    // op deze vraag. Null zolang de leerling de vraag niet herkanst.
+    herkansing: normalizeHerkansing(data.herkansing ?? existingData.herkansing),
     ...resultMetadata,
     updatedAt: timestamp,
     firstAttemptAt: existingData.firstAttemptAt || timestamp
@@ -238,7 +248,44 @@ export const buildAssessmentItemVoortgangUpdate = ({
     updates.completedAt = timestamp;
   }
 
+  // De eerste ronde wordt eenmalig bevroren zodra de vraag voor het eerst af
+  // is: daarna kan een herkansing de bovenste velden bijwerken (score na hulp)
+  // zonder dat de docent de eerste score kwijtraakt.
+  if (existingData.ronde1) {
+    updates.ronde1 = existingData.ronde1;
+  } else if (data.ronde1 && typeof data.ronde1 === 'object') {
+    // Een record van vóór de herkansingsronde: de eerste stand komt dan mee
+    // met de eerste herkansingsbeurt.
+    updates.ronde1 = data.ronde1;
+  } else if (updates.completed && !updates.herkansing) {
+    updates.ronde1 = {
+      isCorrect: updates.isCorrect === true,
+      score: normalizeCount(updates.score, 0),
+      maxScore: normalizeCount(updates.maxScore, 0),
+      attempts: normalizeCount(updates.attempts, 0),
+      aiHelpCount: normalizeCount(updates.aiHelpCount, 0),
+      resultTier: updates.resultTier || '',
+      attemptStatus: updates.attemptStatus || ''
+    };
+  }
+
   return updates;
+};
+
+const normalizeHerkansing = (value) => {
+  if (!value || typeof value !== 'object') return null;
+  return {
+    attempts: normalizeCount(value.attempts, 0),
+    maxAttempts: value.maxAttempts ?? null,
+    aiHelpCount: normalizeCount(value.aiHelpCount, 0),
+    completed: value.completed === true,
+    isCorrect: value.isCorrect === true,
+    score: normalizeCount(value.score, 0),
+    maxScore: normalizeCount(value.maxScore, 0),
+    lastAnswer: value.lastAnswer ?? null,
+    startedAt: value.startedAt || null,
+    completedAt: value.completedAt || null
+  };
 };
 
 /**
@@ -267,6 +314,27 @@ export const summarizeAssessmentItemProgress = ({ items = [], records = {} } = {
   const completed = itemList.length > 0 && completedItems.length === itemList.length;
   const isCorrect = completed && correctItems.length === itemList.length;
 
+  // Eerste ronde: pas een score als elke vraag zijn bevroren eerste stand heeft.
+  const ronde1Records = itemList.map((item) => recordFor(item)?.ronde1 || null);
+  const eersteScore = itemList.length > 0 && ronde1Records.every(Boolean)
+    ? {
+        itemCount: itemList.length,
+        itemsCorrect: ronde1Records.filter((ronde) => ronde.isCorrect === true).length,
+        score: ronde1Records.reduce((sum, ronde) => sum + normalizeCount(ronde.score, 0), 0),
+        maxScore: ronde1Records.reduce((sum, ronde) => sum + (normalizeCount(ronde.maxScore, 0) || 1), 0)
+      }
+    : null;
+  const herkansingRecords = itemList.map((item) => recordFor(item)?.herkansing || null).filter(Boolean);
+  const herkansing = herkansingRecords.length > 0
+    ? {
+        itemsHerkanst: herkansingRecords.length,
+        itemsAfgerond: herkansingRecords.filter((ronde) => ronde.completed === true).length,
+        itemsGoed: herkansingRecords.filter((ronde) => ronde.isCorrect === true).length,
+        aiHelpCount: herkansingRecords.reduce((sum, ronde) => sum + normalizeCount(ronde.aiHelpCount, 0), 0),
+        completed: herkansingRecords.every((ronde) => ronde.completed === true)
+      }
+    : null;
+
   return {
     itemCount: itemList.length,
     itemsAnswered: answered.length,
@@ -277,6 +345,8 @@ export const summarizeAssessmentItemProgress = ({ items = [], records = {} } = {
     score,
     maxScore,
     aiHelpCount,
+    eersteScore,
+    herkansing,
     completed,
     isCorrect,
     resultTier: !completed

@@ -115,6 +115,13 @@ export const getDefaultContentForBlockType = (type) => {
         enabled: true,
         totalTokens: type === 'quiz' ? 15 : 25
       },
+      // Herkansingsronde: na de eerste ronde krijgt de leerling de fout
+      // beantwoorde vragen nog een keer, met Digidocent als hulp. De eerste
+      // score blijft bewaard naast de score na hulp.
+      retryPolicy: {
+        enabled: true,
+        aiHelp: true
+      },
       sourceBasis: [],
       sourceNotes: '',
       crops: []

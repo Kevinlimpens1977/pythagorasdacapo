@@ -1625,3 +1625,89 @@ test("assessOpenAnswer hides raw JSON parser errors from learners", async () => 
   assert.equal(result.error, "Digidocent kon je antwoord niet beoordelen. Probeer het nog eens.");
   assert.doesNotMatch(result.error, /json/i);
 });
+
+test("askAiTutor helpt bij de herkansing van een quizvraag ook als de gewone Digidocent-hulp op het blok uit staat", async () => {
+  const calls = [];
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/quiz-1": {
+      type: "quiz",
+      settings: { allowAiHelp: false },
+      content: {
+        retryPolicy: { enabled: true, aiHelp: true },
+        items: [{
+          id: "nw-06",
+          type: "meerkeuze",
+          prompt: "Schimmel op brood. Welk vak?",
+          feedback: "De schimmel is een levend organisme, dus biologie.",
+          answer: { type: "meerkeuze", options: [
+            { id: "nw-06-biologie", text: "Biologie", correct: true, explanation: "" },
+            { id: "nw-06-scheikunde", text: "Scheikunde", correct: false, explanation: "Niet scheikunde: er ontstaat geen nieuwe stof door een reactie." },
+          ] },
+        }],
+      },
+    },
+    "privateConfig/openrouter": { enabled: true, apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz", model: "openai/gpt-4.1-mini" },
+    "apps/helix/settings/aiTutorRules": { adminRules: "", masterRules: "Je bent Digidocent.", vmboRules: "" },
+  });
+
+  const result = await __test.askAiTutorCore({
+    auth: { uid: "student-1" },
+    data: {
+      message: "Waarom is het fout?",
+      contextHeading: "Schimmel op brood",
+      blockId: "quiz-1",
+      itemId: "nw-06",
+      itemAnswer: "nw-06-scheikunde",
+      previousMessages: [],
+      studentAnswer: "Gekozen optie(s): b: Scheikunde (onjuist). Antwoordstatus: gekozen antwoord is onjuist (eerste ronde), de leerling herkanst nu.",
+    },
+    db,
+    openrouterApiKeyProvider: () => "",
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options });
+      return { ok: true, json: async () => ({ choices: [{ message: { content: "Het juiste antwoord is Biologie. Denk aan wat er groeit op het brood: leeft dat?" } }] }) };
+    },
+  });
+
+  const body = JSON.parse(calls[0].options.body);
+  assert.equal(result.success, true);
+  assert.match(body.messages[0].content, /herkansing/iu);
+  assert.match(body.messages[0].content, /koos "Scheikunde"/u);
+  assert.match(body.messages[0].content, /geen nieuwe stof/u);
+  // De juiste optie lekte in het modelantwoord: die zin wordt weggefilterd.
+  assert.doesNotMatch(result.content, /Biologie/u);
+  assert.match(result.content, /leeft dat/u);
+});
+
+test("askAiTutor weigert de herkansingshulp als de herkansing op het blok uit staat", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", firstName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { settings: { aiEnabled: true } },
+    "contentBlocks/quiz-1": { type: "quiz", settings: { allowAiHelp: false }, content: { retryPolicy: { enabled: false }, items: [{ id: "v1", type: "meerkeuze", answer: { options: [] } }] } },
+    "privateConfig/openrouter": { enabled: true, apiKey: "sk-or-v1-abcdefghijklmnopqrstuvwxyz", model: "m" },
+    "apps/helix/settings/aiTutorRules": {},
+  });
+  await assert.rejects(
+    __test.askAiTutorCore({
+      auth: { uid: "student-1" },
+      data: { message: "Help", blockId: "quiz-1", itemId: "v1", itemAnswer: "x", previousMessages: [] },
+      db,
+      openrouterApiKeyProvider: () => "",
+      fetchImpl: async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: "x" } }] }) }),
+    }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+});
+
+test("buildAssessmentRetryDiagnosis en stripAssessmentAnswerLeaks dekken koppelen en de lekfilter", () => {
+  const diagnosis = __test.buildAssessmentRetryDiagnosis({
+    item: { type: "koppelen", answer: { type: "koppelen", pairs: [{ id: "p1", left: "Taakbalk", right: "De balk onderaan" }, { id: "p2", left: "Start", right: "Het menu" }] } },
+    itemAnswer: { p1: { id: "match-2", text: "Het menu" }, p2: { id: "match-1", text: "De balk onderaan" } },
+  });
+  assert.match(diagnosis.promptText, /Bij "Taakbalk" koos de leerling "Het menu"/u);
+  assert.deepEqual(diagnosis.correctTexts, ["De balk onderaan", "Het menu"]);
+  assert.equal(__test.stripAssessmentAnswerLeaks("Denk na. Het is de balk onderaan!", diagnosis.correctTexts), "Denk na. Kijk nog eens goed naar wat de vraag precies vraagt: welke keuze past daar het beste bij, en waarom?");
+  assert.equal(__test.stripAssessmentAnswerLeaks("Wat zie je onderaan je scherm?", diagnosis.correctTexts), "Wat zie je onderaan je scherm?");
+});

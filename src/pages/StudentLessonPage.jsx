@@ -68,7 +68,14 @@ import {
   shouldSaveBlockProgressBeforeNavigation
 } from '../lib/studentLessonProgress';
 import { buildQuestionPreviewModel, getPreviewAnswerStatus } from '../lib/questionPreviewUtils';
-import { buildAiTutorStudentAnswerSummary } from '../lib/aiTutorAnswerSummary';
+import { buildAiTutorStudentAnswerSummary, buildAssessmentItemTutorSummary } from '../lib/aiTutorAnswerSummary';
+import {
+  buildRetryHelpPayload,
+  buildRetryItemProgressPayload,
+  buildRetryRoundPlan,
+  describeRetryRound,
+  resolveRetryPolicy
+} from '../lib/assessmentRetryRound';
 import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
 import { shouldCollapseAiTutorOnMouseLeave, shouldExpandAiTutorOnHover } from '../lib/aiTutorPanelState';
 import {
@@ -558,7 +565,9 @@ export default function StudentLessonPage() {
 
     // Een upload bij een inleveropdracht verandert alleen het bestand, niet de
     // leeruitkomst: geen tokens en geen streak, alleen de verversing onderaan.
-    const tokenPayload = extra.inleveringOnly === true
+    // Ook na een herkansing komen er geen tokens meer bij: de eerste ronde
+    // is het beloningsmoment (assessmentRetryRound.js).
+    const tokenPayload = extra.inleveringOnly === true || extra.skipTokenAward === true
       ? null
       : buildTokenAwardPayload({
           block,
@@ -673,6 +682,11 @@ export default function StudentLessonPage() {
       itemCount: summary.itemCount,
       itemsCompleted: summary.itemsCompleted,
       itemsCorrect: summary.itemsCorrect,
+      // Eerste score en herkansing naast elkaar voor de docent; de bovenste
+      // velden dragen na een herkansing de score na hulp.
+      eersteScore: summary.eersteScore,
+      herkansing: summary.herkansing,
+      skipTokenAward: Boolean(summary.herkansing),
       teacherSignal: summary.itemsPendingReview > 0 ? 'ai_assessment_failed' : '',
       vraagType: block.content?.assessmentType || block.type || ''
     });
@@ -1237,6 +1251,9 @@ function LessonBlockContent({
             bodyHtml={bodyHtml}
             itemRecords={assessmentItemRecords}
             studentId={studentId}
+            studentName={studentName}
+            paragraaf={paragraaf}
+            hoofdstuk={hoofdstuk}
             onSaveItemProgress={onSaveAssessmentItemProgress}
           />
         ) : block.type === 'question' && !block.linkedVraagId && hasExerciseFields(block) ? (
@@ -3073,7 +3090,16 @@ function AnswerExplanationNotes({ explanation = null, className = '' }) {
   );
 }
 
-function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, studentId = '', onSaveItemProgress = null }) {
+function AssessmentLearningBlock({
+  block,
+  bodyHtml,
+  itemRecords = null,
+  studentId = '',
+  studentName = '',
+  paragraaf = null,
+  hoofdstuk = null,
+  onSaveItemProgress = null
+}) {
   const content = block.content || {};
   const rawItems = Array.isArray(content.items) ? content.items : [];
   const items = normalizeAssessmentItems(rawItems).map((item, index) => {
@@ -3100,6 +3126,12 @@ function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, studentI
   // toe niet omdat de leerlingroute altijd de default van een gewone vraag pakte.
   const maxAttempts = resolveBlockMaxAttempts(block);
   const progressSummary = summarizeAssessmentItemProgress({ items, records: itemRecords || {} });
+  // Herkansingsronde: na de eerste ronde komen de foute vragen terug, met
+  // Digidocent als hulp op de gemaakte fout (assessmentRetryRound.js).
+  const retryPolicy = resolveRetryPolicy(block);
+  const retryPlan = buildRetryRoundPlan({ block, items, records: itemRecords || {} });
+  const retryText = describeRetryRound({ summary: progressSummary });
+  const retryItems = items.filter((item) => retryPlan.kandidaatIds.includes(item.id));
 
   return (
     <div className="space-y-6">
@@ -3119,6 +3151,11 @@ function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, studentI
           <p className="mt-2 text-sm font-bold">
             {progressSummary.itemsCompleted} van {progressSummary.itemCount} afgerond
             {progressSummary.maxScore > 0 ? ` - ${progressSummary.score} van ${progressSummary.maxScore} punten` : ''}
+          </p>
+        )}
+        {progressSummary.eersteScore && progressSummary.herkansing && (
+          <p className="mt-1 text-sm font-semibold">
+            Eerste ronde: {retryText.eersteTekst}. Na herkansing: {retryText.naHerkansingTekst}.
           </p>
         )}
       </div>
@@ -3160,6 +3197,59 @@ function AssessmentLearningBlock({ block, bodyHtml, itemRecords = null, studentI
           </p>
         </div>
       )}
+
+      {retryPlan.ronde1Klaar && retryPolicy.enabled && retryPlan.aantalKandidaten === 0 && progressSummary.itemsPendingReview === 0 && (
+        <div className="study-panel border-emerald-100 bg-emerald-50 text-emerald-950">
+          <p className="helix-eyebrow">Herkansing</p>
+          <p className="mt-2 text-sm font-bold">Alles goed in de eerste ronde. Er is niets te herkansen.</p>
+        </div>
+      )}
+
+      {retryPlan.beschikbaar && (
+        <div className="space-y-4" id={`herkansing-${block.id}`}>
+          <div className="study-panel border-amber-200 bg-amber-50 text-amber-950">
+            <p className="helix-eyebrow">Herkansing</p>
+            <h3 className="mt-2 font-display text-2xl font-extrabold">
+              {retryPlan.herkansingKlaar ? 'Herkansing afgerond' : 'Herkans je fouten'}
+            </h3>
+            <p className="mt-2 text-sm font-semibold leading-6">
+              Eerste ronde: {retryText.eersteTekst}. Je krijgt de {retryPlan.aantalKandidaten === 1 ? 'vraag die' : `${retryPlan.aantalKandidaten} vragen die`} fout {retryPlan.aantalKandidaten === 1 ? 'was' : 'waren'} nog een keer.
+              {retryPolicy.aiHelp ? ' Digidocent helpt je met hints bij je fout, zonder het antwoord te verklappen.' : ''}
+              {' '}Je score na de herkansing wordt apart bewaard; tokens verdien je alleen in de eerste ronde.
+            </p>
+            {retryPlan.aantalAfgerond > 0 && (
+              <p className="mt-2 text-sm font-bold">
+                {retryPlan.aantalGoedNaHerkansing} van {retryPlan.aantalAfgerond} herkanste {retryPlan.aantalAfgerond === 1 ? 'vraag' : 'vragen'} goed
+                {retryPlan.herkansingKlaar ? ` - totaal nu ${retryText.naHerkansingTekst}` : ''}
+              </p>
+            )}
+          </div>
+          <div className="space-y-3">
+            {retryItems.map((item) => (
+              <AssessmentItemLearningCard
+                key={`retry-${item.id}`}
+                block={block}
+                item={item}
+                index={items.findIndex((kandidaat) => kandidaat.id === item.id)}
+                isToets={isToets}
+                maxAttempts={maxAttempts}
+                progressRecord={itemRecords?.[item.id] || null}
+                optionShuffleSeed={buildOptionShuffleSeed({
+                  studentId,
+                  blockId: block.id || '',
+                  questionId: `${item.id}-herkansing`
+                })}
+                onSaveItemProgress={onSaveItemProgress}
+                retryMode
+                retryPolicy={retryPolicy}
+                paragraaf={paragraaf}
+                hoofdstuk={hoofdstuk}
+                studentName={studentName}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3184,29 +3274,55 @@ function AssessmentItemLearningCard({
   maxAttempts = MAX_CORE_QUESTION_ATTEMPTS,
   progressRecord = null,
   optionShuffleSeed = '',
-  onSaveItemProgress = null
+  onSaveItemProgress = null,
+  // Herkansingsronde: dezelfde kaart, maar met een schone start, eigen
+  // pogingenteller en Digidocent-hulp op de fout uit ronde 1.
+  retryMode = false,
+  retryPolicy = null,
+  paragraaf = null,
+  hoofdstuk = null,
+  studentName = ''
 }) {
-  const [answer, setAnswer] = useState(() =>
-    progressRecord?.lastAnswer?.value !== undefined
+  const retryRecord = retryMode ? progressRecord?.herkansing || null : null;
+  const [answer, setAnswer] = useState(() => {
+    if (retryMode) {
+      return retryRecord?.lastAnswer?.value !== undefined && retryRecord?.lastAnswer?.value !== null
+        ? retryRecord.lastAnswer.value
+        : buildInitialAssessmentAnswer(item);
+    }
+    return progressRecord?.lastAnswer?.value !== undefined
       ? progressRecord.lastAnswer.value
-      : buildInitialAssessmentAnswer(item)
-  );
-  const [attempts, setAttempts] = useState(progressRecord?.attempts || 0);
-  const [resultTier, setResultTier] = useState(progressRecord?.resultTier || '');
-  const [attemptStatus, setAttemptStatus] = useState(
-    progressRecord?.attemptStatus || (progressRecord?.completed ? 'completed' : 'open')
-  );
-  const [feedback, setFeedback] = useState(progressRecord?.lastAssessment?.feedback || '');
+      : buildInitialAssessmentAnswer(item);
+  });
+  const [attempts, setAttempts] = useState(retryMode ? retryRecord?.attempts || 0 : progressRecord?.attempts || 0);
+  const [resultTier, setResultTier] = useState(() => {
+    if (retryMode) {
+      if (!retryRecord?.completed) return '';
+      return retryRecord.isCorrect ? (retryRecord.aiHelpCount > 0 ? 'guided' : 'independent') : 'failed';
+    }
+    return progressRecord?.resultTier || '';
+  });
+  const [attemptStatus, setAttemptStatus] = useState(() => {
+    if (retryMode) return retryRecord?.completed ? (retryRecord.isCorrect ? 'completed' : 'locked') : 'open';
+    return progressRecord?.attemptStatus || (progressRecord?.completed ? 'completed' : 'open');
+  });
+  const [feedback, setFeedback] = useState(retryMode ? '' : progressRecord?.lastAssessment?.feedback || '');
   // Wat er bewaard is, is ook wat er getoond mag worden: selectAnswerExplanation
   // filtert de uitleg van het juiste antwoord er bij een openstaande vraag uit
   // voordat hij naar de voortgang gaat.
   const [answerExplanation, setAnswerExplanation] = useState(() =>
-    selectAnswerExplanation({
-      explanation: progressRecord?.lastAssessment?.explanation,
-      questionFinished: true
-    })
+    retryMode
+      ? emptyAnswerExplanation()
+      : selectAnswerExplanation({
+        explanation: progressRecord?.lastAssessment?.explanation,
+        questionFinished: true
+      })
   );
   const [saving, setSaving] = useState(false);
+  const [retryAiHelpCount, setRetryAiHelpCount] = useState(retryRecord?.aiHelpCount || 0);
+  const [showRetryTutor, setShowRetryTutor] = useState(false);
+  const [retryTutorMessages, setRetryTutorMessages] = useState([]);
+  const retryAiHelpAllowed = retryMode && retryPolicy?.aiHelp !== false;
   const closed = isClosedAssessmentItem(item);
   const answerKeyAvailable = hasAssessmentItemAnswerKey(item);
   // Alleen de weergavevolgorde. `item` zelf blijft ongeschud: die gaat naar de
@@ -3320,6 +3436,54 @@ function AssessmentItemLearningCard({
         }
       }
 
+      if (retryMode) {
+        // Ronde 2: eigen pogingen, eigen stand; de bovenste velden van het
+        // record volgen pas als deze herkansing klaar is.
+        const retryScore = buildPartScore({ parts, isCorrect, graded });
+        const { payload, outcome: retryOutcome } = buildRetryItemProgressPayload({
+          block,
+          record: progressRecord || {},
+          answer,
+          isCorrect,
+          graded,
+          aiHelpCount: retryAiHelpCount,
+          score: retryScore
+        });
+        const retryFeedback = !graded
+          ? (isOpenItem
+            ? 'Je antwoord is opgeslagen. Digidocent kon dit nu niet beoordelen, dus je docent kijkt mee.'
+            : buildClosedQuestionReviewMessage(reviewReason, serverError))
+          : isCorrect
+            ? (item.feedback || 'Goed gedaan, nu klopt het.')
+            : retryOutcome.completed
+              ? 'Ook na de herkansing nog niet goed. Je docent ziet dit terug en helpt je verder.'
+              : (assessment?.feedback || 'Nog niet goed. Vraag Digidocent om een hint en probeer het nog een keer.');
+        const retryExplanation = selectAnswerExplanation({
+          explanation: rawExplanation,
+          questionFinished: retryOutcome.completed
+        });
+
+        setAttempts(retryOutcome.attempts);
+        setResultTier(retryOutcome.completed ? (retryOutcome.isCorrect ? (retryAiHelpCount > 0 ? 'guided' : 'independent') : 'failed') : '');
+        setAttemptStatus(retryOutcome.attemptStatus);
+        setFeedback(retryFeedback);
+        setAnswerExplanation(retryExplanation);
+
+        await onSaveItemProgress?.(item.id, {
+          itemIndex: index,
+          ...payload,
+          lastAssessment: {
+            source,
+            status: !graded ? 'pending_teacher_review' : (isCorrect ? 'correct' : 'incorrect'),
+            reviewReason,
+            feedback: retryFeedback,
+            explanation: retryExplanation,
+            round: 2
+          }
+        });
+        return;
+      }
+
       const outcome = buildQuestionAttemptOutcome({
         currentAttempts: attempts,
         maxAttempts,
@@ -3399,13 +3563,35 @@ function AssessmentItemLearningCard({
     }
   };
 
+  const handleRetryHelp = async () => {
+    if (!retryMode || locked) return;
+    const nextCount = retryAiHelpCount + 1;
+    setRetryAiHelpCount(nextCount);
+    await onSaveItemProgress?.(item.id, {
+      itemIndex: index,
+      ...buildRetryHelpPayload({ record: progressRecord || {}, aiHelpCount: nextCount })
+    });
+  };
+  const retryTutorSummary = retryMode
+    ? buildAssessmentItemTutorSummary({ item, answer: progressRecord?.lastAnswer })
+    : '';
+  const retryLessonContext = retryMode
+    ? [
+      paragraaf?.title ? `Paragraaf: ${paragraaf.title}` : '',
+      hoofdstuk?.title ? `Hoofdstuk: ${hoofdstuk.title}` : '',
+      block?.title ? `Lesblok: ${block.title}` : '',
+      'Situatie: herkansingsronde van een quiz of toets. De leerling had deze vraag in de eerste ronde fout en mag hem nu opnieuw maken.'
+    ].filter(Boolean).join('\n')
+    : '';
+
   return (
-    <div className={`rounded-2xl border-2 bg-white p-4 ${hasResult ? `${tone.borderClass} ${tone.ringClass}` : 'border-[var(--helix-border)]'}`}>
+    <div className={`rounded-2xl border-2 bg-white p-4 ${hasResult ? `${tone.borderClass} ${tone.ringClass}` : retryMode ? 'border-amber-200' : 'border-[var(--helix-border)]'}`}>
       <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">
-        <span>Vraag {index + 1}</span>
+        <span>{retryMode ? 'Herkansing - vraag' : 'Vraag'} {index + 1}</span>
         <span>- {item.type}</span>
-        {Number(item.tokens) > 0 && <span>- {item.tokens} tokens</span>}
+        {!retryMode && Number(item.tokens) > 0 && <span>- {item.tokens} tokens</span>}
         {attempts > 0 && <span>- poging {attempts} van {maxAttempts}</span>}
+        {retryMode && retryAiHelpCount > 0 && <span>- {retryAiHelpCount}x Digidocent</span>}
       </div>
       <p className="mt-2 text-base font-bold leading-7 text-[var(--helix-navy)]">
         {item.prompt || 'Vraag wordt nog ingevuld.'}
@@ -3436,12 +3622,39 @@ function AssessmentItemLearningCard({
             {tone.label}
           </div>
         )}
+        {retryAiHelpAllowed && !locked && (
+          <button
+            type="button"
+            onClick={() => setShowRetryTutor((current) => !current)}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)] transition hover:bg-white"
+          >
+            <MessageCircle size={16} />
+            {showRetryTutor ? 'Sluit Digidocent' : 'Vraag Digidocent om een hint'}
+          </button>
+        )}
       </div>
 
       {(feedback || hasAnswerExplanation(answerExplanation)) && (
         <div className="mt-3 rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
           {feedback && <p>{feedback}</p>}
           <AnswerExplanationNotes explanation={answerExplanation} className={feedback ? '' : 'mt-0 border-t-0 pt-0'} />
+        </div>
+      )}
+
+      {retryAiHelpAllowed && showRetryTutor && !locked && (
+        <div className="mt-4">
+          <AITutorChat
+            contextHeading={stripHtmlText(item.prompt || '').slice(0, 120) || block?.title || 'deze vraag'}
+            initialMessage={`Hoi${studentName ? ` ${studentName}` : ''}, deze vraag had je in de eerste ronde fout. Ik geef het antwoord niet, maar help je te zien waar het misging. Wat dacht je toen je je antwoord koos?`}
+            studentAnswer={retryTutorSummary}
+            blockId={block?.id || ''}
+            lessonContext={retryLessonContext}
+            retryItem={{ itemId: item.id, itemAnswer: progressRecord?.lastAnswer?.value ?? null }}
+            messages={retryTutorMessages}
+            onMessagesChange={setRetryTutorMessages}
+            onUserMessageSent={handleRetryHelp}
+            onClose={() => setShowRetryTutor(false)}
+          />
         </div>
       )}
     </div>
