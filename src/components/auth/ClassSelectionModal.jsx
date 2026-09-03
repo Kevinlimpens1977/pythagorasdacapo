@@ -56,11 +56,14 @@ export default function ClassSelectionModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      {/* Vaste kop, scrollende lijst: met negen of meer klassen viel de lijst
+          anders van het scherm en kon een leerling zijn klas niet bereiken. */}
+      <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[calc(100dvh-2rem)] flex flex-col">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Welkom!</h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 mb-4">
           Selecteer je klas om aan de slag te gaan.
+          {klassen.length > 5 ? ' Scrol in de lijst om alle klassen te zien.' : ''}
         </p>
 
         {error && (
@@ -81,7 +84,7 @@ export default function ClassSelectionModal() {
             <p className="text-sm">Neem contact op met je docent.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 overflow-y-auto min-h-0 flex-1 pr-1 custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
             {klassen.map(klas => (
               <button
                 key={klas.id}

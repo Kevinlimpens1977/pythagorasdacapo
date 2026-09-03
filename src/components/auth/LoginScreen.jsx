@@ -63,7 +63,7 @@ export default function LoginScreen() {
     } catch (err) {
       console.error(err);
       if (err.code === 'auth/email-already-in-use') {
-        setError('Dit e-mailadres is al in gebruik.');
+        setError('Er bestaat al een account met dit e-mailadres. Log in met je wachtwoord, of gebruik "Wachtwoord vergeten?" om een nieuw wachtwoord in te stellen.');
       } else if (err.code === 'auth/weak-password') {
         setError('Kies een wachtwoord van minstens 6 tekens.');
       } else if (err.code === 'auth/invalid-email') {
