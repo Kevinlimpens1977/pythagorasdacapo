@@ -119,7 +119,7 @@
     {
       "nr": 5,
       "type": "meerkeuze",
-      "vraag": "Je moet de klas informeren over de sportdag. Welk digitaal product past het best?",
+      "vraag": "De docent wil de klas informeren over de sportdag. Welk digitaal product past daar het best bij?",
       "opties": [
         {
           "tekst": "Een duidelijke digitale poster",
