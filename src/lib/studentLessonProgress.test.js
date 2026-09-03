@@ -110,6 +110,15 @@ test('shouldSaveBlockProgressBeforeNavigation saves non-question blocks that are
     shouldSaveBlockProgressBeforeNavigation({ block: { id: 'question-open', type: 'question' }, completedIds }),
     false
   );
+  // Een quiz of toets rondt af via zijn vragen, nooit door doorklikken.
+  assert.equal(
+    shouldSaveBlockProgressBeforeNavigation({ block: { id: 'toets-open', type: 'toets' }, completedIds }),
+    false
+  );
+  assert.equal(
+    shouldSaveBlockProgressBeforeNavigation({ block: { id: 'quiz-open', type: 'quiz' }, completedIds }),
+    false
+  );
 });
 
 test('shouldSaveBlockProgressBeforeNavigation ignores missing blocks', () => {

@@ -51,9 +51,15 @@ export const resolveRequestedBlockIndex = ({
   return isBlocked ? resumeIndex : requestedIndex;
 };
 
+// Blokken die hun eigen afronding kennen: een vraag via het antwoord, een quiz
+// of toets via de vragen erin (summarizeAssessmentItemProgress). Die mogen
+// nooit stilletjes op afgerond springen omdat de leerling doorklikt; anders
+// staat na drie vragen de hele paragraaf op "afgesloten".
+const SELF_COMPLETING_BLOCK_TYPES = new Set(['question', 'quiz', 'toets']);
+
 export const shouldSaveBlockProgressBeforeNavigation = ({ block = null, completedIds = new Set() } = {}) => {
   if (!block?.id) return false;
-  if (block.type === 'question') return false;
+  if (SELF_COMPLETING_BLOCK_TYPES.has(block.type)) return false;
   return !completedIds.has(block.id);
 };
 
