@@ -1,0 +1,636 @@
+{
+  "versie": "1.0",
+  "doel": "Persoonlijk diagnostisch startprofiel; niet gebruiken als cijfer of leerwegadvies.",
+  "kerndoelenBron": "SLO definitieve conceptkerndoelen digitale geletterdheid, onderbouw vo, versie 2025",
+  "regels": {
+    "vraagPunten": 1,
+    "meerkeuzeMeerdere": "Alle juiste opties geselecteerd en geen onjuiste optie geselecteerd.",
+    "deelvaardigheid": {
+      "aantalVragen": 6,
+      "niveaus": [
+        {
+          "min": 0,
+          "max": 1,
+          "label": "Startniveau"
+        },
+        {
+          "min": 2,
+          "max": 3,
+          "label": "In ontwikkeling"
+        },
+        {
+          "min": 4,
+          "max": 5,
+          "label": "Basis op orde"
+        },
+        {
+          "min": 6,
+          "max": 6,
+          "label": "Extra uitdaging mogelijk"
+        }
+      ]
+    },
+    "domein": "Bereken eerst het percentage per deelvaardigheid. Het domeinpercentage is het gemiddelde van de deelvaardigheidspercentages binnen dat domein.",
+    "totaal": "Toon ondergeschikt aan het profiel; bereken als percentage van 54.",
+    "inconsistentie": "Markeer voor docentcontrole wanneer dezelfde deelvaardigheid in les A 0/3 en in les B 3/3 scoort, of andersom.",
+    "advies": "Koppel maximaal drie laagst scorende deelvaardigheden aan vervolglessen. Gebruik bij gelijke scores de toepassingsvragen als doorslag."
+  },
+  "deelvaardigheden": [
+    {
+      "id": "systemen",
+      "domein": "Praktische kennis en vaardigheden",
+      "onderdeel": "Digitale systemen",
+      "aantalVragen": 6
+    },
+    {
+      "id": "informatie",
+      "domein": "Praktische kennis en vaardigheden",
+      "onderdeel": "Digitale media en informatie",
+      "aantalVragen": 6
+    },
+    {
+      "id": "data",
+      "domein": "Praktische kennis en vaardigheden",
+      "onderdeel": "Data en dataverwerking",
+      "aantalVragen": 6
+    },
+    {
+      "id": "ai",
+      "domein": "Praktische kennis en vaardigheden",
+      "onderdeel": "Artificiële intelligentie",
+      "aantalVragen": 6
+    },
+    {
+      "id": "producten",
+      "domein": "Ontwerpen en maken",
+      "onderdeel": "Digitale producten creëren",
+      "aantalVragen": 6
+    },
+    {
+      "id": "programmeren",
+      "domein": "Ontwerpen en maken",
+      "onderdeel": "Programmeren",
+      "aantalVragen": 6
+    },
+    {
+      "id": "veiligheid",
+      "domein": "De gedigitaliseerde wereld",
+      "onderdeel": "Veiligheid en privacy",
+      "aantalVragen": 6
+    },
+    {
+      "id": "sociaal",
+      "domein": "De gedigitaliseerde wereld",
+      "onderdeel": "Digitale technologie, jezelf en de ander",
+      "aantalVragen": 6
+    },
+    {
+      "id": "samenleving",
+      "domein": "De gedigitaliseerde wereld",
+      "onderdeel": "Digitale technologie, samenleving en wereld",
+      "aantalVragen": 6
+    }
+  ],
+  "vraagmapping": [
+    {
+      "id": "A-01",
+      "les": "A",
+      "nr": 1,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale systemen",
+      "vaardigheid": "herkennen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-02",
+      "les": "A",
+      "nr": 2,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale media en informatie",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-03",
+      "les": "A",
+      "nr": 3,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Data en dataverwerking",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-04",
+      "les": "A",
+      "nr": 4,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Artificiële intelligentie",
+      "vaardigheid": "herkennen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-05",
+      "les": "A",
+      "nr": 5,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Digitale producten creëren",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-06",
+      "les": "A",
+      "nr": 6,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Programmeren",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-07",
+      "les": "A",
+      "nr": 7,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Veiligheid en privacy",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-08",
+      "les": "A",
+      "nr": 8,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, jezelf en de ander",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-09",
+      "les": "A",
+      "nr": 9,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, samenleving en wereld",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-10",
+      "les": "A",
+      "nr": 10,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale systemen",
+      "vaardigheid": "herkennen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-11",
+      "les": "A",
+      "nr": 11,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale media en informatie",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-12",
+      "les": "A",
+      "nr": 12,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Data en dataverwerking",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-13",
+      "les": "A",
+      "nr": 13,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Artificiële intelligentie",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-14",
+      "les": "A",
+      "nr": 14,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Digitale producten creëren",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-15",
+      "les": "A",
+      "nr": 15,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Programmeren",
+      "vaardigheid": "herkennen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-16",
+      "les": "A",
+      "nr": 16,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Veiligheid en privacy",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-17",
+      "les": "A",
+      "nr": 17,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, jezelf en de ander",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-18",
+      "les": "A",
+      "nr": 18,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, samenleving en wereld",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-19",
+      "les": "A",
+      "nr": 19,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale systemen",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-20",
+      "les": "A",
+      "nr": 20,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale media en informatie",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-21",
+      "les": "A",
+      "nr": 21,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Data en dataverwerking",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-22",
+      "les": "A",
+      "nr": 22,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Artificiële intelligentie",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-23",
+      "les": "A",
+      "nr": 23,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Digitale producten creëren",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-24",
+      "les": "A",
+      "nr": 24,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Programmeren",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "A-25",
+      "les": "A",
+      "nr": 25,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Veiligheid en privacy",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-26",
+      "les": "A",
+      "nr": 26,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, jezelf en de ander",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "A-27",
+      "les": "A",
+      "nr": 27,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, samenleving en wereld",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-01",
+      "les": "B",
+      "nr": 1,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale systemen",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-02",
+      "les": "B",
+      "nr": 2,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale media en informatie",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-03",
+      "les": "B",
+      "nr": 3,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Data en dataverwerking",
+      "vaardigheid": "herkennen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-04",
+      "les": "B",
+      "nr": 4,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Artificiële intelligentie",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-05",
+      "les": "B",
+      "nr": 5,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Digitale producten creëren",
+      "vaardigheid": "herkennen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-06",
+      "les": "B",
+      "nr": 6,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Programmeren",
+      "vaardigheid": "herkennen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-07",
+      "les": "B",
+      "nr": 7,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Veiligheid en privacy",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-08",
+      "les": "B",
+      "nr": 8,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, jezelf en de ander",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-09",
+      "les": "B",
+      "nr": 9,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, samenleving en wereld",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-10",
+      "les": "B",
+      "nr": 10,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale systemen",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-11",
+      "les": "B",
+      "nr": 11,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale media en informatie",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-12",
+      "les": "B",
+      "nr": 12,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Data en dataverwerking",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-13",
+      "les": "B",
+      "nr": 13,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Artificiële intelligentie",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-14",
+      "les": "B",
+      "nr": 14,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Digitale producten creëren",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-15",
+      "les": "B",
+      "nr": 15,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Programmeren",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-16",
+      "les": "B",
+      "nr": 16,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Veiligheid en privacy",
+      "vaardigheid": "herkennen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-17",
+      "les": "B",
+      "nr": 17,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, jezelf en de ander",
+      "vaardigheid": "toepassen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-18",
+      "les": "B",
+      "nr": 18,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, samenleving en wereld",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-19",
+      "les": "B",
+      "nr": 19,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale systemen",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-20",
+      "les": "B",
+      "nr": 20,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Digitale media en informatie",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis",
+      "punten": 1
+    },
+    {
+      "id": "B-21",
+      "les": "B",
+      "nr": 21,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Data en dataverwerking",
+      "vaardigheid": "toepassen",
+      "niveau": "verdieping",
+      "punten": 1
+    },
+    {
+      "id": "B-22",
+      "les": "B",
+      "nr": 22,
+      "domein": "Praktische kennis en vaardigheden",
+      "deelvaardigheid": "Artificiële intelligentie",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-23",
+      "les": "B",
+      "nr": 23,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Digitale producten creëren",
+      "vaardigheid": "toepassen",
+      "niveau": "verdieping",
+      "punten": 1
+    },
+    {
+      "id": "B-24",
+      "les": "B",
+      "nr": 24,
+      "domein": "Ontwerpen en maken",
+      "deelvaardigheid": "Programmeren",
+      "vaardigheid": "toepassen",
+      "niveau": "verdieping",
+      "punten": 1
+    },
+    {
+      "id": "B-25",
+      "les": "B",
+      "nr": 25,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Veiligheid en privacy",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-26",
+      "les": "B",
+      "nr": 26,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, jezelf en de ander",
+      "vaardigheid": "toepassen",
+      "niveau": "plus",
+      "punten": 1
+    },
+    {
+      "id": "B-27",
+      "les": "B",
+      "nr": 27,
+      "domein": "De gedigitaliseerde wereld",
+      "deelvaardigheid": "Digitale technologie, samenleving en wereld",
+      "vaardigheid": "uitleggen",
+      "niveau": "verdieping",
+      "punten": 1
+    }
+  ]
+}

@@ -1,0 +1,745 @@
+{
+  "meta": {
+    "slug": "nulmeting-digitale-vaardigheden-a",
+    "titel": "Nulmeting digitale vaardigheden – deel A",
+    "paragraafTitel": "Nulmeting A",
+    "code": "1.0",
+    "leerdoel": "Je laat zien wat je al weet en kunt binnen de negen onderdelen van digitale geletterdheid.",
+    "intro": "<p>Dit is deel A van de nulmeting. Het is <strong>geen toets voor een cijfer</strong>. Werk rustig en kies wat volgens jou klopt. Bekijk de afbeelding met situaties A, B en C voordat je begint.</p>",
+    "pogingen": 1,
+    "tokens": false,
+    "minuten": 30
+  },
+  "vragen": [
+    {
+      "nr": 1,
+      "type": "meerkeuze",
+      "vraag": "Kijk naar situatie A. Welk onderdeel gebruik je vooral om iets in te voeren?",
+      "opties": [
+        {
+          "tekst": "Het toetsenbord",
+          "juist": true,
+          "uitleg": "Met het toetsenbord voer je letters, cijfers en opdrachten in."
+        },
+        {
+          "tekst": "Het beeldscherm",
+          "juist": false,
+          "uitleg": "Het beeldscherm laat informatie zien."
+        },
+        {
+          "tekst": "De koptelefoon",
+          "juist": false,
+          "uitleg": "De koptelefoon laat geluid horen."
+        },
+        {
+          "tekst": "De printer",
+          "juist": false,
+          "uitleg": "Een printer maakt een afdruk."
+        }
+      ],
+      "uitleg": "Invoer gaat het systeem in; uitvoer komt uit het systeem.",
+      "leerdoel": "De leerling herkent een invoerapparaat.",
+      "vaardigheid": "herkennen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 2,
+      "type": "meerkeuze",
+      "vraag": "Je zoekt informatie over veilig fietsen in het donker. Welke zoekopdracht werkt waarschijnlijk het best?",
+      "opties": [
+        {
+          "tekst": "fiets",
+          "juist": false,
+          "uitleg": "Dit zoekwoord is te breed."
+        },
+        {
+          "tekst": "veilig fietsen donker verlichting",
+          "juist": true,
+          "uitleg": "Deze woorden maken duidelijk welke informatie je zoekt."
+        },
+        {
+          "tekst": "donker",
+          "juist": false,
+          "uitleg": "Dit woord zegt niet genoeg over het onderwerp."
+        },
+        {
+          "tekst": "help",
+          "juist": false,
+          "uitleg": "Dit woord beschrijft de informatievraag niet."
+        }
+      ],
+      "uitleg": "Gerichte zoekwoorden geven meestal bruikbaardere resultaten.",
+      "leerdoel": "De leerling kiest een gerichte zoekopdracht.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 3,
+      "type": "numeriek",
+      "vraag": "Kijk naar situatie B. Hoe hoog is de hoogste balk?",
+      "antwoord": 6,
+      "tolerantie": 0,
+      "eenheid": "",
+      "uitleg": "De hoogste balk heeft de waarde 6.",
+      "leerdoel": "De leerling leest een waarde uit een eenvoudige grafiek.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 4,
+      "type": "meerkeuze",
+      "vraag": "Welke toepassing gebruikt waarschijnlijk AI?",
+      "opties": [
+        {
+          "tekst": "Een app die gezichten op foto’s herkent",
+          "juist": true,
+          "uitleg": "Gezichtsherkenning zoekt met een getraind systeem naar patronen."
+        },
+        {
+          "tekst": "Een lamp met alleen een aan-uitknop",
+          "juist": false,
+          "uitleg": "De knop voert steeds dezelfde vaste opdracht uit."
+        },
+        {
+          "tekst": "Een gewone rekenmachine voor 2 + 2",
+          "juist": false,
+          "uitleg": "De rekenmachine volgt vaste rekenregels."
+        },
+        {
+          "tekst": "Een papieren agenda",
+          "juist": false,
+          "uitleg": "Een papieren agenda is geen digitaal systeem."
+        }
+      ],
+      "uitleg": "AI wordt vaak gebruikt om patronen te herkennen of voorspellingen te doen.",
+      "leerdoel": "De leerling herkent een toepassing van AI.",
+      "vaardigheid": "herkennen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 5,
+      "type": "meerkeuze",
+      "vraag": "Je moet de klas informeren over de sportdag. Welk digitaal product past het best?",
+      "opties": [
+        {
+          "tekst": "Een duidelijke digitale poster",
+          "juist": true,
+          "uitleg": "Een poster kan de belangrijkste informatie snel laten zien."
+        },
+        {
+          "tekst": "Een leeg rekenblad",
+          "juist": false,
+          "uitleg": "Een leeg rekenblad brengt nog geen boodschap over."
+        },
+        {
+          "tekst": "Een map zonder bestanden",
+          "juist": false,
+          "uitleg": "Een lege map bevat geen informatie."
+        },
+        {
+          "tekst": "Een willekeurige game",
+          "juist": false,
+          "uitleg": "Een willekeurige game past niet bij het doel."
+        }
+      ],
+      "uitleg": "Een digitaal product moet passen bij het doel en de doelgroep.",
+      "leerdoel": "De leerling kiest een passend digitaal product.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 6,
+      "type": "volgorde",
+      "vraag": "Zet in de juiste volgorde: een robot drie stappen laten lopen.",
+      "stappen": [
+        "Start het programma",
+        "Laat de robot één stap zetten",
+        "Herhaal de stap nog twee keer",
+        "Stop het programma"
+      ],
+      "uitleg": "Een algoritme bestaat uit duidelijke stappen in een vaste volgorde.",
+      "leerdoel": "De leerling ordent een eenvoudig algoritme.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 7,
+      "type": "meerkeuze",
+      "vraag": "Kijk naar situatie C. Wat kun je het beste als eerste doen?",
+      "opties": [
+        {
+          "tekst": "Niet klikken en het bericht controleren",
+          "juist": true,
+          "uitleg": "Bij een onverwacht bericht controleer je eerst de afzender en het webadres."
+        },
+        {
+          "tekst": "Meteen je wachtwoord invullen",
+          "juist": false,
+          "uitleg": "Gegevens invullen bij een onverwacht bericht is onveilig."
+        },
+        {
+          "tekst": "Het bericht naar iedereen doorsturen",
+          "juist": false,
+          "uitleg": "Doorsturen verspreidt mogelijk een onveilig bericht."
+        },
+        {
+          "tekst": "Antwoorden met je adres",
+          "juist": false,
+          "uitleg": "Persoonsgegevens delen maakt het risico groter."
+        }
+      ],
+      "uitleg": "Onverwachte prijzen, haast en vreemde links zijn signalen van phishing.",
+      "leerdoel": "De leerling kiest een veilige eerste reactie op phishing.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 8,
+      "type": "waar-niet-waar",
+      "vraag": "Stelling: Een grap in een groepschat is altijd goed als jij hem grappig vindt.",
+      "juist": false,
+      "uitleg": "Een bericht kan een ander kwetsen. Denk vóór het sturen ook aan de ontvanger.",
+      "leerdoel": "De leerling begrijpt dat online communicatie rekening houdt met anderen.",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 9,
+      "type": "meerkeuze",
+      "vraag": "Welke ontwikkeling helpt mensen die slecht kunnen zien het meest?",
+      "opties": [
+        {
+          "tekst": "Een schermlezer die tekst voorleest",
+          "juist": true,
+          "uitleg": "Een schermlezer maakt digitale tekst hoorbaar."
+        },
+        {
+          "tekst": "Kleinere letters op websites",
+          "juist": false,
+          "uitleg": "Kleinere letters maken lezen juist moeilijker."
+        },
+        {
+          "tekst": "Knoppen zonder naam",
+          "juist": false,
+          "uitleg": "Naamloze knoppen zijn lastig te begrijpen."
+        },
+        {
+          "tekst": "Video zonder geluid én zonder ondertiteling",
+          "juist": false,
+          "uitleg": "Zonder geluid en ondertiteling gaat informatie verloren."
+        }
+      ],
+      "uitleg": "Toegankelijke technologie helpt meer mensen zelfstandig mee te doen.",
+      "leerdoel": "De leerling herkent een voorbeeld van digitale toegankelijkheid.",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 10,
+      "type": "koppelen",
+      "vraag": "Koppel ieder begrip aan de juiste omschrijving.",
+      "paren": [
+        {
+          "links": "Hardware",
+          "rechts": "Onderdelen die je kunt aanraken"
+        },
+        {
+          "links": "Software",
+          "rechts": "Programma’s en apps"
+        },
+        {
+          "links": "Netwerk",
+          "rechts": "Verbinding tussen apparaten"
+        },
+        {
+          "links": "Bestand",
+          "rechts": "Opgeslagen digitale informatie"
+        }
+      ],
+      "uitleg": "Een digitaal systeem bestaat uit hardware, software en verbindingen en verwerkt bestanden.",
+      "leerdoel": "De leerling onderscheidt basisbegrippen van digitale systemen.",
+      "vaardigheid": "herkennen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 11,
+      "type": "meerkeuze",
+      "vraag": "Waaraan kun je zien dat een online bron mogelijk betrouwbaar is? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "De maker en datum zijn genoemd",
+          "juist": true,
+          "uitleg": "Zo kun je nagaan wie de informatie maakte en hoe actueel die is."
+        },
+        {
+          "tekst": "Andere betrouwbare bronnen vertellen hetzelfde",
+          "juist": true,
+          "uitleg": "Vergelijken helpt om informatie te controleren."
+        },
+        {
+          "tekst": "De tekst gebruikt alleen hoofdletters",
+          "juist": false,
+          "uitleg": "Hoofdletters zeggen niets over de betrouwbaarheid."
+        },
+        {
+          "tekst": "De pagina belooft dat alles zeker waar is",
+          "juist": false,
+          "uitleg": "Een belofte is geen bewijs."
+        },
+        {
+          "tekst": "De bron legt uit waar gegevens vandaan komen",
+          "juist": true,
+          "uitleg": "Herleidbare gegevens maken controle mogelijk."
+        }
+      ],
+      "uitleg": "Controleer maker, datum, bewijs en andere bronnen.",
+      "leerdoel": "De leerling herkent controles voor bronbetrouwbaarheid.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 12,
+      "type": "waar-niet-waar",
+      "vraag": "Stelling: Een dataset met antwoorden van alleen drie vrienden laat zeker zien wat alle brugklassers vinden.",
+      "juist": false,
+      "uitleg": "Drie vrienden vormen geen goede afspiegeling van alle brugklassers.",
+      "leerdoel": "De leerling begrijpt dat een dataset een beperkt beeld kan geven.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 13,
+      "type": "meerkeuze",
+      "vraag": "Wat doe je als je AI gebruikt voor een werkstuk? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Belangrijke feiten controleren",
+          "juist": true,
+          "uitleg": "AI kan fouten maken, dus controle is nodig."
+        },
+        {
+          "tekst": "Geen persoonlijke gegevens invoeren",
+          "juist": true,
+          "uitleg": "Persoonlijke gegevens horen niet zomaar in een AI-systeem."
+        },
+        {
+          "tekst": "Alles zonder lezen kopiëren",
+          "juist": false,
+          "uitleg": "Dan weet je niet of de tekst klopt of bij de opdracht past."
+        },
+        {
+          "tekst": "Zelf nadenken over het antwoord",
+          "juist": true,
+          "uitleg": "AI is een hulpmiddel en neemt jouw verantwoordelijkheid niet over."
+        },
+        {
+          "tekst": "Doen alsof je alles zelf schreef",
+          "juist": false,
+          "uitleg": "Je moet eerlijk omgaan met gebruikte hulpmiddelen."
+        }
+      ],
+      "uitleg": "Gebruik AI kritisch, veilig en eerlijk.",
+      "leerdoel": "De leerling kiest verantwoord gedrag bij het gebruiken van AI.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 14,
+      "type": "volgorde",
+      "vraag": "Zet in de juiste volgorde: een digitale poster maken en verbeteren.",
+      "stappen": [
+        "Bepaal doel en doelgroep",
+        "Maak een eerste ontwerp",
+        "Laat iemand het ontwerp testen",
+        "Verbeter het ontwerp met de feedback"
+      ],
+      "uitleg": "Een goed ontwerp ontstaat door maken, testen en verbeteren.",
+      "leerdoel": "De leerling past een iteratief ontwerpproces toe.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 15,
+      "type": "koppelen",
+      "vraag": "Koppel het programmeerbegrip aan het voorbeeld.",
+      "paren": [
+        {
+          "links": "Event",
+          "rechts": "Het programma start na een muisklik"
+        },
+        {
+          "links": "Herhaling",
+          "rechts": "Een opdracht wordt vijf keer uitgevoerd"
+        },
+        {
+          "links": "Variabele",
+          "rechts": "De score wordt bewaard onder een naam"
+        },
+        {
+          "links": "Voorwaarde",
+          "rechts": "Als de deur open is, klinkt een alarm"
+        }
+      ],
+      "uitleg": "Programma’s gebruiken events, herhalingen, variabelen en voorwaarden.",
+      "leerdoel": "De leerling herkent basale programmeerconcepten.",
+      "vaardigheid": "herkennen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 16,
+      "type": "meerkeuze",
+      "vraag": "Welke wachtwoorden zijn het sterkst? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Maan!Fiets7Rivier",
+          "juist": true,
+          "uitleg": "Dit wachtwoord is lang en bevat verschillende soorten tekens."
+        },
+        {
+          "tekst": "K0ffer-Paard-92",
+          "juist": true,
+          "uitleg": "Deze combinatie is lang en lastig te raden."
+        },
+        {
+          "tekst": "12345678",
+          "juist": false,
+          "uitleg": "Deze eenvoudige cijferreeks is snel te raden."
+        },
+        {
+          "tekst": "wachtwoord",
+          "juist": false,
+          "uitleg": "Dit veelgebruikte woord is onveilig."
+        },
+        {
+          "tekst": "Kevin2013",
+          "juist": false,
+          "uitleg": "Een naam en geboortejaar zijn vaak makkelijk te achterhalen."
+        }
+      ],
+      "uitleg": "Een sterk wachtwoord is lang, uniek en moeilijk te raden.",
+      "leerdoel": "De leerling herkent sterke wachtwoorden.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 17,
+      "type": "meerkeuze",
+      "vraag": "Wat zijn veilige acties wanneer iemand je online blijft pesten? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Bewijs bewaren, bijvoorbeeld met een screenshot",
+          "juist": true,
+          "uitleg": "Bewijs kan helpen wanneer je hulp vraagt of een melding maakt."
+        },
+        {
+          "tekst": "De afzender blokkeren of rapporteren",
+          "juist": true,
+          "uitleg": "Zo kun je het contact beperken en het gedrag melden."
+        },
+        {
+          "tekst": "Het aan een vertrouwde volwassene vertellen",
+          "juist": true,
+          "uitleg": "Je hoeft dit niet alleen op te lossen."
+        },
+        {
+          "tekst": "Een nog gemener bericht terugsturen",
+          "juist": false,
+          "uitleg": "Terugschelden kan de situatie erger maken."
+        },
+        {
+          "tekst": "Je wachtwoord aan de afzender geven",
+          "juist": false,
+          "uitleg": "Een wachtwoord is geheim en lost het pesten niet op."
+        }
+      ],
+      "uitleg": "Bewijs bewaren, blokkeren, rapporteren en hulp vragen zijn veilige acties.",
+      "leerdoel": "De leerling kiest veilige acties bij online pesten.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 18,
+      "type": "meerkeuze",
+      "vraag": "Wat kan een slim apparaat doen? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Gegevens uit de omgeving meten",
+          "juist": true,
+          "uitleg": "Slimme apparaten gebruiken vaak sensoren."
+        },
+        {
+          "tekst": "Gegevens via internet uitwisselen",
+          "juist": true,
+          "uitleg": "Veel slimme apparaten communiceren via een netwerk."
+        },
+        {
+          "tekst": "Altijd zonder elektriciteit werken",
+          "juist": false,
+          "uitleg": "Digitale apparaten hebben energie nodig."
+        },
+        {
+          "tekst": "Automatisch reageren op gemeten gegevens",
+          "juist": true,
+          "uitleg": "Het apparaat kan op basis van gegevens een actie uitvoeren."
+        },
+        {
+          "tekst": "Zelf bepalen wat moreel goed is",
+          "juist": false,
+          "uitleg": "Een apparaat heeft geen eigen menselijk geweten."
+        }
+      ],
+      "uitleg": "Slimme apparaten verzamelen en gebruiken gegevens en kunnen verbonden zijn met internet.",
+      "leerdoel": "De leerling begrijpt de werking en mogelijkheden van slimme apparatuur.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 19,
+      "type": "meerkeuze",
+      "vraag": "Je laptop heeft geen internet. Wat controleer je eerst?",
+      "opties": [
+        {
+          "tekst": "Of wifi aanstaat en het juiste netwerk is gekozen",
+          "juist": true,
+          "uitleg": "Dit is een snelle en veilige basiscontrole."
+        },
+        {
+          "tekst": "Je verwijdert al je bestanden",
+          "juist": false,
+          "uitleg": "Bestanden verwijderen lost een netwerkprobleem niet op."
+        },
+        {
+          "tekst": "Je deelt je wachtwoord met iemand",
+          "juist": false,
+          "uitleg": "Een wachtwoord delen is onveilig."
+        },
+        {
+          "tekst": "Je slaat hard op de laptop",
+          "juist": false,
+          "uitleg": "Dat kan schade veroorzaken en helpt niet."
+        }
+      ],
+      "uitleg": "Begin bij een storing met een eenvoudige, veilige controle.",
+      "leerdoel": "De leerling lost een eenvoudig verbindingsprobleem systematisch op.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 20,
+      "type": "meerkeuze",
+      "vraag": "Een video zegt: “Dit product werkt bij iedereen!” Wat is de beste controle?",
+      "opties": [
+        {
+          "tekst": "Zoeken wie de video maakte en welk bewijs wordt gegeven",
+          "juist": true,
+          "uitleg": "Maker en bewijs helpen de betrouwbaarheid beoordelen."
+        },
+        {
+          "tekst": "Geloven omdat de video veel likes heeft",
+          "juist": false,
+          "uitleg": "Veel likes zijn geen bewijs dat een bewering klopt."
+        },
+        {
+          "tekst": "Alleen naar de mooie kleuren kijken",
+          "juist": false,
+          "uitleg": "De vormgeving zegt niets over de juistheid."
+        },
+        {
+          "tekst": "De video meteen delen",
+          "juist": false,
+          "uitleg": "Controleer de informatie voordat je haar verspreidt."
+        }
+      ],
+      "uitleg": "Beoordeel zowel de maker als het bewijs achter een bewering.",
+      "leerdoel": "De leerling beoordeelt de bruikbaarheid van digitale informatie.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 21,
+      "type": "meerkeuze",
+      "vraag": "Een school wil weten hoe leerlingen reizen. Welke gegevens zijn daarvoor het meest bruikbaar?",
+      "opties": [
+        {
+          "tekst": "Vervoermiddel en reistijd",
+          "juist": true,
+          "uitleg": "Deze gegevens passen direct bij de onderzoeksvraag."
+        },
+        {
+          "tekst": "Favoriete kleur en schoenmaat",
+          "juist": false,
+          "uitleg": "Deze gegevens beantwoorden de vraag over reizen niet."
+        },
+        {
+          "tekst": "Voornaam en lievelingseten",
+          "juist": false,
+          "uitleg": "Deze gegevens zijn niet nodig voor de onderzoeksvraag."
+        },
+        {
+          "tekst": "Wachtwoord en pincode",
+          "juist": false,
+          "uitleg": "Deze geheime gegevens mogen nooit voor zo’n onderzoek worden gevraagd."
+        }
+      ],
+      "uitleg": "Verzamel alleen gegevens die nodig zijn om de vraag te beantwoorden.",
+      "leerdoel": "De leerling kiest relevante data voor een onderzoeksvraag.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 22,
+      "type": "waar-niet-waar",
+      "vraag": "Stelling: Een AI-systeem geeft altijd hetzelfde perfecte antwoord, ook als de vraag onduidelijk is.",
+      "juist": false,
+      "uitleg": "Een onduidelijke vraag kan een onbruikbaar of onjuist antwoord opleveren.",
+      "leerdoel": "De leerling begrijpt een beperking van AI-systemen.",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 23,
+      "type": "meerkeuze",
+      "vraag": "Wat maakt een digitale presentatie goed leesbaar? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Grote letters",
+          "juist": true,
+          "uitleg": "Grote letters zijn beter leesbaar op afstand."
+        },
+        {
+          "tekst": "Duidelijk contrast tussen tekst en achtergrond",
+          "juist": true,
+          "uitleg": "Goed contrast maakt tekst herkenbaar."
+        },
+        {
+          "tekst": "Heel veel tekst op elke dia",
+          "juist": false,
+          "uitleg": "Te veel tekst maakt een dia onoverzichtelijk."
+        },
+        {
+          "tekst": "Een rustige indeling",
+          "juist": true,
+          "uitleg": "Een rustige indeling helpt de kijker de informatie volgen."
+        },
+        {
+          "tekst": "Elke letter een andere kleur",
+          "juist": false,
+          "uitleg": "Te veel kleuren maken tekst onrustig."
+        }
+      ],
+      "uitleg": "Leesbaarheid hangt onder andere af van lettergrootte, contrast en indeling.",
+      "leerdoel": "De leerling beoordeelt ontwerpkeuzes voor een presentatie.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 24,
+      "type": "meerkeuze",
+      "vraag": "Een spelpersonage beweegt niet na een klik. Wat doe je het best?",
+      "opties": [
+        {
+          "tekst": "Controleer eerst of het klik-event aan de beweegopdracht vastzit",
+          "juist": true,
+          "uitleg": "Door gericht één verbinding te controleren kun je de fout vinden."
+        },
+        {
+          "tekst": "Verander zonder te kijken alle blokken",
+          "juist": false,
+          "uitleg": "Veel tegelijk veranderen maakt de fout moeilijker te vinden."
+        },
+        {
+          "tekst": "Verwijder het hele project meteen",
+          "juist": false,
+          "uitleg": "Dan raak je werk kwijt zonder de fout te onderzoeken."
+        },
+        {
+          "tekst": "Zet het scherm uit en lever niets in",
+          "juist": false,
+          "uitleg": "Dit test of verbetert het programma niet."
+        }
+      ],
+      "uitleg": "Test gericht en verander één onderdeel tegelijk.",
+      "leerdoel": "De leerling kiest een aanpak voor het opsporen van een programmeerfout.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 25,
+      "type": "waar-niet-waar",
+      "vraag": "Stelling: Je mag een foto van een klasgenoot openbaar plaatsen zonder het te vragen.",
+      "juist": false,
+      "uitleg": "Vraag toestemming voordat je herkenbaar beeld van een ander deelt.",
+      "leerdoel": "De leerling houdt rekening met de privacy van anderen.",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 26,
+      "type": "meerkeuze",
+      "vraag": "Welke keuze is het beste voor je lichaam tijdens lang computerwerk?",
+      "opties": [
+        {
+          "tekst": "Regelmatig bewegen en wegkijken van het scherm",
+          "juist": true,
+          "uitleg": "Pauzes en afwisseling helpen belasting van ogen en lichaam beperken."
+        },
+        {
+          "tekst": "Urenlang in dezelfde houding blijven",
+          "juist": false,
+          "uitleg": "Lang dezelfde houding houden kan klachten geven."
+        },
+        {
+          "tekst": "Het scherm zo fel mogelijk zetten",
+          "juist": false,
+          "uitleg": "Een te fel scherm kan onprettig zijn voor je ogen."
+        },
+        {
+          "tekst": "De laptop altijd op schoot zetten",
+          "juist": false,
+          "uitleg": "Dat geeft vaak geen goede werkhouding."
+        }
+      ],
+      "uitleg": "Gezond digitaal werken vraagt om pauzes, beweging en een passende houding.",
+      "leerdoel": "De leerling maakt een gezonde keuze bij beeldschermgebruik.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 27,
+      "type": "meerkeuze",
+      "vraag": "Waarom tonen sociale media niet aan iedereen precies dezelfde berichten?",
+      "opties": [
+        {
+          "tekst": "Een algoritme kiest mede op basis van eerder gedrag",
+          "juist": true,
+          "uitleg": "Platforms gebruiken gegevens en algoritmen om berichten te selecteren."
+        },
+        {
+          "tekst": "Alle telefoons hebben een ander alfabet",
+          "juist": false,
+          "uitleg": "Het alfabet bepaalt de selectie van berichten niet."
+        },
+        {
+          "tekst": "Berichten bestaan maar één seconde",
+          "juist": false,
+          "uitleg": "Berichten kunnen langer beschikbaar blijven."
+        },
+        {
+          "tekst": "Internet werkt alleen voor één persoon tegelijk",
+          "juist": false,
+          "uitleg": "Veel mensen gebruiken internet tegelijkertijd."
+        }
+      ],
+      "uitleg": "Platforms gebruiken gegevens om te bepalen welke content zichtbaar wordt.",
+      "leerdoel": "De leerling begrijpt hoe platforms het informatieaanbod beïnvloeden.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    }
+  ]
+}

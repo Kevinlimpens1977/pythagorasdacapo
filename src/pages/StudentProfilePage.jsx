@@ -11,6 +11,8 @@ import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../lib/tokenShopRewards';
+import NulmetingProfielKaart from '../components/nulmeting/NulmetingProfielKaart';
+import * as nulmetingService from '../services/nulmetingService';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
   const barColor = tone === 'green' ? 'bg-[var(--helix-success)]' : 'helix-progress-fill';
@@ -40,6 +42,32 @@ export default function StudentProfilePage() {
   const [voortgangMap, setVoortgangMap] = useState({});
   const [studentLoadout, setStudentLoadout] = useState({ activePinIds: [] });
   const [rewardItems, setRewardItems] = useState([]);
+  // Startprofiel uit de nulmeting digitale vaardigheden (alleen het eigen profiel).
+  const [nulmetingProfiel, setNulmetingProfiel] = useState(null);
+  const [nulmetingBezig, setNulmetingBezig] = useState(false);
+  const [nulmetingMelding, setNulmetingMelding] = useState('');
+
+  useEffect(() => {
+    if (!currentUser?.uid || isDevBypass) return undefined;
+    let actief = true;
+    nulmetingService.getNulmetingProfiel(currentUser.uid)
+      .then((profiel) => { if (actief) setNulmetingProfiel(profiel); })
+      .catch((err) => console.warn('Startprofiel laden mislukt:', err));
+    return () => { actief = false; };
+  }, [currentUser?.uid, isDevBypass]);
+
+  const vernieuwNulmetingProfiel = async () => {
+    if (nulmetingBezig) return;
+    setNulmetingBezig(true);
+    setNulmetingMelding('');
+    const profiel = await nulmetingService.berekenEigenNulmetingProfiel();
+    if (profiel) {
+      setNulmetingProfiel(profiel);
+    } else {
+      setNulmetingMelding('Je startprofiel is er nog niet. Maak eerst (een deel van) de nulmeting, of vraag je docent.');
+    }
+    setNulmetingBezig(false);
+  };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -221,6 +249,26 @@ export default function StudentProfilePage() {
           {displayName}
         </h1>
       </div>
+
+      <section className="helix-card mb-5 p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="helix-eyebrow">Mijn startprofiel</p>
+            <h2 className="mt-1 text-xl font-black text-[var(--helix-navy)]">Nulmeting digitale vaardigheden</h2>
+          </div>
+          <button type="button" onClick={vernieuwNulmetingProfiel} disabled={nulmetingBezig} className="btn-secondary px-4 py-2 text-sm disabled:opacity-50">
+            {nulmetingBezig ? 'Bezig...' : nulmetingProfiel ? 'Vernieuwen' : 'Bereken mijn startprofiel'}
+          </button>
+        </div>
+        {nulmetingMelding && <p className="mb-3 text-sm font-semibold text-[var(--helix-muted)]">{nulmetingMelding}</p>}
+        {nulmetingProfiel ? (
+          <NulmetingProfielKaart profiel={nulmetingProfiel} />
+        ) : (
+          <p className="text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+            Na de nulmeting zie je hier wat je al goed kunt en waar je in de lessen mee verdergaat. Geen cijfer, wel een startpunt.
+          </p>
+        )}
+      </section>
 
       <section className="grid items-start gap-5 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.45fr)]">
         <aside className="grid gap-5">

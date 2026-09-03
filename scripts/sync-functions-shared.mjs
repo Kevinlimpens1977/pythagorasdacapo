@@ -37,7 +37,10 @@ export const SHARED_ENTRY_POINTS = [
   'questionPreviewUtils.js',
   // Toets- en quizitems lopen door dezelfde beoordelingslaag; de callable heeft
   // de adapter dus ook server-side nodig.
-  'assessmentItemGrading.js'
+  'assessmentItemGrading.js',
+  // Het nulmetingsprofiel wordt server-side berekend (buildNulmetingProfiel),
+  // met dezelfde regels als de tests en het leerlingscherm.
+  'nulmetingProfiel.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(

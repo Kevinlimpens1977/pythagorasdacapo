@@ -59,6 +59,8 @@ import AandachtsLijst from './AandachtsLijst';
 import PlusOverzicht from './PlusOverzicht';
 import NakijkPaneel from './NakijkPaneel';
 import LeerlingStappen, { StappenSpoor } from './LeerlingStappen';
+import NulmetingKlasOverzicht from './NulmetingKlasOverzicht';
+import NulmetingLeerlingPaneel from './NulmetingLeerlingPaneel';
 import StudentAvatar from '../common/StudentAvatar';
 import HelixBrandBanner from '../common/HelixBrandBanner';
 
@@ -834,6 +836,10 @@ export default function ClassOverview() {
           </HelixBrandBanner>
 
           <div className="pad-content">
+            <NulmetingLeerlingPaneel
+              leerlingUid={selectedStudent.id}
+              leerlingNaam={selectedStudent.displayName || selectedStudent.email || ''}
+            />
             {(nakijkMelding || nakijkFout || openNakijkVoorLeerling > 0) && (
               <div className="mb-6 space-y-2">
                 {openNakijkVoorLeerling > 0 && (
@@ -1251,6 +1257,17 @@ export default function ClassOverview() {
           </div>
         ))}
       </div>
+
+      {/* Nulmeting digitale vaardigheden: startprofielen per klas, alleen bij één gekozen klas */}
+      {activeLens === 'class' && selectedKlasId && (
+        <div className="mb-8">
+          <NulmetingKlasOverzicht
+            klasId={selectedKlasId}
+            klasNaam={selectedKlasOption?.label || ''}
+            students={scopedStudents}
+          />
+        </div>
+      )}
 
       {/* Nakijken: de enige weergave waar de docent de status van een stap wijzigt */}
       {activeLens === 'nakijken' && (

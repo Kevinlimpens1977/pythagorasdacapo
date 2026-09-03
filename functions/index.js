@@ -3068,6 +3068,158 @@ exports.updateAiTutorRules = onCall({
   });
 });
 
+// ---------------------------------------------------------------------------
+// Nulmeting digitale vaardigheden: persoonlijk startprofiel
+//
+// De mapping vraag -> deelvaardigheid en het analysemodel staan als privéveld
+// `content.nulmeting` op de twee toetsblokken (niet in de publieke snapshot).
+// Deze callable leest de itemrecords van de leerling, rekent het profiel uit
+// met de gedeelde laag (functions/shared/nulmetingProfiel.js) en schrijft het
+// naar nulmetingProfielen/{uid}. Leerlingen mogen alleen hun eigen profiel
+// laten berekenen; admin en supervisor elk profiel of een hele klas.
+// ---------------------------------------------------------------------------
+
+let sharedNulmetingLayerPromise = null;
+
+function loadSharedNulmetingLayer() {
+  if (!sharedNulmetingLayerPromise) {
+    sharedNulmetingLayerPromise = import("./shared/nulmetingProfiel.js").then((layer) => ({
+      buildNulmetingProfiel: layer.buildNulmetingProfiel,
+    }));
+  }
+  return sharedNulmetingLayerPromise;
+}
+
+function chunk(list, size) {
+  const out = [];
+  for (let index = 0; index < list.length; index += size) out.push(list.slice(index, index + size));
+  return out;
+}
+
+async function findNulmetingBlocksForKlas({ db, klasData }) {
+  const paragraafIds = Array.isArray(klasData?.enabledParagrafen) ? klasData.enabledParagrafen.map(String) : [];
+  const blocks = [];
+  for (const deel of chunk(paragraafIds, 30)) {
+    if (!deel.length) continue;
+    const snapshot = await db.collection("contentBlocks").where("paragraafId", "in", deel).get();
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data() || {};
+      if (data.type === "toets" && data.content?.nulmeting?.mapping && data.isArchived !== true) {
+        blocks.push({ id: doc.id, ...data });
+      }
+    });
+  }
+  return blocks.sort((a, b) => String(a.content.nulmeting.deel).localeCompare(String(b.content.nulmeting.deel)));
+}
+
+async function computeNulmetingProfielForStudent({ db, uid, userData, klasData, layer, now }) {
+  const blocks = await findNulmetingBlocksForKlas({ db, klasData });
+  if (!blocks.length) {
+    throw new HttpsError("failed-precondition", "Er is geen nulmeting toegewezen aan deze klas.");
+  }
+
+  const mapping = {};
+  blocks.forEach((block) => Object.assign(mapping, block.content.nulmeting.mapping || {}));
+  const analysemodel = blocks.find((block) => block.content.nulmeting.analysemodel)?.content.nulmeting.analysemodel || {};
+
+  const itemRecords = {};
+  let laatsteActiviteit = null;
+  for (const block of blocks) {
+    const items = await db.collection("voortgang").doc(`${uid}_${block.id}`).collection("items").get();
+    items.docs.forEach((doc) => {
+      const data = doc.data() || {};
+      itemRecords[doc.id] = { completed: data.completed === true, isCorrect: data.isCorrect === true };
+      const moment = data.completedAt?.toDate ? data.completedAt.toDate() : null;
+      if (moment && (!laatsteActiviteit || moment > laatsteActiviteit)) laatsteActiviteit = moment;
+    });
+  }
+
+  const profiel = layer.buildNulmetingProfiel({
+    analysemodel,
+    mapping,
+    itemRecords,
+    leerlingId: uid,
+    naam: String(userData.displayName || ""),
+    afgenomenOp: (laatsteActiviteit || now).toISOString().slice(0, 10),
+  });
+
+  const document = {
+    ...profiel,
+    userId: uid,
+    klasId: String(userData.klasId || ""),
+    blokIds: blocks.map((block) => block.id),
+    berekendOp: now.toISOString(),
+  };
+  await db.collection("nulmetingProfielen").doc(uid).set(document, { merge: false });
+  return document;
+}
+
+async function buildNulmetingProfielCore({ auth, data, db, loadLayer = loadSharedNulmetingLayer, now = new Date() }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om je startprofiel te bekijken.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Gebruiker");
+  const callerData = caller.data || {};
+  const role = String(callerData.role || "").trim().toLowerCase();
+  const isStaff = role === "admin" || role === "supervisor" || isConfiguredAdminEmail(callerData.email);
+  const layer = await loadLayer();
+
+  // Hele klas in één keer: alleen voor docenten.
+  const klasId = String(data?.klasId || "").trim();
+  if (klasId) {
+    if (!isStaff) {
+      throw new HttpsError("permission-denied", "Alleen een docent kan profielen voor een klas berekenen.");
+    }
+    const klas = await getRequiredDoc(db.doc(`klassen/${klasId}`), "Klas");
+    const students = await db.collection("users").where("klasId", "==", klasId).get();
+    const profielen = [];
+    for (const doc of students.docs) {
+      const userData = doc.data() || {};
+      if (String(userData.role || "student") !== "student") continue;
+      try {
+        profielen.push(await computeNulmetingProfielForStudent({ db, uid: doc.id, userData, klasData: klas.data, layer, now }));
+      } catch (error) {
+        if (error instanceof HttpsError && error.code === "failed-precondition") break;
+        throw error;
+      }
+    }
+    return { success: true, klasId, aantal: profielen.length, profielen };
+  }
+
+  const targetUid = String(data?.leerlingUid || auth.uid).trim();
+  if (targetUid !== auth.uid && !isStaff) {
+    throw new HttpsError("permission-denied", "Je kunt alleen je eigen startprofiel bekijken.");
+  }
+  const target = targetUid === auth.uid ? caller : await getRequiredDoc(db.doc(`users/${targetUid}`), "Leerling");
+  const targetData = target.data || {};
+  const targetKlasId = String(targetData.klasId || "").trim();
+  if (!targetKlasId) {
+    throw new HttpsError("failed-precondition", "Deze leerling is nog niet aan een klas gekoppeld.");
+  }
+  const klas = await getRequiredDoc(db.doc(`klassen/${targetKlasId}`), "Klas");
+  const profiel = await computeNulmetingProfielForStudent({ db, uid: targetUid, userData: targetData, klasData: klas.data, layer, now });
+  return { success: true, profiel };
+}
+
+exports.buildNulmetingProfiel = onCall({
+  region: REGION,
+}, async (request) => {
+  try {
+    return await buildNulmetingProfielCore({
+      auth: request.auth,
+      data: request.data || {},
+      db: getFirestore(),
+    });
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    console.error("Error in buildNulmetingProfiel:", error);
+    throw new HttpsError("internal", "Het startprofiel kon nu niet berekend worden.");
+  }
+});
+
 exports.assessOpenAnswer = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -3158,7 +3310,9 @@ exports.__test = {
   equipTokenShopItemCore,
   extractTextViaOcrCore,
   gradeClosedQuestionCore,
+  buildNulmetingProfielCore,
   loadSharedGradingLayer,
+  loadSharedNulmetingLayer,
   importStudentNumberAccountsCore,
   getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,

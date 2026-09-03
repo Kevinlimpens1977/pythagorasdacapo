@@ -33,6 +33,25 @@ export const askAiTutorCall = async (message, contextHeading, previousMessages, 
   }
 };
 
+/**
+ * Persoonlijk startprofiel uit de nulmeting digitale vaardigheden. Zonder
+ * argumenten: het eigen profiel. Een docent geeft `leerlingUid` of `klasId`.
+ * De server rekent en bewaart; de client leest daarna nulmetingProfielen/{uid}.
+ */
+export const buildNulmetingProfielCall = async ({ leerlingUid = '', klasId = '' } = {}) => {
+  try {
+    const buildProfiel = httpsCallable(functions, 'buildNulmetingProfiel');
+    const result = await buildProfiel({
+      ...(leerlingUid ? { leerlingUid } : {}),
+      ...(klasId ? { klasId } : {})
+    });
+    return { ...(result.data || {}), success: result.data?.success === true };
+  } catch (error) {
+    console.error('Nulmetingprofiel berekenen mislukt:', error);
+    return { success: false, code: error?.code || '', error: error?.message || 'Het startprofiel kon nu niet berekend worden.' };
+  }
+};
+
 export const assessOpenAnswerCall = async ({
   blockId = '',
   // Oefenopgave in een lesblok: de server zoekt met blockId + fieldId zelf het

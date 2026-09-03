@@ -187,7 +187,11 @@ const sanitizeContent = (block = {}) => {
       retryPolicy: {
         enabled: content.retryPolicy?.enabled !== false,
         aiHelp: content.retryPolicy?.aiHelp !== false
-      }
+      },
+      // Nulmeting: alleen het deel (A/B) reist mee naar de leerling, zodat de
+      // lesroute na afloop naar het startprofiel kan wijzen. De mapping van
+      // vraag naar deelvaardigheid en het analysemodel blijven privé.
+      ...(content.nulmeting?.deel ? { nulmeting: { deel: String(content.nulmeting.deel) } } : {})
     };
   }
 

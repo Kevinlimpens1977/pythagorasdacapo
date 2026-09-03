@@ -1,0 +1,723 @@
+{
+  "meta": {
+    "slug": "nulmeting-digitale-vaardigheden-b",
+    "titel": "Nulmeting digitale vaardigheden – deel B",
+    "paragraafTitel": "Nulmeting B",
+    "code": "1.0",
+    "leerdoel": "Je laat opnieuw zien wat je al weet en kunt, zodat je een persoonlijk startprofiel krijgt.",
+    "intro": "<p>Dit is deel B van de nulmeting. Het is <strong>geen toets voor een cijfer</strong>. Werk zelfstandig en lees iedere situatie goed. Bekijk de afbeelding met situaties D, E en F voordat je begint.</p>",
+    "pogingen": 1,
+    "tokens": false,
+    "minuten": 30
+  },
+  "vragen": [
+    {
+      "nr": 1,
+      "type": "meerkeuze",
+      "vraag": "Kijk naar situatie D. In welke map staat presentatie.pptx?",
+      "opties": [
+        {
+          "tekst": "Digitale vaardigheden",
+          "juist": true,
+          "uitleg": "Het bestand staat zichtbaar in de map Digitale vaardigheden."
+        },
+        {
+          "tekst": "Afbeeldingen",
+          "juist": false,
+          "uitleg": "Deze map is niet in de getoonde structuur te zien."
+        },
+        {
+          "tekst": "Downloads",
+          "juist": false,
+          "uitleg": "Het bestand staat niet in een map Downloads."
+        },
+        {
+          "tekst": "Prullenbak",
+          "juist": false,
+          "uitleg": "Het bestand is niet verwijderd."
+        }
+      ],
+      "uitleg": "Een duidelijke mappenstructuur helpt bestanden terugvinden.",
+      "leerdoel": "De leerling vindt een bestand in een mappenstructuur.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 2,
+      "type": "meerkeuze",
+      "vraag": "Welke bron is het bruikbaarst voor de actuele openingstijden van een museum?",
+      "opties": [
+        {
+          "tekst": "De officiële website van het museum",
+          "juist": true,
+          "uitleg": "De organisatie beheert daar haar actuele informatie."
+        },
+        {
+          "tekst": "Een oud bericht zonder datum",
+          "juist": false,
+          "uitleg": "Zonder datum weet je niet of de tijden nog kloppen."
+        },
+        {
+          "tekst": "Een anonieme reactie over een ander museum",
+          "juist": false,
+          "uitleg": "De reactie gaat niet betrouwbaar over dit museum."
+        },
+        {
+          "tekst": "Een willekeurige advertentie",
+          "juist": false,
+          "uitleg": "Een advertentie hoeft geen actuele openingstijden te geven."
+        }
+      ],
+      "uitleg": "Kies een bron die past bij de informatievraag en controleer actualiteit.",
+      "leerdoel": "De leerling kiest een bruikbare digitale bron.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 3,
+      "type": "invullen",
+      "vraag": "Vul de zin aan.",
+      "tekst": "Losse gegevens noemen we [data|gegevens]. Na verwerking kunnen ze [informatie] worden.",
+      "uitleg": "Data krijgen betekenis wanneer ze worden verwerkt en uitgelegd.",
+      "leerdoel": "De leerling onderscheidt data en informatie.",
+      "vaardigheid": "herkennen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 4,
+      "type": "meerkeuze",
+      "vraag": "Een AI herkent donkere katten minder goed dan lichte katten. Wat kan een oorzaak zijn?",
+      "opties": [
+        {
+          "tekst": "In de trainingsdata stonden te weinig foto’s van donkere katten",
+          "juist": true,
+          "uitleg": "Eenzijdige trainingsdata kunnen tot slechtere resultaten voor een groep leiden."
+        },
+        {
+          "tekst": "De computer heeft een toetsenbord",
+          "juist": false,
+          "uitleg": "Een toetsenbord verklaart dit verschil niet."
+        },
+        {
+          "tekst": "De foto’s hebben bestandsnamen",
+          "juist": false,
+          "uitleg": "Alleen het hebben van bestandsnamen veroorzaakt dit probleem niet."
+        },
+        {
+          "tekst": "De gebruiker draagt een bril",
+          "juist": false,
+          "uitleg": "De bril van de gebruiker beïnvloedt het getrainde model niet."
+        }
+      ],
+      "uitleg": "De kwaliteit en samenstelling van trainingsdata beïnvloeden AI-resultaten.",
+      "leerdoel": "De leerling legt een verband tussen trainingsdata en AI-resultaten.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 5,
+      "type": "invullen",
+      "vraag": "Vul het ontbrekende woord in.",
+      "tekst": "Als je een afbeelding van iemand anders gebruikt, vermeld je de [bron|bronvermelding].",
+      "uitleg": "Bronvermelding maakt zichtbaar waar materiaal vandaan komt.",
+      "leerdoel": "De leerling kent het belang van bronvermelding.",
+      "vaardigheid": "herkennen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 6,
+      "type": "meerkeuze",
+      "vraag": "Kijk naar situatie E. Welk blok zorgt dat een opdracht vaker wordt uitgevoerd?",
+      "opties": [
+        {
+          "tekst": "Herhaal 4 keer",
+          "juist": true,
+          "uitleg": "Een herhaalblok voert de blokken erin meerdere keren uit."
+        },
+        {
+          "tekst": "De groene vlag",
+          "juist": false,
+          "uitleg": "De vlag start het programma maar herhaalt de opdracht niet zelf."
+        },
+        {
+          "tekst": "Zet 1 stap",
+          "juist": false,
+          "uitleg": "Dit blok voert één beweging uit."
+        },
+        {
+          "tekst": "Als rand geraakt, draai om",
+          "juist": false,
+          "uitleg": "Dit blok reageert op een voorwaarde."
+        }
+      ],
+      "uitleg": "Een herhaling laat een programma dezelfde instructie meerdere keren uitvoeren.",
+      "leerdoel": "De leerling herkent een herhaling in blokcode.",
+      "vaardigheid": "herkennen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 7,
+      "type": "meerkeuze",
+      "vraag": "Je krijgt onverwacht een inlogcode per sms. Iemand vraagt je die code door te sturen. Wat doe je?",
+      "opties": [
+        {
+          "tekst": "De code geheimhouden en een volwassene of beheerder waarschuwen",
+          "juist": true,
+          "uitleg": "Een inlogcode is persoonlijk en mag je niet doorgeven."
+        },
+        {
+          "tekst": "De code meteen doorsturen",
+          "juist": false,
+          "uitleg": "Met de code kan iemand mogelijk inloggen op jouw account."
+        },
+        {
+          "tekst": "De code in de groepschat zetten",
+          "juist": false,
+          "uitleg": "Dan kunnen meerdere mensen de code misbruiken."
+        },
+        {
+          "tekst": "Een foto van je wachtwoord meesturen",
+          "juist": false,
+          "uitleg": "Daarmee geef je nog meer geheime informatie weg."
+        }
+      ],
+      "uitleg": "Wachtwoorden en tijdelijke inlogcodes deel je nooit met anderen.",
+      "leerdoel": "De leerling beschermt accountgegevens bij tweestapsverificatie.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 8,
+      "type": "invullen",
+      "vraag": "Vul het ontbrekende woord in.",
+      "tekst": "Alles wat anderen online over jou kunnen vinden, hoort bij je online [identiteit|profiel].",
+      "uitleg": "Berichten, foto’s en gegevens vormen samen een beeld van jou online.",
+      "leerdoel": "De leerling begrijpt het begrip online identiteit.",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 9,
+      "type": "meerkeuze",
+      "vraag": "Kijk naar situatie F. Welk risico hoort bij een slimme thermostaat?",
+      "opties": [
+        {
+          "tekst": "Temperatuur- en gebruiksgegevens kunnen worden verzameld",
+          "juist": true,
+          "uitleg": "Slimme apparaten kunnen gegevens opslaan en versturen."
+        },
+        {
+          "tekst": "De muur wordt automatisch van goud",
+          "juist": false,
+          "uitleg": "Dit heeft niets met de digitale werking te maken."
+        },
+        {
+          "tekst": "Alle ramen verdwijnen",
+          "juist": false,
+          "uitleg": "Een thermostaat laat geen ramen verdwijnen."
+        },
+        {
+          "tekst": "Papier kan niet meer worden gebruikt",
+          "juist": false,
+          "uitleg": "De thermostaat bepaalt niet of papier bruikbaar is."
+        }
+      ],
+      "uitleg": "Slimme apparaten bieden gemak maar kunnen ook gegevens verzamelen.",
+      "leerdoel": "De leerling herkent een risico van verbonden technologie.",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 10,
+      "type": "volgorde",
+      "vraag": "Zet in de juiste volgorde: een schoolbestand via “Opslaan als” in de juiste map zetten.",
+      "stappen": [
+        "Open Opslaan als",
+        "Open de passende hoofdmap",
+        "Open of maak de juiste submap",
+        "Typ een herkenbare bestandsnaam",
+        "Klik op Opslaan"
+      ],
+      "uitleg": "Een herkenbare naam en logische map maken terugvinden eenvoudiger.",
+      "leerdoel": "De leerling beheert bestanden gestructureerd.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 11,
+      "type": "koppelen",
+      "vraag": "Koppel het signaal aan wat je moet controleren.",
+      "paren": [
+        {
+          "links": "Geen auteur genoemd",
+          "rechts": "Wie de informatie heeft gemaakt"
+        },
+        {
+          "links": "Oude publicatiedatum",
+          "rechts": "Of de informatie nog actueel is"
+        },
+        {
+          "links": "Gesponsord bericht",
+          "rechts": "Of reclame het doel is"
+        },
+        {
+          "links": "Sterke bewering zonder link",
+          "rechts": "Of er bewijs of een bron bestaat"
+        }
+      ],
+      "uitleg": "Verschillende signalen vragen om verschillende controles.",
+      "leerdoel": "De leerling beoordeelt digitale informatie systematisch.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 12,
+      "type": "meerkeuze",
+      "vraag": "Een tabel bevat alleen gametijd van leerlingen die elke dag gamen. Welke conclusie is verantwoord?",
+      "opties": [
+        {
+          "tekst": "De tabel vertelt alleen iets over de ondervraagde dagelijkse gamers",
+          "juist": true,
+          "uitleg": "De gekozen groep beperkt wat je uit de gegevens kunt concluderen."
+        },
+        {
+          "tekst": "Alle leerlingen gamen elke dag",
+          "juist": false,
+          "uitleg": "Leerlingen die niet dagelijks gamen zijn niet onderzocht."
+        },
+        {
+          "tekst": "Niemand gebruikt sociale media",
+          "juist": false,
+          "uitleg": "De tabel bevat daar geen gegevens over."
+        },
+        {
+          "tekst": "Iedereen heeft dezelfde gametijd",
+          "juist": false,
+          "uitleg": "Dat volgt niet uit de beschrijving van de dataset."
+        }
+      ],
+      "uitleg": "Een dataset beschrijft alleen de gegevens en groep die werkelijk zijn onderzocht.",
+      "leerdoel": "De leerling trekt een verantwoorde conclusie uit beperkte data.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 13,
+      "type": "koppelen",
+      "vraag": "Koppel het systeem aan de beste omschrijving.",
+      "paren": [
+        {
+          "links": "Rekenmachine",
+          "rechts": "Volgt vaste rekenregels"
+        },
+        {
+          "links": "Aanbevelingssysteem",
+          "rechts": "Voorspelt passende keuzes uit gegevens"
+        },
+        {
+          "links": "Tekstgenerator",
+          "rechts": "Maakt tekst op basis van geleerde patronen"
+        },
+        {
+          "links": "Lichtschakelaar",
+          "rechts": "Voert direct een vaste aan-uitopdracht uit"
+        }
+      ],
+      "uitleg": "Niet ieder digitaal systeem is AI; sommige systemen volgen alleen vaste regels.",
+      "leerdoel": "De leerling onderscheidt AI-systemen van regelgestuurde systemen.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 14,
+      "type": "meerkeuze",
+      "vraag": "Je maakt een poster voor nieuwe brugklassers. Welke ontwerpkeuze past het best bij deze doelgroep?",
+      "opties": [
+        {
+          "tekst": "Korte uitleg, duidelijke pictogrammen en grote koppen",
+          "juist": true,
+          "uitleg": "Deze combinatie helpt jonge leerlingen informatie snel begrijpen."
+        },
+        {
+          "tekst": "Zeer kleine letters en lange alinea’s",
+          "juist": false,
+          "uitleg": "Dat maakt de poster moeilijk leesbaar."
+        },
+        {
+          "tekst": "Alle informatie verbergen achter codes",
+          "juist": false,
+          "uitleg": "De doelgroep kan de boodschap dan niet direct vinden."
+        },
+        {
+          "tekst": "Geen titel gebruiken",
+          "juist": false,
+          "uitleg": "Zonder titel is het doel minder duidelijk."
+        }
+      ],
+      "uitleg": "Stem taal, vorm en indeling af op de doelgroep.",
+      "leerdoel": "De leerling past ontwerpkeuzes aan een doelgroep aan.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 15,
+      "type": "waar-niet-waar",
+      "vraag": "Stelling: Als een programma één keer goed werkt, hoef je het nooit met andere invoer te testen.",
+      "juist": false,
+      "uitleg": "Andere invoer kan nieuwe fouten zichtbaar maken. Test daarom meerdere situaties.",
+      "leerdoel": "De leerling begrijpt waarom programma’s met verschillende invoer worden getest.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 16,
+      "type": "meerkeuze",
+      "vraag": "Welke gegevens zijn persoonsgegevens? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Je volledige naam",
+          "juist": true,
+          "uitleg": "Een naam kan naar jou verwijzen."
+        },
+        {
+          "tekst": "Een herkenbare foto van jou",
+          "juist": true,
+          "uitleg": "Een herkenbare foto is informatie over jou."
+        },
+        {
+          "tekst": "Je thuisadres",
+          "juist": true,
+          "uitleg": "Een adres kan jou identificeren en lokaliseren."
+        },
+        {
+          "tekst": "Het woord computer",
+          "juist": false,
+          "uitleg": "Dit algemene woord verwijst niet naar een persoon."
+        },
+        {
+          "tekst": "Het aantal stoelen in een leeg lokaal",
+          "juist": false,
+          "uitleg": "Dit gegeven gaat niet over een herkenbaar persoon."
+        }
+      ],
+      "uitleg": "Persoonsgegevens zijn gegevens die direct of indirect naar iemand verwijzen.",
+      "leerdoel": "De leerling herkent persoonsgegevens.",
+      "vaardigheid": "herkennen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 17,
+      "type": "meerkeuze",
+      "vraag": "Een vriend stuurt een gênante foto van iemand uit de klas. Wat is de beste keuze?",
+      "opties": [
+        {
+          "tekst": "Niet doorsturen en vragen de foto te verwijderen",
+          "juist": true,
+          "uitleg": "Zo beperk je verdere verspreiding en respecteer je de ander."
+        },
+        {
+          "tekst": "Doorsturen naar nog drie vrienden",
+          "juist": false,
+          "uitleg": "Daarmee vergroot je de schade voor de persoon op de foto."
+        },
+        {
+          "tekst": "De foto openbaar plaatsen",
+          "juist": false,
+          "uitleg": "Openbaar delen maakt de privacyschending groter."
+        },
+        {
+          "tekst": "Een gemene tekst erbij schrijven",
+          "juist": false,
+          "uitleg": "Dat is respectloos en kan online pesten zijn."
+        }
+      ],
+      "uitleg": "Deel kwetsend of privébeeld van anderen niet verder.",
+      "leerdoel": "De leerling handelt respectvol bij ontvangen beeldmateriaal.",
+      "vaardigheid": "toepassen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 18,
+      "type": "waar-niet-waar",
+      "vraag": "Stelling: Digitale technologie heeft alleen voordelen en geen gevolgen voor energiegebruik of grondstoffen.",
+      "juist": false,
+      "uitleg": "Apparaten, netwerken en datacenters gebruiken energie en materialen.",
+      "leerdoel": "De leerling begrijpt dat digitale technologie ook ecologische gevolgen heeft.",
+      "vaardigheid": "begrijpen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 19,
+      "type": "meerkeuze",
+      "vraag": "Je werkt samen in één online document. Wat voorkomt het best dat werk verloren gaat?",
+      "opties": [
+        {
+          "tekst": "Werken in het gedeelde bestand en controleren of wijzigingen zijn opgeslagen",
+          "juist": true,
+          "uitleg": "Zo werkt iedereen in dezelfde versie en kun je de opslag controleren."
+        },
+        {
+          "tekst": "Iedereen maakt willekeurige losse versies met dezelfde naam",
+          "juist": false,
+          "uitleg": "Dan is onduidelijk welke versie de nieuwste is."
+        },
+        {
+          "tekst": "Het bestand nooit een naam geven",
+          "juist": false,
+          "uitleg": "Een herkenbare naam helpt het bestand terugvinden."
+        },
+        {
+          "tekst": "Alle tekst na elke les verwijderen",
+          "juist": false,
+          "uitleg": "Dan gaat juist werk verloren."
+        }
+      ],
+      "uitleg": "Goed samenwerken vraagt om duidelijke bestanden en controle van opgeslagen wijzigingen.",
+      "leerdoel": "De leerling gebruikt digitale samenwerking functioneel.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 20,
+      "type": "waar-niet-waar",
+      "vraag": "Stelling: Een bericht met duizenden likes is daardoor automatisch waar.",
+      "juist": false,
+      "uitleg": "Populariteit is geen bewijs. Controleer maker, bron en onderbouwing.",
+      "leerdoel": "De leerling onderscheidt populariteit van betrouwbaarheid.",
+      "vaardigheid": "begrijpen",
+      "niveau": "basis"
+    },
+    {
+      "nr": 21,
+      "type": "meerkeuze",
+      "vraag": "Een school onderzoekt welke route naar school veiliger kan. Welke gegevens zijn bruikbaar? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "De gebruikte route",
+          "juist": true,
+          "uitleg": "De route laat zien waar leerlingen reizen."
+        },
+        {
+          "tekst": "Plekken waar bijna-ongelukken gebeuren",
+          "juist": true,
+          "uitleg": "Deze plekken kunnen op een veiligheidsprobleem wijzen."
+        },
+        {
+          "tekst": "Tijdstip van reizen",
+          "juist": true,
+          "uitleg": "Drukte en risico kunnen per tijdstip verschillen."
+        },
+        {
+          "tekst": "Het wachtwoord van leerlingen",
+          "juist": false,
+          "uitleg": "Wachtwoorden zijn geheim en niet relevant."
+        },
+        {
+          "tekst": "De favoriete film van leerlingen",
+          "juist": false,
+          "uitleg": "Dit helpt de verkeersvraag niet beantwoorden."
+        }
+      ],
+      "uitleg": "Goede onderzoeksdata passen bij de vraag en verzamelen geen onnodige geheimen.",
+      "leerdoel": "De leerling selecteert relevante en verantwoorde data.",
+      "vaardigheid": "toepassen",
+      "niveau": "verdieping"
+    },
+    {
+      "nr": 22,
+      "type": "meerkeuze",
+      "vraag": "Welke opdracht aan AI is het duidelijkst?",
+      "opties": [
+        {
+          "tekst": "Leg in vijf korte zinnen uit wat phishing is voor een brugklasleerling",
+          "juist": true,
+          "uitleg": "Doelgroep, onderwerp, lengte en vorm zijn duidelijk."
+        },
+        {
+          "tekst": "Doe iets met internet",
+          "juist": false,
+          "uitleg": "Het doel en gewenste resultaat ontbreken."
+        },
+        {
+          "tekst": "Maak het goed",
+          "juist": false,
+          "uitleg": "Het is niet duidelijk wat gemaakt of verbeterd moet worden."
+        },
+        {
+          "tekst": "Vertel alles",
+          "juist": false,
+          "uitleg": "Het onderwerp en de grenzen ontbreken."
+        }
+      ],
+      "uitleg": "Een duidelijke AI-opdracht noemt doel, doelgroep en gewenste vorm.",
+      "leerdoel": "De leerling formuleert een doelgerichte opdracht voor AI.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 23,
+      "type": "meerkeuze",
+      "vraag": "Je gebruikt een online afbeelding in een presentatie. Wat zijn goede keuzes? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Controleren welke gebruikslicentie geldt",
+          "juist": true,
+          "uitleg": "De licentie vertelt wat je met de afbeelding mag doen."
+        },
+        {
+          "tekst": "De maker of bron vermelden",
+          "juist": true,
+          "uitleg": "Zo maak je zichtbaar waar de afbeelding vandaan komt."
+        },
+        {
+          "tekst": "Aannemen dat alles op internet vrij te gebruiken is",
+          "juist": false,
+          "uitleg": "Online beschikbaar betekent niet automatisch vrij van auteursrecht."
+        },
+        {
+          "tekst": "Zo nodig toestemming vragen",
+          "juist": true,
+          "uitleg": "Toestemming kan nodig zijn als de licentie gebruik niet toestaat."
+        },
+        {
+          "tekst": "De naam van de maker verwijderen",
+          "juist": false,
+          "uitleg": "Daarmee verberg je juist de herkomst."
+        }
+      ],
+      "uitleg": "Auteursrecht, licentie en bronvermelding horen bij verantwoord creëren.",
+      "leerdoel": "De leerling gebruikt materiaal van anderen verantwoord.",
+      "vaardigheid": "toepassen",
+      "niveau": "verdieping"
+    },
+    {
+      "nr": 24,
+      "type": "meerkeuze",
+      "vraag": "Een programma moet zeggen “toegang” als leeftijd 12 of hoger is. Welke regel past?",
+      "opties": [
+        {
+          "tekst": "Als leeftijd ≥ 12, toon “toegang”",
+          "juist": true,
+          "uitleg": "De voorwaarde controleert precies de afgesproken grens."
+        },
+        {
+          "tekst": "Herhaal leeftijd altijd",
+          "juist": false,
+          "uitleg": "Een herhaling controleert de toegangsgrens niet."
+        },
+        {
+          "tekst": "Verwijder de leeftijd",
+          "juist": false,
+          "uitleg": "Dan kan het programma de voorwaarde niet controleren."
+        },
+        {
+          "tekst": "Toon altijd “toegang”",
+          "juist": false,
+          "uitleg": "Dan wordt de leeftijdsregel niet gebruikt."
+        }
+      ],
+      "uitleg": "Een voorwaarde laat een programma een keuze maken op basis van gegevens.",
+      "leerdoel": "De leerling past een eenvoudige voorwaarde toe.",
+      "vaardigheid": "toepassen",
+      "niveau": "verdieping"
+    },
+    {
+      "nr": 25,
+      "type": "meerkeuze",
+      "vraag": "Wat maakt een openbaar wifi-netwerk veiliger in gebruik? Kies alle goede antwoorden.",
+      "meerdere": true,
+      "opties": [
+        {
+          "tekst": "Geen gevoelige gegevens versturen als dat niet nodig is",
+          "juist": true,
+          "uitleg": "Zo beperk je wat kan worden onderschept of misbruikt."
+        },
+        {
+          "tekst": "Controleren of de netwerknaam echt van de organisatie is",
+          "juist": true,
+          "uitleg": "Een nepnetwerk kan een bijna dezelfde naam gebruiken."
+        },
+        {
+          "tekst": "Automatisch met elk netwerk verbinden",
+          "juist": false,
+          "uitleg": "Dan kun je ongemerkt een onveilig netwerk gebruiken."
+        },
+        {
+          "tekst": "Bestandsdeling uitschakelen",
+          "juist": true,
+          "uitleg": "Zo voorkom je dat anderen makkelijk bij gedeelde bestanden komen."
+        },
+        {
+          "tekst": "Je wachtwoord hardop zeggen",
+          "juist": false,
+          "uitleg": "Anderen kunnen het dan gebruiken."
+        }
+      ],
+      "uitleg": "Op openbare wifi beperk je risico’s door het netwerk te controleren en weinig gevoelige gegevens te delen.",
+      "leerdoel": "De leerling neemt passende veiligheidsmaatregelen op een netwerk.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 26,
+      "type": "meerkeuze",
+      "vraag": "Je merkt dat korte video’s je steeds afleiden tijdens huiswerk. Welke aanpak helpt het best?",
+      "opties": [
+        {
+          "tekst": "Meldingen uitzetten en een vaste pauzetijd kiezen",
+          "juist": true,
+          "uitleg": "Je vermindert prikkels en bepaalt zelf wanneer je pauze neemt."
+        },
+        {
+          "tekst": "Nog meer apps tegelijk openen",
+          "juist": false,
+          "uitleg": "Meer prikkels maken concentreren meestal moeilijker."
+        },
+        {
+          "tekst": "Elke melding direct bekijken",
+          "juist": false,
+          "uitleg": "Je aandacht wordt dan steeds onderbroken."
+        },
+        {
+          "tekst": "De hele nacht doorgaan",
+          "juist": false,
+          "uitleg": "Te weinig slaap is slecht voor concentratie en gezondheid."
+        }
+      ],
+      "uitleg": "Bewuste instellingen en afspraken helpen grip houden op mediagebruik.",
+      "leerdoel": "De leerling maakt een weloverwogen keuze over eigen mediagebruik.",
+      "vaardigheid": "toepassen",
+      "niveau": "plus"
+    },
+    {
+      "nr": 27,
+      "type": "koppelen",
+      "vraag": "Koppel ieder gevolg aan het juiste perspectief.",
+      "paren": [
+        {
+          "links": "Minder contact met mensen zonder internet",
+          "rechts": "Sociaal gevolg"
+        },
+        {
+          "links": "Banen veranderen door automatisering",
+          "rechts": "Economisch gevolg"
+        },
+        {
+          "links": "Datacenters gebruiken veel elektriciteit",
+          "rechts": "Ecologisch gevolg"
+        },
+        {
+          "links": "Een algoritme beslist wie voorrang krijgt",
+          "rechts": "Ethisch gevolg"
+        }
+      ],
+      "uitleg": "Digitale technologie heeft sociale, economische, ecologische en ethische gevolgen.",
+      "leerdoel": "De leerling analyseert gevolgen van digitalisering vanuit verschillende perspectieven.",
+      "vaardigheid": "uitleggen",
+      "niveau": "verdieping"
+    }
+  ]
+}

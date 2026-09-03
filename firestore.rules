@@ -274,6 +274,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Persoonlijk startprofiel uit de nulmeting digitale vaardigheden. Wordt
+    // alleen door de Cloud Function buildNulmetingProfiel geschreven (Admin
+    // SDK, buiten deze regels om). Een leerling leest uitsluitend zijn eigen
+    // profiel; docenten alles. Geen schrijfrechten vanuit de client, zodat een
+    // leerling zijn profiel niet zelf kan aanpassen.
+    match /nulmetingProfielen/{userId} {
+      allow read: if isOwner(userId) || isAdminOrSupervisor();
+      allow create, update, delete: if false;
+    }
+
     // Voortgang per vraag binnen een toets of quiz.
     // Een toets is een blok, maar de docent kijkt per vraag. Zelfde eigenaars-
     // toets als het ouderdocument: een leerling leest en schrijft alleen zijn

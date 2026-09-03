@@ -1711,3 +1711,105 @@ test("buildAssessmentRetryDiagnosis en stripAssessmentAnswerLeaks dekken koppele
   assert.equal(__test.stripAssessmentAnswerLeaks("Denk na. Het is de balk onderaan!", diagnosis.correctTexts), "Denk na. Kijk nog eens goed naar wat de vraag precies vraagt: welke keuze past daar het beste bij, en waarom?");
   assert.equal(__test.stripAssessmentAnswerLeaks("Wat zie je onderaan je scherm?", diagnosis.correctTexts), "Wat zie je onderaan je scherm?");
 });
+
+// Eigen kleine nep-database voor het nulmetingsprofiel: de gedeelde fake kent
+// geen `in`-queries en geen subcollecties, en die heeft deze callable wel nodig.
+const createNulmetingDb = (docs = {}) => {
+  const store = { ...docs };
+  const writes = [];
+  const snapshotFor = (path) => ({ id: path.split("/").at(-1), exists: store[path] !== undefined, data: () => store[path] });
+  const docsUnder = (prefix, depth) => Object.entries(store)
+    .filter(([path]) => path.startsWith(`${prefix}/`) && path.slice(prefix.length + 1).split("/").length === depth)
+    .map(([path]) => ({ ...snapshotFor(path), ref: docRef(path) }));
+  const collectionRef = (name) => ({
+    doc: (id) => docRef(`${name}/${id}`),
+    where: (field, operator, value) => ({
+      async get() {
+        const match = (data) => (operator === "in" ? value.includes(data?.[field]) : data?.[field] === value);
+        return { docs: docsUnder(name, 1).filter((snap) => match(snap.data())) };
+      },
+    }),
+    async get() { return { docs: docsUnder(name, 1) }; },
+  });
+  const docRef = (path) => ({
+    path,
+    async get() { return snapshotFor(path); },
+    async set(data) { store[path] = data; writes.push({ path, data }); },
+    collection: (sub) => collectionRef(`${path}/${sub}`),
+  });
+  return { doc: docRef, collection: collectionRef, store, writes };
+};
+
+const nulmetingBlok = (deel, slug, deelvaardigheidId = "systemen") => ({
+  type: "toets",
+  paragraafId: "paragraaf-dv-kb-nulmeting-dv",
+  content: {
+    nulmeting: {
+      deel,
+      slug,
+      mapping: { [`${slug}-01`]: { les: deel, nr: 1, deelvaardigheidId, vaardigheid: "herkennen" } },
+      analysemodel: {
+        regels: { deelvaardigheid: { niveaus: [{ min: 0, max: 1, label: "Startniveau" }, { min: 2, max: 3, label: "In ontwikkeling" }, { min: 4, max: 5, label: "Basis op orde" }, { min: 6, max: 6, label: "Extra uitdaging mogelijk" }] } },
+        deelvaardigheden: [{ id: "systemen", domein: "Praktische kennis en vaardigheden", onderdeel: "Digitale systemen" }],
+      },
+    },
+  },
+});
+
+test("buildNulmetingProfiel berekent en bewaart het eigen profiel van een leerling", async () => {
+  const db = createNulmetingDb({
+    "users/student-1": { role: "student", displayName: "Luna", klasId: "klas-1" },
+    "klassen/klas-1": { enabledParagrafen: ["paragraaf-dv-kb-nulmeting-dv"] },
+    "contentBlocks/blok-a": nulmetingBlok("A", "nm-a"),
+    "contentBlocks/blok-b": nulmetingBlok("B", "nm-b"),
+    "voortgang/student-1_blok-a/items/nm-a-01": { completed: true, isCorrect: true },
+    "voortgang/student-1_blok-b/items/nm-b-01": { completed: true, isCorrect: false },
+  });
+  const result = await __test.buildNulmetingProfielCore({
+    auth: { uid: "student-1" },
+    data: {},
+    db,
+    loadLayer: __test.loadSharedNulmetingLayer,
+    now: new Date("2026-09-03T10:00:00Z"),
+  });
+  assert.equal(result.success, true);
+  assert.equal(result.profiel.status, "compleet");
+  assert.deepEqual(result.profiel.totaal, { goed: 1, van: 2, gemaakt: 2, percentage: 50 });
+  assert.equal(result.profiel.deelvaardigheden[0].label, "Startniveau");
+  assert.equal(db.writes[0].path, "nulmetingProfielen/student-1");
+  assert.equal(db.store["nulmetingProfielen/student-1"].userId, "student-1");
+  assert.equal(db.store["nulmetingProfielen/student-1"].klasId, "klas-1");
+});
+
+test("buildNulmetingProfiel weigert het profiel van een andere leerling, maar niet voor een docent", async () => {
+  const docs = {
+    "users/student-1": { role: "student", displayName: "Luna", klasId: "klas-1" },
+    "users/student-2": { role: "student", displayName: "Noah", klasId: "klas-1" },
+    "users/docent-1": { role: "admin", displayName: "Docent" },
+    "klassen/klas-1": { enabledParagrafen: ["paragraaf-dv-kb-nulmeting-dv"] },
+    "contentBlocks/blok-a": nulmetingBlok("A", "nm-a"),
+  };
+  await assert.rejects(
+    __test.buildNulmetingProfielCore({ auth: { uid: "student-1" }, data: { leerlingUid: "student-2" }, db: createNulmetingDb(docs), loadLayer: __test.loadSharedNulmetingLayer }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+  await assert.rejects(
+    __test.buildNulmetingProfielCore({ auth: { uid: "student-1" }, data: { klasId: "klas-1" }, db: createNulmetingDb(docs), loadLayer: __test.loadSharedNulmetingLayer }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+  const alsDocent = await __test.buildNulmetingProfielCore({ auth: { uid: "docent-1" }, data: { klasId: "klas-1" }, db: createNulmetingDb(docs), loadLayer: __test.loadSharedNulmetingLayer });
+  assert.equal(alsDocent.success, true);
+  assert.equal(alsDocent.aantal, 2);
+  assert.equal(alsDocent.profielen[0].status, "voorlopig");
+});
+
+test("buildNulmetingProfiel meldt netjes dat er geen nulmeting is toegewezen", async () => {
+  const db = createNulmetingDb({
+    "users/student-1": { role: "student", klasId: "klas-1" },
+    "klassen/klas-1": { enabledParagrafen: ["paragraaf-dv-kb-1-1"] },
+  });
+  await assert.rejects(
+    __test.buildNulmetingProfielCore({ auth: { uid: "student-1" }, data: {}, db, loadLayer: __test.loadSharedNulmetingLayer }),
+    (error) => error instanceof HttpsError && error.code === "failed-precondition",
+  );
+});

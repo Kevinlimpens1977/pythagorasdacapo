@@ -77,6 +77,7 @@ import {
   resolveRetryPolicy
 } from '../lib/assessmentRetryRound';
 import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
+import { berekenEigenNulmetingProfiel } from '../services/nulmetingService';
 import { shouldCollapseAiTutorOnMouseLeave, shouldExpandAiTutorOnHover } from '../lib/aiTutorPanelState';
 import {
   getLessonReadingPresentation,
@@ -3132,6 +3133,16 @@ function AssessmentLearningBlock({
   const retryPlan = buildRetryRoundPlan({ block, items, records: itemRecords || {} });
   const retryText = describeRetryRound({ summary: progressSummary });
   const retryItems = items.filter((item) => retryPlan.kandidaatIds.includes(item.id));
+  // Nulmeting digitale vaardigheden: na het laatste antwoord wordt het
+  // startprofiel server-side (opnieuw) berekend en wijst de route ernaar.
+  const nulmetingDeel = content.nulmeting?.deel || '';
+  const navigate = useNavigate();
+  const profielBerekendRef = useRef(false);
+  useEffect(() => {
+    if (!nulmetingDeel || !progressSummary.completed || profielBerekendRef.current || !studentId) return;
+    profielBerekendRef.current = true;
+    berekenEigenNulmetingProfiel().catch(() => {});
+  }, [nulmetingDeel, progressSummary.completed, studentId]);
 
   return (
     <div className="space-y-6">
@@ -3195,6 +3206,20 @@ function AssessmentLearningBlock({
           <p className="mt-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
             Je docent vult dit blok nog aan. Je kunt verder met de volgende stap.
           </p>
+        </div>
+      )}
+
+      {nulmetingDeel && progressSummary.completed && (
+        <div className="study-panel border-blue-100 bg-blue-50 text-blue-950">
+          <p className="helix-eyebrow">Nulmeting</p>
+          <h3 className="mt-2 font-display text-2xl font-extrabold">Deel {nulmetingDeel} is klaar</h3>
+          <p className="mt-2 text-sm font-semibold leading-6">
+            Dit was geen toets voor een cijfer. Je antwoorden zijn omgezet in je persoonlijke startprofiel: wat je al goed kunt en waar je mee verdergaat.
+            {nulmetingDeel === 'A' ? ' Na deel B is je profiel compleet.' : ''}
+          </p>
+          <button type="button" onClick={() => navigate('/profiel')} className="btn-primary mt-4 px-5 py-2.5 text-sm">
+            Bekijk mijn startprofiel
+          </button>
         </div>
       )}
 
