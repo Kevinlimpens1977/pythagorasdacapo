@@ -296,7 +296,9 @@ const bouwVragenrondeItems = () => {
             id: `nw-${String(vraag.nr).padStart(2, '0')}-${vak}`,
             text: categorieen[vak].label,
             correct: isJuist,
-            explanation: isJuist ? vraag.uitleg : `Niet ${categorieen[vak].label.toLowerCase()}. ${juist.regel}`,
+            // Bij een fout gekozen vak: waarom dát vak hier niet past, zonder het
+            // juiste vak te noemen (dat komt pas in de uitleg na afronding).
+            explanation: isJuist ? vraag.uitleg : `Niet ${categorieen[vak].label.toLowerCase()}. ${categorieen[vak].nietRegel || juist.regel}`,
             misconception: ''
           };
         })

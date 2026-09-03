@@ -7,18 +7,22 @@
     "categorieen": {
       "biologie": {
         "label": "Biologie",
-        "regel": "Biologie gaat over de levende natuur: alles wat groeit en bloeit."
+        "regel": "Biologie gaat over de levende natuur: alles wat groeit en bloeit.",
+        "nietRegel": "Biologie gaat over de levende natuur: iets dat groeit, leeft of zich voortplant. Kijk nog eens of dat hier echt gebeurt."
       },
       "natuurkunde": {
         "label": "Natuurkunde",
-        "regel": "Natuurkunde gaat over verschijnselen in de levenloze natuur, zoals licht, warmte, geluid, krachten en magnetisme. Na afloop heb je precies dezelfde stoffen als ervoor."
+        "regel": "Natuurkunde gaat over verschijnselen in de levenloze natuur, zoals licht, warmte, geluid, krachten en magnetisme. Na afloop heb je precies dezelfde stoffen als ervoor.",
+        "nietRegel": "Natuurkunde gaat over verschijnselen waarbij je na afloop precies dezelfde stoffen overhoudt. Controleer of de stoffen hier echt hetzelfde blijven."
       },
       "scheikunde": {
         "label": "Scheikunde",
-        "regel": "Scheikunde gaat over stoffen die met elkaar reageren. Na afloop heb je andere stoffen dan ervoor."
+        "regel": "Scheikunde gaat over stoffen die met elkaar reageren. Na afloop heb je andere stoffen dan ervoor.",
+        "nietRegel": "Scheikunde gaat over stoffen die met elkaar reageren, zodat er andere stoffen ontstaan. Controleer of hier echt een nieuwe stof ontstaat."
       }
     },
-    "volgorde": "Vaste willekeurige volgorde (seed 20260903), zodat het juiste vak niet uit de positie af te lezen is; nr verwijst naar het item in het oorspronkelijke oefenspel."
+    "volgorde": "Vaste willekeurige volgorde (seed 20260903), zodat het juiste vak niet uit de positie af te lezen is; nr verwijst naar het item in het oorspronkelijke oefenspel.",
+    "uitlegregel": "Bij een foute optie legt de uitleg alleen uit waarom het gekozen vak niet past (nietRegel); het juiste vak wordt niet genoemd. De uitleg per vraag verschijnt pas na afronding."
   },
   "vragen": [
     {
