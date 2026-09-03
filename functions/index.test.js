@@ -1813,3 +1813,91 @@ test("buildNulmetingProfiel meldt netjes dat er geen nulmeting is toegewezen", a
     (error) => error instanceof HttpsError && error.code === "failed-precondition",
   );
 });
+
+const createResetDb = (docs = {}) => {
+  const store = { ...docs };
+  const deletes = [];
+  const snapshotFor = (path) => ({ id: path.split("/").at(-1), exists: store[path] !== undefined, data: () => store[path], ref: docRef(path) });
+  const docsUnder = (prefix, depth) => Object.entries(store)
+    .filter(([path]) => path.startsWith(`${prefix}/`) && path.slice(prefix.length + 1).split("/").length === depth)
+    .map(([path]) => snapshotFor(path));
+  const collectionRef = (name) => ({
+    doc: (id) => docRef(`${name}/${id}`),
+    async get() { const found = docsUnder(name, 1); return { docs: found, size: found.length }; },
+  });
+  const docRef = (path) => ({
+    path,
+    async get() { return snapshotFor(path); },
+    async set(data) { store[path] = data; },
+    collection: (sub) => collectionRef(`${path}/${sub}`),
+  });
+  const batch = () => {
+    const ops = [];
+    return {
+      delete: (ref) => ops.push(ref.path),
+      update: () => {},
+      async commit() { ops.forEach((path) => { delete store[path]; deletes.push(path); }); },
+    };
+  };
+  return { doc: docRef, collection: collectionRef, batch, store, deletes };
+};
+
+test("resetLeerlingBlokWerk verwijdert blokrecord, itemvoortgang en nulmetingprofiel, en laat tokens staan", async () => {
+  const db = createResetDb({
+    "users/docent-1": { role: "admin" },
+    "users/student-1": { role: "student", klasId: "klas-1" },
+    "contentBlocks/blok-a": { type: "toets", content: { nulmeting: { deel: "A" } } },
+    "voortgang/student-1_blok-a": { userId: "student-1", blockId: "blok-a", completed: true },
+    "voortgang/student-1_blok-a/items/nm-a-01": { completed: true },
+    "voortgang/student-1_blok-a/items/nm-a-02": { concept: { value: "x" } },
+    "voortgang/student-1_blok-b": { userId: "student-1", blockId: "blok-b", completed: true },
+    "nulmetingProfielen/student-1": { userId: "student-1" },
+    "tokenAwardClaims/student-1_contentBlock_blok-a_v1": { amount: 10 },
+  });
+  const result = await __test.resetLeerlingBlokWerkCore({
+    auth: { uid: "docent-1" },
+    data: { leerlingUid: "student-1", blockId: "blok-a" },
+    db,
+  });
+  assert.equal(result.success, true);
+  assert.equal(result.verwijderdeItems, 2);
+  assert.equal(result.blokRecordVerwijderd, true);
+  assert.equal(result.profielVerwijderd, true);
+  assert.equal(db.store["voortgang/student-1_blok-a"], undefined);
+  assert.equal(db.store["voortgang/student-1_blok-a/items/nm-a-01"], undefined);
+  assert.equal(db.store["voortgang/student-1_blok-a/items/nm-a-02"], undefined);
+  assert.equal(db.store["nulmetingProfielen/student-1"], undefined);
+  // Ander blok en de tokenclaim blijven staan.
+  assert.deepEqual(db.store["voortgang/student-1_blok-b"], { userId: "student-1", blockId: "blok-b", completed: true });
+  assert.deepEqual(db.store["tokenAwardClaims/student-1_contentBlock_blok-a_v1"], { amount: 10 });
+});
+
+test("resetLeerlingBlokWerk laat het profiel staan bij een gewoon blok en weigert niet-beheerders", async () => {
+  const docs = {
+    "users/docent-1": { role: "admin" },
+    "users/student-1": { role: "student" },
+    "users/student-2": { role: "student" },
+    "contentBlocks/quiz-1": { type: "quiz", content: {} },
+    "voortgang/student-1_quiz-1/items/q1": { completed: true },
+    "nulmetingProfielen/student-1": { userId: "student-1" },
+  };
+  const db = createResetDb(docs);
+  const result = await __test.resetLeerlingBlokWerkCore({ auth: { uid: "docent-1" }, data: { leerlingUid: "student-1", blockId: "quiz-1" }, db });
+  assert.equal(result.verwijderdeItems, 1);
+  assert.equal(result.blokRecordVerwijderd, false);
+  assert.equal(result.profielVerwijderd, false);
+  assert.ok(db.store["nulmetingProfielen/student-1"]);
+
+  await assert.rejects(
+    __test.resetLeerlingBlokWerkCore({ auth: { uid: "student-2" }, data: { leerlingUid: "student-1", blockId: "quiz-1" }, db: createResetDb(docs) }),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+  await assert.rejects(
+    __test.resetLeerlingBlokWerkCore({ auth: { uid: "docent-1" }, data: { leerlingUid: "docent-1", blockId: "quiz-1" }, db: createResetDb(docs) }),
+    (error) => error instanceof HttpsError && error.code === "failed-precondition",
+  );
+  await assert.rejects(
+    __test.resetLeerlingBlokWerkCore({ auth: { uid: "docent-1" }, data: { leerlingUid: "student-1" }, db: createResetDb(docs) }),
+    (error) => error instanceof HttpsError && error.code === "invalid-argument",
+  );
+});

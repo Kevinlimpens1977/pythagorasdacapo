@@ -52,6 +52,22 @@ export const buildNulmetingProfielCall = async ({ leerlingUid = '', klasId = '' 
   }
 };
 
+/**
+ * Beheerder laat een leerling een lesblok opnieuw maken: al het gemaakte werk
+ * van dat blok gaat weg (server-side, inclusief itemvoortgang en, bij een
+ * nulmeting, het startprofiel). Tokens blijven staan en komen niet opnieuw.
+ */
+export const resetLeerlingBlokWerkCall = async ({ leerlingUid = '', blockId = '' } = {}) => {
+  try {
+    const resetWerk = httpsCallable(functions, 'resetLeerlingBlokWerk');
+    const result = await resetWerk({ leerlingUid, blockId });
+    return { ...(result.data || {}), success: result.data?.success === true };
+  } catch (error) {
+    console.error('Werk resetten mislukt:', error);
+    return { success: false, code: error?.code || '', error: error?.message || 'Het werk kon nu niet gereset worden.' };
+  }
+};
+
 export const assessOpenAnswerCall = async ({
   blockId = '',
   // Oefenopgave in een lesblok: de server zoekt met blockId + fieldId zelf het

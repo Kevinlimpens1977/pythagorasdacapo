@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { STAP_STATUS, getStatusPresentatie } from '../../lib/klasVoortgangOverzicht';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { relatieveTijd } from '../../lib/relatieveTijd';
@@ -157,11 +159,71 @@ export function StappenSpoor({ stappen = [], actieveStapId = '', onSelectStap })
  * wat gaf de leerling als laatste antwoord. Stappen zonder record staan er
  * bewust bij, anders lijkt een lege paragraaf op een afgeronde paragraaf.
  */
+/**
+ * Opnieuw laten maken: een beheerder wist al het gemaakte werk van deze stap
+ * voor deze leerling. Eerst een bevestiging in de rij zelf, dan pas de
+ * server-actie. Tokens blijven staan en komen niet opnieuw (zie
+ * resetLeerlingBlokWerk in functions/index.js).
+ */
+function ResetStapActie({ stap, leerlingNaam = '', onReset, bezig = false }) {
+  const [bevestigen, setBevestigen] = useState(false);
+
+  if (!bevestigen) {
+    return (
+      <button
+        type="button"
+        onClick={() => setBevestigen(true)}
+        disabled={bezig}
+        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[var(--helix-border)] bg-white px-2.5 py-1.5 text-[11px] font-black text-[var(--helix-muted)] transition hover:border-rose-400 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <RotateCcw size={13} aria-hidden="true" />
+        Opnieuw laten maken
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 rounded-[var(--helix-radius-sm)] border border-rose-200 bg-rose-50 px-3 py-2.5">
+      <p className="text-xs font-black text-rose-900">
+        Al het gemaakte werk van {leerlingNaam || 'deze leerling'} voor stap {stap.nummer} ({stap.titel}) wordt verwijderd.
+      </p>
+      <p className="mt-1 text-[11px] font-semibold text-rose-800">
+        Antwoorden, pogingen, score en herkansing gaan weg. De leerling maakt de stap opnieuw. Verdiende tokens blijven staan en komen niet opnieuw. Dit kan niet ongedaan worden gemaakt.
+      </p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={async () => {
+            const gelukt = await onReset(stap);
+            if (gelukt) setBevestigen(false);
+          }}
+          disabled={bezig}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <RotateCcw size={13} aria-hidden="true" />
+          {bezig ? 'Bezig...' : 'Ja, werk verwijderen'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setBevestigen(false)}
+          disabled={bezig}
+          className="rounded-lg border border-[var(--helix-border)] bg-white px-3 py-1.5 text-[11px] font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-navy)]"
+        >
+          Annuleren
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function LeerlingStappen({
   rapport = null,
   nakijkOpdrachtenPerBlockId = {},
   onBeoordeel,
-  bezigId = ''
+  bezigId = '',
+  onResetStap = null,
+  resetBezigId = '',
+  leerlingNaam = ''
 }) {
   if (!rapport || !rapport.stappen.length) {
     return (
@@ -250,6 +312,15 @@ export default function LeerlingStappen({
                 {record.teacherReview.docentNaam ? ` door ${record.teacherReview.docentNaam}` : ''}
                 {record.teacherReview.opmerking ? ` - "${record.teacherReview.opmerking}"` : ''}
               </p>
+            )}
+
+            {onResetStap && stap.blockId && (record || stap.status !== STAP_STATUS.NIET_GESTART) && (
+              <ResetStapActie
+                stap={stap}
+                leerlingNaam={leerlingNaam}
+                onReset={onResetStap}
+                bezig={resetBezigId === stap.blockId}
+              />
             )}
 
             {onBeoordeel && nakijkOpdrachten.map((nakijkOpdracht) => (

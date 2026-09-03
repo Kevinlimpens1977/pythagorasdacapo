@@ -54,6 +54,7 @@ import {
   telNakijkPerLeerling
 } from '../../lib/nakijkOpdrachten';
 import { beoordeelOpenAntwoord } from '../../services/voortgangService';
+import { resetLeerlingBlokWerkCall } from '../../lib/api';
 import KlasVoortgangMatrix, { PlusChip, StatusLegenda, StatusChip } from './KlasVoortgangMatrix';
 import AandachtsLijst from './AandachtsLijst';
 import PlusOverzicht from './PlusOverzicht';
@@ -251,6 +252,7 @@ export default function ClassOverview() {
   const [nakijkBezigId, setNakijkBezigId] = useState('');
   const [nakijkMelding, setNakijkMelding] = useState('');
   const [nakijkFout, setNakijkFout] = useState('');
+  const [resetBezigId, setResetBezigId] = useState('');
 
   // Load all paragraphs from CMS hierarchy
   useEffect(() => {
@@ -536,6 +538,32 @@ export default function ClassOverview() {
       setNakijkBezigId('');
     }
   }, [currentUser, getBlokContext, nakijkBezigId]);
+
+  // Opnieuw laten maken: de server wist het werk van één stap voor één
+  // leerling; de listeners op voortgang en items werken het overzicht bij.
+  const resetStap = useCallback(async (stap) => {
+    if (!stap?.blockId || !selectedStudent?.id || resetBezigId) return false;
+
+    setResetBezigId(stap.blockId);
+    setNakijkFout('');
+    setNakijkMelding('');
+
+    const result = await resetLeerlingBlokWerkCall({ leerlingUid: selectedStudent.id, blockId: stap.blockId });
+    setResetBezigId('');
+
+    if (!result.success) {
+      setNakijkFout(result.error || 'Het werk kon nu niet gereset worden.');
+      return false;
+    }
+
+    const naam = selectedStudent.displayName || selectedStudent.email || 'De leerling';
+    setNakijkMelding(
+      `Werk verwijderd: ${naam}, stap ${stap.nummer} (${stap.titel}). ` +
+      `${result.verwijderdeItems || 0} ${result.verwijderdeItems === 1 ? 'vraag' : 'vragen'} gewist` +
+      `${result.profielVerwijderd ? ', startprofiel gewist' : ''}. De leerling kan de stap opnieuw maken.`
+    );
+    return true;
+  }, [resetBezigId, selectedStudent]);
   const klasStatusTelling = useMemo(() => buildKlasStatusTelling(voortgangRijen), [voortgangRijen]);
   const hoofdstukGroepen = useMemo(() => groepeerParagrafenPerHoofdstuk(paragraphen), [paragraphen]);
   const actiefHoofdstuk = hoofdstukGroepen.find((groep) => groep.hoofdstukId === selectedHoofdstukId)
@@ -1061,6 +1089,9 @@ export default function ClassOverview() {
                                     nakijkOpdrachtenPerBlockId={nakijkPerBlockId}
                                     onBeoordeel={beoordeelStap}
                                     bezigId={nakijkBezigId}
+                                    onResetStap={resetStap}
+                                    resetBezigId={resetBezigId}
+                                    leerlingNaam={selectedStudent.displayName || selectedStudent.email || ''}
                                   />
                                 )
                                 : <StudentProgressRecordList records={assignedRecords} />

@@ -2198,6 +2198,65 @@ async function clearClassStudentOverrides(db, now) {
   return snapshot.size;
 }
 
+/**
+ * Een beheerder laat een leerling één lesblok opnieuw maken: het blokrecord en
+ * alle itemvoortgang (toets- en quizvragen, concepten, herkansing) gaan weg.
+ *
+ * Tokens blijven bewust staan: de claim in tokenAwardClaims blijft bestaan,
+ * dus bij het opnieuw maken komen er geen tokens meer bij voor hetzelfde blok.
+ * Bij een nulmetingblok gaat ook het startprofiel weg; dat wordt opnieuw
+ * berekend zodra de leerling het deel weer afrondt.
+ */
+async function resetLeerlingBlokWerkCore({ auth, data = {}, db }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om werk te resetten.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  assertAdminRole(caller.data);
+
+  const leerlingUid = requireString(data.leerlingUid, "leerlingUid");
+  const blockId = requireString(data.blockId, "blockId");
+
+  const leerling = await getRequiredDoc(db.doc(`users/${leerlingUid}`), "Leerling");
+  if (String(leerling.data.role || "").toLowerCase() !== "student") {
+    throw new HttpsError("failed-precondition", "Alleen het werk van een leerling kan gereset worden.");
+  }
+
+  const blokRef = db.doc(`voortgang/${leerlingUid}_${blockId}`);
+  const blokSnapshot = await blokRef.get();
+  const itemsSnapshot = await blokRef.collection("items").get();
+
+  const verwijderdeItems = await deleteQuerySnapshot(db, itemsSnapshot);
+  let blokRecordVerwijderd = false;
+  if (blokSnapshot.exists) {
+    await commitInChunks(db, [{ type: "delete", ref: blokRef }]);
+    blokRecordVerwijderd = true;
+  }
+
+  // Nulmeting: het startprofiel is een afgeleide van dit werk en klopt niet meer.
+  let profielVerwijderd = false;
+  const blokDoc = await db.doc(`contentBlocks/${blockId}`).get();
+  const isNulmeting = Boolean(blokDoc.exists && blokDoc.data()?.content?.nulmeting?.deel);
+  if (isNulmeting) {
+    const profielRef = db.doc(`nulmetingProfielen/${leerlingUid}`);
+    const profielSnapshot = await profielRef.get();
+    if (profielSnapshot.exists) {
+      await commitInChunks(db, [{ type: "delete", ref: profielRef }]);
+      profielVerwijderd = true;
+    }
+  }
+
+  return {
+    success: true,
+    leerlingUid,
+    blockId,
+    verwijderdeItems,
+    blokRecordVerwijderd,
+    profielVerwijderd,
+  };
+}
+
 async function deleteAllStudentDataCore({ auth, db, now }) {
   if (!auth?.uid) {
     throw new HttpsError("unauthenticated", "Log in om leerlingen te verwijderen.");
@@ -2986,6 +3045,24 @@ exports.deleteAllStudentData = onCall({
   });
 });
 
+exports.resetLeerlingBlokWerk = onCall({
+  region: REGION,
+}, async (request) => {
+  try {
+    return await resetLeerlingBlokWerkCore({
+      auth: request.auth,
+      data: request.data || {},
+      db: getFirestore(),
+    });
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    console.error("Error in resetLeerlingBlokWerk:", error);
+    throw new HttpsError("internal", "Het werk kon nu niet gereset worden.");
+  }
+});
+
 exports.importStudentNumberAccounts = onCall({
   region: REGION,
 }, async (request) => {
@@ -3317,6 +3394,7 @@ exports.__test = {
   getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,
   purchaseTokenShopItemCore,
+  resetLeerlingBlokWerkCore,
   resetStudentPasswordCore,
   syncAllStudentAuthAccountsCore,
   updateAiTutorRulesCore,
