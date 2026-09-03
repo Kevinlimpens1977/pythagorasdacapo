@@ -20,6 +20,7 @@ import {
   buildStapKolommen,
   buildStapMatrixRijen,
   buildStapStatus,
+  formatItemAntwoord,
   getParagraafLabel,
   getStatusPresentatie,
   groepeerParagrafenPerHoofdstuk,
@@ -908,4 +909,54 @@ test('een hoofdstukrapport rekent de plusparagraaf niet mee in het percentage', 
   assert.equal(hoofdstukMetPlus.status, STAP_STATUS.AFGEROND);
   assert.equal(hoofdstukMetPlus.plus.totaalParagrafen, 1);
   assert.equal(hoofdstukMetPlus.plus.afgerondeParagrafen, 0);
+});
+
+test('formatItemAntwoord vertaalt optie-ids en koppelkeuzes naar tekst voor de docent', () => {
+  const meerkeuze = {
+    id: 'nw-06',
+    type: 'meerkeuze',
+    answer: { type: 'meerkeuze', options: [{ id: 'nw-06-biologie', text: 'Biologie' }, { id: 'nw-06-scheikunde', text: 'Scheikunde' }] }
+  };
+  assert.equal(formatItemAntwoord(meerkeuze, { value: 'nw-06-scheikunde' }), 'Scheikunde');
+  assert.equal(formatItemAntwoord(meerkeuze, { value: ['nw-06-biologie', 'nw-06-scheikunde'] }), 'Biologie, Scheikunde');
+  // Zonder vraagdefinitie blijft het id staan, nooit een leeg vak.
+  assert.equal(formatItemAntwoord(null, { value: 'nw-06-scheikunde' }), 'nw-06-scheikunde');
+  assert.equal(formatItemAntwoord(meerkeuze, null), '');
+
+  const koppelen = {
+    id: 'k1',
+    type: 'koppelen',
+    answer: { type: 'koppelen', pairs: [{ id: 'k1-pair-1', left: 'Bureaublad', right: 'Hoofdscherm' }] }
+  };
+  assert.equal(formatItemAntwoord(koppelen, { value: { 'k1-pair-1': { id: 'match-2', text: 'Hoofdscherm' } } }), 'Bureaublad -> Hoofdscherm');
+});
+
+test('een quizstap telt de pogingen van de losse vragen en geeft elke vraag tekst, score en antwoord', () => {
+  const stap = buildStapStatus({
+    block: blok('dv-1-1-quiz', 8, {
+      type: 'quiz',
+      title: 'Vragenronde',
+      content: {
+        items: [
+          { id: 'nw-06', type: 'meerkeuze', prompt: 'Schimmel op brood. Welk vak?', answer: { type: 'meerkeuze', options: [{ id: 'nw-06-biologie', text: 'Biologie' }, { id: 'nw-06-scheikunde', text: 'Scheikunde' }] } },
+          { id: 'nw-10', type: 'meerkeuze', prompt: 'Een kat met kittens. Welk vak?', answer: { type: 'meerkeuze', options: [{ id: 'nw-10-biologie', text: 'Biologie' }] } }
+        ]
+      }
+    }),
+    // Het blokrecord houdt zelf geen pogingen bij (attempts: 0), de vragen wel.
+    record: record('dv-1-1-quiz', { completed: true, isCorrect: true, attempts: 0, itemCount: 2, itemsCompleted: 2, itemsCorrect: 2 }),
+    index: 7,
+    itemRecords: [
+      itemRecord('nw-06', { itemIndex: 0, completed: true, isCorrect: true, attempts: 2, score: 3, maxScore: 3, lastAnswer: { value: 'nw-06-biologie' } }),
+      itemRecord('nw-10', { itemIndex: 1, completed: true, isCorrect: true, attempts: 1, score: 3, maxScore: 3, lastAnswer: { value: 'nw-10-biologie' } })
+    ]
+  });
+
+  assert.equal(stap.pogingen, 3);
+  assert.equal(stap.items[0].titel, 'Schimmel op brood. Welk vak?');
+  assert.equal(stap.items[0].antwoordTekst, 'Biologie');
+  assert.equal(stap.items[0].pogingen, 2);
+  assert.equal(stap.items[0].score, 3);
+  assert.equal(stap.items[0].maxScore, 3);
+  assert.equal(stap.items[1].antwoordTekst, 'Biologie');
 });

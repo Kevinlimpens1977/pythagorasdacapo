@@ -45,6 +45,75 @@ function ZelfbeoordelingBadges({ records = [] }) {
   );
 }
 
+/**
+ * De losse vragen van een toets of quiz onder de stap: per vraag goed of fout,
+ * pogingen, Digidocent-hulp, score en het laatst gegeven antwoord als tekst.
+ * Ingeklapt boven de tien vragen, anders wordt een vragenronde van dertig een
+ * muur; de kop telt altijd het aantal goed.
+ */
+function VragenPerItem({ items = [] }) {
+  const gemaakt = items.filter((item) => item.status !== STAP_STATUS.NIET_GESTART);
+  const goed = items.filter((item) => item.record?.isCorrect === true).length;
+  const scoreTotaal = items.reduce((som, item) => som + (item.score || 0), 0);
+  const maxTotaal = items.reduce((som, item) => som + (item.maxScore || 0), 0);
+  const pogingen = items.reduce((som, item) => som + (item.pogingen || 0), 0);
+
+  return (
+    <details className="mt-2 rounded-[var(--helix-radius-sm)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2" open={items.length <= 10}>
+      <summary className="cursor-pointer text-xs font-black text-[var(--helix-navy)]">
+        Per vraag: {goed} van {items.length} goed
+        {maxTotaal > 0 && ` - ${scoreTotaal}/${maxTotaal} punten`}
+        {` - ${pogingen} poging${pogingen === 1 ? '' : 'en'}`}
+        {gemaakt.length < items.length && ` - ${items.length - gemaakt.length} nog niet gemaakt`}
+      </summary>
+      <ol className="mt-2 space-y-1.5">
+        {items.map((item) => {
+          const presentatie = getStatusPresentatie(item.status);
+          const gemaaktItem = item.status !== STAP_STATUS.NIET_GESTART;
+          const oordeel = !gemaaktItem
+            ? 'Niet gemaakt'
+            : item.status === STAP_STATUS.NAKIJKEN
+              ? 'Wacht op nakijken'
+              : item.record?.isCorrect === true
+                ? 'Goed'
+                : item.status === STAP_STATUS.AFGEROND || item.status === STAP_STATUS.VASTGELOPEN
+                  ? 'Fout'
+                  : 'Bezig';
+          const oordeelKleur = oordeel === 'Goed'
+            ? 'text-emerald-700'
+            : oordeel === 'Fout'
+              ? 'text-rose-700'
+              : 'text-[var(--helix-muted)]';
+
+          return (
+            <li key={item.itemId || item.nummer} className="rounded-lg bg-white px-2.5 py-1.5 text-[11px]">
+              <div className="flex flex-wrap items-start gap-2">
+                <span className={`inline-flex h-5 min-w-5 items-center justify-center rounded-md border px-1 text-[10px] font-black ${presentatie.chipClass}`}>
+                  {item.nummer}
+                </span>
+                <span className="min-w-0 flex-1 font-semibold text-[var(--helix-navy)]">{item.titel}</span>
+                <span className={`font-black ${oordeelKleur}`}>{oordeel}</span>
+              </div>
+              {gemaaktItem && (
+                <div className="mt-1 flex flex-wrap gap-3 pl-7 font-semibold text-[var(--helix-muted)]">
+                  <span>Pogingen: {item.pogingen}</span>
+                  {item.aiHulp > 0 && <span>Digidocent-hulp: {item.aiHulp}</span>}
+                  {item.maxScore > 0 && <span>Score: {item.score}/{item.maxScore}</span>}
+                  {(item.antwoordTekst || item.record?.lastAnswer != null) && (
+                    <span className="max-w-full truncate">
+                      Antwoord: {item.antwoordTekst || formatProgressAnswer(item.record.lastAnswer)}
+                    </span>
+                  )}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </details>
+  );
+}
+
 /** De negen (of hoeveel dan ook) stappen van een paragraaf als spoor. */
 export function StappenSpoor({ stappen = [], actieveStapId = '', onSelectStap }) {
   return (
@@ -146,6 +215,10 @@ export default function LeerlingStappen({
             )}
 
             {record && <ZelfbeoordelingBadges records={record.zelfbeoordeling} />}
+
+            {Array.isArray(stap.items) && stap.items.length > 0 && (
+              <VragenPerItem items={stap.items} />
+            )}
 
             {record?.teacherReview?.besluit && (
               <p className="mt-1.5 text-[11px] font-bold text-[var(--helix-muted)]">

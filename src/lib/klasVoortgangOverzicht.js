@@ -298,21 +298,77 @@ const beoordeelRecord = (record = {}) => {
 
 const schoneTekst = (waarde) => String(waarde ?? '').trim();
 
+const antwoordWaarde = (lastAnswer) =>
+  lastAnswer && typeof lastAnswer === 'object' && !Array.isArray(lastAnswer) && 'value' in lastAnswer
+    ? lastAnswer.value
+    : lastAnswer;
+
+const optieTekst = (opties = [], id = '') =>
+  schoneTekst((Array.isArray(opties) ? opties : []).find((optie) => String(optie?.id || '') === String(id))?.text) || String(id);
+
+/**
+ * Het laatste antwoord van een toetsvraag als leesbare tekst voor de docent.
+ *
+ * De leerling bewaart optie-id's ("nw-06-biologie"), geen teksten. Met de
+ * vraagdefinitie uit het lesblok erbij wordt dat "Biologie"; bij koppelen en
+ * volgorde de gekozen teksten in volgorde. Zonder definitie blijft het id staan,
+ * zodat de docent nooit een leeg vak ziet.
+ */
+export const formatItemAntwoord = (blockItem = null, lastAnswer = null) => {
+  const waarde = antwoordWaarde(lastAnswer);
+  if (waarde === null || waarde === undefined || waarde === '') return '';
+
+  const answer = blockItem?.answer || {};
+  const opties = Array.isArray(answer.options) && answer.options.length ? answer.options : blockItem?.options;
+
+  if (Array.isArray(opties) && opties.length) {
+    const ids = Array.isArray(waarde) ? waarde : [waarde];
+    return ids.map((id) => optieTekst(opties, id)).join(', ');
+  }
+
+  if (answer.type === 'koppelen' && waarde && typeof waarde === 'object' && !Array.isArray(waarde)) {
+    const paren = Array.isArray(answer.pairs) ? answer.pairs : [];
+    return Object.entries(waarde)
+      .map(([pairId, keuze]) => {
+        const paar = paren.find((kandidaat) => String(kandidaat?.id || '') === String(pairId));
+        return `${schoneTekst(paar?.left) || pairId} -> ${schoneTekst(keuze?.text) || String(keuze)}`;
+      })
+      .join('; ');
+  }
+
+  if (answer.type === 'volgorde' && Array.isArray(waarde)) {
+    const items = Array.isArray(answer.items) ? answer.items : [];
+    return waarde.map((id) => schoneTekst(items.find((item) => String(item?.id || '') === String(id))?.text) || String(id)).join(' > ');
+  }
+
+  if (typeof waarde === 'object') {
+    return Object.entries(waarde)
+      .map(([sleutel, tekst]) => `${sleutel}: ${typeof tekst === 'object' ? JSON.stringify(tekst) : String(tekst)}`)
+      .join('; ');
+  }
+
+  return String(waarde);
+};
+
 /** Eén vraag binnen een toets of quiz, als substap onder het lesblok. */
-export const buildItemStap = ({ record = null, index = 0 } = {}) => {
+export const buildItemStap = ({ record = null, index = 0, blockItem = null } = {}) => {
   const gelezenIndex = Number.parseInt(record?.itemIndex, 10);
   const nummer = Number.isFinite(gelezenIndex) ? gelezenIndex + 1 : index + 1;
   const basis = {
-    itemId: schoneTekst(record?.itemId) || schoneTekst(record?.id),
+    itemId: schoneTekst(record?.itemId) || schoneTekst(record?.id) || schoneTekst(blockItem?.id),
     blockId: schoneTekst(record?.blockId),
     nummer,
-    titel: schoneTekst(record?.vraagTitle)
+    titel: schoneTekst(blockItem?.prompt)
+      || schoneTekst(record?.vraagTitle)
       || schoneTekst(record?.questionPlainText)
       || `Vraag ${nummer}`,
-    typeLabel: schoneTekst(record?.vraagType) || 'Vraag',
+    typeLabel: schoneTekst(blockItem?.type) || schoneTekst(record?.vraagType) || 'Vraag',
     pogingen: 0,
     aiHulp: 0,
     laatsteActiviteitMs: 0,
+    score: Number(record?.score) || 0,
+    maxScore: Number(record?.maxScore) || 0,
+    antwoordTekst: formatItemAntwoord(blockItem, record?.lastAnswer),
     record: null
   };
 
@@ -337,8 +393,16 @@ export const buildItemStap = ({ record = null, index = 0 } = {}) => {
  * ingeleverd toetsantwoord uit beeld doordat het blok als geheel nog loopt.
  */
 export const buildStapStatus = ({ block = {}, record = null, index = 0, itemRecords = [] } = {}) => {
+  // De vraagdefinities uit het lesblok (alleen bij een toets of quiz): daarmee
+  // krijgt de docent de vraagtekst en het gekozen antwoord als tekst te zien.
+  const blockItems = Array.isArray(block?.content?.items) ? block.content.items : [];
+  const blockItemById = new Map(blockItems.map((item) => [String(item?.id || ''), item]));
   const items = (Array.isArray(itemRecords) ? itemRecords : [])
-    .map((itemRecord, positie) => buildItemStap({ record: itemRecord, index: positie }))
+    .map((itemRecord, positie) => buildItemStap({
+      record: itemRecord,
+      index: positie,
+      blockItem: blockItemById.get(String(itemRecord?.itemId || '')) || null
+    }))
     .sort((a, b) => a.nummer - b.nummer);
   const itemsNakijken = items.filter((item) => item.status === STAP_STATUS.NAKIJKEN);
   const itemActiviteitMs = items.reduce((hoogste, item) => Math.max(hoogste, item.laatsteActiviteitMs), 0);
@@ -363,14 +427,14 @@ export const buildStapStatus = ({ block = {}, record = null, index = 0, itemReco
   }
 
   const beoordeling = heeftRecord ? beoordeelRecord(record) : null;
+  // Bij een toets of quiz tellen de pogingen per vraag; het blokrecord zelf
+  // houdt geen pogingen bij en zou anders altijd "0" tonen.
+  const itemPogingen = items.reduce((som, item) => som + item.pogingen, 0);
+  const itemAiHulp = items.reduce((som, item) => som + item.aiHulp, 0);
   const gemeenschappelijk = {
     ...basis,
-    pogingen: beoordeling
-      ? beoordeling.pogingen
-      : items.reduce((som, item) => som + item.pogingen, 0),
-    aiHulp: beoordeling
-      ? beoordeling.aiHulp
-      : items.reduce((som, item) => som + item.aiHulp, 0),
+    pogingen: beoordeling && !items.length ? beoordeling.pogingen : Math.max(beoordeling?.pogingen || 0, itemPogingen),
+    aiHulp: beoordeling && !items.length ? beoordeling.aiHulp : Math.max(beoordeling?.aiHulp || 0, itemAiHulp),
     laatsteActiviteitMs: Math.max(beoordeling?.laatsteActiviteitMs || 0, itemActiviteitMs),
     record: heeftRecord ? record : null
   };
