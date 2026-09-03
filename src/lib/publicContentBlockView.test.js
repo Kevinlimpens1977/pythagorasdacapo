@@ -245,3 +245,23 @@ test('buildPublicContentBlockSnapshot laat question zonder exercise ongewijzigd'
   assert.equal(publicBlock.content.exercise, undefined);
   assert.equal(publicBlock.linkedVraagId, 'vraag-1');
 });
+
+test('de leerling krijgt de vlag `multiple` mee bij meerkeuze met meer dan één goed antwoord', () => {
+  const build = (options) => buildPublicContentBlockSnapshot({
+    id: 'block-mk',
+    type: 'quiz',
+    content: { items: [{ id: 'item-1', type: 'meerkeuze', prompt: 'Kies alle goede.', answer: { options } }] }
+  }).content.items[0].answer;
+
+  assert.equal(build([
+    { id: 'a', text: 'A', correct: true },
+    { id: 'b', text: 'B', correct: true },
+    { id: 'c', text: 'C', correct: false }
+  ]).multiple, true);
+  assert.equal(build([
+    { id: 'a', text: 'A', correct: true },
+    { id: 'b', text: 'B', correct: false }
+  ]).multiple, false);
+  // De sleutel zelf blijft weg.
+  assert.deepEqual(Object.keys(build([{ id: 'a', text: 'A', correct: true }]).options[0]), ['id', 'text']);
+});

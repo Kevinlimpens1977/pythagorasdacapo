@@ -93,9 +93,17 @@ const buildPublicAssessmentAnswer = (item = {}) => {
   const answer = item.answer || item.antwoord || {};
 
   if (type === 'meerkeuze' || type === 'waar-niet-waar') {
+    const sourceOptions = Array.isArray(answer.options) && answer.options.length > 0
+      ? answer.options
+      : (Array.isArray(item.options) ? item.options : []);
+    // De leerling ziet de sleutel niet, maar moet wel weten of er meer dan
+    // één antwoord goed is. Anders wordt "kies alle goede antwoorden" een
+    // radio waarmee je maar één optie kunt kiezen.
+    const correctCount = sourceOptions.filter((option) => option?.correct === true).length;
     return {
       type: 'meerkeuze',
-      options: sanitizeOptions(answer.options || item.options)
+      multiple: type === 'meerkeuze' && correctCount > 1,
+      options: sanitizeOptions(sourceOptions)
     };
   }
 
@@ -187,6 +195,10 @@ const sanitizeContent = (block = {}) => {
       retryPolicy: {
         enabled: content.retryPolicy?.enabled !== false,
         aiHelp: content.retryPolicy?.aiHelp !== false
+      },
+      presentatie: {
+        mode: content.presentatie?.mode === 'lijst' ? 'lijst' : 'een-voor-een',
+        terugbladeren: content.presentatie?.terugbladeren !== false
       },
       // Nulmeting: alleen het deel (A/B) reist mee naar de leerling, zodat de
       // lesroute na afloop naar het startprofiel kan wijzen. De mapping van

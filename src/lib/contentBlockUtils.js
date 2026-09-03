@@ -122,6 +122,12 @@ export const getDefaultContentForBlockType = (type) => {
         enabled: true,
         aiHelp: true
       },
+      // Weergave in de leerlingroute: één vraag per scherm met een Verder-knop,
+      // teruglezen van beantwoorde vragen toegestaan (assessmentPresentation.js).
+      presentatie: {
+        mode: 'een-voor-een',
+        terugbladeren: true
+      },
       sourceBasis: [],
       sourceNotes: '',
       crops: []

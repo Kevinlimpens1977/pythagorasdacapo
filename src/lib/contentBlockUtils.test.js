@@ -281,6 +281,10 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
       enabled: true,
       aiHelp: true
     },
+    presentatie: {
+      mode: 'een-voor-een',
+      terugbladeren: true
+    },
     sourceBasis: [],
     sourceNotes: '',
     crops: []
@@ -302,6 +306,10 @@ test('getDefaultContentForBlockType gives every studio block a stable editable s
     retryPolicy: {
       enabled: true,
       aiHelp: true
+    },
+    presentatie: {
+      mode: 'een-voor-een',
+      terugbladeren: true
     },
     sourceBasis: [],
     sourceNotes: '',

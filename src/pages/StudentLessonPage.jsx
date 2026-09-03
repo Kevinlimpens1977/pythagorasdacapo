@@ -78,6 +78,17 @@ import {
 } from '../lib/assessmentRetryRound';
 import { buildAiTutorLessonContext } from '../lib/aiTutorLessonContext';
 import { berekenEigenNulmetingProfiel } from '../services/nulmetingService';
+import { gsap } from 'gsap';
+import {
+  buildStepStatuses,
+  canJumpTo,
+  extractIntroImage,
+  findSituatieReferences,
+  isAssessmentAnswerEmpty,
+  mayNavigateBack,
+  pickStartIndex,
+  resolvePresentationMode
+} from '../lib/assessmentPresentation';
 import { shouldCollapseAiTutorOnMouseLeave, shouldExpandAiTutorOnHover } from '../lib/aiTutorPanelState';
 import {
   getLessonReadingPresentation,
@@ -3133,6 +3144,7 @@ function AssessmentLearningBlock({
   const retryPlan = buildRetryRoundPlan({ block, items, records: itemRecords || {} });
   const retryText = describeRetryRound({ summary: progressSummary });
   const retryItems = items.filter((item) => retryPlan.kandidaatIds.includes(item.id));
+  const presentationMode = resolvePresentationMode(block);
   // Nulmeting digitale vaardigheden: na het laatste antwoord wordt het
   // startprofiel server-side (opnieuw) berekend en wijst de route ernaar.
   const nulmetingDeel = content.nulmeting?.deel || '';
@@ -3171,7 +3183,30 @@ function AssessmentLearningBlock({
         )}
       </div>
 
-      {items.length > 0 ? (
+      {items.length > 0 && presentationMode === 'een-voor-een' ? (
+        <AssessmentStepper
+          block={block}
+          items={items}
+          records={itemRecords || {}}
+          renderItem={(item, index) => (
+            <AssessmentItemLearningCard
+              key={item.id || `${block.id}-item-${index}`}
+              block={block}
+              item={item}
+              index={index}
+              isToets={isToets}
+              maxAttempts={maxAttempts}
+              progressRecord={itemRecords?.[item.id] || null}
+              optionShuffleSeed={buildOptionShuffleSeed({
+                studentId,
+                blockId: block.id || '',
+                questionId: rawItems[index]?.id || `item-${index + 1}`
+              })}
+              onSaveItemProgress={onSaveItemProgress}
+            />
+          )}
+        />
+      ) : items.length > 0 ? (
         <div className="space-y-3">
           {items.map((item, index) => (
             <AssessmentItemLearningCard
@@ -3280,6 +3315,153 @@ function AssessmentLearningBlock({
 }
 
 /**
+ * Eén vraag per scherm: voortgangsbalk, de vraagkaart, en na het antwoord een
+ * Verder-knop. De wissel gaat met GSAP: de oude vraag schuift rechts uit
+ * beeld, de nieuwe komt van links binnen. Teruglezen mag alleen als het blok
+ * dat toestaat (assessmentPresentation.js); vooruit springen naar een nog
+ * niet beantwoorde vraag nooit. Verwijst de vraag naar "situatie A t/m F",
+ * dan staat de afbeelding uit de inleiding erboven.
+ */
+function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
+  const [currentIndex, setCurrentIndex] = useState(() => pickStartIndex({ items, records }));
+  const [afgerond, setAfgerond] = useState(false);
+  const [imageLarge, setImageLarge] = useState(false);
+  const stageRef = useRef(null);
+  const animatingRef = useRef(false);
+
+  const safeIndex = Math.min(Math.max(0, currentIndex), Math.max(0, items.length - 1));
+  const item = items[safeIndex];
+  const statuses = buildStepStatuses({ items, records, currentIndex: safeIndex });
+  const current = statuses[safeIndex];
+  const beantwoord = Boolean(current?.completed || current?.pendingReview);
+  const isLast = safeIndex === items.length - 1;
+  const terug = mayNavigateBack(block);
+  const introImage = extractIntroImage(block?.content?.html || '');
+  const situaties = item ? findSituatieReferences(item.prompt || '') : [];
+  const toonAfbeelding = Boolean(introImage && situaties.length);
+  const gemaakt = statuses.filter((status) => status.completed || status.pendingReview).length;
+
+  const gaNaar = (nextIndex, richting = 1) => {
+    if (animatingRef.current || nextIndex === safeIndex || nextIndex < 0 || nextIndex >= items.length) return;
+    const stage = stageRef.current;
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (!stage || reduceMotion) {
+      setCurrentIndex(nextIndex);
+      return;
+    }
+    animatingRef.current = true;
+    gsap.to(stage, {
+      x: richting > 0 ? '110%' : '-110%',
+      opacity: 0,
+      duration: 0.28,
+      ease: 'power2.in',
+      onComplete: () => {
+        setCurrentIndex(nextIndex);
+        gsap.fromTo(stage, { x: richting > 0 ? '-110%' : '110%', opacity: 0 }, {
+          x: 0,
+          opacity: 1,
+          duration: 0.34,
+          ease: 'power2.out',
+          onComplete: () => { animatingRef.current = false; }
+        });
+      }
+    });
+  };
+
+  if (!item) return null;
+
+  return (
+    <div className="assessment-stepper space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm font-black uppercase tracking-[0.14em] text-[var(--helix-purple)]">
+          Vraag {safeIndex + 1} van {items.length}
+        </p>
+        <p className="text-xs font-bold text-[var(--helix-muted)]">{gemaakt} van {items.length} beantwoord</p>
+      </div>
+      <ol className="flex flex-wrap gap-1.5" aria-label="Vragen in deze toets">
+        {statuses.map((status, index) => {
+          const kanSpringen = canJumpTo({ block, statuses, targetIndex: index, currentIndex: safeIndex });
+          const kleur = status.current
+            ? 'bg-[var(--helix-purple)] text-white ring-2 ring-[var(--helix-purple)] ring-offset-1'
+            : status.pendingReview
+              ? 'bg-amber-100 text-amber-800'
+              : status.completed
+                ? (status.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800')
+                : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]';
+          return (
+            <li key={status.itemId}>
+              <button
+                type="button"
+                onClick={() => kanSpringen && gaNaar(index, index > safeIndex ? 1 : -1)}
+                disabled={!kanSpringen}
+                aria-current={status.current ? 'step' : undefined}
+                title={`Vraag ${status.nummer}${status.completed ? (status.correct ? ': goed' : ': fout') : ''}`}
+                className={`h-7 min-w-7 rounded-md px-1 text-[11px] font-black transition ${kleur} ${kanSpringen ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}
+              >
+                {status.nummer}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      {toonAfbeelding && (
+        <figure className="rounded-2xl border-2 border-[var(--helix-border)] bg-white p-3">
+          <button type="button" onClick={() => setImageLarge((value) => !value)} className="block w-full text-left" title={imageLarge ? 'Verklein' : 'Vergroot'}>
+            <img
+              src={introImage.src}
+              alt={introImage.alt || `Situatie ${situaties.join(', ')}`}
+              className={`mx-auto h-auto rounded-xl transition-all ${imageLarge ? 'w-full' : 'max-h-64 w-auto'}`}
+            />
+          </button>
+          <figcaption className="mt-2 flex items-center justify-between gap-2 text-xs font-bold text-[var(--helix-muted)]">
+            <span>Deze vraag gaat over situatie {situaties.join(', ')}.</span>
+            <span className="inline-flex items-center gap-1"><Maximize2 size={14} aria-hidden="true" /> Klik om te {imageLarge ? 'verkleinen' : 'vergroten'}</span>
+          </figcaption>
+        </figure>
+      )}
+
+      <div className="assessment-stepper-stage">
+        <div ref={stageRef}>
+          {renderItem(item, safeIndex)}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          {terug && safeIndex > 0 && (
+            <button type="button" onClick={() => gaNaar(safeIndex - 1, -1)} className="btn-secondary inline-flex items-center gap-2 px-4 py-2.5 text-sm">
+              <ChevronLeft size={18} aria-hidden="true" /> Vorige
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          {beantwoord && !isLast && (
+            <button type="button" onClick={() => gaNaar(safeIndex + 1, 1)} className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-base">
+              Verder <ChevronRight size={20} aria-hidden="true" />
+            </button>
+          )}
+          {beantwoord && isLast && !afgerond && (
+            <button type="button" onClick={() => setAfgerond(true)} className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-base">
+              <Check size={20} aria-hidden="true" /> Rond af
+            </button>
+          )}
+          {!beantwoord && (
+            <p className="text-sm font-semibold text-[var(--helix-muted)]">Beantwoord de vraag om verder te gaan.</p>
+          )}
+        </div>
+      </div>
+
+      {afgerond && (
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-900">
+          Alle vragen zijn gemaakt. Hieronder zie je hoe het ging.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
  * Een vraag binnen een toets of quiz.
  *
  * Dit is dezelfde route als QuestionLearningBlock, alleen dan voor een item dat
@@ -3373,8 +3555,11 @@ function AssessmentItemLearningCard({
     resultTier
   });
 
+  // Zonder antwoord geen inzending: die zou als foute poging tellen.
+  const answerEmpty = isAssessmentAnswerEmpty(item, answer);
+
   const handleCheck = async () => {
-    if (saving || locked) return;
+    if (saving || locked || answerEmpty) return;
     setSaving(true);
     setFeedback('');
     setAnswerExplanation(emptyAnswerExplanation());
@@ -3637,11 +3822,15 @@ function AssessmentItemLearningCard({
         <button
           type="button"
           onClick={handleCheck}
-          disabled={saving || locked}
+          disabled={saving || locked || answerEmpty}
+          title={!locked && answerEmpty ? 'Vul eerst een antwoord in' : undefined}
           className="btn-primary px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving ? 'Bezig...' : closed && !isToets ? 'Controleer antwoord' : 'Antwoord inleveren'}
         </button>
+        {!locked && !saving && answerEmpty && !hasResult && (
+          <span className="text-xs font-bold text-[var(--helix-muted)]">Vul eerst een antwoord in.</span>
+        )}
         {hasResult && (
           <div className={`rounded-xl px-3 py-2 text-sm font-black ${tone.fillClass}`}>
             {tone.label}
@@ -3729,7 +3918,9 @@ function AssessmentAnswerInput({
   }
 
   if (item.type === 'meerkeuze') {
-    const multipleCorrect = answerKeyAvailable && item.options.filter((option) => option.correct).length > 1;
+    // Bij een publieke kopie (zonder sleutel) reist alleen de vlag `multiple` mee.
+    const multipleCorrect = item.answer?.multiple === true
+      || (answerKeyAvailable && item.options.filter((option) => option.correct).length > 1);
     return (
       <div className="grid gap-2 sm:grid-cols-2">
         {choiceOptions.map((option) => (

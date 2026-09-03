@@ -1868,3 +1868,20 @@ input[type=number] {
 .presenter-page-enter {
   animation: presenter-page-enter 160ms ease-out;
 }
+
+/* Eén vraag per scherm in een toets of quiz: groter lettertype dan de lijst.
+   Ongelaagd, zodat het wint van de Tailwind-utilities in de kaart. */
+.assessment-stepper .text-sm { font-size: 1.0625rem; line-height: 1.6; }
+.assessment-stepper .text-base { font-size: 1.375rem; line-height: 1.55; }
+.assessment-stepper .text-xs { font-size: 0.875rem; }
+.assessment-stepper input[type="radio"], .assessment-stepper input[type="checkbox"] { width: 1.25rem; height: 1.25rem; }
+.assessment-stepper .btn-primary,
+.assessment-stepper .btn-secondary { font-size: 1.0625rem; padding: 0.75rem 1.5rem; }
+@media (max-width: 640px) {
+  .assessment-stepper .text-sm { font-size: 1rem; }
+  .assessment-stepper .text-base { font-size: 1.2rem; }
+}
+.assessment-stepper-stage { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .assessment-stepper-stage > * { transform: none !important; opacity: 1 !important; }
+}

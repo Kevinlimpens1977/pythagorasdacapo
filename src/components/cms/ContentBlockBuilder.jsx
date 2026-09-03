@@ -1986,6 +1986,36 @@ const LessonBlockStudio = ({
                   </span>
                 </span>
               </label>
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
+                <label className="mb-2 block text-sm font-black text-slate-900">Weergave voor de leerling</label>
+                <select
+                  value={content.presentatie?.mode === 'lijst' ? 'lijst' : 'een-voor-een'}
+                  onChange={(event) => updateContent({
+                    presentatie: { ...(content.presentatie || {}), mode: event.target.value }
+                  })}
+                  className="input-standard w-full"
+                >
+                  <option value="een-voor-een">Eén vraag per scherm, met Verder-knop</option>
+                  <option value="lijst">Alle vragen onder elkaar</option>
+                </select>
+                <label className="mt-3 flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={content.presentatie?.terugbladeren !== false}
+                    disabled={Boolean(content.nulmeting?.deel)}
+                    onChange={(event) => updateContent({
+                      presentatie: { ...(content.presentatie || {}), terugbladeren: event.target.checked }
+                    })}
+                    className="mt-1 h-4 w-4 accent-[var(--helix-purple)]"
+                  />
+                  <span>
+                    <span className="block text-sm font-black text-slate-900">Teruglezen toegestaan</span>
+                    <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+                      De leerling mag terug naar al beantwoorde vragen. {content.nulmeting?.deel ? 'Bij een nulmeting staat dit altijd uit.' : ''}
+                    </span>
+                  </span>
+                </label>
+              </div>
               {publicationOverridePanel}
               <BlockSettingsPanel settings={settings} onChange={setSettings} />
             </div>
