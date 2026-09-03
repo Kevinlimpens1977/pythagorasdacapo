@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   appendHelixContentImportToPresenterSession,
-  buildPresenterPagesFromHelixContent
+  buildPresenterPagesFromHelixContent,
+  countPresenterImportPages,
+  getPresenterAssessmentItems
 } from './presenterContentImport.js';
 import { createPresenterSession } from './presenterModel.js';
 
@@ -266,4 +268,58 @@ test('question blocks without a question document and without exercise fields st
   });
 
   assert.equal(pages[0].objects[0].data.question.vraagtype, 'open');
+});
+
+const toetsBlok = {
+  id: 'block-toets',
+  type: 'toets',
+  title: 'Nulmeting deel A',
+  status: 'published',
+  order: 1,
+  content: {
+    html: '<p>Kijk naar de situaties.</p><figure><img src="https://x/intro.webp" alt="Situaties A, B en C"></figure>',
+    items: [
+      { id: 'nm-01', type: 'meerkeuze', prompt: 'Welk apparaat?', tokens: 2, answer: { options: [{ id: 'a', text: 'Laptop', correct: true }, { id: 'b', text: 'Muis', correct: false }] } },
+      { id: 'nm-02', type: 'waar-niet-waar', prompt: 'Een browser is hardware.', answer: { options: [{ id: 'w', text: 'Waar', correct: false }, { id: 'nw', text: 'Niet waar', correct: true }] } },
+      { id: 'nm-03', type: 'koppelen', prompt: 'Koppel.', answer: { pairs: [{ id: 'p1', left: 'CPU', right: 'rekent' }] } }
+    ]
+  }
+};
+
+test('quiz- en toetsblokken worden inleiding plus één vraagvenster per gekozen vraag', () => {
+  const alles = buildPresenterPagesFromHelixContent({ paragraaf, contentBlocks: [toetsBlok] });
+  assert.equal(alles.length, 4);
+  assert.equal(alles[0].title, 'Nulmeting deel A - inleiding');
+  assert.equal(alles[0].objects[0].type, 'lessonBlock');
+  assert.match(alles[0].objects[0].data.html, /intro\.webp/);
+  assert.equal(alles[1].objects[0].type, 'questionWindow');
+  assert.equal(alles[1].objects[0].data.question.vraagtype, 'meerkeuze');
+  assert.equal(alles[1].objects[0].data.question.title, 'Vraag 1');
+  assert.equal(alles[1].objects[0].data.question.antwoord.options[0].correct, true);
+  // Waar/niet waar is onder water meerkeuze; koppelen houdt zijn paren.
+  assert.equal(alles[2].objects[0].data.question.vraagtype, 'meerkeuze');
+  assert.equal(alles[3].objects[0].data.question.antwoord.pairs[0].right, 'rekent');
+  assert.equal(JSON.stringify(alles).includes('"tokens"'), false);
+
+  const keuze = buildPresenterPagesFromHelixContent({
+    paragraaf,
+    contentBlocks: [toetsBlok],
+    itemSelections: { 'block-toets': ['nm-03'] }
+  });
+  assert.deepEqual(keuze.map((page) => page.title), ['Nulmeting deel A - inleiding', 'Nulmeting deel A - vraag 3']);
+});
+
+test('getPresenterAssessmentItems en countPresenterImportPages beschrijven de keuze voor de dialoog', () => {
+  assert.deepEqual(
+    getPresenterAssessmentItems(toetsBlok).map((item) => [item.nummer, item.typeLabel, item.prompt]),
+    [[1, 'Meerkeuze', 'Welk apparaat?'], [2, 'Waar of niet waar', 'Een browser is hardware.'], [3, 'Koppelen', 'Koppel.']]
+  );
+  assert.equal(countPresenterImportPages({ contentBlocks: [toetsBlok] }), 4);
+  assert.equal(countPresenterImportPages({ contentBlocks: [toetsBlok], itemSelections: { 'block-toets': [] } }), 1);
+  assert.equal(countPresenterImportPages({
+    contentBlocks: [toetsBlok, { id: 'theorie', type: 'theory', status: 'published', content: { html: '<p>x</p>' } }],
+    itemSelections: { 'block-toets': ['nm-01', 'nm-02'] }
+  }), 4);
+  // Zonder inleiding telt alleen de vraagkeuze.
+  assert.equal(countPresenterImportPages({ contentBlocks: [{ ...toetsBlok, content: { ...toetsBlok.content, html: '' } }] }), 3);
 });

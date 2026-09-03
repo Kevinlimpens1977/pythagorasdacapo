@@ -11,7 +11,21 @@ import {
 } from 'lucide-react';
 import cmsService from '../../services/cmsService';
 import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils';
-import { getPublishedPresenterContentBlocks } from '../../lib/presenterContentImport';
+import {
+  countPresenterImportPages,
+  getPresenterAssessmentItems,
+  getPublishedPresenterContentBlocks,
+  isPresenterAssessmentBlock
+} from '../../lib/presenterContentImport';
+
+// Standaard gaan alle vragen van een quiz of toets mee; de docent vinkt uit
+// wat niet op het bord hoeft (bijvoorbeeld alleen de vragen voor de nabespreking).
+const buildDefaultItemSelections = (blocks = []) =>
+  Object.fromEntries(
+    blocks
+      .filter(isPresenterAssessmentBlock)
+      .map((block) => [block.id, getPresenterAssessmentItems(block).map((item) => item.id)])
+  );
 
 const sortByOrder = (items = []) =>
   [...items].sort((a, b) => (a.order || a.year || 0) - (b.order || b.year || 0));
@@ -63,6 +77,7 @@ export default function PresenterImportDialog({
   const [selectedParagraafId, setSelectedParagraafId] = useState('');
   const [importPreview, setImportPreview] = useState(null);
   const [selectedBlockIds, setSelectedBlockIds] = useState([]);
+  const [itemSelections, setItemSelections] = useState({});
 
   useEffect(() => {
     if (!open) return undefined;
@@ -168,6 +183,7 @@ export default function PresenterImportDialog({
         linkedQuestions: linkedQuestions.filter(Boolean)
       });
       setSelectedBlockIds(publishedBlocks.map((block) => block.id));
+      setItemSelections(buildDefaultItemSelections(publishedBlocks));
     } catch (err) {
       console.error('Error loading presenter import preview:', err);
       setError('De lesblokken konden niet worden geladen. Probeer het opnieuw.');
@@ -182,15 +198,40 @@ export default function PresenterImportDialog({
     );
   };
 
-  const handleConfirmImport = () => {
-    if (!importPreview || selectedBlockIds.length === 0) return;
+  const toggleItemSelection = (blockId, itemId) => {
+    setItemSelections((current) => {
+      const chosen = current[blockId] || [];
+      return {
+        ...current,
+        [blockId]: chosen.includes(itemId) ? chosen.filter((id) => id !== itemId) : [...chosen, itemId]
+      };
+    });
+  };
 
-    const chosenBlocks = importPreview.blocks.filter((block) => selectedBlockIds.includes(block.id));
+  const setAllItems = (block, everything) => {
+    setItemSelections((current) => ({
+      ...current,
+      [block.id]: everything ? getPresenterAssessmentItems(block).map((item) => item.id) : []
+    }));
+  };
+
+  const chosenBlocks = importPreview
+    ? importPreview.blocks.filter((block) => selectedBlockIds.includes(block.id))
+    : [];
+  const pageCount = importPreview
+    ? countPresenterImportPages({ contentBlocks: chosenBlocks, itemSelections })
+    : 0;
+  const pageWord = pageCount === 1 ? 'pagina' : "pagina's";
+
+  const handleConfirmImport = () => {
+    if (!importPreview || chosenBlocks.length === 0 || pageCount === 0) return;
+
     const imported = onImport?.({
       paragraaf: importPreview.paragraaf,
       hoofdstuk: importPreview.hoofdstuk,
       contentBlocks: chosenBlocks,
-      linkedQuestions: importPreview.linkedQuestions
+      linkedQuestions: importPreview.linkedQuestions,
+      itemSelections
     });
 
     if (imported === false) {
@@ -200,12 +241,14 @@ export default function PresenterImportDialog({
 
     setImportPreview(null);
     setSelectedBlockIds([]);
+    setItemSelections({});
     onClose?.();
   };
 
   const handleBackToSelection = () => {
     setImportPreview(null);
     setSelectedBlockIds([]);
+    setItemSelections({});
     setError('');
   };
 
@@ -246,42 +289,106 @@ export default function PresenterImportDialog({
         {importPreview ? (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="border-b border-[#E1F0F8] bg-[#FBF5E8] px-5 py-3 text-sm font-black text-[var(--helix-navy)]">
-              Deze import maakt {selectedBlockIds.length} {selectedBlockIds.length === 1 ? 'pagina' : "pagina's"}
+              Deze import maakt {pageCount} {pageWord}
               {' '}van {getParagraphLabel(importPreview.paragraaf)}. Vink blokken uit die je niet op het bord wilt.
+              Bij een quiz of toets kies je welke vragen meegaan.
             </div>
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4">
               <div className="space-y-2">
                 {importPreview.blocks.map((block, index) => {
                   const checked = selectedBlockIds.includes(block.id);
+                  const assessmentItems = isPresenterAssessmentBlock(block) ? getPresenterAssessmentItems(block) : [];
+                  const chosenItemIds = itemSelections[block.id] || [];
+                  const blockPages = checked
+                    ? countPresenterImportPages({ contentBlocks: [block], itemSelections })
+                    : 0;
 
                   return (
-                    <label
-                      key={block.id}
-                      className={[
-                        'flex w-full cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 text-left transition',
-                        checked
-                          ? 'border-[#BED8EA] bg-[#F5EDDB] text-[var(--helix-navy)]'
-                          : 'border-[#F5EDDB] bg-white text-[var(--helix-muted)] hover:border-[#E1F0F8]'
-                      ].join(' ')}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleBlockSelection(block.id)}
-                        className="h-4 w-4 shrink-0 accent-[var(--helix-purple)]"
-                      />
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-[var(--helix-purple)] ring-1 ring-[#E1F0F8]">
-                        {index + 1}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-black">
-                          {block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'}
+                    <div key={block.id}>
+                      <label
+                        className={[
+                          'flex w-full cursor-pointer items-center gap-3 rounded-lg border px-3 py-3 text-left transition',
+                          checked
+                            ? 'border-[#BED8EA] bg-[#F5EDDB] text-[var(--helix-navy)]'
+                            : 'border-[#F5EDDB] bg-white text-[var(--helix-muted)] hover:border-[#E1F0F8]'
+                        ].join(' ')}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleBlockSelection(block.id)}
+                          className="h-4 w-4 shrink-0 accent-[var(--helix-purple)]"
+                        />
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-black text-[var(--helix-purple)] ring-1 ring-[#E1F0F8]">
+                          {index + 1}
                         </span>
-                        <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--helix-muted)]">
-                          {CONTENT_BLOCK_LABELS[block.type] || block.type}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-black">
+                            {block.title || CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'}
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--helix-muted)]">
+                            {CONTENT_BLOCK_LABELS[block.type] || block.type}
+                            {assessmentItems.length > 0
+                              ? ` - ${chosenItemIds.length} van ${assessmentItems.length} vragen, ${blockPages} ${blockPages === 1 ? 'pagina' : "pagina's"}`
+                              : ''}
+                          </span>
                         </span>
-                      </span>
-                    </label>
+                      </label>
+
+                      {checked && assessmentItems.length > 0 && (
+                        <div className="ml-6 mt-1 rounded-lg border border-[#F5EDDB] bg-white px-3 py-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--helix-purple)]">
+                              Vragen op het bord
+                            </p>
+                            <div className="flex gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setAllItems(block, true)}
+                                className="rounded-md border border-[#E1F0F8] px-2 py-1 text-[11px] font-black text-[var(--helix-navy)] transition hover:bg-[#FBF5E8]"
+                              >
+                                Alles
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setAllItems(block, false)}
+                                className="rounded-md border border-[#E1F0F8] px-2 py-1 text-[11px] font-black text-[var(--helix-navy)] transition hover:bg-[#FBF5E8]"
+                              >
+                                Geen
+                              </button>
+                            </div>
+                          </div>
+                          <ol className="mt-2 grid gap-1 sm:grid-cols-2">
+                            {assessmentItems.map((item) => {
+                              const itemChecked = chosenItemIds.includes(item.id);
+                              return (
+                                <li key={item.id}>
+                                  <label
+                                    className={[
+                                      'flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-left transition',
+                                      itemChecked ? 'bg-[#F5EDDB] text-[var(--helix-navy)]' : 'text-[var(--helix-muted)] hover:bg-[#FBF5E8]'
+                                    ].join(' ')}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={itemChecked}
+                                      onChange={() => toggleItemSelection(block.id, item.id)}
+                                      className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--helix-purple)]"
+                                    />
+                                    <span className="min-w-0">
+                                      <span className="block text-xs font-black">
+                                        {item.nummer}. <span className="font-semibold text-[var(--helix-muted)]">{item.typeLabel}</span>
+                                      </span>
+                                      <span className="block truncate text-xs font-semibold" title={item.prompt}>{item.prompt}</span>
+                                    </span>
+                                  </label>
+                                </li>
+                              );
+                            })}
+                          </ol>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -401,7 +508,7 @@ export default function PresenterImportDialog({
               <span className="flex min-w-0 items-center gap-2">
                 <CheckCircle2 size={17} className="shrink-0 text-[var(--helix-purple)]" />
                 <span className="truncate">
-                  {selectedBlockIds.length} van {importPreview.blocks.length} blokken geselecteerd
+                  {selectedBlockIds.length} van {importPreview.blocks.length} blokken geselecteerd, {pageCount} {pageWord}
                 </span>
               </span>
             ) : selectedParagraph ? (
@@ -427,9 +534,9 @@ export default function PresenterImportDialog({
                 type="button"
                 className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[var(--helix-purple)] px-4 py-2 text-sm font-black text-white transition hover:bg-[#5F2C9E] disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handleConfirmImport}
-                disabled={selectedBlockIds.length === 0}
+                disabled={pageCount === 0}
               >
-                Importeer {selectedBlockIds.length} {selectedBlockIds.length === 1 ? 'pagina' : "pagina's"}
+                Importeer {pageCount} {pageWord}
               </button>
             ) : (
               <button
