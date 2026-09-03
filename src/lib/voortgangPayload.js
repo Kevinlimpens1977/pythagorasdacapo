@@ -231,6 +231,9 @@ export const buildAssessmentItemVoortgangUpdate = ({
     teacherReview: normalizeTeacherReview(data.teacherReview ?? existingData.teacherReview),
     lastAnswer: data.lastAnswer ?? existingData.lastAnswer ?? null,
     lastAssessment: data.lastAssessment ?? existingData.lastAssessment ?? null,
+    // Tussentijds bewaard antwoord (buildAssessmentItemConceptUpdate). Zodra er
+    // een antwoord is ingeleverd is het concept achterhaald en gaat het weg.
+    concept: data.lastAnswer !== undefined ? null : (existingData.concept ?? null),
     parts,
     score: partScore.score,
     maxScore: partScore.maxScore,
@@ -289,6 +292,50 @@ const normalizeHerkansing = (value) => {
 };
 
 /**
+ * Heeft de leerling deze vraag echt ingeleverd? Een record met alleen een
+ * concept (tussentijds bewaard antwoord) telt niet als poging.
+ */
+export const hasAssessmentItemAttempt = (record = null) =>
+  Boolean(record) && (
+    record.completed === true ||
+    normalizeCount(record.attempts, 0) > 0 ||
+    record.attemptStatus === 'pending_teacher_review'
+  );
+
+/**
+ * Tussentijds bewaard antwoord op een toets- of quizvraag. Zo kan een leerling
+ * na een refresh of de volgende les verder waar hij gebleven was, met het
+ * ingevulde antwoord nog in beeld. Alleen het concept en de sleutels worden
+ * geschreven (merge); pogingen, score en status blijven onaangeraakt.
+ */
+export const buildAssessmentItemConceptUpdate = ({
+  userId,
+  blockId,
+  itemId,
+  itemIndex = 0,
+  paragraafId,
+  hoofdstukId = '',
+  klasId,
+  value,
+  blockTitle = '',
+  blockType = '',
+  timestamp
+}) => ({
+  userId,
+  blockId,
+  itemId,
+  itemIndex: normalizeCount(itemIndex, 0),
+  paragraafId,
+  hoofdstukId,
+  klasId,
+  progressType: 'assessmentItem',
+  blockTitle,
+  blockType,
+  concept: { value: value ?? null, updatedAt: timestamp },
+  updatedAt: timestamp
+});
+
+/**
  * Rolt de itemvoortgang op tot de stand van het toets- of quizblok zelf, zodat
  * de lesnavigatie, de voortgangsbalk en de tokentoekenning met precies dezelfde
  * velden blijven werken als bij een gewone vraag.
@@ -296,7 +343,8 @@ const normalizeHerkansing = (value) => {
 export const summarizeAssessmentItemProgress = ({ items = [], records = {} } = {}) => {
   const itemList = asArray(items);
   const recordFor = (item) => records?.[item?.id] || null;
-  const answered = itemList.filter((item) => recordFor(item));
+  // Een concept (tussentijds bewaard, nog niet ingeleverd) telt niet mee.
+  const answered = itemList.filter((item) => hasAssessmentItemAttempt(recordFor(item)));
   const completedItems = itemList.filter((item) => recordFor(item)?.completed === true);
   const correctItems = itemList.filter((item) => recordFor(item)?.isCorrect === true);
   const pendingReview = itemList.filter(

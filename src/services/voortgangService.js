@@ -17,6 +17,7 @@ import {
 import { db } from './firebase';
 import { buildLearningResultMetadata } from '../lib/learningResultUtils';
 import {
+  buildAssessmentItemConceptUpdate,
   buildAssessmentItemVoortgangUpdate,
   buildContentBlockVoortgangUpdate
 } from '../lib/voortgangPayload';
@@ -242,6 +243,50 @@ export const saveAssessmentItemVoortgang = async (
     id: itemId,
     updatedAt: new Date(),
     firstAttemptAt: existingData.firstAttemptAt || new Date()
+  };
+};
+
+/**
+ * Tussentijds bewaard antwoord op een vraag (nog niet ingeleverd). Merge op
+ * hetzelfde itemdocument, zodat de leerling na een refresh verder kan waar hij
+ * gebleven was. Zie buildAssessmentItemConceptUpdate voor wat er precies
+ * geschreven wordt: geen pogingen, geen score, geen status.
+ */
+export const saveAssessmentItemConcept = async (
+  userId,
+  blockId,
+  itemId,
+  paragraafId,
+  hoofdstukId,
+  klasId,
+  data = {}
+) => {
+  if (!userId || !blockId || !itemId || !paragraafId || !klasId) {
+    throw new Error('userId, blockId, itemId, paragraafId, and klasId are required');
+  }
+
+  const docRef = doc(db, 'voortgang', `${userId}_${blockId}`, 'items', itemId);
+  const updates = buildAssessmentItemConceptUpdate({
+    userId,
+    blockId,
+    itemId,
+    itemIndex: data.itemIndex ?? 0,
+    paragraafId,
+    hoofdstukId,
+    klasId,
+    value: data.value,
+    blockTitle: data.blockTitle || '',
+    blockType: data.blockType || '',
+    timestamp: serverTimestamp()
+  });
+
+  await setDoc(docRef, updates, { merge: true });
+
+  return {
+    ...updates,
+    id: itemId,
+    concept: { value: data.value ?? null, updatedAt: new Date() },
+    updatedAt: new Date()
   };
 };
 
@@ -495,6 +540,7 @@ export default {
   beoordeelOpenAntwoord,
   saveAssessmentItemVoortgang,
   getAssessmentItemVoortgang,
+  saveAssessmentItemConcept,
   getVoortgangForParagraaf,
   getLastIncompleteVraag,
   getKlasVoortgangForParagraaf,

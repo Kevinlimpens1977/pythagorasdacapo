@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildAssessmentItemConceptUpdate,
   buildAssessmentItemVoortgangUpdate,
+  hasAssessmentItemAttempt,
   buildContentBlockVoortgangUpdate,
   summarizeAssessmentItemProgress
 } from './voortgangPayload.js';
@@ -423,4 +425,43 @@ test('buildContentBlockVoortgangUpdate bewaart zelfbeoordeling en houdt bestaand
   // Firestore weigert undefined.
   const leeg = buildContentBlockVoortgangUpdate({ ...base, data: { completed: true } });
   assert.deepEqual(leeg.zelfbeoordeling, []);
+});
+
+test('een concept telt niet als inzending en verdwijnt zodra er is ingeleverd', () => {
+  const concept = buildAssessmentItemConceptUpdate({
+    ...base,
+    itemId: 'item-1',
+    itemIndex: 0,
+    klasId: 'klas-1',
+    value: ['option-2'],
+    blockTitle: 'Nulmeting A',
+    blockType: 'toets',
+    timestamp: 'ts'
+  });
+  assert.equal(concept.progressType, 'assessmentItem');
+  assert.deepEqual(concept.concept, { value: ['option-2'], updatedAt: 'ts' });
+  assert.equal('completed' in concept, false);
+  assert.equal('attempts' in concept, false);
+
+  assert.equal(hasAssessmentItemAttempt(concept), false);
+  assert.equal(hasAssessmentItemAttempt({ attempts: 1 }), true);
+  assert.equal(hasAssessmentItemAttempt({ attemptStatus: 'pending_teacher_review' }), true);
+
+  const summary = summarizeAssessmentItemProgress({
+    items: [{ id: 'item-1' }, { id: 'item-2' }],
+    records: { 'item-1': concept }
+  });
+  assert.equal(summary.itemsAnswered, 0);
+  assert.equal(summary.completed, false);
+
+  const ingeleverd = buildAssessmentItemVoortgangUpdate({
+    ...base,
+    itemId: 'item-1',
+    klasId: 'klas-1',
+    data: { completed: true, isCorrect: true, attempts: 1, lastAnswer: { value: ['option-2'] } },
+    existingData: concept,
+    timestamp: 'ts2'
+  });
+  assert.equal(ingeleverd.concept, null);
+  assert.equal(ingeleverd.attempts, 1);
 });

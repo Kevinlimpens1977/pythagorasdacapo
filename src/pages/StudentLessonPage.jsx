@@ -110,6 +110,7 @@ import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
 import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
 import StudyStepRail from '../components/lesson/StudyStepRail';
 import { spelSlotStatus } from '../lib/spelSlot';
+import { nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
 import {
   buildExerciseAnswerPayload,
   buildInitialExerciseAnswers,
@@ -463,6 +464,13 @@ export default function StudentLessonPage() {
     () => spelSlotStatus({ blocks, progressRecords, klasSettings: isAdmin ? { spelAlsAfsluiting: false } : klasData?.settings }),
     [blocks, progressRecords, klasData?.settings, isAdmin]
   );
+  // Nulmeting: deel B pas als deel A helemaal is ingeleverd (nulmetingVolgorde.js).
+  const nulmetingSlot = useMemo(
+    () => (isAdmin
+      ? { vergrendeld: false, vereist: [] }
+      : nulmetingDeelSlot({ block: currentBlock, blocks, itemRecordsByBlock: assessmentItemRecords })),
+    [assessmentItemRecords, blocks, currentBlock, isAdmin]
+  );
   const learningGoalsIntro = useMemo(
     () => buildLearningGoalsIntro({ paragraaf, blocks }),
     [blocks, paragraaf]
@@ -704,6 +712,39 @@ export default function StudentLessonPage() {
     });
 
     return saved;
+  };
+
+  // Tussentijds bewaard antwoord: alleen het itemdocument, geen blokstand en
+  // geen tokens. Mislukt het stilletjes, dan werkt de vraag gewoon door.
+  const saveAssessmentItemConcept = async (block, itemId, value) => {
+    const effectiveKlasId = getEffectiveKlasId({ authKlasId, userData, klasData });
+    if (!block || !itemId || !currentUser || isAdmin || !effectiveKlasId) return null;
+    try {
+      const saved = await voortgangService.saveAssessmentItemConcept(
+        currentUser.uid,
+        block.id,
+        itemId,
+        block.paragraafId || paragraafId,
+        block.hoofdstukId || paragraaf?.hoofdstukId || '',
+        effectiveKlasId,
+        {
+          value,
+          blockTitle: block.title || CONTENT_BLOCK_LABELS[block.type] || 'Toets',
+          blockType: block.type || ''
+        }
+      );
+      setAssessmentItemRecords((current) => {
+        const blockRecords = current[block.id] || {};
+        return {
+          ...current,
+          [block.id]: { ...blockRecords, [itemId]: { ...(blockRecords[itemId] || {}), ...saved } }
+        };
+      });
+      return saved;
+    } catch (conceptError) {
+      console.warn('Concept-antwoord kon niet worden bewaard:', conceptError);
+      return null;
+    }
   };
 
   const coreQuestionRecords = useMemo(() => (
@@ -1082,6 +1123,9 @@ export default function StudentLessonPage() {
                   assessmentItemRecords={assessmentItemRecords[currentBlock?.id] || null}
                   onSaveAssessmentItemProgress={(itemId, payload) =>
                     saveAssessmentItemProgress(currentBlock, itemId, payload)}
+                  onSaveAssessmentItemConcept={(itemId, value) =>
+                    saveAssessmentItemConcept(currentBlock, itemId, value)}
+                  nulmetingSlot={nulmetingSlot}
                   studentName={studentFirstName}
                   // De seed voor de antwoordvolgorde. Leeg voor een docent: in de
                   // docent- en lespreview blijft de auteursvolgorde staan, zodat
@@ -1200,11 +1244,13 @@ export default function StudentLessonPage() {
 
 function LessonBlockContent({
   spelSlot = null,
+  nulmetingSlot = null,
   block,
   isCompleted,
   progressRecord,
   assessmentItemRecords,
   onSaveAssessmentItemProgress,
+  onSaveAssessmentItemConcept = null,
   studentName,
   studentId = '',
   paragraaf,
@@ -1257,6 +1303,14 @@ function LessonBlockContent({
           )
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
+        ) : (block.type === 'quiz' || block.type === 'toets') && nulmetingSlot?.vergrendeld ? (
+          <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-6">
+            <p className="font-black text-[var(--helix-navy)]">{block.title || 'Dit deel'} gaat nog niet open</p>
+            <p className="helix-muted mt-2 text-sm leading-6">
+              Maak eerst {nulmetingSlot.vereist.map((stand) => `${stand.title} (${stand.itemsAf} van ${stand.itemCount} vragen ingeleverd)`).join(' en ')} helemaal af.
+              Daarna gaat dit deel vanzelf open.
+            </p>
+          </div>
         ) : block.type === 'quiz' || block.type === 'toets' ? (
           <AssessmentLearningBlock
             block={block}
@@ -1267,6 +1321,7 @@ function LessonBlockContent({
             paragraaf={paragraaf}
             hoofdstuk={hoofdstuk}
             onSaveItemProgress={onSaveAssessmentItemProgress}
+            onSaveItemConcept={onSaveAssessmentItemConcept}
           />
         ) : block.type === 'question' && !block.linkedVraagId && hasExerciseFields(block) ? (
           <ExerciseLearningBlock
@@ -3110,7 +3165,8 @@ function AssessmentLearningBlock({
   studentName = '',
   paragraaf = null,
   hoofdstuk = null,
-  onSaveItemProgress = null
+  onSaveItemProgress = null,
+  onSaveItemConcept = null
 }) {
   const content = block.content || {};
   const rawItems = Array.isArray(content.items) ? content.items : [];
@@ -3203,6 +3259,7 @@ function AssessmentLearningBlock({
                 questionId: rawItems[index]?.id || `item-${index + 1}`
               })}
               onSaveItemProgress={onSaveItemProgress}
+              onSaveItemConcept={onSaveItemConcept}
             />
           )}
         />
@@ -3229,6 +3286,7 @@ function AssessmentLearningBlock({
                 questionId: rawItems[index]?.id || `item-${index + 1}`
               })}
               onSaveItemProgress={onSaveItemProgress}
+              onSaveItemConcept={onSaveItemConcept}
             />
           ))}
         </div>
@@ -3482,6 +3540,8 @@ function AssessmentItemLearningCard({
   progressRecord = null,
   optionShuffleSeed = '',
   onSaveItemProgress = null,
+  // Tussentijds bewaren van het ingevulde antwoord (nog niet ingeleverd).
+  onSaveItemConcept = null,
   // Herkansingsronde: dezelfde kaart, maar met een schone start, eigen
   // pogingenteller en Digidocent-hulp op de fout uit ronde 1.
   retryMode = false,
@@ -3497,6 +3557,10 @@ function AssessmentItemLearningCard({
         ? retryRecord.lastAnswer.value
         : buildInitialAssessmentAnswer(item);
     }
+    // Een concept is altijd jonger dan het laatst ingeleverde antwoord: bij het
+    // inleveren gaat het concept weg (voortgangPayload.js).
+    const concept = progressRecord?.completed ? null : progressRecord?.concept?.value;
+    if (concept !== undefined && concept !== null) return concept;
     return progressRecord?.lastAnswer?.value !== undefined
       ? progressRecord.lastAnswer.value
       : buildInitialAssessmentAnswer(item);
@@ -3558,8 +3622,38 @@ function AssessmentItemLearningCard({
   // Zonder antwoord geen inzending: die zou als foute poging tellen.
   const answerEmpty = isAssessmentAnswerEmpty(item, answer);
 
+  // Tussentijds bewaren: kort na de laatste wijziging, en bij het verlaten van
+  // de kaart (volgende vraag, refresh) meteen. Niet in de herkansing.
+  const conceptTimerRef = useRef(null);
+  const conceptPendingRef = useRef(null);
+  const flushConceptRef = useRef(null);
+  useEffect(() => {
+    flushConceptRef.current = () => {
+      if (conceptTimerRef.current) {
+        clearTimeout(conceptTimerRef.current);
+        conceptTimerRef.current = null;
+      }
+      if (conceptPendingRef.current === null || !onSaveItemConcept) return;
+      const value = conceptPendingRef.current;
+      conceptPendingRef.current = null;
+      Promise.resolve(onSaveItemConcept(item.id, value)).catch(() => {});
+    };
+  }, [item.id, onSaveItemConcept]);
+  useEffect(() => () => flushConceptRef.current?.(), []);
+  const handleAnswerChange = (value) => {
+    setAnswer(value);
+    if (retryMode || locked || !onSaveItemConcept) return;
+    conceptPendingRef.current = value;
+    if (conceptTimerRef.current) clearTimeout(conceptTimerRef.current);
+    conceptTimerRef.current = setTimeout(() => flushConceptRef.current?.(), 700);
+  };
+
   const handleCheck = async () => {
     if (saving || locked || answerEmpty) return;
+    // Wat nu wordt ingeleverd, hoeft niet meer als concept bewaard te worden.
+    if (conceptTimerRef.current) clearTimeout(conceptTimerRef.current);
+    conceptTimerRef.current = null;
+    conceptPendingRef.current = null;
     setSaving(true);
     setFeedback('');
     setAnswerExplanation(emptyAnswerExplanation());
@@ -3812,7 +3906,7 @@ function AssessmentItemLearningCard({
           item={item}
           displayOptions={displayOptions}
           value={answer}
-          onChange={setAnswer}
+          onChange={handleAnswerChange}
           disabled={locked || saving}
           answerKeyAvailable={answerKeyAvailable}
         />
