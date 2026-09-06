@@ -642,6 +642,25 @@ export const createQuestionContentBlock = async (paragraafId, vraagData, blockDa
  * @param {Object} data - Fields to update
  * @returns {Promise<void>}
  */
+/**
+ * Publiceert alle nog niet gepubliceerde blokken van een paragraaf, prive en
+ * publiek tegelijk. Voor de "nog X concept"-knop in het klaarzettenpaneel:
+ * een docent die klaarzet bedoelt vrijwel altijd "en zet ze dus ook zichtbaar".
+ */
+export const publishAllBlocksInParagraaf = async (paragraafId) => {
+  const snapshot = await getDocs(query(collection(db, 'contentBlocks'), where('paragraafId', '==', paragraafId)));
+  const batch = writeBatch(db);
+  let count = 0;
+  snapshot.docs.forEach((blockDoc) => {
+    if (blockDoc.data().status === 'published') return;
+    batch.update(doc(db, 'contentBlocks', blockDoc.id), { status: 'published', updatedAt: serverTimestamp() });
+    batch.set(doc(db, 'publicContentBlocks', blockDoc.id), { status: 'published', updatedAt: serverTimestamp() }, { merge: true });
+    count += 1;
+  });
+  if (count > 0) await batch.commit();
+  return count;
+};
+
 export const updateParagraaf = async (paragraafId, data) => {
   try {
     await updateDoc(doc(db, 'paragraaf', paragraafId), {

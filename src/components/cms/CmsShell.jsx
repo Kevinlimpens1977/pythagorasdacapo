@@ -606,7 +606,11 @@ export default function CmsShell() {
 
           {/* Klaarzetten in context: klassen aanvinken bij de paragraaf zelf */}
           {!cms.loading && !cms.error && isParagraafView && (
-            <ParagraafKlaarzettenPanel paragraaf={cms.currentParagraaf} />
+            <ParagraafKlaarzettenPanel
+              paragraaf={cms.currentParagraaf}
+              blocks={cms.contentBlocks}
+              onRefresh={() => cms.loadContentBlocks(cms.selectedParagraafId)}
+            />
           )}
 
           {/* PARAGRAAF Detail Panel with Lesson Route Builder */}

@@ -9,17 +9,19 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, BarChart3, Loader, Users } from 'lucide-react';
 import * as klasService from '../../services/klasService';
+import { publishAllBlocksInParagraaf } from '../../services/cmsService';
 import {
   isParagraafKlaargezet,
   isParagraafZichtbaarVoorLeerlingen,
   sortKlassenByName
 } from '../../lib/lesmateriaalStudio';
 
-export default function ParagraafKlaarzettenPanel({ paragraaf }) {
+export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRefresh }) {
   const [klassen, setKlassen] = useState(null); // null = nog aan het laden
   const [studentCounts, setStudentCounts] = useState({});
   const [savingKlasId, setSavingKlasId] = useState(null);
   const [error, setError] = useState(null);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -56,6 +58,28 @@ export default function ParagraafKlaarzettenPanel({ paragraaf }) {
   if (!paragraaf?.id) return null;
 
   const paragraafZichtbaar = isParagraafZichtbaarVoorLeerlingen(paragraaf);
+
+  // De klassieke valkuil: blokken gebouwd, klas aangevinkt, maar de blokken
+  // staan nog op concept - dan ziet de leerling niets en telt de toewijzing
+  // nul lesblokken. Daarom hier de teller met een knop die alles tegelijk
+  // publiceert.
+  const conceptAantal = (Array.isArray(blocks) ? blocks : []).filter(
+    (block) => block && block.status !== 'published' && block.isArchived !== true
+  ).length;
+
+  const publiceerAlles = async () => {
+    setPublishing(true);
+    setError(null);
+    try {
+      await publishAllBlocksInParagraaf(paragraaf.id);
+      await onRefresh?.();
+    } catch (err) {
+      console.error('Alles publiceren mislukt:', err);
+      setError('Publiceren is niet gelukt. Probeer het opnieuw.');
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   const toggleKlas = async (klas) => {
     const wasKlaargezet = isParagraafKlaargezet(klas, paragraaf.id);
@@ -159,6 +183,23 @@ export default function ParagraafKlaarzettenPanel({ paragraaf }) {
               <AlertTriangle size={14} className="shrink-0" />
               Leerlingen zien deze paragraaf pas na publiceren.
             </p>
+          )}
+          {conceptAantal > 0 && (
+            <div className="flex flex-col items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 lg:items-end">
+              <p className="inline-flex items-center gap-2 text-xs font-bold text-amber-800">
+                <AlertTriangle size={14} className="shrink-0" />
+                {conceptAantal} {conceptAantal === 1 ? 'blok is' : 'blokken zijn'} nog concept en voor leerlingen onzichtbaar.
+              </p>
+              <button
+                type="button"
+                onClick={publiceerAlles}
+                disabled={publishing}
+                className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-black text-white transition hover:bg-amber-700 disabled:opacity-50"
+              >
+                {publishing ? <Loader size={13} className="animate-spin" /> : null}
+                Alles publiceren
+              </button>
+            </div>
           )}
           <Link
             to="/dashboard"
