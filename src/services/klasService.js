@@ -4,6 +4,8 @@
  */
 
 import {
+  arrayRemove,
+  arrayUnion,
   collection,
   doc,
   setDoc,
@@ -265,6 +267,53 @@ export const updateKlasEnabledParagrafen = async (klasId, paragraafIds) => {
     });
   } catch (error) {
     throw new Error(`Failed to update class paragraphs: ${error.message}`, { cause: error });
+  }
+};
+
+/**
+ * Zet één paragraaf klaar voor een klas. Schrijft hetzelfde veld als
+ * TakenToewijzenPage/AdminKlassenPage (enabledParagrafen), maar met
+ * arrayUnion zodat gelijktijdige wijzigingen elkaar niet overschrijven.
+ * @param {string} klasId
+ * @param {string} paragraafId
+ * @returns {Promise<void>}
+ */
+export const addParagraafToKlas = async (klasId, paragraafId) => {
+  if (!klasId || !paragraafId) {
+    throw new Error('klasId and paragraafId are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      enabledParagrafen: arrayUnion(paragraafId),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to enable paragraph for class: ${error.message}`, { cause: error });
+  }
+};
+
+/**
+ * Haal één paragraaf weer weg bij een klas (zelfde veld enabledParagrafen,
+ * via arrayRemove).
+ * @param {string} klasId
+ * @param {string} paragraafId
+ * @returns {Promise<void>}
+ */
+export const removeParagraafFromKlas = async (klasId, paragraafId) => {
+  if (!klasId || !paragraafId) {
+    throw new Error('klasId and paragraafId are required');
+  }
+
+  try {
+    const klasRef = doc(db, 'klassen', klasId);
+    await updateDoc(klasRef, {
+      enabledParagrafen: arrayRemove(paragraafId),
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to disable paragraph for class: ${error.message}`, { cause: error });
   }
 };
 

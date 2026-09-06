@@ -3,7 +3,7 @@
  * Manages image upload, rectangle selection, and crop metadata saving
  */
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import ImageCanvasEditor from '../components/admin/ImageCanvasEditor';
@@ -113,7 +113,7 @@ export default function AdminCropToolPage() {
           0.85
         );
       } catch (error) {
-        throw new Error(`Crop extraction failed: ${error.message}`);
+        throw new Error(`Crop extraction failed: ${error.message}`, { cause: error });
       }
 
       const failedCrops = cropResults.filter(r => r.status === 'error');
@@ -200,7 +200,7 @@ export default function AdminCropToolPage() {
           currentUser.uid
         );
       } catch (error) {
-        throw new Error(`Database save failed: ${error.message}`);
+        throw new Error(`Database save failed: ${error.message}`, { cause: error });
       }
 
       // Success
@@ -312,7 +312,7 @@ export default function AdminCropToolPage() {
       )}
 
       {/* Debug info (remove in production) */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <div className="fixed top-4 right-4 bg-gray-100 p-2 rounded text-xs text-gray-600 max-w-xs">
           <p>User: {currentUser?.email}</p>
           <p>Para: {selectedParagraphId}</p>

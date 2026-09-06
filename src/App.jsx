@@ -6,8 +6,8 @@ import AppShell from './components/layout/AppShell';
 import TableOfContents from './components/layout/TableOfContents';
 import StudentLessonPage from './pages/StudentLessonPage';
 import ClassOverview from './components/dashboard/ClassOverview';
-import AdminCropToolPage from './pages/AdminCropToolPage';
 import AdminCmsPage from './pages/AdminCmsPage';
+import AdminCropToolPage from './pages/AdminCropToolPage';
 import AdminKlassenPage from './pages/AdminKlassenPage';
 import AdminDigibordPage from './pages/AdminDigibordPage';
 import TakenToewijzenPage from './pages/TakenToewijzenPage';
@@ -57,11 +57,6 @@ function AppRoutes() {
             <ClassOverview />
           </PrivateRoute>
         } />
-        <Route path="admin/crop-tool" element={
-          <PrivateRoute requireAdmin={true}>
-            <AdminCropToolPage />
-          </PrivateRoute>
-        } />
         <Route path="admin/lesstof" element={
           <PrivateRoute requireAdmin={true}>
             <AdminLesstofPage />
@@ -95,6 +90,11 @@ function AppRoutes() {
         <Route path="admin/slidedecks" element={
           <PrivateRoute requireAdmin={true}>
             <AdminSlidedecksPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/crop-tool" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminCropToolPage />
           </PrivateRoute>
         } />
         <Route path="admin/cms" element={

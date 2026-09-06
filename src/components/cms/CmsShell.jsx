@@ -14,8 +14,10 @@ import CreateContentModal from './CreateContentModal';
 import InlineEdit from './InlineEdit';
 import ColorEmojiPicker from './ColorEmojiPicker';
 import ContentBlockBuilder from './ContentBlockBuilder';
+import ParagraafKlaarzettenPanel from './ParagraafKlaarzettenPanel';
 import useCms from '../../hooks/useCms';
 import * as cmsService from '../../services/cmsService';
+import { buildBouwPad } from '../../lib/lesmateriaalStudio';
 
 const DEFAULT_SIDEBAR_WIDTH = 400;
 const MIN_SIDEBAR_WIDTH = 300;
@@ -209,14 +211,17 @@ export default function CmsShell() {
     }
   };
 
-  // Build breadcrumb
-  const breadcrumbItems = [
-    cms.currentVak && { label: cms.currentVak.name, id: cms.selectedVakId },
-    cms.currentLeerjaar && { label: `Jaar ${cms.currentLeerjaar.year}`, id: cms.selectedLeerjaarId },
-    cms.currentNiveau && { label: cms.currentNiveau.label, id: cms.selectedNiveauId },
-    cms.currentHoofdstuk && { label: cms.currentHoofdstuk.title, id: cms.selectedHoofdstukId },
-    cms.currentParagraaf && { label: cms.currentParagraaf.title, id: cms.selectedParagraafId },
-  ].filter(Boolean);
+  // "Je bouwt"-kruimelpad: klikbaar, en bij een vak met één leerjaar/niveau
+  // plat weergegeven (vak › hoofdstuk › paragraaf).
+  const bouwPad = buildBouwPad({
+    vak: cms.currentVak,
+    leerjaar: cms.currentLeerjaar,
+    niveau: cms.currentNiveau,
+    hoofdstuk: cms.currentHoofdstuk,
+    paragraaf: cms.currentParagraaf,
+    leerjaarCount: cms.leerjaren.length,
+    niveauCount: cms.niveaus.length
+  });
 
   const currentContextLabel =
     cms.currentParagraaf?.title ||
@@ -232,7 +237,7 @@ export default function CmsShell() {
     cms.vragen.length && `${cms.vragen.length} vragen`,
     cms.contentBlocks.length && `${cms.contentBlocks.length} lesblokken`
   ].filter(Boolean);
-  const visibleBreadcrumbItems = breadcrumbItems.length > 1 ? breadcrumbItems.slice(0, -1) : breadcrumbItems;
+  const isParagraafView = Boolean(cms.selectedParagraafId && cms.currentParagraaf);
 
   return (
     <>
@@ -301,19 +306,37 @@ export default function CmsShell() {
 
         {/* Right Panel - Content Editor or Detail Panel */}
         <div className="custom-scrollbar flex-1 overflow-y-auto p-6">
-          <div className="helix-surface mb-5 px-5 py-4">
+          {/* Sticky zodat je tijdens het bouwen altijd ziet waar je bent. */}
+          <div className="helix-surface sticky top-0 z-30 mb-5 px-5 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[var(--helix-muted)]">
-                  {visibleBreadcrumbItems.length > 0 ? (
-                    visibleBreadcrumbItems.map((item, idx) => (
-                      <React.Fragment key={item.id}>
-                        <span className="max-w-[16rem] truncate">{item.label}</span>
-                        {idx < visibleBreadcrumbItems.length - 1 && (
-                          <ChevronRight size={14} className="flex-shrink-0 text-slate-300" />
-                        )}
-                      </React.Fragment>
-                    ))
+                  {bouwPad.length > 0 ? (
+                    <>
+                      {isParagraafView && (
+                        <span className="uppercase tracking-[0.18em] text-[var(--helix-purple)]">Je bouwt:</span>
+                      )}
+                      {bouwPad.map((item, idx) => {
+                        const isLast = idx === bouwPad.length - 1;
+                        return (
+                          <React.Fragment key={item.id}>
+                            {isLast ? (
+                              <span className="max-w-[16rem] truncate text-[var(--helix-navy)]">{item.label}</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => cms.goToLevel(item.type)}
+                                className="max-w-[16rem] truncate rounded-md px-1 py-0.5 transition-colors hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)]"
+                                title={`Ga naar ${item.label}`}
+                              >
+                                {item.label}
+                              </button>
+                            )}
+                            {!isLast && <ChevronRight size={14} className="flex-shrink-0 text-slate-300" />}
+                          </React.Fragment>
+                        );
+                      })}
+                    </>
                   ) : (
                     <span className="uppercase tracking-[0.18em]">Werkvlak</span>
                   )}
@@ -579,6 +602,11 @@ export default function CmsShell() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Klaarzetten in context: klassen aanvinken bij de paragraaf zelf */}
+          {!cms.loading && !cms.error && isParagraafView && (
+            <ParagraafKlaarzettenPanel paragraaf={cms.currentParagraaf} />
           )}
 
           {/* PARAGRAAF Detail Panel with Lesson Route Builder */}

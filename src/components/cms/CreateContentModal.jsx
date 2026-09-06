@@ -47,12 +47,28 @@ export default function CreateContentModal({
       let newId;
 
       switch (type) {
-        case 'vak':
+        case 'vak': {
           newId = await cmsService.createVak(
             { name, description },
             auth.currentUser.uid
           );
+          // Auto-aanmaak tussenlagen: elk nieuw vak krijgt direct één leerjaar
+          // ("Leerjaar 1") met één niveau ("Standaard"). De navigatieboom toont
+          // zo'n vak plat (vak › hoofdstuk › paragraaf), dus de docent kan
+          // meteen een hoofdstuk toevoegen zonder vier lagen te klikken.
+          // Meer leerjaren of niveaus toevoegen kan later altijd nog via de boom.
+          const leerjaarId = await cmsService.createLeerjaar(
+            newId,
+            { year: 1, label: 'Leerjaar 1' },
+            auth.currentUser.uid
+          );
+          await cmsService.createNiveau(
+            leerjaarId,
+            { label: 'Standaard', name: 'Standaard' },
+            auth.currentUser.uid
+          );
           break;
+        }
 
         case 'leerjaar':
           newId = await cmsService.createLeerjaar(

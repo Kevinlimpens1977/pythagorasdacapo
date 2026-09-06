@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils';
 import { buildCmsNavigationTree } from '../../lib/cmsNavigationUtils';
+import { flattenNavigationTree, getTreeCreateAction } from '../../lib/lesmateriaalStudio';
 
 const STORAGE_KEY = 'cms-tree-expanded-ids';
 
@@ -32,6 +33,10 @@ const ArchiveToggleButton = ({ showArchived, onToggleShowArchived }) => (
 );
 
 const countLabel = (node) => {
+  if (node.type === 'vak' && node.flattened) {
+    // Plat pad: leerjaar/niveau zijn verborgen, dus tellen we hoofdstukken.
+    return `${node.counts.hoofdstukken} ${node.counts.hoofdstukken === 1 ? 'hoofdstuk' : 'hoofdstukken'}`;
+  }
   if (node.type === 'vak') return `${node.counts.leerjaren} ${node.counts.leerjaren === 1 ? 'jaar' : 'jaren'}`;
   if (node.type === 'leerjaar') return `${node.counts.niveaus} ${node.counts.niveaus === 1 ? 'niveau' : 'niveaus'}`;
   if (node.type === 'niveau') return `${node.counts.hoofdstukken} ${node.counts.hoofdstukken === 1 ? 'hoofdstuk' : 'hoofdstukken'}`;
@@ -86,7 +91,8 @@ const TreeNode = ({
   const isActivePath = isSelected && !isActiveParagraaf;
   const pills = blockTypePills(node);
   const mutedCount = countLabel(node);
-  const canCreateChild = ['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(node.type);
+  // Benoemde plus-actie voor dit niveau ("+ Hoofdstuk", "+ Paragraaf", ...).
+  const createAction = getTreeCreateAction(node);
   const actionsOpen = actionNodeId === node.id;
   const isArchived = node.archived === true;
   const displayLabel = getNodeDisplayLabel(node);
@@ -197,19 +203,17 @@ const TreeNode = ({
               {mutedCount}
             </span>
           )}
-          {onCreateChild && canCreateChild && (
+          {onCreateChild && createAction && (
             <button
               onClick={(event) => {
                 event.stopPropagation();
-                onCreateChild(node.id);
+                onCreateChild(createAction);
               }}
-              className={[
-                'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[var(--helix-border)] transition-colors',
-                isChapterBand || isActiveParagraaf ? 'bg-white text-[var(--helix-purple)] hover:bg-white' : 'bg-white text-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]'
-              ].join(' ')}
-              title={`Nieuw onderdeel toevoegen`}
+              className="flex h-7 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-[var(--helix-border)] bg-white px-2 text-[11px] font-black text-[var(--helix-purple)] transition-colors hover:border-fuchsia-200 hover:bg-[var(--helix-soft-lavender)]"
+              title={`${createAction.label.slice(2)} toevoegen onder ${displayLabel}`}
             >
-              <Plus size={15} />
+              <Plus size={13} />
+              {createAction.label.slice(2)}
             </button>
           )}
           <button
@@ -337,11 +341,15 @@ export default function NavigationTree({
     vraag: selectedVraagId
   };
 
+  // Platte-pad-afleiding: een vak met één leerjaar en één niveau toont
+  // direct zijn hoofdstukken (zie flattenNavigationTree in lesmateriaalStudio).
   const tree = useMemo(
     () =>
-      buildCmsNavigationTree(
-        { vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks },
-        { query, includeArchived: showArchived }
+      flattenNavigationTree(
+        buildCmsNavigationTree(
+          { vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks },
+          { query, includeArchived: showArchived }
+        )
       ),
     [vakken, leerjaren, niveaus, hoofdstukken, paragrafen, vragen, contentBlocks, query, showArchived]
   );
@@ -365,11 +373,14 @@ export default function NavigationTree({
     );
   };
 
-  const handleCreateChild = (parentId) => {
-    if (vakken.some((vak) => vak.id === parentId)) return onCreateLeerjaar?.(parentId);
-    if (leerjaren.some((leerjaar) => leerjaar.id === parentId)) return onCreateNiveau?.(parentId);
-    if (niveaus.some((niveau) => niveau.id === parentId)) return onCreateHoofdstuk?.(parentId);
-    if (hoofdstukken.some((hoofdstuk) => hoofdstuk.id === parentId)) return onCreateParagraaf?.(parentId);
+  // De boomknoop levert een benoemde actie ({type, parentId}) aan; bij een
+  // plat vak wijst parentId naar het verborgen niveau van dat vak.
+  const handleCreateChild = (action) => {
+    if (!action) return null;
+    if (action.type === 'leerjaar') return onCreateLeerjaar?.(action.parentId);
+    if (action.type === 'niveau') return onCreateNiveau?.(action.parentId);
+    if (action.type === 'hoofdstuk') return onCreateHoofdstuk?.(action.parentId);
+    if (action.type === 'paragraaf') return onCreateParagraaf?.(action.parentId);
     return null;
   };
 
@@ -385,10 +396,11 @@ export default function NavigationTree({
           </div>
           <button
             onClick={() => onCreateVak?.()}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] shadow-sm transition-colors hover:bg-white"
-            title="Nieuw vak"
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 text-sm font-black text-[var(--helix-purple)] shadow-sm transition-colors hover:bg-white"
+            title="Nieuw vak aanmaken"
           >
-            <Plus size={18} />
+            <Plus size={16} />
+            Vak
           </button>
         </div>
 

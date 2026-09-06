@@ -39,6 +39,7 @@ import {
   Layers,
   Maximize2,
   Pencil,
+  Plus,
   Save,
   Scissors,
   Upload,
@@ -46,6 +47,7 @@ import {
   X
 } from 'lucide-react';
 import { auth } from '../../services/firebase';
+import BlockTypePickerModal from './BlockTypePickerModal';
 import * as cmsService from '../../services/cmsService';
 import * as cropService from '../../services/cropService';
 import * as storageService from '../../services/storageService';
@@ -2814,6 +2816,7 @@ export default function ContentBlockBuilder({
   const [creatingType, setCreatingType] = useState(null);
   const [applyingTemplateId, setApplyingTemplateId] = useState(null);
   const [confirmArchiveBlockId, setConfirmArchiveBlockId] = useState(null);
+  const [blockPicker, setBlockPicker] = useState(null); // { index } of null; index null = achteraan
   const [archiveUndo, setArchiveUndo] = useState(null);
   const [selectedBlockIds, setSelectedBlockIds] = useState(() => new Set());
   const [bulkAction, setBulkAction] = useState(null);
@@ -2893,52 +2896,70 @@ export default function ContentBlockBuilder({
 
   const clearBulkSelection = () => setSelectedBlockIds(new Set());
 
-  const handleCreateBlock = async (type) => {
-    try {
-      setCreatingType(type);
-      setActionError(null);
-      const userId = auth.currentUser?.uid || 'unknown-admin';
+  // Maakt het Firestore-document voor een nieuw blok (achteraan) en geeft
+  // het blockId terug. Refresh en openen gebeuren in handleInsertBlock.
+  const createBlockDocument = async (type) => {
+    const userId = auth.currentUser?.uid || 'unknown-admin';
 
-      if (type === 'question') {
-        const number = getNextQuestionNumber(vragen);
-        const vraagtype = 'open';
-        const antwoord = buildDefaultAnswerForQuestionType(vraagtype);
-        const { blockId } = await cmsService.createQuestionContentBlock(
-          paragraaf.id,
-          {
-            number,
-            title: `Vraag ${number}`,
-            status: 'draft',
-            vraagtype,
-            content: { text: '<p></p>', images: [] },
-            vraagMetadata: {
-              tokenConfig: buildDefaultTokenConfigForQuestionType(vraagtype, antwoord)
-            },
-            antwoord
-          },
-          {
-            title: 'Vraag',
-            status: 'draft',
-            content: getDefaultContentForBlockType(type)
-          },
-          userId
-        );
-        await onRefresh();
-        setEditingBlockId(blockId);
-        return;
-      }
-
-      const blockId = await cmsService.createContentBlock(
+    if (type === 'question') {
+      const number = getNextQuestionNumber(vragen);
+      const vraagtype = 'open';
+      const antwoord = buildDefaultAnswerForQuestionType(vraagtype);
+      const { blockId } = await cmsService.createQuestionContentBlock(
         paragraaf.id,
         {
-          type,
-          title: type === 'question' ? 'Vraag' : CONTENT_BLOCK_LABELS[type],
+          number,
+          title: `Vraag ${number}`,
           status: 'draft',
-          content: getDefaultContentForBlockType(type),
-          linkedVraagId: null
+          vraagtype,
+          content: { text: '<p></p>', images: [] },
+          vraagMetadata: {
+            tokenConfig: buildDefaultTokenConfigForQuestionType(vraagtype, antwoord)
+          },
+          antwoord
+        },
+        {
+          title: 'Vraag',
+          status: 'draft',
+          content: getDefaultContentForBlockType(type)
         },
         userId
       );
+      return blockId;
+    }
+
+    return cmsService.createContentBlock(
+      paragraaf.id,
+      {
+        type,
+        title: CONTENT_BLOCK_LABELS[type],
+        status: 'draft',
+        content: getDefaultContentForBlockType(type),
+        linkedVraagId: null
+      },
+      userId
+    );
+  };
+
+  /**
+   * Nieuw blok toevoegen, optioneel op een specifieke plek in de route.
+   * Het blok wordt eerst achteraan aangemaakt; bij een tussenpositie halen we
+   * daarna de verse (volledige) bloklijst op en schuiven we het blok via het
+   * bestaande order-mechanisme naar zijn plek, zodat de publicContentBlocks-
+   * sync gewoon zijn werk doet.
+   */
+  const handleInsertBlock = async (type, insertIndex = null) => {
+    try {
+      setCreatingType(type);
+      setActionError(null);
+
+      const blockId = await createBlockDocument(type);
+
+      if (typeof insertIndex === 'number' && insertIndex < normalizedBlocks.length) {
+        const freshBlocks = normalizeContentBlocks(await cmsService.getContentBlocks(paragraaf.id, true));
+        const reordered = getReorderedBlocksByIndex(freshBlocks, blockId, insertIndex);
+        await cmsService.updateContentBlockOrder(reordered);
+      }
 
       await onRefresh();
       setEditingBlockId(blockId);
@@ -2948,6 +2969,16 @@ export default function ContentBlockBuilder({
     } finally {
       setCreatingType(null);
     }
+  };
+
+  const handleCreateBlock = (type) => handleInsertBlock(type, null);
+
+  // Typekiezer ("+ Blok toevoegen"): onthoudt op welke plek het nieuwe blok
+  // moet komen; null = achteraan.
+  const handlePickBlockType = async (type) => {
+    const insertIndex = blockPicker?.index ?? null;
+    setBlockPicker(null);
+    await handleInsertBlock(type, insertIndex);
   };
 
   const handleApplyTemplate = async (templateId) => {
@@ -3484,6 +3515,15 @@ export default function ContentBlockBuilder({
             <p className="mt-2 text-sm text-[var(--helix-muted)]">
               Voeg een theorieblok, voorbeeld, vraag, media, samenvatting, game of slidedeck toe om deze paragraaf op te bouwen.
             </p>
+            <button
+              type="button"
+              onClick={() => setBlockPicker({ index: null })}
+              disabled={creatingType !== null || applyingTemplateId !== null}
+              className="btn-primary mx-auto mt-5 px-5 py-3 text-sm disabled:cursor-wait disabled:opacity-60"
+            >
+              <Plus size={16} />
+              Blok toevoegen
+            </button>
           </div>
         ) : (
           <DndContext
@@ -3501,31 +3541,68 @@ export default function ContentBlockBuilder({
                 });
 
                 return (
-                  <SortableLessonBlockCard
-                    key={block.id}
-                    block={block}
-                    index={index}
-                    totalBlocks={normalizedBlocks.length}
-                    isEditing={isEditing}
-                    previewText={previewText}
-                    confirmArchiveBlockId={confirmArchiveBlockId}
-                    isSelected={selectedBlockIds.has(block.id)}
-                    onMove={handleMoveBlock}
-                    onOpen={setEditingBlockId}
-                    onToggleStatus={handleToggleBlockStatus}
-                    onRename={handleRenameBlock}
-                    onToggleSelected={toggleSelectedBlock}
-                    onToggleArchiveConfirm={(blockId) => setConfirmArchiveBlockId(
-                      confirmArchiveBlockId === blockId ? null : blockId
+                  <div key={block.id} className="space-y-4">
+                    <SortableLessonBlockCard
+                      block={block}
+                      index={index}
+                      totalBlocks={normalizedBlocks.length}
+                      isEditing={isEditing}
+                      previewText={previewText}
+                      confirmArchiveBlockId={confirmArchiveBlockId}
+                      isSelected={selectedBlockIds.has(block.id)}
+                      onMove={handleMoveBlock}
+                      onOpen={setEditingBlockId}
+                      onToggleStatus={handleToggleBlockStatus}
+                      onRename={handleRenameBlock}
+                      onToggleSelected={toggleSelectedBlock}
+                      onToggleArchiveConfirm={(blockId) => setConfirmArchiveBlockId(
+                        confirmArchiveBlockId === blockId ? null : blockId
+                      )}
+                      onArchive={handleArchiveBlock}
+                    />
+                    {index < normalizedBlocks.length - 1 && (
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={() => setBlockPicker({ index: index + 1 })}
+                          disabled={creatingType !== null || applyingTemplateId !== null}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-[var(--helix-border)] bg-white/80 px-4 py-1.5 text-xs font-black text-[var(--helix-muted)] transition-colors hover:border-fuchsia-200 hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)] disabled:cursor-wait disabled:opacity-60"
+                          title="Blok tussenvoegen op deze plek"
+                        >
+                          <Plus size={13} />
+                          Blok toevoegen
+                        </button>
+                      </div>
                     )}
-                    onArchive={handleArchiveBlock}
-                  />
+                  </div>
                 );
               })}
             </SortableContext>
           </DndContext>
         )}
+
+        {normalizedBlocks.length > 0 && (
+          <div className="flex justify-center pt-1">
+            <button
+              type="button"
+              onClick={() => setBlockPicker({ index: null })}
+              disabled={creatingType !== null || applyingTemplateId !== null}
+              className="btn-primary px-6 py-3 text-sm disabled:cursor-wait disabled:opacity-60"
+            >
+              <Plus size={16} />
+              Blok toevoegen
+            </button>
+          </div>
+        )}
       </div>
+
+      {blockPicker && (
+        <BlockTypePickerModal
+          busyType={creatingType}
+          onPick={handlePickBlockType}
+          onClose={() => setBlockPicker(null)}
+        />
+      )}
 
       {activeBlock && (
         <FullscreenLessonBlockStudio

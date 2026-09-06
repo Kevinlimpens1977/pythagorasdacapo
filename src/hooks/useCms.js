@@ -313,6 +313,19 @@ export const useCms = (includeArchived = false) => {
     setSelectedVraagId(vraagId);
   }, []);
 
+  // Voor het "Je bouwt"-kruimelpad: spring terug naar een niveau dat al
+  // geselecteerd is. Alleen de selecties eronder worden leeggemaakt; de
+  // geladen data blijft staan zodat de boom niet leegloopt.
+  const goToLevel = useCallback((type) => {
+    if (['vak', 'leerjaar', 'niveau', 'hoofdstuk'].includes(type)) {
+      setSelectedParagraafId(null);
+      setSelectedVraagId(null);
+    }
+    if (['vak', 'leerjaar', 'niveau'].includes(type)) setSelectedHoofdstukId(null);
+    if (['vak', 'leerjaar'].includes(type)) setSelectedNiveauId(null);
+    if (type === 'vak') setSelectedLeerjaarId(null);
+  }, []);
+
   const breadcrumb = {
     vak: vakken.find(v => v.id === selectedVakId),
     leerjaar: leerjaren.find(l => l.id === selectedLeerjaarId),
@@ -335,6 +348,7 @@ export const useCms = (includeArchived = false) => {
     setHoofdstuk,
     setParagraaf,
     setVraag,
+    goToLevel,
     vakken,
     leerjaren,
     niveaus,
