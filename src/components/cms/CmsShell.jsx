@@ -619,6 +619,9 @@ export default function CmsShell() {
               onRefresh={async () => {
                 await cms.loadContentBlocks(cms.selectedParagraafId);
                 await cms.loadVragen(cms.selectedParagraafId);
+                // Ook de paragraaflijst zelf: anders blijven de kop en de boom
+                // na een naamswijziging de oude titel tonen en lijkt opslaan mislukt.
+                await cms.loadParagrafen(cms.selectedHoofdstukId);
               }}
               onEditVraag={(vraagId) => {
                 cms.setVraag(vraagId);

@@ -403,6 +403,9 @@ const StudioTextArea = ({ label, value, onChange, placeholder, className = '' })
 );
 
 const InlineTitleEditor = ({ label, value, onSave }) => {
+  // Rustige naamswijziging: het potlood verandert de titel zelf in een
+  // invoerveld in dezelfde letter, zonder popup. Enter of het vinkje slaat op,
+  // Escape annuleert. Het veld is precies zo groot als de titel zelf.
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value || '');
   const [saving, setSaving] = useState(false);
@@ -418,7 +421,6 @@ const InlineTitleEditor = ({ label, value, onSave }) => {
       setOpen(false);
       return;
     }
-
     try {
       setSaving(true);
       setError(null);
@@ -426,68 +428,67 @@ const InlineTitleEditor = ({ label, value, onSave }) => {
       setOpen(false);
     } catch (saveError) {
       console.error('Naam opslaan mislukt:', saveError);
-      setError('Naam opslaan is mislukt.');
+      setError('Opslaan mislukt.');
     } finally {
       setSaving(false);
     }
   };
 
-  return (
-    <span className="relative inline-flex align-middle">
+  if (!open) {
+    return (
       <button
         type="button"
         onClick={() => {
           setDraft(value || '');
           setError(null);
-          setOpen((current) => !current);
+          setOpen(true);
         }}
-        className="ml-2 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] shadow-sm transition hover:border-[var(--helix-purple)]/30 hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)]"
+        className="ml-2 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-transparent text-[var(--helix-muted)] transition hover:border-[var(--helix-border)] hover:text-[var(--helix-purple)]"
         title={`${label} aanpassen`}
         aria-label={`${label} aanpassen`}
       >
         <Pencil size={15} />
       </button>
+    );
+  }
 
-      {open && (
-        <div className="absolute left-0 top-10 z-40 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-[var(--helix-border)] bg-white p-3 text-left shadow-xl">
-          <label className="mb-2 block text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
-            {label}
-          </label>
-          <input
-            value={draft}
-            onChange={(event) => {
-              setDraft(event.target.value);
-              setError(null);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') saveTitle();
-              if (event.key === 'Escape') setOpen(false);
-            }}
-            className="input-standard w-full"
-            autoFocus
-          />
-          {error && <p className="mt-2 text-xs font-bold text-red-600">{error}</p>}
-          <div className="mt-3 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="btn-secondary w-auto px-3 py-2 text-xs"
-            >
-              <X size={14} />
-              Annuleer
-            </button>
-            <button
-              type="button"
-              onClick={saveTitle}
-              disabled={saving}
-              className="btn-primary w-auto px-3 py-2 text-xs disabled:cursor-wait disabled:opacity-60"
-            >
-              <Check size={14} />
-              {saving ? 'Opslaan...' : 'Opslaan'}
-            </button>
-          </div>
-        </div>
-      )}
+  return (
+    <span className="ml-2 inline-flex items-center gap-1 align-middle">
+      <input
+        value={draft}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          setError(null);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') saveTitle();
+          if (event.key === 'Escape') setOpen(false);
+        }}
+        size={Math.max(draft.length, 8)}
+        className="rounded-lg border-b-2 border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)]/50 px-2 font-display text-inherit font-extrabold text-[var(--helix-navy)] outline-none"
+        aria-label={label}
+        autoFocus
+      />
+      <button
+        type="button"
+        onClick={saveTitle}
+        disabled={saving}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-[var(--helix-purple)] transition hover:bg-[var(--helix-soft-lavender)] disabled:opacity-50"
+        title="Opslaan (Enter)"
+        aria-label="Naam opslaan"
+      >
+        <Check size={16} />
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)]"
+        title="Annuleren (Escape)"
+        aria-label="Annuleren"
+      >
+        <X size={16} />
+      </button>
+      {error ? <span className="text-xs font-bold text-red-600">{error}</span> : null}
     </span>
   );
 };
