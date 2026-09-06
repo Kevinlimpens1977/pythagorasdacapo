@@ -23,6 +23,22 @@ service firebase.storage {
       );
     }
 
+    /* Inleveringen bij praktijkopdrachten: een Word-, PDF- of afbeeldingsbestand
+       per opgave. Vervangbaar (update) zolang de docent nog niet beoordeeld
+       heeft; die grens bewaakt de app, hier ligt alleen het eigendom vast. */
+    match /inleveringen/{userId}/{allPaths=**} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == userId);
+      allow create, update: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.size < 15 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*')
+            || request.resource.contentType == 'application/pdf'
+            || request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.*')
+            || request.resource.contentType == 'application/msword');
+      allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
     /* Schermafbeeldingen bij meldingen. Het pad draagt de uid van de melder,
        zodat de regels de eigenaar kennen zonder Firestore erbij te halen.
        Niet overschrijven: een melding hoort te tonen wat er toen te zien was. */
