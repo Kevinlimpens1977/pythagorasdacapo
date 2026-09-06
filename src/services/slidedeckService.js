@@ -123,7 +123,10 @@ const uploadBlob = async (storagePath, blob, contentType) => {
   const storageRef = ref(storage, storagePath);
   await uploadBytes(storageRef, blob, {
     contentType,
-    cacheControl: 'public, max-age=86400'
+    cacheControl: 'public, max-age=86400',
+    // inline: anders toont een iframe-terugval een lege pagina omdat de
+    // browser het bestand als download behandelt.
+    contentDisposition: 'inline'
   });
   const downloadURL = await getDownloadURL(storageRef);
   return {

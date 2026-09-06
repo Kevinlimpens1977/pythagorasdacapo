@@ -1,4 +1,7 @@
-export const PDF_LOAD_TIMEOUT_MS = 12000;
+// Ruim bemeten: een deck van 20+ MB moet ook op schoolwifi binnen kunnen komen.
+// 12 seconden bleek te krap en duwde grote decks in de iframe-terugval, waar
+// Firebase het bestand als download serveert en het beeld dus leeg blijft.
+export const PDF_LOAD_TIMEOUT_MS = 60000;
 
 export const createPdfJsLoadOptions = (url) => ({
   url,
