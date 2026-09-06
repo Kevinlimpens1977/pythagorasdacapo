@@ -3118,6 +3118,11 @@ function SlidedeckBlock({ block, onOpen }) {
       {content.html && (
         <div className="lesson-prose mt-5" dangerouslySetInnerHTML={htmlValue(content.html)} />
       )}
+      {!presenterSlide.imageUrl && !presenterSlide.pdfStoragePath && !presenterSlide.slidedeckPackageId && (
+        <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800">
+          Er is nog geen presentatie aan dit blok gekoppeld. Je docent kiest er een in de lesbouwer.
+        </p>
+      )}
       <button
         onClick={() => onOpen(presenterSlide)}
         disabled={!presenterSlide.imageUrl && !presenterSlide.pdfStoragePath && !presenterSlide.slidedeckPackageId}
