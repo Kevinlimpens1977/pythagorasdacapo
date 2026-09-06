@@ -1,3 +1,4 @@
+import { comprimeerPdfNaarJpegPaginas } from '../lib/pdfCompressie';
 import {
   collection,
   doc,
@@ -205,9 +206,24 @@ export const createSlidedeckPackage = async ({
 };
 
 export const uploadGeneratedDeckPdf = async (packageId, file, userId) => {
+  // Huisregel: het leerlingdeck gaat altijd eerst door de JPEG-molen, zodat
+  // grote decks (ongecomprimeerde bitmaps) drie tot vier keer sneller laden.
+  // Mislukt de omzetting, dan gaat het origineel door; uploaden mag nooit
+  // stranden op compressie.
+  let deckBlob = file;
+  try {
+    const resultaat = await comprimeerPdfNaarJpegPaginas(file);
+    deckBlob = resultaat.blob;
+    if (resultaat.omgezet) {
+      console.info(`[slidedeck] deck verkleind: ${(resultaat.vanBytes / 1e6).toFixed(1)} -> ${(resultaat.naarBytes / 1e6).toFixed(1)} MB`);
+    }
+  } catch (compressieFout) {
+    console.warn('[slidedeck] compressie overgeslagen:', compressieFout);
+  }
+
   const generatedDeckPdf = await uploadBlob(
     `slidedecks/${packageId}/generated-deck.pdf`,
-    file,
+    deckBlob,
     'application/pdf'
   );
   const existingPackage = await getSlidedeckPackage(packageId);
