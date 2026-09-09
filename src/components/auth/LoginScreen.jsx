@@ -196,7 +196,7 @@ export default function LoginScreen() {
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">
-                  {isSignUp ? 'E-mailadres' : 'Leerlingnummer of e-mailadres'}
+                  E-mailadres
                 </label>
                 <input
                   type="email"
@@ -204,7 +204,7 @@ export default function LoginScreen() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-auth"
-                  placeholder={isSignUp ? 'naam@leerling.dacapo-college.nl' : 'Leerlingnummer of naam@school.nl'}
+                  placeholder="naam@leerling.dacapo-college.nl"
                   autoComplete={isSignUp ? 'email' : 'username'}
                 />
               </div>
