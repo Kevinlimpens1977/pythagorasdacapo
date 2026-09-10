@@ -685,8 +685,17 @@ export default function StudentLessonPage() {
       }
     );
 
-    const nextBlockRecords = { ...(assessmentItemRecords[block.id] || {}), [itemId]: saved };
-    setAssessmentItemRecords((current) => ({ ...current, [block.id]: nextBlockRecords }));
+    // Samenvoegen MOET op de laatste stand gebeuren, niet op de stand van vóór
+    // het wegschrijven hierboven. Op een trage schoolverbinding komt er tijdens
+    // die await zo een tweede opslag (concept of vorige vraag) binnen; bouwden
+    // we de nieuwe map op de oude closure, dan viel dat record er weer uit en
+    // stond een net beantwoorde vraag opeens weer op open. De leerling zag dan
+    // geen Verder-knop meer en kwam niet verder.
+    let nextBlockRecords = { ...(assessmentItemRecords[block.id] || {}), [itemId]: saved };
+    setAssessmentItemRecords((current) => {
+      nextBlockRecords = { ...(current[block.id] || {}), [itemId]: saved };
+      return { ...current, [block.id]: nextBlockRecords };
+    });
 
     const summary = summarizeAssessmentItemProgress({
       items: Array.isArray(block.content?.items) ? block.content.items : [],
@@ -1161,7 +1170,7 @@ export default function StudentLessonPage() {
               <StudyConfirmBar
                 open={readConfirmBarOpen}
                 message={readConfirmLabels.done}
-                actionLabel={isLastStep ? 'Les afronden' : 'Volgende'}
+                actionLabel={isLastStep ? 'Les afronden' : 'Volgende stap'}
                 onAction={goNext}
               />
 
@@ -1202,7 +1211,7 @@ export default function StudentLessonPage() {
                     onClick={goNext}
                     className="btn-primary px-5 py-3 text-sm"
                   >
-                    {isLastStep ? 'Les afronden' : 'Volgende'}
+                    {isLastStep ? 'Les afronden' : 'Volgende stap'}
                     <ChevronRight size={18} />
                   </button>
                 )}
@@ -3289,9 +3298,10 @@ function AssessmentLearningBlock({
           block={block}
           items={items}
           records={itemRecords || {}}
-          renderItem={(item, index) => (
+          renderItem={(item, index, meldBeantwoord) => (
             <AssessmentItemLearningCard
               key={item.id || `${block.id}-item-${index}`}
+              onAnswered={meldBeantwoord}
               block={block}
               item={item}
               index={index}
@@ -3428,6 +3438,16 @@ function AssessmentLearningBlock({
 function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
   const [currentIndex, setCurrentIndex] = useState(() => pickStartIndex({ items, records }));
   const [afgerond, setAfgerond] = useState(false);
+  // Vangnet voor de vastloper: de vraagkaart meldt hier zelf dat hij klaar is.
+  // Het opgeslagen record blijft de bron voor de balk en de score, maar het
+  // doorlopen mag er niet van afhangen. Mislukt of vertraagt het wegschrijven,
+  // dan zat de leerling anders vast op een vraag die hij al had ingeleverd en
+  // door de pogingenlimiet niet opnieuw kon insturen.
+  const [lokaalBeantwoord, setLokaalBeantwoord] = useState(() => new Set());
+  const meldBeantwoord = (itemId) => {
+    if (!itemId) return;
+    setLokaalBeantwoord((huidig) => (huidig.has(itemId) ? huidig : new Set(huidig).add(itemId)));
+  };
   const [imageLarge, setImageLarge] = useState(false);
   const stageRef = useRef(null);
   const animatingRef = useRef(false);
@@ -3436,7 +3456,7 @@ function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
   const item = items[safeIndex];
   const statuses = buildStepStatuses({ items, records, currentIndex: safeIndex });
   const current = statuses[safeIndex];
-  const beantwoord = Boolean(current?.completed || current?.pendingReview);
+  const beantwoord = Boolean(current?.completed || current?.pendingReview || lokaalBeantwoord.has(item?.id));
   const isLast = safeIndex === items.length - 1;
   const terug = mayNavigateBack(block);
   const introImage = extractIntroImage(block?.content?.html || '');
@@ -3526,22 +3546,26 @@ function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
 
       <div className="assessment-stepper-stage">
         <div ref={stageRef}>
-          {renderItem(item, safeIndex)}
+          {renderItem(item, safeIndex, meldBeantwoord)}
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Deze rij hoort zichtbaar bij de vraag. Hij zat te dicht op de
+          paragraafvoet onderaan het scherm, waar "Volgende stap" staat: twee
+          knoppen met bijna dezelfde tekst vlak onder elkaar. Vandaar de eigen
+          omlijsting, de eigen achtergrond en de naam "Volgende vraag". */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-4 py-3">
         <div>
           {terug && safeIndex > 0 && (
             <button type="button" onClick={() => gaNaar(safeIndex - 1, -1)} className="btn-secondary inline-flex items-center gap-2 px-4 py-2.5 text-sm">
-              <ChevronLeft size={18} aria-hidden="true" /> Vorige
+              <ChevronLeft size={18} aria-hidden="true" /> Vorige vraag
             </button>
           )}
         </div>
         <div className="flex items-center gap-3">
           {beantwoord && !isLast && (
             <button type="button" onClick={() => gaNaar(safeIndex + 1, 1)} className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-base">
-              Verder <ChevronRight size={20} aria-hidden="true" />
+              Volgende vraag <ChevronRight size={20} aria-hidden="true" />
             </button>
           )}
           {beantwoord && isLast && !afgerond && (
@@ -3587,6 +3611,8 @@ function AssessmentItemLearningCard({
   onSaveItemProgress = null,
   // Tussentijds bewaren van het ingevulde antwoord (nog niet ingeleverd).
   onSaveItemConcept = null,
+  // Melding aan de stepper dat deze vraag klaar is, los van het opslaan.
+  onAnswered = null,
   // Herkansingsronde: dezelfde kaart, maar met een schone start, eigen
   // pogingenteller en Digidocent-hulp op de fout uit ronde 1.
   retryMode = false,
@@ -3817,6 +3843,9 @@ function AssessmentItemLearningCard({
         setAttemptStatus(retryOutcome.attemptStatus);
         setFeedback(retryFeedback);
         setAnswerExplanation(retryExplanation);
+        if (retryOutcome.completed || retryOutcome.attemptStatus === 'pending_teacher_review') {
+          onAnswered?.(item.id);
+        }
 
         await onSaveItemProgress?.(item.id, {
           itemIndex: index,
@@ -3865,6 +3894,9 @@ function AssessmentItemLearningCard({
       setAttemptStatus(outcome.attemptStatus);
       setFeedback(feedbackText);
       setAnswerExplanation(visibleExplanation);
+      if (outcome.completed || outcome.attemptStatus === 'pending_teacher_review') {
+        onAnswered?.(item.id);
+      }
 
       await onSaveItemProgress?.(item.id, {
         itemIndex: index,
