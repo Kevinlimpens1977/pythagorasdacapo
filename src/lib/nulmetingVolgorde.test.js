@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { nulmetingDeelOnaf, nulmetingDeelSlot } from './nulmetingVolgorde.js';
+import { nulmetingDeelLetter, nulmetingDeelOnaf, nulmetingDeelSlot } from './nulmetingVolgorde.js';
 
 const deelA = {
   id: 'blok-a',
@@ -78,4 +78,11 @@ test('nulmetingDeelOnaf meldt alleen een onafgemaakt deel van de nulmeting', () 
   // Gewone lesblokken vragen nooit om een bevestiging.
   assert.equal(nulmetingDeelOnaf({ block: { id: 'quiz', type: 'quiz', content: { items: [{ id: 'q1' }] } } }).isNulmeting, false);
   assert.equal(nulmetingDeelOnaf({ block: null }).onaf, false);
+});
+
+test('nulmetingDeelLetter geeft de letter van het deel, en anders niets', () => {
+  assert.equal(nulmetingDeelLetter(deelA), 'A');
+  assert.equal(nulmetingDeelLetter(deelB), 'B');
+  assert.equal(nulmetingDeelLetter({ id: 'quiz', type: 'quiz', content: {} }), '');
+  assert.equal(nulmetingDeelLetter(null), '');
 });

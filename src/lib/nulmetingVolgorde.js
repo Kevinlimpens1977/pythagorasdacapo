@@ -12,6 +12,17 @@ const asArray = (value) => (Array.isArray(value) ? value : []);
 const deelLetter = (block = null) =>
   String(block?.content?.nulmeting?.deel || '').trim().toUpperCase();
 
+/**
+ * De deelletter van een nulmetingblok, of '' voor gewone quizzen en toetsen.
+ *
+ * De twee delen lijken op elkaar: dezelfde negen deelvaardigheden, dezelfde
+ * vraagtypen en allebei een reeks situaties met een plaatje. Geen enkele vraag
+ * komt in beide delen voor, maar een leerling die terugklikt naar stap 1 denkt
+ * al snel dat hij hetzelfde deel opnieuw krijgt. Vandaar de letter bij elke
+ * vraag in beeld.
+ */
+export const nulmetingDeelLetter = (block = null) => deelLetter(block);
+
 const isItemIngeleverd = (record = null) =>
   Boolean(record) && (
     record.completed === true ||

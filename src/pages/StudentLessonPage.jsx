@@ -112,7 +112,7 @@ import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
 import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
 import StudyStepRail from '../components/lesson/StudyStepRail';
 import { spelSlotStatus } from '../lib/spelSlot';
-import { nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
+import { nulmetingDeelLetter, nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
 import {
   buildExerciseAnswerPayload,
   buildInitialExerciseAnswers,
@@ -3523,6 +3523,7 @@ function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
   const beantwoord = Boolean(current?.completed || current?.pendingReview || lokaalBeantwoord.has(item?.id));
   const isLast = safeIndex === items.length - 1;
   const terug = mayNavigateBack(block);
+  const deelLetter = nulmetingDeelLetter(block);
   const introImage = extractIntroImage(block?.content?.html || '');
   const situaties = item ? findSituatieReferences(item.prompt || '') : [];
   const toonAfbeelding = Boolean(introImage && situaties.length);
@@ -3560,8 +3561,11 @@ function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
   return (
     <div className="assessment-stepper space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* De deelletter staat bij elke vraag, niet alleen boven het blok. Deel A
+            en deel B meten dezelfde negen onderdelen met dezelfde vraagtypen, dus
+            zonder dat label lijkt terugklikken naar deel A op hetzelfde deel. */}
         <p className="text-sm font-black uppercase tracking-[0.14em] text-[var(--helix-purple)]">
-          Vraag {safeIndex + 1} van {items.length}
+          {deelLetter ? `Deel ${deelLetter} · ` : ''}Vraag {safeIndex + 1} van {items.length}
         </p>
         <p className="text-xs font-bold text-[var(--helix-muted)]">{gemaakt} van {items.length} beantwoord</p>
       </div>
