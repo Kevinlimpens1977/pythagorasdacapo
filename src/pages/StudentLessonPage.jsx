@@ -248,6 +248,21 @@ export default function StudentLessonPage() {
   const [progressRecords, setProgressRecords] = useState([]);
   // Voortgang per vraag binnen een toets of quiz: blockId -> { itemId: record }.
   const [assessmentItemRecords, setAssessmentItemRecords] = useState({});
+  // Dezelfde map, maar synchroon bij te werken. React voert een state-updater pas
+  // bij de volgende render uit, terwijl de blokstand (itemsCompleted, score,
+  // afgerond ja/nee) direct na het opslaan van een vraag berekend moet worden.
+  // Op de state leunen leverde een stand op uit een verouderde kopie: leerlingen
+  // die alle 27 vragen af hadden, stonden in het blokrecord op 1 van 27.
+  const assessmentItemRecordsRef = useRef({});
+  const zetAssessmentItemRecords = (volgende) => {
+    assessmentItemRecordsRef.current = volgende;
+    setAssessmentItemRecords(volgende);
+  };
+  const voegItemRecordToe = (blockId, itemId, record) => {
+    const blokRecords = { ...(assessmentItemRecordsRef.current[blockId] || {}), [itemId]: record };
+    zetAssessmentItemRecords({ ...assessmentItemRecordsRef.current, [blockId]: blokRecords });
+    return blokRecords;
+  };
   const [currentIndex, setCurrentIndex] = useState(0);
   // Bevestigingen die de leerling net zelf gaf. Firestore bevestigt pas na een
   // round-trip; zonder deze set loopt het vinkje zichtbaar achter op de klik.
@@ -415,7 +430,7 @@ export default function StudentLessonPage() {
               await voortgangService.getAssessmentItemVoortgang(currentUser.uid, block.id)
             ])
           );
-          if (!cancelled) setAssessmentItemRecords(Object.fromEntries(loadedItemRecords));
+          if (!cancelled) zetAssessmentItemRecords(Object.fromEntries(loadedItemRecords));
         }
       } catch (loadError) {
         console.error('Leerlingroute kon niet laden:', loadError);
@@ -704,11 +719,7 @@ export default function StudentLessonPage() {
     // we de nieuwe map op de oude closure, dan viel dat record er weer uit en
     // stond een net beantwoorde vraag opeens weer op open. De leerling zag dan
     // geen Verder-knop meer en kwam niet verder.
-    let nextBlockRecords = { ...(assessmentItemRecords[block.id] || {}), [itemId]: saved };
-    setAssessmentItemRecords((current) => {
-      nextBlockRecords = { ...(current[block.id] || {}), [itemId]: saved };
-      return { ...current, [block.id]: nextBlockRecords };
-    });
+    const nextBlockRecords = voegItemRecordToe(block.id, itemId, saved);
 
     const summary = summarizeAssessmentItemProgress({
       items: Array.isArray(block.content?.items) ? block.content.items : [],
@@ -757,13 +768,8 @@ export default function StudentLessonPage() {
           blockType: block.type || ''
         }
       );
-      setAssessmentItemRecords((current) => {
-        const blockRecords = current[block.id] || {};
-        return {
-          ...current,
-          [block.id]: { ...blockRecords, [itemId]: { ...(blockRecords[itemId] || {}), ...saved } }
-        };
-      });
+      const huidig = assessmentItemRecordsRef.current[block.id]?.[itemId] || {};
+      voegItemRecordToe(block.id, itemId, { ...huidig, ...saved });
       return saved;
     } catch (conceptError) {
       console.warn('Concept-antwoord kon niet worden bewaard:', conceptError);
