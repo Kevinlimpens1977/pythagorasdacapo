@@ -290,7 +290,19 @@ service cloud.firestore {
     // eigen items, een admin alles. Verwijderen blijft aan de admin, zodat een
     // leerling zijn eigen pogingengeschiedenis niet kan wissen.
     match /voortgang/{docId}/items/{itemId} {
+      // De eerste voorwaarde kijkt naar het PAD, niet naar de inhoud, en dat is
+      // hier het hele punt. Het blokdocument heet `{uid}_{blockId}`, dus alles
+      // onder dat pad is van die leerling. Stond er alleen een regel op
+      // `resource.data.userId`, dan mag een leerling wel elk item apart opvragen
+      // maar de subcollectie niet oplijsten: bij een lijstquery toetst Firestore
+      // de regel tegen de query en die kan zonder where-clausule niet bewijzen
+      // dat alle treffers van hem zijn. De leerlingroute haalt zijn antwoorden
+      // juist met zo'n lijstquery op. Gevolg tot 11 september 2026: na een
+      // refresh leek de toets leeg, en deel B van de nulmeting bleef op slot
+      // ("rond eerst deel A af") terwijl alle antwoorden gewoon in Firestore
+      // stonden. Een docent merkte er niets van, want die viel in isAdmin().
       allow read: if signedIn() && (
+        docId.split('_')[0] == request.auth.uid ||
         resource.data.userId == request.auth.uid ||
         isAdmin()
       );

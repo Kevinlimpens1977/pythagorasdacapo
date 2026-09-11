@@ -118,7 +118,9 @@ test('firestore rules keep the closed question grading throttle server-only', ()
 test('firestore rules keep assessment item progress readable and writable by its owner only', () => {
   const block = getRuleBlock('match /voortgang/{docId}/items/{itemId}');
 
-  assert.match(block, /allow read: if signedIn\(\) && \(\s*resource\.data\.userId == request\.auth\.uid \|\|\s*isAdmin\(\)/);
+  // De padcontrole moet er staan EN als eerste, anders kan een leerling de
+  // subcollectie niet oplijsten en lijken zijn antwoorden verdwenen.
+  assert.match(block, /allow read: if signedIn\(\) && \(\s*docId\.split\('_'\)\[0\] == request\.auth\.uid \|\|\s*resource\.data\.userId == request\.auth\.uid \|\|\s*isAdmin\(\)/);
   assert.match(block, /allow create: if signedIn\(\) &&\s*request\.resource\.data\.userId == request\.auth\.uid/);
   assert.match(block, /allow update: if signedIn\(\)/);
   // Wissen blijft bij de admin: een leerling mag zijn eigen pogingengeschiedenis
