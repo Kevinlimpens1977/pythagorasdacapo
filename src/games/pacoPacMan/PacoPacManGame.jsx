@@ -358,10 +358,14 @@ export default function PacoPacManGame({ onStart, onComplete }) {
     setVraagActief(null);
     setSprites(nieuweStaat.spoken.map((spook) => ({ id: spook.id, kleur: spook.kleur })));
 
+    // Bewust NIET overslaan bij "minder beweging". Die voorkeur staat op veel
+    // schoollaptops aan omdat de Windows-animaties uit staan, en dan zag een
+    // hele klas de introfilms nooit. De film verschijnt dus altijd; alleen het
+    // vanzelf starten blijft achterwege, de leerling drukt dan zelf op play.
     const films = index === 0
       ? ['intro-hoofdfilm.mp4', PACO_LEVELS[0].introVideo]
       : [PACO_LEVELS[index]?.introVideo];
-    const teSpelen = wilMinderBeweging() ? [] : films.filter(Boolean);
+    const teSpelen = films.filter(Boolean);
     setFilmRij(teSpelen);
     setFilmIndex(0);
     setScherm(teSpelen.length > 0 ? SCHERMEN.VIDEO : SCHERMEN.SPEL);
@@ -791,6 +795,7 @@ function HerkansingScherm({ vragen, onGoed, onKlaar, geluid }) {
 
 function VideoScherm({ bron, titel, geluidAan = true, nummer = 1, totaal = 1, onKlaar, onOverslaan }) {
   const videoRef = useRef(null);
+  const [laadt, setLaadt] = useState(true);
 
   // Met geluid aan autoplayen mag pas na een klik van de leerling, en die klik
   // ligt achter ons (Start, of Volgende level). Weigert de browser het toch, dan
@@ -798,7 +803,7 @@ function VideoScherm({ bron, titel, geluidAan = true, nummer = 1, totaal = 1, on
   // blijven hangen. Lukt ook dat niet, dan staan de bedieningsknoppen er nog.
   useEffect(() => {
     const speler = videoRef.current;
-    if (!speler) return;
+    if (!speler || wilMinderBeweging()) return;
     speler.muted = !geluidAan;
     const poging = speler.play();
     if (poging?.catch) {
@@ -814,13 +819,20 @@ function VideoScherm({ bron, titel, geluidAan = true, nummer = 1, totaal = 1, on
       <video
         ref={videoRef}
         src={bron}
-        autoPlay
+        preload="auto"
         playsInline
         controls
+        onCanPlay={() => setLaadt(false)}
+        onPlaying={() => setLaadt(false)}
         onEnded={onKlaar}
         onError={onKlaar}
         className="max-h-[70svh] w-full"
       />
+      {laadt && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <p className="rounded-xl bg-slate-900/80 px-4 py-2 text-sm font-black text-white">Filmpje laden…</p>
+        </div>
+      )}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-slate-900/80 to-transparent p-4 pb-16">
         <p className="text-sm font-black text-white">
           {titel}
