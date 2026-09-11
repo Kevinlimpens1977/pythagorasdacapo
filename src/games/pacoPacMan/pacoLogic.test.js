@@ -23,16 +23,29 @@ import {
 const RICHTING_NAAM = { '1,0': 'rechts', '-1,0': 'links', '0,-1': 'omhoog', '0,1': 'omlaag' };
 
 // BFS naar de dichtstbijzijnde dot; geeft de eerste stap-richting terug.
+//
+// Bij gelijke afstand wint de richting waarin de speler al loopt. Zonder die
+// voorkeur koos de bot op een symmetrisch veld elke tick de andere kant: met een
+// tunnel links en rechts zijn twee routes naar hetzelfde doel vaak even lang, en
+// dan bleef hij tussen twee vakjes heen en weer schieten. Dit zegt niets over de
+// maze, alleen over de bot: een speler houdt zijn richting aan.
 const bfsRichting = (veld, dots, start) => {
   const sleutel = (x, y) => `${x},${y}`;
   const bezocht = new Set([sleutel(start.x, start.y)]);
   const rij = [{ x: start.x, y: start.y, eerste: null }];
+  const richtingen = Object.values(RICHTINGEN);
+  const huidigeEerst = start.dir
+    ? [...richtingen].sort((a, b) => {
+      const gelijk = (dir) => (dir.x === start.dir.x && dir.y === start.dir.y ? 0 : 1);
+      return gelijk(a) - gelijk(b);
+    })
+    : richtingen;
 
   while (rij.length > 0) {
     const huidig = rij.shift();
     if (dots.has(veld.index(huidig.x, huidig.y)) && huidig.eerste) return huidig.eerste;
 
-    for (const dir of Object.values(RICHTINGEN)) {
+    for (const dir of huidigeEerst) {
       let nx = huidig.x + dir.x;
       const ny = huidig.y + dir.y;
       if (!kanBewegen(veld, nx, ny)) continue;
@@ -59,10 +72,14 @@ test('alle mazes zijn 15x13 met speler, spookhok, deur en dots', () => {
     assert.equal(veld.spookStarts.length >= 3, true, `level ${level.nummer} heeft spookhok`);
     assert.equal(veld.deuren.size >= 1, true, `level ${level.nummer} heeft hokdeur`);
     assert.equal(veld.dots.size >= 60, true, `level ${level.nummer} heeft genoeg dots (${veld.dots.size})`);
+    // Elk level heeft een tunnel links en rechts op dezelfde rij, zoals in het
+    // origineel: het paar moet bestaan en aan weerszijden van het veld liggen.
+    assert.equal(veld.teleports.length, 2, `level ${level.nummer} heeft een tunnelpaar`);
+    const [links, rechts] = [...veld.teleports].sort((a, b) => a.x - b.x);
+    assert.equal(links.x, 0, `level ${level.nummer} tunnel links aan de rand`);
+    assert.equal(rechts.x, veld.breedte - 1, `level ${level.nummer} tunnel rechts aan de rand`);
+    assert.equal(links.y, rechts.y, `level ${level.nummer} tunnel op dezelfde rij`);
   }
-  // Finale heeft teleports en een boss
-  const finale = parseMaze(PACO_LEVELS[3].maze);
-  assert.equal(finale.teleports.length, 2);
   assert.equal(PACO_LEVELS[3].heeftBoss, true);
 });
 

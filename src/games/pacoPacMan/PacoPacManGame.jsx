@@ -52,6 +52,10 @@ const heeftTouch = () => (
 export default function PacoPacManGame({ onStart, onComplete }) {
   const [scherm, setScherm] = useState(SCHERMEN.START);
   const [levelIndex, setLevelIndex] = useState(0);
+  // De films die vóór het komende level draaien. Level 1 krijgt eerst de
+  // hoofdfilm en daarna zijn eigen levelfilm; de rest alleen de levelfilm.
+  const [filmRij, setFilmRij] = useState([]);
+  const [filmIndex, setFilmIndex] = useState(0);
   const [geluidAan, setGeluidAan] = useState(() => {
     try { return window.localStorage.getItem('paco:geluid') !== 'uit'; } catch { return true; }
   });
@@ -353,7 +357,14 @@ export default function PacoPacManGame({ onStart, onComplete }) {
     setLevelIndex(index);
     setVraagActief(null);
     setSprites(nieuweStaat.spoken.map((spook) => ({ id: spook.id, kleur: spook.kleur })));
-    setScherm(wilMinderBeweging() ? SCHERMEN.SPEL : SCHERMEN.VIDEO);
+
+    const films = index === 0
+      ? ['intro-hoofdfilm.mp4', PACO_LEVELS[0].introVideo]
+      : [PACO_LEVELS[index]?.introVideo];
+    const teSpelen = wilMinderBeweging() ? [] : films.filter(Boolean);
+    setFilmRij(teSpelen);
+    setFilmIndex(0);
+    setScherm(teSpelen.length > 0 ? SCHERMEN.VIDEO : SCHERMEN.SPEL);
   };
 
   const handleStart = () => {
@@ -444,11 +455,19 @@ export default function PacoPacManGame({ onStart, onComplete }) {
       <div className="relative mt-4">
         {scherm === SCHERMEN.START && <StartScherm onStart={handleStart} />}
 
-        {scherm === SCHERMEN.VIDEO && (
+        {scherm === SCHERMEN.VIDEO && filmRij[filmIndex] && (
           <VideoScherm
-            bron={`${ASSETS}/${levelIndex === 0 ? 'intro-hoofdfilm.mp4' : level.introVideo}`}
-            titel={`Level ${level.nummer}: ${level.naam}`}
-            onKlaar={() => setScherm(SCHERMEN.SPEL)}
+            key={filmRij[filmIndex]}
+            bron={`${ASSETS}/${filmRij[filmIndex]}`}
+            titel={filmRij[filmIndex] === 'intro-hoofdfilm.mp4' ? 'PacoPacMan' : `Level ${level.nummer}: ${level.naam}`}
+            geluidAan={geluidAan}
+            nummer={filmIndex + 1}
+            totaal={filmRij.length}
+            onKlaar={() => {
+              if (filmIndex + 1 < filmRij.length) { setFilmIndex(filmIndex + 1); return; }
+              setScherm(SCHERMEN.SPEL);
+            }}
+            onOverslaan={() => setScherm(SCHERMEN.SPEL)}
           />
         )}
 
@@ -456,10 +475,17 @@ export default function PacoPacManGame({ onStart, onComplete }) {
           <div className="space-y-3">
             <HudBalk hud={hud} level={level} />
 
+            {/* Het veld is zo groot als het kan, maar past altijd in beeld. Alleen
+                op breedte schalen liet bij een laag scherm de onderste rijen onder
+                de vouw vallen, en juist daar staat de speler. De maximale breedte
+                volgt dus uit de beschikbare hoogte, in dezelfde verhouding. */}
             <div
               ref={veldRef}
-              className="relative w-full select-none overflow-hidden rounded-2xl shadow-inner"
-              style={{ aspectRatio: `${COLS} / ${ROWS}` }}
+              className="relative mx-auto w-full select-none overflow-hidden rounded-2xl shadow-inner"
+              style={{
+                aspectRatio: `${COLS} / ${ROWS}`,
+                maxWidth: `calc((100svh - 14rem) * ${COLS} / ${ROWS})`
+              }}
             >
               <img src={`${ASSETS}/${level.achtergrond}`} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
               <div className="absolute inset-0 bg-white/40" />
@@ -763,24 +789,47 @@ function HerkansingScherm({ vragen, onGoed, onKlaar, geluid }) {
   );
 }
 
-function VideoScherm({ bron, titel, onKlaar }) {
+function VideoScherm({ bron, titel, geluidAan = true, nummer = 1, totaal = 1, onKlaar, onOverslaan }) {
+  const videoRef = useRef(null);
+
+  // Met geluid aan autoplayen mag pas na een klik van de leerling, en die klik
+  // ligt achter ons (Start, of Volgende level). Weigert de browser het toch, dan
+  // starten we alsnog zonder geluid in plaats van op een stilstaand beeld te
+  // blijven hangen. Lukt ook dat niet, dan staan de bedieningsknoppen er nog.
+  useEffect(() => {
+    const speler = videoRef.current;
+    if (!speler) return;
+    speler.muted = !geluidAan;
+    const poging = speler.play();
+    if (poging?.catch) {
+      poging.catch(() => {
+        speler.muted = true;
+        speler.play().catch(() => {});
+      });
+    }
+  }, [bron, geluidAan]);
+
   return (
     <div className="relative overflow-hidden rounded-2xl bg-slate-900">
       <video
+        ref={videoRef}
         src={bron}
         autoPlay
-        muted
         playsInline
+        controls
         onEnded={onKlaar}
         onError={onKlaar}
-        className="aspect-video w-full"
+        className="max-h-[70svh] w-full"
       />
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-slate-900/70 to-transparent p-4">
-        <p className="text-sm font-black text-white">{titel}</p>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-slate-900/80 to-transparent p-4 pb-16">
+        <p className="text-sm font-black text-white">
+          {titel}
+          {totaal > 1 ? ` · filmpje ${nummer} van ${totaal}` : ''}
+        </p>
         <button
           type="button"
-          onClick={onKlaar}
-          className="rounded-xl bg-white/90 px-4 py-2 text-sm font-black text-slate-800 shadow-sm transition hover:bg-white"
+          onClick={onOverslaan || onKlaar}
+          className="pointer-events-auto rounded-xl bg-white/90 px-4 py-2 text-sm font-black text-slate-800 shadow-sm transition hover:bg-white"
         >
           Overslaan ▸
         </button>

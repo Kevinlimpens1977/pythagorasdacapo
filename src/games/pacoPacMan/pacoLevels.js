@@ -1,6 +1,8 @@
 // Levels van PacoPacMan als pure data. Elke maze is 15 kolommen x 13 rijen.
 // Tekens: # muur · . datapunt · (spatie) leeg pad · P spelerstart
 //         G spookstart (in het hok) · - hokdeur (alleen spoken) · T teleport (paar per rij)
+// Elk level heeft op de hokrij een tunnel links en rechts, zoals in het origineel:
+// wie het veld aan de ene kant uit loopt, komt er aan de andere kant weer in.
 // De integriteit van elke maze wordt afgedwongen door pacoLogic.test.js (bereikbaarheid, maten).
 export const PACO_LEVELS = [
   {
@@ -18,7 +20,7 @@ export const PACO_LEVELS = [
       '#.###.#.#.###.#',
       '#.#.........#.#',
       '#.#.##---##.#.#',
-      '#....#GGG#....#',
+      'T....#GGG#....T',
       '#.#.#######.#.#',
       '#.#.........#.#',
       '#.###.#.#.###.#',
@@ -43,7 +45,7 @@ export const PACO_LEVELS = [
       '#.####.#.####.#',
       '#.............#',
       '#.##.##---##.##',
-      '#....#GGG#....#',
+      'T....#GGG#....T',
       '#.##.#######.##',
       '#.............#',
       '#.####.#.####.#',
@@ -68,7 +70,7 @@ export const PACO_LEVELS = [
       '#.#.#.#.#.#.#.#',
       '#.#...........#',
       '#...##---##.#.#',
-      '#.#.#GGGG#..#.#',
+      'T.#.#GGGG#..#.T',
       '#.#.######.##.#',
       '#.#.........#.#',
       '#.#.#.###.#.#.#',
