@@ -112,7 +112,7 @@ import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
 import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
 import StudyStepRail from '../components/lesson/StudyStepRail';
 import { spelSlotStatus } from '../lib/spelSlot';
-import { nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
+import { nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
 import {
   buildExerciseAnswerPayload,
   buildInitialExerciseAnswers,
@@ -261,6 +261,9 @@ export default function StudentLessonPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
   const [showParagraphEnd, setShowParagraphEnd] = useState(false);
+  // Het blok waarvoor de leerling om een bevestiging is gevraagd. Een id in
+  // plaats van een ja/nee, zodat van stap wisselen de vraag vanzelf sluit.
+  const [bevestigVerlatenBlokId, setBevestigVerlatenBlokId] = useState('');
   const [tokenAwardNotice, setTokenAwardNotice] = useState('');
   const [victoryPlayback, setVictoryPlayback] = useState(null);
   const [rewardLoadout, setRewardLoadout] = useState({ activePinIds: [] });
@@ -473,6 +476,16 @@ export default function StudentLessonPage() {
       : nulmetingDeelSlot({ block: currentBlock, blocks, itemRecordsByBlock: assessmentItemRecords })),
     [assessmentItemRecords, blocks, currentBlock, isAdmin]
   );
+  // Staat de leerling midden in deel A of B van de nulmeting? Dan vraagt de
+  // knop onderaan om een bevestiging voor hij de stap verlaat.
+  const nulmetingOnaf = useMemo(
+    () => (isAdmin
+      ? { isNulmeting: false, onaf: false, deel: '', itemsAf: 0, itemCount: 0 }
+      : nulmetingDeelOnaf({ block: currentBlock, itemRecordsByBlock: assessmentItemRecords })),
+    [assessmentItemRecords, currentBlock, isAdmin]
+  );
+  const bevestigNulmetingVerlaten =
+    Boolean(bevestigVerlatenBlokId) && bevestigVerlatenBlokId === currentBlock?.id;
   const learningGoalsIntro = useMemo(
     () => buildLearningGoalsIntro({ paragraaf, blocks }),
     [blocks, paragraaf]
@@ -897,9 +910,22 @@ export default function StudentLessonPage() {
     }
   };
 
+  // De knop onderaan verlaat de hele stap. Midden in een deel van de nulmeting
+  // is dat bijna altijd een misklik op de knop naar de volgende vraag, en de
+  // leerling loopt er vast mee: deel B blijft op slot tot deel A af is.
+  const vraagVerderBevestiging = () => {
+    if (nulmetingOnaf.onaf) {
+      setStudyNotice('');
+      setBevestigVerlatenBlokId(currentBlock?.id || '');
+      return;
+    }
+    goNext();
+  };
+
   const goPrev = () => {
     setConfirmedReadBlockId('');
     setStudyNotice('');
+    setBevestigVerlatenBlokId('');
     if (showParagraphEnd) {
       setShowParagraphEnd(false);
       return;
@@ -1171,7 +1197,7 @@ export default function StudentLessonPage() {
                 open={readConfirmBarOpen}
                 message={readConfirmLabels.done}
                 actionLabel={isLastStep ? 'Les afronden' : 'Volgende stap'}
-                onAction={goNext}
+                onAction={vraagVerderBevestiging}
               />
 
               <footer className="flex flex-col gap-3 border-t border-[var(--helix-border)] bg-white/86 px-4 py-3 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -1208,7 +1234,7 @@ export default function StudentLessonPage() {
                   <span className="hidden sm:block sm:w-[9.5rem]" aria-hidden="true" />
                 ) : (
                   <button
-                    onClick={goNext}
+                    onClick={vraagVerderBevestiging}
                     className="btn-primary px-5 py-3 text-sm"
                   >
                     {isLastStep ? 'Les afronden' : 'Volgende stap'}
@@ -1216,6 +1242,44 @@ export default function StudentLessonPage() {
                   </button>
                 )}
               </footer>
+
+              {/* Bevestiging bij het verlaten van een onafgemaakt deel van de
+                  nulmeting. Alleen deze knop vraagt het; "Volgende vraag" in de
+                  vraag zelf blijft één klik. */}
+              {bevestigNulmetingVerlaten && (
+                <div className="absolute inset-x-0 bottom-full z-20 mb-2 px-4 sm:px-6">
+                  <div
+                    role="alertdialog"
+                    aria-labelledby="nulmeting-verlaten-titel"
+                    className="rounded-2xl border-2 border-[var(--helix-border)] bg-white p-4 shadow-xl"
+                  >
+                    <p id="nulmeting-verlaten-titel" className="font-black text-[var(--helix-navy)]">
+                      Je bent nog bezig met deel {nulmetingOnaf.deel} van de nulmeting
+                    </p>
+                    <p className="helix-muted mt-1 text-sm font-semibold">
+                      Je hebt {nulmetingOnaf.itemsAf} van de {nulmetingOnaf.itemCount} vragen ingeleverd. Wil je naar de
+                      volgende vraag, gebruik dan de knop <strong>Volgende vraag</strong> bij de vraag zelf. Deze knop
+                      brengt je naar de volgende stap van de paragraaf.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setBevestigVerlatenBlokId('')}
+                        className="btn-primary px-5 py-3 text-sm"
+                      >
+                        Terug naar de vragen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setBevestigVerlatenBlokId(''); goNext(); }}
+                        className="btn-secondary px-5 py-3 text-sm"
+                      >
+                        Toch naar de volgende stap
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>

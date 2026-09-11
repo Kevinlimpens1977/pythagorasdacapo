@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { nulmetingDeelSlot } from './nulmetingVolgorde.js';
+import { nulmetingDeelOnaf, nulmetingDeelSlot } from './nulmetingVolgorde.js';
 
 const deelA = {
   id: 'blok-a',
@@ -47,4 +47,35 @@ test('deel A en gewone toetsen zitten nooit op slot', () => {
   assert.equal(nulmetingDeelSlot({ block: deelA, blocks, itemRecordsByBlock: {} }).vergrendeld, false);
   assert.equal(nulmetingDeelSlot({ block: { id: 'quiz', type: 'quiz', content: {} }, blocks, itemRecordsByBlock: {} }).vergrendeld, false);
   assert.equal(nulmetingDeelSlot({ block: null }).vergrendeld, false);
+});
+
+test('nulmetingDeelOnaf meldt alleen een onafgemaakt deel van de nulmeting', () => {
+  const leeg = nulmetingDeelOnaf({ block: deelA, itemRecordsByBlock: {} });
+  assert.equal(leeg.isNulmeting, true);
+  assert.equal(leeg.onaf, true);
+  assert.equal(leeg.itemsAf, 0);
+  assert.equal(leeg.itemCount, 3);
+  assert.equal(leeg.deel, 'A');
+
+  // Een concept telt niet als ingeleverd, dus het deel blijft onaf.
+  const halverwege = nulmetingDeelOnaf({
+    block: deelA,
+    itemRecordsByBlock: { 'blok-a': { a1: { completed: true }, a2: { concept: { value: 'x' } } } }
+  });
+  assert.equal(halverwege.onaf, true);
+  assert.equal(halverwege.itemsAf, 1);
+
+  // Alles ingeleverd: doorgaan is dan juist de bedoeling.
+  const af = nulmetingDeelOnaf({
+    block: deelA,
+    itemRecordsByBlock: {
+      'blok-a': { a1: { completed: true }, a2: { completed: true }, a3: { attemptStatus: 'pending_teacher_review' } }
+    }
+  });
+  assert.equal(af.onaf, false);
+  assert.equal(af.itemsAf, 3);
+
+  // Gewone lesblokken vragen nooit om een bevestiging.
+  assert.equal(nulmetingDeelOnaf({ block: { id: 'quiz', type: 'quiz', content: { items: [{ id: 'q1' }] } } }).isNulmeting, false);
+  assert.equal(nulmetingDeelOnaf({ block: null }).onaf, false);
 });
