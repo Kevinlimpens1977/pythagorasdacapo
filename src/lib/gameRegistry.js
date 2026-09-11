@@ -242,7 +242,7 @@ export const GAME_REGISTRY = [
     tokenRewardPotential: { min: 0, max: 400, basis: 'score_accuracy_completion' },
     // Onbeperkt oefenen; tokens vervallen per beurt via replayDecay (plafond 400).
     maxPlays: 0,
-    status: GAME_STATUSES.PROTOTYPE
+    status: GAME_STATUSES.ACTIVE
   },
   {
     gameId: 'data-koerier',
