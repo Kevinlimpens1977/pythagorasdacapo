@@ -66,6 +66,7 @@ import {
   calculateLessonProgress,
   getCompletedBlockIds,
   getLessonBlockRenderKey,
+  opentAfrondschermBijLaden,
   resolveRequestedBlockIndex,
   shouldSaveBlockProgressBeforeNavigation
 } from '../lib/studentLessonProgress';
@@ -415,7 +416,18 @@ export default function StudentLessonPage() {
           progressRecords: voortgang,
           requestedBlockId
         }));
-        setShowParagraphEnd(loadedLessonProgress.isCompleted && !hasCompletedParagraphEnd);
+        // Een afgeronde paragraaf opent bij de lesstof. Het slotscherm komt
+        // alleen vanzelf als er nog herstelwerk ligt; verder zet de Verder-knop
+        // het op het moment dat de leerling echt afrondt.
+        const kernvraagRecords = enrichedBlocks
+          .filter((block) => block.type === 'question')
+          .map((block) => voortgang.find((record) => (record.blockId || record.vraagId) === block.id) || null);
+        setShowParagraphEnd(opentAfrondschermBijLaden({
+          isCompleted: loadedLessonProgress.isCompleted,
+          afrondschermAfgerond: hasCompletedParagraphEnd,
+          eindPlanKind: buildParagraphEndPlan({ coreQuestionRecords: kernvraagRecords }).kind,
+          gevraagdeStapId: requestedBlockId
+        }));
 
         // Toets- en quizantwoorden staan per vraag in een subcollectie onder het
         // blokdocument. Zonder dit hervinden zou een leerling na een refresh met

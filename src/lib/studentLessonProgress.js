@@ -65,3 +65,30 @@ export const shouldSaveBlockProgressBeforeNavigation = ({ block = null, complete
 
 export const getLessonBlockRenderKey = (block = null) =>
   `lesson-block:${block?.id || 'missing'}`;
+
+/**
+ * Opent het afrondscherm vanzelf zodra een paragraaf geladen wordt?
+ *
+ * Tot 14 september 2026 gebeurde dat bij elke afgeronde paragraaf. Wie iets kwam
+ * nalezen kreeg dus eerst het slotscherm en moest terugklikken voor hij bij zijn
+ * eigen antwoorden was. Het slotscherm hoort bij het MOMENT van afronden - de
+ * Verder-knop zet het dan zelf - en bij herstelwerk dat nog openstaat.
+ *
+ * Alleen `remediation` telt als herstelwerk. `challenge` staat ook op
+ * `required`, maar dat is de bonus voor wie alles goed had; die hoeft niemand
+ * bij het openen van een oude paragraaf voor de voeten te krijgen. Hij blijft
+ * bereikbaar via "Les afronden" op de laatste stap.
+ *
+ * Vraagt de leerling om een bepaalde stap (de `stap`-parameter in de URL), dan
+ * wint die altijd: hij wil daar zijn, niet op het slotscherm.
+ */
+export const opentAfrondschermBijLaden = ({
+  isCompleted = false,
+  afrondschermAfgerond = false,
+  eindPlanKind = '',
+  gevraagdeStapId = ''
+} = {}) => {
+  if (gevraagdeStapId) return false;
+  if (!isCompleted || afrondschermAfgerond) return false;
+  return eindPlanKind === 'remediation';
+};

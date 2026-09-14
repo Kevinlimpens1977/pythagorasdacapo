@@ -5,6 +5,7 @@ import {
   findResumeBlockIndex,
   getCompletedBlockIds,
   getLessonBlockRenderKey,
+  opentAfrondschermBijLaden,
   resolveRequestedBlockIndex,
   shouldSaveBlockProgressBeforeNavigation
 } from './studentLessonProgress.js';
@@ -235,4 +236,30 @@ test('student progress lifecycle supports draft save, resume, completion and adm
     percentage: 67,
     isCompleted: false
   });
+});
+
+test('opentAfrondschermBijLaden houdt het slotscherm weg bij nalezen', () => {
+  // Alles af en niets te herstellen: de leerling hoort bij de lesstof te landen.
+  assert.equal(opentAfrondschermBijLaden({ isCompleted: true, eindPlanKind: 'challenge' }), false);
+  assert.equal(opentAfrondschermBijLaden({ isCompleted: true, eindPlanKind: 'none' }), false);
+  assert.equal(opentAfrondschermBijLaden({ isCompleted: true, eindPlanKind: 'teacher_review_pending' }), false);
+
+  // Openstaand herstelwerk is wel een reden om het scherm te tonen.
+  assert.equal(opentAfrondschermBijLaden({ isCompleted: true, eindPlanKind: 'remediation' }), true);
+
+  // Is het slotscherm al afgerond, dan komt het niet terug.
+  assert.equal(
+    opentAfrondschermBijLaden({ isCompleted: true, afrondschermAfgerond: true, eindPlanKind: 'remediation' }),
+    false
+  );
+
+  // Een gevraagde stap wint altijd, ook van herstelwerk.
+  assert.equal(
+    opentAfrondschermBijLaden({ isCompleted: true, eindPlanKind: 'remediation', gevraagdeStapId: 'blok-3' }),
+    false
+  );
+
+  // Nog niet af: sowieso niet.
+  assert.equal(opentAfrondschermBijLaden({ isCompleted: false, eindPlanKind: 'remediation' }), false);
+  assert.equal(opentAfrondschermBijLaden(), false);
 });
