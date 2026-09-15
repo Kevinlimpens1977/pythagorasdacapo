@@ -1830,6 +1830,119 @@ test("vertaalLesblok stuurt de antwoordsleutel nooit naar het model", async () =
   assert.equal(verstuurdeBody.includes("Iets tastbaars"), true);
 });
 
+test("vertaalLesblok weigert een vertaling die een afbeelding kwijt is", async () => {
+  const publiekBlok = {
+    id: "blok-3",
+    type: "theory",
+    status: "published",
+    paragraafId: "para-1",
+    title: "Stoffen",
+    content: {
+      html: '<p>Kijk naar situatie A.</p><img src="/situatie-a.png" alt="Situatie A">',
+      items: []
+    }
+  };
+  const db = vertaalDb({ publiekBlok, bestaandeVertaling: null, caller: { role: "student", klasId: "klas-1" } });
+
+  await assert.rejects(
+    () => vertaalLesblokCore({
+      auth: { uid: "leerling-1" },
+      data: { blockId: "blok-3", taal: "el" },
+      db,
+      fetchImpl: async () => ({
+        ok: true,
+        json: async () => ({
+          // Het model levert de tekst terug zonder de afbeelding.
+          choices: [{ message: { content: JSON.stringify({ titel: "Ουσίες", html: "<p>Κοίτα την κατάσταση Α.</p>", items: [] }) } }]
+        })
+      }),
+      openrouterApiKeyProvider: () => "sk-or-test"
+    }),
+    (error) => error instanceof HttpsError && /afbeelding/i.test(error.message),
+  );
+
+  // En er is niets bewaard: de leerling houdt de Nederlandse tekst.
+  assert.equal(db.store["vertalingen/blok-3__el"], undefined);
+});
+
+test("vertaalLesblok bewaart een vertaling die de afbeelding behoudt", async () => {
+  const publiekBlok = {
+    id: "blok-4",
+    type: "theory",
+    status: "published",
+    paragraafId: "para-1",
+    title: "Stoffen",
+    content: {
+      html: '<p>Kijk naar situatie A.</p><img src="/situatie-a.png" alt="Situatie A">',
+      items: []
+    }
+  };
+  const db = vertaalDb({ publiekBlok, bestaandeVertaling: null, caller: { role: "student", klasId: "klas-1" } });
+
+  const resultaat = await vertaalLesblokCore({
+    auth: { uid: "leerling-1" },
+    data: { blockId: "blok-4", taal: "el" },
+    db,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: JSON.stringify({ titel: "Ουσίες", html: '<p>Κοίτα την κατάσταση Α.</p><img src="/situatie-a.png" alt="Κατάσταση Α">', items: [] }) } }]
+      })
+    }),
+    openrouterApiKeyProvider: () => "sk-or-test"
+  });
+
+  assert.equal(resultaat.success, true);
+  assert.ok(db.store["vertalingen/blok-4__el"]);
+  assert.ok(db.store["vertalingen/blok-4__el"].gemaaktOp);
+});
+
+test("vertaalLesblok noemt de doeltaal met de naam uit LES_TALEN", async () => {
+  let verstuurdeBody = null;
+  const publiekBlok = {
+    id: "blok-5",
+    type: "theory",
+    status: "published",
+    paragraafId: "para-1",
+    title: "Stoffen",
+    content: { html: "<p>Een stof heeft eigenschappen.</p>", items: [] }
+  };
+
+  await vertaalLesblokCore({
+    auth: { uid: "leerling-1" },
+    data: { blockId: "blok-5", taal: "el" },
+    db: vertaalDb({ publiekBlok, bestaandeVertaling: null, caller: { role: "student", klasId: "klas-1" } }),
+    fetchImpl: (url, opties) => {
+      verstuurdeBody = JSON.parse(opties.body);
+      return {
+        ok: true,
+        json: async () => ({ choices: [{ message: { content: JSON.stringify({ titel: "Ουσίες", html: "<p>...</p>", items: [] }) } }] })
+      };
+    },
+    openrouterApiKeyProvider: () => "sk-or-test"
+  });
+
+  assert.match(verstuurdeBody.messages[0].content, /naar het Grieks/);
+  // Het budget schaalt mee met de brontekst en zakt nooit onder de ondergrens.
+  assert.ok(verstuurdeBody.max_tokens >= 3000);
+});
+
+test("het tokenbudget schaalt mee met de brontekst, met ondergrens en plafond", () => {
+  const { vertaalTokenBudget, telAfbeeldingen } = __test;
+
+  assert.equal(vertaalTokenBudget(0), 3000);
+  assert.equal(vertaalTokenBudget(100), 3000);
+  // Lange tekst: ruim boven de oude vaste grens van 3000.
+  assert.ok(vertaalTokenBudget(4000) > 3000);
+  assert.equal(vertaalTokenBudget(4000), 12000);
+  // En nooit onbeperkt.
+  assert.equal(vertaalTokenBudget(1000000), 16000);
+
+  assert.equal(telAfbeeldingen('<p>x</p><img src="a.png"><IMG src="b.png"/>'), 2);
+  assert.equal(telAfbeeldingen("<p>geen beeld</p>"), 0);
+  assert.equal(telAfbeeldingen(null), 0);
+});
+
 test("vertaalLesblok weigert een onbekende taal", async () => {
   await assert.rejects(
     () => vertaalLesblokCore({

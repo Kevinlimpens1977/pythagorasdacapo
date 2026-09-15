@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
+  AlertTriangle,
   BookOpen,
   Calculator,
   Check,
@@ -484,8 +485,10 @@ export default function StudentLessonPage() {
       return false;
     }
   });
-  const [vertalingen, setVertalingen] = useState({});
-  const [vertalingBezig, setVertalingBezig] = useState(false);
+  // Per blok-id het resultaat van de vertaalaanroep: { vertaling, mislukt }.
+  // Ook een mislukking krijgt hier een plek, want anders blijft de knop
+  // oplichten boven een Nederlandse pagina zonder dat iemand weet waarom.
+  const [vertaalResultaten, setVertaalResultaten] = useState({});
   // Blok-id's waarvoor al een verzoek onderweg is. Voorkomt een dubbel
   // verzoek als dit effect twee keer snel achter elkaar draait (bijvoorbeeld
   // de schakelaar snel uit en weer aan) terwijl de vorige aanroep nog loopt.
@@ -511,40 +514,60 @@ export default function StudentLessonPage() {
   // vertaald en toonde de rest van de les Nederlandse tekst onder een knop
   // die "aan" zei.
   useEffect(() => {
-    if (!taalActief || !lesTaal || !currentBlock?.id) return undefined;
-    if (!isVertaalbaarBlok(currentBlock)) return undefined;
+    if (!taalActief || !lesTaal || !currentBlock?.id) return;
+    if (!isVertaalbaarBlok(currentBlock)) return;
     // Eenmaal opgehaald - gelukt of niet - wordt hetzelfde blok niet nog een
-    // keer bevraagd. Een mislukte vertaling blijft dus mislukt tot de
-    // leerling de les opnieuw laadt; de Nederlandse tekst blijft intussen
-    // gewoon staan.
-    if (vertalingen[currentBlock.id] !== undefined) return undefined;
-    if (vertalingOnderwegRef.current.has(currentBlock.id)) return undefined;
+    // keer bevraagd. Een mislukte vertaling blijft dus mislukt tot de leerling
+    // op "Opnieuw proberen" drukt; de Nederlandse tekst blijft intussen gewoon
+    // staan, met een melding bij de schakelaar.
+    if (vertaalResultaten[currentBlock.id] !== undefined) return;
+    if (vertalingOnderwegRef.current.has(currentBlock.id)) return;
 
     const blockId = currentBlock.id;
     vertalingOnderwegRef.current.add(blockId);
-    // Genegeerd zodra dit effect wordt opgeruimd (ander blok, schakelaar uit,
-    // pagina verlaten): een antwoord dat dan alsnog binnenkomt hoort niet
-    // meer bij de huidige stand en mag niet meer worden weggeschreven.
-    let genegeerd = false;
 
-    const ophalen = async () => {
-      setVertalingBezig(true);
-      try {
-        const vertaling = await haalVertaling(blockId, lesTaal);
-        if (genegeerd) return;
-        setVertalingen((huidige) => ({ ...huidige, [blockId]: vertaling }));
-      } finally {
+    haalVertaling(blockId, lesTaal)
+      .then((resultaat) => {
+        // Het resultaat bewaren we altijd, ook als dit effect intussen is
+        // opgeruimd (ander blok, schakelaar uit). Het hangt aan zijn eigen
+        // blok-id en kan dus nooit bij het verkeerde blok landen; de
+        // berekening van zichtbaarBlok hieronder bepaalt of het ook echt op
+        // het scherm komt. Gooiden we het weg, dan bleef het blok-id tot de
+        // afronding in vertalingOnderwegRef staan, viel een herstart (snel uit
+        // en weer aan) weg en bleef het blok Nederlands staan met de knop op
+        // "aan".
+        setVertaalResultaten((huidige) => ({ ...huidige, [blockId]: resultaat }));
+      })
+      .finally(() => {
         vertalingOnderwegRef.current.delete(blockId);
-        if (!genegeerd) setVertalingBezig(false);
-      }
-    };
-    ophalen();
+      });
+  }, [currentBlock, lesTaal, taalActief, vertaalResultaten]);
 
-    return () => {
-      genegeerd = true;
-      setVertalingBezig(false);
-    };
-  }, [currentBlock, lesTaal, taalActief, vertalingen]);
+  // Of er nu gewacht wordt, leiden we af in plaats van het in een eigen
+  // toestand bij te houden: het zichtbare blok heeft nog geen resultaat terwijl
+  // de schakelaar aan staat. Zo klopt de draaiende ring ook als de aanroep bij
+  // een vorige effectbeurt is gestart, en hoeft er geen setState in een effect
+  // of in zijn opruimfunctie te staan.
+  const vertalingBezig = Boolean(
+    taalActief
+    && lesTaal
+    && currentBlock?.id
+    && isVertaalbaarBlok(currentBlock)
+    && vertaalResultaten[currentBlock.id] === undefined
+  );
+  const vertalingMislukt = Boolean(taalActief && lesTaal && vertaalResultaten[currentBlock?.id]?.mislukt);
+
+  // Opnieuw proberen: het bewaarde (mislukte) resultaat weghalen, waarna het
+  // effect hierboven vanzelf een nieuwe poging doet.
+  const probeerVertalingOpnieuw = () => {
+    const blockId = currentBlock?.id;
+    if (!blockId) return;
+    setVertaalResultaten((huidige) => {
+      const rest = { ...huidige };
+      delete rest[blockId];
+      return rest;
+    });
+  };
 
   const studySteps = useMemo(() => {
     const model = buildStudyStepModel({ blocks, completedIds, currentIndex, labels: CONTENT_BLOCK_LABELS });
@@ -1121,8 +1144,13 @@ export default function StudentLessonPage() {
   // Het blok dat op het scherm komt: Nederlands, of - als de leerling de
   // schakelaar aan heeft en de vertaling al is opgehaald - zijn eigen taal
   // eroverheen. currentBlock zelf blijft de bron voor voortgang en opslaan.
-  const zichtbaarBlok = taalActief && lesTaal && vertalingen[currentBlock?.id]
-    ? voegVertalingSamen(currentBlock, vertalingen[currentBlock.id])
+  // Dit is ook de enige plek die beslist of een binnengekomen vertaling op het
+  // scherm komt; het effect hierboven bewaart alleen.
+  const zichtbareVertaling = taalActief && lesTaal
+    ? vertaalResultaten[currentBlock?.id]?.vertaling || null
+    : null;
+  const zichtbaarBlok = zichtbareVertaling
+    ? voegVertalingSamen(currentBlock, zichtbareVertaling)
     : currentBlock;
 
   return (
@@ -1223,6 +1251,24 @@ export default function StudentLessonPage() {
               <span className="sr-only">{isFullscreen ? 'Verlaat volledig scherm' : 'Volledig scherm'}</span>
             </button>
           </div>
+
+          {/* Mislukt het vertalen, dan blijft de Nederlandse tekst staan - maar
+              nooit stil. Deze regel staat direct onder de schakelaar, zodat de
+              leerling ziet waarom hij Nederlands leest en het opnieuw kan
+              proberen. */}
+          {vertalingMislukt && !showParagraphEnd && (
+            <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 sm:px-6">
+              <AlertTriangle size={14} aria-hidden="true" />
+              <span>Het vertalen lukte even niet. Je ziet nu de Nederlandse tekst.</span>
+              <button
+                type="button"
+                onClick={probeerVertalingOpnieuw}
+                className="rounded-lg border border-amber-300 bg-white px-2 py-1 font-black text-amber-900 transition hover:bg-amber-100"
+              >
+                Opnieuw proberen
+              </button>
+            </div>
+          )}
 
           {isAdmin && (
             <div className="shrink-0 border-b border-[var(--helix-border)] bg-white/70 px-4 py-2 text-xs font-bold text-[var(--helix-muted)] sm:px-6">
@@ -2352,6 +2398,18 @@ function InleveringVak({ blockId, studentId, progressRecord, onSaveProgress }) {
   );
 }
 
+/**
+ * Let op bij vertalingen: dit pad kent geen `origineelBlok`. Het nakijken, het
+ * opslaan en de tekst naar Digidocent draaien hier nog op `block` - het
+ * ZICHTBARE blok, dat de vertaling kan zijn die de leerling leest. Dat is
+ * alleen veilig zolang isVertaalbaarBlok() in src/lib/lesTaal.js een vraagblok
+ * met een linkedVraagId als niet-vertaalbaar behandelt: dan is `block` hier
+ * altijd het Nederlandse origineel. Haal die uitsluiting dus niet weg als
+ * "dode code" - zonder haar wordt hier een vertaalde vraagtekst nagekeken
+ * tegen een Nederlands modelantwoord. Wie de uitsluiting wil laten vallen,
+ * geeft dit blok eerst een origineelBlok/origineelItem zoals
+ * AssessmentItemLearningCard dat heeft.
+ */
 function QuestionLearningBlock({
   block,
   bodyHtml,
@@ -3512,6 +3570,9 @@ function AssessmentLearningBlock({
         <AssessmentStepper
           block={block}
           items={items}
+          // De Nederlandse bronvragen: de stepper zoekt daarin naar "situatie A
+          // t/m F" om de juiste afbeelding erboven te zetten.
+          origineelItems={origineelItems}
           records={itemRecords || {}}
           renderItem={(item, index, meldBeantwoord) => (
             <AssessmentItemLearningCard
@@ -3659,7 +3720,7 @@ function AssessmentLearningBlock({
  * niet beantwoorde vraag nooit. Verwijst de vraag naar "situatie A t/m F",
  * dan staat de afbeelding uit de inleiding erboven.
  */
-function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
+function AssessmentStepper({ block, items = [], origineelItems = [], records = {}, renderItem }) {
   const [currentIndex, setCurrentIndex] = useState(() => pickStartIndex({ items, records }));
   const [afgerond, setAfgerond] = useState(false);
   // Vangnet voor de vastloper: de vraagkaart meldt hier zelf dat hij klaar is.
@@ -3685,7 +3746,13 @@ function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
   const terug = mayNavigateBack(block);
   const deelLetter = nulmetingDeelLetter(block);
   const introImage = extractIntroImage(block?.content?.html || '');
-  const situaties = item ? findSituatieReferences(item.prompt || '') : [];
+  // De verwijzing "situatie A t/m F" zoeken we in het Nederlandse bronitem, niet
+  // in de vraag zoals hij op het scherm staat. Op een vertaalde prompt matcht
+  // die zoekactie nooit, en dan valt de afbeelding weg waar de vraag naar
+  // verwijst - juist bij de leerling die dat beeld het hardst nodig heeft.
+  // Zonder vertaling zijn bronItem en item hetzelfde item.
+  const bronItem = origineelItems.find((kandidaat) => kandidaat?.id === item?.id) || item;
+  const situaties = item ? findSituatieReferences(bronItem?.prompt || '') : [];
   const toonAfbeelding = Boolean(introImage && situaties.length);
   const gemaakt = statuses.filter((status) => status.completed || status.pendingReview).length;
 

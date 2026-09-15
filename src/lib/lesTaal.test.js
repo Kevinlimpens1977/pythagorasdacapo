@@ -1,12 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  LES_TALEN,
   antwoordInstructie,
   bronVingerafdruk,
+  controleerTalenCompleet,
   getLesTaal,
   isLesTaal,
   isVertaalbaarBlok,
   taalLabel,
+  taalNederlands,
   voegVertalingSamen
 } from './lesTaal.js';
 
@@ -131,4 +134,30 @@ test('de antwoordinstructie staat vast in de code, niet in het model', () => {
   assert.match(antwoordInstructie('it'), /olandese/i);
   assert.equal(antwoordInstructie('nl'), '');
   assert.equal(antwoordInstructie(''), '');
+});
+
+test('de Nederlandse naam van een taal komt uit LES_TALEN', () => {
+  assert.equal(taalNederlands('el'), 'Grieks');
+  assert.equal(taalNederlands(' it '), 'Italiaans');
+  assert.equal(taalNederlands('nl'), '');
+  assert.equal(taalNederlands(''), '');
+});
+
+test('elke taal in de lijst heeft een Nederlandse naam en een antwoordinstructie', () => {
+  assert.equal(controleerTalenCompleet(), true);
+  LES_TALEN.forEach((taal) => {
+    assert.ok(taalNederlands(taal.code), `${taal.code} mist een Nederlandse naam`);
+    assert.ok(antwoordInstructie(taal.code), `${taal.code} mist een antwoordinstructie`);
+  });
+});
+
+test('een taal zonder antwoordinstructie of Nederlandse naam faalt hard, niet stil', () => {
+  assert.throws(
+    () => controleerTalenCompleet([{ code: 'pl', label: 'Polski', nederlands: 'Pools' }]),
+    /antwoordinstructie/i
+  );
+  assert.throws(
+    () => controleerTalenCompleet([{ code: 'el', label: 'Ελληνικά' }]),
+    /Nederlandse naam/i
+  );
 });

@@ -27,6 +27,15 @@ export const getLesTaal = (user) => {
 export const taalLabel = (code) => LES_TALEN.find((taal) => taal.code === schoon(code))?.label || '';
 
 /**
+ * De Nederlandse naam van een taal ('Grieks', 'Italiaans'), voor de opdracht
+ * aan het vertaalmodel en voor schermteksten in het beheer. Hij komt uit
+ * LES_TALEN, zodat een taal toevoegen alleen dit bestand raakt en de Cloud
+ * Function niet ergens een tweede lijstje hoeft bij te houden.
+ */
+export const taalNederlands = (code) =>
+  LES_TALEN.find((taal) => taal.code === schoon(code))?.nederlands || '';
+
+/**
  * Welke bloktypen hebben tekst die we kunnen omzetten? Slidedecks, media en
  * spellen zijn beeld; daar valt niets te vertalen zonder het materiaal zelf te
  * verbouwen.
@@ -137,4 +146,37 @@ const ANTWOORD_INSTRUCTIE = {
   it: 'Scrivi la tua risposta in olandese.'
 };
 
-export const antwoordInstructie = (taal) => ANTWOORD_INSTRUCTIE[schoon(taal)] || '';
+/**
+ * Een lege taal betekent "gewoon Nederlands": dan hoort er geen extra zin bij
+ * de vraag. Een taal die wél in LES_TALEN staat, heeft altijd een instructie;
+ * daar zorgt controleerTalenCompleet hieronder voor.
+ */
+export const antwoordInstructie = (taal) => {
+  const code = schoon(taal);
+  if (!isLesTaal(code)) return '';
+  return ANTWOORD_INSTRUCTIE[code];
+};
+
+/**
+ * Een taal toevoegen raakt alleen dit bestand - maar dan moet hij hier ook
+ * compleet zijn. Ontbreekt de Nederlandse naam, dan krijgt het vertaalmodel
+ * geen doeltaal te horen; ontbreekt de antwoordinstructie, dan verdwijnt de
+ * zin "schrijf je antwoord in het Nederlands" geruisloos terwijl het nakijken
+ * Nederlands blijft. Beide zijn stille fouten die pas bij een leerling
+ * opvallen, dus faalt het hier hard, bij het laden van de module.
+ */
+export const controleerTalenCompleet = (talen = LES_TALEN) => {
+  talen.forEach((taal) => {
+    const code = schoon(taal?.code);
+    if (!code) throw new Error('lesTaal: een taal in LES_TALEN heeft geen code.');
+    if (!schoon(taal?.nederlands)) {
+      throw new Error(`lesTaal: taal ${code} mist de Nederlandse naam (veld "nederlands").`);
+    }
+    if (!ANTWOORD_INSTRUCTIE[code]) {
+      throw new Error(`lesTaal: taal ${code} mist een antwoordinstructie in ANTWOORD_INSTRUCTIE.`);
+    }
+  });
+  return true;
+};
+
+controleerTalenCompleet();

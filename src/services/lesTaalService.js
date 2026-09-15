@@ -1,4 +1,4 @@
-import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { isLesTaal } from '../lib/lesTaal';
 
@@ -33,6 +33,16 @@ export const bewaarDocentVertaling = async (blockId, taal, velden) => {
     gecontroleerd: true,
     bijgewerktOp: serverTimestamp()
   }, { merge: true });
+};
+
+/**
+ * De opgeslagen vertaling weggooien. Dat is de enige weg terug nadat een
+ * vertaling op `bron: docent` en `gecontroleerd: true` is gezet: vanaf dat
+ * moment maakt de Cloud Function er nooit meer een nieuwe. Na het weggooien
+ * vertaalt hij het blok bij de eerstvolgende aanvraag opnieuw.
+ */
+export const verwijderVertaling = async (blockId, taal) => {
+  await deleteDoc(doc(db, 'vertalingen', `${blockId}__${taal}`));
 };
 
 export const haalOpgeslagenVertaling = async (blockId, taal) => {

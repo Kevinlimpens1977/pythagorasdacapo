@@ -3397,12 +3397,43 @@ function getLesTaalLayer() {
       bronVingerafdruk: layer.bronVingerafdruk,
       isLesTaal: layer.isLesTaal,
       isVertaalbaarBlok: layer.isVertaalbaarBlok,
+      taalNederlands: layer.taalNederlands,
     }));
   }
   return sharedLesTaalLayerPromise;
 }
 
-const VERTAAL_MAX_TOKENS = 3000;
+// Hoeveel tokens het antwoord mag kosten. Een vaste grens werkte niet: Grieks
+// kost bij de gangbare tokenizers al gauw twee tot drie keer zoveel tokens per
+// teken als Nederlands (Latijnse woorden vallen vaak in één token, Griekse
+// worden per paar tekens gehakt). Bij 3000 liep een lang theorieblok halverwege
+// af, kwam er onafgemaakte JSON terug, faalde het parsen en zag de leerling
+// stil niets. Daarom schalen we mee met de lengte van de brontekst:
+// - VERTAAL_TOKENS_PER_TEKEN is ruim genomen, zodat ook de duurste taal past;
+// - VERTAAL_MIN_TOKENS houdt korte blokken royaal boven de ondergrens;
+// - VERTAAL_TOKEN_PLAFOND voorkomt dat één uitzonderlijk blok een onbeperkte
+//   rekening oplevert. Een blok dat daar tegenaan loopt hoort gesplitst te
+//   worden, niet stilletjes duurder te worden.
+const VERTAAL_TOKENS_PER_TEKEN = 3;
+const VERTAAL_MIN_TOKENS = 3000;
+const VERTAAL_TOKEN_PLAFOND = 16000;
+
+function vertaalTokenBudget(bronLengte) {
+  const geschat = Math.ceil((Number(bronLengte) || 0) * VERTAAL_TOKENS_PER_TEKEN);
+  return Math.min(VERTAAL_TOKEN_PLAFOND, Math.max(VERTAAL_MIN_TOKENS, geschat));
+}
+
+/**
+ * Het aantal afbeeldingen in een stuk html. De vertaling gaat later met
+ * dangerouslySetInnerHTML het scherm op; het praktische risico daarbij is niet
+ * een aanval maar verlies: een model dat een <img> of een link "opruimt". Een
+ * leerling die de vertaling aanzet zou dan juist het beeld kwijtraken waar de
+ * vraag naar verwijst.
+ */
+function telAfbeeldingen(html) {
+  return (String(html || "").match(/<img\b/gi) || []).length;
+}
+
 // Zelfde tekens als cleanIdPart() elders in dit bestand toelaat voor id's.
 const BLOCK_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 
@@ -3425,25 +3456,31 @@ function vormItemsVoorLeerling(items, maxAantal = Infinity) {
   }));
 }
 
-function bouwVertaalBericht({ blok, taalNederlands }) {
-  // Alleen de zichtbare tekst gaat mee. Wat hier niet in staat, kan het model
-  // ook niet lekken: de leerlingversie draagt geen antwoordsleutel, en we
-  // sturen expliciet alleen de velden die vertaald moeten worden.
-  const teVertalen = {
+/**
+ * Alleen de zichtbare tekst gaat mee. Wat hier niet in staat, kan het model ook
+ * niet lekken: de leerlingversie draagt geen antwoordsleutel, en we sturen
+ * expliciet alleen de velden die vertaald moeten worden. Apart van
+ * bouwVertaalBericht, omdat de lengte van deze JSON ook het tokenbudget bepaalt.
+ */
+function bouwVertaalInvoer(blok) {
+  return {
     titel: String(blok.title || ""),
     html: String(blok.content?.html || ""),
     items: vormItemsVoorLeerling(blok.content?.items)
   };
+}
 
+function bouwVertaalBericht({ teVertalen, taalNaam }) {
   return [
     {
       role: "system",
       content: [
-        `Je vertaalt lesmateriaal voor het voortgezet onderwijs van het Nederlands naar het ${taalNederlands}.`,
+        `Je vertaalt lesmateriaal voor het voortgezet onderwijs van het Nederlands naar het ${taalNaam}.`,
         "Regels:",
         "- Vertaal uitsluitend de zichtbare tekst in de velden titel, html, prompt en text.",
         "- Laat elke id ongewijzigd.",
         "- Behoud de HTML-structuur en alle attributen precies zoals ze zijn.",
+        "- Laat elke afbeelding (<img>) en elke link staan; verwijder er nooit een.",
         "- Beantwoord geen vragen en voeg niets toe.",
         "- Gebruik taal die een leerling van twaalf tot vijftien jaar begrijpt.",
         "- Antwoord met uitsluitend geldige JSON in exact dezelfde vorm als de invoer."
@@ -3454,7 +3491,7 @@ function bouwVertaalBericht({ blok, taalNederlands }) {
 }
 
 async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openrouterApiKeyProvider, nowMs = Date.now() }) {
-  const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok } = await getLesTaalLayer();
+  const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok, taalNederlands } = await getLesTaalLayer();
 
   if (!auth?.uid) {
     throw new HttpsError("unauthenticated", "Je moet ingelogd zijn.");
@@ -3512,7 +3549,17 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
   }
 
   const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
-  const taalNederlands = taal === "el" ? "Grieks" : "Italiaans";
+  // De doeltaal komt uit LES_TALEN (shared/lesTaal.js), niet uit een lijstje
+  // hier. Zo raakt een derde taal toevoegen alleen dat ene bestand.
+  const taalNaam = taalNederlands(taal);
+  if (!taalNaam) {
+    // Onbereikbaar zolang LES_TALEN compleet is - die module faalt bij het
+    // laden als een taal geen Nederlandse naam heeft - maar nooit stil
+    // doorgaan met een lege doeltaal in de opdracht aan het model.
+    throw new HttpsError("internal", `Geen Nederlandse naam voor taal ${taal}.`);
+  }
+
+  const teVertalen = bouwVertaalInvoer(blok);
 
   const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -3524,8 +3571,10 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
     },
     body: JSON.stringify({
       model: runtimeConfig.model,
-      messages: bouwVertaalBericht({ blok, taalNederlands }),
-      max_tokens: VERTAAL_MAX_TOKENS,
+      messages: bouwVertaalBericht({ teVertalen, taalNaam }),
+      // De vertaling heeft dezelfde vorm als de invoer, dus de lengte van die
+      // invoer is hier de beste maat voor wat het antwoord mag kosten.
+      max_tokens: vertaalTokenBudget(JSON.stringify(teVertalen).length),
       response_format: { type: "json_object" }
     })
   });
@@ -3541,6 +3590,19 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
     vertaald = JSON.parse(rauw);
   } catch {
     throw new HttpsError("internal", "De vertaling kwam niet in het juiste formaat terug.");
+  }
+
+  // Afbeeldingen tellen vóór het opslaan. Laat het model er een weg, dan is de
+  // vertaling onbruikbaar: de tekst verwijst naar een plaatje dat er niet meer
+  // is. Liever niets bewaren en de Nederlandse tekst laten staan dan een
+  // vertaling vastleggen waar de helft van de les uit verdwenen is.
+  const bronAfbeeldingen = telAfbeeldingen(teVertalen.html);
+  const vertaaldeAfbeeldingen = telAfbeeldingen(vertaald.html);
+  if (vertaaldeAfbeeldingen !== bronAfbeeldingen) {
+    throw new HttpsError(
+      "internal",
+      `De vertaling miste afbeeldingen uit de lesstof (${vertaaldeAfbeeldingen} in plaats van ${bronAfbeeldingen}) en is niet bewaard.`
+    );
   }
 
   const vertaling = {
@@ -3564,7 +3626,15 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
   // en awardTokensForActivityCore elders in dit bestand het doen, komt de
   // sentinel alleen in het geschreven document terecht, nooit in het
   // antwoord aan de client.
-  await vertalingRef.set({ ...vertaling, bijgewerktOp: FieldValue.serverTimestamp() }, { merge: false });
+  //
+  // gemaaktOp hoort volgens het ontwerp bij de herkomst van een vertaling. Dit
+  // pad is het enige dat een vertaling aanmaakt; het nakijkpaneel schrijft met
+  // merge: true en laat het veld dus staan.
+  await vertalingRef.set({
+    ...vertaling,
+    gemaaktOp: FieldValue.serverTimestamp(),
+    bijgewerktOp: FieldValue.serverTimestamp()
+  }, { merge: false });
 
   return { success: true, vertaling, verouderd: false };
 }
@@ -3606,6 +3676,8 @@ exports.__test = {
   updateOpenRouterConfigCore,
   uploadTokenShopItemImageCore,
   vertaalLesblokCore,
+  vertaalTokenBudget,
+  telAfbeeldingen,
   buildAiTutorSystemPrompt,
   buildAiTutorMistakeDiagnosis,
   buildAssessmentRetryDiagnosis,
