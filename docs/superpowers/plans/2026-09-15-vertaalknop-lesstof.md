@@ -575,7 +575,21 @@ Expected: FAIL, `vertaalLesblokCore is not defined`
 In `functions/index.js`, bij de andere cores:
 
 ```js
-const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok } = require("./shared/lesTaal.js");
+// functions/shared is ESM en dit bestand is CommonJS, dus de laag komt binnen
+// met een dynamische import in een gecachete promise. Exact hetzelfde patroon
+// als sharedNulmetingLayerPromise verderop in dit bestand; require() zou hier
+// bij de eerste aanroep stukgaan.
+let sharedLesTaalLayerPromise = null;
+function getLesTaalLayer() {
+  if (!sharedLesTaalLayerPromise) {
+    sharedLesTaalLayerPromise = import("./shared/lesTaal.js").then((layer) => ({
+      bronVingerafdruk: layer.bronVingerafdruk,
+      isLesTaal: layer.isLesTaal,
+      isVertaalbaarBlok: layer.isVertaalbaarBlok,
+    }));
+  }
+  return sharedLesTaalLayerPromise;
+}
 
 const VERTAAL_MAX_TOKENS = 3000;
 
@@ -615,6 +629,8 @@ function bouwVertaalBericht({ blok, taalNederlands }) {
 }
 
 async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openrouterApiKeyProvider }) {
+  const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok } = await getLesTaalLayer();
+
   if (!auth?.uid) {
     throw new HttpsError("unauthenticated", "Je moet ingelogd zijn.");
   }
@@ -729,6 +745,8 @@ exports.vertaalLesblok = onCall({
 ```
 
 En in `exports.__test` de regel `vertaalLesblokCore,` erbij, op alfabetische plek.
+
+Maak tot slot de foutteksten van `assertAssessmentBlockAssignedToCaller` neutraal, want die controle dekt nu ook theorie- en vraagblokken: vervang in die functie "Dit toetsblok staat niet klaar om nagekeken te worden." door "Dit lesblok staat niet klaar." en beide keren "Dit toetsblok hoort niet bij jouw lesstof." door "Dit lesblok hoort niet bij jouw lesstof.". Controleer met `grep -n "toetsblok" functions/index.js` dat er geen achterblijven in deze functie, en pas de bestaande tests aan die op die teksten matchen.
 
 - [ ] **Step 4: Draai de functietests**
 
@@ -944,10 +962,9 @@ Vraag Kevin daarna om de laatste check met een echte leerling: de dev-login geef
 
 - [ ] **Step 1: Breid de service uit**
 
-Voeg toe aan `src/services/lesTaalService.js`:
+Voeg toe aan `src/services/lesTaalService.js`. Let op: Task 2 heeft daar al een importregel uit `firebase/firestore` staan. Breid die regel uit tot `import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';` en voeg GEEN tweede importregel toe.
 
 ```js
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 /**
  * Een vertaling die de docent heeft nagekeken. Vanaf nu overschrijft de machine
