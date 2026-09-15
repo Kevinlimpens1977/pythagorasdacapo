@@ -112,6 +112,9 @@ import {
 import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
 import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
 import StudyStepRail from '../components/lesson/StudyStepRail';
+import TaalSchakelaar from '../components/lesson/TaalSchakelaar';
+import { haalVertaling } from '../services/vertaalService';
+import { antwoordInstructie, getLesTaal, isVertaalbaarBlok, voegVertalingSamen } from '../lib/lesTaal';
 import { spelSlotStatus } from '../lib/spelSlot';
 import { nulmetingDeelLetter, nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
 import {
@@ -469,6 +472,37 @@ export default function StudentLessonPage() {
     [localCompletedIds, progressRecords]
   );
   const currentBlock = blocks[currentIndex] || null;
+
+  // Vertaalknop: welke taal een leerling heeft staat op zijn gebruikersdocument
+  // (userData.lesTaal). Of de knop nu aan staat, onthouden we per apparaat, niet
+  // in Firestore: het is een weergavekeuze, geen voortgang.
+  const lesTaal = getLesTaal(userData);
+  const [taalActief, setTaalActief] = useState(() => {
+    try {
+      return window.localStorage.getItem(`helix-lestaal-${currentUser?.uid || ''}`) === 'aan';
+    } catch {
+      return false;
+    }
+  });
+  const [vertalingen, setVertalingen] = useState({});
+  const [vertalingBezig, setVertalingBezig] = useState(false);
+
+  const wisselTaal = async (aan) => {
+    setTaalActief(aan);
+    try {
+      window.localStorage.setItem(`helix-lestaal-${currentUser?.uid || ''}`, aan ? 'aan' : 'uit');
+    } catch {
+      // Een browser die opslag weigert mag de les niet breken.
+    }
+    if (!aan || !lesTaal || !currentBlock?.id) return;
+    if (!isVertaalbaarBlok(currentBlock) || vertalingen[currentBlock.id]) return;
+
+    setVertalingBezig(true);
+    const vertaling = await haalVertaling(currentBlock.id, lesTaal);
+    setVertalingen((huidige) => ({ ...huidige, [currentBlock.id]: vertaling }));
+    setVertalingBezig(false);
+  };
+
   const studySteps = useMemo(() => {
     const model = buildStudyStepModel({ blocks, completedIds, currentIndex, labels: CONTENT_BLOCK_LABELS });
 
@@ -1041,6 +1075,13 @@ export default function StudentLessonPage() {
     onExit: () => navigate('/')
   };
 
+  // Het blok dat op het scherm komt: Nederlands, of - als de leerling de
+  // schakelaar aan heeft en de vertaling al is opgehaald - zijn eigen taal
+  // eroverheen. currentBlock zelf blijft de bron voor voortgang en opslaan.
+  const zichtbaarBlok = taalActief && lesTaal && vertalingen[currentBlock?.id]
+    ? voegVertalingSamen(currentBlock, vertalingen[currentBlock.id])
+    : currentBlock;
+
   return (
     <div className="study-surface study-shell flex flex-col">
       <VictoryEffectOverlay playback={victoryPlayback} onDone={finishVictoryPlayback} />
@@ -1085,6 +1126,17 @@ export default function StudentLessonPage() {
                   : `Stap ${currentIndex + 1} van ${blocks.length} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
               </p>
             </div>
+
+            {!showParagraphEnd && (
+              <div className="shrink-0">
+                <TaalSchakelaar
+                  taal={lesTaal}
+                  actief={taalActief}
+                  bezig={vertalingBezig}
+                  onWissel={wisselTaal}
+                />
+              </div>
+            )}
 
             {paragraafIsPlus && (
               <span
@@ -1171,8 +1223,9 @@ export default function StudentLessonPage() {
                 </div>
               ) : (
                 <LessonBlockContent
-                  key={getLessonBlockRenderKey(currentBlock)}
-                  block={currentBlock}
+                  key={getLessonBlockRenderKey(zichtbaarBlok)}
+                  block={zichtbaarBlok}
+                  antwoordInstructie={antwoordInstructie(taalActief ? lesTaal : '')}
                   isCompleted={currentBlockCompleted}
                   progressRecord={getBlockProgressRecord(currentBlock?.id)}
                   assessmentItemRecords={assessmentItemRecords[currentBlock?.id] || null}
@@ -1339,6 +1392,7 @@ function LessonBlockContent({
   spelSlot = null,
   nulmetingSlot = null,
   block,
+  antwoordInstructie = '',
   isCompleted,
   progressRecord,
   assessmentItemRecords,
@@ -1413,6 +1467,7 @@ function LessonBlockContent({
             studentName={studentName}
             paragraaf={paragraaf}
             hoofdstuk={hoofdstuk}
+            antwoordInstructie={antwoordInstructie}
             onSaveItemProgress={onSaveAssessmentItemProgress}
             onSaveItemConcept={onSaveAssessmentItemConcept}
           />
@@ -3263,6 +3318,7 @@ function AssessmentLearningBlock({
   studentName = '',
   paragraaf = null,
   hoofdstuk = null,
+  antwoordInstructie = '',
   onSaveItemProgress = null,
   onSaveItemConcept = null
 }) {
@@ -3395,6 +3451,7 @@ function AssessmentLearningBlock({
                 blockId: block.id || '',
                 questionId: rawItems[index]?.id || `item-${index + 1}`
               })}
+              antwoordInstructie={antwoordInstructie}
               onSaveItemProgress={onSaveItemProgress}
               onSaveItemConcept={onSaveItemConcept}
             />
@@ -3422,6 +3479,7 @@ function AssessmentLearningBlock({
                 blockId: block.id || '',
                 questionId: rawItems[index]?.id || `item-${index + 1}`
               })}
+              antwoordInstructie={antwoordInstructie}
               onSaveItemProgress={onSaveItemProgress}
               onSaveItemConcept={onSaveItemConcept}
             />
@@ -3494,6 +3552,7 @@ function AssessmentLearningBlock({
                   blockId: block.id || '',
                   questionId: `${item.id}-herkansing`
                 })}
+                antwoordInstructie={antwoordInstructie}
                 onSaveItemProgress={onSaveItemProgress}
                 retryMode
                 retryPolicy={retryPolicy}
@@ -3694,6 +3753,7 @@ function AssessmentItemLearningCard({
   maxAttempts = MAX_CORE_QUESTION_ATTEMPTS,
   progressRecord = null,
   optionShuffleSeed = '',
+  antwoordInstructie = '',
   onSaveItemProgress = null,
   // Tussentijds bewaren van het ingevulde antwoord (nog niet ingeleverd).
   onSaveItemConcept = null,
@@ -4063,6 +4123,9 @@ function AssessmentItemLearningCard({
       <p className="mt-2 text-base font-bold leading-7 text-[var(--helix-navy)]">
         {item.prompt || 'Vraag wordt nog ingevuld.'}
       </p>
+      {isOpenItem && antwoordInstructie && (
+        <p className="mt-1 text-sm font-semibold text-[var(--helix-muted)]">{antwoordInstructie}</p>
+      )}
 
       <div className="mt-4">
         <AssessmentAnswerInput
