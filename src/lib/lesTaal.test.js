@@ -75,6 +75,16 @@ test('alleen tekstblokken zijn vertaalbaar', () => {
   assert.equal(isVertaalbaarBlok(null), false);
 });
 
+test('een vraagblok met linkedVraagId is niet vertaalbaar', () => {
+  // De tekst van zo'n blok komt uit het losse vraagdocument (linkedVraag),
+  // dat voegVertalingSamen niet raakt. Alleen de titel zou vertaald worden
+  // en de rest Nederlands blijven - dus behandelen we het blok als geheel
+  // niet vertaalbaar.
+  assert.equal(isVertaalbaarBlok({ type: 'question', linkedVraagId: 'vraag-1' }), false);
+  assert.equal(isVertaalbaarBlok({ type: 'question', linkedVraagId: '' }), true);
+  assert.equal(isVertaalbaarBlok({ type: 'question' }), true);
+});
+
 test('de vingerafdruk volgt de zichtbare tekst en niets anders', () => {
   const zelfde = JSON.parse(JSON.stringify(blok));
   assert.equal(bronVingerafdruk(blok), bronVingerafdruk(zelfde));

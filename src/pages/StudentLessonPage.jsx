@@ -486,22 +486,65 @@ export default function StudentLessonPage() {
   });
   const [vertalingen, setVertalingen] = useState({});
   const [vertalingBezig, setVertalingBezig] = useState(false);
+  // Blok-id's waarvoor al een verzoek onderweg is. Voorkomt een dubbel
+  // verzoek als dit effect twee keer snel achter elkaar draait (bijvoorbeeld
+  // de schakelaar snel uit en weer aan) terwijl de vorige aanroep nog loopt.
+  const vertalingOnderwegRef = useRef(new Set());
 
-  const wisselTaal = async (aan) => {
+  // De schakelaar zelf doet alleen onthouden en tonen; het ophalen gebeurt
+  // hieronder in het effect. Zo hoeft dit niet dubbel: bij het aanklikken
+  // wordt taalActief waar, en het effect (dat op taalActief let) pakt de
+  // rest op.
+  const wisselTaal = (aan) => {
     setTaalActief(aan);
     try {
       window.localStorage.setItem(`helix-lestaal-${currentUser?.uid || ''}`, aan ? 'aan' : 'uit');
     } catch {
       // Een browser die opslag weigert mag de les niet breken.
     }
-    if (!aan || !lesTaal || !currentBlock?.id) return;
-    if (!isVertaalbaarBlok(currentBlock) || vertalingen[currentBlock.id]) return;
-
-    setVertalingBezig(true);
-    const vertaling = await haalVertaling(currentBlock.id, lesTaal);
-    setVertalingen((huidige) => ({ ...huidige, [currentBlock.id]: vertaling }));
-    setVertalingBezig(false);
   };
+
+  // Haalt de vertaling op voor het blok dat in beeld is, zodra dat nodig is:
+  // bij het aanzetten van de schakelaar, bij het wisselen van blok terwijl
+  // hij al aan staat, en bij het laden van de pagina als hij via localStorage
+  // al aan stond. Zonder dit bleef alleen het blok van het klikmoment
+  // vertaald en toonde de rest van de les Nederlandse tekst onder een knop
+  // die "aan" zei.
+  useEffect(() => {
+    if (!taalActief || !lesTaal || !currentBlock?.id) return undefined;
+    if (!isVertaalbaarBlok(currentBlock)) return undefined;
+    // Eenmaal opgehaald - gelukt of niet - wordt hetzelfde blok niet nog een
+    // keer bevraagd. Een mislukte vertaling blijft dus mislukt tot de
+    // leerling de les opnieuw laadt; de Nederlandse tekst blijft intussen
+    // gewoon staan.
+    if (vertalingen[currentBlock.id] !== undefined) return undefined;
+    if (vertalingOnderwegRef.current.has(currentBlock.id)) return undefined;
+
+    const blockId = currentBlock.id;
+    vertalingOnderwegRef.current.add(blockId);
+    // Genegeerd zodra dit effect wordt opgeruimd (ander blok, schakelaar uit,
+    // pagina verlaten): een antwoord dat dan alsnog binnenkomt hoort niet
+    // meer bij de huidige stand en mag niet meer worden weggeschreven.
+    let genegeerd = false;
+
+    const ophalen = async () => {
+      setVertalingBezig(true);
+      try {
+        const vertaling = await haalVertaling(blockId, lesTaal);
+        if (genegeerd) return;
+        setVertalingen((huidige) => ({ ...huidige, [blockId]: vertaling }));
+      } finally {
+        vertalingOnderwegRef.current.delete(blockId);
+        if (!genegeerd) setVertalingBezig(false);
+      }
+    };
+    ophalen();
+
+    return () => {
+      genegeerd = true;
+      setVertalingBezig(false);
+    };
+  }, [currentBlock, lesTaal, taalActief, vertalingen]);
 
   const studySteps = useMemo(() => {
     const model = buildStudyStepModel({ blocks, completedIds, currentIndex, labels: CONTENT_BLOCK_LABELS });
@@ -1225,6 +1268,10 @@ export default function StudentLessonPage() {
                 <LessonBlockContent
                   key={getLessonBlockRenderKey(zichtbaarBlok)}
                   block={zichtbaarBlok}
+                  // De Nederlandse bron: het nakijken en alles wat naar de
+                  // voortgang of naar Digidocent gaat, moet hierop blijven
+                  // draaien, nooit op de vertaling die de leerling ziet.
+                  origineelBlok={currentBlock}
                   antwoordInstructie={antwoordInstructie(taalActief ? lesTaal : '')}
                   isCompleted={currentBlockCompleted}
                   progressRecord={getBlockProgressRecord(currentBlock?.id)}
@@ -1392,6 +1439,7 @@ function LessonBlockContent({
   spelSlot = null,
   nulmetingSlot = null,
   block,
+  origineelBlok = null,
   antwoordInstructie = '',
   isCompleted,
   progressRecord,
@@ -1461,6 +1509,7 @@ function LessonBlockContent({
         ) : block.type === 'quiz' || block.type === 'toets' ? (
           <AssessmentLearningBlock
             block={block}
+            origineelBlok={origineelBlok}
             bodyHtml={bodyHtml}
             itemRecords={assessmentItemRecords}
             studentId={studentId}
@@ -1474,6 +1523,7 @@ function LessonBlockContent({
         ) : block.type === 'question' && !block.linkedVraagId && hasExerciseFields(block) ? (
           <ExerciseLearningBlock
             block={block}
+            origineelBlok={origineelBlok}
             bodyHtml={content.html || ''}
             progressRecord={progressRecord}
             onSaveProgress={onSaveProgress}
@@ -3312,6 +3362,7 @@ function AnswerExplanationNotes({ explanation = null, className = '' }) {
 
 function AssessmentLearningBlock({
   block,
+  origineelBlok = null,
   bodyHtml,
   itemRecords = null,
   studentId = '',
@@ -3342,6 +3393,32 @@ function AssessmentLearningBlock({
       publicSnapshotVersion: 1
     };
   });
+  // Dezelfde normalisatie, maar op de Nederlandse bron in plaats van het
+  // zichtbare (mogelijk vertaalde) blok. Alles wat naar het nakijken, de
+  // voortgang of Digidocent gaat, moet uit dit item komen, nooit uit `items`
+  // hierboven. Zonder vertaling zijn block en origineelBlok hetzelfde blok,
+  // dus dan zijn origineelItems en items ook gelijk.
+  const origineelContent = (origineelBlok || block).content || {};
+  const origineelRawItems = Array.isArray(origineelContent.items) ? origineelContent.items : [];
+  const origineelItems = normalizeAssessmentItems(origineelRawItems).map((item, index) => {
+    const rawItem = origineelRawItems[index] || {};
+    if (rawItem.publicSnapshotVersion !== 1 && rawItem.answerKeyAvailable !== false) return item;
+    return {
+      ...item,
+      ...rawItem,
+      id: rawItem.id || item.id,
+      type: rawItem.type || item.type,
+      vraagtype: rawItem.vraagtype || item.vraagtype,
+      prompt: rawItem.prompt ?? item.prompt,
+      answer: rawItem.answer || item.answer,
+      options: Array.isArray(rawItem.options) ? rawItem.options : item.options,
+      feedback: rawItem.feedback || '',
+      tokens: Math.max(0, Math.round(Number(rawItem.tokens) || 0)),
+      answerKeyAvailable: false,
+      publicSnapshotVersion: 1
+    };
+  });
+  const origineelPerId = new Map(origineelItems.map((bronItem) => [bronItem.id, bronItem]));
   const isToets = block.type === 'toets';
   const tokenTotal = Number(content.tokenConfig?.totalTokens || block.tokenTotal || 0);
   // Een toets staat in de studio standaard op twee pogingen; die grens gold tot nu
@@ -3441,7 +3518,9 @@ function AssessmentLearningBlock({
               key={item.id || `${block.id}-item-${index}`}
               onAnswered={meldBeantwoord}
               block={block}
+              origineelBlok={origineelBlok || block}
               item={item}
+              origineelItem={origineelPerId.get(item.id) || item}
               index={index}
               isToets={isToets}
               maxAttempts={maxAttempts}
@@ -3463,7 +3542,9 @@ function AssessmentLearningBlock({
             <AssessmentItemLearningCard
               key={item.id || `${block.id}-item-${index}`}
               block={block}
+              origineelBlok={origineelBlok || block}
               item={item}
+              origineelItem={origineelPerId.get(item.id) || item}
               index={index}
               isToets={isToets}
               maxAttempts={maxAttempts}
@@ -3542,7 +3623,9 @@ function AssessmentLearningBlock({
               <AssessmentItemLearningCard
                 key={`retry-${item.id}`}
                 block={block}
+                origineelBlok={origineelBlok || block}
                 item={item}
+                origineelItem={origineelPerId.get(item.id) || item}
                 index={items.findIndex((kandidaat) => kandidaat.id === item.id)}
                 isToets={isToets}
                 maxAttempts={maxAttempts}
@@ -3747,7 +3830,13 @@ function AssessmentStepper({ block, items = [], records = {}, renderItem }) {
  */
 function AssessmentItemLearningCard({
   block,
+  // Het Nederlandse origineel van `block`/`item`. Gelijk aan block/item als er
+  // niets vertaald is. Alles wat wordt nagekeken, opgeslagen of naar
+  // Digidocent gestuurd wordt, moet hieruit komen - nooit uit `block`/`item`
+  // zelf, want die kunnen de vertaling zijn die de leerling op het scherm ziet.
+  origineelBlok = null,
   item,
+  origineelItem = null,
   index,
   isToets,
   maxAttempts = MAX_CORE_QUESTION_ATTEMPTS,
@@ -3767,6 +3856,8 @@ function AssessmentItemLearningCard({
   hoofdstuk = null,
   studentName = ''
 }) {
+  const bronBlok = origineelBlok || block;
+  const bronItem = origineelItem || item;
   const retryRecord = retryMode ? progressRecord?.herkansing || null : null;
   const [answer, setAnswer] = useState(() => {
     if (retryMode) {
@@ -3887,11 +3978,14 @@ function AssessmentItemLearningCard({
 
       if (isOpenItem) {
         // Zelfde volgorde als bij een gewone open vraag: eerst de lokale
-        // rekencontrole, pas daarna Digidocent.
+        // rekencontrole, pas daarna Digidocent. Altijd op het Nederlandse
+        // origineel: de leerling schrijft zijn antwoord verplicht in het
+        // Nederlands (antwoordInstructie), dus nakijken tegen de vertaalde
+        // vraagtekst zou een correct antwoord kunnen afkeuren.
         const studentAnswer = String(answer ?? '').trim();
-        const modelAnswer = item.answer?.modelAnswer || item.answer?.answer || '';
+        const modelAnswer = bronItem.answer?.modelAnswer || bronItem.answer?.answer || '';
         const local = assessOpenAnswerLocally({
-          questionPrompt: item.prompt || '',
+          questionPrompt: bronItem.prompt || '',
           modelAnswer,
           studentAnswer
         });
@@ -3902,8 +3996,8 @@ function AssessmentItemLearningCard({
           try {
             assessment = await assessOpenAnswerCall({
               blockId: block?.id || '',
-              questionTitle: item.prompt || block?.title || 'Open vraag',
-              questionPrompt: item.prompt || '',
+              questionTitle: bronItem.prompt || bronBlok?.title || 'Open vraag',
+              questionPrompt: bronItem.prompt || '',
               modelAnswer,
               studentAnswer
             });
@@ -4055,13 +4149,15 @@ function AssessmentItemLearningCard({
         attemptStatus: outcome.attemptStatus,
         completionReason: outcome.completionReason,
         teacherSignal: outcome.teacherSignal,
-        vraagTitle: item.prompt || '',
+        // Nederlands origineel, ook als de leerling de vertaling op het scherm
+        // had staan: de docent kijkt dit na tegen de brontekst.
+        vraagTitle: bronItem.prompt || '',
         vraagType: item.type || '',
-        questionPlainText: stripHtmlText(item.prompt || ''),
+        questionPlainText: stripHtmlText(bronItem.prompt || ''),
         // Referentie voor de nakijkstapel: zonder dit ziet de docent straks wel
         // het antwoord van de leerling, maar niet waartegen hij het afzet.
-        modelAnswer: item.answer?.modelAnswer || item.answer?.answer || '',
-        rubric: item.answer?.rubric || '',
+        modelAnswer: bronItem.answer?.modelAnswer || bronItem.answer?.answer || '',
+        rubric: bronItem.answer?.rubric || '',
         tokens: item.tokens || 0,
         parts,
         score: score.score,
@@ -4099,14 +4195,18 @@ function AssessmentItemLearningCard({
       ...buildRetryHelpPayload({ record: progressRecord || {}, aiHelpCount: nextCount })
     });
   };
+  // Ook richting Digidocent altijd het Nederlandse origineel: de AI-hulp en
+  // haar instructies zijn Nederlandstalig, dus een vertaalde vraagtekst erin
+  // zou de hint onbegrijpelijk maken en kan de gegeven vertaling laten lekken
+  // naar de server.
   const retryTutorSummary = retryMode
-    ? buildAssessmentItemTutorSummary({ item, answer: progressRecord?.lastAnswer })
+    ? buildAssessmentItemTutorSummary({ item: bronItem, answer: progressRecord?.lastAnswer })
     : '';
   const retryLessonContext = retryMode
     ? [
       paragraaf?.title ? `Paragraaf: ${paragraaf.title}` : '',
       hoofdstuk?.title ? `Hoofdstuk: ${hoofdstuk.title}` : '',
-      block?.title ? `Lesblok: ${block.title}` : '',
+      bronBlok?.title ? `Lesblok: ${bronBlok.title}` : '',
       'Situatie: herkansingsronde van een quiz of toets. De leerling had deze vraag in de eerste ronde fout en mag hem nu opnieuw maken.'
     ].filter(Boolean).join('\n')
     : '';
@@ -4178,7 +4278,7 @@ function AssessmentItemLearningCard({
       {retryAiHelpAllowed && showRetryTutor && !locked && (
         <div className="mt-4">
           <AITutorChat
-            contextHeading={stripHtmlText(item.prompt || '').slice(0, 120) || block?.title || 'deze vraag'}
+            contextHeading={stripHtmlText(bronItem.prompt || '').slice(0, 120) || bronBlok?.title || 'deze vraag'}
             initialMessage={`Hoi${studentName ? ` ${studentName}` : ''}, deze vraag had je in de eerste ronde fout. Ik geef het antwoord niet, maar help je te zien waar het misging. Wat dacht je toen je je antwoord koos?`}
             studentAnswer={retryTutorSummary}
             blockId={block?.id || ''}
@@ -4390,7 +4490,12 @@ function AssessmentAnswerInput({
  * eigen antwoord is ingeleverd (assessOpenAnswer met blockId + fieldId).
  * De fase-overgangen zelf staan in src/lib/oefenFlow.js en zijn daar getest.
  */
-function ExerciseLearningBlock({ block, bodyHtml, progressRecord, onSaveProgress, onAutoAdvance }) {
+function ExerciseLearningBlock({ block, origineelBlok = null, bodyHtml, progressRecord, onSaveProgress, onAutoAdvance }) {
+  // De veldlabels komen uit content.exercise, dat voegVertalingSamen niet
+  // aanraakt (alleen content.items/html/title worden vertaald) - die zijn dus
+  // sowieso altijd Nederlands. Alleen de bloktitel, gebruikt als vraagTitle
+  // hieronder, kan vertaald zijn.
+  const bronBlok = origineelBlok || block;
   const fields = useMemo(() => getExerciseFields(block), [block]);
   const [answers, setAnswers] = useState(() => buildInitialExerciseAnswers(fields, progressRecord?.lastAnswer));
   const [flow, setFlow] = useState(() => createOefenFlow(fields));
@@ -4417,7 +4522,7 @@ function ExerciseLearningBlock({ block, bodyHtml, progressRecord, onSaveProgress
       const result = await assessOpenAnswerCall({
         blockId: block.id,
         fieldId: veld.id,
-        questionTitle: block.title || 'Oefenopgave',
+        questionTitle: bronBlok.title || 'Oefenopgave',
         questionPrompt: veld.label,
         studentAnswer: antwoord.trim()
       });

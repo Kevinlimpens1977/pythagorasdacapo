@@ -33,7 +33,18 @@ export const taalLabel = (code) => LES_TALEN.find((taal) => taal.code === schoon
  */
 export const VERTAALBARE_BLOKTYPEN = new Set(['theory', 'question', 'quiz', 'toets', 'summary']);
 
-export const isVertaalbaarBlok = (block) => VERTAALBARE_BLOKTYPEN.has(schoon(block?.type));
+/**
+ * Een vraagblok dat naar de vragenbank verwijst (linkedVraagId) haalt zijn
+ * tekst uit dat losse vraagdocument, niet uit dit blok. voegVertalingSamen
+ * raakt dat document niet, dus zou alleen de bloktitel vertalen en de rest
+ * Nederlands laten staan. Zo'n blok behandelen we daarom als niet
+ * vertaalbaar: geen halfvertaald scherm en geen overbodige aanroep.
+ */
+export const isVertaalbaarBlok = (block) => {
+  if (!VERTAALBARE_BLOKTYPEN.has(schoon(block?.type))) return false;
+  if (schoon(block?.type) === 'question' && schoon(block?.linkedVraagId)) return false;
+  return true;
+};
 
 /**
  * De tekst waar de vingerafdruk over gaat: precies wat de leerling leest, in
