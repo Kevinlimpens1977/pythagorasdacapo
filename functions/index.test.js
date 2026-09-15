@@ -2,6 +2,8 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { HttpsError } = require("firebase-functions/v2/https");
 const { __test } = require("./index");
+const { bronVingerafdruk } = require("./shared/lesTaal.js");
+const { vertaalLesblokCore } = __test;
 
 const createDocSnapshot = (id, data) => ({
   id,
@@ -1739,6 +1741,100 @@ const createNulmetingDb = (docs = {}) => {
   });
   return { doc: docRef, collection: collectionRef, store, writes };
 };
+
+// Zelfde nep-database als createNulmetingDb, met de documenten die
+// vertaalLesblokCore nodig heeft: de leerling, zijn klas, het publieke blok
+// en eventueel een al bewaarde vertaling.
+const vertaalDb = ({ publiekBlok, bestaandeVertaling, caller }) => createNulmetingDb({
+  "users/leerling-1": caller,
+  "klassen/klas-1": {
+    enabledParagrafen: ["para-1"],
+    enabledContentBlocks: {},
+    studentOverrides: {}
+  },
+  ...(publiekBlok ? { [`publicContentBlocks/${publiekBlok.id}`]: publiekBlok } : {}),
+  ...(bestaandeVertaling
+    ? { [`vertalingen/${publiekBlok.id}__${bestaandeVertaling.taal || "el"}`]: bestaandeVertaling }
+    : {}),
+  "privateConfig/openrouter": { apiKey: "sk-or-test", model: "test/model", enabled: true }
+});
+
+test("vertaalLesblok geeft een bewaarde vertaling terug zonder het model te bellen", async () => {
+  let modelGebeld = false;
+  const publiekBlok = {
+    id: "blok-1",
+    type: "theory",
+    status: "published",
+    paragraafId: "para-1",
+    title: "Stoffen",
+    content: { html: "<p>Een stof heeft eigenschappen.</p>", items: [] }
+  };
+  const vingerafdruk = bronVingerafdruk(publiekBlok);
+
+  const resultaat = await vertaalLesblokCore({
+    auth: { uid: "leerling-1" },
+    data: { blockId: "blok-1", taal: "el" },
+    db: vertaalDb({
+      publiekBlok,
+      bestaandeVertaling: { bronVingerafdruk: vingerafdruk, titel: "Ουσίες", html: "<p>...</p>", items: [] },
+      caller: { role: "student", klasId: "klas-1" }
+    }),
+    fetchImpl: () => { modelGebeld = true; throw new Error("had niet gebeld mogen worden"); },
+    openrouterApiKeyProvider: () => "sk-or-test"
+  });
+
+  assert.equal(modelGebeld, false);
+  assert.equal(resultaat.success, true);
+  assert.equal(resultaat.vertaling.titel, "Ουσίες");
+});
+
+test("vertaalLesblok stuurt de antwoordsleutel nooit naar het model", async () => {
+  let verstuurdeBody = null;
+  const publiekBlok = {
+    id: "blok-2",
+    type: "quiz",
+    status: "published",
+    paragraafId: "para-1",
+    title: "Quiz",
+    content: {
+      html: "",
+      items: [{ id: "v1", type: "meerkeuze", prompt: "Wat is een stof?", options: [{ id: "a", text: "Iets tastbaars" }] }]
+    }
+  };
+
+  await vertaalLesblokCore({
+    auth: { uid: "leerling-1" },
+    data: { blockId: "blok-2", taal: "it" },
+    db: vertaalDb({ publiekBlok, bestaandeVertaling: null, caller: { role: "student", klasId: "klas-1" } }),
+    fetchImpl: (url, opties) => {
+      verstuurdeBody = opties.body;
+      return {
+        ok: true,
+        json: async () => ({
+          choices: [{ message: { content: JSON.stringify({ titel: "Quiz", html: "", items: [{ id: "v1", prompt: "Che cos'e una sostanza?", options: [{ id: "a", text: "Qualcosa di tangibile" }] }] }) } }]
+        })
+      };
+    },
+    openrouterApiKeyProvider: () => "sk-or-test"
+  });
+
+  assert.equal(verstuurdeBody.includes("correctOptionId"), false);
+  assert.equal(verstuurdeBody.includes("modelAnswer"), false);
+  assert.equal(verstuurdeBody.includes("Iets tastbaars"), true);
+});
+
+test("vertaalLesblok weigert een onbekende taal", async () => {
+  await assert.rejects(
+    () => vertaalLesblokCore({
+      auth: { uid: "leerling-1" },
+      data: { blockId: "blok-1", taal: "klingon" },
+      db: vertaalDb({ publiekBlok: null, bestaandeVertaling: null, caller: { role: "student", klasId: "klas-1" } }),
+      fetchImpl: () => { throw new Error("niet bellen"); },
+      openrouterApiKeyProvider: () => "sk-or-test"
+    }),
+    /taal/i
+  );
+});
 
 const nulmetingBlok = (deel, slug, deelvaardigheidId = "systemen") => ({
   type: "toets",

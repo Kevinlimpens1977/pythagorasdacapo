@@ -1619,7 +1619,7 @@ async function assertAssessmentBlockAssignedToCaller({ db, uid, callerData = {},
   }
 
   if (block.status !== "published" || block.isArchived === true) {
-    throw new HttpsError("failed-precondition", "Dit toetsblok staat niet klaar om nagekeken te worden.");
+    throw new HttpsError("failed-precondition", "Dit lesblok staat niet klaar.");
   }
 
   const paragraafId = String(block.paragraafId || "").trim();
@@ -1630,11 +1630,11 @@ async function assertAssessmentBlockAssignedToCaller({ db, uid, callerData = {},
 
   const klas = await getRequiredDoc(db.doc(`klassen/${klasId}`), "Klas");
   if (!isParagraphAssignedToStudent(klas.data, uid, paragraafId)) {
-    throw new HttpsError("permission-denied", "Dit toetsblok hoort niet bij jouw lesstof.");
+    throw new HttpsError("permission-denied", "Dit lesblok hoort niet bij jouw lesstof.");
   }
 
   if (!isContentBlockAssignedToStudent(klas.data, uid, paragraafId, blockId)) {
-    throw new HttpsError("permission-denied", "Dit toetsblok hoort niet bij jouw lesstof.");
+    throw new HttpsError("permission-denied", "Dit lesblok hoort niet bij jouw lesstof.");
   }
 
   return { role: role || "student", rateLimited: true };
@@ -3376,6 +3376,180 @@ exports.askAiTutor = onCall({
   }
 });
 
+// ---------------------------------------------------------------------------
+// Vertaling van lesstof naar de taal van de leerling
+//
+// Leest uitsluitend publicContentBlocks: dat is de leerlingversie zonder
+// antwoordsleutel, dus dat is de enige content die hier het model in mag. Een
+// vertaling wordt bewaard op de vingerafdruk van de brontekst
+// (functions/shared/lesTaal.js), zodat een ongewijzigd blok nooit opnieuw
+// langs het model hoeft.
+// ---------------------------------------------------------------------------
+
+// functions/shared is ESM en dit bestand is CommonJS, dus de laag komt binnen
+// met een dynamische import in een gecachete promise. Exact hetzelfde patroon
+// als sharedNulmetingLayerPromise verderop in dit bestand; require() zou hier
+// bij de eerste aanroep stukgaan.
+let sharedLesTaalLayerPromise = null;
+function getLesTaalLayer() {
+  if (!sharedLesTaalLayerPromise) {
+    sharedLesTaalLayerPromise = import("./shared/lesTaal.js").then((layer) => ({
+      bronVingerafdruk: layer.bronVingerafdruk,
+      isLesTaal: layer.isLesTaal,
+      isVertaalbaarBlok: layer.isVertaalbaarBlok,
+    }));
+  }
+  return sharedLesTaalLayerPromise;
+}
+
+const VERTAAL_MAX_TOKENS = 3000;
+
+function bouwVertaalBericht({ blok, taalNederlands }) {
+  // Alleen de zichtbare tekst gaat mee. Wat hier niet in staat, kan het model
+  // ook niet lekken: de leerlingversie draagt geen antwoordsleutel, en we
+  // sturen expliciet alleen de velden die vertaald moeten worden.
+  const teVertalen = {
+    titel: String(blok.title || ""),
+    html: String(blok.content?.html || ""),
+    items: (blok.content?.items || []).map((item) => ({
+      id: String(item.id || ""),
+      prompt: String(item.prompt || ""),
+      options: (item.options || []).map((optie) => ({
+        id: String(optie.id || ""),
+        text: String(optie.text || "")
+      }))
+    }))
+  };
+
+  return [
+    {
+      role: "system",
+      content: [
+        `Je vertaalt lesmateriaal voor het voortgezet onderwijs van het Nederlands naar het ${taalNederlands}.`,
+        "Regels:",
+        "- Vertaal uitsluitend de zichtbare tekst in de velden titel, html, prompt en text.",
+        "- Laat elke id ongewijzigd.",
+        "- Behoud de HTML-structuur en alle attributen precies zoals ze zijn.",
+        "- Beantwoord geen vragen en voeg niets toe.",
+        "- Gebruik taal die een leerling van twaalf tot vijftien jaar begrijpt.",
+        "- Antwoord met uitsluitend geldige JSON in exact dezelfde vorm als de invoer."
+      ].join("\n")
+    },
+    { role: "user", content: JSON.stringify(teVertalen) }
+  ];
+}
+
+async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openrouterApiKeyProvider }) {
+  const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok } = await getLesTaalLayer();
+
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Je moet ingelogd zijn.");
+  }
+
+  const blockId = String(data?.blockId || "").trim();
+  const taal = String(data?.taal || "").trim();
+
+  if (!blockId) {
+    throw new HttpsError("invalid-argument", "blockId ontbreekt.");
+  }
+  if (!isLesTaal(taal)) {
+    throw new HttpsError("invalid-argument", `Onbekende taal: ${taal}`);
+  }
+
+  const callerSnapshot = await db.doc(`users/${auth.uid}`).get();
+  const callerData = callerSnapshot.exists ? callerSnapshot.data() || {} : {};
+
+  // Uitsluitend de leerlingversie. Het blok uit contentBlocks draagt de
+  // antwoordsleutel en hoort niet bij een vertaler.
+  const blokSnapshot = await db.doc(`publicContentBlocks/${blockId}`).get();
+  if (!blokSnapshot.exists) {
+    throw new HttpsError("not-found", "Dit lesblok bestaat niet.");
+  }
+  const blok = { id: blockId, ...blokSnapshot.data() };
+
+  if (!isVertaalbaarBlok(blok)) {
+    throw new HttpsError("failed-precondition", "Dit soort lesblok heeft geen tekst om te vertalen.");
+  }
+
+  await assertAssessmentBlockAssignedToCaller({ db, uid: auth.uid, callerData, block: blok, blockId });
+
+  const vingerafdruk = bronVingerafdruk(blok);
+  const vertalingRef = db.doc(`vertalingen/${blockId}__${taal}`);
+  const bestaand = await vertalingRef.get();
+
+  if (bestaand.exists) {
+    const opgeslagen = bestaand.data() || {};
+    if (opgeslagen.bronVingerafdruk === vingerafdruk) {
+      return { success: true, vertaling: opgeslagen, verouderd: false };
+    }
+    // Werk van de docent overschrijven we niet stil: teruggeven met een vlag.
+    if (opgeslagen.bron === "docent") {
+      return { success: true, vertaling: opgeslagen, verouderd: true };
+    }
+  }
+
+  const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
+  const taalNederlands = taal === "el" ? "Grieks" : "Italiaans";
+
+  const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${runtimeConfig.apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://stellingvanpythagoras.nl",
+      "X-Title": "HELIX App"
+    },
+    body: JSON.stringify({
+      model: runtimeConfig.model,
+      messages: bouwVertaalBericht({ blok, taalNederlands }),
+      max_tokens: VERTAAL_MAX_TOKENS,
+      response_format: { type: "json_object" }
+    })
+  });
+
+  if (!response.ok) {
+    throw new HttpsError("unavailable", "Vertalen lukt nu even niet.");
+  }
+
+  const payload = await response.json();
+  const rauw = payload?.choices?.[0]?.message?.content || "";
+  let vertaald;
+  try {
+    vertaald = JSON.parse(rauw);
+  } catch {
+    throw new HttpsError("internal", "De vertaling kwam niet in het juiste formaat terug.");
+  }
+
+  const vertaling = {
+    blockId,
+    taal,
+    bronVingerafdruk: vingerafdruk,
+    titel: String(vertaald.titel || ""),
+    html: String(vertaald.html || ""),
+    items: Array.isArray(vertaald.items) ? vertaald.items : [],
+    bron: "ai",
+    gecontroleerd: false,
+    model: runtimeConfig.model,
+    bijgewerktOp: new Date().toISOString()
+  };
+
+  await vertalingRef.set(vertaling, { merge: false });
+
+  return { success: true, vertaling, verouderd: false };
+}
+
+exports.vertaalLesblok = onCall({
+  region: REGION,
+  secrets: [openrouterApiKey],
+}, async (request) => {
+  return await vertaalLesblokCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    openrouterApiKeyProvider: () => openrouterApiKey.value(),
+  });
+});
+
 exports.__test = {
   adjustStudentTokensCore,
   approveStudentPhotoImportCropCore,
@@ -3400,6 +3574,7 @@ exports.__test = {
   updateAiTutorRulesCore,
   updateOpenRouterConfigCore,
   uploadTokenShopItemImageCore,
+  vertaalLesblokCore,
   buildAiTutorSystemPrompt,
   buildAiTutorMistakeDiagnosis,
   buildAssessmentRetryDiagnosis,

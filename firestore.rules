@@ -284,6 +284,18 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Vertalingen van lesstof. Leesbaar voor iedereen die ingelogd is: het is
+    // dezelfde tekst die de leerling toch al in zijn les ziet, en er staat geen
+    // antwoordsleutel in (vertaalLesblok leest alleen publicContentBlocks).
+    // Schrijven gaat via de Cloud Function met de Admin SDK, of door een
+    // beheerder die een vertaling corrigeert. De leesvoorwaarde raakt bewust
+    // geen `resource`, zodat ook een lijstquery van het docentoverzicht er
+    // langs komt.
+    match /vertalingen/{vertalingId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
     // Voortgang per vraag binnen een toets of quiz.
     // Een toets is een blok, maar de docent kijkt per vraag. Zelfde eigenaars-
     // toets als het ouderdocument: een leerling leest en schrijft alleen zijn
