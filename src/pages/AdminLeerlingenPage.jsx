@@ -9,12 +9,14 @@ import {
   filterStudentAccounts
 } from '../lib/studentAccountUtils';
 import { countStudentPhotos } from '../lib/studentPhotoImportUtils';
+import { beschikbareTalen } from '../lib/lesTaal';
 import { useAuth } from '../components/auth/AuthProvider';
 import StudentAvatar from '../components/common/StudentAvatar';
 import StudentPhotoImportWizard from '../components/admin/StudentPhotoImportWizard';
 import StudentNumberImportPanel from '../components/admin/StudentNumberImportPanel';
 import { DEFAULT_STUDENT_PASSWORD, resetStudentPassword, syncAllStudentAuthAccounts } from '../services/studentPasswordService';
 import { archiveStudent, deleteArchivedStudent, restoreStudent } from '../services/studentArchiveService';
+import { zetLesTaal } from '../services/lesTaalService';
 import { splitArchivedStudents } from '../lib/studentArchiveUtils';
 
 const formatLastActive = (value) => {
@@ -108,6 +110,25 @@ export default function AdminLeerlingenPage() {
     } catch (err) {
       console.error('Verplaatsen mislukt:', err);
       setError('Deze leerling kon niet naar een andere klas verplaatst worden.');
+    } finally {
+      setBusyStudentUid(null);
+    }
+  };
+
+  const handleSetLesTaal = async (student, taal) => {
+    if ((student.lesTaal || '') === taal) return;
+
+    setBusyStudentUid(student.uid);
+    setError(null);
+    setPasswordMessage('');
+    try {
+      await zetLesTaal(student.uid, taal);
+      setStudents((huidige) => huidige.map((rij) => (
+        rij.uid === student.uid ? { ...rij, lesTaal: taal } : rij
+      )));
+    } catch (err) {
+      console.error('Taal opslaan mislukt:', err);
+      setError('De taal kon niet worden opgeslagen.');
     } finally {
       setBusyStudentUid(null);
     }
@@ -326,7 +347,7 @@ export default function AdminLeerlingenPage() {
           ) : (
             <div className="divide-y divide-slate-100">
               {filteredStudents.map((student) => (
-                <div key={student.uid} className="grid gap-4 px-5 py-4 md:grid-cols-[1.5fr_1fr_1fr_auto_auto] md:items-center">
+                <div key={student.uid} className="grid gap-4 px-5 py-4 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto_auto] md:items-center">
                   <div className="flex items-center gap-3">
                     <StudentAvatar student={student} showPreview />
                     <div>
@@ -354,6 +375,27 @@ export default function AdminLeerlingenPage() {
                         <option value="">Geen klas</option>
                         {klassen.map((klas) => (
                           <option key={klas.id} value={klas.id}>{klas.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">Taal</p>
+                    {showArchive ? (
+                      <p className="mt-1 text-sm font-bold text-[var(--helix-navy)]">
+                        {beschikbareTalen().find((taal) => taal.code === student.lesTaal)?.nederlands || 'Nederlands'}
+                      </p>
+                    ) : (
+                      <select
+                        value={student.lesTaal || ''}
+                        onChange={(event) => handleSetLesTaal(student, event.target.value)}
+                        disabled={busyStudentUid === student.uid}
+                        aria-label={`Taal van ${student.displayName || student.email || 'leerling'}`}
+                        className="mt-1 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-2 py-1.5 text-sm font-bold text-[var(--helix-navy)] focus:border-[var(--helix-purple)] focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)] disabled:opacity-50"
+                      >
+                        <option value="">Nederlands</option>
+                        {beschikbareTalen().map((taal) => (
+                          <option key={taal.code} value={taal.code}>{taal.nederlands}</option>
                         ))}
                       </select>
                     )}
