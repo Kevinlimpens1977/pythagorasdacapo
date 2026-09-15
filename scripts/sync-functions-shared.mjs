@@ -40,7 +40,8 @@ export const SHARED_ENTRY_POINTS = [
   'assessmentItemGrading.js',
   // Het nulmetingsprofiel wordt server-side berekend (buildNulmetingProfiel),
   // met dezelfde regels als de tests en het leerlingscherm.
-  'nulmetingProfiel.js'
+  'nulmetingProfiel.js',
+  'lesTaal.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(
