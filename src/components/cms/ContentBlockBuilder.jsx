@@ -140,6 +140,8 @@ import { buildSlidedeckCreatorUrl } from '../../lib/slidedeckCmsLink';
 import { uploadMediaAsset } from '../../services/mediaService';
 import MediaRenderer from '../media/MediaRenderer';
 import CropEditorPanel from './CropEditorPanel';
+import VertalingPaneel from './VertalingPaneel';
+import { isVertaalbaarBlok } from '../../lib/lesTaal';
 
 const blockIcons = {
   theory: BookOpen,
@@ -2505,6 +2507,10 @@ const FullscreenLessonBlockStudio = ({
             onEditLinkedQuestion={onEditLinkedQuestion}
             onDraftDirtyChange={setDraftHasChanges}
           />
+
+          {/* Alleen bloktypen met vertaalbare tekst; media, game en slidedeck
+              zijn beeld en hebben niets om na te kijken. */}
+          {isVertaalbaarBlok(block) && <VertalingPaneel blok={block} />}
         </div>
       </main>
     </div>
