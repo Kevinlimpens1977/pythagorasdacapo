@@ -121,9 +121,9 @@ test('the access message passes the real server message through, plus what to do
     buildClosedQuestionAccessMessage({
       success: false,
       code: 'functions/permission-denied',
-      error: 'Dit toetsblok hoort niet bij jouw lesstof.'
+      error: 'Dit lesblok hoort niet bij jouw lesstof.'
     }),
-    'Dit toetsblok hoort niet bij jouw lesstof. Vraag je docent om de paragraaf toe te wijzen.'
+    'Dit lesblok hoort niet bij jouw lesstof. Vraag je docent om de paragraaf toe te wijzen.'
   );
 
   assert.equal(

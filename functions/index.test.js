@@ -1798,7 +1798,13 @@ test("vertaalLesblok stuurt de antwoordsleutel nooit naar het model", async () =
     title: "Quiz",
     content: {
       html: "",
-      items: [{ id: "v1", type: "meerkeuze", prompt: "Wat is een stof?", options: [{ id: "a", text: "Iets tastbaars" }] }]
+      items: [{
+        id: "v1",
+        type: "meerkeuze",
+        prompt: "Wat is een stof?",
+        options: [{ id: "a", text: "Iets tastbaars", correct: true }],
+        answer: { modelAnswer: "geheim" }
+      }]
     }
   };
 
@@ -1818,8 +1824,9 @@ test("vertaalLesblok stuurt de antwoordsleutel nooit naar het model", async () =
     openrouterApiKeyProvider: () => "sk-or-test"
   });
 
-  assert.equal(verstuurdeBody.includes("correctOptionId"), false);
+  assert.equal(verstuurdeBody.includes("correct"), false);
   assert.equal(verstuurdeBody.includes("modelAnswer"), false);
+  assert.equal(verstuurdeBody.includes("geheim"), false);
   assert.equal(verstuurdeBody.includes("Iets tastbaars"), true);
 });
 

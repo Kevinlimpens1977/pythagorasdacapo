@@ -3403,6 +3403,27 @@ function getLesTaalLayer() {
 }
 
 const VERTAAL_MAX_TOKENS = 3000;
+// Zelfde tekens als cleanIdPart() elders in dit bestand toelaat voor id's.
+const BLOCK_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Dezelfde vorm voor uitgaande en binnenkomende tekst: alleen id, prompt en
+ * per optie id/text, allemaal door String(). Dit is de enige plek die bepaalt
+ * welke itemvelden het systeem in en uit mogen, dus wat het model teruggeeft
+ * kan hier nooit een antwoordsleutel of ander veld binnensmokkelen dat er bij
+ * het versturen niet in zat. `maxAantal` begrenst het aantal items op wat het
+ * bronblok werkelijk heeft, zodat een model geen extra items kan verzinnen.
+ */
+function vormItemsVoorLeerling(items, maxAantal = Infinity) {
+  return (Array.isArray(items) ? items : []).slice(0, maxAantal).map((item) => ({
+    id: String(item?.id || ""),
+    prompt: String(item?.prompt || ""),
+    options: (Array.isArray(item?.options) ? item.options : []).map((optie) => ({
+      id: String(optie?.id || ""),
+      text: String(optie?.text || "")
+    }))
+  }));
+}
 
 function bouwVertaalBericht({ blok, taalNederlands }) {
   // Alleen de zichtbare tekst gaat mee. Wat hier niet in staat, kan het model
@@ -3411,14 +3432,7 @@ function bouwVertaalBericht({ blok, taalNederlands }) {
   const teVertalen = {
     titel: String(blok.title || ""),
     html: String(blok.content?.html || ""),
-    items: (blok.content?.items || []).map((item) => ({
-      id: String(item.id || ""),
-      prompt: String(item.prompt || ""),
-      options: (item.options || []).map((optie) => ({
-        id: String(optie.id || ""),
-        text: String(optie.text || "")
-      }))
-    }))
+    items: vormItemsVoorLeerling(blok.content?.items)
   };
 
   return [
@@ -3439,7 +3453,7 @@ function bouwVertaalBericht({ blok, taalNederlands }) {
   ];
 }
 
-async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openrouterApiKeyProvider }) {
+async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openrouterApiKeyProvider, nowMs = Date.now() }) {
   const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok } = await getLesTaalLayer();
 
   if (!auth?.uid) {
@@ -3451,6 +3465,9 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
 
   if (!blockId) {
     throw new HttpsError("invalid-argument", "blockId ontbreekt.");
+  }
+  if (!BLOCK_ID_PATTERN.test(blockId)) {
+    throw new HttpsError("invalid-argument", "blockId bevat ongeldige tekens.");
   }
   if (!isLesTaal(taal)) {
     throw new HttpsError("invalid-argument", `Onbekende taal: ${taal}`);
@@ -3471,7 +3488,7 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
     throw new HttpsError("failed-precondition", "Dit soort lesblok heeft geen tekst om te vertalen.");
   }
 
-  await assertAssessmentBlockAssignedToCaller({ db, uid: auth.uid, callerData, block: blok, blockId });
+  const access = await assertAssessmentBlockAssignedToCaller({ db, uid: auth.uid, callerData, block: blok, blockId });
 
   const vingerafdruk = bronVingerafdruk(blok);
   const vertalingRef = db.doc(`vertalingen/${blockId}__${taal}`);
@@ -3486,6 +3503,12 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
     if (opgeslagen.bron === "docent") {
       return { success: true, vertaling: opgeslagen, verouderd: true };
     }
+  }
+
+  // De rem geldt pas hier, vlak voor de betaalde modelaanroep: een cache-hit
+  // hierboven kost niets en mag dus niet van het budget van de leerling af.
+  if (access.rateLimited) {
+    await assertQuestionGradingRateLimit({ db, uid: auth.uid, subjectId: `${blockId}__${taal}`, nowMs });
   }
 
   const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
@@ -3522,18 +3545,26 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
 
   const vertaling = {
     blockId,
+    paragraafId: String(blok.paragraafId || ""),
     taal,
     bronVingerafdruk: vingerafdruk,
     titel: String(vertaald.titel || ""),
     html: String(vertaald.html || ""),
-    items: Array.isArray(vertaald.items) ? vertaald.items : [],
+    // Zelfde filter als bij het versturen (vormItemsVoorLeerling): wat het
+    // model erbij verzint of extra teruggeeft, komt zo nooit in het bewaarde
+    // document terecht.
+    items: vormItemsVoorLeerling(vertaald.items, (blok.content?.items || []).length),
     bron: "ai",
     gecontroleerd: false,
-    model: runtimeConfig.model,
-    bijgewerktOp: new Date().toISOString()
+    model: runtimeConfig.model
   };
 
-  await vertalingRef.set(vertaling, { merge: false });
+  // FieldValue.serverTimestamp() is een schrijf-sentinel: die los houden van
+  // het object dat we teruggeven. Precies zoals createOrUpdateTokenShopItemCore
+  // en awardTokensForActivityCore elders in dit bestand het doen, komt de
+  // sentinel alleen in het geschreven document terecht, nooit in het
+  // antwoord aan de client.
+  await vertalingRef.set({ ...vertaling, bijgewerktOp: FieldValue.serverTimestamp() }, { merge: false });
 
   return { success: true, vertaling, verouderd: false };
 }

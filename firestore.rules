@@ -284,15 +284,21 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Vertalingen van lesstof. Leesbaar voor iedereen die ingelogd is: het is
-    // dezelfde tekst die de leerling toch al in zijn les ziet, en er staat geen
-    // antwoordsleutel in (vertaalLesblok leest alleen publicContentBlocks).
-    // Schrijven gaat via de Cloud Function met de Admin SDK, of door een
-    // beheerder die een vertaling corrigeert. De leesvoorwaarde raakt bewust
-    // geen `resource`, zodat ook een lijstquery van het docentoverzicht er
-    // langs komt.
+    // Vertalingen van lesstof. Zelfde toegangsvoorwaarde als het bronblok
+    // (canReadPublicContentBlock hierboven): een vertaling mag een leerling
+    // alleen lezen als paragraaf en blok aan hem zijn toegewezen. paragraafId
+    // en blockId staan al op het vertalingdocument zelf (overgenomen van het
+    // publieke blok bij het opslaan in vertaalLesblokCore), dus dit draait
+    // rechtstreeks op resource.data — met opzet geen extra cross-document
+    // get() naar publicContentBlocks, want dat zou een tweede documentlezing
+    // per leesactie kosten terwijl de velden hier al staan. Een aparte
+    // "published"-check is niet nodig: een vertaling bestaat pas nadat
+    // vertaalLesblokCore het bronblok al tegen diezelfde voorwaarde heeft
+    // gecontroleerd. Schrijven gaat via de Cloud Function met de Admin SDK,
+    // of door een beheerder die een vertaling corrigeert.
     match /vertalingen/{vertalingId} {
-      allow read: if signedIn();
+      allow read: if isAdminOrSupervisor() ||
+        isAssignedContentBlock(resource.data.paragraafId, resource.data.blockId);
       allow write: if isAdmin();
     }
 
