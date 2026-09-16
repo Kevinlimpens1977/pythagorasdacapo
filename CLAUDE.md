@@ -1,69 +1,48 @@
-# Claude Code Guide - Stelling van Pythagoras Project
+# HELIX - leeswijzer voor Claude Code
 
-## Slidedeck Workflow
+HELIX is het leerplatform van Kevin Limpens: React 19, Vite, Tailwind 4, met
+Firebase (`pythagoras-eoa`) als database en Vercel als hosting. De site staat op
+https://dvdacapo.vercel.app.
 
-**Skill:** `.claude/skills/create-slidedeck/SKILL.md`  
-**Preferences:** `.claude/preferences/slidedeck-preferences.md`
+**Begin met `docs/HANDOFF.md`.** Daar staat de werkwijze, wat er buiten git
+leeft, en de stand per vak. Dit bestand is alleen de leeswijzer.
 
-### Quick Start
+Eerste twee commando's van een sessie:
 
 ```bash
-/create-slidedeck <source> [options]
+git pull
+node scripts/handoff-stand.mjs
 ```
 
-**Sources:**
-- Notebook name/ID: `/create-slidedeck "stelling van pythagoras"`
-- PDF/JPG: `/create-slidedeck @file.pdf`
-- Text: `/create-slidedeck "Pythagoras zei dat a² + b² = c²..."`
+## Wat je moet weten voordat je iets doet
 
-**Output:** PDF (digibord) + JSON (platform) + HTML (preview) → `./exports/`
+- **Het meeste werk staat niet in git.** Lesstof, klassen, toewijzingen en
+  voortgang leven in Firestore; presentaties in Firebase Storage. Een `git log`
+  vertelt de helft. `handoff-stand.mjs` vertelt de andere helft.
+- **Niets committen of pushen zonder dat Kevin het vraagt.**
+- De productietak is `codex/digitale-vaardigheden-seed`, niet `main`.
+- **Nooit `git add -A`.** Noem de paden. Buiten git blijven: `exports/`,
+  `badges/`, `.firebase/`, `.superpowers/`, `.tmp*`, `sources/`.
+- Deployen alleen met `npx vercel --prod --yes`. Nooit
+  `firebase deploy --only hosting`.
+- Elk schrijvend script eerst als dry run, pas daarna `--apply`.
+- Werk niet tegelijk met een andere sessie in deze map.
 
-### Standard Settings
-- **Level:** VMBO 1-2
-- **Slides:** 15-20
-- **Tone:** Laagdrempelig
-- **Questions:** 3-5 per slidedeck
-- **Exports:** Always PDF + JSON + HTML
+## Lesmateriaal van Kevin
 
-See preferences file for customization per project.
+Levert Kevin een hoofdstuk aan (PDF, tekst, presentaties), gebruik dan de skill
+`/helix-hoofdstuk-bouwen`. Die kent de vaste volgorde en de valkuilen. De weg
+staat ook in `docs/HANDOFF.md`, paragraaf 4, voor het geval de skill er niet is.
 
----
+## Na een wijziging
 
-## PDF Integration Strategy (All Chapters)
+```bash
+npx eslint <gewijzigde bestanden>
+node --test src/lib/
+npm run build
+```
 
-**Approach:** Option 3 - Hybrid Dual-Presentation Mode  
-**Doc:** `IMPLEMENTATION_PLAN_PDF_INTEGRATION.md`
+## Taal
 
-Each chapter (7.3, 7.4, 7.5, 7.6) follows Phase-based rollout:
-- **Phase 1:** PDF viewer component + digibord presentation (2-3 days)
-- **Phase 2:** Optional native React slides + evaluation questions (1 week)
-- **Phase 3:** Polish & analytics based on teacher feedback
-
-**Pattern:** PDF always works, native features added gradually.
-
----
-
-## Key Notes
-
-- NotebookLM (local): PDF/JPG analysis
-- Claude Code: Content structure & exports
-- Firebase: Lesson platform (separate setup)
-- Source tags: `SOURCE_BASED` | `AI_SUGGESTION` | `NEEDS_REVIEW` | `TEACHER_DECISION`
-- **PDF Integration:** Hybrid approach with Phase-based rollout (see Implementation Plan)
-
----
-
-## Git Versioning Rules
-
-After every significant change (new feature, refactor, bugfix, major UI update):
-
-1. Run `git add -A`
-2. Write a clear commit message: `git commit -m "feat: [short description]"`
-3. Push to GitHub: `git push origin main`
-
-**Never skip this step.** Always commit before moving to the next task.
-
----
-
-**Created:** 2026-05-10  
-**Updated:** 2026-05-14 (Custom Colors/Emoji feature, Git versioning rules added)
+Nederlands, korte zinnen, geen emoji. Iconen zijn lucide of SVG. Dat geldt voor
+de app, voor commits en voor wat je aan Kevin schrijft.

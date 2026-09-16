@@ -256,5 +256,5 @@ for (const snapshot of plan.snapshots) {
 await batch.commit();
 console.log(`Geschreven: ${plan.pakketten.length} pakketten, ${plan.blokken.length} lesblokken, ${plan.snapshots.length} publieke snapshots.`);
 console.log('');
-console.log('Klaar. Toewijzen aan de klassen doet scripts/zet-binask-klaar-eoa.mjs (Binask).');
+console.log('Klaar. Toewijzen aan de klassen: node scripts/zet-klas-lesstof-klaar.mjs --vak <binask|dv> --apply');
 process.exit(0);
