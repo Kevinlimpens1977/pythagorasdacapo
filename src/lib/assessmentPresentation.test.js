@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  startMetIngeklapteInleiding,
   buildStepStatuses,
   canJumpTo,
   extractIntroImage,
@@ -83,4 +84,20 @@ test('een lege inzending wordt herkend per vraagtype', () => {
   const invul = { type: 'invullen', answer: { gaps: [{ id: 'g1' }, { id: 'g2' }] } };
   assert.equal(isAssessmentAnswerEmpty(invul, { g1: 'CPU', g2: '' }), true);
   assert.equal(isAssessmentAnswerEmpty(invul, { g1: 'CPU', g2: 'RAM' }), false);
+});
+
+test('de inleiding kan per lesblok meteen ingeklapt beginnen', () => {
+  const uit = { type: 'toets', content: { presentatie: { mode: 'een-voor-een' } } };
+  const aan = { type: 'toets', content: { presentatie: { mode: 'een-voor-een', inleidingIngeklapt: true } } };
+
+  assert.equal(startMetIngeklapteInleiding(uit), false);
+  assert.equal(startMetIngeklapteInleiding(aan), true);
+
+  // Alleen een uitdrukkelijke true telt; een waarde die er op lijkt niet.
+  assert.equal(startMetIngeklapteInleiding({ type: 'quiz', content: { presentatie: { inleidingIngeklapt: 'ja' } } }), false);
+
+  // Gewone lesblokken hebben geen inleiding om in te klappen.
+  assert.equal(startMetIngeklapteInleiding({ type: 'theory', content: { presentatie: { inleidingIngeklapt: true } } }), false);
+  assert.equal(startMetIngeklapteInleiding(null), false);
+  assert.equal(startMetIngeklapteInleiding(), false);
 });

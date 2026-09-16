@@ -198,7 +198,10 @@ const sanitizeContent = (block = {}) => {
       },
       presentatie: {
         mode: content.presentatie?.mode === 'lijst' ? 'lijst' : 'een-voor-een',
-        terugbladeren: content.presentatie?.terugbladeren !== false
+        terugbladeren: content.presentatie?.terugbladeren !== false,
+        // Begint de inleiding meteen ingeklapt? Reist mee, want de leerling
+        // leest deze snapshot en niet het blok uit het CMS.
+        inleidingIngeklapt: content.presentatie?.inleidingIngeklapt === true
       },
       // Nulmeting: alleen het deel (A/B) reist mee naar de leerling, zodat de
       // lesroute na afloop naar het startprofiel kan wijzen. De mapping van

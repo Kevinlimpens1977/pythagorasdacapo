@@ -91,7 +91,8 @@ import {
   isAssessmentAnswerEmpty,
   mayNavigateBack,
   pickStartIndex,
-  resolvePresentationMode
+  resolvePresentationMode,
+  startMetIngeklapteInleiding
 } from '../lib/assessmentPresentation';
 import { shouldCollapseAiTutorOnMouseLeave, shouldExpandAiTutorOnHover } from '../lib/aiTutorPanelState';
 import {
@@ -3505,7 +3506,12 @@ function AssessmentLearningBlock({
   // tot één regel. Zo staat de vraag bovenaan en is Verder zonder scrollen te
   // bereiken. De leerling kan de inleiding altijd weer openklappen.
   const introKanInklappen = presentationMode === 'een-voor-een' && items.length > 0;
-  const introStandaardIngeklapt = introKanInklappen && progressSummary.itemsAnswered > 0 && !progressSummary.completed;
+  // Normaal klapt de inleiding pas in zodra de leerling bezig is. Staat de
+  // instelling op het blok, dan begint hij al bij vraag 1 dicht.
+  const introStandaardIngeklapt = introKanInklappen && (
+    startMetIngeklapteInleiding(block) ||
+    (progressSummary.itemsAnswered > 0 && !progressSummary.completed)
+  );
   const [introKeuze, setIntroKeuze] = useState(null);
   const introIngeklapt = introKanInklappen && (introKeuze === null ? introStandaardIngeklapt : !introKeuze);
   const panelKleur = isToets ? 'border-blue-100 bg-blue-50 text-blue-950' : 'border-emerald-100 bg-emerald-50 text-emerald-950';

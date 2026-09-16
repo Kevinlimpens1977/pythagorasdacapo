@@ -113,3 +113,18 @@ export const isAssessmentAnswerEmpty = (item = {}, value) => {
 
   return !String(value).trim();
 };
+
+/**
+ * Begint de inleiding boven de vragen meteen ingeklapt?
+ *
+ * Standaard klapt hij pas in zodra de leerling aan de vragen bezig is. Voor een
+ * klas die snel afgeleid raakt is dat te laat: die ziet bij vraag 1 eerst een
+ * scherm vol tekst. Met `content.presentatie.inleidingIngeklapt` staat hij
+ * vanaf de eerste vraag dicht, met de knop "Inleiding tonen" ernaast. Het is een
+ * instelling op het lesblok en niet op de klas, zodat er nergens een uitzondering
+ * voor één klas in de code hoeft te staan.
+ */
+export const startMetIngeklapteInleiding = (block = {}) => {
+  if (!isAssessment(block)) return false;
+  return block?.content?.presentatie?.inleidingIngeklapt === true;
+};
