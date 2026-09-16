@@ -1,15 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ExternalLink, Loader2, Maximize2, Minimize2, X } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
-import { buildPdfPageUrl, createPdfJsDataLoadOptions, getPdfLoadErrorMessage, withTimeout } from '../../lib/pdfPresenterUtils';
+import {
+  PDF_LOAD_TIMEOUT_MS,
+  buildPdfPageUrl,
+  createPdfJsDataLoadOptions,
+  getPdfLoadErrorMessage,
+  withTimeout
+} from '../../lib/pdfPresenterUtils';
 import { getSlidedeckPackage, getSlidedeckPdfBytes } from '../../services/slidedeckService';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
 export default function PdfSlideDeckPresenter({ slide, onClose }) {
+  // Het aantal dia's staat bij het lesblok. Daarmee klopt de teller ook als de
+  // PDF zelf niet ingelezen kan worden en de ingebouwde PDF-weergave het
+  // overneemt; die vertelt ons namelijk niets over het aantal pagina's.
+  const bekendAantalDias = Math.max(0, Math.round(Number(slide?.pageCount || slide?.meta?.pageCount || 0))) || 0;
+
   const [pdf, setPdf] = useState(null);
   const [pageNum, setPageNum] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(bekendAantalDias);
   const [loading, setLoading] = useState(true);
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +43,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
     setLoading(true);
     setError('');
     setPageNum(1);
-    setTotalPages(0);
+    setTotalPages(bekendAantalDias);
     setPdf(null);
     setFallbackMode(false);
     setResolvedPdfUrl(pdfUrl || '');
@@ -57,13 +68,20 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
           const deckPackage = await getSlidedeckPackage(packageId);
           storagePath ||= deckPackage?.generatedDeckPdf?.storagePath || '';
           downloadURL ||= deckPackage?.generatedDeckPdf?.downloadURL || '';
+          // Kent het lesblok het aantal dia's niet, dan weet het pakket het vaak wel.
+          const pakketPaginas = Math.round(Number(deckPackage?.generatedDeckPdf?.pageCount || 0));
+          if (!bekendAantalDias && pakketPaginas > 0 && !cancelled) setTotalPages(pakketPaginas);
         }
         fallbackUrl = downloadURL || pdfUrl || '';
         setResolvedPdfUrl(downloadURL || pdfUrl || '');
 
+        // Eén grens voor beide stappen: PDF_LOAD_TIMEOUT_MS. Hier stond 12000,
+        // precies de waarde die bij die constante als te krap is afgeschreven.
+        // Een deck van een paar MB haalde dat op schoolwifi niet, viel terug op
+        // de iframe en toonde dan "1 / ?" in plaats van losse dia's.
         const bytes = await withTimeout(
           getSlidedeckPdfBytes({ storagePath, downloadURL }),
-          12000,
+          PDF_LOAD_TIMEOUT_MS,
           'PDF ophalen'
         );
         if (cancelled) return;
@@ -72,7 +90,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
 
         const pdfDocument = await withTimeout(
           loadingTask.promise,
-          12000,
+          PDF_LOAD_TIMEOUT_MS,
           'PDF voorbereiden'
         );
         if (cancelled) return;
@@ -98,7 +116,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
       cancelled = true;
       loadingTask?.destroy?.();
     };
-  }, [directStoragePath, packageId, pdfUrl]);
+  }, [bekendAantalDias, directStoragePath, packageId, pdfUrl]);
 
   useEffect(() => {
     if (!pdf || !canvasRef.current || !stageRef.current) return;
@@ -325,7 +343,7 @@ export default function PdfSlideDeckPresenter({ slide, onClose }) {
 
           <button
             onClick={goNext}
-            disabled={(!fallbackMode && pageNum >= totalPages) || loading || Boolean(error)}
+            disabled={(totalPages ? pageNum >= totalPages : !fallbackMode) || loading || Boolean(error)}
             className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-950/30 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-30"
           >
             Volgende

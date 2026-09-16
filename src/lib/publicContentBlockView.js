@@ -218,7 +218,9 @@ const sanitizeContent = (block = {}) => {
       generatedDeckUrl: content.generatedDeckUrl || '',
       generatedDeckStoragePath: content.generatedDeckStoragePath || '',
       sourcePdfUrl: content.sourcePdfUrl || '',
-      sourcePdfStoragePath: content.sourcePdfStoragePath || ''
+      sourcePdfStoragePath: content.sourcePdfStoragePath || '',
+      // Aantal dia's: nodig voor de teller in de presentatieweergave.
+      deckPageCount: Math.max(0, Math.round(Number(content.deckPageCount || 0))) || 0
     };
   }
 

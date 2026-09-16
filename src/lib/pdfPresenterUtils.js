@@ -18,10 +18,13 @@ export const createPdfJsDataLoadOptions = (data) => ({
   disableStream: true
 });
 
+// view=Fit laat de ingebouwde PDF-viewer de HELE pagina passen. Zonder die
+// aanwijzing kiest de browser "passend in de breedte", en dan valt bij een
+// liggende dia de boven- en onderkant buiten beeld.
 export const buildPdfPageUrl = (url, pageNum) => {
   if (!url) return '';
   const [baseUrl] = String(url).split('#');
-  return `${baseUrl}#page=${Math.max(1, Number(pageNum) || 1)}&toolbar=0&navpanes=0&scrollbar=0`;
+  return `${baseUrl}#page=${Math.max(1, Number(pageNum) || 1)}&view=Fit&toolbar=0&navpanes=0&scrollbar=0`;
 };
 
 export const withTimeout = (promise, timeoutMs = PDF_LOAD_TIMEOUT_MS, label = 'Actie') => {

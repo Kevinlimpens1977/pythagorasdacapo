@@ -10,6 +10,11 @@ const { FieldValue, getFirestore } = requireFromFunctions('firebase-admin/firest
 const PROJECT_ID = 'pythagoras-eoa';
 const apply = process.argv.includes('--apply');
 
+// --hoofdstuk <id>: alleen de lesblokken van dat hoofdstuk verversen (en dan
+// geen vragen). Zonder deze optie doet het script wat het altijd deed: alles.
+const hoofdstukIndex = process.argv.indexOf('--hoofdstuk');
+const alleenHoofdstuk = hoofdstukIndex >= 0 ? process.argv[hoofdstukIndex + 1] || '' : '';
+
 if (getApps().length === 0) {
   initializeApp({
     credential: applicationDefault(),
@@ -75,10 +80,13 @@ const writeSnapshots = async (collectionName, snapshots) => {
 console.log(`Public content snapshot backfill (${apply ? 'APPLY' : 'DRY RUN'})`);
 console.log(`Project: ${PROJECT_ID}`);
 
-const [privateQuestions, privateBlocks] = await Promise.all([
-  readCollection('vraag'),
-  readCollection('contentBlocks')
-]);
+const [privateQuestions, privateBlocks] = alleenHoofdstuk
+  ? [[], (await readCollection('contentBlocks')).filter((block) => block.hoofdstukId === alleenHoofdstuk)]
+  : await Promise.all([
+    readCollection('vraag'),
+    readCollection('contentBlocks')
+  ]);
+if (alleenHoofdstuk) console.log(`Alleen hoofdstuk: ${alleenHoofdstuk}`);
 
 const publicQuestions = privateQuestions.map(buildPublicQuestionSnapshot);
 const publicBlocks = privateBlocks.map(buildPublicContentBlockSnapshot);

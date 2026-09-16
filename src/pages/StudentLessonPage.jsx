@@ -3394,10 +3394,12 @@ function SlidedeckBlock({ block, onOpen }) {
     imageUrl: content.generatedDeckUrl || '',
     pdfStoragePath: content.generatedDeckStoragePath || '',
     slidedeckPackageId: content.slidedeckPackageId || '',
+    pageCount: content.deckPageCount || 0,
     meta: {
       pdfUrl: content.generatedDeckUrl || '',
       pdfStoragePath: content.generatedDeckStoragePath || '',
-      slidedeckPackageId: content.slidedeckPackageId || ''
+      slidedeckPackageId: content.slidedeckPackageId || '',
+      pageCount: content.deckPageCount || 0
     }
   };
 

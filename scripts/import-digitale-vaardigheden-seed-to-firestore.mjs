@@ -7,7 +7,17 @@ const { applicationDefault, getApps, initializeApp } = requireFromFunctions('fir
 const { FieldValue, getFirestore } = requireFromFunctions('firebase-admin/firestore');
 
 const PROJECT_ID = 'pythagoras-eoa';
-const seedPath = path.resolve('docs/seeds/digitale-vaardigheden-vmbo1.seed.json');
+
+// --seed <pad> importeert een ander seedbestand met dezelfde structuur. Nodig
+// voor een hoofdstuk dat uit aangeleverd lesmateriaal is gebouwd: dat hoort
+// NIET in digitale-vaardigheden-vmbo1.seed.json, want die wordt volledig
+// opnieuw gegenereerd uit het jaarplan en zou het hoofdstuk weggooien.
+const seedArgIndex = process.argv.indexOf('--seed');
+const seedPath = path.resolve(
+  seedArgIndex !== -1 && process.argv[seedArgIndex + 1]
+    ? process.argv[seedArgIndex + 1]
+    : 'docs/seeds/digitale-vaardigheden-vmbo1.seed.json'
+);
 const apply = process.argv.includes('--apply');
 
 // --hoofdstuk N importeert alleen dat hoofdstuk (plus vak, leerjaar en niveaus),

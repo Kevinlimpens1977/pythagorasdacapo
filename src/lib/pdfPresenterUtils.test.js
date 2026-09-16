@@ -21,8 +21,13 @@ test('createPdfJsLoadOptions disables range and stream loading for storage URLs'
 test('buildPdfPageUrl replaces existing hash and targets a page in native PDF viewer', () => {
   assert.equal(
     buildPdfPageUrl('https://example.test/deck.pdf#page=7', 3),
-    'https://example.test/deck.pdf#page=3&toolbar=0&navpanes=0&scrollbar=0'
+    'https://example.test/deck.pdf#page=3&view=Fit&toolbar=0&navpanes=0&scrollbar=0'
   );
+});
+
+test('buildPdfPageUrl asks the native viewer to fit the whole page', () => {
+  // Zonder view=Fit snijdt de browser een liggende dia boven en onder af.
+  assert.ok(buildPdfPageUrl('https://example.test/deck.pdf', 1).includes('view=Fit'));
 });
 
 test('createPdfJsDataLoadOptions normalizes ArrayBuffer to Uint8Array', () => {
@@ -37,7 +42,7 @@ test('createPdfJsDataLoadOptions normalizes ArrayBuffer to Uint8Array', () => {
 test('buildPdfPageUrl clamps invalid page numbers to page one', () => {
   assert.equal(
     buildPdfPageUrl('https://example.test/deck.pdf', 0),
-    'https://example.test/deck.pdf#page=1&toolbar=0&navpanes=0&scrollbar=0'
+    'https://example.test/deck.pdf#page=1&view=Fit&toolbar=0&navpanes=0&scrollbar=0'
   );
 });
 

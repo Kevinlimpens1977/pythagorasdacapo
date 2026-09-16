@@ -103,21 +103,35 @@ export const getDeckReadySlidedeckPackages = async () => {
   return packages.filter(canUseSlidedeckPackageInCms);
 };
 
+/**
+ * De bytes van een presentatie-PDF, voor de dia-weergave.
+ *
+ * Eerst de downloadlink met token: dat is een gewoon verzoek dat meteen slaagt
+ * of meteen faalt. De weg via de Storage-SDK doet er een eigen kop bij en
+ * probeert het bij tegenslag herhaaldelijk opnieuw; staat de CORS-instelling
+ * van de bucket niet goed, dan blijft die minuten hangen en kijkt de leerling
+ * al die tijd naar "Presentatie laden...". Daarom is de SDK hier de terugval
+ * en niet de eerste keus: hij blijft nodig voor een deck zonder downloadlink
+ * of met een ingetrokken token.
+ */
 export const getSlidedeckPdfBytes = async ({ storagePath, downloadURL }) => {
+  if (downloadURL) {
+    try {
+      const response = await fetch(downloadURL);
+      if (!response.ok) {
+        throw new Error(`PDF kon niet worden opgehaald (${response.status}).`);
+      }
+      return await response.arrayBuffer();
+    } catch (fetchError) {
+      if (!storagePath) throw fetchError;
+    }
+  }
+
   if (storagePath) {
     return getBytes(ref(storage, storagePath));
   }
 
-  if (!downloadURL) {
-    throw new Error('Geen PDF-bron beschikbaar.');
-  }
-
-  const response = await fetch(downloadURL);
-  if (!response.ok) {
-    throw new Error(`PDF kon niet worden opgehaald (${response.status}).`);
-  }
-
-  return response.arrayBuffer();
+  throw new Error('Geen PDF-bron beschikbaar.');
 };
 
 const uploadBlob = async (storagePath, blob, contentType) => {

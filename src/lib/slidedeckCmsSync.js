@@ -17,7 +17,11 @@ export const buildSlidedeckCmsBlockSyncPatch = ({ block = {}, deckPackage = {} }
     generatedDeckUrl: generatedDeckPdf.downloadURL || '',
     generatedDeckStoragePath: generatedDeckPdf.storagePath || '',
     sourcePdfUrl: sourcePdf.downloadURL || '',
-    sourcePdfStoragePath: sourcePdf.storagePath || ''
+    sourcePdfStoragePath: sourcePdf.storagePath || '',
+    // Het aantal dia's reist mee met het lesblok, zodat de teller ook klopt
+    // wanneer de viewer de PDF zelf niet kan inlezen en op de ingebouwde
+    // PDF-weergave terugvalt. 0 betekent: onbekend.
+    deckPageCount: Math.max(0, Math.round(Number(generatedDeckPdf.pageCount ?? block.content?.deckPageCount ?? 0))) || 0
   };
 
   return {

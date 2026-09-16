@@ -37,18 +37,22 @@ import { createRequire } from 'node:module';
 
 import { normalizeAssessmentItems } from '../src/lib/assessmentBlockUtils.js';
 import { normalizeContentBlockSettings } from '../src/lib/contentBlockUtils.js';
-import { validateContentBlockReadiness } from '../src/lib/contentReadiness.js';
 import { buildPublicContentBlockSnapshot } from '../src/lib/publicContentBlockView.js';
-import { buildSlidedeckCmsBlockSyncPatch } from '../src/lib/slidedeckCmsSync.js';
+// De pakket- en deckblok-bouwstenen zijn gedeeld met de hoofdstuk-2-plaatsing.
 import {
-  buildInitialSlidedeckReviewMetadata,
-  buildSlidedeckDeckUploadMetadata,
-  validateSlidedeckPackageForCms
-} from '../src/lib/slidedeckReview.js';
-import { normalizeSlidedeckReviewChecklist } from '../src/lib/slidedeckReviewChecklist.js';
+  PROJECT_ID,
+  STORAGE_BUCKET,
+  bouwSlidedeckBlok,
+  bouwSlidedeckPakket,
+  cleanForFirestore,
+  controleerPlan,
+  downloadUrl,
+  leesPdf,
+  megabytes,
+  telPdfPaginas,
+  uploadPdf
+} from './lib/slidedeckPlaatsing.mjs';
 
-const PROJECT_ID = 'pythagoras-eoa';
-const STORAGE_BUCKET = 'pythagoras-eoa.firebasestorage.app';
 const SCRIPT_NAAM = 'scripts/plaats-binask-slidedecks.mjs';
 
 const argumenten = process.argv.slice(2);
@@ -105,140 +109,32 @@ const blokId = (paragraaf, type, volgnummer) => `block-binask-eoa-${leerjaarKort
 const storagePad = (deck) => `slidedecks/${pakketId(deck)}/generated-deck.pdf`;
 const mediaStoragePad = (paragraaf, opdracht, volgnummer) =>
   `mediaBlocks/${blokId(paragraaf, 'media', volgnummer)}/${opdracht.bestand.replace(/[^a-zA-Z0-9._-]+/g, '-')}`;
-const downloadUrl = (pad, token) =>
-  `https://firebasestorage.googleapis.com/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(pad)}?alt=media&token=${token}`;
 
-const cleanForFirestore = (value) => {
-  if (Array.isArray(value)) return value.map(cleanForFirestore);
-  if (value && typeof value === 'object' && value.constructor === Object) {
-    return Object.fromEntries(
-      Object.entries(value)
-        .filter(([, child]) => child !== undefined)
-        .map(([key, child]) => [key, cleanForFirestore(child)])
-    );
-  }
-  return value;
-};
-
-const leesBestand = (bestandsnaam) => {
-  const pad = path.join(bronmap, bestandsnaam);
-  if (!fs.existsSync(pad)) {
-    throw new Error(`PDF niet gevonden: ${pad}`);
-  }
-  const buffer = fs.readFileSync(pad);
-  if (buffer.subarray(0, 5).toString('latin1') !== '%PDF-') {
-    throw new Error(`Geen PDF-bestand: ${pad}`);
-  }
-  return { pad, buffer, grootte: buffer.length };
-};
-
-const megabytes = (bytes) => `${(bytes / 1e6).toFixed(1)} MB`;
+const leesBestand = (bestandsnaam) => leesPdf(path.join(bronmap, bestandsnaam));
 
 /* ---------- documenten opbouwen (puur, zonder Firebase) ---------- */
 
-const bouwPakket = (deck, bestand, pdfReferentie, nu) => {
-  const sourceText = `Bestaande docentpresentatie, aangeleverd als PDF: ${deck.bestand}`;
-  const review = buildInitialSlidedeckReviewMetadata({
-    learningGoals: 'Kennismaken met Binask in Helix',
-    sourceText
-  });
-  const upload = buildSlidedeckDeckUploadMetadata({
-    file: { name: deck.bestand, size: bestand.grootte },
-    userId: maker
-  });
-  const goedkeuring = {
-    action: 'review_status_updated',
-    reviewStatus: 'approved',
-    note: 'Bestaande docentpresentatie, geen NotebookLM-output; direct goedgekeurd door het plaatsingsscript.',
-    reviewChecklist: normalizeSlidedeckReviewChecklist({
-      sourceFaithful: true,
-      answersChecked: true,
-      languageLevelChecked: true,
-      privacyChecked: true
-    }),
-    userId: maker,
-    createdAt: nu
-  };
-
-  return {
+// De aangeleverde PDF is zowel bron als deck: er is geen aparte bron-PDF.
+const bouwPakket = (deck, bestand, pdfReferentie, nu) =>
+  bouwSlidedeckPakket({
     id: pakketId(deck),
-    title: deck.titel,
+    deck,
+    bestand,
+    pdfReferentie,
+    nu,
+    maker,
+    scriptNaam: SCRIPT_NAAM,
     learningGoals: 'Kennismaken met Binask in Helix',
-    sourceText,
     linkedContext: {
       vakId: vak.id,
       vakTitle: vak.name,
-      leerjaarId: '',
-      leerjaarTitle: '',
-      niveauId: '',
       niveauTitle: 'Leerroute 3 (leerjaar 1 en 2)',
-      hoofdstukId: '',
-      hoofdstukTitle: '',
-      paragraafId: '',
-      paragraafTitle: 'Ga van start... (1.1)',
-      contentBlockId: ''
-    },
-    promptTemplateId: null,
-    promptTemplateName: '',
-    promptSnapshot: '',
-    // De aangeleverde PDF is zowel bron als deck: er is geen aparte bron-PDF.
-    sourcePdf: { ...pdfReferentie },
-    sourceAssets: [],
-    generatedDeckPdf: {
-      fileName: deck.bestand,
-      size: bestand.grootte,
-      ...pdfReferentie
-    },
-    status: 'deckUploaded',
-    ...review,
-    reviewStatus: 'approved',
-    reviewChecklist: goedkeuring.reviewChecklist,
-    teacherDecisionNote: '',
-    generationManifest: {
-      ...review.generationManifest,
-      ...upload.generationManifest,
-      generatedAt: nu
-    },
-    teacherDecisionLog: [
-      { ...upload.teacherDecisionLog[0], createdAt: nu },
-      goedkeuring
-    ],
-    createdBy: maker,
-    deckUploadedBy: maker,
-    plaatsingMeta: { script: SCRIPT_NAAM, geplaatstOp: nu }
-  };
-};
+      paragraafTitle: 'Ga van start... (1.1)'
+    }
+  });
 
-const bouwBlok = (paragraaf, deck, volgnummer, pakket) => {
-  const basis = {
-    id: blokId(paragraaf, 'slidedeck', volgnummer),
-    vakId: paragraaf.vakId,
-    leerjaarId: paragraaf.leerjaarId,
-    niveauId: paragraaf.niveauId,
-    hoofdstukId: paragraaf.hoofdstukId,
-    paragraafId: paragraaf.id,
-    type: 'slidedeck',
-    order: volgnummer,
-    title: deck.titel,
-    status: 'published',
-    content: {
-      html: '',
-      slidedeckPackageId: pakket.id,
-      deckTitle: deck.titel,
-      generatedDeckUrl: '',
-      generatedDeckStoragePath: '',
-      sourcePdfUrl: '',
-      sourcePdfStoragePath: ''
-    },
-    settings: normalizeContentBlockSettings({}, 'slidedeck'),
-    linkedVraagId: null,
-    createdBy: maker,
-    isArchived: false
-  };
-  // Dezelfde patch die het beheerscherm toepast na een deck-upload.
-  const patch = buildSlidedeckCmsBlockSyncPatch({ block: basis, deckPackage: pakket });
-  return { ...basis, ...patch };
-};
+const bouwBlok = (paragraaf, deck, volgnummer, pakket) =>
+  bouwSlidedeckBlok({ id: blokId(paragraaf, 'slidedeck', volgnummer), paragraaf, deck, volgnummer, pakket, maker });
 
 // Een PDF als mediablok, zoals het beheerscherm hem na een upload opslaat
 // (zie buildMediaFromUpload in src/lib/mediaUtils.js).
@@ -370,26 +266,6 @@ const bouwPlan = (pdfReferenties, nu) => {
   return { pakketten, blokken, snapshots, uploads };
 };
 
-const controleerPlan = ({ pakketten, blokken }) => {
-  const fouten = [];
-  pakketten.forEach((pakket) => {
-    const check = validateSlidedeckPackageForCms(pakket);
-    if (!check.canUseInCms) {
-      fouten.push(`${pakket.id}: ${check.errors.map((issue) => issue.message).join(' ')}`);
-    }
-  });
-  blokken.forEach(({ blok }) => {
-    const readiness = validateContentBlockReadiness(blok);
-    if (readiness.errors.length > 0) {
-      fouten.push(`${blok.id}: ${readiness.errors.map((issue) => issue.message).join(' ')}`);
-    }
-    if (blok.status !== 'published') {
-      fouten.push(`${blok.id}: status is "${blok.status}", verwacht "published".`);
-    }
-  });
-  return fouten;
-};
-
 /* ---------- hoofdprogramma ---------- */
 
 console.log(`Binask slidedecks plaatsen (${toonPlan ? 'TOON PLAN' : apply ? 'APPLY' : 'DRY RUN'})`);
@@ -398,10 +274,11 @@ console.log(`Bronmap: ${bronmap}`);
 console.log('');
 
 console.log(`Leerjaren: ${PARAGRAFEN.map(leerjaarKort).join(', ')}`);
-DECKS.forEach((deck) => {
+for (const deck of DECKS) {
   deck.bestandInfo = leesBestand(deck.bestand);
-  console.log(`- deck ${deck.titel}: ${deck.bestand} (${megabytes(deck.bestandInfo.grootte)}) -> ${storagePad(deck)}`);
-});
+  deck.bestandInfo.paginas = await telPdfPaginas(deck.bestandInfo.buffer);
+  console.log(`- deck ${deck.titel}: ${deck.bestand} (${megabytes(deck.bestandInfo.grootte)}, ${deck.bestandInfo.paginas} dia's) -> ${storagePad(deck)}`);
+}
 LEESOPDRACHTEN.forEach((opdracht) => {
   opdracht.bestandInfo = leesBestand(opdracht.bestand);
   const actief = PARAGRAFEN.some((paragraaf) => leerjaarKort(paragraaf) === opdracht.leerjaar);
@@ -497,14 +374,7 @@ if (!apply) {
 console.log('');
 for (const upload of plan.uploads) {
   process.stdout.write(`Uploaden ${upload.bestand} (${megabytes(upload.bestandInfo.grootte)}) -> ${upload.storagePath}... `);
-  await bucket.file(upload.storagePath).save(upload.bestandInfo.buffer, {
-    resumable: true,
-    contentType: 'application/pdf',
-    metadata: {
-      cacheControl: 'public, max-age=86400',
-      metadata: { firebaseStorageDownloadTokens: upload.token }
-    }
-  });
+  await uploadPdf(bucket, { storagePath: upload.storagePath, buffer: upload.bestandInfo.buffer, token: upload.token });
   console.log('klaar');
 }
 

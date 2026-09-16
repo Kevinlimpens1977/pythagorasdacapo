@@ -42,9 +42,12 @@ const { getFirestore, FieldValue } = requireFromFunctions('firebase-admin/firest
 const PROJECT_ID = 'pythagoras-eoa';
 const SCRIPT_NAAM = 'scripts/zet-binask-klaar-eoa.mjs';
 const NIVEAU_LESSTOF = 'niveau-binask-eoa-1-lr3';
+// eigenNiveau: de route waar de klas oorspronkelijk onder viel. Daarmee blijft
+// "Ga van start..." van ER3L2A ook staan nu die klas geen route meer heeft;
+// anders zou een tweede run hem als overbodig weghalen, mét de voortgang erin.
 const KLASSEN = [
-  { id: 'klas_1787768387441_7', naam: 'ER3L1A', routeNa: NIVEAU_LESSTOF },
-  { id: 'klas_1787768387528_8', naam: 'ER3L2A', routeNa: '' }
+  { id: 'klas_1787768387441_7', naam: 'ER3L1A', routeNa: NIVEAU_LESSTOF, eigenNiveau: NIVEAU_LESSTOF },
+  { id: 'klas_1787768387528_8', naam: 'ER3L2A', routeNa: '', eigenNiveau: 'niveau-binask-eoa-2-lr3' }
 ];
 
 const apply = process.argv.slice(2).includes('--apply');
@@ -98,13 +101,14 @@ for (const klas of KLASSEN) {
   const huidig = Array.isArray(data.enabledParagrafen) ? data.enabledParagrafen : [];
 
   // Paragrafen van de eigen route die al toegewezen waren blijven staan.
+  const eigenNiveau = klas.eigenNiveau || huidigeRoute;
   const eigen = [];
   const overbodig = [];
   for (const paragraafId of huidig) {
     if (lesstof.some((p) => p.id === paragraafId)) continue;
     const doc = await db.collection('paragraaf').doc(paragraafId).get();
     const niveauId = doc.exists ? getKlasNiveauId(doc.data()) : '';
-    if (doc.exists && huidigeRoute && niveauId === huidigeRoute) {
+    if (doc.exists && eigenNiveau && niveauId === eigenNiveau) {
       eigen.push({ id: paragraafId, title: doc.get('title') || doc.get('titel') || '' });
     } else {
       overbodig.push({

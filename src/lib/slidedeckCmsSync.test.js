@@ -47,7 +47,8 @@ test('buildSlidedeckCmsBlockSyncPatch links uploaded deck data and protects publ
     generatedDeckUrl: 'https://example.test/deck.pdf',
     generatedDeckStoragePath: 'slidedecks/pkg-1/generated-deck.pdf',
     sourcePdfUrl: 'https://example.test/source.pdf',
-    sourcePdfStoragePath: 'slidedecks/pkg-1/source.pdf'
+    sourcePdfStoragePath: 'slidedecks/pkg-1/source.pdf',
+    deckPageCount: 0
   });
   assert.deepEqual(patch.sourceReview, {
     reviewStatus: 'needs_review',
@@ -85,4 +86,19 @@ test('buildSlidedeckCmsBlockSyncPatch ignores non-slidedeck blocks', () => {
     block: { id: 'block-2', type: 'theory', status: 'published' },
     deckPackage
   }), null);
+});
+
+test('buildSlidedeckCmsBlockSyncPatch neemt het aantal dia\u0027s mee uit het pakket', () => {
+  // Zonder dit getal toont de presentatieweergave "3 / ?" zodra zij de PDF
+  // niet zelf kan inlezen en op de ingebouwde PDF-weergave terugvalt.
+  const patch = buildSlidedeckCmsBlockSyncPatch({
+    block: { id: 'block-1', type: 'slidedeck', status: 'draft', content: {} },
+    deckPackage: {
+      ...deckPackage,
+      reviewStatus: 'approved',
+      generatedDeckPdf: { ...deckPackage.generatedDeckPdf, pageCount: 14 }
+    }
+  });
+
+  assert.equal(patch.content.deckPageCount, 14);
 });
