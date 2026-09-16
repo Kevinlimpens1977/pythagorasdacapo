@@ -30,7 +30,6 @@ helft. Buiten de repo leven:
 | Alle lesstof, klassen, toewijzingen, voortgang | Firestore `pythagoras-eoa` | `node scripts/handoff-stand.mjs` |
 | Presentatie-PDF's | Firebase Storage `slidedecks/...` | idem |
 | Wie de PDF's mag ophalen | CORS-instelling van de bucket | idem, kopje Storage |
-| De skill `helix-hoofdstuk-bouwen` | `~/.claude/skills/` (profiel, niet de repo) | idem, kopje Buiten de repo |
 | De draaiende site | Vercel | idem, kopje Live site |
 
 Gevolg: een sessie kan iets grondig veranderd hebben zonder één regel diff. Zet
@@ -61,8 +60,13 @@ voordat je in de andere begint.
 ## 4. Lesmateriaal naar de bibliotheek: één weg
 
 Een hoofdstuk van Kevin (PDF of tekst, plus losse presentaties) wordt lesstof
-via de skill `/helix-hoofdstuk-bouwen`, of met de hand via dezelfde scripts. De
-volgorde ligt vast:
+via de skill in `.claude/skills/helix-hoofdstuk-bouwen/`. In Claude Code heet
+die `/helix-hoofdstuk-bouwen`; in Codex lees je `SKILL.md` uit die map, wat op
+hetzelfde neerkomt, want het is tekst met instructies. De vier naslagbestanden
+in `references/` gaan over het bronformaat, de vakken met hun id's en klassen,
+de vraagregels en de vragenronde.
+
+Werk je zonder de skill, dan is dit de volgorde, en die ligt vast:
 
 1. bron-JSON schrijven, formaat in `docs/LESBLOKKEN-AANLEVERFORMAAT.md`
 2. `node scripts/bouw-hoofdstuk-seed.mjs --bron <bestand>`

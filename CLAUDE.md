@@ -31,8 +31,11 @@ node scripts/handoff-stand.mjs
 ## Lesmateriaal van Kevin
 
 Levert Kevin een hoofdstuk aan (PDF, tekst, presentaties), gebruik dan de skill
-`/helix-hoofdstuk-bouwen`. Die kent de vaste volgorde en de valkuilen. De weg
-staat ook in `docs/HANDOFF.md`, paragraaf 4, voor het geval de skill er niet is.
+`/helix-hoofdstuk-bouwen`. Die staat in de repo, in
+`.claude/skills/helix-hoofdstuk-bouwen/`, en kent de vaste volgorde en de
+valkuilen. Verschijnt hij niet in je lijst (een sessie leest de skills bij het
+starten), lees dan gewoon `SKILL.md` uit die map; het is tekst met instructies.
+De weg staat ook in `docs/HANDOFF.md`, paragraaf 4.
 
 ## Na een wijziging
 

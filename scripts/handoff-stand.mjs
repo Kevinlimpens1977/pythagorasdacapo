@@ -88,8 +88,14 @@ try {
 /* ---------- buiten de repo ---------- */
 
 kop('Buiten de repo');
-const skillMap = path.join(os.homedir(), '.claude', 'skills', 'helix-hoofdstuk-bouwen');
-console.log(`skill helix-hoofdstuk-bouwen: ${fs.existsSync(skillMap) ? `aanwezig (${skillMap})` : 'NIET aanwezig; zie docs/HANDOFF.md'}`);
+// De skill hoort in de repo te staan, zodat Codex hem ook heeft. Staat er nog
+// een kopie in het profiel, dan lopen er twee versies uit elkaar.
+const skillInRepo = fs.existsSync(path.resolve('.claude/skills/helix-hoofdstuk-bouwen/SKILL.md'));
+const skillInProfiel = fs.existsSync(path.join(os.homedir(), '.claude', 'skills', 'helix-hoofdstuk-bouwen', 'SKILL.md'));
+console.log(`skill helix-hoofdstuk-bouwen: ${skillInRepo ? 'in de repo (.claude/skills/)' : 'ONTBREEKT in de repo; zie docs/HANDOFF.md'}`);
+if (skillInProfiel) {
+  console.log('                              LET OP: er staat ook een kopie in ~/.claude/skills/; die kan uit de pas gaan lopen');
+}
 console.log('Firestore, Storage en de bucketinstelling staan per definitie buiten git. Zie hieronder.');
 
 if (kort) {

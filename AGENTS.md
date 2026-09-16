@@ -14,6 +14,20 @@ git pull
 node scripts/handoff-stand.mjs
 ```
 
+## Lesmateriaal van Kevin
+
+Levert Kevin een hoofdstuk aan (PDF, tekst, presentaties), lees dan eerst
+`.claude/skills/helix-hoofdstuk-bouwen/SKILL.md` en volg die stappen. Het is
+gewoon tekst met instructies, dus lezen werkt net zo goed als aanroepen:
+
+```bash
+cat .claude/skills/helix-hoofdstuk-bouwen/SKILL.md
+```
+
+Daarnaast liggen er vier naslagbestanden in `references/` van diezelfde map: het
+formaat van het bronbestand, per vak de id's en klassen, de vraagregels, en de
+vragenronde waarmee je de les met Kevin scherper maakt.
+
 ## Wat je moet weten voordat je iets doet
 
 - **Het meeste werk staat niet in git.** Lesstof, klassen, toewijzingen en
