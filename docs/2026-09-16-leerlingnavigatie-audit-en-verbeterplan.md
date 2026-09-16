@@ -1,5 +1,9 @@
 # Leerlingomgeving: audit van navigatie en overzicht, met verbeterplan
 
+> **Stand 16 september 2026, later op de dag:** fase 1 en fase 2 zijn gebouwd en
+> staan live (commit `006aa01`), samen met het snelheidspunt uit fase 3. Wat er
+> nog open staat, staat onderaan onder "Wat er na deze ronde nog ligt".
+
 16 september 2026. Gebaseerd op de live omgeving (dvdacapo.vercel.app, ingelogd
 als leerling in ER3L2A), de code van de leerlingroute en de werkelijke
 toewijzingen in Firestore.
@@ -258,3 +262,25 @@ structuur en woorden, niet in stijl.
 
 Mijn advies: fase 1 nu, fase 2 zodra het tweede hoofdstuk voor de brugklassen
 klaarstaat, fase 3 daarna.
+
+## Wat er na deze ronde nog ligt
+
+Gebouwd en live: de hoofdstukpagina, "Verder waar je was", de uitgang met
+kruimelpad en buren, de knop naar de volgende paragraaf, de dubbele quizrij, de
+drempel voor "Toon alles", het woord "onderdeel" en de naam bij Spellen. Ook het
+zwaarste punt uit fase 3 zit erin: de voortgang komt nu in één query binnen en
+tijdens het laden staan de kaarten alvast op hun plek.
+
+Nog niet gedaan, in volgorde van nut:
+
+1. **Bevinding 9, hoofdstuknummering.** "h1 Stoffen" heeft zijn nummer in de
+   titel staan in plaats van in het nummerveld, waardoor de kaart "HOOFDSTUK"
+   zonder cijfer toont. Dat is een opruimactie in de lesbibliotheek, geen code.
+2. **Bevinding 12, het tweede overzicht op het profiel.** De voortgang per
+   paragraaf staat daar nog naast die op de hoofdstukpagina. Eén regel per
+   hoofdstuk is genoeg.
+3. **Tokens in de bovenbalk** heeft nog geen woord naast het muntje; alleen
+   Spellen heeft die behandeling gekregen.
+4. **Onthouden welk hoofdstuk het laatst open stond**, zodat de terugknop uit
+   een les daar landt in plaats van op het hoofdstuk van de paragraaf.
+5. **Toetsenbordbediening** van de stappenbalk.
