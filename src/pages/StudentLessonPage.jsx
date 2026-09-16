@@ -119,6 +119,8 @@ import { haalVertaling } from '../services/vertaalService';
 import { antwoordInstructie, getLesTaal, isVertaalbaarBlok, voegVertalingSamen } from '../lib/lesTaal';
 import { spelSlotStatus } from '../lib/spelSlot';
 import { nulmetingDeelLetter, nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
+import { buildParagraphNavigation } from '../lib/chapterOutline';
+import { useStudentOutline } from '../hooks/useStudentOutline';
 import {
   buildExerciseAnswerPayload,
   buildInitialExerciseAnswers,
@@ -246,6 +248,9 @@ export default function StudentLessonPage() {
   const navigate = useNavigate();
   const { currentUser, userData, isAdmin, klasData, klasId: authKlasId, isDevBypass } = useAuth();
   const { setContext: setStudentBugReportContext } = useStudentBugReportContext();
+  // Alleen voor de wegwijzers om de les heen: het kruimelpad, de buren in de
+  // balk en de knop op het afrondscherm. De les zelf wacht hier niet op.
+  const { chapters: outlineChapters } = useStudentOutline();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paragraaf, setParagraaf] = useState(null);
@@ -1120,6 +1125,18 @@ export default function StudentLessonPage() {
   // indruk krijgen dat hij hier iets inhaalt.
   const paragraafIsPlus = isOptionalParagraph(paragraaf || {});
 
+  // De plek van deze paragraaf in zijn hoofdstuk: goed voor het kruimelpad, de
+  // buren in de balk en de knop op het afrondscherm. Komt uit dezelfde bron als
+  // de lesstof- en hoofdstukpagina, dus de volgorde klopt altijd met wat de
+  // leerling daar zag.
+  const paragraafNavigatie = buildParagraphNavigation({
+    outlines: outlineChapters,
+    paragraafId
+  });
+  const terugNaarOverzicht = () => navigate(
+    paragraafNavigatie.chapter ? `/hoofdstuk/${paragraafNavigatie.chapter.id}` : '/'
+  );
+
   const railProps = {
     paragraafTitle: paragraaf?.title || 'Les',
     hoofdstukTitle: hoofdstukLabel,
@@ -1139,7 +1156,13 @@ export default function StudentLessonPage() {
       setShowStepDrawer(false);
       goToStep(step.index);
     },
-    onExit: () => navigate('/')
+    onExit: terugNaarOverzicht,
+    exitLabel: paragraafNavigatie.chapter ? 'Terug naar het hoofdstuk' : 'Terug naar overzicht',
+    chapterId: paragraafNavigatie.chapter?.id || '',
+    onOpenChapter: (id) => navigate(`/hoofdstuk/${id}`),
+    vorigeParagraaf: paragraafNavigatie.vorige,
+    volgendeParagraaf: paragraafNavigatie.volgende,
+    onOpenParagraaf: (id) => navigate(`/chapter/${id}`)
   };
 
   // Het blok dat op het scherm komt: Nederlands, of - als de leerling de
@@ -1195,7 +1218,7 @@ export default function StudentLessonPage() {
               <p className="truncate text-[11px] font-bold text-[var(--helix-muted)]">
                 {showParagraphEnd
                   ? paragraaf?.title || 'Les'
-                  : `Stap ${currentIndex + 1} van ${blocks.length} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
+                  : `Onderdeel ${currentIndex + 1} van ${blocks.length} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
               </p>
             </div>
 
@@ -1307,8 +1330,17 @@ export default function StudentLessonPage() {
                           });
                         }
                       }
-                      navigate('/');
+                      // Na het afronden door naar wat er nog ligt in dit
+                      // hoofdstuk. Alleen als er niets meer is, terug naar het
+                      // overzicht: anders moest een leerling na elke paragraaf
+                      // opnieuw omhoog klimmen om verder te kunnen.
+                      if (paragraafNavigatie.volgendeOpen) {
+                        navigate(`/chapter/${paragraafNavigatie.volgendeOpen.id}`);
+                        return;
+                      }
+                      terugNaarOverzicht();
                     }}
+                    volgendeParagraaf={paragraafNavigatie.volgendeOpen}
                   />
                 </div>
               ) : (
@@ -1389,7 +1421,7 @@ export default function StudentLessonPage() {
                     ? studyNotice
                     : readConfirmBarOpen
                       ? 'Ga verder met de knop hierboven'
-                      : `Stap ${currentIndex + 1} van ${blocks.length}`}
+                      : `Onderdeel ${currentIndex + 1} van ${blocks.length}`}
                 </p>
 
                 {/* De knop staat nooit uit: vooruit werkt hier hetzelfde als
@@ -1664,7 +1696,8 @@ function ParagraphEndActivity({
   activity,
   paragraaf,
   onBack,
-  onFinish
+  onFinish,
+  volgendeParagraaf = null
 }) {
   const [answer, setAnswer] = useState('');
   const [saving, setSaving] = useState(false);
@@ -1672,6 +1705,11 @@ function ParagraphEndActivity({
   const isChallenge = activity.assignmentKind === 'challenge';
   const isRemediation = activity.assignmentKind === 'remediation';
   const isTeacherReviewPending = plan.kind === 'teacher_review_pending';
+  // Is er in dit hoofdstuk nog werk, dan wijst de knop daarheen in plaats van
+  // terug naar het overzicht. De lesroute regelt waar hij werkelijk landt.
+  const volgendeParagraafLabel = volgendeParagraaf
+    ? `Verder naar ${volgendeParagraaf.number ? `${volgendeParagraaf.number} ` : ''}${volgendeParagraaf.title}`
+    : 'Naar overzicht';
 
   const handleSubmit = async () => {
     if (!isRemediation && !isChallenge) {
@@ -1738,7 +1776,7 @@ function ParagraphEndActivity({
               Terug naar les
             </button>
             <button type="button" className="btn-primary px-5 py-3 text-sm" onClick={() => onFinish?.(null)}>
-              Naar overzicht
+              {volgendeParagraafLabel}
             </button>
           </div>
         </div>
@@ -1755,7 +1793,7 @@ function ParagraphEndActivity({
             Je voortgang is opgeslagen.
           </p>
           <button type="button" className="btn-primary mt-6 px-5 py-3 text-sm" onClick={() => onFinish?.(null)}>
-            Naar overzicht
+            {volgendeParagraafLabel}
           </button>
         </div>
       </article>

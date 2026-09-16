@@ -184,7 +184,7 @@ export default function AppShell() {
           {!isAdmin && (
             <button
               onClick={() => navigate('/spellen')}
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition ${
+              className={`flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border px-3 text-sm font-black transition ${
                 location.pathname === '/spellen'
                   ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
                   : 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
@@ -192,7 +192,10 @@ export default function AppShell() {
               title="Spellen"
             >
               <Gamepad2 size={18} />
-              <span className="sr-only">Spellen</span>
+              {/* Alleen een gamepad zonder woord liet leerlingen raden waar de
+                  knop heen ging. Op een smal scherm blijft het icoon alleen. */}
+              <span className="hidden sm:inline">Spellen</span>
+              <span className="sr-only sm:hidden">Spellen</span>
             </button>
           )}
 

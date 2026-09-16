@@ -4,6 +4,7 @@ import LoginScreen from './components/auth/LoginScreen';
 import AdminLoginScreen from './components/auth/AdminLoginScreen';
 import AppShell from './components/layout/AppShell';
 import TableOfContents from './components/layout/TableOfContents';
+import StudentChapterPage from './pages/StudentChapterPage';
 import StudentLessonPage from './pages/StudentLessonPage';
 import ClassOverview from './components/dashboard/ClassOverview';
 import AdminCmsPage from './pages/AdminCmsPage';
@@ -46,6 +47,7 @@ function AppRoutes() {
         <Route path="profiel" element={<StudentProfilePage />} />
         <Route path="tokenshop" element={<StudentTokenShopPage />} />
         <Route path="spellen" element={<StudentSpellenPage />} />
+        <Route path="hoofdstuk/:chapterId" element={<StudentChapterPage />} />
         <Route path="chapter/:chapterId" element={<StudentLessonPage />} />
         <Route path="admin" element={
           <PrivateRoute requireAdmin={true}>

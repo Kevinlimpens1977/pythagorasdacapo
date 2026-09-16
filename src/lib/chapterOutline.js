@@ -7,7 +7,10 @@ import { getCompletedBlockIds } from './studentLessonProgress.js';
 // bouwt die ruggengraat uit de echte lesstof en laat rijen zonder inhoud weg,
 // zodat de pagina nooit lege kopjes toont.
 
-export const PARAGRAPH_PREVIEW_COUNT = 3;
+// Tot en met zes paragrafen staat alles gewoon in beeld. Bij drie verdween er
+// vaak maar één paragraaf achter de knop, en dat was uitgerekend de laatste
+// paragraaf van een hoofdstuk: precies waar de leerling naartoe werkt.
+export const PARAGRAPH_PREVIEW_COUNT = 6;
 
 export const CHAPTER_SECTION_LABELS = {
   introductie: 'Introductie',
@@ -272,4 +275,77 @@ export const buildLessonPath = (paragraafId = '', onderdeelId = '') => {
   return onderdeel
     ? `/chapter/${paragraaf}?stap=${encodeURIComponent(onderdeel)}`
     : `/chapter/${paragraaf}`;
+};
+
+/** De rijen van een hoofdstuk in leesvolgorde: introductie, voorkennis, dan de genummerde reeks. */
+const rijenVanHoofdstuk = (outline = null) => [
+  ...(outline?.introRow && outline.introRow.kind !== 'chapterIntro' ? [outline.introRow] : []),
+  ...(Array.isArray(outline?.voorkennisRows) ? outline.voorkennisRows : []),
+  ...(Array.isArray(outline?.paragraphRows) ? outline.paragraphRows : [])
+];
+
+/**
+ * Waar moet de leerling verder?
+ *
+ * De eerste paragraaf met een openstaand onderdeel, in de volgorde waarin de
+ * hoofdstukken op het scherm staan. Plusstof telt niet mee: dat is een aanbod,
+ * geen achterstand, en het hoort een leerling dus nooit als volgende stap
+ * voorgehouden te worden. Is alles af, dan komt er niets terug en zegt de
+ * pagina dat hij bij is.
+ */
+export const buildResumePointer = (outlines = []) => {
+  for (const outline of Array.isArray(outlines) ? outlines : []) {
+    for (const row of rijenVanHoofdstuk(outline)) {
+      if (row.optioneel === true) continue;
+      const open = row.onderdelen?.find((onderdeel) => !onderdeel.isDone);
+      if (!open) continue;
+
+      return {
+        chapterId: outline.id,
+        chapterTitle: outline.title,
+        chapterNumber: outline.number ?? null,
+        paragraafId: row.id,
+        paragraafNumber: row.number || '',
+        paragraafTitle: row.title,
+        onderdeelId: open.id,
+        onderdeelTitle: open.title,
+        onderdeelType: open.type,
+        onderdeelTypeLabel: open.typeLabel,
+        isEersteStap: row.progress.done === 0,
+        progress: row.progress
+      };
+    }
+  }
+
+  return null;
+};
+
+/**
+ * De buren van een paragraaf binnen zijn eigen hoofdstuk.
+ *
+ * `volgende` is de eerstvolgende in leesvolgorde en vult de balk links.
+ * `volgendeOpen` is de eerstvolgende die nog niet af is en vult de knop op het
+ * afrondscherm: daar wil je een leerling naar werk sturen dat er nog ligt, niet
+ * naar iets dat hij vorige week al deed.
+ */
+export const buildParagraphNavigation = ({ outlines = [], paragraafId = '' } = {}) => {
+  const gezocht = cleanText(paragraafId);
+  const leeg = { chapter: null, vorige: null, volgende: null, volgendeOpen: null };
+  if (!gezocht) return leeg;
+
+  for (const outline of Array.isArray(outlines) ? outlines : []) {
+    const rijen = rijenVanHoofdstuk(outline);
+    const index = rijen.findIndex((row) => row.id === gezocht);
+    if (index === -1) continue;
+
+    const verderop = rijen.slice(index + 1);
+    return {
+      chapter: { id: outline.id, title: outline.title, number: outline.number ?? null },
+      vorige: rijen[index - 1] || null,
+      volgende: verderop[0] || null,
+      volgendeOpen: verderop.find((row) => !row.progress.isCompleted && row.optioneel !== true) || null
+    };
+  }
+
+  return leeg;
 };

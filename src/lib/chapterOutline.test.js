@@ -3,10 +3,13 @@ import assert from 'node:assert/strict';
 import {
   buildChapterOutline,
   buildChapterOutlines,
+  buildParagraphNavigation,
+  buildResumePointer,
   buildLessonPath,
   buildParagraphNumber,
   classifyParagraph,
   getShowAllLabel,
+  PARAGRAPH_PREVIEW_COUNT,
   getStartLabel,
   getVisibleParagraphRows,
   shouldOfferShowAll,
@@ -157,25 +160,36 @@ test('buildChapterOutlines groepeert en sorteert op hoofdstuknummer', () => {
 test('"Toon alles" verschijnt pas als er meer paragrafen zijn dan de voorvertoning', () => {
   const rows = [1, 2, 3, 4, 5].map((value) => ({ id: `row-${value}` }));
 
-  assert.equal(shouldOfferShowAll(rows), true);
-  assert.equal(shouldOfferShowAll(rows.slice(0, 3)), false);
-  assert.equal(getVisibleParagraphRows(rows).length, 3);
-  assert.equal(getVisibleParagraphRows(rows, true).length, 5);
-  assert.equal(getShowAllLabel(rows), 'Toon alles (5)');
-  assert.equal(getShowAllLabel(rows, true), 'Toon minder');
+  // De drempel wordt hier meegegeven, zodat deze test over het gedrag gaat en
+  // niet over de waarde die PARAGRAPH_PREVIEW_COUNT vandaag heeft.
+  assert.equal(shouldOfferShowAll(rows, 3), true);
+  assert.equal(shouldOfferShowAll(rows.slice(0, 3), 3), false);
+  assert.equal(getVisibleParagraphRows(rows, false, 3).length, 3);
+  assert.equal(getVisibleParagraphRows(rows, true, 3).length, 5);
+  assert.equal(getShowAllLabel(rows, false, 3), 'Toon alles (5)');
+  assert.equal(getShowAllLabel(rows, true, 3), 'Toon minder');
+});
+
+test('een hoofdstuk tot en met zes paragrafen laat alles gewoon zien', () => {
+  const zes = [1, 2, 3, 4, 5, 6].map((value) => ({ id: `row-${value}` }));
+
+  assert.equal(PARAGRAPH_PREVIEW_COUNT, 6);
+  assert.equal(shouldOfferShowAll(zes), false);
+  assert.equal(getVisibleParagraphRows(zes).length, 6);
+  assert.equal(shouldOfferShowAll([...zes, { id: 'row-7' }]), true);
 });
 
 test('"Toon alles" zegt erbij dat de plusparagraaf erachter zit', () => {
   const rows = [1, 2, 3, 4, 5].map((value) => ({ id: `row-${value}`, optioneel: value === 5 }));
 
-  // De plusparagraaf staat achteraan en valt dus buiten de eerste drie. Zonder
+  // De plusparagraaf staat achteraan en valt dus buiten de voorvertoning. Zonder
   // deze regel zou een leerling die meer wil nergens zien waar hij moet kijken.
-  assert.equal(getShowAllLabel(rows), 'Toon alles (5) - ook de plusparagraaf');
-  assert.equal(getShowAllLabel(rows, true), 'Toon minder');
+  assert.equal(getShowAllLabel(rows, false, 3), 'Toon alles (5) - ook de plusparagraaf');
+  assert.equal(getShowAllLabel(rows, true, 3), 'Toon minder');
 
   // Zit de plusparagraaf al in de voorvertoning, dan valt er niets te melden.
   const kortHoofdstuk = [{ id: 'row-1' }, { id: 'row-2', optioneel: true }];
-  assert.equal(getShowAllLabel(kortHoofdstuk), 'Toon alles (2)');
+  assert.equal(getShowAllLabel(kortHoofdstuk, false, 3), 'Toon alles (2)');
 });
 
 test('startknop vertelt of je begint of verdergaat', () => {
@@ -256,4 +270,84 @@ test('de oefentoetsrij markeert de quiz van een plusparagraaf als vrijwillig', (
   assert.equal(quizRijen.length, 2);
   assert.equal(quizRijen.find((rij) => rij.id === 'v-b2').optioneel, false);
   assert.equal(quizRijen.find((rij) => rij.id === 'plus-b1').optioneel, true);
+});
+
+// Twee hoofdstukken met genoeg vorm om de wegwijzers op te testen.
+const outlineFixture = () => buildChapterOutlines({
+  hoofdstukken: {
+    'h-1': { id: 'h-1', title: 'Welkom', number: 1 },
+    'h-2': { id: 'h-2', title: 'Stoffen', number: 2 }
+  },
+  paragrafen: [
+    {
+      id: 'p-1-1', hoofdstukId: 'h-1', code: '1.1', title: 'Ga van start', order: 1,
+      contentBlocks: [{ id: 'b1', type: 'theory', title: 'Lezen' }, { id: 'b2', type: 'quiz', title: 'Quiz' }]
+    },
+    {
+      id: 'p-2-1', hoofdstukId: 'h-2', code: '2.1', title: 'Natuurwetenschappen', order: 1,
+      contentBlocks: [{ id: 'b3', type: 'theory', title: 'Theorie' }]
+    },
+    {
+      id: 'p-2-2', hoofdstukId: 'h-2', code: '2.2', title: 'Stofeigenschappen', order: 2,
+      contentBlocks: [{ id: 'b4', type: 'theory', title: 'Meer theorie' }]
+    },
+    {
+      id: 'p-2-3', hoofdstukId: 'h-2', code: '2.3', title: 'Plusstof', order: 3, optioneel: true,
+      contentBlocks: [{ id: 'b5', type: 'theory', title: 'Extra' }]
+    }
+  ],
+  voortgangMap: {
+    'p-1-1': [{ blockId: 'b1', completed: true }]
+  }
+});
+
+test('buildResumePointer wijst naar de eerste openstaande stap', () => {
+  const wijzer = buildResumePointer(outlineFixture());
+
+  assert.equal(wijzer.paragraafId, 'p-1-1');
+  assert.equal(wijzer.onderdeelId, 'b2');
+  assert.equal(wijzer.onderdeelTitle, 'Quiz');
+  assert.equal(wijzer.chapterTitle, 'Welkom');
+  assert.equal(wijzer.isEersteStap, false);
+  assert.equal(wijzer.progress.done, 1);
+});
+
+test('buildResumePointer slaat plusstof over en geeft niets terug als alles af is', () => {
+  const alleenPlusOpen = buildChapterOutlines({
+    hoofdstukken: { 'h-1': { id: 'h-1', title: 'Welkom', number: 1 } },
+    paragrafen: [
+      { id: 'p-a', hoofdstukId: 'h-1', code: '1.1', title: 'Klaar', order: 1, contentBlocks: [{ id: 'b1', type: 'theory' }] },
+      { id: 'p-b', hoofdstukId: 'h-1', code: '1.2', title: 'Plus', order: 2, optioneel: true, contentBlocks: [{ id: 'b2', type: 'theory' }] }
+    ],
+    voortgangMap: { 'p-a': [{ blockId: 'b1', completed: true }] }
+  });
+
+  assert.equal(buildResumePointer(alleenPlusOpen), null);
+  assert.equal(buildResumePointer([]), null);
+  assert.equal(buildResumePointer(), null);
+});
+
+test('buildParagraphNavigation geeft de buren binnen hetzelfde hoofdstuk', () => {
+  const outlines = outlineFixture();
+  const midden = buildParagraphNavigation({ outlines, paragraafId: 'p-2-2' });
+
+  assert.equal(midden.chapter.title, 'Stoffen');
+  assert.equal(midden.vorige.id, 'p-2-1');
+  assert.equal(midden.volgende.id, 'p-2-3');
+  // De plusparagraaf is wel de volgende in de rij, maar nooit het werk dat de
+  // leerling nog moet doen.
+  assert.equal(midden.volgendeOpen, null);
+
+  const eerste = buildParagraphNavigation({ outlines, paragraafId: 'p-2-1' });
+  assert.equal(eerste.vorige, null);
+  assert.equal(eerste.volgende.id, 'p-2-2');
+  assert.equal(eerste.volgendeOpen.id, 'p-2-2');
+
+  // Een hoofdstuk houdt op bij zijn eigen grens.
+  const laatste = buildParagraphNavigation({ outlines, paragraafId: 'p-1-1' });
+  assert.equal(laatste.volgende, null);
+  assert.equal(laatste.chapter.title, 'Welkom');
+
+  assert.deepEqual(buildParagraphNavigation({ outlines, paragraafId: 'bestaat-niet' }).chapter, null);
+  assert.deepEqual(buildParagraphNavigation().chapter, null);
 });
