@@ -1,0 +1,1182 @@
+{
+  "meta": {
+    "titel": "Digitale geletterdheid vmbo klas 1 - curriculum van 22 lessen",
+    "versie": "concept fase 3, 19 september 2026",
+    "status": "ontwerp, nog niet gebouwd",
+    "bron": "SLO (2026). Kerndoelen voortgezet onderwijs, derde druk. Elementcodes zoals 21A-1 zijn een eigen nummering van de vmbo-elementen onder 'het gaat hierbij om'.",
+    "eenheid": "1 les van 45 minuten = 1 HELIX-hoofdstuk met zijn paragrafen. Hoofdstuk 1 (Startklaar en nulmeting) staat al en telt niet mee. Kevin: in de brugklas 20 tot 24 lessen in de DIF-uren (schooljaar 2026-2027).",
+    "rollen": {
+      "I": "introductie: het element wordt voor het eerst echt behandeld",
+      "O": "oefenen: het element wordt opnieuw gebruikt in een opdracht",
+      "H": "herhalen: het element komt inhoudelijk terug in een nieuwe context",
+      "h": "terugblik: een korte herhaalvraag aan het begin van de les",
+      "T": "toepassen: het element wordt ingezet in een nieuwe, grotere opdracht",
+      "E": "evidence: de leerling maakt een product dat laat zien dat hij het kan"
+    }
+  },
+  "kerndoelen": {
+    "21A": {
+      "naam": "Digitale systemen",
+      "nulmeting": "systemen",
+      "elementen": {
+        "21A-1": "beschrijven wat technisch nodig is om digitale systemen te laten werken en in een netwerk te laten samenwerken",
+        "21A-2": "beschrijven hoe internet werkt en welke plaats slimme apparatuur daarin heeft",
+        "21A-3": "geavanceerde mogelijkheden van software gebruiken voor communicatie, samenwerken en het maken en bewerken van verschillende typen bestanden",
+        "21A-4": "digitale systemen herkennen die bedrijven, media en overheid gebruiken om taken uit te voeren of problemen op te lossen",
+        "21A-5": "nieuwe technologische ontwikkelingen bijhouden, met hun mogelijkheden en beperkingen"
+      }
+    },
+    "21B": {
+      "naam": "Digitale media en informatie",
+      "nulmeting": "informatie",
+      "elementen": {
+        "21B-1": "geschikte zoekhulpmiddelen, zoekopdrachten en zoekstrategieën combineren",
+        "21B-2": "aangeboden en gevonden informatie beoordelen op betrouwbaarheid en bruikbaarheid",
+        "21B-3": "reflecteren op hoe geschikt de gebruikte zoekstrategie was",
+        "21B-4": "beschrijven hoe sociale media werken en hoe ze aandacht trekken, vasthouden en beïnvloeden",
+        "21B-5": "reflecteren op hoe eigen kennis, opvattingen en voorkeuren de interpretatie van informatie beïnvloeden"
+      }
+    },
+    "21C": {
+      "naam": "Data",
+      "nulmeting": "data",
+      "elementen": {
+        "21C-1": "redeneren over hoe een dataset een beperkt beeld geeft van de werkelijkheid",
+        "21C-2": "onderzoek uitvoeren met een dataset om een vraag te beantwoorden, een taak uit te voeren of een probleem op te lossen",
+        "21C-3": "beschrijven hoe bedrijven, instellingen en overheden data gebruiken",
+        "21C-4": "beschrijven hoe de mogelijkheden groeien om datagestuurd te werken",
+        "21C-5": "reflecteren op hoe AI nieuwe manieren van dataverwerking mogelijk maakt"
+      }
+    },
+    "21D": {
+      "naam": "Artificiële Intelligentie (AI)",
+      "nulmeting": "ai",
+      "elementen": {
+        "21D-1": "beschrijven hoe de kwaliteit en eigenschappen van data de werking en uitkomsten van AI bepalen",
+        "21D-2": "veelvoorkomende AI-systemen en hun toepassingen herkennen bij bedrijven, instellingen en overheden",
+        "21D-3": "het verschil beschrijven tussen systemen die op regels werken en AI-systemen die op statistiek werken",
+        "21D-4": "doelgericht, verantwoord en kritisch interacteren met een AI-systeem",
+        "21D-5": "experimenteren met het trainen van AI-systemen"
+      }
+    },
+    "22A": {
+      "naam": "Creëren met digitale technologie",
+      "nulmeting": "producten",
+      "elementen": {
+        "22A-1": "experimenteren met ontwikkel- en bewerkingssoftware om gedachten, ideeën of gevoelens uit te drukken",
+        "22A-2": "een digitaal product ontwikkelen en delen dat informeert, overtuigt of beïnvloedt",
+        "22A-3": "met computationele denkstrategieën afwegen in hoeverre het doel met een digitaal product bereikt kan worden",
+        "22A-4": "een product ontwerpen en realiseren aan de hand van ontwerpeisen, in een iteratief proces, met reflectie op product en proces",
+        "22A-5": "rekening houden met auteursrecht, licenties en bron- en naamsvermelding"
+      }
+    },
+    "22B": {
+      "naam": "Programmeren",
+      "nulmeting": "programmeren",
+      "elementen": {
+        "22B-1": "de taak en het doel van een computerprogramma beschrijven",
+        "22B-2": "het algoritme bij een taak ontwerpen en schematisch weergeven",
+        "22B-3": "programmeerconcepten gebruiken: events, datastructuren en combinaties van logische operatoren",
+        "22B-4": "een eigen programma of dat van een ander documenteren, testen en bijstellen",
+        "22B-5": "een probleem of taak zo aanpakken dat programmeren het kan oplossen"
+      }
+    },
+    "23A": {
+      "naam": "Veiligheid en privacy",
+      "nulmeting": "veiligheid",
+      "elementen": {
+        "23A-1": "kennis hebben van rechten en plichten rond de bescherming van persoonsgegevens, data en privacy",
+        "23A-2": "veiligheidsrisico's herkennen bij het gebruik van digitale systemen van bedrijven, instellingen en overheden",
+        "23A-3": "zich beschermen tegen zwakke plekken in gebruikte systemen en netwerken",
+        "23A-4": "herkennen hoe anderen omgaan met privacy en de veiligheid van data die zij verzamelen of bewaren",
+        "23A-5": "adequaat omgaan met ongepaste content, ongepast gedrag en veiligheidsrisico's in digitale omgevingen"
+      }
+    },
+    "23B": {
+      "naam": "Digitale technologie, jezelf en de ander",
+      "nulmeting": "sociaal",
+      "elementen": {
+        "23B-1": "online respectvol en verantwoord communiceren en handelen",
+        "23B-2": "de invloed van technologie en media op het eigen denken, gedrag en de omgang met anderen evalueren",
+        "23B-3": "rekening houden met de eigen fysieke en mentale gezondheid en die van anderen",
+        "23B-4": "reflecteren op en vormgeven van de eigen online identiteit in relatie tot anderen",
+        "23B-5": "de eigen interesse in digitale technologie en media verkennen in relatie tot studies en beroepen"
+      }
+    },
+    "23C": {
+      "naam": "Digitale technologie, samenleving en wereld",
+      "nulmeting": "samenleving",
+      "elementen": {
+        "23C-1": "verkennen hoe technologie en media te benutten zijn voor maatschappelijke betrokkenheid",
+        "23C-2": "verkennen hoe de ontwikkeling van technologie te sturen en te reguleren is om menselijke en democratische waarden te beschermen",
+        "23C-3": "redeneren over kansen en risico's vanuit ethisch, sociaal, economisch en ecologisch perspectief",
+        "23C-4": "analyseren hoe samenlevingen afhankelijk zijn van digitale technologie en van grote technologiebedrijven",
+        "23C-5": "ethische dilemma's beschrijven bij toekomstkeuzes die met technologie te maken hebben"
+      }
+    }
+  },
+  "blokken": {
+    "A": "Hoe digitale systemen werken",
+    "B": "Veilig en privacy",
+    "C": "Informatie en media",
+    "D": "Data en AI",
+    "E": "Ontwerpen en maken",
+    "F": "Technologie en samenleving"
+  },
+  "lessen": [
+    {
+      "nr": 1,
+      "hoofdstuk": 2,
+      "blok": "A",
+      "titel": "Wat zit er in je device?",
+      "primair": "21A",
+      "nulmeting": "systemen",
+      "focus": "Een computer is geen magie: invoer, verwerking, opslag en uitvoer, en hoe software daarmee samenwerkt. Met een vast stappenplan los je zelf een storing op.",
+      "paragrafen": [
+        "Invoer, verwerking, opslag en uitvoer",
+        "Software en besturingssysteem",
+        "Het storingsplan: zelf een probleem oplossen"
+      ],
+      "leerdoelen": [
+        "Je kunt de hoofdonderdelen van een computer noemen en uitleggen wat ze doen.",
+        "Je kunt het verschil uitleggen tussen hardware, software en een besturingssysteem.",
+        "Je kunt met een stappenplan een eenvoudige storing zelf oplossen."
+      ],
+      "elementen": {
+        "21A-1": [
+          "I"
+        ]
+      },
+      "routine": "Storingsplan",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "techniek",
+        "NaSk"
+      ],
+      "basis": "Werken met een plaat van een computer en kaartjes per onderdeel.",
+      "tlPlus": "Uitleggen waarom een computer trager wordt met veel open programma's, in eigen woorden.",
+      "spel": ""
+    },
+    {
+      "nr": 2,
+      "hoofdstuk": 3,
+      "blok": "A",
+      "titel": "Hoe reist jouw bericht over internet?",
+      "primair": "21A",
+      "nulmeting": "systemen",
+      "focus": "Wat er gebeurt tussen versturen en ontvangen: netwerk, router, server en datacenter. Slimme apparaten zitten ook op dat netwerk. Wat gebeurt er als het uitvalt, en wat kost het aan energie?",
+      "paragrafen": [
+        "Van jouw scherm naar een server en terug",
+        "Slimme apparaten op het netwerk",
+        "Als internet uitvalt: afhankelijk en energie"
+      ],
+      "leerdoelen": [
+        "Je kunt in stappen uitleggen hoe een bericht over internet reist.",
+        "Je kunt voorbeelden geven van slimme apparaten en uitleggen hoe ze met internet verbonden zijn.",
+        "Je kunt uitleggen waarom een storing bij een grote dienst veel mensen tegelijk raakt, en dat datacenters veel energie gebruiken."
+      ],
+      "elementen": {
+        "21A-2": [
+          "I"
+        ],
+        "21A-1": [
+          "O"
+        ],
+        "23C-4": [
+          "I"
+        ],
+        "23C-3": [
+          "I"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "aardrijkskunde",
+        "NaSk"
+      ],
+      "basis": "De route van een bericht als strip met vijf vakken.",
+      "tlPlus": "Opzoeken hoeveel stroom een datacenter in Nederland gebruikt, met bron.",
+      "spel": ""
+    },
+    {
+      "nr": 3,
+      "hoofdstuk": 4,
+      "blok": "A",
+      "titel": "Samenwerken in de cloud",
+      "primair": "21A",
+      "nulmeting": "systemen",
+      "focus": "Werken met OneDrive: een vaste mappenstructuur, duidelijke bestandsnamen, lokaal of in de cloud opslaan, delen met de juiste rechten, samen in één document werken en een oude versie terughalen. Word en OneDrive zijn het middel, niet het doel.",
+      "paragrafen": [
+        "Mappen en bestandsnamen in OneDrive",
+        "Delen: bekijken of bewerken",
+        "Samen in één document en versies terughalen"
+      ],
+      "leerdoelen": [
+        "Je kunt in OneDrive een vaste mappenstructuur maken en bestanden een duidelijke naam geven.",
+        "Je kunt uitleggen wat het verschil is tussen lokaal opslaan en opslaan in de cloud, en een bestand delen met de juiste rechten.",
+        "Je kunt met een klasgenoot in één document werken en een eerdere versie terughalen."
+      ],
+      "elementen": {
+        "21A-3": [
+          "I",
+          "E"
+        ],
+        "21A-1": [
+          "H"
+        ]
+      },
+      "routine": "",
+      "evidence": "een gedeeld document dat samen is bewerkt, met een teruggehaalde versie",
+      "officeMiddel": "OneDrive, Word",
+      "vakintegratie": [
+        "alle vakken"
+      ],
+      "basis": "Stappenkaart met schermafbeeldingen voor delen en versies.",
+      "tlPlus": "Een map inrichten voor een groepsproject met afspraken over namen en rechten.",
+      "spel": "",
+      "opmerking": "Kevin: leerlingen moeten OneDrive en bestanden delen nog leren. Deze les zo vroeg mogelijk in het jaar plannen, zodat andere vakken er direct gebruik van maken."
+    },
+    {
+      "nr": 4,
+      "hoofdstuk": 5,
+      "blok": "A",
+      "titel": "Technologie aan het werk",
+      "primair": "21A",
+      "nulmeting": "systemen",
+      "focus": "Welke digitale systemen gebruiken een supermarkt, een ziekenhuis, een garage en de gemeente? Welke beroepen horen daarbij, en welke passen bij jou? Hoe houd je nieuwe ontwikkelingen bij?",
+      "paragrafen": [
+        "Systemen bij bedrijven en overheid",
+        "AI die je al tegenkomt zonder het te merken",
+        "Beroepen met technologie, en wat bij jou past"
+      ],
+      "leerdoelen": [
+        "Je kunt bij drie bedrijven of instellingen een digitaal systeem noemen en zeggen welke taak het uitvoert.",
+        "Je kunt voorbeelden geven van AI-systemen die bedrijven en de overheid gebruiken.",
+        "Je kunt twee beroepen noemen waarin digitale technologie belangrijk is en uitleggen of ze bij jou passen."
+      ],
+      "elementen": {
+        "21A-4": [
+          "I"
+        ],
+        "21A-5": [
+          "I"
+        ],
+        "21D-2": [
+          "I"
+        ],
+        "23B-5": [
+          "I"
+        ],
+        "21A-2": [
+          "H"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "LOB",
+        "mentor",
+        "praktijkvakken"
+      ],
+      "basis": "Kiezen uit vier uitgewerkte werkplekken.",
+      "tlPlus": "Een nieuwe technologische ontwikkeling uit het nieuws beoordelen op mogelijkheden en beperkingen.",
+      "spel": ""
+    },
+    {
+      "nr": 5,
+      "hoofdstuk": 6,
+      "blok": "B",
+      "titel": "Je accounts op slot",
+      "primair": "23A",
+      "nulmeting": "veiligheid",
+      "focus": "Zwakke plekken in je accounts en apparaten, en hoe je ze dichtzet. Tweestapsverificatie heeft iedereen al aan voor het schoolaccount; in deze les leer je waarom die werkt en wat je doet als je telefoon kwijt is. Daarna: updates, openbaar wifi en een wachtwoordzin voor je andere accounts.",
+      "paragrafen": [
+        "Waarom tweestapsverificatie werkt",
+        "Updates en zwakke plekken",
+        "Veilig op openbaar wifi"
+      ],
+      "leerdoelen": [
+        "Je kunt uitleggen waarom tweestapsverificatie je account beter beschermt, en wat je doet als je telefoon kwijt is.",
+        "Je kunt drie zwakke plekken in een account of apparaat noemen en uitleggen waarom updates belangrijk zijn.",
+        "Je kunt uitleggen wat je wel en niet doet op een openbaar wifi-netwerk."
+      ],
+      "elementen": {
+        "23A-3": [
+          "I",
+          "E"
+        ],
+        "21A-1": [
+          "H"
+        ]
+      },
+      "routine": "",
+      "evidence": "beveiligingscheck van het eigen schoolaccount en de schoollaptop: herstelopties, updates en wachtwoordzin",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "mentor"
+      ],
+      "basis": "Controlelijst van vijf punten voor je eigen account.",
+      "tlPlus": "Uitleggen waarom een lange wachtwoordzin sterker is dan een kort ingewikkeld wachtwoord.",
+      "spel": "Wachtwoord Detective (gebouwd)",
+      "opmerking": "Tweestapsverificatie is in de eerste schoolweken bij alle leerlingen ingesteld. Deze les bouwt daarop voort. Telefoons mogen niet in de klas; de check gebeurt op de schoollaptop."
+    },
+    {
+      "nr": 6,
+      "hoofdstuk": 7,
+      "blok": "B",
+      "titel": "Trap er niet in",
+      "primair": "23A",
+      "nulmeting": "veiligheid",
+      "focus": "Phishing, oplichting via games en marktplaatsen, nepberichten van bank of DigiD, datalekken. Wat doe je als het toch misgaat, en hoe ga je om met ongepaste berichten?",
+      "paragrafen": [
+        "Rode vlaggen in berichten",
+        "Oplichting in games, apps en marktplaatsen",
+        "Het ging toch mis: wat nu?"
+      ],
+      "leerdoelen": [
+        "Je kunt vijf kenmerken van een phishingbericht herkennen.",
+        "Je kunt voorbeelden geven van risico's bij het gebruik van diensten van bedrijven en overheid.",
+        "Je weet wat je doet als je bent opgelicht of een ongepast bericht krijgt."
+      ],
+      "elementen": {
+        "23A-2": [
+          "I"
+        ],
+        "23A-5": [
+          "I"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "economie",
+        "mentor"
+      ],
+      "basis": "Werken met drie uitgewerkte voorbeeldberichten.",
+      "tlPlus": "Beschrijven wat malware is en hoe het op een apparaat komt (havo-vwo-aanvulling 23A).",
+      "spel": ""
+    },
+    {
+      "nr": 7,
+      "hoofdstuk": 8,
+      "blok": "B",
+      "titel": "Jouw gegevens, jouw rechten",
+      "primair": "23A",
+      "nulmeting": "veiligheid",
+      "focus": "Wat persoonsgegevens zijn, wat bedrijven en de overheid ermee doen, welke toestemmingen apps vragen, en welke rechten de AVG jou geeft.",
+      "paragrafen": [
+        "Wat zijn persoonsgegevens?",
+        "Wat doen apps en bedrijven met jouw data?",
+        "Je rechten volgens de AVG"
+      ],
+      "leerdoelen": [
+        "Je kunt uitleggen wat persoonsgegevens zijn en voorbeelden geven.",
+        "Je kunt de toestemmingen van een app beoordelen met de privacycheck.",
+        "Je kunt twee rechten noemen die de AVG jou geeft en uitleggen waarom die wet er is."
+      ],
+      "elementen": {
+        "23A-1": [
+          "I"
+        ],
+        "23A-4": [
+          "I"
+        ],
+        "21C-3": [
+          "I"
+        ],
+        "23C-2": [
+          "I"
+        ],
+        "21A-4": [
+          "h"
+        ]
+      },
+      "routine": "Privacycheck",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "burgerschap",
+        "mens en maatschappij"
+      ],
+      "basis": "Beoordelen van twee bekende apps met een ingevulde voorbeeldcheck.",
+      "tlPlus": "Een privacyverklaring van een app lezen en drie gegevens noemen die hij verzamelt.",
+      "spel": ""
+    },
+    {
+      "nr": 8,
+      "hoofdstuk": 9,
+      "blok": "C",
+      "titel": "Slim zoeken",
+      "primair": "21B",
+      "nulmeting": "informatie",
+      "focus": "Van vraag naar zoektermen, zoekhulpmiddelen combineren (zoekmachine, filters, woordenboek, AI-zoeker), en achteraf nagaan of je aanpak werkte.",
+      "paragrafen": [
+        "Van vraag naar zoektermen",
+        "Zoekhulpmiddelen combineren",
+        "Werkte mijn zoekaanpak?"
+      ],
+      "leerdoelen": [
+        "Je kunt een zoekvraag omzetten in goede zoektermen.",
+        "Je kunt verschillende zoekhulpmiddelen combineren om iets te vinden.",
+        "Je kunt uitleggen waarom een zoekaanpak wel of niet goed werkte."
+      ],
+      "elementen": {
+        "21B-1": [
+          "I"
+        ],
+        "21B-3": [
+          "I"
+        ],
+        "23A-2": [
+          "h"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "Nederlands",
+        "mens en maatschappij"
+      ],
+      "basis": "Zoektermen kiezen uit een lijst voordat je zelf formuleert.",
+      "tlPlus": "Zoeken in een vakspecifieke bron, zoals een nieuwsarchief of een woordenboek (havo-vwo-aanvulling 21B).",
+      "spel": ""
+    },
+    {
+      "nr": 9,
+      "hoofdstuk": 10,
+      "blok": "C",
+      "titel": "De broncheck: echt, nep of twijfel?",
+      "primair": "21B",
+      "nulmeting": "informatie",
+      "focus": "Een vaste broncheck voor elke bewering: wie, wanneer, waarom, en klopt het elders? Nepnieuws en deepfakes, en hoe je eigen mening bepaalt wat je gelooft. Oplichters gebruiken deepfakes ook om je geld of gegevens te ontfutselen.",
+      "paragrafen": [
+        "De broncheck in vier vragen",
+        "Nepnieuws en deepfakes",
+        "Waarom je gelooft wat je al dacht"
+      ],
+      "leerdoelen": [
+        "Je kunt met de broncheck beoordelen of informatie betrouwbaar en bruikbaar is.",
+        "Je kunt kenmerken van nepnieuws en deepfakes noemen.",
+        "Je kunt uitleggen hoe je eigen mening beïnvloedt wat je gelooft."
+      ],
+      "elementen": {
+        "21B-2": [
+          "I",
+          "E"
+        ],
+        "21B-5": [
+          "I"
+        ],
+        "21B-1": [
+          "O"
+        ],
+        "21B-3": [
+          "H"
+        ],
+        "23A-1": [
+          "h"
+        ],
+        "23A-4": [
+          "h"
+        ],
+        "23A-2": [
+          "H"
+        ]
+      },
+      "routine": "Broncheck",
+      "evidence": "een ingevulde broncheck bij een echte bewering uit het nieuws of van sociale media",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "Nederlands",
+        "mens en maatschappij",
+        "burgerschap"
+      ],
+      "basis": "De broncheck met aankruisvakken.",
+      "tlPlus": "Twee bronnen over hetzelfde onderwerp vergelijken en uitleggen welke het bruikbaarst is.",
+      "spel": ""
+    },
+    {
+      "nr": 10,
+      "hoofdstuk": 11,
+      "blok": "C",
+      "titel": "Hoe sociale media je aandacht vangen",
+      "primair": "23B",
+      "nulmeting": "sociaal",
+      "focus": "Hoe een feed werkt en waarom je blijft scrollen. Wat het doet met je denken, je stemming, je slaap en je lichaam, en wat jij eraan kunt doen. Je schermtijd noteer je thuis van je eigen telefoon; in de les werk je met die cijfers.",
+      "paragrafen": [
+        "Hoe een feed bepaalt wat jij ziet",
+        "Wat scrollen met je doet",
+        "Jouw schermtijd onder de loep"
+      ],
+      "leerdoelen": [
+        "Je kunt uitleggen hoe sociale media je aandacht trekken en vasthouden.",
+        "Je kunt beschrijven hoe sociale media je denken en gedrag beïnvloeden.",
+        "Je kunt je eigen schermgebruik bekijken en één verandering kiezen die goed is voor je gezondheid."
+      ],
+      "elementen": {
+        "21B-4": [
+          "I"
+        ],
+        "23B-2": [
+          "I"
+        ],
+        "23B-3": [
+          "I",
+          "E"
+        ],
+        "21B-5": [
+          "H"
+        ]
+      },
+      "routine": "",
+      "evidence": "eigen schermtijdoverzicht (thuis genoteerd) met één gekozen verandering",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "biologie",
+        "bewegen en sport",
+        "mentor"
+      ],
+      "basis": "Een ingevuld voorbeeldoverzicht als model.",
+      "tlPlus": "Uitleggen waarom een gratis app toch geld verdient aan jouw aandacht.",
+      "spel": "Social Media Zoektocht (gebouwd)",
+      "opmerking": "Telefoons mogen niet in de klas. Plan deze les rond de Week van de mediawijsheid, dan sluit hij aan op wat de school die week doet."
+    },
+    {
+      "nr": 11,
+      "hoofdstuk": 12,
+      "blok": "C",
+      "titel": "Wie ben jij online?",
+      "primair": "23B",
+      "nulmeting": "sociaal",
+      "focus": "Je online identiteit bewust inrichten, respectvol reageren, en wat je doet bij cyberpesten als slachtoffer of als omstander.",
+      "paragrafen": [
+        "Je online identiteit",
+        "Respectvol reageren",
+        "Cyberpesten: kijken of ingrijpen?"
+      ],
+      "leerdoelen": [
+        "Je kunt uitleggen hoe wat je online deelt je online identiteit vormt.",
+        "Je kunt respectvol reageren, ook als je het ergens niet mee eens bent.",
+        "Je weet wat je doet bij cyberpesten, als slachtoffer en als omstander."
+      ],
+      "elementen": {
+        "23B-1": [
+          "I"
+        ],
+        "23B-4": [
+          "I"
+        ],
+        "23A-5": [
+          "O"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "mentor",
+        "burgerschap"
+      ],
+      "basis": "Keuzes maken in uitgewerkte situaties.",
+      "tlPlus": "Een eigen profiel beoordelen vanuit de blik van een toekomstige werkgever.",
+      "spel": "",
+      "opmerking": "De Week tegen Pesten valt vroeg in het schooljaar, deze les later. Het vakmoment bij de mentor (V11) vangt dat op; de les verwijst terug naar die week."
+    },
+    {
+      "nr": 12,
+      "hoofdstuk": 13,
+      "blok": "D",
+      "titel": "Onderzoek met data",
+      "primair": "21C",
+      "nulmeting": "data",
+      "focus": "Een eigen vraag beantwoorden met een kleine dataset: ordenen in een spreadsheet, een grafiek maken, een conclusie trekken, en zeggen wat de data niet laten zien.",
+      "paragrafen": [
+        "Van vraag naar data",
+        "Ordenen en een grafiek maken",
+        "Wat de data niet laten zien"
+      ],
+      "leerdoelen": [
+        "Je kunt met een kleine dataset een vraag beantwoorden.",
+        "Je kunt data ordenen in een spreadsheet en er een passende grafiek van maken.",
+        "Je kunt uitleggen waarom een dataset maar een deel van de werkelijkheid laat zien."
+      ],
+      "elementen": {
+        "21C-1": [
+          "I",
+          "E"
+        ],
+        "21C-2": [
+          "I",
+          "E"
+        ],
+        "21A-3": [
+          "O"
+        ],
+        "21B-4": [
+          "h"
+        ],
+        "23B-2": [
+          "h"
+        ]
+      },
+      "routine": "Datacheck",
+      "evidence": "mini-onderzoek: vraag, data, grafiek, conclusie en één beperking",
+      "officeMiddel": "Excel",
+      "vakintegratie": [
+        "wiskunde",
+        "NaSk"
+      ],
+      "basis": "Werken met een klaargezette dataset en een grafiek die al half af is.",
+      "tlPlus": "Een open dataset gebruiken, bijvoorbeeld van het CBS (havo-vwo-aanvulling 21C).",
+      "spel": ""
+    },
+    {
+      "nr": 13,
+      "hoofdstuk": 14,
+      "blok": "D",
+      "titel": "Van data naar AI",
+      "primair": "21C",
+      "nulmeting": "data",
+      "focus": "Hoe bedrijven en overheid datagestuurd werken, en hoe AI uit data leert. Het verschil tussen een systeem met vaste regels en een AI die op kansen werkt, en waarom slechte data slechte AI oplevert.",
+      "paragrafen": [
+        "Datagestuurd werken",
+        "Vaste regels of leren van voorbeelden",
+        "Slechte data, slechte AI"
+      ],
+      "leerdoelen": [
+        "Je kunt voorbeelden geven van hoe bedrijven en de overheid data gebruiken om beslissingen te nemen.",
+        "Je kunt het verschil uitleggen tussen een systeem met vaste regels en een AI-systeem.",
+        "Je kunt uitleggen waarom de kwaliteit van data bepaalt hoe goed een AI werkt."
+      ],
+      "elementen": {
+        "21C-4": [
+          "I"
+        ],
+        "21C-5": [
+          "I"
+        ],
+        "21D-1": [
+          "I"
+        ],
+        "21D-3": [
+          "I"
+        ],
+        "21C-3": [
+          "O"
+        ],
+        "21C-1": [
+          "H"
+        ],
+        "23B-1": [
+          "h"
+        ],
+        "23B-4": [
+          "h"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "wiskunde",
+        "economie"
+      ],
+      "basis": "Sorteren van tien voorbeelden in 'vaste regel' of 'leert van data'.",
+      "tlPlus": "Beschrijven wat machine learning is (havo-vwo-aanvulling 21D).",
+      "spel": ""
+    },
+    {
+      "nr": 14,
+      "hoofdstuk": 15,
+      "blok": "D",
+      "titel": "Maak kennis met generatieve AI",
+      "primair": "21D",
+      "nulmeting": "ai",
+      "focus": "Een speelse kennismaking: tekst en beeld maken met Copilot. Hoe het werkt (het volgende woord of pixel voorspellen), wat het goed kan en waar het misgaat. Een klein experiment: leer een computer sorteren met voorbeelden.",
+      "paragrafen": [
+        "Maken met Copilot",
+        "Hoe voorspelt AI?",
+        "Experiment: leer de computer sorteren"
+      ],
+      "leerdoelen": [
+        "Je kunt met Copilot een tekst en een afbeelding maken.",
+        "Je kunt uitleggen dat generatieve AI voorspelt en niet weet.",
+        "Je kunt met een klein experiment laten zien dat de voorbeelden bepalen wat een AI leert."
+      ],
+      "elementen": {
+        "21D-2": [
+          "O"
+        ],
+        "21D-3": [
+          "O"
+        ],
+        "21D-5": [
+          "I"
+        ],
+        "21A-5": [
+          "H"
+        ],
+        "21C-5": [
+          "H"
+        ],
+        "23B-3": [
+          "h"
+        ],
+        "21C-2": [
+          "h"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "Copilot",
+      "vakintegratie": [
+        "Nederlands",
+        "kunst"
+      ],
+      "basis": "Werken met drie kant-en-klare prompts om mee te beginnen.",
+      "tlPlus": "Twee AI-antwoorden op dezelfde vraag vergelijken en verklaren waarom ze verschillen.",
+      "spel": "",
+      "opmerking": "21D-5 licht ingevuld: geen echt model trainen (keuze Kevin), wel een sorteerexperiment met voorbeelden. Zwakke plek."
+    },
+    {
+      "nr": 15,
+      "hoofdstuk": 16,
+      "blok": "D",
+      "titel": "AI als studiemaatje",
+      "primair": "21D",
+      "nulmeting": "ai",
+      "focus": "AI inzetten om te leren in plaats van om het werk over te nemen: Copilot laat jou vragen beantwoorden, zoals een goede docent. Met de AI-check controleer je elk antwoord, en je weet wat wel en niet mag bij schoolwerk. Wat deel je wel en niet met een AI, en wat doet Microsoft met jouw gesprek?",
+      "paragrafen": [
+        "Laat AI jou vragen stellen",
+        "De AI-check",
+        "Eerlijk gebruik bij schoolwerk"
+      ],
+      "leerdoelen": [
+        "Je kunt Copilot zo instrueren dat hij je helpt leren in plaats van het antwoord te geven.",
+        "Je kunt een AI-antwoord controleren met de AI-check en een fout verbeteren.",
+        "Je kunt uitleggen wanneer AI-gebruik bij schoolwerk eerlijk is en wanneer niet."
+      ],
+      "elementen": {
+        "21D-4": [
+          "I",
+          "E"
+        ],
+        "21D-1": [
+          "H"
+        ],
+        "21B-2": [
+          "H"
+        ],
+        "21C-4": [
+          "h"
+        ],
+        "23A-1": [
+          "H"
+        ],
+        "23A-4": [
+          "H"
+        ]
+      },
+      "routine": "AI-check",
+      "evidence": "een leergesprek met Copilot plus een gecontroleerd en verbeterd antwoord",
+      "officeMiddel": "Copilot",
+      "vakintegratie": [
+        "Nederlands",
+        "moderne vreemde talen",
+        "alle vakken"
+      ],
+      "basis": "Een vaste openingsprompt voor het leergesprek.",
+      "tlPlus": "Zelf een prompt ontwerpen die Copilot dwingt om vragen te stellen en geen antwoorden te geven.",
+      "spel": ""
+    },
+    {
+      "nr": 16,
+      "hoofdstuk": 17,
+      "blok": "E",
+      "titel": "Ontwerpen voor een doelgroep",
+      "primair": "22A",
+      "nulmeting": "producten",
+      "focus": "Een digitaal product voor een echt doel op school of in de buurt: informeren, overtuigen of iets in beweging zetten. Doelgroep, ontwerpeisen, een eerste versie, feedback en een tweede versie. Beeld dat je mag gebruiken. PowerPoint of Word is het middel. Feedback geef je respectvol en concreet.",
+      "paragrafen": [
+        "Doel, doelgroep en ontwerpeisen",
+        "Versie 1, feedback, versie 2",
+        "Beeld dat je mag gebruiken"
+      ],
+      "leerdoelen": [
+        "Je kunt voor een doelgroep ontwerpeisen opstellen en daarmee een digitaal product maken.",
+        "Je kunt je product verbeteren na feedback en uitleggen wat je veranderde en waarom.",
+        "Je kunt beeld gebruiken dat je mag gebruiken, met de juiste bronvermelding."
+      ],
+      "elementen": {
+        "22A-2": [
+          "I",
+          "E"
+        ],
+        "22A-3": [
+          "I"
+        ],
+        "22A-4": [
+          "I",
+          "E"
+        ],
+        "22A-5": [
+          "I",
+          "E"
+        ],
+        "23C-1": [
+          "I"
+        ],
+        "21A-3": [
+          "O"
+        ],
+        "23B-5": [
+          "h"
+        ],
+        "23B-1": [
+          "O"
+        ]
+      },
+      "routine": "Ontwerpcyclus",
+      "evidence": "product met ontwerpeisen, versie 1, feedback en versie 2",
+      "officeMiddel": "PowerPoint of Word",
+      "vakintegratie": [
+        "kunst",
+        "Nederlands",
+        "praktijkvakken"
+      ],
+      "basis": "Een sjabloon met vaste ontwerpeisen om uit te kiezen.",
+      "tlPlus": "Het product testen bij twee echte gebruikers en de uitkomst verwerken.",
+      "spel": ""
+    },
+    {
+      "nr": 17,
+      "hoofdstuk": 18,
+      "blok": "E",
+      "titel": "Jouw animatie: storyboard en karakters",
+      "primair": "22A",
+      "nulmeting": "producten",
+      "focus": "Een eigen kort verhaal uitdrukken in beeld: een storyboard maken en karakters ontwerpen met prompts in Copilot. Wie is eigenaar van een AI-beeld? Extra opdracht: de animatie echt maken. Welke beroepen maken dit soort beeld?",
+      "paragrafen": [
+        "Van idee naar storyboard",
+        "Karakters maken met prompts",
+        "Van wie is een AI-beeld?"
+      ],
+      "leerdoelen": [
+        "Je kunt een idee of gevoel uitwerken in een storyboard van zes beelden.",
+        "Je kunt met prompts in Copilot karakters maken die passen bij je verhaal.",
+        "Je kunt uitleggen wat je wel en niet mag met beeld dat door AI is gemaakt."
+      ],
+      "elementen": {
+        "22A-1": [
+          "I",
+          "E"
+        ],
+        "22A-4": [
+          "O"
+        ],
+        "22A-5": [
+          "O"
+        ],
+        "21D-4": [
+          "O"
+        ],
+        "22A-2": [
+          "h"
+        ],
+        "23B-5": [
+          "H"
+        ]
+      },
+      "routine": "Ontwerpcyclus",
+      "evidence": "storyboard met karakters; extra opdracht: de animatie zelf",
+      "officeMiddel": "Copilot, PowerPoint",
+      "vakintegratie": [
+        "kunst",
+        "Nederlands"
+      ],
+      "basis": "Een storyboard met drie vaste beelden en drie eigen beelden.",
+      "tlPlus": "De animatie afmaken en presenteren (extra opdracht).",
+      "spel": ""
+    },
+    {
+      "nr": 18,
+      "hoofdstuk": 19,
+      "blok": "E",
+      "titel": "Denken als een programmeur",
+      "primair": "22B",
+      "nulmeting": "programmeren",
+      "focus": "Een probleem zo opknippen dat een computer het kan uitvoeren: taak en doel beschrijven, een algoritme bedenken en tekenen als stroomschema. Eerst zonder computer.",
+      "paragrafen": [
+        "Wat moet het programma doen?",
+        "Het algoritme als stroomschema",
+        "Kan een computer dit oplossen?"
+      ],
+      "leerdoelen": [
+        "Je kunt beschrijven wat de taak en het doel van een programma zijn.",
+        "Je kunt een algoritme bedenken en tekenen als stroomschema.",
+        "Je kunt een probleem opdelen in stappen die een computer kan uitvoeren."
+      ],
+      "elementen": {
+        "22B-1": [
+          "I"
+        ],
+        "22B-2": [
+          "I"
+        ],
+        "22B-5": [
+          "I"
+        ],
+        "22A-3": [
+          "H"
+        ],
+        "21D-5": [
+          "h"
+        ]
+      },
+      "routine": "",
+      "evidence": "afsluitcheck",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "wiskunde",
+        "techniek"
+      ],
+      "basis": "Een stroomschema aanvullen waarin een paar stappen al staan.",
+      "tlPlus": "Een probleem uit een ander vak omzetten in een algoritme (havo-vwo-aanvulling 22A).",
+      "spel": ""
+    },
+    {
+      "nr": 19,
+      "hoofdstuk": 20,
+      "blok": "E",
+      "titel": "Programmeren: events, lijsten en logica",
+      "primair": "22B",
+      "nulmeting": "programmeren",
+      "focus": "Een klein blokprogramma dat reageert op een klik (event), een lijst gebruikt en beslist met en, of en niet. Testen met verschillende invoer, een fout vinden en uitleggen wat je programma doet.",
+      "paragrafen": [
+        "Events: het programma reageert",
+        "Lijsten en logica",
+        "Testen, fouten zoeken en uitleggen"
+      ],
+      "leerdoelen": [
+        "Je kunt een programma maken dat reageert op een event, zoals een klik.",
+        "Je kunt in een programma een lijst en een voorwaarde met en of of gebruiken.",
+        "Je kunt een programma testen, een fout verbeteren en in eigen woorden uitleggen wat het doet."
+      ],
+      "elementen": {
+        "22B-3": [
+          "I",
+          "E"
+        ],
+        "22B-4": [
+          "I",
+          "E"
+        ],
+        "22B-2": [
+          "O"
+        ],
+        "22B-1": [
+          "O"
+        ],
+        "22B-5": [
+          "h"
+        ]
+      },
+      "routine": "",
+      "evidence": "werkend programma met korte uitleg en een verbeterde fout",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "wiskunde",
+        "techniek"
+      ],
+      "basis": "Een half af programma aanvullen.",
+      "tlPlus": "Het programma uitbreiden met een eigen functie en die documenteren.",
+      "spel": ""
+    },
+    {
+      "nr": 20,
+      "hoofdstuk": 21,
+      "blok": "E",
+      "titel": "Programmeren: maak je eigen spel",
+      "primair": "22B",
+      "nulmeting": "programmeren",
+      "focus": "Wat je in les 19 leerde, zet je in voor een eigen mini-spel: een event start het spel, een lijst houdt iets bij en een voorwaarde met en of of beslist wie wint. Een klasgenoot test je spel met een testlijst, en jij verbetert het.",
+      "paragrafen": [
+        "Je spel ontwerpen op papier",
+        "Bouwen met events, lijsten en logica",
+        "Laten testen en verbeteren"
+      ],
+      "leerdoelen": [
+        "Je kunt een eigen spelidee omzetten in een algoritme en een werkend blokprogramma.",
+        "Je kunt in je spel een event, een lijst en een voorwaarde met en of of gebruiken.",
+        "Je kunt het spel van een klasgenoot testen met een testlijst en je eigen spel verbeteren na zijn feedback."
+      ],
+      "elementen": {
+        "22B-3": [
+          "O",
+          "E"
+        ],
+        "22B-4": [
+          "O",
+          "E"
+        ],
+        "22B-5": [
+          "O"
+        ],
+        "22B-2": [
+          "O"
+        ],
+        "22A-3": [
+          "H"
+        ],
+        "21D-5": [
+          "h"
+        ]
+      },
+      "routine": "",
+      "evidence": "eigen mini-spel met ingevulde testlijst en een verbetering",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "wiskunde",
+        "techniek"
+      ],
+      "basis": "Een spelsjabloon waarin het event al staat; de leerling vult lijst en voorwaarde aan.",
+      "tlPlus": "Een tweede level toevoegen dat een variabele of lijst uit het eerste level gebruikt.",
+      "spel": ""
+    },
+    {
+      "nr": 21,
+      "hoofdstuk": 22,
+      "blok": "F",
+      "titel": "Technologie, samenleving en jij",
+      "primair": "23C",
+      "nulmeting": "samenleving",
+      "focus": "Een dilemma over de toekomst, bekeken vanuit vier kanten: ethisch, sociaal, economisch en ecologisch. Wie maakt de regels voor technologie en AI, en hoe afhankelijk zijn we van een paar grote bedrijven? Welke rol spelen sociale media in het debat?",
+      "paragrafen": [
+        "Een dilemma van vier kanten",
+        "Wie maakt de regels?",
+        "Hoe afhankelijk zijn we?"
+      ],
+      "leerdoelen": [
+        "Je kunt een dilemma over technologie beschrijven en vanuit vier perspectieven bekijken.",
+        "Je kunt uitleggen waarom er regels zijn voor technologie, zoals de AVG en de Europese AI-wet.",
+        "Je kunt met een voorbeeld uitleggen hoe afhankelijk de samenleving is van grote technologiebedrijven."
+      ],
+      "elementen": {
+        "23C-5": [
+          "I",
+          "E"
+        ],
+        "23C-3": [
+          "T",
+          "E"
+        ],
+        "23C-2": [
+          "H"
+        ],
+        "23C-4": [
+          "H"
+        ],
+        "23C-1": [
+          "H"
+        ],
+        "21B-2": [
+          "T"
+        ],
+        "21B-4": [
+          "H"
+        ],
+        "21A-5": [
+          "H"
+        ],
+        "22A-1": [
+          "h"
+        ]
+      },
+      "routine": "Broncheck",
+      "evidence": "beargumenteerde mening over een dilemma vanuit vier perspectieven, met gecheckte bronnen",
+      "officeMiddel": "",
+      "vakintegratie": [
+        "mens en maatschappij",
+        "burgerschap"
+      ],
+      "basis": "Perspectiefkaarten met een voorbeeldzin per perspectief.",
+      "tlPlus": "Een standpunt verdedigen in een kort debat.",
+      "spel": ""
+    },
+    {
+      "nr": 22,
+      "hoofdstuk": 23,
+      "blok": "F",
+      "titel": "Eindproject: een campagne voor brugklassers",
+      "primair": "22A",
+      "nulmeting": "producten",
+      "focus": "Afsluiting van het jaar in één product. De klas verzamelt data over schermgebruik, slaap of online gedrag, en elke leerling maakt een korte campagne voor andere brugklassers, met eerlijke cijfers, gecheckte bronnen en de ontwerpcyclus. De eindmeting maken leerlingen daarna in HELIX buiten de les.",
+      "paragrafen": [
+        "Wat zeggen onze eigen data?",
+        "De campagne ontwerpen en maken",
+        "Terugkijken: wat kun jij nu?"
+      ],
+      "leerdoelen": [
+        "Je kunt data uit je eigen klas gebruiken als onderbouwing, en zeggen wat die data niet laten zien.",
+        "Je kunt een digitaal product maken dat een doelgroep informeert of overtuigt, met de ontwerpcyclus.",
+        "Je kunt met voorbeelden uit dit jaar laten zien wat je hebt geleerd over technologie, jezelf en de ander."
+      ],
+      "elementen": {
+        "21C-2": [
+          "T"
+        ],
+        "21C-1": [
+          "H"
+        ],
+        "22A-2": [
+          "T",
+          "E"
+        ],
+        "22A-1": [
+          "H"
+        ],
+        "22A-4": [
+          "O"
+        ],
+        "23B-2": [
+          "H"
+        ],
+        "23B-3": [
+          "H"
+        ],
+        "23B-4": [
+          "H"
+        ],
+        "23C-1": [
+          "T"
+        ],
+        "21B-2": [
+          "H"
+        ],
+        "21C-4": [
+          "h"
+        ],
+        "21A-4": [
+          "h"
+        ]
+      },
+      "routine": "Datacheck, Broncheck, Ontwerpcyclus",
+      "evidence": "campagneproduct met eigen klasdata, bronnen en een korte verantwoording",
+      "officeMiddel": "PowerPoint, Excel of Copilot, naar keuze",
+      "vakintegratie": [
+        "mentor",
+        "Nederlands",
+        "wiskunde"
+      ],
+      "basis": "Een campagnesjabloon met vaste onderdelen en een klaargezette klasgrafiek.",
+      "tlPlus": "De campagne testen bij twee leerlingen uit een andere klas en de reactie verwerken.",
+      "spel": ""
+    }
+  ]
+}

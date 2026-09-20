@@ -1,0 +1,607 @@
+{
+  "meta": {
+    "titel": "Scenario's voor digitale geletterdheid vmbo klas 1 (en 2)",
+    "versie": "concept fase 3, 19 september 2026",
+    "basis": "dv-klas1-curriculum.json (22 lessen)",
+    "uitleg": "Elk scenario is de basis van 22 lessen plus iets erbij. Rollen zoals in het curriculum: O oefenen, H herhalen, h terugblikvraag, T toepassen in een andere context, E evidence.",
+    "dacapo": "Vakken volgens de lessentabel 2026-2027 van DaCapo: BK klas 1 heeft geen aardrijkskunde, geschiedenis, economie of NaSk, wel natuur en techniek, LOB en mentor; TL klas 1 heeft aardrijkskunde en geschiedenis."
+  },
+  "extraLessen40": [
+    {
+      "code": "X1",
+      "na": 3,
+      "titel": "Oefenen: zelf je problemen oplossen",
+      "doel": "echte storingen en bestandsproblemen oplossen met het storingsplan",
+      "elementen": {
+        "21A-1": [
+          "O",
+          "E"
+        ],
+        "21A-3": [
+          "O"
+        ],
+        "23A-3": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X2",
+      "na": 4,
+      "titel": "Technologie in beroepen: op onderzoek",
+      "doel": "een beroep of bedrijf onderzoeken en de gebruikte systemen in kaart brengen",
+      "elementen": {
+        "21A-4": [
+          "O",
+          "E"
+        ],
+        "23B-5": [
+          "O"
+        ],
+        "21D-2": [
+          "H"
+        ],
+        "21A-5": [
+          "O"
+        ]
+      }
+    },
+    {
+      "code": "X3",
+      "na": 7,
+      "titel": "Veilig en privé: casusdag",
+      "doel": "vijf casussen oplossen en een advieskaart maken voor een klasgenoot of ouder",
+      "elementen": {
+        "23A-1": [
+          "O"
+        ],
+        "23A-2": [
+          "O",
+          "E"
+        ],
+        "23A-3": [
+          "O"
+        ],
+        "23A-4": [
+          "O"
+        ],
+        "23A-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "X4",
+      "na": 9,
+      "titel": "Broncheck in de praktijk",
+      "doel": "de broncheck toepassen op berichten uit de eigen feed en op een werkstukonderwerp",
+      "elementen": {
+        "21B-1": [
+          "O"
+        ],
+        "21B-2": [
+          "O",
+          "E"
+        ],
+        "21B-3": [
+          "O"
+        ],
+        "21B-5": [
+          "O"
+        ]
+      }
+    },
+    {
+      "code": "X5",
+      "na": 11,
+      "titel": "Mijn digitale balans",
+      "doel": "een week eigen gebruik bijhouden, een plan maken en terugkijken",
+      "elementen": {
+        "23B-2": [
+          "O"
+        ],
+        "23B-3": [
+          "O",
+          "E"
+        ],
+        "23B-4": [
+          "O"
+        ],
+        "23B-1": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X6",
+      "na": 12,
+      "titel": "Data-onderzoek: eigen enquête",
+      "doel": "een eigen vraag, een eigen enquête en een eigen dataset",
+      "elementen": {
+        "21C-2": [
+          "O"
+        ],
+        "21C-1": [
+          "O"
+        ],
+        "21A-3": [
+          "O"
+        ]
+      }
+    },
+    {
+      "code": "X7",
+      "na": 12,
+      "titel": "Data-onderzoek: eerlijk presenteren",
+      "doel": "grafiek, conclusie en beperkingen presenteren aan de klas",
+      "elementen": {
+        "21C-2": [
+          "E"
+        ],
+        "21C-1": [
+          "E"
+        ],
+        "22A-2": [
+          "O"
+        ],
+        "21C-4": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X8",
+      "na": 13,
+      "titel": "Data bij bedrijven en overheid",
+      "doel": "onderzoeken wat een winkel, app of gemeente met data doet",
+      "elementen": {
+        "21C-3": [
+          "O"
+        ],
+        "21C-4": [
+          "O"
+        ],
+        "23A-4": [
+          "H"
+        ],
+        "23C-4": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X9",
+      "na": 14,
+      "titel": "AI-experiment: wat leert de computer van jouw voorbeelden?",
+      "doel": "het sorteerexperiment uitbreiden en ontdekken hoe een eenzijdige set tot vooroordeel leidt",
+      "elementen": {
+        "21D-5": [
+          "O",
+          "E"
+        ],
+        "21D-1": [
+          "O"
+        ],
+        "21D-3": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X10",
+      "na": 15,
+      "titel": "AI in jouw vakken",
+      "doel": "het leergesprek en de AI-check gebruiken voor een echte opdracht uit een ander vak",
+      "elementen": {
+        "21D-4": [
+          "T"
+        ],
+        "21B-2": [
+          "H"
+        ],
+        "23A-1": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X11",
+      "na": 16,
+      "titel": "Ontwerpproject: wat heeft de doelgroep nodig?",
+      "doel": "doelgroep bevragen en ontwerpeisen opstellen",
+      "elementen": {
+        "22A-3": [
+          "O"
+        ],
+        "22A-4": [
+          "O"
+        ],
+        "23B-1": [
+          "O"
+        ]
+      }
+    },
+    {
+      "code": "X12",
+      "na": 16,
+      "titel": "Ontwerpproject: bouwen en testen",
+      "doel": "versie 1 bouwen en laten testen",
+      "elementen": {
+        "22A-2": [
+          "O"
+        ],
+        "22A-4": [
+          "O"
+        ],
+        "22A-5": [
+          "O"
+        ]
+      }
+    },
+    {
+      "code": "X13",
+      "na": 16,
+      "titel": "Ontwerpproject: versie 2 en presenteren",
+      "doel": "verbeteren, presenteren en verantwoorden",
+      "elementen": {
+        "22A-2": [
+          "E"
+        ],
+        "22A-4": [
+          "E"
+        ],
+        "22A-3": [
+          "E"
+        ]
+      }
+    },
+    {
+      "code": "X14",
+      "na": 17,
+      "titel": "Je animatie maken",
+      "doel": "de animatie uit het storyboard echt maken",
+      "elementen": {
+        "22A-1": [
+          "O",
+          "E"
+        ],
+        "22A-5": [
+          "O"
+        ],
+        "21D-4": [
+          "O"
+        ]
+      }
+    },
+    {
+      "code": "X15",
+      "na": 20,
+      "titel": "Programmeren: andermans code verbeteren",
+      "doel": "een kapot programma lezen, testen, documenteren en repareren",
+      "elementen": {
+        "22B-4": [
+          "O",
+          "E"
+        ],
+        "22B-1": [
+          "O"
+        ],
+        "22B-3": [
+          "O"
+        ]
+      }
+    },
+    {
+      "code": "X16",
+      "na": 20,
+      "titel": "Programmeren: een echt probleem oplossen",
+      "doel": "een klein probleem uit school omzetten in een programma",
+      "elementen": {
+        "22B-5": [
+          "O",
+          "E"
+        ],
+        "22B-2": [
+          "O",
+          "E"
+        ],
+        "22B-3": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X17",
+      "na": 21,
+      "titel": "Wie beslist over technologie? Een debat",
+      "doel": "een voorbereid debat over een actueel dilemma",
+      "elementen": {
+        "23C-2": [
+          "O"
+        ],
+        "23C-4": [
+          "O"
+        ],
+        "23C-5": [
+          "O",
+          "E"
+        ],
+        "23C-3": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "X18",
+      "na": 22,
+      "titel": "Eindmeting en portfolio",
+      "doel": "eindmeting in de les en een portfolio met de beste bewijsstukken van het jaar",
+      "elementen": {
+        "21A-5": [
+          "H"
+        ],
+        "23C-1": [
+          "O"
+        ],
+        "23B-4": [
+          "H"
+        ]
+      }
+    }
+  ],
+  "vakmomenten": [
+    {
+      "code": "V1",
+      "vak": "Nederlands",
+      "periode": 1,
+      "titel": "Werkstuk met broncheck en bronvermelding",
+      "routine": "Broncheck",
+      "elementen": {
+        "21B-1": [
+          "T"
+        ],
+        "21B-2": [
+          "T"
+        ],
+        "22A-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V2",
+      "vak": "Nederlands",
+      "periode": 3,
+      "titel": "Een AI-tekst controleren en verbeteren",
+      "routine": "AI-check",
+      "elementen": {
+        "21D-4": [
+          "T"
+        ],
+        "21B-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V3",
+      "vak": "wiskunde",
+      "periode": 2,
+      "titel": "Klassenenquête met grafiek",
+      "routine": "Datacheck",
+      "elementen": {
+        "21C-1": [
+          "T"
+        ],
+        "21C-2": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V4",
+      "vak": "wiskunde",
+      "periode": 3,
+      "titel": "Een rekenprobleem als stroomschema",
+      "routine": "",
+      "elementen": {
+        "22B-2": [
+          "T"
+        ],
+        "22B-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V5",
+      "vak": "natuur en techniek",
+      "periode": 2,
+      "titel": "Meten en de meetdata digitaal vastleggen",
+      "routine": "Datacheck",
+      "elementen": {
+        "21C-2": [
+          "T"
+        ],
+        "21A-3": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V6",
+      "vak": "natuur en techniek (praktijk)",
+      "periode": 3,
+      "titel": "Een ontwerp maken met de ontwerpcyclus",
+      "routine": "Ontwerpcyclus",
+      "elementen": {
+        "22A-4": [
+          "T"
+        ],
+        "22A-3": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V7",
+      "vak": "beeldende vorming",
+      "periode": 3,
+      "titel": "Een digitaal beeld maken, met aandacht voor rechten",
+      "routine": "Ontwerpcyclus",
+      "elementen": {
+        "22A-1": [
+          "T"
+        ],
+        "22A-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V8",
+      "vak": "mentor, in de Week van de mediawijsheid",
+      "periode": 2,
+      "titel": "Nepnieuws en beïnvloeding bij een actueel onderwerp",
+      "routine": "Broncheck",
+      "elementen": {
+        "21B-4": [
+          "T"
+        ],
+        "21B-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V9",
+      "vak": "mentor (burgerschap), in een thema- of projectweek; TL: geschiedenis",
+      "periode": 4,
+      "titel": "Wie maakt de regels voor technologie?",
+      "routine": "",
+      "elementen": {
+        "23C-2": [
+          "T"
+        ],
+        "23C-4": [
+          "T"
+        ],
+        "23C-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V10",
+      "vak": "mentor",
+      "periode": 1,
+      "titel": "Accountcheck en privacycheck van nieuwe schoolapps",
+      "routine": "Privacycheck",
+      "elementen": {
+        "23A-3": [
+          "T"
+        ],
+        "23A-4": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V11",
+      "vak": "mentor, in de Week tegen Pesten",
+      "periode": 1,
+      "titel": "De klassenapp: afspraken en wat te doen bij pesten",
+      "routine": "",
+      "elementen": {
+        "23B-1": [
+          "T"
+        ],
+        "23A-5": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V12",
+      "vak": "LOB (BK) of mentor (TL), met Proeftuin",
+      "periode": 3,
+      "titel": "Beroepen met technologie in de zes DaCapo-profielen",
+      "routine": "",
+      "elementen": {
+        "23B-5": [
+          "T"
+        ],
+        "21A-4": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V13",
+      "vak": "LO of biologie",
+      "periode": 2,
+      "titel": "Schermtijd, slaap en bewegen",
+      "routine": "",
+      "elementen": {
+        "23B-3": [
+          "T"
+        ],
+        "23B-2": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V14",
+      "vak": "Engels of Duits",
+      "periode": 3,
+      "titel": "Een vertaaltool controleren",
+      "routine": "AI-check",
+      "elementen": {
+        "21D-4": [
+          "T"
+        ],
+        "21D-1": [
+          "H"
+        ]
+      }
+    },
+    {
+      "code": "V15",
+      "vak": "LOB (BK) of economie (klas 2)",
+      "periode": 4,
+      "titel": "Wat doen bedrijven met jouw data?",
+      "routine": "Privacycheck",
+      "elementen": {
+        "21C-3": [
+          "T"
+        ],
+        "21C-4": [
+          "T"
+        ],
+        "23C-4": [
+          "T"
+        ]
+      }
+    },
+    {
+      "code": "V16",
+      "vak": "aardrijkskunde (TL) of natuur en techniek (BK)",
+      "periode": 4,
+      "titel": "Datacenters, energie en water",
+      "routine": "Datacheck",
+      "elementen": {
+        "23C-3": [
+          "T"
+        ],
+        "21A-2": [
+          "T"
+        ]
+      }
+    }
+  ],
+  "helixOefenrondes": {
+    "uitleg": "Na elk blok een herhaalronde in HELIX buiten de les: een korte quiz over alle elementen van dat blok en een spel met tokens. Ongeveer 15 minuten per ronde.",
+    "rondes": 6
+  }
+}
