@@ -95,6 +95,9 @@ De gebruikelijke opbouw van een paragraaf, zoals in Binask hoofdstuk 2:
 presentatie, theorie, voorbeeld, eventueel een tweede theorie en voorbeeld,
 schriftopdracht, samenvatting, korte check.
 
+De presentatie volgt altijd het design system; zie
+`references/slidedeck-designsysteem.md`.
+
 Welke bloktypen er zijn en wat er per type in moet staat in
 `references/bronformaat.md`.
 
@@ -220,7 +223,28 @@ hebt.
 
 ### 6e. Presentaties
 
-Comprimeer eerst. Een deck uit PowerPoint is vaak 15 tot 25 MB; dat moet een
+**Elk deck volgt het Helix Slide Design System.** Lees
+`references/slidedeck-designsysteem.md` voordat je een deck maakt. Daar staat
+de masterprompt, de promptvelden per dia en het contract. Twee regels die je
+niet mag overslaan:
+
+1. **In de bron**: voeg naast de lesstof de tekst van het design system toe als
+   tweede bron in NotebookLM (`sources/designsysteem/designsysteem-tekst.txt`).
+2. **In de prompt**: gebruik de masterprompt uit dat bestand, met de
+   promptvelden en het contract eronder.
+
+De oude prompt uit `src/lib/notebookPromptTemplates.js` ("Algemene digibordles
+VMBO/EOA") is van vóór het design system. Gebruik die niet voor nieuwe decks.
+
+Het deck maak je in NotebookLM met het account van Kevin (Chrome moet draaien;
+de bron plak je als "Gekopieerde tekst", want de uploadknop opent een
+Windows-venster dat je niet kunt bedienen). Kies bij Studio de diapresentatie
+en daarna "Presentatordia's".
+
+**Bekijk het deck daarna zelf, dia voor dia.** Het is beeld zonder tekstlaag,
+dus fouten vind je alleen met je ogen. Bij H2 had één dia een onleesbare regel.
+
+Comprimeer daarna. Een deck uit PowerPoint is vaak 15 tot 25 MB; dat moet een
 leerling helemaal binnenhalen voordat hij dia 1 ziet.
 
 ```bash
@@ -337,3 +361,6 @@ niet gebeurd is.
 - `references/vraagregels.md` — wanneer een quiz- of toetsvraag goed genoeg is;
   dit zijn de regels die `scripts/lib/vraagItems.mjs` afdwingt.
 - `references/vraagronde.md` — de vragenbank voor stap 4 en 5.
+- `references/slidedeck-designsysteem.md` — het Helix Slide Design System: de
+  masterprompt, de promptvelden, het contract en de kleuren. Verplicht bij elk
+  deck.
