@@ -1,0 +1,274 @@
+{
+  "meta": {
+    "vak": "Digitale vaardigheden",
+    "bron": "Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.",
+    "afspraak": "Eén les van 45 minuten, drie compacte paragrafen. Geen schriftopdrachten: bij DV zijn de opdrachten digitaal. Verrijking akkoord: de keuken-beeldspraak in 2.1.",
+    "slo": {
+      "2.1": ["21A-1"],
+      "2.2": ["21A-1"],
+      "2.3": ["21A-1"]
+    },
+    "vakId": "vak-digitale-vaardigheden",
+    "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+    "niveauId": "niveau-dv-vmbo1-kb",
+    "seedBestand": "docs/seeds/dv-h2-device.seed.json",
+    "blokPrefix": "dv-klas1",
+    "deckPrefix": "dv-klas1",
+    "deckMap": "sources/dv-jpeg"
+  },
+  "hoofdstuk": {
+    "nummer": 2,
+    "titel": "H2: Wat zit er in je device?",
+    "beschrijving": "Een computer is geen magie. Je leert hoe invoer, verwerking, opslag en uitvoer samenwerken, wat software en een besturingssysteem doen, en hoe je met het storingsplan zelf een probleem oplost."
+  },
+  "paragrafen": [
+    {
+      "code": "2.1",
+      "titel": "Invoer, verwerking, opslag en uitvoer",
+      "beschrijving": "De vier stappen die elke computer zet, en de computer als keuken.",
+      "leerdoelen": [
+        "Je kunt de hoofdonderdelen van een computer noemen en uitleggen wat ze doen.",
+        "Je kunt met de vier stappen invoer, verwerking, opslag en uitvoer uitleggen wat een computer doet."
+      ],
+      "slidedeck": {
+        "sleutel": "dv-h2-device",
+        "bestand": "dv-h2-device.pdf",
+        "titel": "Presentatie H2 - Wat zit er in je device?"
+      },
+      "blokken": [
+        {
+          "type": "theory",
+          "titel": "Vier stappen in elke computer",
+          "html": "<p>Een computer lijkt soms magie. Je klikt, en er gebeurt iets. Maar binnenin doet elke computer steeds hetzelfde, in vier stappen.</p><ol><li><strong>Invoer.</strong> Jij geeft de computer iets. Dat doe je met het toetsenbord, de muis, het touchpad, de microfoon of de camera.</li><li><strong>Verwerking.</strong> De computer rekent met wat jij invoert. Dat werk doet de <strong>processor</strong>.</li><li><strong>Opslag.</strong> De computer bewaart je werk, ook als hij uitgaat.</li><li><strong>Uitvoer.</strong> Jij ziet of hoort het resultaat: op het scherm, uit de speakers of uit de printer.</li></ol><p>Een voorbeeld. Je typt een woord. Dat is invoer. De processor zet het woord in je document. Dat is verwerking. Je ziet het woord op je scherm. Dat is uitvoer. En als je op Opslaan klikt, wordt je document bewaard. Dat is opslag.</p>",
+          "kernbegrippen": [
+            { "begrip": "invoer", "uitleg": "Alles wat jij aan de computer geeft, bijvoorbeeld met het toetsenbord of de microfoon." },
+            { "begrip": "verwerking", "uitleg": "Het rekenwerk dat de computer doet met jouw invoer." },
+            { "begrip": "opslag", "uitleg": "De plek waar de computer je bestanden bewaart, ook als hij uit staat." },
+            { "begrip": "uitvoer", "uitleg": "Wat de computer aan jou teruggeeft, bijvoorbeeld beeld op het scherm of geluid." },
+            { "begrip": "processor", "uitleg": "Het onderdeel dat het rekenwerk doet. Het rekenhart van de computer." }
+          ]
+        },
+        {
+          "type": "theory",
+          "titel": "De computer als keuken",
+          "html": "<p>Je kunt een computer vergelijken met een keuken.</p><ul><li>De <strong>processor</strong> is de <strong>kok</strong>. Hij doet het werk, en hij is heel snel.</li><li>Het <strong>werkgeheugen</strong> is het <strong>aanrecht</strong>. Daar ligt alles waar je nu mee bezig bent. Zet je de computer uit, dan wordt het aanrecht leeg.</li><li>De <strong>opslag</strong> is de <strong>voorraadkast</strong>. Daar blijft alles bewaard, ook als de stroom eraf gaat.</li></ul><p>Als de kok gaat koken, pakt hij eerst spullen uit de voorraadkast en legt ze op het aanrecht. Zo werkt een computer ook. Open je een bestand, dan haalt de computer het uit de opslag en zet het in het werkgeheugen.</p><p>Wat gebeurt er als het aanrecht te klein is? Dan moet de kok steeds heen en weer lopen naar de voorraadkast. Dat kost tijd. Daarom wordt je laptop traag als je heel veel programma's en tabbladen tegelijk open hebt. Sluit wat je niet gebruikt, dan heeft de kok weer ruimte.</p>",
+          "kernbegrippen": [
+            { "begrip": "werkgeheugen", "uitleg": "Tijdelijke ruimte voor alles waar je nu mee bezig bent. Leeg als de computer uitgaat." }
+          ]
+        },
+        {
+          "type": "example",
+          "titel": "Voorbeeld: waarom is de laptop van Noor zo traag?",
+          "html": "<p>Noor werkt aan een werkstuk. Ze heeft Word open, twintig tabbladen in de browser en een video op de achtergrond. Haar laptop wordt steeds trager.</p><ol><li>Noor denkt eerst: mijn laptop is vol. Maar haar opslag heeft nog genoeg ruimte. De voorraadkast is dus niet het probleem.</li><li>Het probleem is het aanrecht. Het werkgeheugen is vol met alles wat tegelijk openstaat.</li><li>Noor sluit de video en achttien tabbladen die ze niet meer nodig heeft.</li><li>Nu heeft de kok weer ruimte op het aanrecht. De laptop reageert weer snel.</li></ol>"
+        },
+        {
+          "type": "summary",
+          "titel": "Samenvatting 2.1",
+          "html": "<ul><li>Elke computer werkt met vier stappen: invoer, verwerking, opslag en uitvoer.</li><li>De processor doet de verwerking. Hij is de kok.</li><li>Het werkgeheugen is het aanrecht: tijdelijk, en leeg als de computer uitgaat.</li><li>De opslag is de voorraadkast: daar blijven je bestanden bewaard.</li><li>Te veel tegelijk open? Dan is het werkgeheugen vol en wordt je computer traag.</li></ul>"
+        },
+        {
+          "type": "quiz",
+          "titel": "Quiz 2.1",
+          "inleiding": "Vier vragen. Je mag het vaker proberen.",
+          "vragen": [
+            {
+              "prompt": "Je praat in de microfoon van je laptop. Welke stap is dat?",
+              "options": [
+                { "text": "Uitvoer" },
+                { "text": "Invoer", "correct": true },
+                { "text": "Opslag" }
+              ],
+              "feedback": "Met de microfoon geef je de computer iets. Alles wat jij aan de computer geeft, is invoer."
+            },
+            {
+              "prompt": "Welk onderdeel is in de keuken de kok?",
+              "options": [
+                { "text": "Het werkgeheugen" },
+                { "text": "De opslag" },
+                { "text": "De processor", "correct": true }
+              ],
+              "feedback": "De processor doet het werk, net als de kok. Het werkgeheugen is het aanrecht en de opslag is de voorraadkast."
+            },
+            {
+              "prompt": "Als je laptop uitgaat, blijft alles in het werkgeheugen bewaard.",
+              "waar": false,
+              "feedback": "Het werkgeheugen is tijdelijk. Gaat de computer uit, dan is het aanrecht leeg. Alleen wat in de opslag staat, blijft bewaard."
+            },
+            {
+              "prompt": "Je laptop wordt traag als je veel tabbladen open hebt. Wat is dan waarschijnlijk vol?",
+              "options": [
+                { "text": "Het werkgeheugen", "correct": true },
+                { "text": "De opslag" },
+                { "text": "Het toetsenbord" }
+              ],
+              "feedback": "Alles wat openstaat ligt op het aanrecht, het werkgeheugen. Is dat vol, dan moet de kok steeds heen en weer lopen."
+            }
+          ]
+        },
+        {
+          "type": "question",
+          "titel": "Plusopdracht (voor wie meer wil)",
+          "inleiding": "Deze opdracht is niet verplicht. Antwoord in gewone zinnen.",
+          "vragen": [
+            {
+              "vraag": "Een laptop met meer werkgeheugen kan meer programma's tegelijk soepel openhouden. Leg met de keuken uit waarom.",
+              "modelantwoord": "Meer werkgeheugen is een groter aanrecht. Daar past meer tegelijk op, dus de kok (de processor) hoeft minder vaak heen en weer te lopen naar de voorraadkast (de opslag). Daardoor blijft de laptop sneller.",
+              "uitleg": "Het gaat om het aanrecht: meer ruimte voor wat nu openstaat."
+            }
+          ],
+          "digidocent": true
+        }
+      ]
+    },
+    {
+      "code": "2.2",
+      "titel": "Software en besturingssysteem",
+      "beschrijving": "Het verschil tussen hardware en software, en wat het besturingssysteem doet.",
+      "leerdoelen": [
+        "Je kunt het verschil uitleggen tussen hardware en software.",
+        "Je kunt uitleggen wat een besturingssysteem doet."
+      ],
+      "blokken": [
+        {
+          "type": "theory",
+          "titel": "Hardware en software",
+          "html": "<p>Een computer bestaat uit twee soorten dingen.</p><ul><li><strong>Hardware</strong> is alles wat je kunt vastpakken. Het toetsenbord, het scherm, de processor en de oplader zijn hardware.</li><li><strong>Software</strong> zijn de programma's. Je kunt ze niet vastpakken. Software vertelt de hardware wat hij moet doen. Word, de browser en een game zijn software.</li></ul><p>Twijfel je? Stel jezelf dan één vraag: kan ik het vastpakken? Ja: hardware. Nee: software.</p><p>Zonder software doet hardware niets. Zonder hardware kan software nergens draaien. Ze hebben elkaar nodig.</p>",
+          "kernbegrippen": [
+            { "begrip": "hardware", "uitleg": "De onderdelen van een computer die je kunt vastpakken." },
+            { "begrip": "software", "uitleg": "De programma's die de hardware vertellen wat hij moet doen." }
+          ]
+        },
+        {
+          "type": "theory",
+          "titel": "Het besturingssysteem is de baas",
+          "html": "<p>Eén programma is extra belangrijk: het <strong>besturingssysteem</strong>. Dat programma start als eerste als je de computer aanzet. Het is de baas van de computer.</p><p>Het besturingssysteem:</p><ul><li>verdeelt het werk van de processor over de programma's die openstaan;</li><li>verdeelt het werkgeheugen, het aanrecht, over die programma's;</li><li>laat je mappen en bestanden zien en bewaart ze in de opslag;</li><li>regelt de invoer en de uitvoer, zoals het toetsenbord en het scherm.</li></ul><p>Andere programma's, zoals Word of de browser, werken bovenop het besturingssysteem. Op de schoollaptop is dat besturingssysteem Windows. Op een telefoon is het meestal Android of iOS.</p><p>Het besturingssysteem krijgt regelmatig een update. Daarmee worden fouten hersteld. Daar leer je later meer over.</p>",
+          "kernbegrippen": [
+            { "begrip": "besturingssysteem", "uitleg": "Het programma dat de hele computer aanstuurt, zoals Windows, Android of iOS." },
+            { "begrip": "programma", "uitleg": "Software voor één soort taak, zoals Word voor teksten. Op een telefoon heet het meestal een app." }
+          ]
+        },
+        {
+          "type": "example",
+          "titel": "Voorbeeld: van aan-knop tot getypte zin",
+          "html": "<ol><li>Je drukt op de aan-knop. Die knop is hardware.</li><li>Windows start op. Dat is het besturingssysteem, dus software.</li><li>Je opent Word. Dat is een programma. Windows geeft Word een plek op het aanrecht en tijd van de kok.</li><li>Je typt een zin. Het toetsenbord (hardware) geeft de letters door, Windows stuurt ze naar Word, en Word zet ze op je scherm.</li></ol><p>Hardware, het besturingssysteem en het programma werken dus steeds samen.</p>"
+        },
+        {
+          "type": "summary",
+          "titel": "Samenvatting 2.2",
+          "html": "<ul><li>Hardware kun je vastpakken. Software zijn de programma's.</li><li>Het besturingssysteem is het programma dat de hele computer aanstuurt.</li><li>Op de schoollaptop is dat Windows. Op een telefoon meestal Android of iOS.</li><li>Programma's zoals Word werken bovenop het besturingssysteem.</li></ul>"
+        },
+        {
+          "type": "quiz",
+          "titel": "Quiz 2.2",
+          "inleiding": "Vier vragen. Je mag het vaker proberen.",
+          "vragen": [
+            {
+              "prompt": "Welke van deze is software?",
+              "options": [
+                { "text": "Het toetsenbord" },
+                { "text": "Windows", "correct": true },
+                { "text": "De processor" },
+                { "text": "De oplader" }
+              ],
+              "feedback": "Windows kun je niet vastpakken: het is een programma. Het toetsenbord, de processor en de oplader zijn hardware."
+            },
+            {
+              "prompt": "Word is een programma dat werkt bovenop het besturingssysteem.",
+              "waar": true,
+              "feedback": "Klopt. Word heeft het besturingssysteem nodig om tijd van de processor en ruimte in het werkgeheugen te krijgen."
+            },
+            {
+              "prompt": "Wat doet het besturingssysteem niet?",
+              "options": [
+                { "text": "Het start de computer op." },
+                { "text": "Het verdeelt het werkgeheugen over de programma's." },
+                { "text": "Het schrijft je verslag voor je.", "correct": true },
+                { "text": "Het laat je mappen en bestanden zien." }
+              ],
+              "feedback": "Het besturingssysteem regelt de computer, maar maakt geen schoolwerk. Je verslag schrijf je zelf, in een programma zoals Word."
+            },
+            {
+              "prompt": "Welk besturingssysteem staat vaak op een telefoon?",
+              "options": [
+                { "text": "Word" },
+                { "text": "OneDrive" },
+                { "text": "Android", "correct": true }
+              ],
+              "feedback": "Android is een besturingssysteem, net als iOS op een iPhone. Word en OneDrive zijn programma's."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2.3",
+      "titel": "Het storingsplan: zelf een probleem oplossen",
+      "beschrijving": "Zes vaste stappen als je laptop of een programma het niet doet.",
+      "leerdoelen": [
+        "Je kunt met het storingsplan een eenvoudige storing zelf oplossen.",
+        "Je kunt uitleggen waarom je je werk opslaat voordat je herstart."
+      ],
+      "blokken": [
+        {
+          "type": "theory",
+          "titel": "Het storingsplan in zes stappen",
+          "html": "<p>Soms doet je laptop of een programma het niet. Dat heet een <strong>storing</strong>. Vaak kun je die zelf oplossen, als je een vaste volgorde volgt. Die volgorde heet het <strong>storingsplan</strong>. Je gebruikt het dit hele jaar, ook bij andere vakken.</p><ol><li><strong>Kijk wat er gebeurt.</strong> Lees de melding op het scherm.</li><li><strong>Is het één programma of alles?</strong> Werkt de rest van de laptop nog wel?</li><li><strong>Opnieuw proberen.</strong> Sluit het programma en open het opnieuw, of vernieuw de pagina.</li><li><strong>Controleer de verbinding.</strong> Heb je wifi? Zit de kabel erin?</li><li><strong>Herstart de laptop.</strong> Sla eerst je werk op als dat nog kan.</li><li><strong>Lukt het nog niet?</strong> Schrijf op wat je hebt gedaan en vraag hulp: eerst een klasgenoot, dan je docent, dan de helpdesk.</li></ol><p>Waarom eerst opslaan? Herstarten maakt het werkgeheugen leeg, het aanrecht uit 2.1. Wat je nog niet had opgeslagen, ben je dan kwijt.</p>",
+          "kernbegrippen": [
+            { "begrip": "storing", "uitleg": "Iets aan je computer of een programma dat niet werkt zoals het hoort." },
+            { "begrip": "foutmelding", "uitleg": "Een bericht op het scherm dat vertelt wat er misgaat." },
+            { "begrip": "herstarten", "uitleg": "De computer uitzetten en meteen weer aanzetten. Het werkgeheugen wordt daarbij leeg." }
+          ]
+        },
+        {
+          "type": "example",
+          "titel": "Voorbeeld: Jayden heeft geen internet",
+          "html": "<p>Jayden wil in de les een website openen, maar hij krijgt een melding.</p><ol><li>Hij leest de melding: <em>Geen internet</em>.</li><li>Hij kijkt of andere programma's werken. Word werkt wel, maar geen enkele website laadt.</li><li>Hij vernieuwt de pagina. Dat helpt niet.</li><li>Hij klikt op het wifi-icoon rechtsonder. Zijn laptop is niet verbonden. Hij kiest het schoolnetwerk en maakt verbinding.</li><li>De website laadt. Herstarten was niet nodig.</li></ol><p>Had stap 4 niet geholpen, dan had Jayden zijn werk opgeslagen en herstart. En daarna, bij stap 6, had hij zijn docent verteld wat hij al had geprobeerd.</p>"
+        },
+        {
+          "type": "summary",
+          "titel": "Samenvatting 2.3",
+          "html": "<ul><li>Een storing kun je vaak zelf oplossen met het storingsplan.</li><li>Begin altijd met lezen wat er op het scherm staat.</li><li>Sla je werk op voordat je herstart, want herstarten maakt het werkgeheugen leeg.</li><li>Lukt het niet? Schrijf op wat je deed en vraag hulp.</li></ul>"
+        },
+        {
+          "type": "quiz",
+          "titel": "Quiz 2.3",
+          "inleiding": "Vier vragen. Je mag het vaker proberen.",
+          "vragen": [
+            {
+              "prompt": "Je programma loopt vast. Wat doe je als eerste?",
+              "options": [
+                { "text": "Meteen de laptop uitzetten." },
+                { "text": "Lezen wat er op het scherm staat.", "correct": true },
+                { "text": "Een klasgenoot je laptop laten overnemen." }
+              ],
+              "feedback": "Stap 1 is kijken wat er gebeurt. De melding op het scherm vertelt vaak al wat er misgaat."
+            },
+            {
+              "prompt": "Herstarten is altijd de eerste stap van het storingsplan.",
+              "waar": false,
+              "feedback": "Herstarten is pas stap 5. Vaak los je het eerder op, en bij herstarten kun je werk kwijtraken."
+            },
+            {
+              "prompt": "Waarom sla je je werk op voordat je herstart?",
+              "options": [
+                { "text": "Dan start de laptop sneller op." },
+                { "text": "Dat moet van Windows." },
+                { "text": "Anders kun je je werk kwijtraken.", "correct": true }
+              ],
+              "feedback": "Herstarten maakt het werkgeheugen leeg. Alleen wat in de opslag staat, blijft bewaard."
+            },
+            {
+              "prompt": "Je hebt stap 1 tot en met 5 gedaan en het werkt nog steeds niet. Wat doe je nu?",
+              "options": [
+                { "text": "Opschrijven wat je deed en hulp vragen.", "correct": true },
+                { "text": "Opnieuw beginnen bij stap 1." },
+                { "text": "Een andere laptop pakken zonder iets te zeggen." }
+              ],
+              "feedback": "Stap 6: schrijf op wat je al hebt geprobeerd en vraag hulp. Dan hoeft niemand die stappen opnieuw te doen."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

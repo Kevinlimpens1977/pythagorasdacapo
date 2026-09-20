@@ -374,3 +374,22 @@ test('paragraph readiness requires a complete closing check block', () => {
 
   assert.equal(withClosingCheck.canPublish, true);
 });
+
+test('question blocks with their own exercise fields need no linked question', () => {
+  const metVelden = validateContentBlockReadiness({
+    type: 'question',
+    status: 'published',
+    linkedVraagId: '',
+    content: { exercise: { fields: [{ id: 'vraag-1', label: 'Leg uit waarom.' }] } }
+  });
+  assert.equal(metVelden.canPublish, true);
+  assert.deepEqual(metVelden.errors, []);
+
+  const legeVelden = validateContentBlockReadiness({
+    type: 'question',
+    status: 'published',
+    linkedVraagId: '',
+    content: { exercise: { fields: [{ id: 'vraag-1', label: '' }] } }
+  });
+  assert.deepEqual(legeVelden.errors.map((issue) => issue.code), ['question_missing']);
+});

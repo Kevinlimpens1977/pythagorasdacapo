@@ -1,0 +1,1386 @@
+{
+  "meta": {
+    "omschrijving": "Seed voor DV hoofdstuk 2 (curriculum klas 1, les 1). Eigen bestand, want digitale-vaardigheden-vmbo1.seed.json wordt volledig opnieuw gegenereerd.",
+    "seedId": "dv-h2-device"
+  },
+  "vakken": [
+    {
+      "id": "vak-digitale-vaardigheden",
+      "name": "Digitale vaardigheden",
+      "code": "DV",
+      "description": "Digitale vaardigheden voor VMBO leerjaar 1",
+      "order": 99,
+      "isActive": true,
+      "color": "#2563eb",
+      "emoji": "DV"
+    }
+  ],
+  "leerjaren": [
+    {
+      "id": "leerjaar-digitale-vaardigheden-vmbo1",
+      "vakId": "vak-digitale-vaardigheden",
+      "year": 1,
+      "label": "Leerjaar 1",
+      "order": 1,
+      "isActive": true
+    }
+  ],
+  "niveaus": [
+    {
+      "id": "niveau-dv-vmbo1-kb",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "leerweg": "kb",
+      "label": "Kaderberoepsgerichte leerweg",
+      "name": "Groene route",
+      "description": "Groene route (Kaderberoepsgerichte leerweg) van Digitale vaardigheden, VMBO leerjaar 1.",
+      "order": 2,
+      "isActive": true
+    }
+  ],
+  "hoofdstukken": [
+    {
+      "id": "hoofdstuk-dv-klas1-h2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "number": 2,
+      "title": "H2: Wat zit er in je device?",
+      "description": "Een computer is geen magie. Je leert hoe invoer, verwerking, opslag en uitvoer samenwerken, wat software en een besturingssysteem doen, en hoe je met het storingsplan zelf een probleem oplost.",
+      "order": 2,
+      "published": true,
+      "isArchived": false
+    }
+  ],
+  "paragrafen": [
+    {
+      "id": "paragraaf-dv-klas1-21",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "code": "2.1",
+      "title": "2.1 Invoer, verwerking, opslag en uitvoer",
+      "beschrijving": "De vier stappen die elke computer zet, en de computer als keuken.",
+      "order": 1,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt de hoofdonderdelen van een computer noemen en uitleggen wat ze doen.",
+        "Je kunt met de vier stappen invoer, verwerking, opslag en uitvoer uitleggen wat een computer doet."
+      ],
+      "leerdoelen": [
+        "Je kunt de hoofdonderdelen van een computer noemen en uitleggen wat ze doen.",
+        "Je kunt met de vier stappen invoer, verwerking, opslag en uitvoer uitleggen wat een computer doet."
+      ]
+    },
+    {
+      "id": "paragraaf-dv-klas1-22",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "code": "2.2",
+      "title": "2.2 Software en besturingssysteem",
+      "beschrijving": "Het verschil tussen hardware en software, en wat het besturingssysteem doet.",
+      "order": 2,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt het verschil uitleggen tussen hardware en software.",
+        "Je kunt uitleggen wat een besturingssysteem doet."
+      ],
+      "leerdoelen": [
+        "Je kunt het verschil uitleggen tussen hardware en software.",
+        "Je kunt uitleggen wat een besturingssysteem doet."
+      ]
+    },
+    {
+      "id": "paragraaf-dv-klas1-23",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "code": "2.3",
+      "title": "2.3 Het storingsplan: zelf een probleem oplossen",
+      "beschrijving": "Zes vaste stappen als je laptop of een programma het niet doet.",
+      "order": 3,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt met het storingsplan een eenvoudige storing zelf oplossen.",
+        "Je kunt uitleggen waarom je je werk opslaat voordat je herstart."
+      ],
+      "leerdoelen": [
+        "Je kunt met het storingsplan een eenvoudige storing zelf oplossen.",
+        "Je kunt uitleggen waarom je je werk opslaat voordat je herstart."
+      ]
+    }
+  ],
+  "contentBlocks": [
+    {
+      "id": "block-dv-klas1-21-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-21",
+      "type": "theory",
+      "order": 2,
+      "title": "Vier stappen in elke computer",
+      "status": "published",
+      "content": {
+        "html": "<p>Een computer lijkt soms magie. Je klikt, en er gebeurt iets. Maar binnenin doet elke computer steeds hetzelfde, in vier stappen.</p><ol><li><strong>Invoer.</strong> Jij geeft de computer iets. Dat doe je met het toetsenbord, de muis, het touchpad, de microfoon of de camera.</li><li><strong>Verwerking.</strong> De computer rekent met wat jij invoert. Dat werk doet de <strong>processor</strong>.</li><li><strong>Opslag.</strong> De computer bewaart je werk, ook als hij uitgaat.</li><li><strong>Uitvoer.</strong> Jij ziet of hoort het resultaat: op het scherm, uit de speakers of uit de printer.</li></ol><p>Een voorbeeld. Je typt een woord. Dat is invoer. De processor zet het woord in je document. Dat is verwerking. Je ziet het woord op je scherm. Dat is uitvoer. En als je op Opslaan klikt, wordt je document bewaard. Dat is opslag.</p><h3>Kernbegrippen</h3><dl><dt>invoer</dt><dd>Alles wat jij aan de computer geeft, bijvoorbeeld met het toetsenbord of de microfoon.</dd><dt>verwerking</dt><dd>Het rekenwerk dat de computer doet met jouw invoer.</dd><dt>opslag</dt><dd>De plek waar de computer je bestanden bewaart, ook als hij uit staat.</dd><dt>uitvoer</dt><dd>Wat de computer aan jou teruggeeft, bijvoorbeeld beeld op het scherm of geluid.</dd><dt>processor</dt><dd>Het onderdeel dat het rekenwerk doet. Het rekenhart van de computer.</dd></dl>",
+        "keyTerms": [
+          "invoer",
+          "verwerking",
+          "opslag",
+          "uitvoer",
+          "processor"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-21-theory-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-21",
+      "type": "theory",
+      "order": 3,
+      "title": "De computer als keuken",
+      "status": "published",
+      "content": {
+        "html": "<p>Je kunt een computer vergelijken met een keuken.</p><ul><li>De <strong>processor</strong> is de <strong>kok</strong>. Hij doet het werk, en hij is heel snel.</li><li>Het <strong>werkgeheugen</strong> is het <strong>aanrecht</strong>. Daar ligt alles waar je nu mee bezig bent. Zet je de computer uit, dan wordt het aanrecht leeg.</li><li>De <strong>opslag</strong> is de <strong>voorraadkast</strong>. Daar blijft alles bewaard, ook als de stroom eraf gaat.</li></ul><p>Als de kok gaat koken, pakt hij eerst spullen uit de voorraadkast en legt ze op het aanrecht. Zo werkt een computer ook. Open je een bestand, dan haalt de computer het uit de opslag en zet het in het werkgeheugen.</p><p>Wat gebeurt er als het aanrecht te klein is? Dan moet de kok steeds heen en weer lopen naar de voorraadkast. Dat kost tijd. Daarom wordt je laptop traag als je heel veel programma's en tabbladen tegelijk open hebt. Sluit wat je niet gebruikt, dan heeft de kok weer ruimte.</p><h3>Kernbegrippen</h3><dl><dt>werkgeheugen</dt><dd>Tijdelijke ruimte voor alles waar je nu mee bezig bent. Leeg als de computer uitgaat.</dd></dl>",
+        "keyTerms": [
+          "werkgeheugen"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-21-example-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-21",
+      "type": "example",
+      "order": 4,
+      "title": "Voorbeeld: waarom is de laptop van Noor zo traag?",
+      "status": "published",
+      "content": {
+        "html": "<p>Noor werkt aan een werkstuk. Ze heeft Word open, twintig tabbladen in de browser en een video op de achtergrond. Haar laptop wordt steeds trager.</p><ol><li>Noor denkt eerst: mijn laptop is vol. Maar haar opslag heeft nog genoeg ruimte. De voorraadkast is dus niet het probleem.</li><li>Het probleem is het aanrecht. Het werkgeheugen is vol met alles wat tegelijk openstaat.</li><li>Noor sluit de video en achttien tabbladen die ze niet meer nodig heeft.</li><li>Nu heeft de kok weer ruimte op het aanrecht. De laptop reageert weer snel.</li></ol>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-21-summary-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-21",
+      "type": "summary",
+      "order": 5,
+      "title": "Samenvatting 2.1",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Elke computer werkt met vier stappen: invoer, verwerking, opslag en uitvoer.</li><li>De processor doet de verwerking. Hij is de kok.</li><li>Het werkgeheugen is het aanrecht: tijdelijk, en leeg als de computer uitgaat.</li><li>De opslag is de voorraadkast: daar blijven je bestanden bewaard.</li><li>Te veel tegelijk open? Dan is het werkgeheugen vol en wordt je computer traag.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-21-quiz-6",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-21",
+      "type": "quiz",
+      "order": 6,
+      "title": "Quiz 2.1",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Vier vragen. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je praat in de microfoon van je laptop. Welke stap is dat?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Uitvoer",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Invoer",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Opslag",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Uitvoer",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Invoer",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Opslag",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Met de microfoon geef je de computer iets. Alles wat jij aan de computer geeft, is invoer.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk onderdeel is in de keuken de kok?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het werkgeheugen",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "De opslag",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De processor",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het werkgeheugen",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "De opslag",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "De processor",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De processor doet het werk, net als de kok. Het werkgeheugen is het aanrecht en de opslag is de voorraadkast.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Als je laptop uitgaat, blijft alles in het werkgeheugen bewaard.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Het werkgeheugen is tijdelijk. Gaat de computer uit, dan is het aanrecht leeg. Alleen wat in de opslag staat, blijft bewaard.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je laptop wordt traag als je veel tabbladen open hebt. Wat is dan waarschijnlijk vol?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het werkgeheugen",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "De opslag",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Het toetsenbord",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het werkgeheugen",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "De opslag",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Het toetsenbord",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Alles wat openstaat ligt op het aanrecht, het werkgeheugen. Is dat vol, dan moet de kok steeds heen en weer lopen.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-21-question-7",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-21",
+      "type": "question",
+      "order": 7,
+      "title": "Plusopdracht (voor wie meer wil)",
+      "status": "published",
+      "content": {
+        "html": "<p>Deze opdracht is niet verplicht. Antwoord in gewone zinnen.</p>\n<p><strong>1. Een laptop met meer werkgeheugen kan meer programma's tegelijk soepel openhouden. Leg met de keuken uit waarom.</strong></p>",
+        "exercise": {
+          "fields": [
+            {
+              "id": "vraag-1",
+              "label": "Een laptop met meer werkgeheugen kan meer programma's tegelijk soepel openhouden. Leg met de keuken uit waarom.",
+              "answer": "",
+              "modelAnswer": "Meer werkgeheugen is een groter aanrecht. Daar past meer tegelijk op, dus de kok (de processor) hoeft minder vaak heen en weer te lopen naar de voorraadkast (de opslag). Daardoor blijft de laptop sneller.",
+              "explanation": "Het gaat om het aanrecht: meer ruimte voor wat nu openstaat."
+            }
+          ]
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-22-theory-1",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-22",
+      "type": "theory",
+      "order": 1,
+      "title": "Hardware en software",
+      "status": "published",
+      "content": {
+        "html": "<p>Een computer bestaat uit twee soorten dingen.</p><ul><li><strong>Hardware</strong> is alles wat je kunt vastpakken. Het toetsenbord, het scherm, de processor en de oplader zijn hardware.</li><li><strong>Software</strong> zijn de programma's. Je kunt ze niet vastpakken. Software vertelt de hardware wat hij moet doen. Word, de browser en een game zijn software.</li></ul><p>Twijfel je? Stel jezelf dan één vraag: kan ik het vastpakken? Ja: hardware. Nee: software.</p><p>Zonder software doet hardware niets. Zonder hardware kan software nergens draaien. Ze hebben elkaar nodig.</p><h3>Kernbegrippen</h3><dl><dt>hardware</dt><dd>De onderdelen van een computer die je kunt vastpakken.</dd><dt>software</dt><dd>De programma's die de hardware vertellen wat hij moet doen.</dd></dl>",
+        "keyTerms": [
+          "hardware",
+          "software"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-22-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-22",
+      "type": "theory",
+      "order": 2,
+      "title": "Het besturingssysteem is de baas",
+      "status": "published",
+      "content": {
+        "html": "<p>Eén programma is extra belangrijk: het <strong>besturingssysteem</strong>. Dat programma start als eerste als je de computer aanzet. Het is de baas van de computer.</p><p>Het besturingssysteem:</p><ul><li>verdeelt het werk van de processor over de programma's die openstaan;</li><li>verdeelt het werkgeheugen, het aanrecht, over die programma's;</li><li>laat je mappen en bestanden zien en bewaart ze in de opslag;</li><li>regelt de invoer en de uitvoer, zoals het toetsenbord en het scherm.</li></ul><p>Andere programma's, zoals Word of de browser, werken bovenop het besturingssysteem. Op de schoollaptop is dat besturingssysteem Windows. Op een telefoon is het meestal Android of iOS.</p><p>Het besturingssysteem krijgt regelmatig een update. Daarmee worden fouten hersteld. Daar leer je later meer over.</p><h3>Kernbegrippen</h3><dl><dt>besturingssysteem</dt><dd>Het programma dat de hele computer aanstuurt, zoals Windows, Android of iOS.</dd><dt>programma</dt><dd>Software voor één soort taak, zoals Word voor teksten. Op een telefoon heet het meestal een app.</dd></dl>",
+        "keyTerms": [
+          "besturingssysteem",
+          "programma"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-22-example-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-22",
+      "type": "example",
+      "order": 3,
+      "title": "Voorbeeld: van aan-knop tot getypte zin",
+      "status": "published",
+      "content": {
+        "html": "<ol><li>Je drukt op de aan-knop. Die knop is hardware.</li><li>Windows start op. Dat is het besturingssysteem, dus software.</li><li>Je opent Word. Dat is een programma. Windows geeft Word een plek op het aanrecht en tijd van de kok.</li><li>Je typt een zin. Het toetsenbord (hardware) geeft de letters door, Windows stuurt ze naar Word, en Word zet ze op je scherm.</li></ol><p>Hardware, het besturingssysteem en het programma werken dus steeds samen.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-22-summary-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-22",
+      "type": "summary",
+      "order": 4,
+      "title": "Samenvatting 2.2",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Hardware kun je vastpakken. Software zijn de programma's.</li><li>Het besturingssysteem is het programma dat de hele computer aanstuurt.</li><li>Op de schoollaptop is dat Windows. Op een telefoon meestal Android of iOS.</li><li>Programma's zoals Word werken bovenop het besturingssysteem.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-22-quiz-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-22",
+      "type": "quiz",
+      "order": 5,
+      "title": "Quiz 2.2",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Vier vragen. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke van deze is software?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het toetsenbord",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Windows",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De processor",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-4",
+                  "text": "De oplader",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het toetsenbord",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Windows",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "De processor",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-4",
+                "text": "De oplader",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Windows kun je niet vastpakken: het is een programma. Het toetsenbord, de processor en de oplader zijn hardware.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Word is een programma dat werkt bovenop het besturingssysteem.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Klopt. Word heeft het besturingssysteem nodig om tijd van de processor en ruimte in het werkgeheugen te krijgen.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat doet het besturingssysteem niet?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het start de computer op.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Het verdeelt het werkgeheugen over de programma's.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Het schrijft je verslag voor je.",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Het laat je mappen en bestanden zien.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het start de computer op.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Het verdeelt het werkgeheugen over de programma's.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Het schrijft je verslag voor je.",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-4",
+                "text": "Het laat je mappen en bestanden zien.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Het besturingssysteem regelt de computer, maar maakt geen schoolwerk. Je verslag schrijf je zelf, in een programma zoals Word.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk besturingssysteem staat vaak op een telefoon?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Word",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "OneDrive",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Android",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Word",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "OneDrive",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Android",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Android is een besturingssysteem, net als iOS op een iPhone. Word en OneDrive zijn programma's.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-23-theory-1",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-23",
+      "type": "theory",
+      "order": 1,
+      "title": "Het storingsplan in zes stappen",
+      "status": "published",
+      "content": {
+        "html": "<p>Soms doet je laptop of een programma het niet. Dat heet een <strong>storing</strong>. Vaak kun je die zelf oplossen, als je een vaste volgorde volgt. Die volgorde heet het <strong>storingsplan</strong>. Je gebruikt het dit hele jaar, ook bij andere vakken.</p><ol><li><strong>Kijk wat er gebeurt.</strong> Lees de melding op het scherm.</li><li><strong>Is het één programma of alles?</strong> Werkt de rest van de laptop nog wel?</li><li><strong>Opnieuw proberen.</strong> Sluit het programma en open het opnieuw, of vernieuw de pagina.</li><li><strong>Controleer de verbinding.</strong> Heb je wifi? Zit de kabel erin?</li><li><strong>Herstart de laptop.</strong> Sla eerst je werk op als dat nog kan.</li><li><strong>Lukt het nog niet?</strong> Schrijf op wat je hebt gedaan en vraag hulp: eerst een klasgenoot, dan je docent, dan de helpdesk.</li></ol><p>Waarom eerst opslaan? Herstarten maakt het werkgeheugen leeg, het aanrecht uit 2.1. Wat je nog niet had opgeslagen, ben je dan kwijt.</p><h3>Kernbegrippen</h3><dl><dt>storing</dt><dd>Iets aan je computer of een programma dat niet werkt zoals het hoort.</dd><dt>foutmelding</dt><dd>Een bericht op het scherm dat vertelt wat er misgaat.</dd><dt>herstarten</dt><dd>De computer uitzetten en meteen weer aanzetten. Het werkgeheugen wordt daarbij leeg.</dd></dl>",
+        "keyTerms": [
+          "storing",
+          "foutmelding",
+          "herstarten"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-23-example-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-23",
+      "type": "example",
+      "order": 2,
+      "title": "Voorbeeld: Jayden heeft geen internet",
+      "status": "published",
+      "content": {
+        "html": "<p>Jayden wil in de les een website openen, maar hij krijgt een melding.</p><ol><li>Hij leest de melding: <em>Geen internet</em>.</li><li>Hij kijkt of andere programma's werken. Word werkt wel, maar geen enkele website laadt.</li><li>Hij vernieuwt de pagina. Dat helpt niet.</li><li>Hij klikt op het wifi-icoon rechtsonder. Zijn laptop is niet verbonden. Hij kiest het schoolnetwerk en maakt verbinding.</li><li>De website laadt. Herstarten was niet nodig.</li></ol><p>Had stap 4 niet geholpen, dan had Jayden zijn werk opgeslagen en herstart. En daarna, bij stap 6, had hij zijn docent verteld wat hij al had geprobeerd.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-23-summary-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-23",
+      "type": "summary",
+      "order": 3,
+      "title": "Samenvatting 2.3",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Een storing kun je vaak zelf oplossen met het storingsplan.</li><li>Begin altijd met lezen wat er op het scherm staat.</li><li>Sla je werk op voordat je herstart, want herstarten maakt het werkgeheugen leeg.</li><li>Lukt het niet? Schrijf op wat je deed en vraag hulp.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-23-quiz-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h2",
+      "paragraafId": "paragraaf-dv-klas1-23",
+      "type": "quiz",
+      "order": 4,
+      "title": "Quiz 2.3",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Vier vragen. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je programma loopt vast. Wat doe je als eerste?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Meteen de laptop uitzetten.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Lezen wat er op het scherm staat.",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een klasgenoot je laptop laten overnemen.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Meteen de laptop uitzetten.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Lezen wat er op het scherm staat.",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een klasgenoot je laptop laten overnemen.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Stap 1 is kijken wat er gebeurt. De melding op het scherm vertelt vaak al wat er misgaat.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Herstarten is altijd de eerste stap van het storingsplan.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Herstarten is pas stap 5. Vaak los je het eerder op, en bij herstarten kun je werk kwijtraken.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waarom sla je je werk op voordat je herstart?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Dan start de laptop sneller op.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Dat moet van Windows.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Anders kun je je werk kwijtraken.",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Dan start de laptop sneller op.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Dat moet van Windows.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Anders kun je je werk kwijtraken.",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Herstarten maakt het werkgeheugen leeg. Alleen wat in de opslag staat, blijft bewaard.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je hebt stap 1 tot en met 5 gedaan en het werkt nog steeds niet. Wat doe je nu?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Opschrijven wat je deed en hulp vragen.",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Opnieuw beginnen bij stap 1.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een andere laptop pakken zonder iets te zeggen.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Opschrijven wat je deed en hulp vragen.",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Opnieuw beginnen bij stap 1.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een andere laptop pakken zonder iets te zeggen.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Stap 6: schrijf op wat je al hebt geprobeerd en vraag hulp. Dan hoeft niemand die stappen opnieuw te doen.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 1 (docs/curriculum/dv-klas1-curriculum.json), goedgekeurd door Kevin op 19 september 2026. Tekst nieuw geschreven.."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    }
+  ],
+  "badges": [],
+  "certificates": []
+}

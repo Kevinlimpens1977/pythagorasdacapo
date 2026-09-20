@@ -1,3 +1,4 @@
+import { hasExerciseFields } from './exerciseBlockUtils.js';
 import { normalizeParagraphMetadata } from './paragraphMetadata.js';
 
 export const CONTENT_BLOCK_STATUSES = ['draft', 'needs_review', 'ready', 'published', 'archived'];
@@ -158,6 +159,9 @@ const validateQuestionBlock = (block = {}) => {
   const linkedVraagId = block.linkedVraagId || linkedVraag?.id || '';
 
   if (!linkedVraagId) {
+    // Een vraagblok met eigen invulvelden (content.exercise) heeft geen
+    // gekoppelde vraag nodig: de leerlingroute toont die velden zelf.
+    if (hasExerciseFields(block)) return errors;
     errors.push(createIssue('question_missing', 'Koppel eerst een vraag aan dit lesblok.'));
     return errors;
   }

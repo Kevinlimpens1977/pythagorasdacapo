@@ -46,6 +46,12 @@ const SCRIPT_NAAM = 'scripts/zet-klas-lesstof-klaar.mjs';
 //                  krijgt. Meestal één; meerdere mag.
 //   uitsluiten     paragrafen die deze klas niet moet krijgen, ook al horen ze
 //                  bij haar niveau.
+//   lesstofHoofdstukken  optioneel: alleen paragrafen uit deze hoofdstukken
+//                  toewijzen. Zonder dit veld krijgt de klas alles van het
+//                  niveau, dus bij DV ook de lessen 1.1 tot en met 1.5.
+// De nieuwe DV-hoofdstukken (curriculum klas 1) die aan de H1-klassen gaan.
+const H2_EN_VERDER = ['hoofdstuk-dv-klas1-h2'];
+
 const VAKKEN = {
   binask: {
     omschrijving: 'Binask voor de twee EOA-klassen',
@@ -72,26 +78,28 @@ const VAKKEN = {
   },
 
   dv: {
-    omschrijving: 'Digitale vaardigheden voor de H1-klassen: alleen de routes eraf',
+    omschrijving: 'Digitale vaardigheden voor de H1-klassen: hoofdstuk 2 erbij, verder niets',
     backupNaam: 'dv-h1',
     // Kevin bouwt Digitale vaardigheden opnieuw op met één gedeelde versie.
     // Daarvoor moeten de leerroutes eraf: een klas met een route ziet alleen
     // lesstof van dat ene niveau, dus een gedeeld hoofdstuk zou onzichtbaar
     // blijven.
     //
-    // De toewijzingen blijven staan zoals ze zijn (lesstofNiveaus leeg). Elke
-    // klas houdt dus haar eigen nulmeting, met de resultaten die de leerlingen
-    // daarop hebben staan. Er komt op dit moment niets bij: wat de leerling
-    // ziet verandert niet.
+    // Sinds 19 september 2026 (Kevin): hoofdstuk 2 van het nieuwe curriculum
+    // (hoofdstuk-dv-klas1-h2) gaat naar acht klassen. Alleen dat hoofdstuk, dus
+    // niet de lessen 1.1 tot en met 1.5 die ook onder niveau-dv-vmbo1-kb hangen.
+    // De nulmeting van elke klas blijft staan via eigenNiveau. H1i1 houdt
+    // voorlopig alleen haar korte nulmeting (lesstofNiveaus leeg).
+    // Een volgend hoofdstuk voeg je toe aan H2_EN_VERDER.
     klassen: [
-      { id: 'klas_1787767044660', naam: 'H1B1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-bb', lesstofNiveaus: [] },
-      { id: 'klas_1787767053890', naam: 'H1B2', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-bb', lesstofNiveaus: [] },
-      { id: 'klas_1787768386819_0', naam: 'H1K1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-kb', lesstofNiveaus: [] },
-      { id: 'klas_1787768386908_1', naam: 'H1K2', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-kb', lesstofNiveaus: [] },
-      { id: 'klas_1787768387011_2', naam: 'H1K3', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-kb', lesstofNiveaus: [] },
-      { id: 'klas_1787768387188_4', naam: 'H1TL1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: [] },
-      { id: 'klas_1787768387289_5', naam: 'H1TL2', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: [] },
-      { id: 'klas_1787768387366_6', naam: 'H1TL3', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: [] },
+      { id: 'klas_1787767044660', naam: 'H1B1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-bb', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
+      { id: 'klas_1787767053890', naam: 'H1B2', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-bb', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
+      { id: 'klas_1787768386819_0', naam: 'H1K1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-kb', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
+      { id: 'klas_1787768386908_1', naam: 'H1K2', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-kb', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
+      { id: 'klas_1787768387011_2', naam: 'H1K3', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-kb', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
+      { id: 'klas_1787768387188_4', naam: 'H1TL1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
+      { id: 'klas_1787768387289_5', naam: 'H1TL2', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
+      { id: 'klas_1787768387366_6', naam: 'H1TL3', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
       { id: 'klas_1787768387105_3', naam: 'H1i1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-bb', lesstofNiveaus: [] }
     ]
   }
@@ -163,7 +171,9 @@ for (const klas of vak.klassen) {
   const lesstof = [];
   for (const niveauId of klas.lesstofNiveaus) {
     for (const paragraaf of await lesstofVanNiveau(niveauId)) {
-      if (!uitsluiten.has(paragraaf.id)) lesstof.push(paragraaf);
+      if (uitsluiten.has(paragraaf.id)) continue;
+      if (klas.lesstofHoofdstukken && !klas.lesstofHoofdstukken.includes(paragraaf.hoofdstukId)) continue;
+      lesstof.push(paragraaf);
     }
   }
   if (!alleenRoute && lesstof.length === 0) {
