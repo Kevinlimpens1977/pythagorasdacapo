@@ -76,7 +76,7 @@
     {
       "nr": 3,
       "type": "invullen",
-      "vraag": "Vul de zin aan.",
+      "vraag": "Lees eerst dit stukje. Losse gegevens, zoals cijfers, namen of metingen, noemen we data. Als je data verwerkt en uitlegt, krijgen ze betekenis. Dan worden ze informatie. Vul nu de zin aan.",
       "tekst": "Losse gegevens noemen we [data|gegevens]. Na verwerking kunnen ze [informatie] worden.",
       "uitleg": "Data krijgen betekenis wanneer ze worden verwerkt en uitgelegd.",
       "leerdoel": "De leerling onderscheidt data en informatie.",
