@@ -8,8 +8,8 @@
 
 <p class="meta">Visie- en beslisdocument voor teamleiding en MT<br>
 Opgesteld door Kevin Limpens, docent digitale vaardigheden<br>
-Versie 2.0 &middot; 22 september 2026<br>
-Nieuw ten opzichte van versie 1: hoofdstuk 7 met de nulmeting per leerweg, het startprofiel van de leerling en wat HELIX ermee doet</p>
+Versie 3.0 &middot; 22 september 2026<br>
+Nieuw ten opzichte van versie 2: waarop de verdeling over de lessen is gebaseerd (8.1 tot 8.3), de stand van de leeromgeving (hoofdstuk 10), wat meer tijd met de verankering doet (15.3) en waar digitale geletterdheid in klas 2 tot 4 kan landen (hoofdstuk 17)</p>
 
 <p class="leeswijzer">Dit document is zelfstandig leesbaar. Kennis van het leerplatform HELIX is niet nodig. Waar dat telt, staat erbij of een uitspraak <strong>officieel</strong> is (SLO, wet), een <strong>analyse</strong>, een <strong>ontwerpkeuze</strong> van DaCapo, of een <strong>scenario</strong>.</p>
 
@@ -28,22 +28,24 @@ Nieuw ten opzichte van versie 1: hoofdstuk 7 met de nulmeting per leerweg, het s
 7. Bestaande lesstof en de nulmeting per leerweg
 8. Het curriculum voor klas 1: 22 lessen
 9. SLO-dekkingsmatrix
-10. De grens van twintig lessen
-11. Scenario: 40 lessen
-12. Wat extra onderwijstijd inhoudelijk oplevert
-13. Scenario: hybride
-14. Vergelijking van de scenario's
-15. Doorlopende lijn klas 1 tot en met 4
-16. De rol van vakdocenten
-17. Een gemeenschappelijke digitale taal
-18. Vakoverstijgende projecten
-19. Beoordelen als AI beschikbaar is
-20. Toekomstbestendige digitale competenties
-21. Toekomstscenario's
-22. Concept voor een SLO-dashboard
-23. Organisatorische invoering
-24. Beslispunten voor het MT
-25. Bronnen
+10. De stand van de leeromgeving vandaag
+11. De grens van twintig lessen
+12. Scenario: 40 lessen
+13. Wat extra onderwijstijd inhoudelijk oplevert
+14. Scenario: hybride
+15. Vergelijking van de scenario's
+16. Doorlopende lijn klas 1 tot en met 4
+17. Waar digitale geletterdheid kan landen in klas 2, 3 en 4
+18. De rol van vakdocenten
+19. Een gemeenschappelijke digitale taal
+20. Vakoverstijgende projecten
+21. Beoordelen als AI beschikbaar is
+22. Toekomstbestendige digitale competenties
+23. Toekomstscenario's
+24. Concept voor een SLO-dashboard
+25. Organisatorische invoering
+26. Beslispunten voor het MT
+27. Bronnen
 
 Bijlagen: A. De 22 lessen · B. Docentkaarten
 
@@ -71,7 +73,7 @@ Bijlagen: A. De 22 lessen · B. Docentkaarten
 | 22 lessen + oefenen in HELIX | 6 × 15 minuten zelfstandig | 9 (meer herhaling, niet meer oefening) | 0 |
 | 22 in klas 1 + 18 in klas 2 | 18 lessen in klas 2 | 39 | 0 |
 
-**Beslispunten** (hoofdstuk 24): de DV-tijd in klas 1, een plek voor DV in klas 2 vanaf 2027-2028, de rol van andere vakken, oefenen in HELIX buiten de les, en het moment van overstappen op de nieuwe kerndoelen.
+**Beslispunten** (hoofdstuk 26): de DV-tijd in klas 1, een plek voor DV in klas 2 vanaf 2027-2028, de rol van andere vakken, oefenen in HELIX buiten de les, en het moment van overstappen op de nieuwe kerndoelen.
 
 ## 2. Aanleiding en context
 
@@ -117,7 +119,7 @@ Deze ontwerpkeuzes liggen onder het curriculum.
 1. **SLO is de maat.** Elke les is gekoppeld aan concrete onderdelen van de kerndoelen. Een koppeling staat er alleen als de les het onderdeel echt behandelt.
 2. **Geen Office-cursus.** Word, Excel, PowerPoint en Copilot zijn middelen die opduiken als een opdracht ze nodig heeft. Er zijn geen lessen "Word leren".
 3. **Van begrijpen naar maken.** Het jaar loopt van hoe systemen werken, via veiligheid, informatie, data en AI, naar zelf ontwerpen en programmeren, en eindigt bij de samenleving.
-4. **Vaste routines met een naam.** Zes routines worden in DV aangeleerd en kunnen in elk vak worden gebruikt (hoofdstuk 17).
+4. **Vaste routines met een naam.** Zes routines worden in DV aangeleerd en kunnen in elk vak worden gebruikt (hoofdstuk 19).
 5. **Evidence op twee niveaus.** Elke les sluit af met een korte check. Twaalf lessen leveren daarnaast een product op dat laat zien dat de leerling het kan.
 6. **Eén leerlijn voor iedereen.** Basis, kader en TL volgen dezelfde lessen. Het verschil zit in de steun (basis) en in een plusopdracht (TL).
 7. **Startscore uit de nulmeting.** Elke leerling ziet bij de start van een les zijn eigen score voor dat onderdeel.
@@ -212,7 +214,29 @@ De nulmeting is pas nuttig als er iets mee gebeurt. In HELIX gebeurt dat op drie
 
 ## 8. Het curriculum voor klas 1: 22 lessen
 
-Ontwerpkeuze: 22 lessen van 45 minuten, passend in de DIF-uren van klas 1. In zes blokken:
+Ontwerpkeuze: 22 lessen van 45 minuten, passend in de DIF-uren van klas 1.
+
+### 8.1 Waarop de verdeling over de lessen is gebaseerd
+
+De 22 lessen zijn niet ontstaan uit het bestaande lesmateriaal, maar uit zes regels die vooraf zijn vastgelegd. In deze volgorde:
+
+**1. De kerndoelen zijn het frame, niet de inhoudsopgave van een methode.** SLO beschrijft negen kerndoelen digitale geletterdheid en werkt die voor het vmbo uit in 45 onderdelen. Die 45 zijn geteld en over de lessen verdeeld; geen enkel onderdeel mag ontbreken. Een generator controleert dat bij elke wijziging: wordt een onderdeel nergens geïntroduceerd, dan weigert het curriculumbestand te bouwen. De dekkingsmatrix in hoofdstuk 9 komt uit diezelfde telling en kan dus niet uit de pas lopen met de lessen.
+
+**2. Zes blokken, in een opbouwende volgorde.** De volgorde is didactisch, niet alfabetisch. Blok A legt uit hoe een apparaat en een netwerk werken, want zonder dat begrip is "waarom is phishing gevaarlijk" iets om te onthouden in plaats van iets om te begrijpen. Blok B staat vooraan omdat brugklassers hun schoolaccount in de eerste weken nodig hebben. Blok E, zelf maken en programmeren, staat achteraan omdat het alles uit de eerdere blokken gebruikt. Blok F sluit af met de vraag wat dit alles met de samenleving doet.
+
+**3. Eén les is één hoofdstuk in de leeromgeving.** Elke les van 45 minuten is in HELIX één hoofdstuk met drie paragrafen: uitleg, voorbeeld, oefening en een check. Een leerling ziet per les een afgerond geheel, en een collega die invalt ziet wat er die les gebeurt zonder de hele leerlijn te kennen.
+
+**4. De nulmeting bepaalt de accenten.** De uitslag uit hoofdstuk 7 zit in de verdeling. Zelf digitale producten maken scoorde in alle leerwegen het laagst (41 tot 50 procent) en is daarom het grootste blok geworden: vijf van de 22 lessen gaan over ontwerpen, maken en programmeren. Data scoorde het hoogst, maar met de makkelijkste vragen; dat onderdeel houdt één volle les in plaats van twee.
+
+**5. Software is een middel, geen doel.** Er is geen Word-les en geen PowerPoint-les. Waar een leerling een tekstverwerker, een presentatie of een spreadsheet nodig heeft, gebeurt dat binnen een inhoudelijke les. Dat is een bewuste breuk met het huidige materiaal, waarin vier van de twintig lessen over Office gaan.
+
+**6. Elke les levert iets op.** Per les ligt vast welk bewijs de leerling maakt: een afsluitcheck, een uitwerking in HELIX of een product. Vijftien van de 22 lessen eindigen in een product. Dat is nodig om later te kunnen laten zien dat een kerndoel niet alleen behandeld, maar ook bereikt is.
+
+**Wat de verdeling niet is.** Geen methode en geen volgorde die vastligt voor de eeuwigheid. Elke les staat in één bestand, met zijn kerndoelonderdelen, leerdoelen, bewijs, differentiatie en de vakken waarbij hij past. Schuiven mag; de dekking wordt dan opnieuw geteld.
+
+### 8.2 De zes blokken en de volgorde
+
+In zes blokken:
 
 | Blok | Lessen | Kern |
 | --- | --- | --- |
@@ -229,6 +253,12 @@ De volledige lijst staat in bijlage A. Enkele kenmerken:
 - **Programmeren** wordt in drie lessen geïntroduceerd: van stroomschema tot een klein eigen spel met events, lijsten en logica. Verdiepen hoort bij klas 2.
 - **Het eindproject** is een campagne voor andere brugklassers, onderbouwd met data uit de eigen klas. Dat is lastig door AI te laten maken, omdat AI die data niet kent.
 
+### 8.3 Hoe één les eruitziet
+
+Elke les bestaat in HELIX uit drie paragrafen. Een paragraaf begint met een presentatie voor het digibord en bevat daarna uitleg, een voorbeeld uit de leefwereld van de leerling, een samenvatting en een korte quiz met directe feedback. Een les telt zo ongeveer zestien onderdelen, goed voor 45 minuten met ruimte voor verschil in tempo.
+
+Alle presentaties worden op dezelfde manier gemaakt en volgen één vormgevingssysteem, zodat een leerling in elk hoofdstuk dezelfde opbouw herkent: één denkstap per dia, een vaste kleurbetekenis en steeds een zichtbaar succescriterium. Hoofdstuk 10 laat zien wat daarvan nu al klaarstaat.
+
 ## 9. SLO-dekkingsmatrix
 
 De matrix toont per kerndoel en per les welke rol de les heeft. **I** introductie, **O** oefenen, **H** herhalen in een nieuwe context, **h** korte terugblikvraag, **T** toepassen in een grotere opdracht, **E** evidence (een product). Een sterretje: dit kerndoel is in deze les primair.
@@ -237,7 +267,26 @@ De matrix toont per kerndoel en per les welke rol de les heeft. **I** introducti
 
 **Uitkomst voor de 45 onderdelen.** Alle 45 worden geïntroduceerd. 40 komen daarna inhoudelijk terug; 3 alleen als korte terugblikvraag; 2 worden alleen geïntroduceerd. 15 onderdelen hebben een product als evidence, de andere 30 alleen de afsluitcheck.
 
-## 10. De grens van twintig lessen
+## 10. De stand van de leeromgeving vandaag
+
+Dit hoofdstuk beschrijft wat er op dit moment werkelijk in HELIX staat, zodat het MT het plan naast de praktijk kan leggen.
+
+**Wat er live staat.**
+
+| Hoofdstuk | Wat het is | Stand |
+| --- | --- | --- |
+| H1 Startklaar op je nieuwe school | de nulmeting, twee delen van 27 vragen | live sinds begin september; 143 van de 145 brugklassers zijn begonnen |
+| H2 Wat zit er in je device? | les 1 van het curriculum: invoer en verwerking, software en besturingssysteem, het storingsplan | live, drie paragrafen en zestien onderdelen; staat op slot tot de les begint |
+
+**Hoe een hoofdstuk tot stand komt.** De inhoud van een les staat in één bronbestand: paragraafindeling, teksten, voorbeelden, quizvragen en de koppeling met de kerndoelonderdelen. Daaruit bouwt een generator de lesonderdelen, met controles die de bouw stoppen bij een lege vraag, een ontbrekende uitleg of een antwoord dat zichtbaar zou worden voor de leerling. De presentatie wordt apart gemaakt en aan de eerste plaats van de paragraaf gekoppeld. Wijzigt de les, dan wijzigt het bronbestand en niet de database: de les blijft daardoor reproduceerbaar.
+
+**Wat de leerling ziet.** Zijn eigen lesstofpagina met de hoofdstukken die voor zijn klas klaarstaan, per hoofdstuk de paragrafen en per paragraaf de stappen. Hij ziet waar hij gebleven was, hij ziet zijn startprofiel uit de nulmeting (hoofdstuk 7), en hij kan de uitleg desgewenst in zijn eigen taal lezen: leerlingen die Nederlands nog leren, kiezen zelf een van tien talen. Zijn antwoorden schrijft hij altijd in het Nederlands.
+
+**Wat de docent doet.** Lesstof staat weken vooruit klaar en gaat per klas op slot tot de les begint; met één vinkje geeft de docent een heel hoofdstuk vrij. In het klasoverzicht ziet hij per leerling per stap hoe ver die is, wat er nagekeken moet worden en wie is vastgelopen.
+
+**Wat er nog moet gebeuren.** De hoofdstukken 3 tot en met 23 van het curriculum worden in dezelfde vorm gebouwd; per les kost dat ongeveer een dagdeel, inclusief de presentatie. De volgorde volgt de blokken uit 8.2, zodat de klassen na de nulmeting zonder onderbreking verder kunnen.
+
+## 11. De grens van twintig lessen
 
 **Analyse.** Met twintig lessen komt elk onderdeel één keer aan bod, maar komen er 14 van de 45 daarna niet meer terug. Met 22 lessen zijn dat er nog 5. Wat dan overblijft is het verschil tussen **dekking** en **leren**:
 
@@ -251,7 +300,7 @@ Twee groepen onderdelen lijden het meest onder weinig tijd:
 
 Een planning die alleen dekking laat zien, zegt dus weinig over wat leerlingen kunnen. Daarom legt het curriculum per les de rol vast (introductie, oefenen, herhalen, toepassen, evidence), en niet alleen de koppeling aan een kerndoel.
 
-## 11. Scenario: 40 lessen
+## 12. Scenario: 40 lessen
 
 De 22 lessen plus 18 lessen die geen nieuwe onderwerpen toevoegen, maar oefenen, projecten en bewijs bij dezelfde onderdelen:
 
@@ -272,7 +321,7 @@ De 22 lessen plus 18 lessen die geen nieuwe onderwerpen toevoegen, maar oefenen,
 
 **Variant.** Dezelfde 18 lessen in klas 2 in plaats van klas 1 geven dezelfde opbrengst. Dat past bij hoe SLO de kerndoelen bedoelt, voor de hele onderbouw. Het vraagt wel een plek in klas 2, die er nu niet is.
 
-## 12. Wat extra onderwijstijd inhoudelijk oplevert
+## 13. Wat extra onderwijstijd inhoudelijk oplevert
 
 **Analyse.** Het argument is niet "meer lessen is beter". Het gaat om wat alleen met meer tijd kan:
 
@@ -285,7 +334,7 @@ De 22 lessen plus 18 lessen die geen nieuwe onderwerpen toevoegen, maar oefenen,
 | **feedback en herkansing** | zonder terugkoppeling op een product groeit een leerling niet |
 | **betere evidence** | met projecten ontstaat per leerling bewijs dat verder gaat dan een quiz |
 
-## 13. Scenario: hybride
+## 14. Scenario: hybride
 
 De 22 DV-lessen plus zestien vaste momenten verspreid over het jaar in de lessen van andere vakken. Daar gebruiken leerlingen een routine uit DV in hun eigen vak. Dat kost geen extra lesuren; het vraagt een kleine aanpassing van een les die er al is.
 
@@ -302,9 +351,9 @@ De 22 DV-lessen plus zestien vaste momenten verspreid over het jaar in de lessen
 
 **Aanvulling: oefenen in HELIX.** Na elk blok een herhaalronde van ongeveer vijftien minuten buiten de les, met een quiz en een spel. Goedkoop en goed voor onthouden, maar geen oefening of toepassing. Het werkt het best in combinatie met het hybride model.
 
-## 14. Vergelijking van de scenario's
+## 15. Vergelijking van de scenario's
 
-### 14.1 In cijfers
+### 15.1 In cijfers
 
 Berekend over de 45 onderdelen. "Stevig verankerd" betekent: na de introductie minstens twee keer inhoudelijk terug.
 
@@ -312,7 +361,7 @@ Berekend over de 45 onderdelen. "Stevig verankerd" betekent: na de introductie m
 
 Legenda: **A20** 20 DV-lessen, **A** 22 DV-lessen, **B** 40 DV-lessen in klas 1, **C** 22 lessen + 16 vakmomenten, **D** 22 lessen + oefenen in HELIX, **E** 22 lessen in klas 1 + 18 in klas 2, **C+D** hybride met oefenen in HELIX.
 
-### 14.2 Op onderwijsaspecten
+### 15.2 Op onderwijsaspecten
 
 | Aspect | 20 / 22 lessen | 40 lessen | Hybride |
 | --- | --- | --- | --- |
@@ -330,7 +379,28 @@ Legenda: **A20** 20 DV-lessen, **A** 22 DV-lessen, **B** 40 DV-lessen in klas 1,
 
 **Wat de vergelijking laat zien.** Alle scenario's dekken formeel alle kerndoelen. Het verschil zit in oefening, herhaling en transfer. Veertig lessen levert per leerling het meeste op, maar kost achttien lesuren. Het hybride model haalt zonder extra lesuren een groot deel van die winst, plus transfer die veertig lessen niet hebben, maar alleen met een eigenaar en registratie.
 
-## 15. Doorlopende lijn klas 1 tot en met 4
+### 15.3 Wat meer tijd met de verankering doet
+
+Voor het MT is dit de kern van de keuze, teruggebracht tot vier kolommen. "Stevig verankerd" betekent: na de introductie minstens twee keer inhoudelijk terug.
+
+| Van de 45 onderdelen | 22 lessen klas 1 (nu) | 40 lessen klas 1 | 22 in klas 1 + 18 in klas 2 | 22 lessen + 16 vakmomenten |
+| --- | --- | --- | --- | --- |
+| Geïntroduceerd | 45 | 45 | 45 | 45 |
+| Komt daarna inhoudelijk terug | 40 | 45 | 45 | 44 |
+| **Stevig verankerd** | **9** | **39** | **39** | **29** |
+| Alleen introductie of een terugblikvraag | 5 | 0 | 0 | 1 |
+| Met een product als bewijs | 15 | 22 | 22 | 15 |
+| Toegepast in een ander vak | 0 | 0 | 0 | 30 |
+
+In één zin: met 22 lessen halen we alle kerndoelen aan en verankeren we er negen; met 40 lessen worden dat er 39.
+
+Drie dingen die het MT hieruit kan meenemen:
+
+1. **De derde kolom kost geen extra uren in klas 1.** 22 lessen in klas 1 plus 18 in klas 2 geeft exact dezelfde verankering als 40 lessen in klas 1, en sluit aan bij hoe de kerndoelen geschreven zijn: ze gelden voor de hele onderbouw, dus klas 1 én 2. Er is alleen nog geen plek voor in het rooster van klas 2.
+2. **Het hybride model is de goedkoopste winst**, maar verplaatst het werk naar de vakken: 30 onderdelen komen dan in een ander vak terug, en dat vraagt afstemming (hoofdstuk 18).
+3. **Wij bouwen nu op 20 tot 22 lessen in klas 1.** Het materiaal in HELIX is daarop gemaakt. Komt er later tijd bij, dan hoeft het curriculum niet opnieuw: de extra lessen zijn uitgewerkt en te koppelen aan de bestaande blokken.
+
+## 16. Doorlopende lijn klas 1 tot en met 4
 
 **Officieel:** de kerndoelen gelden voor klas 1 en 2. In klas 3 en 4 gelden examenprogramma's. Een lijn tot klas 4 is daarom een keuze van de school.
 
@@ -351,7 +421,51 @@ Legenda: **A20** 20 DV-lessen, **A** 22 DV-lessen, **B** 40 DV-lessen in klas 1,
 
 Groei zit niet in steeds nieuwe onderwerpen, maar in zelfstandigheid, complexiteit en verantwoordelijkheid. Dezelfde routines komen elk jaar terug, op een hoger niveau.
 
-## 16. De rol van vakdocenten
+## 17. Waar digitale geletterdheid kan landen in klas 2, 3 en 4
+
+Hoofdstuk 16 beschrijft de lijn; dit hoofdstuk maakt hem concreet. Alles hieronder is een **voorstel**, geen planning: het laat zien welke plekken er in de schoolkalender al zijn, zodat het MT kan kiezen wat het wil gebruiken.
+
+### 17.1 Meeliften op landelijke themaweken
+
+Deze weken staan landelijk vast, hebben gratis lesmateriaal en vragen geen extra lesuren; ze vragen wel dat iemand ze in de jaarplanning zet.
+
+| Week | Datum 2026-2027 | Organisator | Sluit aan op |
+| --- | --- | --- | --- |
+| Week tegen Pesten | 21-25 september 2026 | Stichting School & Veiligheid | 23B jezelf en de ander: online pesten en groepsdruk |
+| Paarse Vrijdag | 9 oktober 2026 | COC en GSA's | 23B, burgerschap: jezelf zijn, ook online |
+| Nationale Klimaatweek | 2-8 november 2026 | Rijksoverheid en partners | 23C samenleving: wat technologie kost aan energie |
+| Week van de Mediawijsheid | 6-13 november 2026 | Netwerk Mediawijsheid, met MediaMasters voor de brugklas | 21B informatie en media, 23B |
+| Week van Respect | 9-15 november 2026 | Respect Education Foundation | 23B, burgerschap |
+| Safer Internet Day | 9 februari 2027, thema oplichting | Safer Internet Centre Nederland | 23A veiligheid en privacy |
+| Week van het geld | 15-19 maart 2027 | Wijzer in geldzaken | 23A oplichting en online kopen, 21C data |
+
+Een landelijke burgerschapsweek als zodanig bestaat niet; Week van Respect en Paarse Vrijdag zijn de momenten waar burgerschap in de praktijk aan hangt.
+
+**Hoe dat eruitziet.** Eén mentorles in de Week tegen Pesten over online pesten, met dezelfde routine die de leerling in klas 1 leerde. Eén les in de Week van de Mediawijsheid waarin klas 2 de broncheck opnieuw doet, nu op een actueel onderwerp. Safer Internet Day als jaarlijkse herhaling van phishing herkennen. Dat is drie lesuren per jaar, uit uren die er al zijn, en het levert precies de herhaling op die in het scenario van 22 lessen ontbreekt.
+
+### 17.2 Projectweken
+
+In klas 2 en 3 staan projectweken. Digitale geletterdheid past daar niet als apart onderwerp maar als het gereedschap van het project: bronnen checken, data verzamelen en presenteren, een digitaal product maken, en verantwoorden wat AI eraan gedaan heeft. De vier vakoverstijgende projecten in hoofdstuk 20 zijn zo ontworpen dat ze in een projectweek passen.
+
+Het verschil met een losse les is de omvang van het bewijs: in een projectweek maakt een leerling een product waaraan meerdere kerndoelen tegelijk af te lezen zijn. Voor de dekking telt dat zwaarder dan drie losse lessen.
+
+### 17.3 LOB en stage
+
+In LOB ligt twee keer een directe koppeling: **"wie ben jij online"** (23B) als voorbereiding op sollicitatie en stage, en **"technologie verandert beroepen"** (23C) bij het verkennen van profielen. In klas 3 en 4 komt daar de stage bij: wat mag je delen over je stageadres, hoe ga je om met klantgegevens, welke systemen gebruikt dit bedrijf. Dezelfde inhoud als in klas 1, maar toegepast op hun eigen toekomst; dat is precies de groei in zelfstandigheid uit hoofdstuk 16.
+
+### 17.4 Vakintegratie, en wat we daarvoor eerst moeten weten
+
+Elke les in het curriculum heeft een veld met de vakken waar hij bij past. In het hybride scenario zijn dat zestien momenten, die 30 van de 45 onderdelen in een ander vak laten terugkomen. Maar dat ontwerp is gemaakt op grond van wat logisch lijkt, niet op grond van wat er in die vakken werkelijk gebeurt.
+
+**Daarom eerst de vakgroepenquête.** Vorig schooljaar is al voorbereid om een korte digitale enquête in de vakgroepen uit te zetten: welke onderdelen van digitale geletterdheid komen in jouw vak nu al aan bod, hoe vaak, en met welk bewijs? Die enquête is niet uitgezet, en ze is nog even nuttig als toen. Ze levert drie dingen op:
+
+1. **Een kaart van wat er al gebeurt.** Waarschijnlijk oefenen leerlingen bij Nederlands al met bronnen beoordelen en bij wiskunde al met grafieken lezen. Dat hoeft DV dan niet opnieuw te introduceren, maar wel te benoemen met dezelfde woorden.
+2. **Een realistische lijst vakmomenten.** De zestien momenten uit het hybride scenario kunnen dan worden aangeboden aan de vakken waar ze het beste passen, in plaats van toebedeeld.
+3. **Een nulmeting voor de school zelf.** Bij de invoering van de kerndoelen in 2027 moet de school kunnen laten zien waar digitale geletterdheid zit. Deze enquête is daarvan de eerste meting; herhaald na een jaar laat ze zien of er beweging is.
+
+De enquête is kort te houden: negen kerndoelen, per kerndoel drie vragen (komt het aan bod, hoe vaak, is er bewijs), plus één open vraag. Tien minuten per vakgroep, digitaal af te nemen en automatisch samen te vatten.
+
+## 18. De rol van vakdocenten
 
 | Wie | Verantwoordelijk voor |
 | --- | --- |
@@ -363,7 +477,7 @@ Groei zit niet in steeds nieuwe onderwerpen, maar in zelfstandigheid, complexite
 
 Het grootste risico van een doorlopende lijn is dat elke docent opnieuw begint. Drie dingen voorkomen dat: dezelfde namen voor de routines, een zichtbaar overzicht in HELIX van wat een klas al heeft gehad, en een vaste start in klas 2 die de routines herhaalt.
 
-## 17. Een gemeenschappelijke digitale taal
+## 19. Een gemeenschappelijke digitale taal
 
 Zes routines die DV aanleert, zodat een vakdocent kan zeggen "doe de broncheck" zonder het opnieuw uit te leggen:
 
@@ -378,7 +492,7 @@ Zes routines die DV aanleert, zodat een vakdocent kan zeggen "doe de broncheck" 
 
 **Ondersteuning voor collega's:** een docentkaart van één pagina per routine (bijlage B), een microtraining van twintig minuten in een teamvergadering, een standaardrubric voor producten, en een overzicht in HELIX van welke routines een klas al heeft gehad.
 
-## 18. Vakoverstijgende projecten
+## 20. Vakoverstijgende projecten
 
 Vier projecten voor klas 2 en 3, met een echte context en een zichtbaar proces:
 
@@ -391,7 +505,7 @@ Vier projecten voor klas 2 en 3, met een echte context en een zichtbaar proces:
 
 Met alle profielen vanaf volgend jaar op één locatie worden projecten over profielen heen eenvoudiger te organiseren.
 
-## 19. Beoordelen als AI beschikbaar is
+## 21. Beoordelen als AI beschikbaar is
 
 **Analyse.** Een opdracht volledig "AI-proof" maken lukt niet: een leerling heeft AI op zijn telefoon. Beter is **AI-inclusive assessment**: de opdracht is zo ingericht dat het denken, kiezen en leren van de leerling zichtbaar blijft, ook als hij AI gebruikt.
 
@@ -409,7 +523,7 @@ Met alle profielen vanaf volgend jaar op één locatie worden projecten over pro
 
 **Werkvormen die het proces zichtbaar maken:** tussenproducten inleveren, een korte AI-verantwoording, slechte AI-uitvoer laten verbeteren, werken met eigen klasdata, een mondelinge toelichting van twee minuten, en meekijken in de versiegeschiedenis.
 
-## 20. Toekomstbestendige digitale competenties
+## 22. Toekomstbestendige digitale competenties
 
 De leerlingen van nu zitten over drie jaar in klas 4. Wat een knop in Word doet, kan dan anders zijn. Het curriculum onderscheidt daarom drie lagen, en toetst alleen de eerste:
 
@@ -423,7 +537,7 @@ De leerlingen van nu zitten over drie jaar in klas 4. Wat een knop in Word doet,
 | je accounts en gegevens beschermen | tweestapsverificatie | een specifieke app |
 | bronnen beoordelen | zoekmachine, factcheck-sites | een specifieke zoekfunctie |
 
-## 21. Toekomstscenario's
+## 23. Toekomstscenario's
 
 Geen voorspellingen, maar drie mogelijke richtingen, en per richting de vraag: wat moet een leerling dan nog zelf kunnen?
 
@@ -435,7 +549,7 @@ Geen voorspellingen, maar drie mogelijke richtingen, en per richting de vraag: w
 
 **Analyse.** In alle drie de richtingen blijven dezelfde kernen overeind: een probleem helder formuleren, uitkomsten controleren, begrijpen hoe systemen en data werken, veiligheid en privacy, en verantwoordelijkheid voor het resultaat. Dat zijn precies de onderdelen die in het curriculum de meeste ruimte krijgen. Softwarebediening, die in alle richtingen minder belangrijk wordt, krijgt bewust geen eigen lessen.
 
-## 22. Concept voor een SLO-dashboard
+## 24. Concept voor een SLO-dashboard
 
 Een overzicht in HELIX waarmee docent en teamleiding op elk moment zien waar de school staat met de kerndoelen. Dit is een functioneel concept; het is nog niet gebouwd.
 
@@ -453,7 +567,7 @@ Een overzicht in HELIX waarmee docent en teamleiding op elk moment zien waar de 
 
 De informatie die daarvoor per les nodig is, ligt al vast in het curriculum: primair kerndoel, onderdelen, rol per onderdeel en soort evidence.
 
-## 23. Organisatorische invoering
+## 25. Organisatorische invoering
 
 | Wanneer | Wat |
 | --- | --- |
@@ -466,7 +580,7 @@ De informatie die daarvoor per les nodig is, ligt al vast in het curriculum: pri
 
 **Wat het van de school vraagt:** tijd voor coördinatie bij het hybride scenario, een plek in het rooster voor klas 2, en een jaarlijks evaluatiemoment.
 
-## 24. Beslispunten voor het MT
+## 26. Beslispunten voor het MT
 
 1. **Hoeveel DV-tijd in klas 1?** 20 tot 24 lessen binnen de DIF-uren, zoals nu, of meer.
 2. **Komt er vanaf 2027-2028 een plek voor DV in klas 2?** Zo ja, waar: DIF-uren doortrekken naar klas 2, een deel van de LOB-tijd, of een eigen uur. Zonder plek in klas 2 hangt de verankering af van andere vakken en van HELIX.
@@ -475,13 +589,17 @@ De informatie die daarvoor per les nodig is, ligt al vast in het curriculum: pri
 5. **Wordt de AI-ladder na dit jaar een schoolbrede afspraak?**
 6. **Wanneer stapt DaCapo over op de nieuwe kerndoelen digitale geletterdheid?** Wettelijk kan het vanaf 2027, verplicht vanaf augustus 2031.
 
-## 25. Bronnen
+## 27. Bronnen
 
 - SLO (2026). *Kerndoelen voortgezet onderwijs*, derde druk, 15 april 2026. slo.nl
 - SLO (2026). *Veelgestelde vragen actualisatie kerndoelen*, bijgewerkt 10 september 2026. slo.nl
 - SLO (2025). *Het curriculum verandert. Wat kun je wanneer verwachten?* actualisatiekerndoelen.nl
 - DaCapo College (2026). *Lessentabel 2026-2027* en *Schoolgids 2026-2027*. dacapokijktnaarmij.nl
 - Perkins, M., Furze, L., Roe, J. en MacVaugh, J. (2024). *The AI Assessment Scale (AIAS)*.
+- Stichting School & Veiligheid, *Week tegen Pesten 2026* (21-25 september 2026). weektegenpesten.nl
+- Netwerk Mediawijsheid, *Week van de Mediawijsheid 2026* (6-13 november 2026) en MediaMasters voor de brugklas. netwerkmediawijsheid.nl
+- Safer Internet Centre Nederland, *Safer Internet Day 2027* (9 februari 2027). saferinternetcentre.nl
+- Wijzer in geldzaken, *Week van het geld 2027* (15-19 maart 2027). weekvanhetgeld.nl
 - Eigen onderzoek, september 2026: curriculumanalyse, nulmeting digitale vaardigheden (stand 22 september 2026: 143 van de 145 brugklassers begonnen, 86 allebei de delen af), en de onderliggende curriculumbestanden in HELIX. De telling erachter staat in `docs/curriculum/nulmeting-stand-per-niveau.mjs`.
 
 <div class="bijlage">

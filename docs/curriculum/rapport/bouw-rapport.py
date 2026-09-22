@@ -98,7 +98,7 @@ def docentkaarten():
 CSS = """
 @page { size: A4; margin: 22mm 20mm 20mm 20mm;
   @bottom-right { content: counter(page); font: 9pt 'Segoe UI', sans-serif; color: #6b7280; }
-  @bottom-left { content: 'Digitale geletterdheid vmbo · DaCapo College · versie 2.0, 22 september 2026'; font: 8pt 'Segoe UI', sans-serif; color: #9ca3af; } }
+  @bottom-left { content: 'Digitale geletterdheid vmbo · DaCapo College · versie 3.0, 22 september 2026'; font: 8pt 'Segoe UI', sans-serif; color: #9ca3af; } }
 @page :first { @bottom-right { content: none; } @bottom-left { content: none; } }
 :root { --inkt: #1f2937; --accent: #0f4c81; --zacht: #eef4fa; --lijn: #d1d5db; }
 body { font-family: 'Segoe UI', Calibri, sans-serif; font-size: 10.5pt; line-height: 1.5; color: var(--inkt); }
