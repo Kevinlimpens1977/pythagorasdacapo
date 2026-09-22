@@ -124,7 +124,7 @@ ER3L1A (`klas_1787768387441_7`) en ER3L2A (`klas_1787768387528_8`). Eén gedeeld
 kopie onder `niveau-binask-eoa-1-lr3`: ER3L1A ziet die via haar route, ER3L2A
 doordat zij bewust **geen** route heeft. Eerstvolgende vrije hoofdstuknummer: 3.
 
-### Digitale vaardigheden - bijgewerkt 20 september 2026
+### Digitale vaardigheden - bijgewerkt 21 september 2026
 
 Negen H1-klassen, allemaal zonder leerroute (routes zijn er op 16 september
 afgehaald, back-up in `exports/reset-backups/klassen-voor-dv-h1-2026-09-16.json`).
@@ -164,6 +164,33 @@ hoofdstuk toe aan `H2_EN_VERDER`. Back-up van de klassen in
 `controleer-hoofdstuk.mjs` alles in orde; bestaande hoofdstukken en de 428
 voortgangsrecords ongewijzigd.
 
+**21 september: quiz 2.3 heeft tien uitbreidingsvragen.** Vijf over hardware of
+software en vijf over de keuken uit 2.1 (kok, aanrecht, voorraadkast). Het blok
+`block-dv-klas1-23-quiz-4` ging van 4 naar 14 vragen en van 30 naar 60 tokens.
+Niemand had er voortgang op. Bron bijgewerkt in `docs/seeds/dv-h2-device.json`,
+daarna `bouw-hoofdstuk-seed.mjs`, het nieuwe
+`scripts/werk-blok-bij-uit-seed.mjs` (werkt één blok bij zonder het hoofdstuk
+opnieuw te importeren) en `backfill-public-content-snapshots.mjs`. Back-up van
+het oude blok in `exports/reset-backups/blok-block-dv-klas1-23-quiz-4-2026-09-21.json`.
+
+**21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
+nulmeting kreeg `resultTier: failed` zodra niet alles goed was, en het
+klasoverzicht las dat als "vastgelopen": een klas die de hele nulmeting had
+gemaakt stond op nul afgeronde stappen. `buildStapStatus` in
+`src/lib/klasVoortgangOverzicht.js` telt een nulmetingblok nu af zodra alle
+vragen beantwoord zijn en toont anders hoeveel vragen al beantwoord zijn. De
+tweede was geen fout in de code: er zijn drie paragrafen "1.0 Nulmeting
+digitale vaardigheden" (bb, kb, tl) met dezelfde naam in dezelfde keuzelijst.
+Kies voor een TL-klas de 1.0 onder het TL-hoofdstuk, anders staat elke leerling
+op "Niet toegewezen".
+
+**21 september: voortgang hoort bij de leerling, niet bij de klas.**
+`getStudentVoortgang` filterde op de huidige klas; wie van klas wisselde raakte
+zijn eerdere resultaten kwijt op de lesstofpagina en kon niet verder waar hij
+gebleven was. De query gaat nu alleen op `userId`; `src/lib/voortgangQueryUtils.js`
+is daarmee overbodig en verwijderd. Nagerekend over alle 162 leerlingen: alleen
+Kevins eigen account had werk in meerdere klassen.
+
 **19 september: curriculumontwerp DV klas 1, alleen op papier.** In
 `docs/curriculum/` staan fase 1 (SLO-onderzoek, audit, nulmeting), fase 2 (het
 goedgekeurde curriculum van 22 lessen, H2 tot en met H23) en fase 3 (scenario's
@@ -172,6 +199,108 @@ uit `genereer-fase2.mjs` en `genereer-fase3.mjs`. Het MT-rapport (fase 5) bouw j
 `python docs/curriculum/rapport/bouw-rapport.py`; de PDF komt in `exports/curriculum/`.
 Er is niets gebouwd in HELIX. Fase 6 (technisch plan) volgt; bouwen pas na
 Kevins akkoord op het plan van fase 6.
+
+### Testen als leerling - 21 september 2026
+
+Elf testleerlingaccounts, één per klas, uid `testleerling-<klas>`, e-mail
+`<uid>@helix-test.local`, `isTestaccount: true`. Aangemaakt met
+`scripts/maak-testleerlingen.mjs` (dry run standaard, `--verwijder` haalt ze
+weg). Ze hebben geen wachtwoord: inloggen kan alleen via de callable
+`startTestleerlingSessie` (europe-west1), en die geeft alleen een token voor een
+account met die vlag, en alleen aan de admin.
+
+De beheerpagina staat op `/admin/testen` (knop op Leerlingen). Per klas: wat de
+leerling echt ziet, de problemen die de lesstof onzichtbaar maken, een knop
+"Start testsessie" en de testdata van dat account. Tijdens een testsessie staat
+er een paarse balk bovenin met "Terug naar beheer".
+
+Testaccounts tellen nergens mee: `src/lib/testaccounts.js` filtert ze uit het
+klasoverzicht, leerlingbeheer, tokenbeheer en de klaslijsten, en
+`buildNulmetingProfielCore` slaat ze over bij een klasberekening.
+`firestore.rules` laat een leerling zijn eigen `isTestaccount` niet zetten.
+
+**Wat nog moet gebeuren:** de functie draait nu nog als het standaard
+compute-account en kan daardoor geen inlogtoken ondertekenen. De regel
+`serviceAccount: "firebase-adminsdk-fbsvc@..."` staat in `functions/index.js`,
+maar de deploy daarvan staat nog open:
+`npx firebase deploy --only functions:startTestleerlingSessie --project pythagoras-eoa`.
+Tot dat moment geeft de startknop een foutmelding.
+
+### Taalknop in de hele leerroute - 21 september 2026
+
+De vertaalknop stond alleen op de lespagina en vertaalde alleen lesblokken. Nu
+staat hij ook op de lesstofpagina, op de hoofdstukpagina en in het startvenster
+"Wat je gaat leren", met één keuze voor alles (localStorage
+`helix-lestaal-<uid>`, gedeeld via `src/hooks/useLesstofTaal.js`).
+
+Twee soorten tekst, bewust gescheiden:
+
+1. **Vaste schermteksten** ("Ga verder", "7 stappen", "3 van 7 onderdelen af")
+   staan in `src/lib/uiTaal.js`, een woordenboek nl/el/it. Een test bewaakt dat
+   elke sleutel elke taal heeft en dezelfde plaatshouders gebruikt. Hier komt
+   geen model aan te pas: een knop mag nooit op een vertaling wachten.
+2. **Titels, beschrijvingen en leerdoelen** komen van de nieuwe callable
+   `vertaalLesstofInfo` (europe-west1). Die leest alleen het paragraaf- en
+   hoofdstukdocument - geen lesblokken, dus geen antwoordsleutel - en bewaart
+   het resultaat in `vertalingen/info-<soort>-<id>__<taal>` met een
+   vingerafdruk over de brontekst.
+
+Wat nog Nederlands blijft: de titels van lesblokken in de stappenbalk, en het
+eindscherm van een paragraaf. Beide zijn een volgende stap.
+
+Twee dingen die bij het bouwen misgingen en die je moet weten:
+
+- het model plakt er soms een accolade te veel achter; `leesJsonObject` in
+  `functions/index.js` leest daarom tot de sluitende accolade in plaats van
+  blind te parsen;
+- React draait een effect in ontwikkelmodus twee keer, waardoor de eerste
+  aanroep zijn eigen antwoord weggooide en de tweede dacht dat alles al was
+  opgehaald. De hook gebruikt daarom een `levendRef` en geen vlag per effect.
+
+### De leerling kiest zelf zijn taal - 21 september 2026
+
+De taal stond op het gebruikersdocument en werd door het beheer gezet. Een
+leerling kiest hem nu zelf op zijn profiel (`src/components/profiel/TaalKeuzeKaart.jsx`);
+in Leerlingbeheer kan Kevin hem nog steeds zetten. De kaart schrijft alleen
+`lesTaal` op het eigen document; `firestore.rules` liet dat al toe zolang rol en
+testvlag gelijk blijven.
+
+Negen talen: Grieks, Oekraïens, Arabisch, Turks, Pools, Roemeens, Spaans,
+Italiaans en Engels. Arabisch staat op verzoek van Kevin in dezelfde
+leesrichting als de rest van het scherm (links naar rechts); de Arabische
+woorden zelf zet de browser goed, de opmaak draait niet mee.
+
+`src/lib/uiTaal.js` heeft nu één blok per taal in plaats van één regel per
+sleutel: een taal erbij is een blok plus een regel in `LES_TALEN` (en daar ook
+de antwoordinstructie). De test faalt zodra een taal een sleutel of een
+plaatshouder mist.
+
+Let op bij een nieuwe taal: `scripts/sync-functions-shared.mjs` en daarna
+`npx firebase deploy --only functions:vertaalLesblok,functions:vertaalLesstofInfo`.
+Zonder die deploy weigert de server de taal ("Onbekende taal: uk") en blijft de
+lesstof Nederlands terwijl de knoppen al zijn omgezet.
+
+### Hoofdstukken op slot - 22 september 2026
+
+Lesstof kan vooruit klaarstaan zonder dat een klas erin kan. Per klas staat op
+het klasdocument `vergrendeldeHoofdstukken: [hoofdstukId]`; de regels staan in
+`src/lib/hoofdstukSlot.js` en worden gebruikt door de lesstofpagina, de
+hoofdstukpagina en de lespagina (ook wie de link intypt komt er niet in).
+
+Beheer: `/admin/vrijgeven`, ook als kaart op Lesstof. Eén raster met de
+hoofdstukken onder elkaar en de klassen ernaast; een vinkje betekent "op slot".
+Per rij zetten twee knoppen het hoofdstuk voor alle klassen tegelijk open of op
+slot. Het niveau staat bij de hoofdstuknaam, want drie hoofdstukken heten
+"H1: Startklaar op je nieuwe school".
+
+Leerling: de tegel blijft staan, grijst weg en krijgt een oranje slotsticker
+("Nog op slot") plus de regel "Je docent zet dit hoofdstuk open als de les
+begint." De teller bovenaan en "verder waar je was" slaan een vergrendeld
+hoofdstuk over, zodat een leerling niet met een achterstand lijkt te beginnen.
+De slotteksten staan in alle tien de talen.
+
+De knop Projectkompas is dezelfde dag uit de adminbalk gehaald; de pagina blijft
+op `/admin/vrijgeven`'s buurroute `/admin/projectkompas` bestaan.
 
 ### Presentaties - 16 september 2026
 
@@ -186,35 +315,29 @@ deck van 3 MB in tienden van seconden, als echte dia's met een kloppende teller.
 
 In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij.
 
-1. **Testen als leerling, per klas.** De spec is af en wacht op Kevins review:
-   `docs/superpowers/specs/2026-09-20-testleerling-per-klas-design.md`. Negen
-   testleerlingaccounts, een callable die alleen voor testaccounts een
-   inlogtoken maakt, een beheerpagina "Testen", een balk tijdens het testen en
-   filters zodat testaccounts nergens meetellen. Twee open punten staan
-   onderaan die spec. Na akkoord: implementatieplan, dan bouwen.
+1. **Testen als leerling afmaken.** Alles is gebouwd en gedeployd behalve de
+   laatste stap: `startTestleerlingSessie` opnieuw uitrollen zodat hij als het
+   serviceaccount `firebase-adminsdk-fbsvc` draait. Zonder dat kan hij geen
+   inlogtoken ondertekenen. Zie paragraaf 5, "Testen als leerling".
 2. **Het losse werk committen** (zie paragraaf 7, "Los in de werkmap"). Kevin
    beslist wanneer.
-3. **De gereedheidsfix deployen.** `src/lib/contentReadiness.js` keurde een
-   vraagblok met eigen invulvelden ten onrechte af. Tot de volgende deploy
-   toont de CMS bij de plusopdracht van 2.1 nog "Koppel eerst een vraag".
-   Leerlingen merken er niets van.
-4. **Curriculum DV, fase 6.** Fase 1 tot en met 5 liggen er (zie paragraaf 5).
+3. **Curriculum DV, fase 6.** Fase 1 tot en met 5 liggen er (zie paragraaf 5).
    Fase 6 is het technische plan: SLO-koppeling per les in HELIX, de
    startscore uit de nulmeting bij elke les, en het dashboardconcept. Pas
    bouwen na Kevins akkoord op dat plan.
-5. **Hoofdstuk 3 en verder van DV.** Les 2 van het curriculum is "Hoe reist
+4. **Hoofdstuk 3 en verder van DV.** Les 2 van het curriculum is "Hoe reist
    jouw bericht over internet?". Bouwen gaat met `/helix-hoofdstuk-bouwen`;
    het deck volgt verplicht het design system.
-6. **Vrijgeven van DV hoofdstuk 1**: de lesparagrafen 1.1 tot en met 1.5
+5. **Vrijgeven van DV hoofdstuk 1**: de lesparagrafen 1.1 tot en met 1.5
    bestaan wel maar zijn aan niemand toegewezen. Dat is een lesbesluit; vraag
    het voordat je toewijst.
-7. Uit de navigatie-audit: het dubbele voortgangsoverzicht op het profiel, een
+6. Uit de navigatie-audit: het dubbele voortgangsoverzicht op het profiel, een
    woord bij het tokenmuntje, onthouden welk hoofdstuk het laatst open stond,
    en toetsenbordbediening van de stappenbalk.
-8. Vertaalknop: een blok publiceren vóór "Vertaling nu maken", de
+7. Vertaalknop: een blok publiceren vóór "Vertaling nu maken", de
    `vertalingen`-regel kent geen publicatiestatus, en vertalingen worden niet
    verwijderd als een blok wordt teruggetrokken.
-9. Paragraaf 1.2 van Binask heeft een deck van 7,1 MB; dat kan naar ongeveer
+8. Paragraaf 1.2 van Binask heeft een deck van 7,1 MB; dat kan naar ongeveer
    5,9 MB. Niet dringend.
 
 ## 7. Bij het afsluiten van een sessie
@@ -233,19 +356,37 @@ donker werken.
 
 ### Los in de werkmap
 
-Stand 20 september 2026. Niets hiervan is gecommit; Kevin bepaalt wanneer dat
-gebeurt.
+Stand 21 september 2026. Alles van 17 tot en met 20 september is gecommit
+(t/m `f54ef77`). Wat hieronder staat is van 21 september en nog niet gecommit;
+Kevin bepaalt wanneer dat gebeurt. Het staat wel live: gedeployd met
+`npx vercel --prod --yes`.
 
 | Pad | Wat het is |
 | --- | --- |
-| `docs/seeds/dv-h2-device.json`, `dv-h2-device.seed.json` | de lesstof van DV hoofdstuk 2, die live staat |
-| `scripts/nulmeting-b03-opzoekvraag.mjs` | het script dat nulmeting B vraag 3 een opzoekvraag maakte (al uitgevoerd) |
-| `docs/seeds/nulmeting-dv/nulmeting-b.json` (gewijzigd) | dezelfde vraag in de bron, zodat een nieuwe import hem niet terugdraait |
-| `scripts/zet-klas-lesstof-klaar.mjs` (gewijzigd) | kan nu één hoofdstuk toewijzen via `lesstofHoofdstukken` |
-| `src/lib/contentReadiness.js` en de test (gewijzigd) | vraagblok met eigen invulvelden is geldig; nog niet gedeployd |
-| `.claude/skills/helix-hoofdstuk-bouwen/SKILL.md` (gewijzigd) en `references/slidedeck-designsysteem.md` | het design system is verplicht bij elk deck |
-| `docs/curriculum/` | het hele curriculumonderzoek, fase 1 tot en met 5, inclusief het MT-rapport en het bouwscript |
-| `docs/superpowers/specs/2026-09-20-testleerling-per-klas-design.md` | de spec voor testen als leerling |
+| `docs/seeds/dv-h2-device.json`, `dv-h2-device.seed.json` (gewijzigd) | quiz 2.3 met tien uitbreidingsvragen, 60 tokens |
+| `scripts/werk-blok-bij-uit-seed.mjs` (nieuw) | werkt één lesblok bij vanuit een seed, met back-up en dry run |
+| `src/lib/klasVoortgangOverzicht.js` en de test (gewijzigd) | een afgemaakte nulmeting telt als afgerond |
+| `src/services/voortgangService.js` (gewijzigd) | voortgang van een leerling zonder klasfilter |
+| `src/lib/voortgangQueryUtils.js` en de test (verwijderd) | de terugvalregel die daarbij hoorde is overbodig |
+| `src/components/auth/LoginScreen.jsx`, `src/lib/loginIdentifier.js` en de test | inloggen en aanmelden met alleen het leerlingnummer |
+| `scripts/maak-testleerlingen.mjs` (nieuw) | maakt de elf testleerlingen aan (al uitgevoerd) |
+| `functions/index.js` (gewijzigd) en `index.test.js` | de callable `startTestleerlingSessie` |
+| `src/lib/testaccounts.js`, `src/lib/testleerlingOverzicht.js` en hun tests (nieuw) | testaccounts filteren en berekenen wat een klas ziet |
+| `src/pages/AdminTestenPage.jsx`, `src/components/admin/TestleerlingBalk.jsx` (nieuw) | de beheerpagina en de balk tijdens het testen |
+| `src/App.jsx`, `src/lib/adminWorkspaceNav.js`, `AdminLeerlingenPage.jsx`, `AdminTokenManagementPage.jsx`, `ClassOverview.jsx`, `klasService.js` (gewijzigd) | route, menu en de filters |
+| `firestore.rules` (gewijzigd) | een leerling mag zijn eigen testvlag niet zetten |
+| `src/lib/uiTaal.js` en de test (nieuw) | het woordenboek met de vaste schermteksten (nl/el/it) |
+| `src/hooks/useLesstofTaal.js` (nieuw) | de taalkeuze van de leerling en het ophalen van vertaalde titels |
+| `functions/index.js` (gewijzigd) | de callable `vertaalLesstofInfo` en `leesJsonObject` |
+| `src/lib/lesTaal.js` + `functions/shared/lesTaal.js` | vingerafdruk voor losse tekst (`tekstVingerafdruk`) |
+| `TableOfContents.jsx`, `StudentChapterPage.jsx`, `ChapterDetail.jsx`, `LearningGoalsIntro.jsx`, `StudyStepRail.jsx`, `StudentLessonPage.jsx` | de taalknop en de vertaalde schermteksten |
+| `src/components/profiel/TaalKeuzeKaart.jsx` (nieuw) + `StudentProfilePage.jsx` | de leerling kiest zelf zijn taal |
+| `src/lib/lesTaal.js` (gewijzigd) en de test | negen talen met hun antwoordinstructie |
+| `.claude/launch.json` (gewijzigd) | extra dev-server op poort 5180, voor als 5173 bezet is |
+| `src/lib/hoofdstukSlot.js` + test, `src/pages/AdminVrijgevenPage.jsx` (nieuw) | hoofdstukken op slot en het raster om ze vrij te geven |
+| `TableOfContents.jsx`, `StudentChapterPage.jsx`, `StudentLessonPage.jsx`, `useStudentOutline.js`, `klasService.js`, `App.jsx`, `AdminLesstofPage.jsx`, `adminWorkspaceNav.js` (gewijzigd) | de slotsticker, de gesloten ingangen en de route ernaartoe |
+| `PROJECTKOMPAS-HELIX.md` (gewijzigd) | bijgewerkt naar 22 september; verwijst voor de dagstand naar deze handoff |
+| `scripts/ruim-leeg-dubbelaccount-op.mjs`, `scripts/voeg-dubbelaccount-samen.mjs` (nieuw) | dubbele leerlingaccounts opruimen of samenvoegen (allebei al uitgevoerd) |
 
 Buiten git (genegeerd, maar wel nodig): `sources/dv-jpeg/dv-h2-device.pdf` (het
 deck van H2), `sources/designsysteem/` (het design system en de uitgelezen

@@ -1,8 +1,23 @@
 # HELIX Projectkompas
 
-Laatst bijgewerkt: 24 augustus 2026
+Laatst bijgewerkt: 22 september 2026
 
 Dit document is het vaste contextanker voor verdere ontwikkeling van HELIX. Lees dit bestand eerst na contextcompressie, bij een nieuwe agent-sessie of voordat je grotere productkeuzes maakt. Het doel is niet om alle details te herhalen, maar om een frisse agent snel en correct op de rails te zetten.
+
+**De dagelijkse stand staat in `docs/HANDOFF.md`, niet hier.** Dit kompas beschrijft hoe HELIX in elkaar zit en waarom; de handoff beschrijft wat er vandaag klaarstaat, wat er los in de werkmap ligt en wat er als eerste moet gebeuren. Begin een sessie dus met `git pull`, `node scripts/handoff-stand.mjs` en `docs/HANDOFF.md`, en gebruik dit kompas voor de achtergrond.
+
+## Wat Er Sinds 24 Augustus 2026 Bij Is Gekomen (stand 22 september 2026)
+
+De leeromgeving is niet meer leeg. Wat hieronder staat, is de korte versie; de details staan in `docs/HANDOFF.md`, paragraaf 5, en in `docs/handoffs/`.
+
+- **Lesstof staat live.** Binask voor de twee EOA-klassen (twee hoofdstukken) en Digitale vaardigheden voor de negen brugklassen: de nulmeting (deel A en B, 27 vragen per deel) en hoofdstuk 2 "Wat zit er in je device?". Ruim honderd leerlingen hebben er werk in staan, dus **niets in Firestore weggooien zonder back-up en zonder te tellen wat eraan hangt**.
+- **Een curriculum op papier.** `docs/curriculum/` bevat het ontwerp voor digitale geletterdheid klas 1 (22 lessen, alle 45 SLO-onderdelen), scenario's voor het MT en een rapport. De enige bron is `dv-klas1-curriculum.json`; de tabellen komen uit generatoren. Er is nog niets van gebouwd behalve hoofdstuk 2.
+- **De leerlingroute heeft drie lagen**: lesstofkaarten, een hoofdstukpagina en de les zelf, met de gedeelde hook `useStudentOutline`.
+- **Vertalen.** Een leerling met een ingestelde taal leest de hele route in zijn eigen taal: vaste schermteksten uit `src/lib/uiTaal.js` (tien talen), en titels, beschrijvingen en leerdoelen via de Cloud Functions `vertaalLesblok` en `vertaalLesstofInfo`. De leerling kiest zijn taal zelf op zijn profiel. Twee grenzen blijven staan: de functies lezen alleen `publicContentBlocks`, en het nakijken gebruikt altijd de Nederlandse brontekst.
+- **Inloggen met alleen het leerlingnummer.** De rest van het adres (`@leerling.dacapo-college.nl`) vult het scherm zelf aan, bij inloggen en bij het maken van een account.
+- **Testen als leerling.** Elf testaccounts (één per klas) en de beheerpagina `/admin/testen`. De callable `startTestleerlingSessie` geeft alleen een inlogtoken voor een account met `isTestaccount: true`, en draait als het serviceaccount `firebase-adminsdk-fbsvc` omdat alleen dat account een token mag ondertekenen. Testaccounts tellen nergens mee (`src/lib/testaccounts.js`).
+- **Hoofdstukken op slot.** Lesstof kan vooruit klaarstaan zonder dat een klas erin kan: `vergrendeldeHoofdstukken` op het klasdocument, het raster op `/admin/vrijgeven`, en aan de leerlingkant een grijze tegel met een oranje slotsticker (`src/lib/hoofdstukSlot.js`).
+- **De knop Projectkompas is uit de adminbalk gehaald** (22 september 2026). Dit document is er voor wie aan HELIX bouwt, niet voor de balk boven een les. De pagina zelf blijft bestaan op `/admin/projectkompas`.
 
 ## De Leeromgeving Is Leeg (24 augustus 2026)
 
@@ -1120,7 +1135,7 @@ Belangrijk risico:
 
 ## Direct Openstaand (stand 24 augustus 2026)
 
-Dit zijn geen ontwerpvragen maar concrete losse eindjes van de laatste sessies. Ze blokkeren DVLingo in de klas.
+**Verouderd; de actuele lijst staat in `docs/HANDOFF.md`, paragraaf 6.** De punten hieronder gaan over DVLingo en zijn sinds augustus niet opnieuw nagelopen.
 
 1. `npx firebase deploy --only firestore:rules --project pythagoras-eoa` — verplicht, anders kan het woordenbeheerpaneel niet opslaan naar `gameInstellingen/dvlingo`.
 2. `npx firebase deploy --only functions --project pythagoras-eoa` — voor de servercode-default DVLingo 0-400 met `replayDecay 0.5`.
