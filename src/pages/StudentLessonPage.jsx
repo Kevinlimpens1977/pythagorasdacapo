@@ -17,6 +17,7 @@ import {
   Layers3,
   ListChecks,
   Loader2,
+  Lock,
   Maximize2,
   MessageCircle,
   Minimize2,
@@ -116,7 +117,9 @@ import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
 import StudyStepRail from '../components/lesson/StudyStepRail';
 import TaalSchakelaar from '../components/lesson/TaalSchakelaar';
 import { haalVertaling } from '../services/vertaalService';
-import { antwoordInstructie, getLesTaal, isVertaalbaarBlok, voegVertalingSamen } from '../lib/lesTaal';
+import { antwoordInstructie, isVertaalbaarBlok, voegVertalingSamen } from '../lib/lesTaal';
+import { useLesstofTaal } from '../hooks/useLesstofTaal';
+import { isParagraafVergrendeld } from '../lib/hoofdstukSlot';
 import { spelSlotStatus } from '../lib/spelSlot';
 import { nulmetingDeelLetter, nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
 import { buildParagraphNavigation } from '../lib/chapterOutline';
@@ -481,16 +484,12 @@ export default function StudentLessonPage() {
   const currentBlock = blocks[currentIndex] || null;
 
   // Vertaalknop: welke taal een leerling heeft staat op zijn gebruikersdocument
-  // (userData.lesTaal). Of de knop nu aan staat, onthouden we per apparaat, niet
-  // in Firestore: het is een weergavekeuze, geen voortgang.
-  const lesTaal = getLesTaal(userData);
-  const [taalActief, setTaalActief] = useState(() => {
-    try {
-      return window.localStorage.getItem(`helix-lestaal-${currentUser?.uid || ''}`) === 'aan';
-    } catch {
-      return false;
-    }
-  });
+  // (userData.lesTaal). De keuze zelf komt uit useLesstofTaal, dezelfde hook die
+  // de lesstofpagina en de hoofdstukpagina gebruiken, zodat het één keuze is
+  // voor de hele route. De vertaling van de lesBLOKKEN blijft hier: die loopt
+  // via vertaalLesblok en hoort bij deze pagina.
+  const taalHulp = useLesstofTaal({ paragraafIds: [paragraafId], hoofdstukIds: [paragraaf?.hoofdstukId || ''] });
+  const { lesTaal, taalActief, wisselTaal } = taalHulp;
   // Per blok-id het resultaat van de vertaalaanroep: { vertaling, mislukt }.
   // Ook een mislukking krijgt hier een plek, want anders blijft de knop
   // oplichten boven een Nederlandse pagina zonder dat iemand weet waarom.
@@ -499,19 +498,6 @@ export default function StudentLessonPage() {
   // verzoek als dit effect twee keer snel achter elkaar draait (bijvoorbeeld
   // de schakelaar snel uit en weer aan) terwijl de vorige aanroep nog loopt.
   const vertalingOnderwegRef = useRef(new Set());
-
-  // De schakelaar zelf doet alleen onthouden en tonen; het ophalen gebeurt
-  // hieronder in het effect. Zo hoeft dit niet dubbel: bij het aanklikken
-  // wordt taalActief waar, en het effect (dat op taalActief let) pakt de
-  // rest op.
-  const wisselTaal = (aan) => {
-    setTaalActief(aan);
-    try {
-      window.localStorage.setItem(`helix-lestaal-${currentUser?.uid || ''}`, aan ? 'aan' : 'uit');
-    } catch {
-      // Een browser die opslag weigert mag de les niet breken.
-    }
-  };
 
   // Haalt de vertaling op voor het blok dat in beeld is, zodra dat nodig is:
   // bij het aanzetten van de schakelaar, bij het wisselen van blok terwijl
@@ -1093,6 +1079,21 @@ export default function StudentLessonPage() {
     );
   }
 
+  // Staat het hoofdstuk van deze paragraaf op slot, dan gaat ook de les dicht.
+  // Een leerling komt hier anders alsnog binnen via een oude link of de
+  // adresbalk, en dan zou het slot alleen een plaatje op de tegel zijn.
+  if (!isAdmin && isParagraafVergrendeld(klasData, paragraaf)) {
+    return (
+      <CenteredState
+        icon={Lock}
+        title={taalHulp.tekst('slot.titel')}
+        description={taalHulp.tekst('slot.uitleg')}
+        actionLabel={taalHulp.tekst('knop.terugNaarOverzicht')}
+        onAction={() => navigate('/')}
+      />
+    );
+  }
+
   if (!blocks.length) {
     return (
       <CenteredState
@@ -1109,7 +1110,9 @@ export default function StudentLessonPage() {
   const currentStepTitle =
     currentBlock?.title || CONTENT_BLOCK_LABELS[currentBlock?.type] || 'Lesblok';
   const hoofdstukLabel =
-    hoofdstuk?.title || (hoofdstuk?.number ? `Hoofdstuk ${hoofdstuk.number}` : '');
+    taalHulp.hoofdstukInfo(hoofdstuk?.id || '')?.titel
+    || hoofdstuk?.title
+    || (hoofdstuk?.number ? taalHulp.tekst('hoofdstuk.kopMetNummer', { nummer: hoofdstuk.number }) : '');
   const isLastStep = currentIndex === blocks.length - 1;
   // Het resultaatlabel hoort leesbaar op het scherm te staan, niet alleen in een
   // tooltip: in de bovenbalk naast "afgerond" en in de linkerbalk onder de stap.
@@ -1138,7 +1141,8 @@ export default function StudentLessonPage() {
   );
 
   const railProps = {
-    paragraafTitle: paragraaf?.title || 'Les',
+    taal: taalHulp,
+    paragraafTitle: taalHulp.paragraafInfo(paragraafId)?.titel || paragraaf?.title || taalHulp.tekst('les.kop'),
     hoofdstukTitle: hoofdstukLabel,
     optioneel: paragraafIsPlus,
     steps: studySteps,
@@ -1157,7 +1161,9 @@ export default function StudentLessonPage() {
       goToStep(step.index);
     },
     onExit: terugNaarOverzicht,
-    exitLabel: paragraafNavigatie.chapter ? 'Terug naar het hoofdstuk' : 'Terug naar overzicht',
+    exitLabel: paragraafNavigatie.chapter
+      ? taalHulp.tekst('les.terugNaarHoofdstuk')
+      : taalHulp.tekst('knop.terugNaarOverzicht'),
     chapterId: paragraafNavigatie.chapter?.id || '',
     onOpenChapter: (id) => navigate(`/hoofdstuk/${id}`),
     vorigeParagraaf: paragraafNavigatie.vorige,
@@ -1183,10 +1189,11 @@ export default function StudentLessonPage() {
       <LearningGoalsIntro
         open={showLearningGoals}
         intro={learningGoalsIntro}
-        paragraafTitle={paragraaf?.title || ''}
+        paragraafTitle={taalHulp.paragraafInfo(paragraafId)?.titel || paragraaf?.title || ''}
         hoofdstukTitle={hoofdstukLabel}
         optioneel={paragraafIsPlus}
         onContinue={closeLearningGoals}
+        taal={taalHulp}
       />
 
       <div className="flex min-h-0 flex-1">
@@ -1213,12 +1220,12 @@ export default function StudentLessonPage() {
 
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-black text-[var(--helix-navy)]">
-                {showParagraphEnd ? 'Paragraaf afronden' : currentStepTitle}
+                {showParagraphEnd ? taalHulp.tekst('les.paragraafAfronden') : currentStepTitle}
               </p>
               <p className="truncate text-[11px] font-bold text-[var(--helix-muted)]">
                 {showParagraphEnd
-                  ? paragraaf?.title || 'Les'
-                  : `Onderdeel ${currentIndex + 1} van ${blocks.length} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
+                  ? taalHulp.paragraafInfo(paragraafId)?.titel || paragraaf?.title || taalHulp.tekst('les.kop')
+                  : `${taalHulp.tekst('les.onderdeelVan', { nummer: currentIndex + 1, totaal: blocks.length })} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
               </p>
             </div>
 
@@ -1261,18 +1268,18 @@ export default function StudentLessonPage() {
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
               >
                 <Target size={18} />
-                <span className="sr-only">Leerdoelen</span>
+                <span className="sr-only">{taalHulp.tekst('les.leerdoelen')}</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={toggleFullscreen}
-              title={isFullscreen ? 'Verlaat volledig scherm' : 'Volledig scherm'}
+              title={isFullscreen ? 'Verlaat volledig scherm' : taalHulp.tekst('les.volledigScherm')}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
             >
               {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-              <span className="sr-only">{isFullscreen ? 'Verlaat volledig scherm' : 'Volledig scherm'}</span>
+              <span className="sr-only">{isFullscreen ? 'Verlaat volledig scherm' : taalHulp.tekst('les.volledigScherm')}</span>
             </button>
           </div>
 
@@ -1393,7 +1400,7 @@ export default function StudentLessonPage() {
               <StudyConfirmBar
                 open={readConfirmBarOpen}
                 message={readConfirmLabels.done}
-                actionLabel={isLastStep ? 'Les afronden' : 'Volgende stap'}
+                actionLabel={isLastStep ? taalHulp.tekst('les.afronden') : taalHulp.tekst('knop.volgendeStap')}
                 onAction={vraagVerderBevestiging}
               />
 
@@ -1404,7 +1411,7 @@ export default function StudentLessonPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-5 py-3 text-sm font-black text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft size={18} />
-                  Vorige
+                  {taalHulp.tekst('knop.vorige')}
                 </button>
 
                 <p
@@ -1421,7 +1428,7 @@ export default function StudentLessonPage() {
                     ? studyNotice
                     : readConfirmBarOpen
                       ? 'Ga verder met de knop hierboven'
-                      : `Onderdeel ${currentIndex + 1} van ${blocks.length}`}
+                      : taalHulp.tekst('les.onderdeelVan', { nummer: currentIndex + 1, totaal: blocks.length })}
                 </p>
 
                 {/* De knop staat nooit uit: vooruit werkt hier hetzelfde als
@@ -1434,7 +1441,7 @@ export default function StudentLessonPage() {
                     onClick={vraagVerderBevestiging}
                     className="btn-primary px-5 py-3 text-sm"
                   >
-                    {isLastStep ? 'Les afronden' : 'Volgende stap'}
+                    {isLastStep ? taalHulp.tekst('les.afronden') : taalHulp.tekst('knop.volgendeStap')}
                     <ChevronRight size={18} />
                   </button>
                 )}

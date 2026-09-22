@@ -4,10 +4,11 @@ import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
 import CmsResetButton from '../admin/CmsResetButton';
 import DeleteStudentsButton from '../admin/DeleteStudentsButton';
+import TestleerlingBalk from '../admin/TestleerlingBalk';
 import Meldbel from '../common/Meldbel';
 import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
 import TokenBalancePill from '../tokens/TokenBalancePill';
-import { BarChart3, BellRing, BookOpen, Compass, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
+import { BarChart3, BellRing, BookOpen, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import { isStudyRoutePath } from '../../lib/studyRouteState';
 import { subscribeToNieuweMeldingenAantal } from '../../services/meldingenService';
@@ -95,6 +96,7 @@ export default function AppShell() {
     <StudentBugReportContext.Provider value={{ context: studentBugReportContext, setContext: setStudentBugReportContext }}>
     <div className="helix-page flex min-h-screen flex-col font-sans selection:bg-fuchsia-100 selection:text-[var(--helix-navy)]">
       <NameSetupModal />
+      <TestleerlingBalk />
 
       {!isStudyRoute && (
       <header className="sticky top-0 z-[100] flex min-h-20 items-center justify-between border-b border-[var(--helix-border)] bg-white/86 px-4 shadow-[0_14px_34px_-28px_rgba(11,19,43,0.45)] backdrop-blur-2xl md:px-10">
@@ -151,21 +153,9 @@ export default function AppShell() {
           </nav>
         </div>
 
-        {isAdmin && (
-          <button
-            type="button"
-            onClick={() => navigate('/admin/projectkompas')}
-            className={`hidden min-h-11 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border px-4 text-sm font-black shadow-[var(--helix-shadow-card)] transition hover:-translate-y-0.5 lg:inline-flex ${
-              location.pathname === '/admin/projectkompas'
-                ? 'border-transparent bg-[var(--helix-navy)] text-white'
-                : 'border-[var(--helix-border)] bg-white/92 text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
-            }`}
-            title="Open het actuele HELIX Projectkompas"
-          >
-            <Compass size={17} />
-            Projectkompas
-          </button>
-        )}
+        {/* De knop Projectkompas is er op 22 september 2026 uitgehaald: dat
+            document is er voor wie aan HELIX bouwt, niet voor de balk boven een
+            les. De pagina blijft bestaan op /admin/projectkompas. */}
 
         <div className="flex items-center gap-3 md:gap-4">
           {isAdmin && <DeleteStudentsButton />}

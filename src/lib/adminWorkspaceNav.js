@@ -3,7 +3,7 @@ export const ADMIN_WORKSPACES = [
     id: 'lesstof',
     label: 'Lesstof',
     path: '/admin/lesstof',
-    routePrefixes: ['/admin/lesstof', '/admin/cms', '/admin/digibord', '/admin/slidedecks', '/admin/taken-toewijzen']
+    routePrefixes: ['/admin/lesstof', '/admin/cms', '/admin/digibord', '/admin/slidedecks', '/admin/taken-toewijzen', '/admin/vrijgeven']
   },
   {
     id: 'voortgang',
@@ -15,7 +15,7 @@ export const ADMIN_WORKSPACES = [
     id: 'leerlingen',
     label: 'Leerlingen',
     path: '/admin/leerlingen',
-    routePrefixes: ['/admin/leerlingen', '/admin/klassen', '/admin/tokenbeheer']
+    routePrefixes: ['/admin/leerlingen', '/admin/klassen', '/admin/tokenbeheer', '/admin/testen']
   },
   {
     id: 'spellen',

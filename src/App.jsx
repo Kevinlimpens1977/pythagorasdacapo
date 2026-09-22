@@ -26,6 +26,8 @@ import AdminProjectKompasPage from './pages/AdminProjectKompasPage';
 import StudentTokenShopPage from './pages/StudentTokenShopPage';
 import StudentSpellenPage from './pages/StudentSpellenPage';
 import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
+import AdminTestenPage from './pages/AdminTestenPage';
+import AdminVrijgevenPage from './pages/AdminVrijgevenPage';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { user, isAdmin } = useAuth();
@@ -67,6 +69,16 @@ function AppRoutes() {
         <Route path="admin/leerlingen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminLeerlingenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/vrijgeven" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminVrijgevenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/testen" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminTestenPage />
           </PrivateRoute>
         } />
         <Route path="admin/tokenbeheer" element={

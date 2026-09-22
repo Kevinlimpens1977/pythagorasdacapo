@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, BarChart3, BookOpen, CheckSquare, Clapperboard, FileStack, Scissors } from 'lucide-react';
+import { ArrowRight, BarChart3, BookOpen, CheckSquare, Clapperboard, FileStack, LockOpen, Scissors } from 'lucide-react';
 
 // De drie stappen van de docentflow, in volgorde: bouwen → klaarzetten → volgen.
 const hoofdacties = [
@@ -16,6 +16,13 @@ const hoofdacties = [
     actionLabel: 'Open klaarzetten',
     path: '/admin/taken-toewijzen',
     icon: CheckSquare
+  },
+  {
+    title: 'Vrijgeven',
+    description: 'Zet hele hoofdstukken per klas open of op slot. De klas ziet ze staan tot jij ze vrijgeeft.',
+    actionLabel: 'Open vrijgeven',
+    path: '/admin/vrijgeven',
+    icon: LockOpen
   },
   {
     title: 'Voortgang',

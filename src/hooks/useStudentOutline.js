@@ -5,6 +5,7 @@ import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import { buildChapterOutlines } from '../lib/chapterOutline';
+import { markeerVergrendeldeHoofdstukken } from '../lib/hoofdstukSlot';
 import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -135,9 +136,15 @@ export const useStudentOutline = () => {
     return () => { gestopt = true; };
   }, [authKlasId, currentUser, klasData, userData, herlaadTeller]);
 
+  // Het slot per hoofdstuk staat op de klas. Het hoort hier thuis en niet in
+  // buildChapterOutlines: die functie kent alleen lesstof en voortgang, geen
+  // klas.
   const chapters = useMemo(
-    () => buildChapterOutlines({ hoofdstukken: hoofdstukkenMap, paragrafen, voortgangMap }),
-    [hoofdstukkenMap, paragrafen, voortgangMap]
+    () => markeerVergrendeldeHoofdstukken(
+      buildChapterOutlines({ hoofdstukken: hoofdstukkenMap, paragrafen, voortgangMap }),
+      klasData
+    ),
+    [hoofdstukkenMap, paragrafen, voortgangMap, klasData]
   );
 
   return { chapters, paragrafen, loading, herlaad };

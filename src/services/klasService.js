@@ -21,6 +21,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { getStudentEffectiveParagrafen as getEffectiveParagrafenFromAssignments } from '../lib/assignmentUtils';
+import { zonderTestaccounts } from '../lib/testaccounts';
 
 /**
  * Generate a 6-character class code (e.g., "VMB1A")
@@ -152,10 +153,12 @@ export const getKlasStudents = async (klasId) => {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('klasId', '==', klasId), where('role', '==', 'student'));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
+    // Testaccounts horen niet in een klaslijst: een docent die "18 van 22 af"
+    // leest, mag daar geen testleerling in hebben zitten.
+    return zonderTestaccounts(snapshot.docs.map(doc => ({
       ...doc.data(),
       uid: doc.id
-    }));
+    })));
   } catch (error) {
     console.error('Failed to fetch class students:', error);
     return [];
@@ -267,6 +270,32 @@ export const updateKlasEnabledParagrafen = async (klasId, paragraafIds) => {
     });
   } catch (error) {
     throw new Error(`Failed to update class paragraphs: ${error.message}`, { cause: error });
+  }
+};
+
+/**
+ * Zet het slot van een heel hoofdstuk voor een klas.
+ *
+ * De lesstof blijft toegewezen; alleen de deur gaat dicht. Zo kan Kevin weken
+ * vooruit klaarzetten zonder dat een klas alvast begint. Zie
+ * `src/lib/hoofdstukSlot.js` voor wat de leerlingroute ermee doet.
+ *
+ * @param {string} klasId
+ * @param {Array<string>} hoofdstukIds - de hoofdstukken die op slot staan
+ * @returns {Promise<void>}
+ */
+export const updateKlasVergrendeldeHoofdstukken = async (klasId, hoofdstukIds) => {
+  if (!klasId || !Array.isArray(hoofdstukIds)) {
+    throw new Error('klasId and hoofdstukIds array are required');
+  }
+
+  try {
+    await updateDoc(doc(db, 'klassen', klasId), {
+      vergrendeldeHoofdstukken: hoofdstukIds,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    throw new Error(`Failed to update locked chapters: ${error.message}`, { cause: error });
   }
 };
 
@@ -519,6 +548,7 @@ export default {
   updateKlasNiveau,
   deleteKlas,
   updateKlasEnabledParagrafen,
+  updateKlasVergrendeldeHoofdstukken,
   updateKlasEnabledContentBlocks,
   clearKlasEnabledContentBlocks,
   setStudentOverride,
