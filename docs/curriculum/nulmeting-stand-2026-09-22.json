@@ -1,0 +1,334 @@
+{
+  "gemaaktOp": "2026-09-22",
+  "groepen": [
+    {
+      "id": "basis",
+      "label": "Basisberoepsgerichte leerweg",
+      "klassen": [
+        "H1B1",
+        "H1B2"
+      ],
+      "aantalLeerlingen": 27,
+      "begonnen": 27,
+      "beideDelenAf": 12,
+      "gemaakt": 1051,
+      "goed": 589,
+      "percentage": 56,
+      "mediaan": 56,
+      "laagste": 33,
+      "hoogste": 100,
+      "onderdelen": [
+        {
+          "id": "systemen",
+          "label": "21A Digitale systemen",
+          "goed": 68,
+          "gemaakt": 122,
+          "percentage": 56
+        },
+        {
+          "id": "informatie",
+          "label": "21B Digitale media en informatie",
+          "goed": 71,
+          "gemaakt": 121,
+          "percentage": 59
+        },
+        {
+          "id": "data",
+          "label": "21C Data en dataverwerking",
+          "goed": 78,
+          "gemaakt": 119,
+          "percentage": 66
+        },
+        {
+          "id": "ai",
+          "label": "21D Artificiele intelligentie",
+          "goed": 64,
+          "gemaakt": 118,
+          "percentage": 54
+        },
+        {
+          "id": "producten",
+          "label": "22A Digitale producten creeren",
+          "goed": 48,
+          "gemaakt": 118,
+          "percentage": 41
+        },
+        {
+          "id": "programmeren",
+          "label": "22B Programmeren",
+          "goed": 65,
+          "gemaakt": 117,
+          "percentage": 56
+        },
+        {
+          "id": "veiligheid",
+          "label": "23A Veiligheid en privacy",
+          "goed": 67,
+          "gemaakt": 114,
+          "percentage": 59
+        },
+        {
+          "id": "sociaal",
+          "label": "23B Jezelf en de ander",
+          "goed": 68,
+          "gemaakt": 111,
+          "percentage": 61
+        },
+        {
+          "id": "samenleving",
+          "label": "23C Digitale technologie en samenleving",
+          "goed": 60,
+          "gemaakt": 111,
+          "percentage": 54
+        }
+      ]
+    },
+    {
+      "id": "kader",
+      "label": "Kaderberoepsgerichte leerweg",
+      "klassen": [
+        "H1K1",
+        "H1K2",
+        "H1K3"
+      ],
+      "aantalLeerlingen": 53,
+      "begonnen": 52,
+      "beideDelenAf": 31,
+      "gemaakt": 2341,
+      "goed": 1425,
+      "percentage": 61,
+      "mediaan": 63,
+      "laagste": 24,
+      "hoogste": 80,
+      "onderdelen": [
+        {
+          "id": "systemen",
+          "label": "21A Digitale systemen",
+          "goed": 152,
+          "gemaakt": 270,
+          "percentage": 56
+        },
+        {
+          "id": "informatie",
+          "label": "21B Digitale media en informatie",
+          "goed": 172,
+          "gemaakt": 266,
+          "percentage": 65
+        },
+        {
+          "id": "data",
+          "label": "21C Data en dataverwerking",
+          "goed": 197,
+          "gemaakt": 264,
+          "percentage": 75
+        },
+        {
+          "id": "ai",
+          "label": "21D Artificiele intelligentie",
+          "goed": 164,
+          "gemaakt": 261,
+          "percentage": 63
+        },
+        {
+          "id": "producten",
+          "label": "22A Digitale producten creeren",
+          "goed": 107,
+          "gemaakt": 259,
+          "percentage": 41
+        },
+        {
+          "id": "programmeren",
+          "label": "22B Programmeren",
+          "goed": 154,
+          "gemaakt": 257,
+          "percentage": 60
+        },
+        {
+          "id": "veiligheid",
+          "label": "23A Veiligheid en privacy",
+          "goed": 171,
+          "gemaakt": 255,
+          "percentage": 67
+        },
+        {
+          "id": "sociaal",
+          "label": "23B Jezelf en de ander",
+          "goed": 162,
+          "gemaakt": 255,
+          "percentage": 64
+        },
+        {
+          "id": "samenleving",
+          "label": "23C Digitale technologie en samenleving",
+          "goed": 146,
+          "gemaakt": 254,
+          "percentage": 57
+        }
+      ]
+    },
+    {
+      "id": "tl",
+      "label": "Theoretische leerweg",
+      "klassen": [
+        "H1TL1",
+        "H1TL2",
+        "H1TL3"
+      ],
+      "aantalLeerlingen": 65,
+      "begonnen": 64,
+      "beideDelenAf": 43,
+      "gemaakt": 2901,
+      "goed": 1988,
+      "percentage": 69,
+      "mediaan": 70,
+      "laagste": 39,
+      "hoogste": 93,
+      "onderdelen": [
+        {
+          "id": "systemen",
+          "label": "21A Digitale systemen",
+          "goed": 217,
+          "gemaakt": 325,
+          "percentage": 67
+        },
+        {
+          "id": "informatie",
+          "label": "21B Digitale media en informatie",
+          "goed": 237,
+          "gemaakt": 325,
+          "percentage": 73
+        },
+        {
+          "id": "data",
+          "label": "21C Data en dataverwerking",
+          "goed": 257,
+          "gemaakt": 323,
+          "percentage": 80
+        },
+        {
+          "id": "ai",
+          "label": "21D Artificiele intelligentie",
+          "goed": 207,
+          "gemaakt": 323,
+          "percentage": 64
+        },
+        {
+          "id": "producten",
+          "label": "22A Digitale producten creeren",
+          "goed": 163,
+          "gemaakt": 323,
+          "percentage": 50
+        },
+        {
+          "id": "programmeren",
+          "label": "22B Programmeren",
+          "goed": 226,
+          "gemaakt": 322,
+          "percentage": 70
+        },
+        {
+          "id": "veiligheid",
+          "label": "23A Veiligheid en privacy",
+          "goed": 234,
+          "gemaakt": 320,
+          "percentage": 73
+        },
+        {
+          "id": "sociaal",
+          "label": "23B Jezelf en de ander",
+          "goed": 240,
+          "gemaakt": 320,
+          "percentage": 75
+        },
+        {
+          "id": "samenleving",
+          "label": "23C Digitale technologie en samenleving",
+          "goed": 207,
+          "gemaakt": 320,
+          "percentage": 65
+        }
+      ]
+    },
+    {
+      "id": "inclusie",
+      "label": "Inclusieklas (verkorte nulmeting)",
+      "klassen": [
+        "H1i1"
+      ],
+      "aantalLeerlingen": 9,
+      "begonnen": 8,
+      "beideDelenAf": 7,
+      "gemaakt": 300,
+      "goed": 217,
+      "percentage": 72,
+      "mediaan": 76,
+      "laagste": 50,
+      "hoogste": 85,
+      "onderdelen": [
+        {
+          "id": "systemen",
+          "label": "21A Digitale systemen",
+          "goed": 26,
+          "gemaakt": 30,
+          "percentage": 87
+        },
+        {
+          "id": "informatie",
+          "label": "21B Digitale media en informatie",
+          "goed": 30,
+          "gemaakt": 38,
+          "percentage": 79
+        },
+        {
+          "id": "data",
+          "label": "21C Data en dataverwerking",
+          "goed": 22,
+          "gemaakt": 31,
+          "percentage": 71
+        },
+        {
+          "id": "ai",
+          "label": "21D Artificiele intelligentie",
+          "goed": 22,
+          "gemaakt": 38,
+          "percentage": 58
+        },
+        {
+          "id": "producten",
+          "label": "22A Digitale producten creeren",
+          "goed": 17,
+          "gemaakt": 23,
+          "percentage": 74
+        },
+        {
+          "id": "programmeren",
+          "label": "22B Programmeren",
+          "goed": 18,
+          "gemaakt": 22,
+          "percentage": 82
+        },
+        {
+          "id": "veiligheid",
+          "label": "23A Veiligheid en privacy",
+          "goed": 31,
+          "gemaakt": 44,
+          "percentage": 70
+        },
+        {
+          "id": "sociaal",
+          "label": "23B Jezelf en de ander",
+          "goed": 28,
+          "gemaakt": 37,
+          "percentage": 76
+        },
+        {
+          "id": "samenleving",
+          "label": "23C Digitale technologie en samenleving",
+          "goed": 23,
+          "gemaakt": 37,
+          "percentage": 62
+        }
+      ]
+    }
+  ]
+}
