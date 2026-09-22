@@ -1,6 +1,8 @@
 # Testen als leerling, per klas
 
-Ontwerp, 20 september 2026. Status: ter review bij Kevin. Nog niet gebouwd.
+Ontwerp, 20 september 2026. **Gebouwd op 21 september 2026** naar dit ontwerp.
+Kevins antwoorden op de open punten: alleen de admin mag testen (geen
+supervisors), en de tokenshop blijft voor testaccounts ongemoeid.
 
 ## 1. Waarom
 
@@ -213,8 +215,21 @@ Opruimen van testdata kan met het bestaande
 - Testaccounts zichtbaar maken in de gewone overzichten met een schakelaar.
 - Testen van meerdere klassen tegelijk in één sessie.
 
-## 14. Open punten
+## 14. Open punten: beantwoord op 21 september
 
-1. Mag de testpagina ook voor supervisors, of alleen voor admins?
-2. Moet de testleerling meetellen in de tokenshop-voorraad, of moet die voor
-   testaccounts ongemoeid blijven?
+1. **Alleen de admin.** De Cloud Function laat een supervisor niet door; dat
+   wijkt bewust af van hoofdstuk 5 van dit ontwerp.
+2. **De tokenshop blijft ongemoeid.** Een testleerling verdient en geeft tokens
+   uit als een gewone leerling; er is geen aparte voorraadregel voor hem.
+
+## 15. Wat er anders is gebouwd dan hier staat
+
+- `getKlasVoortgangForParagraaf` in `voortgangService.js` heeft geen filter
+  gekregen: die functie heeft geen enkele aanroeper meer.
+- `getStudentVoortgang` filtert sinds 21 september sowieso niet meer op klas
+  (voortgang hoort bij de leerling), dus daar was geen testfilter nodig.
+- `startTestleerlingSessie` draait als het serviceaccount
+  `firebase-adminsdk-fbsvc`: alleen dat account mag een inlogtoken
+  ondertekenen. Het standaard compute-account van Cloud Functions heeft de rol
+  Service Account Token Creator niet, en `roles/editor` bevat `signBlob` niet.
+- Er zijn elf testleerlingen, niet negen: de twee EOA-klassen horen er ook bij.

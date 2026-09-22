@@ -13,6 +13,7 @@ import {
 } from '../services/tokenService';
 import * as klasService from '../services/klasService';
 import { enrichStudentsWithClassName, filterStudentAccounts } from '../lib/studentAccountUtils';
+import { zonderTestaccounts } from '../lib/testaccounts';
 import { useAuth } from '../components/auth/AuthProvider';
 import {
   getRewardRarityLabel,
@@ -83,7 +84,7 @@ export default function AdminTokenManagementPage() {
         fetchTokenAccounts(),
         fetchTokenPurchases()
       ]);
-      const rawStudents = studentSnapshot.docs.map((item) => ({ uid: item.id, ...item.data() }));
+      const rawStudents = zonderTestaccounts(studentSnapshot.docs.map((item) => ({ uid: item.id, ...item.data() })));
       setStudents(enrichStudentsWithClassName(rawStudents, classes));
       setAccounts(tokenAccounts);
       setPurchases(tokenPurchases);

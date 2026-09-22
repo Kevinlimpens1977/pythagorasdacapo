@@ -31,6 +31,7 @@ import {
 import { isOptionalParagraph } from '../../lib/paragraphMetadata';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
+import { zonderTestaccounts } from '../../lib/testaccounts';
 import {
   PLUS_PRESENTATIE,
   STAP_STATUS,
@@ -386,10 +387,12 @@ export default function ClassOverview() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const studentData = snapshot.docs.map(doc => ({
+      // De testleerlingen van /admin/testen staan als gewone leerling in de
+      // database; in het klasoverzicht en de nakijkstapel horen ze niet thuis.
+      const studentData = zonderTestaccounts(snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })));
 
       // Sort by lastActive in JavaScript instead of Firebase query
       studentData.sort((a, b) => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Archive, ArchiveRestore, Camera, Coins, FileSpreadsheet, KeyRound, Loader2, Save, Search, Trash2, Users, Users2, X } from 'lucide-react';
+import { AlertCircle, Archive, ArchiveRestore, Camera, Coins, FileSpreadsheet, FlaskConical, KeyRound, Loader2, Save, Search, Trash2, Users, Users2, X } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import * as klasService from '../services/klasService';
@@ -18,6 +18,7 @@ import { DEFAULT_STUDENT_PASSWORD, resetStudentPassword, syncAllStudentAuthAccou
 import { archiveStudent, deleteArchivedStudent, restoreStudent } from '../services/studentArchiveService';
 import { zetLesTaal } from '../services/lesTaalService';
 import { splitArchivedStudents } from '../lib/studentArchiveUtils';
+import { zonderTestaccounts } from '../lib/testaccounts';
 
 const formatLastActive = (value) => {
   if (!value) return 'Onbekend';
@@ -56,10 +57,10 @@ export default function AdminLeerlingenPage() {
         getDocs(query(collection(db, 'users'), where('role', '==', 'student')))
       ]);
 
-      const rawStudents = studentSnapshot.docs.map((doc) => ({
+      const rawStudents = zonderTestaccounts(studentSnapshot.docs.map((doc) => ({
         uid: doc.id,
         ...doc.data()
-      }));
+      })));
 
       setKlassen(availableKlassen);
       setStudents(enrichStudentsWithClassName(rawStudents, availableKlassen));
@@ -244,6 +245,13 @@ export default function AdminLeerlingenPage() {
             >
               <Coins size={18} />
               Tokenbeheer
+            </Link>
+            <Link
+              to="/admin/testen"
+              className="btn-tool min-h-12 px-5 text-sm"
+            >
+              <FlaskConical size={18} />
+              Testen als leerling
             </Link>
             <button
               type="button"
