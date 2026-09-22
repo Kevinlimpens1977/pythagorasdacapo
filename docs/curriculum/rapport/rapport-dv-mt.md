@@ -8,7 +8,8 @@
 
 <p class="meta">Visie- en beslisdocument voor teamleiding en MT<br>
 Opgesteld door Kevin Limpens, docent digitale vaardigheden<br>
-Versie: concept, september 2026</p>
+Versie 2.0 &middot; 22 september 2026<br>
+Nieuw ten opzichte van versie 1: hoofdstuk 7 met de nulmeting per leerweg, het startprofiel van de leerling en wat HELIX ermee doet</p>
 
 <p class="leeswijzer">Dit document is zelfstandig leesbaar. Kennis van het leerplatform HELIX is niet nodig. Waar dat telt, staat erbij of een uitspraak <strong>officieel</strong> is (SLO, wet), een <strong>analyse</strong>, een <strong>ontwerpkeuze</strong> van DaCapo, of een <strong>scenario</strong>.</p>
 
@@ -24,7 +25,7 @@ Versie: concept, september 2026</p>
 4. De kerndoelen digitale geletterdheid
 5. Onderwijsuitgangspunten
 6. De huidige situatie bij DaCapo
-7. Bestaande lesstof en nulmeting
+7. Bestaande lesstof en de nulmeting per leerweg
 8. Het curriculum voor klas 1: 22 lessen
 9. SLO-dekkingsmatrix
 10. De grens van twintig lessen
@@ -55,6 +56,8 @@ Bijlagen: A. De 22 lessen · B. Docentkaarten
 **Wat er nu is.** DaCapo heeft geen apart vak. Digitale geletterdheid krijgt in klas 1 tijd in de DIF-uren, samen met rekenen en begrijpend lezen: dit jaar 20 tot 24 lessen. In klas 2 is er geen vaste plek. Het huidige lesmateriaal behandelt twee van de negen kerndoelen niet (data en programmeren) en besteedt veel tijd aan Word en PowerPoint.
 
 **Wat er ligt.** Een nieuw curriculum voor klas 1 van 22 lessen. Alle negen kerndoelen, en alle 45 onderdelen die SLO daarbij voor het vmbo noemt, komen aantoonbaar aan bod. Software is een middel, geen doel. De lessen zijn gekoppeld aan de nulmeting die de brugklassers in september maakten: elke leerling ziet bij de start van een les zijn eigen startscore voor dat onderdeel.
+
+**Wat de nulmeting laat zien** (stand 22 september 2026; 143 van de 145 brugklassers zijn begonnen, de laatste tweede delen komen deze week binnen). Basis 56% goed, kader 61%, tl 69%. De spreiding binnen een klas is groter dan het verschil tussen de leerwegen, en één onderdeel is overal het zwakst: zelf digitale producten maken (41-50%). Dat is geen niveaukwestie maar een gat in het aanbod. Hoofdstuk 7 gaat er uitgebreid op in.
 
 **De kernboodschap.** Alle kerndoelen formeel behandelen kan in twintig lessen. Dat betekent nog niet dat leerlingen het daarna kunnen. In 22 lessen worden 9 van de 45 onderdelen stevig verankerd: ze komen na de introductie minstens twee keer terug. De rest komt één keer of alleen kort terug.
 
@@ -133,25 +136,79 @@ Volgens de lessentabel en de schoolgids 2026-2027:
 - **Burgerschap en mediawijsheid** lopen via de vakken, de mentor en schoolbrede weken, zoals de Week tegen Pesten en de Week van de mediawijsheid.
 - **Techniek**: DaCapo doet mee aan Sterk Techniek Onderwijs en heeft een Doe-Lab met 3D-printers, drones en programmeerbare robots, dat ook vmbo-klassen mogen gebruiken.
 
-## 7. Bestaande lesstof en nulmeting
+## 7. Bestaande lesstof en de nulmeting per leerweg
 
 **Het huidige lesmateriaal** (het Wikiwijs-arrangement van twintig lessen) is herkenbaar en praktisch, maar dekt twee kerndoelen niet: data (21C) en programmeren (22B). Vier van de twintig lessen gaan over Word en PowerPoint, twee zijn eindtoetsen. De kerndoelen over de samenleving (23C) komen nauwelijks aan bod. Een eerder uitgewerkte leerlijn in HELIX (acht hoofdstukken) is bruikbaar als grondstof, vooral voor veiligheid, privacy en mediawijsheid.
 
-**De nulmeting.** In september maakten 122 van de 144 brugklassers een nulmeting van 54 vragen, zes per kerndoel. Dat levert per leerling een startprofiel op. Het beeld over die 122 leerlingen:
+### 7.1 De nulmeting: opzet en deelname
 
-| Onderdeel | Goed | Toelichting |
-| --- | --- | --- |
-| 22A Producten creëren | 48% | het laagst, terwijl er alleen kennisvragen over waren |
-| 23C Samenleving | 62% | wordt maar half gemeten |
-| 21D AI | 63% | |
-| 22B Programmeren | 64% | |
-| 21A Systemen | 65% | |
-| 21B Informatie | 69% | |
-| 23B Jezelf en de ander | 70% | |
-| 23A Veiligheid | 71% | |
-| 21C Data | 80% | eenvoudige vragen; waarschijnlijk te rooskleurig |
+Alle brugklassen maken in september een nulmeting digitale vaardigheden in HELIX: twee delen van 27 vragen, samen 54, met zes vragen per kerndoel. De vragen zijn gesloten of kort; een leerling doet er ongeveer twee lesuren over. De uitkomst is geen cijfer maar een startprofiel per leerling.
 
-**Wat dit betekent.** De nulmeting is evenwichtig opgebouwd en geschikt om per klas accenten te zien. Zes vragen per onderdeel is te weinig voor een oordeel over één leerling. De uitkomst wijst dezelfde kant op als de analyse van het lesmateriaal: **zelf maken is het zwakst en wordt het minst geoefend**. Dat pleit voor maaktijd, niet voor meer uitleg.
+**Deze cijfers zijn een momentopname van 22 september 2026.** De nulmeting loopt nog: in deze week maken de laatste leerlingen hun tweede deel af. De percentages hieronder verschuiven daardoor nog enkele punten, maar de verhoudingen tussen de leerwegen liggen er al duidelijk in.
+
+| Leerweg | Klassen | Leerlingen | Begonnen | Beide delen af | Goed beantwoord |
+| --- | --- | --- | --- | --- | --- |
+| Basisberoepsgericht | H1B1, H1B2 | 27 | 27 | 12 | 56% |
+| Kaderberoepsgericht | H1K1, H1K2, H1K3 | 53 | 52 | 31 | 61% |
+| Theoretisch | H1TL1, H1TL2, H1TL3 | 65 | 64 | 43 | 69% |
+| **Samen** | **acht klassen** | **145** | **143** | **86** | **64%** |
+
+**De inclusieklas H1i1 doet niet mee in deze vergelijking.** Die klas maakte een verkorte nulmeting van twee keer twintig vragen, met meer leestijd en minder vragen per kerndoel. Acht van de negen leerlingen zijn eraan begonnen en zeven hebben beide delen af. Hun resultaat (72% goed) staat naast een andere toets en is dus niet één op één te vergelijken met de tabel hierboven; het hoort bij die klas thuis, niet in een niveauvergelijking.
+
+Het percentage in de laatste kolom gaat over alle beantwoorde vragen samen, niet alleen over de leerlingen die klaar zijn. Wie halverwege is, telt dus mee met het deel dat hij al maakte.
+
+### 7.2 De scores per leerweg
+
+| Kerndoel | Basis | Kader | TL | Verschil basis-tl |
+| --- | --- | --- | --- | --- |
+| 21A Digitale systemen | 56% | 56% | 67% | 11 |
+| 21B Digitale media en informatie | 59% | 65% | 73% | 14 |
+| 21C Data en dataverwerking | 66% | 75% | 80% | 14 |
+| 21D Artificiele intelligentie | 54% | 63% | 64% | 10 |
+| 22A Digitale producten creeren | 41% | 41% | 50% | 9 |
+| 22B Programmeren | 56% | 60% | 70% | 14 |
+| 23A Veiligheid en privacy | 59% | 67% | 73% | 14 |
+| 23B Jezelf en de ander | 61% | 64% | 75% | 14 |
+| 23C Digitale technologie en samenleving | 54% | 57% | 65% | 11 |
+| **Gemiddeld** | **56%** | **61%** | **69%** | **13** |
+
+De spreiding binnen een leerweg is groter dan het verschil tussen de leerwegen. In de basisklassen loopt de score per leerling van 33% tot 100%, in kader van 24% tot 80%, in tl van 39% tot 93%. De mediaan ligt telkens dicht bij het gemiddelde (56%, 63% en 70%), dus het beeld wordt niet door enkele uitschieters bepaald.
+
+### 7.3 Wat hieruit volgt
+
+**1. De volgorde klopt, de afstand is klein.** Basis, kader en tl staan in de verwachte volgorde, met dertien punten tussen de buitenste twee. Dat is minder dan de spreiding binnen elke klas. Voor het curriculum betekent dat: niet drie verschillende programma's, maar een gemeenschappelijk programma met verschil in tempo en in ondersteuning. Dat is precies de ontwerpkeuze uit hoofdstuk 8.
+
+**2. Zelf maken is overal het zwakst, en het minst afhankelijk van niveau.** 22A (digitale producten creëren) is in alle drie de leerwegen de laagste score, en juist daar is het verschil tussen basis en tl het kleinst (negen punten). Dit is dus geen niveaukwestie maar een aanbodkwestie: geen van de leerlingen heeft het geleerd. Hetzelfde patroon zag de analyse van het lesmateriaal: er is nauwelijks maaktijd. Dit pleit voor maakopdrachten voor iedereen, niet voor meer uitleg voor de zwakkeren.
+
+**3. AI is voor iedereen nieuw.** 21D blijft in alle leerwegen onder de 65% en het verschil tussen kader en tl is één punt. Een gedeelde introductie volstaat; differentiëren heeft hier weinig zin.
+
+**4. Data scoort het hoogst, maar dat is deels schijn.** 21C staat overal bovenaan (66-80%). De vragen in dit onderdeel zijn eenvoudiger dan bij de andere kerndoelen. Neem deze score dus niet als bewijs dat data geen aandacht nodig heeft; het curriculum houdt er een volle les voor.
+
+**5. De basisklassen hebben meer tijd nodig om de nulmeting af te maken.** Van de 27 leerlingen hebben er twaalf beide delen af, tegenover 43 van de 65 in tl. Dezelfde toets kost hun meer lestijd. Dat is op zichzelf informatie voor de planning: reken bij basis op meer tijd per onderdeel, niet op minder inhoud.
+
+**6. Zes vragen per kerndoel is genoeg voor een klasbeeld, te weinig voor een oordeel over één leerling.** Het startprofiel is daarom bewust een startpunt en geen niveaubepaling; het geeft richting aan wat een leerling als eerste oefent.
+
+### 7.4 Wat de leerling zelf ziet
+
+Elke leerling ziet zijn eigen uitslag in HELIX op zijn profielpagina, onder **Mijn startprofiel**. Geen cijfer en geen ranglijst: drie domeinscores, negen onderdelen met een label (Startniveau, Op weg, Sterk), zijn sterke punten en drie concrete vervolgstappen. De docent ziet dezelfde kaart, met daarnaast een signaal als deel A en deel B ver uit elkaar liggen.
+
+![Het startprofiel zoals een leerling het ziet](startprofiel-voorbeeld.png)
+
+*Voorbeeld met verzonnen gegevens. Deze leerling is sterk in data (6 van 6) en zwak in zelf maken en AI (2 van 6). De tekst bovenaan benoemt dat in zijn eigen woorden; rechtsonder staan drie vervolgstappen die bij zijn laagste onderdelen horen.*
+
+Waarom dit zo is vormgegeven: een leerling die 54 vragen maakt wil weten wat het betekende. Een percentage zegt hem niets, een label per onderdeel wel. En doordat hij zijn eigen zwakke punten in gewone taal terugleest, is het gesprek met de docent aan het begin van het jaar meteen concreet.
+
+### 7.5 Hoe HELIX per leerling op de uitslag inspeelt
+
+De nulmeting is pas nuttig als er iets mee gebeurt. In HELIX gebeurt dat op drie manieren, en die werken vandaag al in de lessen die live staan.
+
+**Extra uitleg waar het nodig is.** Elk onderdeel van het startprofiel is gekoppeld aan de lessen die erover gaan. Een leerling met Startniveau op "digitale producten creëren" krijgt bij die lessen de uitgebreide uitleg en een extra voorbeeld te zien; wie daar Sterk scoort, slaat die stap over en gaat door naar de opdracht. De les blijft dezelfde les, maar de weg erdoorheen verschilt.
+
+**Extra vragen of juist een uitdaging aan het eind van een paragraaf.** HELIX kijkt aan het eind van elke paragraaf naar wat de leerling werkelijk goed had. Zijn er kernvragen fout gebleven, dan volgt een herstelopdracht die precies over die stappen gaat. Is alles groen, dan volgt een uitdagende vraag die verder gaat dan de les. Dat gebeurt automatisch, per leerling, zonder dat de docent iets hoeft klaar te zetten.
+
+**Een fout antwoord krijgt een tweede kans met de Digidocent.** Een fout beantwoorde vraag is in HELIX geen eindpunt. De leerling krijgt een nieuwe poging, en daarbij helpt de Digidocent - de AI-hulp in de les - volgens vaste huisregels: nooit het antwoord geven, één hint tegelijk, socratisch vragen stellen en wachten op de leerling. Het doel is dat de leerling zelf de denkfout vindt. De docent ziet achteraf hoe vaak die hulp is gebruikt, zodat "zelfstandig goed" en "goed na hulp" niet door elkaar lopen.
+
+**Wat hier nog voor nodig is.** De koppeling tussen startprofiel en lesroute staat nu per les vast; de automatische start op het eigen niveau uit het profiel is uitgewerkt in het technische plan (fase 6) en nog niet gebouwd. De drie mechanismen hierboven werken al wel, en de nulmetinggegevens liggen klaar om ze te voeden.
 
 ## 8. Het curriculum voor klas 1: 22 lessen
 
@@ -425,7 +482,7 @@ De informatie die daarvoor per les nodig is, ligt al vast in het curriculum: pri
 - SLO (2025). *Het curriculum verandert. Wat kun je wanneer verwachten?* actualisatiekerndoelen.nl
 - DaCapo College (2026). *Lessentabel 2026-2027* en *Schoolgids 2026-2027*. dacapokijktnaarmij.nl
 - Perkins, M., Furze, L., Roe, J. en MacVaugh, J. (2024). *The AI Assessment Scale (AIAS)*.
-- Eigen onderzoek, september 2026: curriculumanalyse, nulmeting digitale vaardigheden (122 startprofielen), en de onderliggende curriculumbestanden in HELIX.
+- Eigen onderzoek, september 2026: curriculumanalyse, nulmeting digitale vaardigheden (stand 22 september 2026: 143 van de 145 brugklassers begonnen, 86 allebei de delen af), en de onderliggende curriculumbestanden in HELIX. De telling erachter staat in `docs/curriculum/nulmeting-stand-per-niveau.mjs`.
 
 <div class="bijlage">
 

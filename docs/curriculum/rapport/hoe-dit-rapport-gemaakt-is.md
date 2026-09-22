@@ -221,3 +221,35 @@ Drie regels die de kwaliteit bepalen:
    geteld worden, anders is het een mening.
 3. **Scheid officieel van eigen keuze.** Dat is wat het document bruikbaar
    maakt in een gesprek met een MT.
+
+## Versie 2.0 (22 september 2026)
+
+Wat er is veranderd ten opzichte van versie 1, en hoe je het reproduceert:
+
+1. **Hoofdstuk 7 is herschreven** met de nulmeting per leerweg. De cijfers komen
+   uit `node docs/curriculum/nulmeting-stand-per-niveau.mjs`, dat de losse
+   antwoorden (`voortgang/{uid}_{blockId}/items`) optelt per basis-, kader- en
+   tl-klas. De stand van 22 september staat als JSON in
+   `docs/curriculum/nulmeting-stand-2026-09-22.json`.
+2. **De inclusieklas H1i1 staat er bewust naast**, niet in de vergelijking: die
+   klas maakte een verkorte nulmeting (twee keer twintig vragen). Dat is in het
+   rapport expliciet benoemd, omdat een half vergelijkbare score erger is dan
+   geen score.
+3. **Het is een momentopname.** Dat staat er twee keer bij: in de
+   managementsamenvatting en in 7.1. De laatste tweede delen komen in dezelfde
+   week binnen.
+4. **De schermafbeelding van het startprofiel** maak je met
+   `node docs/curriculum/rapport/maak-startprofiel-figuur.mjs`. Dat script bouwt
+   de kaart op met dezelfde HTML als `NulmetingProfielKaart.jsx` en de gebouwde
+   CSS van de app, en schiet hem met Edge headless naar
+   `exports/curriculum/startprofiel-voorbeeld.png`. De leerling is verzonnen;
+   dezelfde gegevens staan als profiel op het testaccount `testleerling-h1k2`,
+   zodat je de kaart ook in de app zelf kunt bekijken.
+5. **Paragraaf 7.5 beschrijft alleen wat werkt.** Extra uitleg per onderdeel,
+   de herstelopdracht of uitdaging aan het eind van een paragraaf
+   (`buildParagraphEndPlan`) en de tweede kans met de Digidocent (huisregels in
+   `DEFAULT_MASTER_RULES`) draaien vandaag. Dat de lesroute straks automatisch
+   op het startprofiel begint, staat er als nog te bouwen bij.
+6. Bouwen: `python docs/curriculum/rapport/bouw-rapport.py`. Het versienummer
+   staat op de titelpagina in `rapport-dv-mt.md` en in de voettekst in
+   `bouw-rapport.py`.

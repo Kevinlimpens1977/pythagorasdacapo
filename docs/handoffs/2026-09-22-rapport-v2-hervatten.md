@@ -1,4 +1,7 @@
-# Hervatten: MT-rapport versie 2.0
+# MT-rapport versie 2.0 (afgerond)
+
+**Klaar op 22 september 2026.** Dit bestand beschrijft hoe het is gegaan; de
+reproductie staat in `docs/curriculum/rapport/hoe-dit-rapport-gemaakt-is.md`.
 
 Kevin moest zijn laptop afsluiten terwijl dit liep. Dit bestand beschrijft
 precies waar het staat, zodat het thuis in één keer af kan.
@@ -48,9 +51,16 @@ bijwerken met de actuele nulmeting en opnieuw bouwen als **versie 2.0**:
   en samenleving. Gemaakt met `.tmp-diag/fictief-profiel.mjs` (`--verwijder`
   haalt hem weg).
 
-## Wat er nog moet gebeuren
+## Hoe het is afgerond
 
-1. **Schermafbeelding maken.** De kaart rendert goed op `/profiel` van dat
+Alles hieronder is gedaan; de PDF (21 pagina's) staat in
+`exports/curriculum/Digitale-geletterdheid-vmbo-rapport-MT.pdf`.
+
+1. **Schermafbeelding gemaakt** met
+   `docs/curriculum/rapport/maak-startprofiel-figuur.mjs` in plaats van via de
+   browser: dat script bouwt de kaart met dezelfde HTML als het component en de
+   gebouwde CSS, en schiet hem met Edge headless naar een PNG. Reproduceerbaar
+   zonder in te loggen. Oorspronkelijk plan: De kaart rendert goed op `/profiel` van dat
    testaccount. Werkwijze die al werkte: tijdelijk wachtwoord zetten met
    `.tmp-diag/testinlog-el.mjs <uid>` (en er daarna met `--verwijder` weer
    afhalen), dev-server starten (`helix-dev-5180`; vite luistert op IPv6, dus
