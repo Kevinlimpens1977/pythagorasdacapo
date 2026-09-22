@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, GraduationCap, LogIn, UserPlus } from 'lucide-react';
 import { auth } from '../../services/firebase';
 import { DOMEIN_FOUTMELDING, isToegestaanSchoolEmail } from '../../lib/allowedEmailDomains';
-import { naarInlogEmail } from '../../lib/loginIdentifier';
+import { naarInlogEmail, toonInlogEmail } from '../../lib/loginIdentifier';
 import { useFinishGoogleRedirect, useRedirectWhenAuthenticated } from './loginFlow';
 
 const MERKPUNTEN = ['Stap voor stap', 'Directe hulp', 'Tokens'];
@@ -26,6 +26,11 @@ export default function LoginScreen() {
   const [notice, setNotice] = useState('');
   const navigate = useNavigate();
 
+  // Wat er straks als adres naar Firebase gaat. Alleen zichtbaar zodra er een
+  // heel leerlingnummer staat, zodat een leerling ziet met welk account hij
+  // binnenkomt zonder dat het meetypt bij elke losse cijfer.
+  const volledigAdres = toonInlogEmail(email);
+
   useFinishGoogleRedirect(setError);
   useRedirectWhenAuthenticated();
 
@@ -41,11 +46,13 @@ export default function LoginScreen() {
           setError('Vul je voornaam en achternaam in.');
           return;
         }
-        // Bij aanmelden vragen we het volledige adres: een kaal leerlingnummer
-        // aanvullen zou een account op een geraden adres aanmaken.
-        const aanmeldEmail = String(email).trim().toLowerCase();
+        // Een leerlingnummer is genoeg: het adres is voor elke leerling
+        // hetzelfde op het nummer na, en Firebase weigert een nummer dat al een
+        // account heeft. Een volledig adres mag ook, voor wie geen
+        // leerlingnummer heeft.
+        const aanmeldEmail = naarInlogEmail(email);
         if (!aanmeldEmail.includes('@')) {
-          setError('Vul je hele e-mailadres in, dus inclusief het @-teken.');
+          setError('Vul je leerlingnummer in, of anders je hele schoolmailadres.');
           return;
         }
         if (!isToegestaanSchoolEmail(aanmeldEmail)) {
@@ -86,7 +93,7 @@ export default function LoginScreen() {
     setNotice('');
 
     if (!email.trim()) {
-      setError('Vul eerst je e-mailadres in, dan sturen we je een herstelmail.');
+      setError('Vul eerst je leerlingnummer in, dan sturen we je een herstelmail.');
       return;
     }
 
@@ -95,7 +102,7 @@ export default function LoginScreen() {
       setNotice('We hebben je een herstelmail gestuurd. Kijk in je schoolmail.');
     } catch (err) {
       console.error(err);
-      setError('Versturen lukte niet. Klopt je e-mailadres? Vraag anders je docent om hulp.');
+      setError('Versturen lukte niet. Klopt je leerlingnummer? Vraag anders je docent om hulp.');
     }
   };
 
@@ -196,17 +203,27 @@ export default function LoginScreen() {
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">
-                  E-mailadres
+                  Leerlingnummer
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="input-auth"
-                  placeholder="naam@leerling.dacapo-college.nl"
-                  autoComplete={isSignUp ? 'email' : 'username'}
+                  placeholder="Bijv. 50122920"
+                  inputMode="numeric"
+                  autoComplete="username"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  aria-describedby="inlog-adres-uitleg"
                 />
+                <p id="inlog-adres-uitleg" className="mt-2 text-sm text-[var(--helix-muted)]">
+                  {volledigAdres
+                    ? `Je ${isSignUp ? 'maakt een account op' : 'logt in als'} ${volledigAdres}`
+                    : 'Alleen je nummer, de rest van je schoolmail vullen wij aan. Geen leerlingnummer? Typ dan je hele mailadres.'}
+                </p>
               </div>
 
               <div>
