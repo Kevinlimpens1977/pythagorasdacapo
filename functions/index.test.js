@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { HttpsError } = require("firebase-functions/v2/https");
 const { __test } = require("./index");
-const { bronVingerafdruk } = require("./shared/lesTaal.js");
+const { bronTekstVanLesstofInfo, bronVingerafdruk, tekstVingerafdruk } = require("./shared/lesTaal.js");
 const { vertaalLesblokCore } = __test;
 
 const createDocSnapshot = (id, data) => ({
@@ -1759,6 +1759,129 @@ const vertaalDb = ({ publiekBlok, bestaandeVertaling, caller }) => createNulmeti
   "privateConfig/openrouter": { apiKey: "sk-or-test", model: "test/model", enabled: true }
 });
 
+const lesstofInfoDb = (extra = {}) => createNulmetingDb({
+  "users/leerling-1": { role: "student", klasId: "klas-1" },
+  "klassen/klas-1": { enabledParagrafen: ["para-1"], enabledContentBlocks: {}, studentOverrides: {} },
+  "paragraaf/para-1": {
+    title: "Massa",
+    code: "2.1",
+    description: "Wat massa is en hoe je het meet.",
+    learningGoals: ["Je weet wat massa is.", "Je kunt massa meten met een weegschaal."],
+  },
+  "hoofdstuk/hoofdstuk-1": { title: "Massa, volume en dichtheid", description: "" },
+  "privateConfig/openrouter": { apiKey: "sk-or-test", model: "test/model", enabled: true },
+  ...extra,
+});
+
+test("vertaalLesstofInfo vertaalt titel, beschrijving en leerdoelen en bewaart ze", async () => {
+  let verstuurdeBody = null;
+  const db = lesstofInfoDb();
+
+  const resultaat = await __test.vertaalLesstofInfoCore({
+    auth: { uid: "leerling-1" },
+    data: { taal: "el", paragraafIds: ["para-1"], hoofdstukIds: ["hoofdstuk-1"] },
+    db,
+    fetchImpl: async (url, options) => {
+      verstuurdeBody = JSON.parse(options.body);
+      return {
+        ok: true,
+        json: async () => ({
+          choices: [{
+            message: {
+              content: JSON.stringify({
+                onderdelen: [
+                  {
+                    id: "paragraaf-para-1",
+                    titel: "Μάζα",
+                    beschrijving: "Τι είναι η μάζα.",
+                    leerdoelen: ["Ξέρεις τι είναι η μάζα.", "Μπορείς να μετρήσεις τη μάζα."],
+                  },
+                  { id: "hoofdstuk-hoofdstuk-1", titel: "Μάζα, όγκος και πυκνότητα", beschrijving: "" },
+                ],
+              }),
+            },
+          }],
+        }),
+      };
+    },
+    openrouterApiKeyProvider: () => "sk-or-test",
+  });
+
+  assert.equal(resultaat.success, true);
+  assert.equal(resultaat.paragrafen["para-1"].titel, "Μάζα");
+  assert.equal(resultaat.paragrafen["para-1"].leerdoelen.length, 2);
+  assert.equal(resultaat.hoofdstukken["hoofdstuk-1"].titel, "Μάζα, όγκος και πυκνότητα");
+
+  // De brontekst gaat mee, de antwoordsleutel van lesblokken nooit: deze
+  // functie leest alleen het paragraaf- en hoofdstukdocument.
+  const verstuurd = JSON.stringify(verstuurdeBody);
+  assert.match(verstuurd, /Massa/);
+  assert.doesNotMatch(verstuurd, /correct/);
+
+  const bewaard = await db.doc("vertalingen/info-paragraaf-para-1__el").get();
+  assert.equal(bewaard.exists, true);
+  assert.equal(bewaard.data().titel, "Μάζα");
+});
+
+test("vertaalLesstofInfo belt het model niet voor wat al bewaard is", async () => {
+  const bron = { titel: "Massa", beschrijving: "Wat massa is en hoe je het meet.", leerdoelen: ["Je weet wat massa is.", "Je kunt massa meten met een weegschaal."] };
+  const vingerafdruk = tekstVingerafdruk(bronTekstVanLesstofInfo(bron));
+
+  const resultaat = await __test.vertaalLesstofInfoCore({
+    auth: { uid: "leerling-1" },
+    data: { taal: "el", paragraafIds: ["para-1"] },
+    db: lesstofInfoDb({
+      "vertalingen/info-paragraaf-para-1__el": {
+        bronVingerafdruk: vingerafdruk,
+        titel: "Μάζα",
+        beschrijving: "Τι είναι η μάζα.",
+        leerdoelen: ["Ξέρεις τι είναι η μάζα.", "Μπορείς να μετρήσεις τη μάζα."],
+      },
+    }),
+    fetchImpl: () => { throw new Error("had niet gebeld mogen worden"); },
+    openrouterApiKeyProvider: () => "sk-or-test",
+  });
+
+  assert.equal(resultaat.paragrafen["para-1"].titel, "Μάζα");
+});
+
+test("vertaalLesstofInfo houdt de Nederlandse leerdoelen als het model er een laat vallen", async () => {
+  const resultaat = await __test.vertaalLesstofInfoCore({
+    auth: { uid: "leerling-1" },
+    data: { taal: "it", paragraafIds: ["para-1"] },
+    db: lesstofInfoDb(),
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              onderdelen: [{ id: "paragraaf-para-1", titel: "Massa", beschrijving: "", leerdoelen: ["Sai che cos\u2019\u00e8 la massa."] }],
+            }),
+          },
+        }],
+      }),
+    }),
+    openrouterApiKeyProvider: () => "sk-or-test",
+  });
+
+  assert.deepEqual(resultaat.paragrafen["para-1"].leerdoelen, [
+    "Je weet wat massa is.",
+    "Je kunt massa meten met een weegschaal.",
+  ]);
+});
+
+test("vertaalLesstofInfo weigert zonder inlog en bij een onbekende taal", async () => {
+  await assert.rejects(
+    __test.vertaalLesstofInfoCore({ auth: null, data: { taal: "el" }, db: lesstofInfoDb() }),
+    /ingelogd/,
+  );
+  await assert.rejects(
+    __test.vertaalLesstofInfoCore({ auth: { uid: "leerling-1" }, data: { taal: "fr" }, db: lesstofInfoDb() }),
+    /Onbekende taal/,
+  );
+});
+
 test("vertaalLesblok geeft een bewaarde vertaling terug zonder het model te bellen", async () => {
   let modelGebeld = false;
   const publiekBlok = {
@@ -2058,6 +2181,65 @@ const createResetDb = (docs = {}) => {
   return { doc: docRef, collection: collectionRef, batch, store, deletes };
 };
 
+const createTestleerlingDb = (docs = {}) => ({
+  doc: (path) => ({
+    path,
+    async get() {
+      return { exists: Object.prototype.hasOwnProperty.call(docs, path), data: () => docs[path] };
+    },
+  }),
+});
+
+test("startTestleerlingSessie geeft een token voor een testaccount", async () => {
+  const db = createTestleerlingDb({
+    "users/beheer-1": { role: "admin", email: "kevlimpens@gmail.com" },
+    "users/testleerling-h1k2": { role: "student", isTestaccount: true, displayName: "Testleerling H1K2", klasId: "klas-2" },
+  });
+  const gevraagd = [];
+
+  const resultaat = await __test.startTestleerlingSessieCore({
+    auth: { uid: "beheer-1" },
+    data: { uid: "testleerling-h1k2" },
+    db,
+    createCustomToken: async (uid, claims) => {
+      gevraagd.push({ uid, claims });
+      return "token-123";
+    },
+  });
+
+  assert.equal(resultaat.token, "token-123");
+  assert.equal(resultaat.displayName, "Testleerling H1K2");
+  assert.equal(resultaat.klasId, "klas-2");
+  assert.deepEqual(gevraagd, [{ uid: "testleerling-h1k2", claims: { testleerling: true } }]);
+});
+
+test("startTestleerlingSessie weigert een echte leerling, een niet-admin en een uitgelogde aanroep", async () => {
+  const docs = {
+    "users/beheer-1": { role: "admin" },
+    "users/docent-1": { role: "supervisor" },
+    "users/student-1": { role: "student" },
+    "users/testleerling-h1k2": { role: "student", isTestaccount: true },
+  };
+  const createCustomToken = async () => "token-123";
+
+  await assert.rejects(
+    __test.startTestleerlingSessieCore({ auth: null, data: { uid: "testleerling-h1k2" }, db: createTestleerlingDb(docs), createCustomToken }),
+    /Log in om een testsessie te starten/,
+  );
+  await assert.rejects(
+    __test.startTestleerlingSessieCore({ auth: { uid: "student-1" }, data: { uid: "testleerling-h1k2" }, db: createTestleerlingDb(docs), createCustomToken }),
+    /Alleen de beheerder/,
+  );
+  await assert.rejects(
+    __test.startTestleerlingSessieCore({ auth: { uid: "docent-1" }, data: { uid: "testleerling-h1k2" }, db: createTestleerlingDb(docs), createCustomToken }),
+    /Alleen de beheerder/,
+  );
+  await assert.rejects(
+    __test.startTestleerlingSessieCore({ auth: { uid: "beheer-1" }, data: { uid: "student-1" }, db: createTestleerlingDb(docs), createCustomToken }),
+    /geen testaccount/,
+  );
+});
+
 test("resetLeerlingBlokWerk verwijdert blokrecord, itemvoortgang en nulmetingprofiel, en laat tokens staan", async () => {
   const db = createResetDb({
     "users/docent-1": { role: "admin" },
@@ -2116,4 +2298,15 @@ test("resetLeerlingBlokWerk laat het profiel staan bij een gewoon blok en weiger
     __test.resetLeerlingBlokWerkCore({ auth: { uid: "docent-1" }, data: { leerlingUid: "student-1" }, db: createResetDb(docs) }),
     (error) => error instanceof HttpsError && error.code === "invalid-argument",
   );
+});
+
+test("leesJsonObject leest ook een antwoord met een accolade te veel of een codeblok", () => {
+  assert.deepEqual(__test.leesJsonObject('{"onderdelen":[{"id":"a"}]}'), { onderdelen: [{ id: "a" }] });
+  // Het model plakt er soms een extra accolade achter; dat mag de vertaling niet kosten.
+  assert.deepEqual(__test.leesJsonObject('{"onderdelen":[{"id":"a"}]}\n}'), { onderdelen: [{ id: "a" }] });
+  assert.deepEqual(__test.leesJsonObject('```json\n{"titel":"Μάζα"}\n```'), { titel: "Μάζα" });
+  // Een accolade binnen een tekst telt niet mee.
+  assert.deepEqual(__test.leesJsonObject('{"titel":"a } b"} rommel'), { titel: "a } b" });
+  assert.equal(__test.leesJsonObject("geen json"), null);
+  assert.equal(__test.leesJsonObject(""), null);
 });

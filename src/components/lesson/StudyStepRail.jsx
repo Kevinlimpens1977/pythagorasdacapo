@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, BookOpen, Check, Star, Target } from 'lucide-react';
-import { PLUS_LABEL, PLUS_UITLEG_LEERLING } from '../../lib/paragraphMetadata';
+import { nederlandseTaalhulp } from '../../hooks/useLesstofTaal';
 
 // Linkerbalk van de studeerweergave: de stappen van deze paragraaf, met de actieve
 // stap gevuld, een vinkje bij wat af is, en onderin een duidelijke uitgang.
@@ -16,13 +16,16 @@ export default function StudyStepRail({
   onOpenIntro,
   onSelectStep,
   onExit,
-  exitLabel = 'Terug naar overzicht',
+  exitLabel = '',
   chapterId = '',
   onOpenChapter = null,
   vorigeParagraaf = null,
   volgendeParagraaf = null,
-  onOpenParagraaf = null
+  onOpenParagraaf = null,
+  taal = nederlandseTaalhulp
 }) {
+  const { tekst } = taal;
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="shrink-0 border-b border-[var(--helix-border)] px-5 py-5">
@@ -35,12 +38,12 @@ export default function StudyStepRail({
           className="inline-flex items-center gap-2 text-sm font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-purple)]"
         >
           <ArrowLeft size={16} />
-          {exitLabel}
+          {exitLabel || tekst('knop.terugNaarOverzicht')}
         </button>
 
-        <p className="helix-eyebrow mt-4">Paragraaf</p>
+        <p className="helix-eyebrow mt-4">{tekst('rubriek.paragraaf')}</p>
         <h2 className="mt-1 font-display text-lg font-extrabold leading-6 tracking-tight text-[var(--helix-navy)]">
-          {paragraafTitle || 'Les'}
+          {paragraafTitle || tekst('les.kop')}
         </h2>
         {hoofdstukTitle && (
           chapterId && onOpenChapter ? (
@@ -58,11 +61,11 @@ export default function StudyStepRail({
 
         {optioneel && (
           <span
-            title={PLUS_UITLEG_LEERLING}
+            title={tekst('plus.uitleg')}
             className="mt-2 inline-flex items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
           >
             <Star size={11} />
-            {PLUS_LABEL}
+            {tekst('plus.label')}
           </span>
         )}
 
@@ -73,7 +76,7 @@ export default function StudyStepRail({
             Bij plusstof zegt de regel eronder er meteen bij dat het extra is,
             zodat een halve balk nooit als achterstand leest. */}
         <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
-          {summary.done} van {summary.total} onderdelen af
+          {tekst('onderdeel.af', { done: summary.done, total: summary.total })}
           {optioneel && ' · extra werk'}
         </p>
       </div>
@@ -90,7 +93,7 @@ export default function StudyStepRail({
               <Target size={17} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="study-step-title">Leerdoelen</span>
+              <span className="study-step-title">{tekst('les.leerdoelen')}</span>
             </span>
             {isIntroDone && (
               <span className="study-step-check">
@@ -109,7 +112,7 @@ export default function StudyStepRail({
             const stateClass = isActive ? 'study-step-active' : 'study-step-idle';
             // Onder de staptitel staat alleen hoe de leerling de stap heeft
             // afgerond. Geen "Stap 3 · Theorie" meer; de bovenbalk telt al.
-            const metaLabel = step.isDone ? step.statusLabel || 'Afgerond' : '';
+            const metaLabel = step.isDone ? step.statusLabel || tekst('status.afgerond') : '';
 
             return (
               <li key={step.id}>
@@ -131,11 +134,11 @@ export default function StudyStepRail({
                   {step.isDone ? (
                     <span className="study-step-check">
                       <Check size={13} strokeWidth={3.5} />
-                      <span className="sr-only">Afgerond</span>
+                      <span className="sr-only">{tekst('status.afgerond')}</span>
                     </span>
                   ) : (
                     <span className="study-step-todo">
-                      <span className="sr-only">Nog niet af</span>
+                      <span className="sr-only">{tekst('status.nogNietAf')}</span>
                     </span>
                   )}
                 </button>
@@ -151,7 +154,7 @@ export default function StudyStepRail({
       {(vorigeParagraaf || volgendeParagraaf) && onOpenParagraaf && (
         <div className="shrink-0 border-t border-[var(--helix-border)] p-3">
           <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-wide text-[var(--helix-muted)]">
-            In dit hoofdstuk
+            {tekst('les.inDitHoofdstuk')}
           </p>
           <div className="space-y-1.5">
             {vorigeParagraaf && (
@@ -162,7 +165,8 @@ export default function StudyStepRail({
               >
                 <ArrowLeft size={15} className="shrink-0 text-[var(--helix-muted)]" />
                 <span className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--helix-navy)]">
-                  {vorigeParagraaf.number ? `${vorigeParagraaf.number} ` : ''}{vorigeParagraaf.title}
+                  {vorigeParagraaf.number ? `${vorigeParagraaf.number} ` : ''}
+                  {taal.paragraafInfo(vorigeParagraaf.id)?.titel || vorigeParagraaf.title}
                 </span>
               </button>
             )}
@@ -173,7 +177,8 @@ export default function StudyStepRail({
                 className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition hover:bg-[var(--helix-surface-soft)]"
               >
                 <span className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--helix-navy)]">
-                  {volgendeParagraaf.number ? `${volgendeParagraaf.number} ` : ''}{volgendeParagraaf.title}
+                  {volgendeParagraaf.number ? `${volgendeParagraaf.number} ` : ''}
+                  {taal.paragraafInfo(volgendeParagraaf.id)?.titel || volgendeParagraaf.title}
                 </span>
                 <ArrowRight size={15} className="shrink-0 text-[var(--helix-muted)]" />
               </button>

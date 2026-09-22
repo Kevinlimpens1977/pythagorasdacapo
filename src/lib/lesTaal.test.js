@@ -153,7 +153,9 @@ test('elke taal in de lijst heeft een Nederlandse naam en een antwoordinstructie
 
 test('een taal zonder antwoordinstructie of Nederlandse naam faalt hard, niet stil', () => {
   assert.throws(
-    () => controleerTalenCompleet([{ code: 'pl', label: 'Polski', nederlands: 'Pools' }]),
+    // Een taal die nog niet in LES_TALEN staat: die heeft dus ook nog geen
+    // antwoordinstructie, en dat hoort hard te falen.
+    () => controleerTalenCompleet([{ code: 'fr', label: 'Français', nederlands: 'Frans' }]),
     /antwoordinstructie/i
   );
   assert.throws(

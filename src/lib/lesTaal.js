@@ -11,7 +11,14 @@ const schoon = (waarde) => String(waarde ?? '').trim();
 
 export const LES_TALEN = [
   { code: 'el', label: 'Ελληνικά', nederlands: 'Grieks' },
-  { code: 'it', label: 'Italiano', nederlands: 'Italiaans' }
+  { code: 'uk', label: 'Українська', nederlands: 'Oekraïens' },
+  { code: 'ar', label: 'العربية', nederlands: 'Arabisch' },
+  { code: 'tr', label: 'Türkçe', nederlands: 'Turks' },
+  { code: 'pl', label: 'Polski', nederlands: 'Pools' },
+  { code: 'ro', label: 'Română', nederlands: 'Roemeens' },
+  { code: 'es', label: 'Español', nederlands: 'Spaans' },
+  { code: 'it', label: 'Italiano', nederlands: 'Italiaans' },
+  { code: 'en', label: 'English', nederlands: 'Engels' }
 ];
 
 export const beschikbareTalen = () => LES_TALEN;
@@ -91,6 +98,24 @@ const fnv1a = (tekst) => {
 export const bronVingerafdruk = (block) => fnv1a(bronTekstVanBlok(block));
 
 /**
+ * Dezelfde vingerafdruk voor een stuk losse tekst, zoals de titel, de
+ * beschrijving en de leerdoelen van een paragraaf. Die staan niet in een
+ * lesblok maar in het CMS-document, en worden apart vertaald voor de
+ * lesstofpagina, de hoofdstukpagina en het startvenster van een paragraaf.
+ */
+export const tekstVingerafdruk = (tekst) => fnv1a(schoon(tekst));
+
+/**
+ * De brontekst van de lesstofgegevens die buiten de lesblokken vallen. Vaste
+ * volgorde, zodat de vingerafdruk alleen verandert als de tekst verandert.
+ */
+export const bronTekstVanLesstofInfo = (info = {}) => [
+  schoon(info.titel),
+  schoon(info.beschrijving),
+  ...(Array.isArray(info.leerdoelen) ? info.leerdoelen : []).map((doel) => schoon(doel))
+].join('|');
+
+/**
  * De vertaalde tekst over het blok heen. Alleen zichtbare tekst wordt
  * vervangen; kenmerken, antwoordgegevens, volgorde en instellingen blijven
  * staan, want daar draait het nakijken op. Een vraag zonder vertaling houdt
@@ -143,7 +168,14 @@ export const voegVertalingSamen = (block, vertaling) => {
  */
 const ANTWOORD_INSTRUCTIE = {
   el: 'Γράψε την απάντησή σου στα ολλανδικά.',
-  it: 'Scrivi la tua risposta in olandese.'
+  uk: 'Пиши свою відповідь нідерландською.',
+  ar: 'اكتب إجابتك بالهولندية.',
+  tr: 'Cevabını Felemenkçe yaz.',
+  pl: 'Odpowiedź napisz po niderlandzku.',
+  ro: 'Scrie răspunsul în olandeză.',
+  es: 'Escribe tu respuesta en neerlandés.',
+  it: 'Scrivi la tua risposta in olandese.',
+  en: 'Write your answer in Dutch.'
 };
 
 /**

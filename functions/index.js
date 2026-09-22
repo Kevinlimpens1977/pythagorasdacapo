@@ -3045,6 +3045,71 @@ exports.deleteAllStudentData = onCall({
   });
 });
 
+/**
+ * Een inlogtoken voor een testleerling, zodat de beheerder kan zien en doen wat
+ * een leerling van een bepaalde klas ziet en doet.
+ *
+ * De derde controle hieronder is het hart van deze functie: er komt alleen een
+ * token voor een account met `isTestaccount === true`. Een echte leerling kan
+ * hiermee dus niet geopend worden, ook niet als iemand de aanroep namaakt. De
+ * functie schrijft niets; ze logt alleen wie welke testsessie startte.
+ */
+async function startTestleerlingSessieCore({ auth, data = {}, db, createCustomToken }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om een testsessie te starten.");
+  }
+
+  const caller = await getRequiredDoc(db.doc(`users/${auth.uid}`), "Caller");
+  const rol = String(caller.data.role || "").trim().toLowerCase();
+  if (rol !== "admin" && !isConfiguredAdminEmail(caller.data.email)) {
+    throw new HttpsError("permission-denied", "Alleen de beheerder kan als testleerling inloggen.");
+  }
+
+  const doelUid = requireString(data.uid, "uid");
+  const doel = await getRequiredDoc(db.doc(`users/${doelUid}`), "Testleerling");
+  if (doel.data.isTestaccount !== true) {
+    throw new HttpsError(
+      "permission-denied",
+      "Dit is geen testaccount. Inloggen als een echte leerling kan niet.",
+    );
+  }
+
+  const token = await createCustomToken(doelUid, { testleerling: true });
+  console.log(`Testsessie gestart door ${auth.uid} voor ${doelUid}`);
+
+  return {
+    token,
+    uid: doelUid,
+    displayName: doel.data.displayName || "Testleerling",
+    klasId: doel.data.klasId || "",
+  };
+}
+
+// Deze functie ondertekent een inlogtoken, en dat mag alleen een serviceaccount
+// met de rol Service Account Token Creator. Het standaard compute-account van
+// Cloud Functions heeft die rol niet (roles/editor bevat signBlob niet meer),
+// dus draait deze ene functie als het Firebase Admin SDK-account, dat hem al
+// heeft.
+exports.startTestleerlingSessie = onCall({
+  region: REGION,
+  serviceAccount: "firebase-adminsdk-fbsvc@pythagoras-eoa.iam.gserviceaccount.com",
+}, async (request) => {
+  try {
+    return await startTestleerlingSessieCore({
+      auth: request.auth,
+      data: request.data || {},
+      db: getFirestore(),
+      createCustomToken: (uid, claims) => getAuth().createCustomToken(uid, claims),
+    });
+  } catch (error) {
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    console.error("Error in startTestleerlingSessie:", error);
+    throw new HttpsError("internal", "De testsessie kon nu niet gestart worden.");
+  }
+});
+
 exports.resetLeerlingBlokWerk = onCall({
   region: REGION,
 }, async (request) => {
@@ -3254,6 +3319,9 @@ async function buildNulmetingProfielCore({ auth, data, db, loadLayer = loadShare
     for (const doc of students.docs) {
       const userData = doc.data() || {};
       if (String(userData.role || "student") !== "student") continue;
+      // Een testleerling hoort niet in een klasberekening: zijn profiel zou
+      // meetellen in het beeld dat de docent van de klas krijgt.
+      if (userData.isTestaccount === true) continue;
       try {
         profielen.push(await computeNulmetingProfielForStudent({ db, uid: doc.id, userData, klasData: klas.data, layer, now }));
       } catch (error) {
@@ -3394,10 +3462,12 @@ let sharedLesTaalLayerPromise = null;
 function getLesTaalLayer() {
   if (!sharedLesTaalLayerPromise) {
     sharedLesTaalLayerPromise = import("./shared/lesTaal.js").then((layer) => ({
+      bronTekstVanLesstofInfo: layer.bronTekstVanLesstofInfo,
       bronVingerafdruk: layer.bronVingerafdruk,
       isLesTaal: layer.isLesTaal,
       isVertaalbaarBlok: layer.isVertaalbaarBlok,
       taalNederlands: layer.taalNederlands,
+      tekstVingerafdruk: layer.tekstVingerafdruk,
     }));
   }
   return sharedLesTaalLayerPromise;
@@ -3639,6 +3709,266 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
   return { success: true, vertaling, verouderd: false };
 }
 
+/**
+ * De lesstofgegevens buiten de lesblokken: de titel, de beschrijving en de
+ * leerdoelen van een paragraaf, en de titel en beschrijving van een hoofdstuk.
+ *
+ * Waarom apart van vertaalLesblok: die teksten staan niet in een lesblok maar
+ * in de CMS-documenten, en een leerling ziet ze voordat hij een les opent - op
+ * de lesstofpagina, op de hoofdstukpagina en in het startvenster "Wat je gaat
+ * leren". Zonder deze functie doet de taalknop daar niets.
+ *
+ * Er gaan alleen titels, beschrijvingen en leerdoelen mee. In die documenten
+ * staat geen antwoordsleutel, en elke ingelogde leerling mag ze al lezen
+ * (firestore.rules: paragraaf en hoofdstuk zijn leesbaar voor wie is ingelogd),
+ * dus deze functie ontsluit niets nieuws.
+ */
+const LESSTOF_INFO_MAX = 60;
+
+/**
+ * Het eerste complete JSON-object uit een modelantwoord.
+ *
+ * Het model levert meestal keurig JSON, maar niet altijd: bij een lijst in een
+ * omhullend object plakt het er soms een extra accolade achter, en soms staat
+ * het antwoord in een ```json-blok. Dan faalt JSON.parse en zag de leerling
+ * alleen Nederlands, terwijl de vertaling er gewoon was. Daarom lezen we tot de
+ * accolade die het openingsteken sluit, met de tekens binnen aanhalingstekens
+ * overgeslagen.
+ */
+function leesJsonObject(rauw) {
+  const tekst = String(rauw || "").replace(/^\s*```(?:json)?/i, "").replace(/```\s*$/i, "").trim();
+  if (!tekst) return null;
+
+  try {
+    return JSON.parse(tekst);
+  } catch {
+    // Verderop nog een poging met alleen het eerste complete object.
+  }
+
+  const start = tekst.indexOf("{");
+  if (start < 0) return null;
+
+  let diepte = 0;
+  let inString = false;
+  let ontsnapt = false;
+
+  for (let i = start; i < tekst.length; i += 1) {
+    const teken = tekst[i];
+
+    if (inString) {
+      if (ontsnapt) ontsnapt = false;
+      else if (teken === "\\") ontsnapt = true;
+      else if (teken === '"') inString = false;
+      continue;
+    }
+
+    if (teken === '"') inString = true;
+    else if (teken === "{") diepte += 1;
+    else if (teken === "}") {
+      diepte -= 1;
+      if (diepte === 0) {
+        try {
+          return JSON.parse(tekst.slice(start, i + 1));
+        } catch {
+          return null;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+const LESSTOF_INFO_SOORTEN = { paragraaf: "paragraaf", hoofdstuk: "hoofdstuk" };
+
+function bouwLesstofInfoBron(soort, data = {}) {
+  const tekst = (waarde) => String(waarde ?? "").trim();
+  const regels = (waarde) => {
+    if (Array.isArray(waarde)) return waarde.map((item) => tekst(item)).filter(Boolean);
+    return tekst(waarde).split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  };
+
+  // Het nummer gaat er eerst af: het scherm zet "Hoofdstuk 2" of "2.1" er zelf
+  // al voor. Stuurden we "h1 Stoffen" mee, dan kwam er "Hoofdstuk 1. Stoffen"
+  // terug en stond het nummer twee keer op de kaart.
+  const zonderNummer = (waarde) => tekst(waarde)
+    .replace(/^[hH]\s*\d+\s*[.:\-]?\s*/, "")
+    .replace(/^\d+(?:\.\d+)*\s*[.:)\-]?\s*/, "");
+
+  const basis = {
+    titel: zonderNummer(data.title ?? data.titel),
+    beschrijving: tekst(data.description ?? data.beschrijving),
+  };
+
+  if (soort !== LESSTOF_INFO_SOORTEN.paragraaf) return { ...basis, leerdoelen: [] };
+
+  return {
+    ...basis,
+    leerdoelen: regels(data.learningGoals ?? data.leerdoelen ?? data.goals ?? data.doelen),
+  };
+}
+
+function bouwLesstofInfoBericht({ teVertalen, taalNaam }) {
+  return [
+    {
+      role: "system",
+      content: [
+        `Je vertaalt de namen en leerdoelen van lesmateriaal voor het voortgezet onderwijs van het Nederlands naar het ${taalNaam}.`,
+        "Regels:",
+        "- Vertaal uitsluitend de velden titel, beschrijving en leerdoelen.",
+        "- Laat elke id en elk nummer (zoals 2.1) ongewijzigd staan.",
+        "- Houd het aantal leerdoelen precies gelijk en in dezelfde volgorde.",
+        "- Voeg niets toe en laat niets weg.",
+        "- Gebruik taal die een leerling van twaalf tot vijftien jaar begrijpt.",
+        "- Antwoord met uitsluitend geldige JSON in exact dezelfde vorm als de invoer.",
+      ].join("\n"),
+    },
+    { role: "user", content: JSON.stringify(teVertalen) },
+  ];
+}
+
+/** Zelfde vorm in en uit: wat het model erbij verzint, komt er hier niet door. */
+function vormLesstofInfo(vertaald, bron) {
+  const leerdoelen = (Array.isArray(vertaald?.leerdoelen) ? vertaald.leerdoelen : [])
+    .slice(0, bron.leerdoelen.length)
+    .map((doel) => String(doel || ""));
+
+  return {
+    titel: String(vertaald?.titel || bron.titel),
+    beschrijving: String(vertaald?.beschrijving || bron.beschrijving),
+    // Een model dat leerdoelen laat vallen levert een half startvenster op.
+    // Dan liever de Nederlandse doelen dan een lijst die niet meer klopt.
+    leerdoelen: leerdoelen.length === bron.leerdoelen.length ? leerdoelen : bron.leerdoelen,
+  };
+}
+
+async function vertaalLesstofInfoCore({ auth, data, db, fetchImpl = fetch, openrouterApiKeyProvider, nowMs = Date.now() }) {
+  const { bronTekstVanLesstofInfo, isLesTaal, taalNederlands, tekstVingerafdruk } = await getLesTaalLayer();
+
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Je moet ingelogd zijn.");
+  }
+
+  const taal = String(data?.taal || "").trim();
+  if (!isLesTaal(taal)) {
+    throw new HttpsError("invalid-argument", `Onbekende taal: ${taal}`);
+  }
+
+  const verzamel = (waarde) => (Array.isArray(waarde) ? waarde : [])
+    .map((id) => String(id || "").trim())
+    .filter((id) => id && BLOCK_ID_PATTERN.test(id));
+
+  const gevraagd = [
+    ...verzamel(data?.paragraafIds).map((id) => ({ soort: LESSTOF_INFO_SOORTEN.paragraaf, id })),
+    ...verzamel(data?.hoofdstukIds).map((id) => ({ soort: LESSTOF_INFO_SOORTEN.hoofdstuk, id })),
+  ].slice(0, LESSTOF_INFO_MAX);
+
+  if (!gevraagd.length) {
+    return { success: true, paragrafen: {}, hoofdstukken: {} };
+  }
+
+  const uitkomst = { paragraaf: {}, hoofdstuk: {} };
+  const teVertalen = [];
+
+  for (const { soort, id } of gevraagd) {
+    const snapshot = await db.doc(`${soort}/${id}`).get();
+    if (!snapshot.exists) continue;
+
+    const bron = bouwLesstofInfoBron(soort, snapshot.data() || {});
+    if (!bron.titel && !bron.beschrijving && !bron.leerdoelen.length) continue;
+
+    const vingerafdruk = tekstVingerafdruk(bronTekstVanLesstofInfo(bron));
+    const bestaand = await db.doc(`vertalingen/info-${soort}-${id}__${taal}`).get();
+    if (bestaand.exists && (bestaand.data() || {}).bronVingerafdruk === vingerafdruk) {
+      const opgeslagen = bestaand.data() || {};
+      uitkomst[soort][id] = {
+        titel: opgeslagen.titel || "",
+        beschrijving: opgeslagen.beschrijving || "",
+        leerdoelen: Array.isArray(opgeslagen.leerdoelen) ? opgeslagen.leerdoelen : [],
+      };
+      continue;
+    }
+
+    teVertalen.push({ soort, id, bron, vingerafdruk });
+  }
+
+  if (!teVertalen.length) {
+    return { success: true, paragrafen: uitkomst.paragraaf, hoofdstukken: uitkomst.hoofdstuk };
+  }
+
+  // De rem geldt pas hier: alles wat uit de cache kwam, kostte niets.
+  await assertQuestionGradingRateLimit({ db, uid: auth.uid, subjectId: `lesstofinfo__${taal}`, nowMs });
+
+  const runtimeConfig = await getOpenRouterRuntimeConfig(db, openrouterApiKeyProvider);
+  const taalNaam = taalNederlands(taal);
+  if (!taalNaam) {
+    throw new HttpsError("internal", `Geen Nederlandse naam voor taal ${taal}.`);
+  }
+
+  const invoer = teVertalen.map((regel) => ({ id: `${regel.soort}-${regel.id}`, ...regel.bron }));
+
+  const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${runtimeConfig.apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://stellingvanpythagoras.nl",
+      "X-Title": "HELIX App",
+    },
+    body: JSON.stringify({
+      model: runtimeConfig.model,
+      messages: bouwLesstofInfoBericht({ teVertalen: { onderdelen: invoer }, taalNaam }),
+      max_tokens: vertaalTokenBudget(JSON.stringify(invoer).length),
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new HttpsError("unavailable", "Vertalen lukt nu even niet.");
+  }
+
+  const payload = await response.json();
+  const vertaald = leesJsonObject(payload?.choices?.[0]?.message?.content);
+  if (!vertaald) {
+    throw new HttpsError("internal", "De vertaling kwam niet in het juiste formaat terug.");
+  }
+
+  // Het model mag de lijst onder "onderdelen" zetten of rechtstreeks teruggeven.
+  const lijst = Array.isArray(vertaald) ? vertaald
+    : Array.isArray(vertaald.onderdelen) ? vertaald.onderdelen
+      : Array.isArray(vertaald.items) ? vertaald.items : [];
+  const perId = new Map(lijst.map((item) => [String(item?.id || ""), item]));
+
+  for (const regel of teVertalen) {
+    const vertaling = vormLesstofInfo(perId.get(`${regel.soort}-${regel.id}`), regel.bron);
+    uitkomst[regel.soort][regel.id] = vertaling;
+
+    await db.doc(`vertalingen/info-${regel.soort}-${regel.id}__${taal}`).set({
+      soort: regel.soort,
+      documentId: regel.id,
+      taal,
+      bronVingerafdruk: regel.vingerafdruk,
+      ...vertaling,
+      bron: "ai",
+      model: runtimeConfig.model,
+      bijgewerktOp: FieldValue.serverTimestamp(),
+    }, { merge: false });
+  }
+
+  return { success: true, paragrafen: uitkomst.paragraaf, hoofdstukken: uitkomst.hoofdstuk };
+}
+
+exports.vertaalLesstofInfo = onCall({
+  region: REGION,
+  secrets: [openrouterApiKey],
+}, async (request) => {
+  return await vertaalLesstofInfoCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+    openrouterApiKeyProvider: () => openrouterApiKey.value(),
+  });
+});
+
 exports.vertaalLesblok = onCall({
   region: REGION,
   secrets: [openrouterApiKey],
@@ -3670,12 +4000,15 @@ exports.__test = {
   getOpenRouterConfigStatusCore,
   purchaseTokenShopItemCore,
   resetLeerlingBlokWerkCore,
+  startTestleerlingSessieCore,
   resetStudentPasswordCore,
   syncAllStudentAuthAccountsCore,
   updateAiTutorRulesCore,
   updateOpenRouterConfigCore,
   uploadTokenShopItemImageCore,
   vertaalLesblokCore,
+  vertaalLesstofInfoCore,
+  leesJsonObject,
   vertaalTokenBudget,
   telAfbeeldingen,
   buildAiTutorSystemPrompt,

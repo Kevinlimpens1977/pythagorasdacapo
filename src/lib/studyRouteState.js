@@ -157,6 +157,9 @@ export const buildLearningGoalsIntro = ({ paragraaf = null, blocks = [] } = {}) 
 
   return {
     kind: goals.length > 0 ? 'goals' : 'derived',
+    // Het startvenster vertaalt de leerdoelen van deze paragraaf; daarvoor moet
+    // het weten om welke paragraaf het gaat.
+    paragraafId: paragraaf?.id || '',
     heading: 'Wat je gaat leren:',
     items: goals.length > 0 ? goals : derived,
     estimatedMinutes: metadata.estimatedMinutes,

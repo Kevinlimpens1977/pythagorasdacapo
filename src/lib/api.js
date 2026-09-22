@@ -68,6 +68,43 @@ export const resetLeerlingBlokWerkCall = async ({ leerlingUid = '', blockId = ''
   }
 };
 
+/**
+ * Start een testsessie: de server geeft een inlogtoken voor de testleerling van
+ * een klas. De functie geeft dat alleen voor een account met
+ * `isTestaccount: true` en alleen aan de beheerder; inloggen als een echte
+ * leerling kan dus niet.
+ */
+/**
+ * De titels, beschrijvingen en leerdoelen van lesstof in de taal van de
+ * leerling. Voor de lesstofpagina, de hoofdstukpagina en het startvenster van
+ * een paragraaf; de lesblokken zelf lopen via vertaalLesblok.
+ */
+export const vertaalLesstofInfoCall = async ({ taal = '', paragraafIds = [], hoofdstukIds = [] } = {}) => {
+  try {
+    const vertaal = httpsCallable(functions, 'vertaalLesstofInfo');
+    const result = await vertaal({ taal, paragraafIds, hoofdstukIds });
+    return {
+      success: result.data?.success === true,
+      paragrafen: result.data?.paragrafen || {},
+      hoofdstukken: result.data?.hoofdstukken || {}
+    };
+  } catch (error) {
+    console.error('Lesstof vertalen mislukt:', error);
+    return { success: false, paragrafen: {}, hoofdstukken: {}, error: error?.message || '' };
+  }
+};
+
+export const startTestleerlingSessieCall = async ({ uid = '' } = {}) => {
+  try {
+    const startSessie = httpsCallable(functions, 'startTestleerlingSessie');
+    const result = await startSessie({ uid });
+    return { ...(result.data || {}), success: Boolean(result.data?.token) };
+  } catch (error) {
+    console.error('Testsessie starten mislukt:', error);
+    return { success: false, code: error?.code || '', error: error?.message || 'De testsessie kon nu niet gestart worden.' };
+  }
+};
+
 export const assessOpenAnswerCall = async ({
   blockId = '',
   // Oefenopgave in een lesblok: de server zoekt met blockId + fieldId zelf het

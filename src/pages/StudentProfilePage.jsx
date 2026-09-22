@@ -12,6 +12,7 @@ import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../lib/tokenShopRewards';
 import NulmetingProfielKaart from '../components/nulmeting/NulmetingProfielKaart';
+import TaalKeuzeKaart from '../components/profiel/TaalKeuzeKaart';
 import * as nulmetingService from '../services/nulmetingService';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
@@ -352,6 +353,8 @@ export default function StudentProfilePage() {
             </div>
             </div>
           </div>
+
+          <TaalKeuzeKaart />
 
           <StudentPasswordForm currentUser={currentUser} />
         </aside>
