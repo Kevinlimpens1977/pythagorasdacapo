@@ -1111,9 +1111,9 @@
       "order": 4,
       "title": "Quiz 2.3",
       "status": "published",
-      "tokenTotal": 30,
+      "tokenTotal": 60,
       "content": {
-        "html": "<p>Vier vragen. Je mag het vaker proberen.</p>",
+        "html": "<p>Veertien vragen. De eerste vier gaan over het storingsplan, daarna komt de uitbreiding over hardware, software en de keuken uit 2.1. Je mag het vaker proberen.</p>",
         "assessmentType": "quiz",
         "items": [
           {
@@ -1171,7 +1171,7 @@
               }
             ],
             "feedback": "Stap 1 is kijken wat er gebeurt. De melding op het scherm vertelt vaak al wat er misgaat.",
-            "tokens": 8,
+            "tokens": 5,
             "taxonomy": {
               "learningGoal": "",
               "cognitiveSkill": "begrijpen",
@@ -1220,7 +1220,7 @@
               }
             ],
             "feedback": "Herstarten is pas stap 5. Vaak los je het eerder op, en bij herstarten kun je werk kwijtraken.",
-            "tokens": 8,
+            "tokens": 5,
             "taxonomy": {
               "learningGoal": "",
               "cognitiveSkill": "begrijpen",
@@ -1283,7 +1283,7 @@
               }
             ],
             "feedback": "Herstarten maakt het werkgeheugen leeg. Alleen wat in de opslag staat, blijft bewaard.",
-            "tokens": 7,
+            "tokens": 5,
             "taxonomy": {
               "learningGoal": "",
               "cognitiveSkill": "begrijpen",
@@ -1346,7 +1346,623 @@
               }
             ],
             "feedback": "Stap 6: schrijf op wat je al hebt geprobeerd en vraag hulp. Dan hoeft niemand die stappen opnieuw te doen.",
-            "tokens": 7,
+            "tokens": 5,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Een SSD zit in je laptop en bewaart je bestanden. Wat is een SSD?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Hardware",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Software",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een besturingssysteem",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Hardware",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Software",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een besturingssysteem",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Je kunt een SSD vastpakken, dus het is hardware. Hij hoort bij de opslag: de voorraadkast.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-6",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je opent Teams om een bericht te sturen. Wat is Teams?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Hardware",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Software",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een besturingssysteem",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Hardware",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Software",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een besturingssysteem",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Teams is een programma. Programma's kun je niet vastpakken, dus dat is software.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-7",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "De webcam boven je scherm is software.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De webcam kun je vastpakken. Alles wat je kunt vastpakken is hardware.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-8",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke van deze vier is software?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "De oplader",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "De muis",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een spelletje op je telefoon",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-4",
+                  "text": "Het beeldscherm",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "De oplader",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "De muis",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een spelletje op je telefoon",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-4",
+                "text": "Het beeldscherm",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een spelletje is een programma, dus software. De oplader, de muis en het beeldscherm kun je vastpakken.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-9",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Zonder software doet hardware niets.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Klopt. Software vertelt de hardware wat hij moet doen. Ze hebben elkaar nodig.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-10",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je typt aan je verslag en hebt nog niet opgeslagen. Waar staat je tekst?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Op het aanrecht: in het werkgeheugen",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "In de voorraadkast: in de opslag",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Bij de kok: in de processor",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Op het aanrecht: in het werkgeheugen",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "In de voorraadkast: in de opslag",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Bij de kok: in de processor",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Waar je nu mee bezig bent, ligt op het aanrecht. Dat is het werkgeheugen, en dat is tijdelijk.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-11",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je klikt op Opslaan. Waar komt je verslag dan terecht?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Op het aanrecht: in het werkgeheugen",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "In de voorraadkast: in de opslag",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Bij de kok: in de processor",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Op het aanrecht: in het werkgeheugen",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "In de voorraadkast: in de opslag",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Bij de kok: in de processor",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Opslaan zet je werk in de voorraadkast. Daar blijft het staan, ook als de laptop uitgaat.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-12",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je klikt op een knop in een programma. Welk onderdeel rekent uit wat er moet gebeuren?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het werkgeheugen, het aanrecht",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "De opslag, de voorraadkast",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De processor, de kok",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het werkgeheugen, het aanrecht",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "De opslag, de voorraadkast",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "De processor, de kok",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De processor doet het rekenwerk, net zoals de kok het kookwerk doet.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-13",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je hebt twaalf tabbladen en drie programma's open. Je laptop wordt traag. Welk onderdeel zit vol?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het werkgeheugen, het aanrecht",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "De opslag, de voorraadkast",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De processor, de kok",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het werkgeheugen, het aanrecht",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "De opslag, de voorraadkast",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "De processor, de kok",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Alles wat openstaat, ligt tegelijk op het aanrecht. Sluit wat je niet gebruikt, dan is er weer ruimte.",
+            "tokens": 4,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-14",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je laptop valt uit terwijl je werkt. Wat ben je kwijt?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Alles wat in de opslag staat, de voorraadkast",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Alles wat nog op het aanrecht lag en niet was opgeslagen",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Niets, want een computer bewaart altijd alles",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Alles wat in de opslag staat, de voorraadkast",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Alles wat nog op het aanrecht lag en niet was opgeslagen",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Niets, want een computer bewaart altijd alles",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Het aanrecht wordt leeg zodra de stroom eraf gaat. Wat je had opgeslagen, staat veilig in de voorraadkast.",
+            "tokens": 4,
             "taxonomy": {
               "learningGoal": "",
               "cognitiveSkill": "begrijpen",
@@ -1362,7 +1978,7 @@
         },
         "tokenConfig": {
           "enabled": true,
-          "totalTokens": 30
+          "totalTokens": 60
         },
         "crops": [],
         "sourceBasis": [

@@ -232,7 +232,8 @@
         {
           "type": "quiz",
           "titel": "Quiz 2.3",
-          "inleiding": "Vier vragen. Je mag het vaker proberen.",
+          "inleiding": "Veertien vragen. De eerste vier gaan over het storingsplan, daarna komt de uitbreiding over hardware, software en de keuken uit 2.1. Je mag het vaker proberen.",
+          "tokens": 60,
           "vragen": [
             {
               "prompt": "Je programma loopt vast. Wat doe je als eerste?",
@@ -265,6 +266,89 @@
                 { "text": "Een andere laptop pakken zonder iets te zeggen." }
               ],
               "feedback": "Stap 6: schrijf op wat je al hebt geprobeerd en vraag hulp. Dan hoeft niemand die stappen opnieuw te doen."
+            },
+            {
+              "prompt": "Een SSD zit in je laptop en bewaart je bestanden. Wat is een SSD?",
+              "options": [
+                { "text": "Hardware", "correct": true },
+                { "text": "Software" },
+                { "text": "Een besturingssysteem" }
+              ],
+              "feedback": "Je kunt een SSD vastpakken, dus het is hardware. Hij hoort bij de opslag: de voorraadkast."
+            },
+            {
+              "prompt": "Je opent Teams om een bericht te sturen. Wat is Teams?",
+              "options": [
+                { "text": "Hardware" },
+                { "text": "Software", "correct": true },
+                { "text": "Een besturingssysteem" }
+              ],
+              "feedback": "Teams is een programma. Programma's kun je niet vastpakken, dus dat is software."
+            },
+            {
+              "prompt": "De webcam boven je scherm is software.",
+              "waar": false,
+              "feedback": "De webcam kun je vastpakken. Alles wat je kunt vastpakken is hardware."
+            },
+            {
+              "prompt": "Welke van deze vier is software?",
+              "options": [
+                { "text": "De oplader" },
+                { "text": "De muis" },
+                { "text": "Een spelletje op je telefoon", "correct": true },
+                { "text": "Het beeldscherm" }
+              ],
+              "feedback": "Een spelletje is een programma, dus software. De oplader, de muis en het beeldscherm kun je vastpakken."
+            },
+            {
+              "prompt": "Zonder software doet hardware niets.",
+              "waar": true,
+              "feedback": "Klopt. Software vertelt de hardware wat hij moet doen. Ze hebben elkaar nodig."
+            },
+            {
+              "prompt": "Je typt aan je verslag en hebt nog niet opgeslagen. Waar staat je tekst?",
+              "options": [
+                { "text": "Op het aanrecht: in het werkgeheugen", "correct": true },
+                { "text": "In de voorraadkast: in de opslag" },
+                { "text": "Bij de kok: in de processor" }
+              ],
+              "feedback": "Waar je nu mee bezig bent, ligt op het aanrecht. Dat is het werkgeheugen, en dat is tijdelijk."
+            },
+            {
+              "prompt": "Je klikt op Opslaan. Waar komt je verslag dan terecht?",
+              "options": [
+                { "text": "Op het aanrecht: in het werkgeheugen" },
+                { "text": "In de voorraadkast: in de opslag", "correct": true },
+                { "text": "Bij de kok: in de processor" }
+              ],
+              "feedback": "Opslaan zet je werk in de voorraadkast. Daar blijft het staan, ook als de laptop uitgaat."
+            },
+            {
+              "prompt": "Je klikt op een knop in een programma. Welk onderdeel rekent uit wat er moet gebeuren?",
+              "options": [
+                { "text": "Het werkgeheugen, het aanrecht" },
+                { "text": "De opslag, de voorraadkast" },
+                { "text": "De processor, de kok", "correct": true }
+              ],
+              "feedback": "De processor doet het rekenwerk, net zoals de kok het kookwerk doet."
+            },
+            {
+              "prompt": "Je hebt twaalf tabbladen en drie programma's open. Je laptop wordt traag. Welk onderdeel zit vol?",
+              "options": [
+                { "text": "Het werkgeheugen, het aanrecht", "correct": true },
+                { "text": "De opslag, de voorraadkast" },
+                { "text": "De processor, de kok" }
+              ],
+              "feedback": "Alles wat openstaat, ligt tegelijk op het aanrecht. Sluit wat je niet gebruikt, dan is er weer ruimte."
+            },
+            {
+              "prompt": "Je laptop valt uit terwijl je werkt. Wat ben je kwijt?",
+              "options": [
+                { "text": "Alles wat in de opslag staat, de voorraadkast" },
+                { "text": "Alles wat nog op het aanrecht lag en niet was opgeslagen", "correct": true },
+                { "text": "Niets, want een computer bewaart altijd alles" }
+              ],
+              "feedback": "Het aanrecht wordt leeg zodra de stroom eraf gaat. Wat je had opgeslagen, staat veilig in de voorraadkast."
             }
           ]
         }
