@@ -21,7 +21,6 @@ import {
   buildAssessmentItemVoortgangUpdate,
   buildContentBlockVoortgangUpdate
 } from '../lib/voortgangPayload';
-import { shouldFallbackToUserProgressQuery } from '../lib/voortgangQueryUtils';
 import {
   beoordeelBlokkade,
   buildBeoordelingData,
@@ -483,48 +482,35 @@ export const getKlasVoortgangForParagraaf = async (klasId, paragraafId) => {
 };
 
 /**
- * Get all progress for a student in a class
- * Useful for overview dashboards
+ * Alle voortgang van EEN leerling, ongeacht de klas waarin hij toen zat.
+ *
+ * Voortgang hoort bij de leerling, niet bij de klas. Het klasId in een record
+ * is een notitie van het moment van maken; het documentnummer is
+ * `{uid}_{blockId}`. Werd hier op klas gefilterd, dan raakte een leerling die
+ * van klas wisselde zijn eerdere resultaten kwijt: de lesstofpagina liet zijn
+ * afgeronde lessen weer als onbegonnen zien en "verder waar je gebleven was"
+ * wees naar het begin. Dat overkwam onder meer wie na de nulmeting naar een
+ * andere brugklas ging.
+ *
+ * `klasId` blijft in de aanroep staan omdat de docentenkant hem meegeeft, maar
+ * de query gebruikt hem bewust niet.
  *
  * @param {string} userId - Student user ID
- * @param {string} klasId - Class ID
- * @returns {Promise<Array>} Array of all progress records for student
+ * @param {string} [klasId] - Wordt genegeerd; zie hierboven
+ * @returns {Promise<Array>} Alle voortgangsrecords van deze leerling
  */
-export const getStudentVoortgang = async (userId, klasId) => {
+export const getStudentVoortgang = async (userId) => {
   if (!userId) {
     return [];
   }
 
   try {
-    const userOnlyQuery = query(
+    const snapshot = await getDocs(query(
       collection(db, 'voortgang'),
       where('userId', '==', userId)
-    );
+    ));
 
-    if (!klasId) {
-      const snapshot = await getDocs(userOnlyQuery);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    }
-
-    const classScopedQuery = query(
-      collection(db, 'voortgang'),
-      where('userId', '==', userId),
-      where('klasId', '==', klasId)
-    );
-
-    const classScopedSnapshot = await getDocs(classScopedQuery);
-    if (!shouldFallbackToUserProgressQuery({ klasId, classScopedCount: classScopedSnapshot.size })) {
-      return classScopedSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    }
-
-    const userOnlySnapshot = await getDocs(userOnlyQuery);
-    return userOnlySnapshot.docs.map(doc => ({
+    return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));

@@ -14,6 +14,7 @@
  */
 
 import { normalizeResultTier } from './learningResultUtils.js';
+import { nulmetingDeelLetter } from './nulmetingVolgorde.js';
 import { getEffectiveContentBlocks, getStudentEffectiveParagrafen } from './assignmentUtils.js';
 import {
   PLUS_KORT,
@@ -446,6 +447,39 @@ export const buildStapStatus = ({ block = {}, record = null, index = 0, itemReco
       toelichting: itemsNakijken.length === 1
         ? '1 vraag wacht op jouw beoordeling'
         : `${itemsNakijken.length} vragen wachten op jouw beoordeling`
+    };
+  }
+
+  // Een nulmeting meet waar een leerling staat; fout antwoord hoort erbij.
+  // "Af" is hier dus: alle vragen beantwoord, hoeveel er goed zijn doet er voor
+  // de stand niet toe. Zonder deze uitzondering leest het dashboard het
+  // resultaat als `failed` en staat een klas die de hele nulmeting heeft
+  // gemaakt toch op nul afgeronde stappen.
+  const nulmetingDeel = nulmetingDeelLetter(block);
+  if (nulmetingDeel) {
+    const totaalVragen = Number(record?.itemCount) || items.length || 0;
+    const beantwoord = Number.isFinite(Number(record?.itemsCompleted))
+      ? Number(record.itemsCompleted)
+      : items.filter((item) => item.status !== STAP_STATUS.NIET_GESTART).length;
+    const goed = Number(record?.itemsCorrect);
+    const af = record?.completed === true || (totaalVragen > 0 && beantwoord >= totaalVragen);
+
+    if (af) {
+      return {
+        ...gemeenschappelijk,
+        status: STAP_STATUS.AFGEROND,
+        toelichting: Number.isFinite(goed) && totaalVragen
+          ? `Deel ${nulmetingDeel} af: ${goed} van ${totaalVragen} goed`
+          : `Deel ${nulmetingDeel} af`
+      };
+    }
+
+    return {
+      ...gemeenschappelijk,
+      status: STAP_STATUS.BEZIG,
+      toelichting: totaalVragen
+        ? `Deel ${nulmetingDeel}: ${beantwoord} van ${totaalVragen} vragen beantwoord`
+        : `Deel ${nulmetingDeel}: mee bezig`
     };
   }
 

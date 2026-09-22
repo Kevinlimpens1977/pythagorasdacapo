@@ -116,6 +116,53 @@ test('een afgeronde stap toont of er Digidocent-hulp bij nodig was', () => {
   assert.match(metHulp.toelichting, /2x Digidocent/);
 });
 
+test('een afgemaakte nulmeting is af, ook met fouten erin', () => {
+  const nulmetingBlok = blok('dv-nulmeting-a', 1, {
+    type: 'toets',
+    title: 'Nulmeting deel A',
+    content: { nulmeting: { deel: 'A' }, items: [] }
+  });
+
+  const stap = buildStapStatus({
+    block: nulmetingBlok,
+    record: record('dv-nulmeting-a', {
+      completed: true,
+      isCorrect: false,
+      resultTier: 'failed',
+      helpTier: 'failed',
+      itemCount: 27,
+      itemsCompleted: 27,
+      itemsCorrect: 19
+    })
+  });
+
+  assert.equal(stap.status, STAP_STATUS.AFGEROND);
+  assert.match(stap.toelichting, /Deel A af: 19 van 27 goed/);
+});
+
+test('een halve nulmeting toont hoeveel vragen al beantwoord zijn', () => {
+  const nulmetingBlok = blok('dv-nulmeting-b', 2, {
+    type: 'toets',
+    title: 'Nulmeting deel B',
+    content: { nulmeting: { deel: 'B' }, items: [] }
+  });
+
+  const stap = buildStapStatus({
+    block: nulmetingBlok,
+    record: record('dv-nulmeting-b', {
+      completed: false,
+      isCorrect: false,
+      resultTier: 'in_progress',
+      itemCount: 27,
+      itemsCompleted: 11,
+      itemsCorrect: 8
+    })
+  });
+
+  assert.equal(stap.status, STAP_STATUS.BEZIG);
+  assert.match(stap.toelichting, /Deel B: 11 van 27 vragen beantwoord/);
+});
+
 test('drie pogingen zonder afronding heet vastgelopen', () => {
   const bezig = buildStapStatus({
     block: blok('blok-a', 1),
