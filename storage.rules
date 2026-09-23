@@ -52,6 +52,24 @@ service firebase.storage {
       allow update, delete: if false;
     }
 
+    /* Ontwerpwedstrijd (fase 5). Een inzending is alleen voor de leerling en de
+       docent te zien; na goedkeuring kopieert de server hem naar
+       ontwerpen-goedgekeurd/, en die map mag de klas lezen. */
+    match /ontwerpen/{userId}/{bestand} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == userId);
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.contentType.matches('image/(png|jpeg|webp)')
+        && request.resource.size < 4 * 1024 * 1024;
+      allow update, delete: if false;
+    }
+
+    match /ontwerpen-goedgekeurd/{bestand} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
     // Bestaande crop/OCR uploads
     match /pythagoras/question-crops/{allPaths=**} {
       allow read, write: if signedIn();

@@ -2654,6 +2654,17 @@ function loadPrivilegeLayer() {
   return privilegeLayerPromise;
 }
 
+let fase5LayerPromise = null;
+
+// Companion en meetadvies (fase 5).
+function loadFase5Layer() {
+  if (!fase5LayerPromise) {
+    fase5LayerPromise = Promise.all([import("./shared/companion.js"), import("./shared/beloningMeting.js")])
+      .then(([companion, meting]) => ({ ...companion, ...meting }));
+  }
+  return fase5LayerPromise;
+}
+
 let avatarLayerPromise = null;
 
 function loadAvatarLayer() {
@@ -3363,9 +3374,11 @@ async function getMijnKlasCore({ auth, data = {}, db, nuDatum = new Date() }) {
     .map((doc) => ({ uid: doc.id, ...(doc.data() || {}) }))
     .filter((leerling) => leerling.role === "student" && (leerling.isTestaccount !== true || leerling.uid === auth.uid));
 
-  const [loadouts, niveaus, itemsSnapshot, complimentenSnapshot, klasDoelSnapshot] = await Promise.all([
+  const fase5 = await loadFase5Layer();
+  const [loadouts, niveaus, voortgangen, itemsSnapshot, complimentenSnapshot, klasDoelSnapshot] = await Promise.all([
     Promise.all(leerlingen.map((leerling) => db.doc(`studentTokenLoadouts/${leerling.uid}`).get())),
     Promise.all(leerlingen.map((leerling) => db.doc(`leerlingNiveau/${leerling.uid}`).get())),
+    Promise.all(leerlingen.map((leerling) => db.doc(`leerlingVoortgang/${leerling.uid}`).get())),
     db.collection("tokenShopItems").get(),
     db.collection("complimenten").where("klasId", "==", klasId).get(),
     db.doc(`klasDoel/${klasId}`).get(),
@@ -3401,6 +3414,12 @@ async function getMijnKlasCore({ auth, data = {}, db, nuDatum = new Date() }) {
         ? []
         : (Array.isArray(loadout.activePinIds) ? loadout.activePinIds : []).slice(0, 3).map(beeld).filter(Boolean),
       complimenten: telling,
+      companion: (() => {
+        const companion = fase5.normaliseerCompanion(loadout.companion);
+        if (!companion.soort) return null;
+        const sterren = voortgangen[index].exists ? normalizeNonNegativeInteger(voortgangen[index].data()?.sterren, 0) : 0;
+        return { ...companion, stadium: fase5.companionStadium(sterren).stadium };
+      })(),
     };
   }).sort((a, b) => a.naam.localeCompare(b.naam, "nl"));
 
@@ -3724,6 +3743,232 @@ async function geefKlasBonusCore({ auth, data = {}, db, now = FieldValue.serverT
     });
   }
   return { klasId, bedrag, aantal: leerlingen.length };
+}
+
+// De companion kiezen (fase 5). Groeien doet hij vanzelf, met sterren.
+async function updateCompanionCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen hebben een companion.");
+  }
+  const fase5 = await loadFase5Layer();
+  const companion = fase5.normaliseerCompanion(data);
+  if (!companion.soort) {
+    throw new HttpsError("invalid-argument", "Kies een soort maatje.");
+  }
+  await db.doc(`studentTokenLoadouts/${auth.uid}`).set({
+    studentUid: auth.uid,
+    companion,
+    updatedAt: getServerTimestamp(now),
+  }, { merge: true });
+  return { saved: true, companion };
+}
+
+const inWeek = (waarde, regels) => {
+  const datum = typeof waarde?.toDate === "function" ? waarde.toDate() : (waarde ? new Date(waarde) : null);
+  return datum && !Number.isNaN(datum.getTime()) ? regels.isoWeekSleutel(datum) : "";
+};
+
+async function haalPerLeerling(db, collectie, uids) {
+  const resultaat = [];
+  for (let start = 0; start < uids.length; start += 30) {
+    const snapshot = await db.collection(collectie).where("studentUid", "in", uids.slice(start, start + 30)).get();
+    resultaat.push(...snapshot.docs.map((doc) => doc.data() || {}));
+  }
+  return resultaat;
+}
+
+// Meten en bijsturen (fase 5): de beloningscijfers van een klas per week.
+async function getBeloningMetingCore({ auth, data = {}, db, nuDatum = new Date() }) {
+  const caller = await getCallerDoc({ auth, db, label: "Beheerder" });
+  if (!isAdminCaller(caller.data)) {
+    throw new HttpsError("permission-denied", "Alleen de docent ziet de meting.");
+  }
+  const klasId = requireString(data.klasId, "klasId");
+  const aantalWeken = Math.min(12, Math.max(1, normalizeInteger(data.weken, 6)));
+  const [regels, fase5] = await Promise.all([loadBeloningLayer(), loadFase5Layer()]);
+  const weken = Array.from({ length: aantalWeken }, (_, i) => regels.isoWeekSleutel(new Date(nuDatum.getTime() - i * 7 * 86400000)));
+
+  const leerlingen = (await db.collection("users").where("klasId", "==", klasId).get()).docs
+    .filter((doc) => doc.data()?.role === "student" && doc.data()?.isTestaccount !== true)
+    .map((doc) => doc.id);
+  const uidSet = new Set(leerlingen);
+  const [weekDocs, aankopen, claims, verzoeken, accounts] = await Promise.all([
+    db.collection("leerlingWeek").where("klasId", "==", klasId).get().then((snapshot) => snapshot.docs.map((doc) => doc.data() || {})),
+    haalPerLeerling(db, "tokenPurchases", leerlingen),
+    haalPerLeerling(db, "tokenAwardClaims", leerlingen),
+    db.collection("privilegeVerzoeken").where("klasId", "==", klasId).get().then((snapshot) => snapshot.docs.map((doc) => doc.data() || {})),
+    Promise.all(leerlingen.map((uid) => db.doc(`tokenAccounts/${uid}`).get())),
+  ]);
+  const saldi = accounts.map((snapshot) => (snapshot.exists ? normalizeNonNegativeInteger(snapshot.data()?.balance, 0) : 0));
+  const gemiddeldSaldo = saldi.length ? Math.round(saldi.reduce((som, saldo) => som + saldo, 0) / saldi.length) : 0;
+
+  const resultaat = weken.map((week, index) => {
+    const dezeWeek = weekDocs.filter((doc) => doc.week === week && uidSet.has(doc.studentUid));
+    const tokensPerLeerling = new Map();
+    for (const doc of dezeWeek) {
+      tokensPerLeerling.set(doc.studentUid, Math.max(tokensPerLeerling.get(doc.studentUid) || 0, normalizeNonNegativeInteger(doc.tokens, 0)));
+    }
+    const dv = dezeWeek.filter((doc) => doc.vak === "dv" && doc.weekdoel?.totaal > 0);
+    const beheersing = claims
+      .filter((claim) => Number.isFinite(Number(claim.bestePercentage)) && inWeek(claim.createdAt, regels) === week)
+      .map((claim) => Number(claim.bestePercentage));
+    const cijfers = {
+      week,
+      leerlingen: leerlingen.length,
+      actief: new Set(dezeWeek.map((doc) => doc.studentUid)).size,
+      tokens: dezeWeek.reduce((som, doc) => som + normalizeNonNegativeInteger(doc.tokens, 0), 0),
+      xp: dezeWeek.reduce((som, doc) => som + normalizeNonNegativeInteger(doc.xp, 0), 0),
+      plafondGeraakt: [...tokensPerLeerling.values()].filter((tokens) => tokens >= regels.WEEKPLAFOND_TOKENS).length,
+      weekdoelTotaal: dv.length,
+      weekdoelGehaald: dv.filter((doc) => doc.weekdoel?.gehaald === true).length,
+      gemiddeldeBeheersing: beheersing.length ? Math.round(beheersing.reduce((som, pct) => som + pct, 0) / beheersing.length) : null,
+      aankopen: aankopen.filter((aankoop) => inWeek(aankoop.createdAt, regels) === week).length,
+      privileges: verzoeken.filter((verzoek) => verzoek.week === week && verzoek.status !== "afgewezen").length,
+      gemiddeldSaldo: index === 0 ? gemiddeldSaldo : null,
+    };
+    return { ...cijfers, advies: index === 0 ? fase5.adviesVoorWeek(cijfers) : [] };
+  });
+  return { klasId, gemiddeldSaldo, weken: resultaat };
+}
+
+// Stemmen (fase 5): de docent zet een stemming klaar, elke leerling stemt één keer.
+async function stemCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen stemmen.");
+  }
+  const stemmingId = requireString(data.stemmingId, "stemmingId");
+  const keuze = normalizeInteger(data.keuze, -1);
+  const stemmingRef = db.doc(`stemmingen/${stemmingId}`);
+  const stemRef = db.doc(`stemmen/${cleanIdPart(stemmingId)}_${cleanIdPart(auth.uid)}`);
+  return runDbTransaction(db, async (transaction) => {
+    const [stemmingSnapshot, stemSnapshot] = await Promise.all([transaction.get(stemmingRef), transaction.get(stemRef)]);
+    const stemming = stemmingSnapshot.exists ? (stemmingSnapshot.data() || {}) : null;
+    if (!stemming || stemming.klasId !== String(caller.data.klasId || "") || stemming.status !== "open") {
+      throw new HttpsError("failed-precondition", "Deze stemming is niet open voor jouw klas.");
+    }
+    const opties = Array.isArray(stemming.opties) ? stemming.opties : [];
+    if (keuze < 0 || keuze >= opties.length) {
+      throw new HttpsError("invalid-argument", "Kies een van de opties.");
+    }
+    if (stemSnapshot.exists) {
+      throw new HttpsError("already-exists", "Je hebt al gestemd.");
+    }
+    const telling = opties.map((_, i) => normalizeNonNegativeInteger(stemming.telling?.[i], 0));
+    telling[keuze] += 1;
+    transaction.set(stemRef, { stemmingId, studentUid: auth.uid, keuze, createdAt: getServerTimestamp(now) });
+    transaction.set(stemmingRef, { telling, updatedAt: getServerTimestamp(now) }, { merge: true });
+    return { gestemd: true, keuze };
+  });
+}
+
+async function getStemmingenCore({ auth, db }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  const klasId = String(caller.data.klasId || "").trim();
+  if (!klasId) return { stemmingen: [] };
+  const snapshot = await db.collection("stemmingen").where("klasId", "==", klasId).get();
+  const stemmingen = snapshot.docs
+    .map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
+    .filter((stemming) => stemming.status === "open" || (stemming.status === "gesloten" && stemming.uitslagZichtbaar === true));
+  const mijnStemmen = await Promise.all(stemmingen.map((stemming) => db.doc(`stemmen/${cleanIdPart(stemming.id)}_${cleanIdPart(auth.uid)}`).get()));
+  return {
+    stemmingen: stemmingen.map((stemming, index) => ({
+      id: stemming.id,
+      vraag: String(stemming.vraag || ""),
+      opties: Array.isArray(stemming.opties) ? stemming.opties.map(String) : [],
+      status: stemming.status,
+      mijnKeuze: mijnStemmen[index].exists ? normalizeInteger(mijnStemmen[index].data()?.keuze, -1) : null,
+      uitslag: stemming.uitslagZichtbaar === true ? (stemming.telling || []).map((aantal) => normalizeNonNegativeInteger(aantal, 0)) : null,
+    })),
+  };
+}
+
+// Ontwerpwedstrijd (fase 5). De leerling uploadt naar ontwerpen/{uid}/...;
+// pas na goedkeuring kopieert de server het naar een plek die de klas kan zien.
+async function dienOntwerpInCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen doen mee.");
+  }
+  const wedstrijdId = requireString(data.wedstrijdId, "wedstrijdId");
+  const storagePath = requireString(data.storagePath, "storagePath");
+  if (!storagePath.startsWith(`ontwerpen/${auth.uid}/`) || storagePath.includes("..")) {
+    throw new HttpsError("invalid-argument", "Ongeldig bestand.");
+  }
+  const wedstrijd = await db.doc(`wedstrijden/${wedstrijdId}`).get();
+  if (!wedstrijd.exists || wedstrijd.data()?.status !== "open" || wedstrijd.data()?.klasId !== String(caller.data.klasId || "")) {
+    throw new HttpsError("failed-precondition", "Deze wedstrijd is niet open voor jouw klas.");
+  }
+  const id = `${cleanIdPart(wedstrijdId)}_${cleanIdPart(auth.uid)}`;
+  await db.doc(`inzendingen/${id}`).set({
+    wedstrijdId,
+    klasId: String(caller.data.klasId || ""),
+    studentUid: auth.uid,
+    naam: String(caller.data.displayName || "Leerling"),
+    storagePath,
+    publiekPad: "",
+    status: "ingediend",
+    createdAt: getServerTimestamp(now),
+  });
+  return { ingediend: true, id };
+}
+
+async function beoordeelInzendingCore({ auth, data = {}, db, bucket = null, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Beheerder" });
+  if (!isAdminCaller(caller.data)) {
+    throw new HttpsError("permission-denied", "Alleen de docent beoordeelt inzendingen.");
+  }
+  const id = requireString(data.id, "id");
+  const besluit = String(data.besluit || "");
+  if (!["goedgekeurd", "afgewezen"].includes(besluit)) {
+    throw new HttpsError("invalid-argument", "Onbekend besluit.");
+  }
+  const ref = db.doc(`inzendingen/${id}`);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) {
+    throw new HttpsError("not-found", "Deze inzending bestaat niet.");
+  }
+  const inzending = snapshot.data() || {};
+  let publiekPad = "";
+  if (besluit === "goedgekeurd") {
+    const extensie = (String(inzending.storagePath).split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    publiekPad = `ontwerpen-goedgekeurd/${id}.${extensie || "jpg"}`;
+    const doelBucket = bucket || getStorage().bucket();
+    await doelBucket.file(inzending.storagePath).copy(doelBucket.file(publiekPad));
+  }
+  await ref.set({ status: besluit, publiekPad, beoordeeldOp: getServerTimestamp(now) }, { merge: true });
+  return { id, status: besluit, publiekPad };
+}
+
+async function getWedstrijdenCore({ auth, db }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  const klasId = String(caller.data.klasId || "").trim();
+  if (!klasId) return { wedstrijden: [] };
+  const [wedstrijden, inzendingen] = await Promise.all([
+    db.collection("wedstrijden").where("klasId", "==", klasId).get(),
+    db.collection("inzendingen").where("klasId", "==", klasId).get(),
+  ]);
+  const alle = inzendingen.docs.map((doc) => ({ id: doc.id, ...(doc.data() || {}) }));
+  return {
+    wedstrijden: wedstrijden.docs
+      .map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
+      .filter((wedstrijd) => wedstrijd.status === "open" || wedstrijd.status === "gesloten")
+      .map((wedstrijd) => {
+        const eigen = alle.find((inzending) => inzending.wedstrijdId === wedstrijd.id && inzending.studentUid === auth.uid);
+        return {
+          id: wedstrijd.id,
+          thema: String(wedstrijd.thema || ""),
+          uitleg: String(wedstrijd.uitleg || ""),
+          status: wedstrijd.status,
+          winnaarId: String(wedstrijd.winnaarInzendingId || ""),
+          mijnInzending: eigen ? { status: eigen.status } : null,
+          galerij: alle
+            .filter((inzending) => inzending.wedstrijdId === wedstrijd.id && inzending.status === "goedgekeurd" && inzending.publiekPad)
+            .map((inzending) => ({ id: inzending.id, naam: inzending.naam, publiekPad: inzending.publiekPad })),
+        };
+      }),
+  };
 }
 
 async function hasPurchasedTokenShopItem({ db, studentUid, itemId }) {
@@ -4063,6 +4308,34 @@ exports.equipTokenShopItem = onCall({
     db: getFirestore(),
   });
 });
+
+exports.updateCompanion = onCall({
+  region: REGION,
+}, async (request) => updateCompanionCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.getBeloningMeting = onCall({
+  region: REGION,
+}, async (request) => getBeloningMetingCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.stem = onCall({
+  region: REGION,
+}, async (request) => stemCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.getStemmingen = onCall({
+  region: REGION,
+}, async (request) => getStemmingenCore({ auth: request.auth, db: getFirestore() }));
+
+exports.dienOntwerpIn = onCall({
+  region: REGION,
+}, async (request) => dienOntwerpInCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.beoordeelInzending = onCall({
+  region: REGION,
+}, async (request) => beoordeelInzendingCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.getWedstrijden = onCall({
+  region: REGION,
+}, async (request) => getWedstrijdenCore({ auth: request.auth, db: getFirestore() }));
 
 exports.vraagPrivilegeAan = onCall({
   region: REGION,
@@ -5103,6 +5376,13 @@ exports.__test = {
   updateAvatarCore,
   getMijnKlasCore,
   vraagPrivilegeAanCore,
+  updateCompanionCore,
+  getBeloningMetingCore,
+  stemCore,
+  getStemmingenCore,
+  dienOntwerpInCore,
+  beoordeelInzendingCore,
+  getWedstrijdenCore,
   getMijnPrivilegesCore,
   beoordeelPrivilegeCore,
   geefKlasBonusCore,

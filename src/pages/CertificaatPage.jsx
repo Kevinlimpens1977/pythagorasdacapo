@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Award, Heart, Loader2, Printer, Star, Target, User } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import HelixAvatar from '../components/avatar/HelixAvatar';
+import HelixCompanion from '../components/avatar/HelixCompanion';
 import { BADGES, isoWeekSleutel, niveauVoorXp } from '../lib/beloning';
 import { getMijnKlas } from '../services/klasSamenService';
 import { getKlasBeloning, subscribeLeerlingVoortgang, subscribeLeerlingWeek } from '../services/tokenService';
@@ -28,7 +29,8 @@ export function CertificaatBlad({ kaart, voortgang, weekDv, week }) {
       <h1 className="ds-display mt-2 text-[56px] leading-none">Certificaat</h1>
       <p className="mt-2 text-lg font-extrabold">{weekLabel(week)}</p>
 
-      <div className="mt-8 h-56 w-56 overflow-hidden rounded-full border-[6px] border-[#0B0D0F] bg-white">
+      <div className="relative mt-8">
+      <div className="h-56 w-56 overflow-hidden rounded-full border-[6px] border-[#0B0D0F] bg-white">
         {kaart.avatar ? (
           <HelixAvatar avatar={kaart.avatar} className="h-full w-full" titel={`Avatar van ${kaart.naam}`} />
         ) : kaart.plaatje?.imageUrl ? (
@@ -36,6 +38,12 @@ export function CertificaatBlad({ kaart, voortgang, weekDv, week }) {
         ) : (
           <span className="flex h-full items-center justify-center"><User size={96} /></span>
         )}
+      </div>
+      {kaart.companion && (
+        <div className="absolute -bottom-2 -right-20 h-28 w-28">
+          <HelixCompanion companion={kaart.companion} stadium={kaart.companion.stadium} className="h-full w-full" titel="Maatje" />
+        </div>
+      )}
       </div>
       <p className="ds-display mt-5 text-[44px] leading-none">{kaart.naam}</p>
 

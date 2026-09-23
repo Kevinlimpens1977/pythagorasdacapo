@@ -13,6 +13,7 @@ import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../lib/tokenShopRewards';
 import ProfielAvatar from '../components/avatar/ProfielAvatar';
+import CompanionKaart from '../components/avatar/CompanionKaart';
 import NulmetingProfielKaart from '../components/nulmeting/NulmetingProfielKaart';
 import TaalKeuzeKaart from '../components/profiel/TaalKeuzeKaart';
 import * as nulmetingService from '../services/nulmetingService';
@@ -370,6 +371,8 @@ export default function StudentProfilePage() {
         </aside>
 
         <div className="grid gap-5">
+          <CompanionKaart studentUid={currentUser?.uid} disabled={isDevBypass} />
+
           <section className="helix-card p-6">
             <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
               <div>
@@ -452,7 +455,7 @@ export default function StudentProfilePage() {
                             </div>
                             <div>
                               <h3 className="flex flex-wrap items-center gap-2 font-bold text-slate-900">
-                                {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
+                                {paragraaf.number && `${paragraaf.number} `}{paragraaf.title}
                                 {paragraaf.optioneel && (
                                   <span
                                     title={PLUS_UITLEG_LEERLING}

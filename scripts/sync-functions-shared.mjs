@@ -49,7 +49,10 @@ export const SHARED_ENTRY_POINTS = [
   // Klasdoel en complimenten (fase 3, samen).
   'klasSamen.js',
   // Privileges en events (fase 4).
-  'privileges.js'
+  'privileges.js',
+  // Companion en meetadvies (fase 5).
+  'companion.js',
+  'beloningMeting.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(

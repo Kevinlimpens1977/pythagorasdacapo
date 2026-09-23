@@ -425,6 +425,26 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Fase 5: stemmingen en de ontwerpwedstrijd. Leerlingen lopen via callables
+    // (stem, getStemmingen, dienOntwerpIn, getWedstrijden); de docent beheert hier.
+    match /stemmingen/{stemmingId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /stemmen/{stemId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /wedstrijden/{wedstrijdId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /inzendingen/{inzendingId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     match /leerlingNiveau/{studentUid} {
       allow read: if signedIn() && (
         isOwner(studentUid) ||

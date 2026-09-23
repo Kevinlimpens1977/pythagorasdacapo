@@ -29,6 +29,7 @@ import {
   getVisibleStudentProgressParagraphs
 } from '../../lib/progressDashboardMetrics';
 import { isOptionalParagraph } from '../../lib/paragraphMetadata';
+import { paragraafLabel } from '../../lib/chapterOutline';
 import { formatProgressAnswer } from '../../lib/progressAnswerFormatter';
 import { groupProgressRecordsByStudent } from '../../lib/progressRecordUtils';
 import { zonderTestaccounts } from '../../lib/testaccounts';
@@ -65,6 +66,7 @@ import NulmetingKlasOverzicht from './NulmetingKlasOverzicht';
 import KlasBeloningOverzicht from './KlasBeloningOverzicht';
 import KlasSamenBeheer from './KlasSamenBeheer';
 import KlasPrivilegesBeheer from './KlasPrivilegesBeheer';
+import KlasFase5Beheer from './KlasFase5Beheer';
 import NulmetingLeerlingPaneel from './NulmetingLeerlingPaneel';
 import StudentAvatar from '../common/StudentAvatar';
 import HelixBrandBanner from '../common/HelixBrandBanner';
@@ -1018,7 +1020,7 @@ export default function ClassOverview() {
                               <div className="flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <h5 className="font-bold text-[var(--helix-navy)]">
-                                    {(paragraaf.code || paragraaf.number) && `${paragraaf.code || paragraaf.number}. `}{paragraaf.title}
+                                    {paragraafLabel(paragraaf)}
                                   </h5>
                                   {isPlus && <PlusChip />}
                                   {toonStatusChip && (
@@ -1316,6 +1318,9 @@ export default function ClassOverview() {
           <div className="mt-6">
             <KlasPrivilegesBeheer klasId={selectedKlasId} students={scopedStudents} />
           </div>
+          <div className="mt-6">
+            <KlasFase5Beheer klasId={selectedKlasId} klasNaam={selectedKlasOption?.label || ''} />
+          </div>
         </div>
       )}
 
@@ -1466,7 +1471,7 @@ export default function ClassOverview() {
                 <option value="">Kies een paragraaf</option>
                 {paragraphen.map((paragraaf) => (
                   <option key={paragraaf.id} value={paragraaf.id}>
-                    {paragraaf.code || paragraaf.number ? `${paragraaf.code || paragraaf.number}. ` : ''}{paragraaf.title}
+                    {paragraafLabel(paragraaf)}
                     {isOptionalParagraph(paragraaf) ? ` (${PLUS_PRESENTATIE.label})` : ''}
                   </option>
                 ))}

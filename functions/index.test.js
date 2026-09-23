@@ -87,12 +87,13 @@ const createDb = (initialDocs = {}) => {
           return createDocRef(`${name}/${id}`, store);
         },
         where(field, operator, value) {
-          if (operator !== "==") throw new Error(`Unsupported fake operator ${operator}`);
+          if (operator !== "==" && operator !== "in") throw new Error(`Unsupported fake operator ${operator}`);
+          const past = (data) => (operator === "in" ? value.includes(data?.[field]) : data?.[field] === value);
           return {
             async get() {
               return createQuerySnapshot(
                 Object.entries(store.docs)
-                  .filter(([path, data]) => path.startsWith(`${name}/`) && !path.slice(name.length + 1).includes("/") && data?.[field] === value)
+                  .filter(([path, data]) => path.startsWith(`${name}/`) && !path.slice(name.length + 1).includes("/") && past(data))
                   .map(([path, data]) => ({
                     id: path.split("/").at(-1),
                     ref: createDocRef(path, store),
@@ -2976,4 +2977,84 @@ test("fase 4: een dubbele-XP-week verdubbelt XP, niet de tokens", async () => {
   assert.equal(dubbel.xp, gewoon.xp * 2);
   const blokTokens = (award) => award.amount - (award.niveauTokens || 0);
   assert.equal(blokTokens(dubbel), blokTokens(gewoon), "de extra tokens komen alleen van een hoger niveau");
+});
+
+test("fase 5: companion kiezen en meegroeien op Mijn klas", async () => {
+  const db = createDb({
+    "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+    "leerlingVoortgang/a": { sterren: 12 },
+  });
+  await assert.rejects(() => __test.updateCompanionCore({ auth: { uid: "a" }, data: { soort: "eenhoorn" }, db }), (error) => error.code === "invalid-argument");
+  await __test.updateCompanionCore({ auth: { uid: "a" }, data: { soort: "draak", kleur: "comp-groen" }, db, now: () => "t" });
+  const klas = await __test.getMijnKlasCore({ auth: { uid: "a" }, data: {}, db, nuDatum: new Date("2026-09-23T10:00:00Z") });
+  assert.deepEqual(klas.kaarten[0].companion, { soort: "draak", kleur: "comp-groen", stadium: 3 });
+});
+
+test("fase 5: stemmen kan één keer, alleen in je eigen klas en alleen als hij open is", async () => {
+  const db = createDb({
+    "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+    "users/x": { role: "student", displayName: "Xander", klasId: "klas-2" },
+    "stemmingen/s1": { klasId: "klas-1", vraag: "Welk klasdoel?", opties: ["Film", "Spelkwartier"], status: "open", uitslagZichtbaar: false, telling: [0, 0] },
+  });
+  const stem = (uid, keuze) => __test.stemCore({ auth: { uid }, data: { stemmingId: "s1", keuze }, db, now: () => "t" });
+
+  await stem("a", 1);
+  assert.deepEqual(db.store.docs["stemmingen/s1"].telling, [0, 1]);
+  await assert.rejects(() => stem("a", 0), (error) => error.code === "already-exists");
+  await assert.rejects(() => stem("x", 0), (error) => error.code === "failed-precondition");
+  const zicht = await __test.getStemmingenCore({ auth: { uid: "a" }, db });
+  assert.equal(zicht.stemmingen[0].mijnKeuze, 1);
+  assert.equal(zicht.stemmingen[0].uitslag, null, "uitslag pas zichtbaar als de docent dat wil");
+});
+
+test("fase 5: ontwerp inleveren, pas na goedkeuring zichtbaar voor de klas", async () => {
+  const db = createDb({
+    "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+    "users/b": { role: "student", displayName: "Bo", klasId: "klas-1" },
+    "users/kevin": { role: "admin" },
+    "wedstrijden/w1": { klasId: "klas-1", thema: "Een pin voor Binask", status: "open" },
+  });
+  const bucket = createBucket();
+  await assert.rejects(
+    () => __test.dienOntwerpInCore({ auth: { uid: "a" }, data: { wedstrijdId: "w1", storagePath: "ontwerpen/b/x.png" }, db }),
+    (error) => error.code === "invalid-argument",
+    "niet in de map van een ander",
+  );
+  const { id } = await __test.dienOntwerpInCore({ auth: { uid: "a" }, data: { wedstrijdId: "w1", storagePath: "ontwerpen/a/pin.png" }, db, now: () => "t" });
+  assert.equal((await __test.getWedstrijdenCore({ auth: { uid: "b" }, db })).wedstrijden[0].galerij.length, 0);
+
+  const besluit = await __test.beoordeelInzendingCore({ auth: { uid: "kevin" }, data: { id, besluit: "goedgekeurd" }, db, bucket, now: () => "t" });
+  assert.equal(besluit.publiekPad, "ontwerpen-goedgekeurd/w1_a.png");
+  assert.deepEqual(bucket.copies, [{ from: "ontwerpen/a/pin.png", to: "ontwerpen-goedgekeurd/w1_a.png" }]);
+  const galerij = (await __test.getWedstrijdenCore({ auth: { uid: "b" }, db })).wedstrijden[0].galerij;
+  assert.deepEqual(galerij.map((inzending) => inzending.naam), ["Ada"]);
+});
+
+test("fase 5: meting per week, zonder testaccounts", async () => {
+  const nu = new Date("2026-09-23T10:00:00Z");
+  const db = createDb({
+    "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+    "users/b": { role: "student", displayName: "Bo", klasId: "klas-1" },
+    "users/t": { role: "student", displayName: "Test", klasId: "klas-1", isTestaccount: true },
+    "users/kevin": { role: "admin" },
+    "leerlingWeek/a_dv_2026-W39": { studentUid: "a", klasId: "klas-1", vak: "dv", week: "2026-W39", tokens: 200, xp: 90, weekdoel: { totaal: 5, gedaan: 5, gehaald: true } },
+    "leerlingWeek/t_dv_2026-W39": { studentUid: "t", klasId: "klas-1", vak: "dv", week: "2026-W39", tokens: 50, xp: 10 },
+    "tokenAccounts/a": { balance: 400 },
+    "tokenAccounts/b": { balance: 200 },
+    "tokenPurchases/a_pin": { studentUid: "a", itemId: "pin", createdAt: nu },
+  });
+  const meting = await __test.getBeloningMetingCore({ auth: { uid: "kevin" }, data: { klasId: "klas-1", weken: 2 }, db, nuDatum: nu });
+  const week = meting.weken[0];
+  assert.equal(week.week, "2026-W39");
+  assert.equal(week.leerlingen, 2);
+  assert.equal(week.actief, 1);
+  assert.equal(week.plafondGeraakt, 1);
+  assert.equal(week.weekdoelGehaald, 1);
+  assert.equal(week.aankopen, 1);
+  assert.equal(meting.gemiddeldSaldo, 300);
+  assert.equal(meting.weken[1].week, "2026-W38");
+  await assert.rejects(
+    () => __test.getBeloningMetingCore({ auth: { uid: "a" }, data: { klasId: "klas-1" }, db }),
+    (error) => error.code === "permission-denied",
+  );
 });

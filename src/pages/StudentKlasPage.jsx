@@ -4,6 +4,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import HelixAvatar from '../components/avatar/HelixAvatar';
+import HelixCompanion from '../components/avatar/HelixCompanion';
+import { StemmingenSectie, WedstrijdSectie } from '../components/klas/StemEnWedstrijd';
 import { COMPLIMENTEN, COMPLIMENTEN_PER_WEEK, complimentTitel, KLASDOEL_MAX_PER_WEEK, klasdoelProcent } from '../lib/klasSamen';
 import { geefCompliment, getMijnKlas, updateVitrine } from '../services/klasSamenService';
 
@@ -128,6 +130,9 @@ export default function StudentKlasPage() {
               </section>
             )}
 
+            {klas && <StemmingenSectie />}
+            {klas && <WedstrijdSectie uid={currentUser?.uid} />}
+
             {klas && (
               <div className="grid gap-4 md:grid-cols-2">
                 <section className="rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
@@ -206,6 +211,7 @@ function LeerlingKaart({ kaart, alGegeven, over, bezig, kiesOpen, onKies, onGeef
   return (
     <article className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 bg-white p-4 text-center ${kaart.ikZelf ? 'border-[#087EB5] ring-4 ring-[#087EB5]/20' : 'border-[#0B0D0F]'}`}>
       {kaart.ikZelf && <span className="absolute left-2 top-2 rounded-full bg-[#087EB5] px-2 py-0.5 text-[11px] font-extrabold text-white">Dit ben jij</span>}
+      <div className="relative">
       <div
         className="h-24 w-24 overflow-hidden rounded-full border-4 border-[#0B0D0F] bg-[var(--helix-surface-soft)]"
         style={kaart.frame?.accent ? { borderColor: kaart.frame.accent } : undefined}
@@ -217,6 +223,12 @@ function LeerlingKaart({ kaart, alGegeven, over, bezig, kiesOpen, onKies, onGeef
         ) : (
           <span className="flex h-full items-center justify-center text-[var(--helix-muted)]"><User size={40} /></span>
         )}
+      </div>
+      {kaart.companion && (
+        <div className="absolute -bottom-1 -right-7 h-12 w-12">
+          <HelixCompanion companion={kaart.companion} stadium={kaart.companion.stadium} className="h-full w-full" titel={`Maatje van ${kaart.naam}`} />
+        </div>
+      )}
       </div>
       <div>
         <p className="font-black text-[var(--helix-navy)]">{kaart.naam}</p>
