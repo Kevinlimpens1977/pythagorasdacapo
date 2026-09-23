@@ -148,6 +148,10 @@ const DEFAULT_GAME_TOKEN_REWARD_RULES = {
   "data-koerier": { enabled: true, min: 0, max: 200, basis: "score_accuracy_completion", replayDecay: 0.5 },
   // Streefscore 6.000 spelpunten = 100%; de client rekent dat om naar accuracy.
   "dvlingo": { enabled: true, min: 0, max: 400, basis: "score_accuracy_completion", replayDecay: 0.5 },
+  // Volume berekenen (Binask 2.2): drie missies, elk 0-100, onbeperkt oefenen.
+  "binask-volume-maatcilinder": { enabled: true, min: 0, max: 100, basis: "score_accuracy_completion", replayDecay: 0.5 },
+  "binask-volume-balk": { enabled: true, min: 0, max: 100, basis: "score_accuracy_completion", replayDecay: 0.5 },
+  "binask-volume-onderdompelen": { enabled: true, min: 0, max: 100, basis: "score_accuracy_completion", replayDecay: 0.5 },
 };
 
 function cleanIdPart(value = "") {

@@ -292,6 +292,78 @@ export const GAME_REGISTRY = [
     maxPlays: 0,
     status: GAME_STATUSES.PROTOTYPE
   },
+  {
+    gameId: 'binask-volume-maatcilinder',
+    title: 'Volume berekenen 1: Lees de maatcilinder',
+    description:
+      'Lees maatcilinders van 10 ml tot 1 liter precies af: streepjeswaarde, onderkant van de meniscus en de eenheid. De schaal wordt moeilijker als het goed gaat.',
+    subject: 'Binask',
+    topic: 'Volume (hoofdstuk 2.2)',
+    level: 'VMBO leerjaar 1',
+    learningGoals: [
+      'Uitrekenen hoeveel ml één streepje is',
+      'Aflezen bij de onderkant van de meniscus',
+      'Volume noteren in ml en cm³'
+    ],
+    skills: ['meten', 'aflezen', 'nauwkeurig werken'],
+    estimatedMinutes: 8,
+    route: '/admin/spellen/binask-volume-maatcilinder',
+    componentKey: 'volumeMaatcilinder',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 100, basis: 'score_accuracy_completion' },
+    // Opgaven worden steeds nieuw gemaakt: onbeperkt oefenen, opbrengst halveert per beurt (replayDecay).
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
+  },
+  {
+    gameId: 'binask-volume-balk',
+    title: 'Volume berekenen 2: Meet en bereken de balk',
+    description:
+      'Meet blokken met een liniaal, bereken het volume met lengte × breedte × hoogte en reken om naar ml en liter.',
+    subject: 'Binask',
+    topic: 'Volume (hoofdstuk 2.2)',
+    level: 'VMBO leerjaar 1',
+    learningGoals: [
+      'Lengte, breedte en hoogte meten met een liniaal',
+      'Volume berekenen met V = l × b × h',
+      'Omrekenen: 1 cm³ = 1 ml, 1000 cm³ = 1 l'
+    ],
+    skills: ['meten', 'rekenen', 'omrekenen'],
+    estimatedMinutes: 8,
+    route: '/admin/spellen/binask-volume-balk',
+    componentKey: 'volumeBalk',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 100, basis: 'score_accuracy_completion' },
+    // Opgaven worden steeds nieuw gemaakt: onbeperkt oefenen, opbrengst halveert per beurt (replayDecay).
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
+  },
+  {
+    gameId: 'binask-volume-onderdompelen',
+    title: 'Volume berekenen 3: Dompel onder',
+    description:
+      'Meet het volume van een steen, sleutel of knikker met de onderdompelmethode: beginvolume, eindvolume, aftrekken. Met twee valkuilen.',
+    subject: 'Binask',
+    topic: 'Volume (hoofdstuk 2.2)',
+    level: 'VMBO leerjaar 1',
+    learningGoals: [
+      'Begin- en eindvolume aflezen',
+      'V voorwerp = V eind - V begin',
+      'Herkennen wanneer de methode niet klopt'
+    ],
+    skills: ['meten', 'aflezen', 'onderzoeken'],
+    estimatedMinutes: 8,
+    route: '/admin/spellen/binask-volume-onderdompelen',
+    componentKey: 'volumeOnderdompelen',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 100, basis: 'score_accuracy_completion' },
+    // Opgaven worden steeds nieuw gemaakt: onbeperkt oefenen, opbrengst halveert per beurt (replayDecay).
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
+  },
   ...PLANNED_DIGITALE_VAARDIGHEDEN_GAMES
 ];
 

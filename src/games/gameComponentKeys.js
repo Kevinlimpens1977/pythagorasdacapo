@@ -4,7 +4,10 @@ export const GAME_COMPONENT_KEYS = {
   TURBO_TYPEN: 'turboTypen',
   PACO_PAC_MAN: 'pacoPacMan',
   DATA_KOERIER: 'dataKoerier',
-  DVLINGO: 'dvlingo'
+  DVLINGO: 'dvlingo',
+  VOLUME_MAATCILINDER: 'volumeMaatcilinder',
+  VOLUME_BALK: 'volumeBalk',
+  VOLUME_ONDERDOMPELEN: 'volumeOnderdompelen'
 };
 
 export const PLAYABLE_GAME_COMPONENT_KEYS = Object.values(GAME_COMPONENT_KEYS);

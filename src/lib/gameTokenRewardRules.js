@@ -8,7 +8,11 @@ export const SERVER_DEFAULT_GAME_REWARD_RULES = {
   'paco-pac-man': { enabled: true, min: 0, max: 400, basis: 'score_accuracy_completion', replayDecay: 0.5 },
   'data-koerier': { enabled: true, min: 0, max: 200, basis: 'score_accuracy_completion', replayDecay: 0.5 },
   // Streefscore 6.000 spelpunten = 100% (zie src/games/dvlingo/dvlingoScore.js).
-  dvlingo: { enabled: true, min: 0, max: 400, basis: 'score_accuracy_completion', replayDecay: 0.5 }
+  dvlingo: { enabled: true, min: 0, max: 400, basis: 'score_accuracy_completion', replayDecay: 0.5 },
+  // Volume berekenen (Binask 2.2): drie missies, elk 0-100, onbeperkt oefenen.
+  'binask-volume-maatcilinder': { enabled: true, min: 0, max: 100, basis: 'score_accuracy_completion', replayDecay: 0.5 },
+  'binask-volume-balk': { enabled: true, min: 0, max: 100, basis: 'score_accuracy_completion', replayDecay: 0.5 },
+  'binask-volume-onderdompelen': { enabled: true, min: 0, max: 100, basis: 'score_accuracy_completion', replayDecay: 0.5 }
 };
 
 export const GAME_REWARD_BASES = [
