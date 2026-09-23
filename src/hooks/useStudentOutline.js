@@ -4,8 +4,8 @@ import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
-import { buildChapterOutlines } from '../lib/chapterOutline';
-import { markeerVergrendeldeHoofdstukken } from '../lib/hoofdstukSlot';
+import { buildChapterOutline, buildChapterOutlines } from '../lib/chapterOutline';
+import { aangekondigdeHoofdstukIds, markeerVergrendeldeHoofdstukken } from '../lib/hoofdstukSlot';
 import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -26,6 +26,8 @@ export const useStudentOutline = () => {
   const { klasData, currentUser, userData, klasId: authKlasId } = useAuth();
   const [paragrafen, setParagrafen] = useState([]);
   const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
+  // Hoofdstukken op slot zonder toegewezen paragrafen: alleen een kaart.
+  const [aangekondigd, setAangekondigd] = useState([]);
   const [voortgangMap, setVoortgangMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [herlaadTeller, setHerlaadTeller] = useState(0);
@@ -47,6 +49,7 @@ export const useStudentOutline = () => {
           if (!gestopt) {
             setParagrafen([]);
             setHoofdstukkenMap({});
+            setAangekondigd([]);
             setVoortgangMap({});
             setLoading(false);
           }
@@ -117,6 +120,15 @@ export const useStudentOutline = () => {
           if (hoofdstuk) hoofdstukMap[hoofdstuk.id] = hoofdstuk;
         });
 
+        const nogZonderInhoud = aangekondigdeHoofdstukIds(hoofdstukIds.map((id) => ({ id })), klasData);
+        const aangekondigdeDocs = filterLesstofOpKlasRoute(
+          (await Promise.all(nogZonderInhoud.map((id) => cmsService.getHoofdstuk(id).catch(() => null))))
+            .filter((hoofdstuk) => hoofdstuk && hoofdstuk.isArchived !== true),
+          getKlasNiveauId(klasData)
+        );
+        if (gestopt) return;
+
+        setAangekondigd(aangekondigdeDocs);
         setParagrafen(paragraafWithContent);
         setHoofdstukkenMap(hoofdstukMap);
         setVoortgangMap(progressMap);
@@ -125,6 +137,7 @@ export const useStudentOutline = () => {
         if (!gestopt) {
           setParagrafen([]);
           setHoofdstukkenMap({});
+          setAangekondigd([]);
           setVoortgangMap({});
         }
       } finally {
@@ -141,10 +154,13 @@ export const useStudentOutline = () => {
   // klas.
   const chapters = useMemo(
     () => markeerVergrendeldeHoofdstukken(
-      buildChapterOutlines({ hoofdstukken: hoofdstukkenMap, paragrafen, voortgangMap }),
+      [
+        ...buildChapterOutlines({ hoofdstukken: hoofdstukkenMap, paragrafen, voortgangMap }),
+        ...aangekondigd.map((hoofdstuk) => ({ ...buildChapterOutline({ hoofdstuk }), aangekondigd: true }))
+      ].sort((a, b) => (a.number ?? 999) - (b.number ?? 999)),
       klasData
     ),
-    [hoofdstukkenMap, paragrafen, voortgangMap, klasData]
+    [aangekondigd, hoofdstukkenMap, paragrafen, voortgangMap, klasData]
   );
 
   return { chapters, paragrafen, loading, herlaad };

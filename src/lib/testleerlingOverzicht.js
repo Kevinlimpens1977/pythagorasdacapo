@@ -16,18 +16,25 @@
 
 import { getEffectiveContentBlocks, getStudentEffectiveParagrafen } from './assignmentUtils.js';
 import { filterLesstofOpKlasRoute, getKlasNiveauId } from './klasRoute.js';
+import { paragraafLabel } from './chapterOutline.js';
+import { isParagraafVergrendeld } from './hoofdstukSlot.js';
 
-const paragraafLabel = (paragraaf = {}) => {
-  const nummer = paragraaf.code || paragraaf.number || '';
-  const titel = paragraaf.title || paragraaf.titel || 'Paragraaf';
-  return nummer ? `${nummer} ${titel}` : titel;
+// Volgorde zoals de leerling hem ziet: eerst het hoofdstuk, dan de paragraaf.
+// `order` telt per hoofdstuk opnieuw vanaf 1; alleen daarop sorteren gaf
+// 1.1, 2.1, 1.2, 2.2.
+const hoofdstukNummer = (paragraaf, hoofdstukkenById) => {
+  const nummer = Number(hoofdstukkenById[paragraaf.hoofdstukId]?.number);
+  if (Number.isFinite(nummer)) return nummer;
+  const uitCode = Number(String(paragraaf.code || '').split('.')[0]);
+  return Number.isFinite(uitCode) ? uitCode : 999;
 };
 
 export const bouwKlasTestbeeld = ({
   klasData = null,
   leerlingId = '',
   paragrafenById = {},
-  blokkenPerParagraaf = {}
+  blokkenPerParagraaf = {},
+  hoofdstukkenById = {}
 } = {}) => {
   const toegewezenIds = klasData ? getStudentEffectiveParagrafen(klasData, leerlingId) : [];
   const route = getKlasNiveauId(klasData);
@@ -43,7 +50,9 @@ export const bouwKlasTestbeeld = ({
 
   const lessen = zichtbaar
     .slice()
-    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .sort((a, b) => hoofdstukNummer(a, hoofdstukkenById) - hoofdstukNummer(b, hoofdstukkenById)
+      || String(a.hoofdstukId || '').localeCompare(String(b.hoofdstukId || ''))
+      || (a.order || 0) - (b.order || 0))
     .map((paragraaf) => {
       const alleBlokken = blokkenPerParagraaf[paragraaf.id] || [];
       const zichtbareBlokken = getEffectiveContentBlocks(klasData || {}, leerlingId, paragraaf.id, alleBlokken);
@@ -51,7 +60,10 @@ export const bouwKlasTestbeeld = ({
         id: paragraaf.id,
         label: paragraafLabel(paragraaf),
         hoofdstukId: paragraaf.hoofdstukId || '',
-        hoofdstukTitel: paragraaf.hoofdstukTitle || paragraaf.hoofdstukTitel || '',
+        hoofdstukTitel: hoofdstukkenById[paragraaf.hoofdstukId]?.title || paragraaf.hoofdstukTitle || paragraaf.hoofdstukTitel || '',
+        hoofdstukNummer: hoofdstukNummer(paragraaf, hoofdstukkenById),
+        // Staat het hoofdstuk op slot, dan ziet de leerling de paragraaf nog niet open.
+        opSlot: isParagraafVergrendeld(klasData, paragraaf),
         aantalBlokken: zichtbareBlokken.length,
         aantalBeschikbaar: alleBlokken.length,
         blokken: zichtbareBlokken
@@ -92,8 +104,9 @@ export const bouwKlasTestbeeld = ({
     lessen,
     problemen,
     aantalToegewezen: toegewezenIds.length,
-    aantalZichtbaar: lessen.length,
-    aantalBlokken: lessen.reduce((som, les) => som + les.aantalBlokken, 0)
+    aantalZichtbaar: lessen.filter((les) => !les.opSlot).length,
+    aantalOpSlot: lessen.filter((les) => les.opSlot).length,
+    aantalBlokken: lessen.filter((les) => !les.opSlot).reduce((som, les) => som + les.aantalBlokken, 0)
   };
 };
 

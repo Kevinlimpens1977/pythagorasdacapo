@@ -1,4 +1,5 @@
 import { isOptionalParagraph } from './paragraphMetadata.js';
+import { stripParagraphTitlePrefix } from './chapterOutline.js';
 
 const getProgressPercent = (completed, total) => {
   if (!total) return 0;
@@ -63,7 +64,8 @@ export const buildStudentProgressSummary = (
     chapter.paragrafen.push({
       id: paragraaf.id,
       number: paragraaf.number || paragraaf.code,
-      title: paragraaf.title || 'Zonder titel',
+      // Zonder het nummer: de profielpagina zet dat er zelf voor.
+      title: stripParagraphTitlePrefix(paragraaf.title || '', paragraaf.number || paragraaf.code) || 'Zonder titel',
       optioneel,
       verplicht: !optioneel,
       totalQuestions: paragraafTotal,

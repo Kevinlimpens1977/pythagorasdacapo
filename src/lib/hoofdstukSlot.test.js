@@ -65,3 +65,10 @@ test('zonderVergrendeldeHoofdstukken geeft alleen wat open staat', () => {
 
   assert.deepEqual(zonderVergrendeldeHoofdstukken(chapters).map((c) => c.id), ['h1', 'h3']);
 });
+
+test('aangekondigde hoofdstukken: op slot en nog zonder kaart', async () => {
+  const { aangekondigdeHoofdstukIds } = await import('./hoofdstukSlot.js');
+  const klas = { vergrendeldeHoofdstukken: ['h2', 'h3', 'h4', ' '] };
+  assert.deepEqual(aangekondigdeHoofdstukIds([{ id: 'h1' }, { id: 'h2' }], klas), ['h3', 'h4']);
+  assert.deepEqual(aangekondigdeHoofdstukIds([], null), []);
+});

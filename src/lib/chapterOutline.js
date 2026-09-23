@@ -36,6 +36,18 @@ const toNumber = (value) => {
 export const stripChapterTitlePrefix = (title = '') =>
   cleanText(cleanText(title).replace(CHAPTER_PREFIX_PATTERN, ''));
 
+/**
+ * Het label van een paragraaf: "1.1 Natuurwetenschappen". De hoofdstukbouw zet
+ * het nummer zowel in `code` als vooraan in de titel; zonder deze functie werd
+ * dat "1.1 1.1 Natuurwetenschappen". Gebruik hem overal waar een nummer vóór
+ * een titel komt.
+ */
+export const paragraafLabel = (paragraaf = {}, standaard = 'Paragraaf') => {
+  const nummer = cleanText(paragraaf?.code || paragraaf?.number || '');
+  const titel = stripParagraphTitlePrefix(paragraaf?.title || paragraaf?.titel || '', nummer) || standaard;
+  return nummer ? `${nummer} ${titel}` : titel;
+};
+
 export const stripParagraphTitlePrefix = (title = '', code = '') => {
   const clean = cleanText(title);
   const codeText = cleanText(code);

@@ -245,10 +245,14 @@ function HoofdstukKaart({ chapter, taal, onOpen }) {
         )}
       </div>
 
-      <p className="mt-3 text-sm font-bold text-[var(--helix-muted)]">
-        {aantal('paragraaf.aantal', chapter.paragraphRows.length)} ·{' '}
-        {tekst('onderdeel.af', { done: progress.done, total: progress.total })}
-      </p>
+      {chapter.aangekondigd ? (
+        <p className="mt-3 text-sm font-bold text-[var(--helix-muted)]">{tekst('slot.komtEraan')}</p>
+      ) : (
+        <p className="mt-3 text-sm font-bold text-[var(--helix-muted)]">
+          {aantal('paragraaf.aantal', chapter.paragraphRows.length)} ·{' '}
+          {tekst('onderdeel.af', { done: progress.done, total: progress.total })}
+        </p>
+      )}
 
       <div className="helix-progress-track mt-2 h-2">
         <div className="helix-progress-fill" style={{ width: `${progress.percentage}%` }} />

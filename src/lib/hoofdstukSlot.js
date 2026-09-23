@@ -67,6 +67,17 @@ export const markeerVergrendeldeHoofdstukken = (chapters = [], klasData = null) 
   }));
 };
 
+/**
+ * Aangekondigde hoofdstukken: op slot, maar nog zonder toegewezen paragrafen.
+ * Kevin zet zo de kaarten van komende lessen alvast neer (alleen titel); de
+ * inhoud volgt later met de hoofdstuk-skill. Geeft de ids die nog geen kaart
+ * hebben.
+ */
+export const aangekondigdeHoofdstukIds = (chapters = [], klasData = null) => {
+  const bekend = new Set((Array.isArray(chapters) ? chapters : []).map((chapter) => chapter?.id));
+  return getVergrendeldeHoofdstukken(klasData).filter((id) => !bekend.has(id));
+};
+
 /** De hoofdstukken waar de leerling nu wél in mag. */
 export const zonderVergrendeldeHoofdstukken = (chapters = []) =>
   (Array.isArray(chapters) ? chapters : []).filter((chapter) => chapter?.vergrendeld !== true);

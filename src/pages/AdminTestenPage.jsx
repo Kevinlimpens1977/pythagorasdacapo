@@ -65,6 +65,10 @@ export default function AdminTestenPage() {
         paragraafDocs.filter(Boolean).map((paragraaf) => [paragraaf.id, paragraaf])
       );
 
+      const hoofdstukIds = [...new Set(Object.values(paragrafenById).map((paragraaf) => paragraaf.hoofdstukId).filter(Boolean))];
+      const hoofdstukDocs = await Promise.all(hoofdstukIds.map((id) => cmsService.getHoofdstuk(id).catch(() => null)));
+      const hoofdstukkenById = Object.fromEntries(hoofdstukDocs.filter(Boolean).map((hoofdstuk) => [hoofdstuk.id, hoofdstuk]));
+
       const blokkenParen = await Promise.all(
         Object.keys(paragrafenById).map(async (id) => [id, await cmsService.getPublicContentBlocks(id).catch(() => [])])
       );
@@ -76,7 +80,8 @@ export default function AdminTestenPage() {
           klasData: klas,
           leerlingId: testaccount?.uid || '',
           paragrafenById,
-          blokkenPerParagraaf
+          blokkenPerParagraaf,
+          hoofdstukkenById
         });
 
         let testdata = null;
@@ -181,7 +186,7 @@ export default function AdminTestenPage() {
                         {klasNaam(klas)}
                       </h2>
                       <p className="helix-muted mt-1 text-sm">
-                        Leerroute: {beeld.route || 'geen route'} &middot; {beeld.aantalZichtbaar} paragrafen, {beeld.aantalBlokken} lesblokken
+                        Leerroute: {beeld.route || 'geen route'} &middot; {beeld.aantalZichtbaar} paragrafen open, {beeld.aantalBlokken} lesblokken{beeld.aantalOpSlot > 0 ? ` · ${beeld.aantalOpSlot} op slot` : ''}
                       </p>
                     </div>
                     <button
@@ -207,11 +212,20 @@ export default function AdminTestenPage() {
                     </p>
                   ) : (
                     <ul className="mt-4 flex flex-col gap-1.5">
-                      {beeld.lessen.map((les) => (
-                        <li key={les.id} className="flex items-baseline justify-between gap-3 text-sm">
-                          <span className="font-semibold text-[var(--helix-navy)]">{les.label}</span>
-                          <span className="shrink-0 text-[var(--helix-muted)]">
-                            {les.aantalBlokken} {les.aantalBlokken === 1 ? 'lesblok' : 'lesblokken'}
+                      {beeld.lessen.map((les, index) => (
+                        <li key={les.id} className="flex flex-col gap-1.5">
+                          {/* Een kopje per hoofdstuk, zoals de leerling het ziet. */}
+                          {les.hoofdstukId !== beeld.lessen[index - 1]?.hoofdstukId && (
+                            <p className={`text-xs font-black uppercase tracking-wide text-[var(--helix-muted)] ${index > 0 ? 'mt-2' : ''}`}>
+                              Hoofdstuk {les.hoofdstukNummer < 999 ? les.hoofdstukNummer : '?'}{les.hoofdstukTitel ? ` · ${les.hoofdstukTitel}` : ''}
+                              {les.opSlot && ' · op slot'}
+                            </p>
+                          )}
+                          <span className={`flex items-baseline justify-between gap-3 text-sm ${les.opSlot ? 'opacity-60' : ''}`}>
+                            <span className="font-semibold text-[var(--helix-navy)]">{les.label}</span>
+                            <span className="shrink-0 text-[var(--helix-muted)]">
+                              {les.opSlot ? 'op slot' : `${les.aantalBlokken} ${les.aantalBlokken === 1 ? 'lesblok' : 'lesblokken'}`}
+                            </span>
                           </span>
                         </li>
                       ))}

@@ -15,6 +15,7 @@
 
 import { normalizeResultTier } from './learningResultUtils.js';
 import { nulmetingDeelLetter } from './nulmetingVolgorde.js';
+import { paragraafLabel } from './chapterOutline.js';
 import { getEffectiveContentBlocks, getStudentEffectiveParagrafen } from './assignmentUtils.js';
 import {
   PLUS_KORT,
@@ -519,11 +520,7 @@ const bepaalSamengesteldeStatus = (telling, totaal) => {
   return STAP_STATUS.NIET_GESTART;
 };
 
-export const getParagraafLabel = (paragraaf = {}) => {
-  const nummer = paragraaf.code || paragraaf.number || '';
-  const titel = paragraaf.title || 'Paragraaf';
-  return nummer ? `${nummer} ${titel}` : titel;
-};
+export const getParagraafLabel = (paragraaf = {}) => paragraafLabel(paragraaf);
 
 /** Volledig rapport van EEN paragraaf voor EEN leerling. */
 export const buildParagraafRapport = ({

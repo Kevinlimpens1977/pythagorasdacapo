@@ -120,3 +120,27 @@ test('bouwTestdataOverzicht telt per paragraaf en vindt werk buiten de lesstof',
   assert.equal(overzicht.regels[1].gemaakt, 0);
   assert.deepEqual(overzicht.losseParagrafen, ['p-oud']);
 });
+
+test('testbeeld: geen dubbel nummer, volgorde per hoofdstuk en het slot telt mee', async () => {
+  const { paragraafLabel } = await import('./chapterOutline.js');
+  assert.equal(paragraafLabel({ code: '1.1', title: '1.1 Natuurwetenschappen' }), '1.1 Natuurwetenschappen');
+  assert.equal(paragraafLabel({ code: '1.0', title: 'Nulmeting' }), '1.0 Nulmeting');
+  assert.equal(paragraafLabel({ title: 'Zonder nummer' }), 'Zonder nummer');
+
+  const paragrafenById = {
+    a1: { id: 'a1', hoofdstukId: 'h1', code: '1.1', title: '1.1 Een', order: 1 },
+    a2: { id: 'a2', hoofdstukId: 'h1', code: '1.2', title: '1.2 Twee', order: 2 },
+    b1: { id: 'b1', hoofdstukId: 'h2', code: '2.1', title: '2.1 Drie', order: 1 },
+    b2: { id: 'b2', hoofdstukId: 'h2', code: '2.2', title: '2.2 Vier', order: 2 }
+  };
+  const beeld = bouwKlasTestbeeld({
+    klasData: { id: 'klas-1', enabledParagrafen: ['a1', 'b1', 'a2', 'b2'], vergrendeldeHoofdstukken: ['h2'] },
+    leerlingId: 'testleerling-x',
+    paragrafenById,
+    hoofdstukkenById: { h1: { id: 'h1', number: 1 }, h2: { id: 'h2', number: 2 } }
+  });
+  assert.deepEqual(beeld.lessen.map((les) => les.label), ['1.1 Een', '1.2 Twee', '2.1 Drie', '2.2 Vier']);
+  assert.deepEqual(beeld.lessen.map((les) => les.opSlot), [false, false, true, true]);
+  assert.equal(beeld.aantalZichtbaar, 2);
+  assert.equal(beeld.aantalOpSlot, 2);
+});

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import cmsService from '../../services/cmsService';
 import { CONTENT_BLOCK_LABELS } from '../../lib/contentBlockUtils';
+import { stripParagraphTitlePrefix } from '../../lib/chapterOutline';
 import {
   countPresenterImportPages,
   getPresenterAssessmentItems,
@@ -36,7 +37,7 @@ const getChapterLabel = (chapter) =>
     .join(' ');
 
 const getParagraphLabel = (paragraph) =>
-  [paragraph.code || paragraph.number || '', paragraph.title || paragraph.label || paragraph.name || 'Paragraaf']
+  [paragraph.code || paragraph.number || '', stripParagraphTitlePrefix(paragraph.title || paragraph.label || paragraph.name || '', paragraph.code || paragraph.number) || 'Paragraaf']
     .filter(Boolean)
     .join(' ');
 
