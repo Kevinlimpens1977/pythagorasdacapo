@@ -1,3 +1,4 @@
+import BadgesPaneel from '../components/tokens/BadgesPaneel';
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, BadgeCheck, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, ShieldCheck, Star, UserCircle } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -250,6 +251,8 @@ export default function StudentProfilePage() {
           {displayName}
         </h1>
       </div>
+
+      <BadgesPaneel studentUid={currentUser?.uid} disabled={isDevBypass} />
 
       <section className="helix-card mb-5 p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

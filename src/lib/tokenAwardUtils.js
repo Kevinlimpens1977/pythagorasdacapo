@@ -89,5 +89,8 @@ export const beloningMelding = (award = {}) => {
   } else if (award.weekdoel && award.weekdoel.gehaald !== true) {
     tekst += ` · weekdoel ${award.weekdoel.gedaan} van ${award.weekdoel.totaal}`;
   }
-  return tekst;
+  if (Array.isArray(award.nieuweBadges) && award.nieuweBadges.length) {
+    tekst += ` · badge: ${award.nieuweBadges.join(', ')}`;
+  }
+  return tekst.replace(/^ · /, '');
 };

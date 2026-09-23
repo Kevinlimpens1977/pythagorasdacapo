@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  beloningVoorBlok, binnenWeekplafond, isoWeekSleutel, MAX_NIVEAU, niveauVoorXp,
+  BADGES, beloningVoorBlok, nieuweBadges, binnenWeekplafond, isoWeekSleutel, MAX_NIVEAU, niveauVoorXp,
   percentageVanResultaat, tokenFactorVoorPercentage, vakSleutel, volgendeWeekreeks, weekIndex,
   weekkistTokens, xpVoorVolgendNiveau
 } from './beloning.js';
@@ -121,4 +121,17 @@ test('weekreeks: één gemiste week wordt bevroren, twee breken de reeks (met co
   assert.equal(gebroken.comeback, true);
   // Twee keer in dezelfde week: niets verandert.
   assert.equal(volgendeWeekreeks({ reeks: basis, week: '2026-W40', doelWeken: [] }).aantal, 4);
+});
+
+test('badges: twaalf stuks, alleen nieuwe worden gemeld', () => {
+  assert.equal(BADGES.length, 12);
+  assert.equal(new Set(BADGES.map((b) => b.id)).size, 12);
+  assert.deepEqual(nieuweBadges([], { sterren: 1, niveau: 1 }), ['eerste-ster']);
+  assert.deepEqual(nieuweBadges(['eerste-ster'], { sterren: 5, niveau: 5 }), ['vijf-sterren', 'niveau-5']);
+  assert.deepEqual(nieuweBadges([], { weekdoelen: 1, reeks: 3, comeback: true, huiswerkBonussen: 5 }),
+    ['eerste-weekdoel', 'reeks-3', 'comeback', 'huiswerkheld']);
+  assert.deepEqual(nieuweBadges(['foutloze-toets'], { foutlozeToets: true }), []);
+  for (const id of nieuweBadges([], { sterren: 30, foutlozeToets: true, weekdoelen: 9, reeks: 12, comeback: true, huiswerkBonussen: 9, niveau: 12 })) {
+    assert.ok(BADGES.some((b) => b.id === id), id);
+  }
 });

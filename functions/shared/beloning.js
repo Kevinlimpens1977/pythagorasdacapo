@@ -204,3 +204,48 @@ export function volgendeWeekreeks({ reeks = null, week, doelWeken = [] } = {}) {
     bevroren
   };
 }
+
+// ---------- Badges (deel C) ----------
+// Twaalf mijlpalen. De server kent ze toe op basis van de tellers in
+// leerlingVoortgang; de app toont ze op het profiel.
+export const BADGES = [
+  { id: 'eerste-ster', titel: 'Eerste ster', uitleg: 'Een blok helemaal goed.', icoon: 'star' },
+  { id: 'vijf-sterren', titel: '5 sterren', uitleg: 'Vijf blokken helemaal goed.', icoon: 'stars' },
+  { id: 'vijfentwintig-sterren', titel: '25 sterren', uitleg: 'Vijfentwintig blokken helemaal goed.', icoon: 'sparkles' },
+  { id: 'foutloze-toets', titel: 'Foutloze toets', uitleg: 'Een toets zonder fouten.', icoon: 'award' },
+  { id: 'eerste-weekdoel', titel: 'Eerste weekdoel', uitleg: 'Het hoofdstuk van de week af.', icoon: 'target' },
+  { id: 'reeks-3', titel: 'Weekreeks 3', uitleg: 'Drie weekdoelen achter elkaar.', icoon: 'flame' },
+  { id: 'reeks-5', titel: 'Weekreeks 5', uitleg: 'Vijf weekdoelen achter elkaar.', icoon: 'flame' },
+  { id: 'reeks-10', titel: 'Weekreeks 10', uitleg: 'Tien weekdoelen achter elkaar.', icoon: 'flame' },
+  { id: 'comeback', titel: 'Comeback', uitleg: 'Na een pauze weer je weekdoel gehaald.', icoon: 'rotate' },
+  { id: 'huiswerkheld', titel: 'Huiswerkheld', uitleg: 'Vijf keer de huiswerkbonus.', icoon: 'home' },
+  { id: 'niveau-5', titel: 'Niveau 5', uitleg: 'Niveau 5 gehaald.', icoon: 'trophy' },
+  { id: 'niveau-10', titel: 'Niveau 10', uitleg: 'Niveau 10 gehaald.', icoon: 'crown' }
+];
+
+// Welke badges horen bij deze stand? `staat` bevat de tellers uit leerlingVoortgang
+// plus wat er bij deze beloning gebeurde.
+export function verdiendeBadges(staat = {}) {
+  const ids = [];
+  const sterren = Number(staat.sterren) || 0;
+  if (sterren >= 1) ids.push('eerste-ster');
+  if (sterren >= 5) ids.push('vijf-sterren');
+  if (sterren >= 25) ids.push('vijfentwintig-sterren');
+  if (staat.foutlozeToets) ids.push('foutloze-toets');
+  if ((Number(staat.weekdoelen) || 0) >= 1) ids.push('eerste-weekdoel');
+  const reeks = Number(staat.reeks) || 0;
+  if (reeks >= 3) ids.push('reeks-3');
+  if (reeks >= 5) ids.push('reeks-5');
+  if (reeks >= 10) ids.push('reeks-10');
+  if (staat.comeback) ids.push('comeback');
+  if ((Number(staat.huiswerkBonussen) || 0) >= 5) ids.push('huiswerkheld');
+  const niveau = Number(staat.niveau) || 1;
+  if (niveau >= 5) ids.push('niveau-5');
+  if (niveau >= 10) ids.push('niveau-10');
+  return ids;
+}
+
+export function nieuweBadges(bestaand = [], staat = {}) {
+  const had = new Set(bestaand);
+  return verdiendeBadges(staat).filter((id) => !had.has(id));
+}

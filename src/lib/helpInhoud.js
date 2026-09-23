@@ -136,6 +136,8 @@ export const HELP_ONDERWERPEN = [
         tekst: [
           'Binask heeft geen weekdoel; daar verdienen leerlingen per blok.',
           'Het niveau is voor de hele klas zichtbaar. XP beloont inzet, zodat wie meedoet ook stijgt.',
+          'Per klas zie je niveau, sterren, badges, weekdoel en weekreeks onder Voortgang > kies een klas.',
+          'Twaalf badges (sterren, weekdoelen, weekreeks, huiswerk, niveau) staan op het profiel van de leerling.',
           'Instellingen per spel (maximum, opnieuw spelen): Spellen > kies het spel.'
         ]
       }

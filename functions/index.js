@@ -3013,11 +3013,26 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     }, { merge: true });
 
     const sterren = normalizeNonNegativeInteger(voortgang.sterren, 0) + (ster ? 1 : 0);
+    const weekdoelen = normalizeNonNegativeInteger(voortgang.weekdoelen, 0) + (kistTokens > 0 ? 1 : 0);
+    const huiswerkBonussen = normalizeNonNegativeInteger(voortgang.huiswerkBonussen, 0) + (huiswerkTokens > 0 ? 1 : 0);
+    const badgesVoor = Array.isArray(voortgang.badges) ? voortgang.badges : [];
+    const nieuweBadges = regels.nieuweBadges(badgesVoor, {
+      sterren,
+      foutlozeToets: ster && blokType === "toets",
+      weekdoelen,
+      reeks: reeks?.aantal ?? voortgang.dvReeks?.aantal ?? 0,
+      comeback: Boolean(reeks?.comeback),
+      huiswerkBonussen,
+      niveau: niveauNa.niveau,
+    });
     transaction.set(voortgangRef, {
       studentUid: auth.uid,
       xp: xpNa,
       niveau: niveauNa.niveau,
       sterren,
+      weekdoelen,
+      huiswerkBonussen,
+      badges: [...badgesVoor, ...nieuweBadges],
       ...(reeks ? {
         dvReeks: { aantal: reeks.aantal, laatsteWeek: reeks.laatsteWeek, bevriezingWeek: reeks.bevriezingWeek || null },
       } : {}),
@@ -3031,7 +3046,8 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     }, { merge: true });
 
     return {
-      awarded: totaalTokens > 0 || xp > 0,
+      awarded: totaalTokens > 0 || xp > 0 || nieuweBadges.length > 0,
+      nieuweBadges: nieuweBadges.map((id) => regels.BADGES.find((badge) => badge.id === id)?.titel || id),
       amount: totaalTokens,
       huiswerkTokens,
       weekdoel: weekdoelStand,

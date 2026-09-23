@@ -211,6 +211,7 @@ import {
 } from '../lib/inleveringUtils';
 import { uploadInlevering } from '../services/inleveringService';
 import { beloningMelding, buildTokenAwardPayload } from '../lib/tokenAwardUtils';
+import NiveauOmhoogMoment from '../components/tokens/NiveauOmhoogMoment';
 
 const blockIcons = {
   theory: BookOpen,
@@ -294,6 +295,7 @@ export default function StudentLessonPage() {
   // plaats van een ja/nee, zodat van stap wisselen de vraag vanzelf sluit.
   const [bevestigVerlatenBlokId, setBevestigVerlatenBlokId] = useState('');
   const [tokenAwardNotice, setTokenAwardNotice] = useState('');
+  const [niveauMoment, setNiveauMoment] = useState(null);
   const [victoryPlayback, setVictoryPlayback] = useState(null);
   const [rewardLoadout, setRewardLoadout] = useState({ activePinIds: [] });
   const [rewardItems, setRewardItems] = useState([]);
@@ -737,6 +739,9 @@ export default function StudentLessonPage() {
         if (melding) {
           setTokenAwardNotice(melding);
           window.setTimeout(() => setTokenAwardNotice(''), award?.niveauOmhoog ? 5200 : 3600);
+        }
+        if (award?.niveauOmhoog) {
+          setNiveauMoment({ niveau: award.niveau, tokens: award.niveauTokens || 0 });
         }
       } catch (tokenError) {
         console.warn('Tokens konden niet worden toegekend:', tokenError);
@@ -1251,6 +1256,7 @@ export default function StudentLessonPage() {
               </span>
             )}
 
+            <NiveauOmhoogMoment moment={niveauMoment} onKlaar={() => setNiveauMoment(null)} />
             {tokenAwardNotice ? (
               <span className="hidden items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800 sm:inline-flex">
                 {tokenAwardNotice}

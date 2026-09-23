@@ -690,6 +690,23 @@ test("deel B: Binask heeft geen weekdoel", async () => {
   assert.equal(result.huiswerkTokens, 0);
 });
 
+test("deel C: badges bij de eerste ster en het eerste weekdoel, maar één keer", async () => {
+  const db = createDb({
+    ...DV_WEEK(),
+    "voortgang/student-1_dv-a": { completed: true },
+    "voortgang/student-1_dv-b": { completed: true },
+  });
+  const result = await rondAf(db, "dv-b");
+  assert.ok(result.nieuweBadges.includes("Eerste ster"));
+  assert.ok(result.nieuweBadges.includes("Eerste weekdoel"));
+  const voortgang = db.store.docs["leerlingVoortgang/student-1"];
+  assert.ok(voortgang.badges.includes("eerste-ster"));
+  assert.equal(voortgang.weekdoelen, 1);
+
+  const nogEens = await rondAf(db, "dv-a");
+  assert.deepEqual(nogEens.nieuweBadges || [], []);
+});
+
 test("awardTokensForActivity awards nothing for a game without reward rule", async () => {
   const db = createDb({
     "users/student-1": { role: "student", displayName: "Ada" },

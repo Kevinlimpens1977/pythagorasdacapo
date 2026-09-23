@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   limit,
   onSnapshot,
@@ -73,6 +74,26 @@ export const subscribeLeerlingVoortgang = (studentUid, onNext, onError) => {
     (snapshot) => onNext?.({ xp: 0, niveau: 1, sterren: 0, ...(snapshot.exists() ? snapshot.data() : {}) }),
     onError
   );
+};
+
+// Docentoverzicht (deel C): XP, niveau en badges per leerling, en de
+// weekstand van deze week voor de hele klas.
+export const getKlasBeloning = async ({ klasId, studentIds = [], weekSleutel }) => {
+  const voortgangLijst = await Promise.all(
+    studentIds.map(async (uid) => {
+      const snapshot = await getDoc(doc(db, 'leerlingVoortgang', uid));
+      return [uid, snapshot.exists() ? snapshot.data() : null];
+    })
+  );
+  const weken = klasId && weekSleutel
+    ? await getDocs(query(collection(db, 'leerlingWeek'), where('klasId', '==', klasId), where('week', '==', weekSleutel)))
+    : { docs: [] };
+  const weekPerLeerling = {};
+  weken.docs.forEach((weekDoc) => {
+    const data = weekDoc.data();
+    weekPerLeerling[data.studentUid] = { ...(weekPerLeerling[data.studentUid] || {}), [data.vak]: data };
+  });
+  return { voortgang: Object.fromEntries(voortgangLijst), week: weekPerLeerling };
 };
 
 // Weekstand per vak (deel B): tokens deze week, actieve dagen, DV-weekdoel.

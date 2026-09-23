@@ -62,6 +62,7 @@ import PlusOverzicht from './PlusOverzicht';
 import NakijkPaneel from './NakijkPaneel';
 import LeerlingStappen, { StappenSpoor } from './LeerlingStappen';
 import NulmetingKlasOverzicht from './NulmetingKlasOverzicht';
+import KlasBeloningOverzicht from './KlasBeloningOverzicht';
 import NulmetingLeerlingPaneel from './NulmetingLeerlingPaneel';
 import StudentAvatar from '../common/StudentAvatar';
 import HelixBrandBanner from '../common/HelixBrandBanner';
@@ -1300,6 +1301,13 @@ export default function ClassOverview() {
             klasNaam={selectedKlasOption?.label || ''}
             students={scopedStudents}
           />
+        </div>
+      )}
+
+      {/* XP, niveau, badges en het DV-weekdoel van deze week (tokens fase 1, deel C) */}
+      {activeLens === 'class' && selectedKlasId && (
+        <div className="mb-8">
+          <KlasBeloningOverzicht klasId={selectedKlasId} students={scopedStudents} />
         </div>
       )}
 
