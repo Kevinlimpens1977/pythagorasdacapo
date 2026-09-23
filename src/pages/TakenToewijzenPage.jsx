@@ -16,6 +16,7 @@ import {
   UsersRound
 } from 'lucide-react';
 import klasService from '../services/klasService';
+import { openHelp } from '../lib/helpInhoud';
 import cmsService from '../services/cmsService';
 import { getColorStyle } from '../lib/paletColors';
 import { CONTENT_BLOCK_LABELS, buildContentBlockPreview, normalizeContentBlocks } from '../lib/contentBlockUtils';
@@ -916,6 +917,13 @@ export default function TakenToewijzenPage() {
                 {selectedKlas?.name} ({selectedKlas?.code})
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => openHelp('inclusie')}
+              className="text-sm font-bold text-[var(--helix-purple)] underline-offset-2 hover:underline"
+            >
+              Hoe zet ik inclusie klaar?
+            </button>
           </div>
 
           {/* Klas Selector */}

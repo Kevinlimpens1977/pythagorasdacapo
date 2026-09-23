@@ -231,15 +231,50 @@ function getTokenConfigFromContent(contentBlock = {}) {
   return contentBlock.content?.tokenConfig || contentBlock.tokenConfig || null;
 }
 
-function getContentBlockVersion(contentBlock = {}, fallback = "") {
-  return String(
-    fallback ||
-      contentBlock.publishedVersion ||
-      contentBlock.version ||
-      contentBlock.updatedAt ||
-      contentBlock.publishedAt ||
-      "v1",
-  );
+// De versie van een lesblok voor de tokenclaim. Bepaalt ALLEEN de server:
+// tot 23 sep 2026 won een versie die de app meestuurde, en wie elke keer een
+// andere versie stuurde kreeg elke keer de volle beloning. updatedAt telt niet
+// mee: dat verandert bij elke snapshot-herbouw en is een object, geen versie.
+function getContentBlockVersion(contentBlock = {}) {
+  const versie = contentBlock.publishedVersion ?? contentBlock.version;
+  return typeof versie === "string" || typeof versie === "number" ? String(versie) : "v1";
+}
+
+// Spellen: één claim per leerling per spel, ongeacht of het spel in een les of
+// op de spellenpagina gespeeld wordt. Oude claims (per blok of "spellenpagina-v1")
+// tellen mee via getLegacyClaimTotals.
+const GAME_CLAIM_VERSION = "totaal";
+
+// Schaduwmodus: de server legt vast welke toetsvragen hij zelf goed rekende
+// (tokenBewijs) en noteert bij elke claim of dat bewijs compleet is, maar
+// weigert nog niet. Zet op true zodra de gegevens laten zien dat eerlijke
+// leerlingen altijd compleet bewijs hebben.
+const TOKEN_BEWIJS_AFDWINGEN = false;
+
+async function getLegacyClaimTotals(db, uid, sourceKind, sourceId, huidigeClaimId) {
+  const snapshot = await db.collection("tokenAwardClaims").where("studentUid", "==", uid).get();
+  let plays = 0;
+  let totalAwarded = 0;
+  for (const doc of snapshot.docs) {
+    if (doc.id === huidigeClaimId) continue;
+    const data = doc.data() || {};
+    if (data.source?.kind !== sourceKind || data.source?.id !== sourceId) continue;
+    plays += Math.max(1, normalizeNonNegativeInteger(data.plays, 1));
+    totalAwarded += normalizeNonNegativeInteger(data.totalAwarded ?? data.amount, 0);
+  }
+  return { plays, totalAwarded };
+}
+
+async function getTokenBewijs(db, uid, contentBlock = {}, blockId = "") {
+  const items = Array.isArray(contentBlock.content?.items) ? contentBlock.content.items : [];
+  if (!items.length) return null;
+  const snapshot = await db.doc(`tokenBewijs/${uid}_${blockId}`).get();
+  const correct = Array.isArray(snapshot.exists ? snapshot.data()?.correcteItems : null)
+    ? snapshot.data().correcteItems
+    : [];
+  const itemIds = items.map((item) => String(item?.id || "")).filter(Boolean);
+  const aantalCorrect = itemIds.filter((id) => correct.includes(id)).length;
+  return { aantalItems: itemIds.length, aantalCorrect, compleet: aantalCorrect >= itemIds.length };
 }
 
 function getAwardAmountForContentBlock(contentBlock = {}) {
@@ -266,6 +301,7 @@ function normalizeGameRewardRule(data = {}) {
     max,
     basis: String(data.basis || "completion").trim(),
     replayDecay: Number.isFinite(decay) && decay > 0 && decay < 1 ? decay : null,
+    maxPlays: normalizeNonNegativeInteger(data.maxPlays, 0),
   };
 }
 
@@ -1708,6 +1744,21 @@ async function gradeAssessmentItemCore({
   const canGrade = grade?.canGrade === true;
   const isCorrect = canGrade && grade.isCorrect === true;
 
+  // Bewijs voor de tokenbeloning: alleen de server kan hier schrijven
+  // (tokenBewijs staat niet in firestore.rules, dus de app mag er niet bij).
+  if (isCorrect && access.role === "student") {
+    try {
+      await db.doc(`tokenBewijs/${auth.uid}_${blockId}`).set({
+        userId: auth.uid,
+        blockId,
+        correcteItems: FieldValue.arrayUnion(itemId),
+        updatedAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
+    } catch (error) {
+      console.warn("tokenBewijs niet opgeslagen:", error?.message || error);
+    }
+  }
+
   return {
     success: true,
     blockId,
@@ -2583,19 +2634,49 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     return { awarded: false, amount: 0, balance: account.balance, reason: "not-correct" };
   }
 
-  let sourceVersion = String(data.sourceVersion || "").trim();
+  // De versie komt nooit meer van de app (zie getContentBlockVersion).
+  let sourceVersion = "";
   let amount = 0;
   let sourceTitle = String(data.sourceTitle || "").trim();
   let gameRule = null;
+  let bewijs = null;
 
   if (sourceKind === "contentBlock" || sourceKind === "question") {
     const contentPath = sourceKind === "contentBlock" ? `publicContentBlocks/${sourceId}` : `publicQuestions/${sourceId}`;
     const contentDoc = await getRequiredDoc(db.doc(contentPath), sourceKind === "contentBlock" ? "Lesblok" : "Vraag");
-    sourceVersion = getContentBlockVersion(contentDoc.data, sourceVersion);
+
+    // Alleen lesstof die echt aan deze leerling is toegewezen levert tokens op.
+    try {
+      if (sourceKind === "contentBlock") {
+        await assertAssessmentBlockAssignedToCaller({
+          db, uid: auth.uid, callerData: caller.data, block: contentDoc.data, blockId: sourceId,
+        });
+      } else {
+        await assertQuestionAssignedToCaller({
+          db, uid: auth.uid, callerData: caller.data, vraag: contentDoc.data, blockId: String(data.blockId || "").trim(),
+        });
+      }
+    } catch (error) {
+      if (!(error instanceof HttpsError)) throw error;
+      const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
+      const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+      return { awarded: false, amount: 0, balance: account.balance, reason: "not-assigned" };
+    }
+
+    sourceVersion = getContentBlockVersion(contentDoc.data);
     amount = getAwardAmountForContentBlock(contentDoc.data);
     sourceTitle = sourceTitle || contentDoc.data.title || contentDoc.data.content?.title || "";
+
+    if (sourceKind === "contentBlock" && (contentDoc.data.type === "quiz" || contentDoc.data.type === "toets")) {
+      bewijs = await getTokenBewijs(db, auth.uid, contentDoc.data, sourceId);
+      if (TOKEN_BEWIJS_AFDWINGEN && bewijs && !bewijs.compleet) {
+        const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
+        const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+        return { awarded: false, amount: 0, balance: account.balance, reason: "no-evidence" };
+      }
+    }
   } else if (sourceKind === "game") {
-    sourceVersion = sourceVersion || "v1";
+    sourceVersion = GAME_CLAIM_VERSION;
     gameRule = await getGameRewardRule(db, sourceId);
     amount = computeGameAwardAmount(gameRule, result);
   }
@@ -2625,7 +2706,12 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     paragraafId: String(data.paragraafId || "").trim(),
     blockId: String(data.blockId || "").trim(),
     gameId: String(data.gameId || (sourceKind === "game" ? sourceId : "")).trim(),
+    ...(bewijs ? { bewijs } : {}),
   };
+
+  // Claims van vóór 23 sep 2026 stonden onder een andere sleutel (andere versie).
+  // Die tellen mee, zodat niemand voor hetzelfde blok of spel opnieuw begint.
+  const legacy = await getLegacyClaimTotals(db, auth.uid, sourceKind, sourceId, claimId);
 
   return runDbTransaction(db, async (transaction) => {
     const [accountSnapshot, claimSnapshot] = await Promise.all([
@@ -2633,8 +2719,11 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
       transaction.get(claimRef),
     ]);
     const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+    const eerdereClaim = claimSnapshot.exists
+      ? (claimSnapshot.data() || {})
+      : (legacy.plays > 0 ? { plays: legacy.plays, totalAwarded: legacy.totalAwarded } : null);
 
-    if (claimSnapshot.exists) {
+    if (eerdereClaim) {
       const decay = gameRule?.replayDecay;
       if (!decay) {
         return { awarded: false, amount: 0, balance: account.balance, reason: "already-awarded" };
@@ -2642,9 +2731,12 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
 
       // Herhaalbeurt met verval: elke beurt levert decay^beurten van het basisbedrag op,
       // tot het totaalplafond (rule.max) per leerling bereikt is.
-      const claim = claimSnapshot.data() || {};
+      const claim = eerdereClaim;
       const plays = Math.max(1, normalizeNonNegativeInteger(claim.plays, 1));
       const totalAwarded = normalizeNonNegativeInteger(claim.totalAwarded ?? claim.amount, 0);
+      if (gameRule.maxPlays > 0 && plays >= gameRule.maxPlays) {
+        return { awarded: false, amount: 0, balance: account.balance, reason: "play-limit" };
+      }
       const vervallenBedrag = Math.round(amount * Math.pow(decay, plays));
       const beschikbaar = Math.max(0, gameRule.max - totalAwarded);
       const herhaalBedrag = Math.max(0, Math.min(vervallenBedrag, beschikbaar));
@@ -2668,6 +2760,7 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
         balanceAfter: nextAccount.balance,
       });
       transaction.set(claimRef, {
+        ...(claimSnapshot.exists ? {} : { studentUid: auth.uid, source, createdAt: timestamp }),
         plays: plays + 1,
         totalAwarded: totalAwarded + herhaalBedrag,
         updatedAt: timestamp,

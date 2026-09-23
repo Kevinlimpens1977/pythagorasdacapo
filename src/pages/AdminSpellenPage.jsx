@@ -271,6 +271,7 @@ function TokenRewardPanel({ game, rewardRules, rulesError }) {
     min: String(Math.max(0, Math.round(Number(baseline.min) || 0))),
     max: String(Math.max(0, Math.round(Number(baseline.max) || 0))),
     basis: String(baseline.basis || 'completion'),
+    replayDecay: Number(baseline.replayDecay) > 0 && Number(baseline.replayDecay) < 1 ? Number(baseline.replayDecay) : 0,
     maxPlays: effectiveMaxPlays
   };
   const updateForm = (patch) => setDraft({ ...form, ...patch });
@@ -284,6 +285,7 @@ function TokenRewardPanel({ game, rewardRules, rulesError }) {
         min: Number(form.min) || 0,
         max: Number(form.max) || 0,
         basis: form.basis,
+        replayDecay: Number(form.replayDecay) || null,
         maxPlays: Number(form.maxPlays) || 0
       });
       setDraft(null);
@@ -421,8 +423,22 @@ function TokenRewardPanel({ game, rewardRules, rulesError }) {
           </select>
         </div>
         <p className="helix-muted mt-2 text-xs leading-5">
-          De telling loopt per leerling per lesblok. Testen op deze pagina telt niet mee.
+          De server telt de tokenbeurten per leerling per spel, of het spel nu in een les of op de spellenpagina staat.
+          Testen op deze pagina telt niet mee.
         </p>
+        <div className="mt-4 max-w-md">
+          <label className="mb-2 block text-sm font-bold text-slate-700">Tokens bij opnieuw spelen</label>
+          <select
+            value={form.replayDecay}
+            onChange={(event) => updateForm({ replayDecay: Number(event.target.value) })}
+            disabled={!form.enabled}
+            className="input-standard w-full disabled:opacity-50"
+          >
+            <option value={0}>Alleen de eerste keer</option>
+            <option value={0.5}>Elke keer de helft van de vorige keer</option>
+          </select>
+          <p className="helix-muted mt-1 text-xs leading-5">Het maximum hierboven is het totaal dat een leerling ooit met dit spel verdient.</p>
+        </div>
       </div>
 
       {notice && (

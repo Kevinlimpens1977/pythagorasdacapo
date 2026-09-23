@@ -20,11 +20,11 @@ test('normalizeGameRewardRule keert null terug voor uitgeschakelde of lege regel
 test('normalizeGameRewardRule klemt min binnen 0..max en vult basis aan', () => {
   assert.deepEqual(
     normalizeGameRewardRule({ min: 40, max: 25 }),
-    { min: 25, max: 25, basis: 'completion' }
+    { min: 25, max: 25, basis: 'completion', replayDecay: null }
   );
   assert.deepEqual(
     normalizeGameRewardRule({ min: -5, max: 10, basis: 'score_accuracy_completion' }),
-    { min: 0, max: 10, basis: 'score_accuracy_completion' }
+    { min: 0, max: 10, basis: 'score_accuracy_completion', replayDecay: null }
   );
 });
 
@@ -33,7 +33,7 @@ test('getEffectiveGameRewardRule geeft custom regel voorrang', () => {
   const effective = getEffectiveGameRewardRule('demo-spel', configured);
 
   assert.equal(effective.source, 'custom');
-  assert.deepEqual(effective.rule, { min: 2, max: 12, basis: 'completion' });
+  assert.deepEqual(effective.rule, { min: 2, max: 12, basis: 'completion', replayDecay: null });
 });
 
 test('zonder custom regel of serverdefault geldt: geen tokens', () => {
@@ -45,7 +45,7 @@ test('zonder custom regel of serverdefault geldt: geen tokens', () => {
 test('wachtwoord-detective heeft een serverdefault van maximaal 100 tokens', () => {
   const effective = getEffectiveGameRewardRule('wachtwoord-detective', {});
   assert.equal(effective.source, 'default');
-  assert.deepEqual(effective.rule, { min: 0, max: 100, basis: 'score_accuracy_completion' });
+  assert.deepEqual(effective.rule, { min: 0, max: 100, basis: 'score_accuracy_completion', replayDecay: null });
   assert.deepEqual(
     SERVER_DEFAULT_GAME_REWARD_RULES['wachtwoord-detective'],
     { enabled: true, min: 0, max: 100, basis: 'score_accuracy_completion' }

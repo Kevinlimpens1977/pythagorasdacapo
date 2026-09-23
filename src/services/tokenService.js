@@ -163,11 +163,15 @@ export const saveGameTokenRewardRule = async (gameId, rule) => {
   const min = Math.max(0, Math.min(max, Math.round(Number(rule?.min) || 0)));
   const rawMaxPlays = Math.round(Number(rule?.maxPlays));
   const maxPlays = Number.isFinite(rawMaxPlays) && rawMaxPlays > 0 ? Math.min(5, rawMaxPlays) : 0;
+  const decay = Number(rule?.replayDecay);
   const payload = {
     enabled: rule?.enabled !== false,
     min,
     max,
     basis: String(rule?.basis || 'completion').trim() || 'completion',
+    // Tot 23 sep 2026 ontbrak dit veld: opslaan maakte van een herhaalspel
+    // ongemerkt een spel dat maar één keer uitbetaalt.
+    replayDecay: Number.isFinite(decay) && decay > 0 && decay < 1 ? decay : null,
     maxPlays,
     updatedAt: serverTimestamp()
   };

@@ -51,10 +51,13 @@ export const normalizeGameRewardRule = (data = null) => {
   const max = Math.max(0, Math.round(Number(data.max ?? data.maxTokens) || 0));
   if (max <= 0) return null;
 
+  const decay = Number(data.replayDecay);
+
   return {
     min: Math.min(max, Math.max(0, Math.round(Number(data.min ?? data.minTokens) || 0))),
     max,
-    basis: String(data.basis || 'completion').trim() || 'completion'
+    basis: String(data.basis || 'completion').trim() || 'completion',
+    replayDecay: Number.isFinite(decay) && decay > 0 && decay < 1 ? decay : null
   };
 };
 

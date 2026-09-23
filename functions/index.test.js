@@ -216,11 +216,17 @@ test("approveStudentPhotoImportCrop copies a matched crop and updates the studen
   assert.equal(db.store.docs["photoImports/import-1/crops/crop-1"].status, "approved");
 });
 
+const KLAS_MET_PARAGRAAF = {
+  "users/student-1": { role: "student", displayName: "Ada", klasId: "klas-1" },
+  "klassen/klas-1": { enabledParagrafen: ["par-1"] },
+};
+
 test("awardTokensForActivity awards configured tokens once per source version", async () => {
   const db = createDb({
-    "users/student-1": { role: "student", displayName: "Ada" },
+    ...KLAS_MET_PARAGRAAF,
     "publicContentBlocks/block-1": {
       status: "published",
+      paragraafId: "par-1",
       content: { tokenConfig: { enabled: true, totalTokens: 12 } },
       publishedVersion: "v2",
     },
@@ -336,11 +342,168 @@ test("awardTokensForActivity replay decay pays out until the cap is reached", as
   assert.equal(derde.awarded, false);
   assert.equal(derde.reason, "replay-limit");
 
-  const claim = db.store.docs["tokenAwardClaims/student-1_game_turbo-demo_blok-1"];
+  const claim = db.store.docs["tokenAwardClaims/student-1_game_turbo-demo_totaal"];
   assert.equal(claim.plays, 2);
   assert.equal(claim.totalAwarded, 200);
   const ledger = Object.keys(db.store.docs).filter((path) => path.startsWith("tokenTransactions/"));
   assert.equal(ledger.length, 2, "elke uitbetaalde beurt krijgt een eigen grootboekregel");
+});
+
+test("awardTokensForActivity negeert een versie van de app: een andere versie levert niets extra op", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "publicContentBlocks/block-1": {
+      status: "published",
+      paragraafId: "par-1",
+      type: "theory",
+      content: { tokenConfig: { enabled: true, totalTokens: 20 } },
+    },
+  });
+  const claim = (versie) => __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "block-1", sourceVersion: versie, result: { completed: true, isCorrect: true } },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal((await claim("a")).amount, 20);
+  const tweede = await claim("b");
+  const derde = await claim(`poging-${Date.now()}`);
+  assert.equal(tweede.awarded, false);
+  assert.equal(derde.awarded, false);
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 20);
+});
+
+test("awardTokensForActivity telt een oude claim onder een oude sleutel mee", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "publicContentBlocks/block-1": {
+      status: "published",
+      paragraafId: "par-1",
+      content: { tokenConfig: { enabled: true, totalTokens: 20 } },
+    },
+    "tokenAwardClaims/student-1_contentBlock_block-1_object-object": {
+      studentUid: "student-1", amount: 20, plays: 1, totalAwarded: 20,
+      source: { kind: "contentBlock", id: "block-1", version: "[object Object]" },
+    },
+    "tokenAccounts/student-1": { balance: 20, earnedTotal: 20, spentTotal: 0, adjustedTotal: 0 },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "block-1", result: { completed: true, isCorrect: true } },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.deepEqual(result, { awarded: false, amount: 0, balance: 20, reason: "already-awarded" });
+});
+
+test("awardTokensForActivity geeft geen tokens voor een blok dat niet is toegewezen", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "publicContentBlocks/block-x": {
+      status: "published",
+      paragraafId: "andere-paragraaf",
+      content: { tokenConfig: { enabled: true, totalTokens: 50 } },
+    },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "block-x", result: { completed: true, isCorrect: true } },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.awarded, false);
+  assert.equal(result.reason, "not-assigned");
+});
+
+test("awardTokensForActivity: een spel in de les en op de spellenpagina deelt één plafond", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenGameRewardRules/demo": { enabled: true, min: 0, max: 100, basis: "score_accuracy_completion" },
+  });
+  const speel = (versie) => __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "game", sourceId: "demo", sourceVersion: versie, result: { completed: true, passed: true, accuracy: 100 } },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal((await speel("block-les-1")).amount, 100);
+  assert.equal((await speel("spellenpagina-v1")).awarded, false);
+  assert.equal((await speel("iets-anders")).awarded, false);
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 100);
+});
+
+test("awardTokensForActivity telt oude spelclaims mee voor het plafond", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenGameRewardRules/demo": { enabled: true, min: 0, max: 200, basis: "score_accuracy_completion", replayDecay: 0.5 },
+    "tokenAwardClaims/student-1_game_demo_spellenpagina-v1": {
+      studentUid: "student-1", amount: 200, plays: 1, totalAwarded: 200,
+      source: { kind: "game", id: "demo", version: "spellenpagina-v1" },
+    },
+    "tokenAccounts/student-1": { balance: 200, earnedTotal: 200, spentTotal: 0, adjustedTotal: 0 },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "game", sourceId: "demo", result: { completed: true, passed: true, accuracy: 100 } },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.awarded, false);
+  assert.equal(result.reason, "replay-limit");
+});
+
+test("awardTokensForActivity bewaakt maxPlays op de server", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenGameRewardRules/demo": {
+      enabled: true, min: 0, max: 1000, basis: "score_accuracy_completion", replayDecay: 0.9, maxPlays: 2,
+    },
+  });
+  const speel = () => __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "game", sourceId: "demo", result: { completed: true, passed: true, accuracy: 10 } },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal((await speel()).awarded, true);
+  assert.equal((await speel()).awarded, true);
+  const derde = await speel();
+  assert.equal(derde.awarded, false);
+  assert.equal(derde.reason, "play-limit");
+});
+
+test("awardTokensForActivity noteert het serverbewijs bij een toets (schaduwmodus)", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "publicContentBlocks/toets-1": {
+      status: "published",
+      paragraafId: "par-1",
+      type: "toets",
+      content: { items: [{ id: "i1" }, { id: "i2" }], tokenConfig: { enabled: true, totalTokens: 30 } },
+    },
+    "tokenBewijs/student-1_toets-1": { correcteItems: ["i1"] },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "toets-1", result: { completed: true, isCorrect: true } },
+    db,
+    now: () => "timestamp",
+  });
+
+  // Schaduwmodus: nog wel uitbetalen, maar het ontbrekende bewijs staat in de claim.
+  assert.equal(result.awarded, true);
+  const claim = Object.entries(db.store.docs).find(([path]) => path.startsWith("tokenAwardClaims/"))[1];
+  assert.deepEqual(claim.source.bewijs, { aantalItems: 2, aantalCorrect: 1, compleet: false });
 });
 
 test("awardTokensForActivity awards nothing for a game without reward rule", async () => {

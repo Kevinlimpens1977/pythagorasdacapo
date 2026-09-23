@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
 import CmsResetButton from '../admin/CmsResetButton';
 import DeleteStudentsButton from '../admin/DeleteStudentsButton';
+import HelpPaneel from '../admin/HelpPaneel';
 import TestleerlingBalk from '../admin/TestleerlingBalk';
 import Meldbel from '../common/Meldbel';
 import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
@@ -158,6 +159,7 @@ export default function AppShell() {
             les. De pagina blijft bestaan op /admin/projectkompas. */}
 
         <div className="flex items-center gap-3 md:gap-4">
+          {isAdmin && <HelpPaneel />}
           {isAdmin && <DeleteStudentsButton />}
           {isAdmin && <CmsResetButton />}
 
