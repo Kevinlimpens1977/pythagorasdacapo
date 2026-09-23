@@ -88,8 +88,17 @@ test('normalizeLoadout keeps only known active equipment fields', () => {
     activeProfileBannerId: 'banner-1',
     activeVictoryEffectId: 'effect-1',
     activeTitleBadgeId: 'title-1',
-    activePinIds: ['pin-1', 'pin-2', 'pin-3']
+    activePinIds: ['pin-1', 'pin-2', 'pin-3'],
+    avatar: null,
+    avatarGetekend: false
   });
+});
+
+test('normalizeLoadout: getekende avatar telt alleen met een avatar erbij', () => {
+  assert.equal(normalizeLoadout({ avatarGetekend: true }).avatarGetekend, false);
+  const loadout = normalizeLoadout({ avatarGetekend: true, avatar: { huid: 'huid-2' } });
+  assert.equal(loadout.avatarGetekend, true);
+  assert.equal(loadout.avatar.huid, 'huid-2');
 });
 
 test('getActiveRewardItems resolves loadout ids to catalog items', () => {

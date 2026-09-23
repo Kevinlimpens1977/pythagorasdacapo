@@ -12,6 +12,7 @@ import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../lib/tokenShopRewards';
+import ProfielAvatar from '../components/avatar/ProfielAvatar';
 import NulmetingProfielKaart from '../components/nulmeting/NulmetingProfielKaart';
 import TaalKeuzeKaart from '../components/profiel/TaalKeuzeKaart';
 import * as nulmetingService from '../services/nulmetingService';
@@ -292,24 +293,23 @@ export default function StudentProfilePage() {
                   className="token-profile-avatar flex h-16 w-16 overflow-hidden rounded-full border-2 bg-white"
                   style={activeFrame?.previewStyle?.accent ? { borderColor: activeFrame.previewStyle.accent, borderWidth: '3px' } : undefined}
                 >
-                  {activeAvatar?.imageUrl ? (
-                    <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
-                  ) : (
-                    <UserCircle size={38} />
-                  )}
+                  <ProfielAvatar loadout={normalizedLoadout} plaatje={activeAvatar} leeg={<UserCircle size={38} />} />
                 </div>
                 <div className="profile-avatar-popover pointer-events-none absolute left-0 top-[calc(100%+0.75rem)] z-30 w-56 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white p-3 opacity-0 shadow-[var(--helix-shadow-soft)] transition duration-150 group-hover:translate-y-0 group-hover:opacity-100">
                   <div className="aspect-square overflow-hidden rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)]">
-                    {activeAvatar?.imageUrl ? (
-                      <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-contain" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-[var(--helix-purple)]">
-                        <UserCircle size={72} />
-                      </div>
-                    )}
+                    <ProfielAvatar
+                      loadout={normalizedLoadout}
+                      plaatje={activeAvatar}
+                      imgClassName="h-full w-full object-contain"
+                      leeg={(
+                        <div className="flex h-full items-center justify-center text-[var(--helix-purple)]">
+                          <UserCircle size={72} />
+                        </div>
+                      )}
+                    />
                   </div>
                   <p className="mt-2 text-center text-xs font-black uppercase tracking-widest text-[var(--helix-purple)]">
-                    {activeAvatar?.title || 'Starter Avatar'}
+                    {normalizedLoadout.avatarGetekend ? 'Mijn avatar' : (activeAvatar?.title || 'Starter Avatar')}
                   </p>
                 </div>
               </div>
@@ -322,7 +322,7 @@ export default function StudentProfilePage() {
                   {activeTitle?.title || 'Leerling'}
                 </p>
                 <span className="mt-2 inline-flex max-w-full items-center rounded-full border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-3 py-1 text-xs font-black text-[var(--helix-purple)] shadow-sm">
-                  <span className="truncate">{activeAvatar?.title || 'Starter Avatar'}</span>
+                  <span className="truncate">{normalizedLoadout.avatarGetekend ? 'Mijn avatar' : (activeAvatar?.title || 'Starter Avatar')}</span>
                 </span>
               </div>
             </div>

@@ -17,6 +17,7 @@ import { isStudyRoutePath } from '../../lib/studyRouteState';
 import { subscribeToNieuweMeldingenAantal } from '../../services/meldingenService';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewards';
+import ProfielAvatar from '../avatar/ProfielAvatar';
 import helixLogo from '../../afbeeldingen/logo.png';
 
 const workspaceIcons = {
@@ -221,11 +222,7 @@ export default function AppShell() {
                   borderColor: activeFrame?.previewStyle?.accent || activeAvatar?.previewStyle?.accent || 'transparent'
                 }}
               >
-                {activeAvatar?.imageUrl ? (
-                  <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
-                ) : (
-                  <User size={20} />
-                )}
+                <ProfielAvatar loadout={normalizedLoadout} plaatje={activeAvatar} leeg={<User size={20} />} />
               </span>
               <span className="hidden flex-col items-end lg:flex">
                 <span className="text-sm font-bold">{currentUser?.displayName || 'Gebruiker'}</span>

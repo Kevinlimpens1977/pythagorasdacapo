@@ -118,6 +118,7 @@ const TOKEN_SHOP_ITEM_TYPES = new Set([
   "profileBanner",
   "victoryEffect",
   "titleBadge",
+  "avatarOnderdeel",
 ]);
 const TOKEN_SHOP_RARITIES = new Set(["common", "rare", "epic", "platinum", "legendary"]);
 const TOKEN_SHOP_TARGET_SLOT_BY_TYPE = {
@@ -127,6 +128,7 @@ const TOKEN_SHOP_TARGET_SLOT_BY_TYPE = {
   profileBanner: "profileBanner",
   victoryEffect: "victoryEffect",
   titleBadge: "titleBadge",
+  avatarOnderdeel: "avatar",
 };
 const TOKEN_SHOP_LOADOUT_FIELD_BY_TYPE = {
   avatarSkin: "activeAvatarSkinId",
@@ -2622,6 +2624,15 @@ function loadBeloningLayer() {
   return beloningLayerPromise;
 }
 
+let avatarLayerPromise = null;
+
+function loadAvatarLayer() {
+  if (!avatarLayerPromise) {
+    avatarLayerPromise = import("./shared/avatarDelen.js");
+  }
+  return avatarLayerPromise;
+}
+
 async function getLegacyContentClaim(db, uid, sourceKind, sourceId, huidigeClaimId) {
   const snapshot = await db.collection("tokenAwardClaims").where("studentUid", "==", uid).get();
   let gevonden = null;
@@ -3088,7 +3099,9 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
   const vasteAankoopRef = db.doc(`tokenPurchases/${cleanIdPart(auth.uid)}_${cleanIdPart(itemId)}`);
   const shopWensenRef = db.doc(`leerlingShop/${auth.uid}`);
   // Aankopen van vóór 23 sep 2026 hebben een willekeurige id.
-  const alGekochtOudeStijl = await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId });
+  const eerdereAankopen = await getPurchasedTokenShopItemIds({ db, studentUid: auth.uid });
+  const alGekochtOudeStijl = eerdereAankopen.has(itemId);
+  const avatarLaag = await loadAvatarLayer();
 
   return runDbTransaction(db, async (transaction) => {
     const [itemSnapshot, accountSnapshot, vasteAankoopSnapshot, wensenSnapshot] = await Promise.all([
@@ -3151,6 +3164,33 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
     transaction.set(transactionRef, transactionData);
     transaction.set(purchaseRef, purchaseData);
 
+    // Avatarset compleet (deel 2B)? Dan krijgt de leerling het bonusonderdeel
+    // als gratis aankoop erbij.
+    const setBonussen = normalizeShopItemType(item.itemType) === "avatarOnderdeel"
+      ? bepaalNieuweSetBonussen(avatarLaag, eerdereAankopen, itemId)
+      : [];
+    for (const bonus of setBonussen) {
+      const bonusItemId = avatarLaag.shopItemIdVoorDeel(bonus.deel.id);
+      transaction.set(db.doc(`tokenPurchases/${cleanIdPart(auth.uid)}_${cleanIdPart(bonusItemId)}`), {
+        studentUid: auth.uid,
+        itemId: bonusItemId,
+        item: {
+          id: bonusItemId,
+          title: bonus.deel.titel,
+          description: `Bonus voor de complete ${bonus.set.titel}.`,
+          price: 0,
+          imageUrl: "",
+          imageStoragePath: "",
+          itemType: "avatarOnderdeel",
+          rarity: normalizeShopItemRarity(bonus.deel.zeldzaam),
+          targetSlot: "avatar",
+        },
+        price: 0,
+        setBonus: bonus.set.id,
+        createdAt: timestamp,
+      });
+    }
+
     const wensen = wensenSnapshot.exists ? (wensenSnapshot.data() || {}) : {};
     const wasSpaardoel = wensen.spaardoelId === itemId;
     const verlanglijst = Array.isArray(wensen.verlanglijst) ? wensen.verlanglijst : [];
@@ -3165,6 +3205,7 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
 
     return {
       purchased: true,
+      setBonussen: setBonussen.map((bonus) => ({ setId: bonus.set.id, setTitel: bonus.set.titel, deelId: bonus.deel.id, titel: bonus.deel.titel })),
       spaardoelGehaald: wasSpaardoel,
       itemId,
       price,
@@ -3173,6 +3214,53 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
       purchasePath: purchaseRef.path,
     };
   });
+}
+
+async function getPurchasedTokenShopItemIds({ db, studentUid }) {
+  const purchaseSnapshot = await db.collection("tokenPurchases").where("studentUid", "==", studentUid).get();
+  return new Set(purchaseSnapshot.docs.map((purchase) => (purchase.data() || {}).itemId).filter(Boolean));
+}
+
+// Welke sets worden compleet door deze aankoop, en welke bonus hoort daarbij?
+function bepaalNieuweSetBonussen(avatarLaag, eerdereAankopen, itemId) {
+  const voor = new Set(avatarLaag.completeSets(eerdereAankopen).map((set) => set.id));
+  const na = avatarLaag.completeSets(new Set([...eerdereAankopen, itemId]));
+  return na
+    .filter((set) => !voor.has(set.id))
+    .map((set) => ({ set, deel: avatarLaag.avatarDeel(set.bonus) }))
+    .filter((bonus) => bonus.deel && !eerdereAankopen.has(avatarLaag.shopItemIdVoorDeel(bonus.deel.id)));
+}
+
+// De getekende avatar opslaan (deel 2B). De server controleert elk onderdeel:
+// gratis mag altijd, de rest alleen na aankoop of als setbonus.
+async function updateAvatarCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen hebben een avatar.");
+  }
+  if (!data.avatar || typeof data.avatar !== "object") {
+    throw new HttpsError("invalid-argument", "Geen avatar meegegeven.");
+  }
+
+  const avatarLaag = await loadAvatarLayer();
+  const avatar = avatarLaag.normaliseerAvatar(data.avatar);
+  const bezit = await getPurchasedTokenShopItemIds({ db, studentUid: auth.uid });
+  for (const slot of avatarLaag.AVATAR_SLOTS) {
+    if (!avatarLaag.magDeelDragen(avatar[slot], bezit)) {
+      throw new HttpsError("failed-precondition", "Je kunt alleen onderdelen dragen die je hebt.");
+    }
+  }
+
+  await db.doc(`studentTokenLoadouts/${auth.uid}`).set({
+    studentUid: auth.uid,
+    avatar,
+    // De getekende avatar gaat voor een oude plaatjes-avatar, tot de leerling
+    // weer een plaatje aanzet.
+    avatarGetekend: data.actief !== false,
+    updatedAt: getServerTimestamp(now),
+  }, { merge: true });
+
+  return { saved: true, avatar };
 }
 
 async function hasPurchasedTokenShopItem({ db, studentUid, itemId }) {
@@ -3246,6 +3334,7 @@ async function equipTokenShopItemCore({ auth, data = {}, db, now = FieldValue.se
       throw new HttpsError("invalid-argument", "Dit shopitem kan niet worden geactiveerd.");
     }
     patch[fieldName] = itemId;
+    if (itemType === "avatarSkin") patch.avatarGetekend = false;
   }
 
   await loadoutRef.set(patch, { merge: true });
@@ -3506,6 +3595,16 @@ exports.equipTokenShopItem = onCall({
   region: REGION,
 }, async (request) => {
   return equipTokenShopItemCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
+exports.updateAvatar = onCall({
+  region: REGION,
+}, async (request) => {
+  return updateAvatarCore({
     auth: request.auth,
     data: request.data || {},
     db: getFirestore(),
@@ -4506,6 +4605,7 @@ exports.__test = {
   getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,
   purchaseTokenShopItemCore,
+  updateAvatarCore,
   updateShopWensenCore,
   resetLeerlingBlokWerkCore,
   startTestleerlingSessieCore,

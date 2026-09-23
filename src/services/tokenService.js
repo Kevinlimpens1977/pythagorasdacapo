@@ -259,6 +259,13 @@ export const equipTokenShopItem = async (itemId, { unequip = false } = {}) => {
   return result.data;
 };
 
+// De getekende avatar opslaan (Shop 2.0 deel 2B). De server controleert de onderdelen.
+export const updateAvatar = async (avatar, { actief = true } = {}) => {
+  const call = httpsCallable(functions, 'updateAvatar');
+  const result = await call({ avatar, actief });
+  return result.data;
+};
+
 // Spaardoel en verlanglijst (Shop 2.0).
 export const updateShopWensen = async (wensen) => {
   const call = httpsCallable(functions, 'updateShopWensen');

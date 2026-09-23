@@ -2729,3 +2729,42 @@ test("leesJsonObject leest ook een antwoord met een accolade te veel of een code
   assert.equal(__test.leesJsonObject("geen json"), null);
   assert.equal(__test.leesJsonObject(""), null);
 });
+
+test("Shop 2.0 deel 2B: complete labset geeft de gouden erlenmeyer", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenAccounts/student-1": { balance: 1000, earnedTotal: 1000, spentTotal: 0, adjustedTotal: 0 },
+    "tokenShopItems/avatar-kleding-labjas": { title: "Labjas", price: 240, enabled: true, itemType: "avatarOnderdeel" },
+    "tokenShopItems/avatar-accessoire-veiligheidsbril": { title: "Veiligheidsbril", price: 160, enabled: true, itemType: "avatarOnderdeel" },
+    "tokenShopItems/avatar-achtergrond-lab": { title: "Laboratorium", price: 200, enabled: true, itemType: "avatarOnderdeel" },
+  });
+  const koop = (itemId) => __test.purchaseTokenShopItemCore({ auth: { uid: "student-1" }, data: { itemId }, db, now: () => "t" });
+
+  assert.deepEqual((await koop("avatar-kleding-labjas")).setBonussen, []);
+  assert.deepEqual((await koop("avatar-accessoire-veiligheidsbril")).setBonussen, []);
+  const laatste = await koop("avatar-achtergrond-lab");
+  assert.equal(laatste.setBonussen.length, 1);
+  assert.equal(laatste.setBonussen[0].deelId, "accessoire-erlenmeyer");
+  const bonus = db.store.docs["tokenPurchases/student-1_avatar-accessoire-erlenmeyer"];
+  assert.equal(bonus.price, 0);
+  assert.equal(bonus.setBonus, "labset");
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 400);
+});
+
+test("Shop 2.0 deel 2B: avatar opslaan controleert elk onderdeel", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenPurchases/student-1_avatar-kapsel-krullen": { studentUid: "student-1", itemId: "avatar-kapsel-krullen" },
+  });
+  const sla = (avatar) => __test.updateAvatarCore({ auth: { uid: "student-1" }, data: { avatar }, db, now: () => "t" });
+
+  const goed = await sla({ huid: "huid-6", kapsel: "kapsel-krullen", kleding: "kleding-shirt", kledingkleur: "stof-rood" });
+  assert.equal(goed.avatar.huid, "huid-6");
+  assert.equal(db.store.docs["studentTokenLoadouts/student-1"].avatar.kapsel, "kapsel-krullen");
+  assert.equal(db.store.docs["studentTokenLoadouts/student-1"].avatarGetekend, true);
+
+  await assert.rejects(() => sla({ kapsel: "kapsel-afro" }), (error) => error.code === "failed-precondition");
+  await assert.rejects(() => sla({ accessoire: "accessoire-erlenmeyer" }), (error) => error.code === "failed-precondition");
+  const hoofddoek = await sla({ kapsel: "kapsel-hoofddoek", stofkleur: "stof-roze" });
+  assert.equal(hoofddoek.avatar.stofkleur, "stof-roze");
+});

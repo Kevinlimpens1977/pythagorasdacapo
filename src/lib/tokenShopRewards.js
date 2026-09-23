@@ -4,7 +4,8 @@ export const TOKEN_SHOP_ITEM_TYPES = [
   'shopBadge',
   'profileBanner',
   'victoryEffect',
-  'titleBadge'
+  'titleBadge',
+  'avatarOnderdeel'
 ];
 
 export const TOKEN_SHOP_TYPE_LABELS = {
@@ -13,7 +14,8 @@ export const TOKEN_SHOP_TYPE_LABELS = {
   shopBadge: 'Pin',
   profileBanner: 'Banner',
   victoryEffect: 'Effect',
-  titleBadge: 'Titel'
+  titleBadge: 'Titel',
+  avatarOnderdeel: 'Avatar-onderdeel'
 };
 
 export const TOKEN_SHOP_RARITY_LABELS = {
@@ -500,7 +502,11 @@ export const normalizeLoadout = (loadout = {}) => ({
   activeTitleBadgeId: String(loadout.activeTitleBadgeId || ''),
   activePinIds: Array.isArray(loadout.activePinIds)
     ? loadout.activePinIds.map((id) => String(id || '')).filter(Boolean).slice(0, 3)
-    : []
+    : [],
+  // De getekende avatar (Shop 2.0 deel 2B). Die gaat voor een plaatjes-avatar
+  // zolang avatarGetekend aan staat.
+  avatar: loadout.avatar && typeof loadout.avatar === 'object' ? loadout.avatar : null,
+  avatarGetekend: loadout.avatarGetekend === true && Boolean(loadout.avatar)
 });
 
 export const getActiveRewardItems = ({ loadout = {}, items = [] } = {}) => {

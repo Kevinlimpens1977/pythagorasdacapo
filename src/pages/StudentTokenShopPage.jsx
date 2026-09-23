@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle2, Clock, Coins, Eye, Gift, Heart, Loader2, ReceiptText, ShoppingBag, Sparkles, Target, X
 } from 'lucide-react';
@@ -12,6 +12,7 @@ import {
   subscribeStudentPurchases,
   subscribeStudentTokenTransactions,
   subscribeTokenAccount,
+  updateAvatar,
   updateShopWensen
 } from '../services/tokenService';
 import {
@@ -22,6 +23,10 @@ import {
   TOKEN_SHOP_ITEM_TYPES
 } from '../lib/tokenShopRewards';
 import { dagenTotNieuweEtalage, etalageVoorWeek, spaarVoortgang } from '../lib/shopEtalage';
+import { AVATAR_SLOTS, avatarDeel, normaliseerAvatar, shopItemIdVoorDeel } from '../lib/avatarDelen';
+import AvatarMaker from '../components/avatar/AvatarMaker';
+import HelixAvatar from '../components/avatar/HelixAvatar';
+import ProfielAvatar from '../components/avatar/ProfielAvatar';
 
 // Shop 2.0 (SPELOPZET-TOKENS-EN-SHOP.md, fase 2A): spaardoel met voorschot,
 // verlanglijst, een wisselende etalage, passen op je profiel, bevestigen,
@@ -34,8 +39,17 @@ const SHOP_TAB_LABELS = {
   shopBadge: 'Pins',
   profileBanner: 'Banners',
   victoryEffect: 'Effecten',
-  titleBadge: 'Titels'
+  titleBadge: 'Titels',
+  avatarOnderdeel: 'Avatar-onderdelen'
 };
+
+// De eigen avatar van de leerling, zodat een avatar-onderdeel op de kaart
+// meteen op zijn eigen avatar te zien is.
+const EigenAvatar = createContext(null);
+
+const deelVanItem = (item) => (item?.itemType === 'avatarOnderdeel'
+  ? avatarDeel(item.previewStyle?.avatarDeel || String(item.id || '').replace(/^avatar-/, ''))
+  : null);
 
 const SHOP_TABS = ['all', ...TOKEN_SHOP_ITEM_TYPES];
 const LOADOUT_VELD = {
@@ -94,14 +108,16 @@ export default function StudentTokenShopPage() {
   const bezit = useMemo(() => new Set(purchases.map((purchase) => purchase.itemId)), [purchases]);
   const itemsById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   const normalizedLoadout = useMemo(() => normalizeLoadout(loadout), [loadout]);
+  const eigenAvatar = useMemo(() => normaliseerAvatar(normalizedLoadout.avatar || {}), [normalizedLoadout.avatar]);
   const activeIds = useMemo(() => new Set([
     normalizedLoadout.activeAvatarFrameId,
-    normalizedLoadout.activeAvatarSkinId,
+    normalizedLoadout.avatarGetekend ? '' : normalizedLoadout.activeAvatarSkinId,
     normalizedLoadout.activeProfileBannerId,
     normalizedLoadout.activeVictoryEffectId,
     normalizedLoadout.activeTitleBadgeId,
-    ...normalizedLoadout.activePinIds
-  ].filter(Boolean)), [normalizedLoadout]);
+    ...normalizedLoadout.activePinIds,
+    ...(normalizedLoadout.avatarGetekend ? AVATAR_SLOTS.map((slot) => shopItemIdVoorDeel(eigenAvatar[slot])) : [])
+  ].filter(Boolean)), [normalizedLoadout, eigenAvatar]);
 
   // Passen: het profiel laten zien alsof dit item actief is.
   const pasLoadout = useMemo(() => {
@@ -113,6 +129,8 @@ export default function StudentTokenShopPage() {
     return veld ? { ...normalizedLoadout, [veld]: pasItem.id } : normalizedLoadout;
   }, [normalizedLoadout, pasItem]);
   const profielItems = useMemo(() => getActiveRewardItems({ loadout: pasLoadout, items }), [items, pasLoadout]);
+  const pasDeel = deelVanItem(pasItem);
+  const pasAvatar = pasDeel ? { ...eigenAvatar, [pasDeel.slot]: pasDeel.id } : null;
 
   const ownedItems = useMemo(() => purchases
     .map((purchase) => itemsById.get(purchase.itemId) || { id: purchase.itemId, ...(purchase.item || purchase.itemSnapshot || {}) })
@@ -144,9 +162,14 @@ export default function StudentTokenShopPage() {
     try {
       const resultaat = await purchaseTokenShopItem(item.id);
       setUitpakItem(item);
-      meld(resultaat?.spaardoelGehaald
-        ? `Spaardoel gehaald: ${item.title}. Kies hieronder je volgende doel.`
-        : `${item.title} is van jou. Zet hem aan bij Mijn spullen.`);
+      const bonus = resultaat?.setBonussen?.[0];
+      meld(bonus
+        ? `${bonus.setTitel} compleet. Je krijgt er ${bonus.titel.replace(' (setbonus)', '')} bij.`
+        : resultaat?.spaardoelGehaald
+          ? `Spaardoel gehaald: ${item.title}. Kies hieronder je volgende doel.`
+          : deelVanItem(item)
+            ? `${item.title} is van jou. Zet het aan in Mijn avatar.`
+            : `${item.title} is van jou. Zet hem aan bij Mijn spullen.`);
     } catch (err) {
       fout(err, 'Aankoop is mislukt.');
     } finally {
@@ -154,7 +177,26 @@ export default function StudentTokenShopPage() {
     }
   };
 
+  const bewaarAvatar = async (avatar, bezigSleutel = 'avatar') => {
+    setBezigId(bezigSleutel);
+    try {
+      await updateAvatar(avatar);
+      meld('Je avatar is opgeslagen.');
+    } catch (err) {
+      fout(err, 'Avatar opslaan is mislukt.');
+    } finally {
+      setBezigId('');
+    }
+  };
+
   const zetAan = async (item, uit = false) => {
+    const deel = deelVanItem(item);
+    if (deel) {
+      // Uitzetten = terug naar het gratis standaardonderdeel van dat slot.
+      const standaard = normaliseerAvatar({})[deel.slot];
+      await bewaarAvatar({ ...eigenAvatar, [deel.slot]: uit ? standaard : deel.id }, item.id);
+      return;
+    }
     setBezigId(item.id);
     try {
       await equipTokenShopItem(item.id, { unequip: uit });
@@ -211,6 +253,7 @@ export default function StudentTokenShopPage() {
   });
 
   return (
+    <EigenAvatar.Provider value={eigenAvatar}>
     <div className="helix-page min-h-full">
       <div className="helix-container py-8 md:py-10">
         <div className="overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFF7E8] shadow-[6px_6px_0_#0B0D0F]">
@@ -227,6 +270,17 @@ export default function StudentTokenShopPage() {
               {error && <p className="rounded-xl border-2 border-[#D83A2E] bg-[var(--color-red-soft)] px-4 py-3 font-bold text-[var(--color-red-ink)]">{error}</p>}
 
               <SpaardoelKaart spaardoel={spaardoel} saldo={saldo} verlanglijst={verlanglijst} onKoop={setBevestigItem} onKies={kiesSpaardoel} />
+
+              <AvatarMaker
+                opgeslagen={normalizedLoadout.avatar}
+                getekendActief={normalizedLoadout.avatarGetekend}
+                bezit={bezit}
+                itemsById={itemsById}
+                saldo={saldo}
+                bezig={bezigId === 'avatar'}
+                onOpslaan={(avatar) => bewaarAvatar(avatar)}
+                onKoop={setBevestigItem}
+              />
 
               <section>
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
@@ -273,7 +327,7 @@ export default function StudentTokenShopPage() {
             </div>
 
             <aside className="space-y-5">
-              <ProfielVoorbeeld naam={currentUser?.displayName || 'Leerling'} items={profielItems} pasItem={pasItem} onStopPassen={() => setPasItem(null)} />
+              <ProfielVoorbeeld naam={currentUser?.displayName || 'Leerling'} items={profielItems} loadout={normalizedLoadout} pasAvatar={pasAvatar} pasItem={pasItem} onStopPassen={() => setPasItem(null)} />
 
               <section className="rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
                 <h2 className="flex items-center gap-2 font-black text-[var(--helix-navy)]"><Heart size={18} className="text-[#D83A2E]" aria-hidden="true" /> Verlanglijst ({verlanglijst.length}/5)</h2>
@@ -353,6 +407,7 @@ export default function StudentTokenShopPage() {
       )}
       {uitpakItem && <UitpakMoment item={uitpakItem} />}
     </div>
+    </EigenAvatar.Provider>
   );
 }
 
@@ -365,6 +420,15 @@ function Balk({ procent }) {
 }
 
 function ItemBeeld({ item, className = '' }) {
+  const eigenAvatar = useContext(EigenAvatar);
+  const deel = deelVanItem(item);
+  if (deel) {
+    return (
+      <span className="block aspect-square h-full max-h-full overflow-hidden rounded-full border-2 border-[#0B0D0F]">
+        <HelixAvatar avatar={{ ...(eigenAvatar || {}), [deel.slot]: deel.id }} className="h-full w-full" titel={item.title} />
+      </span>
+    );
+  }
   return item?.imageUrl ? (
     <img src={item.imageUrl} alt="" className={`h-full w-full object-contain ${className}`} />
   ) : (
@@ -470,7 +534,7 @@ export function ShopKaart({ item, saldo, bezit, actief, bezig, isSpaardoel, opVe
   );
 }
 
-export function ProfielVoorbeeld({ naam, items, pasItem, onStopPassen }) {
+export function ProfielVoorbeeld({ naam, items, loadout = null, pasAvatar = null, pasItem, onStopPassen }) {
   const van = (type) => items.find((item) => item.itemType === type);
   const avatar = van('avatarSkin');
   const frame = van('avatarFrame');
@@ -493,7 +557,7 @@ export function ProfielVoorbeeld({ naam, items, pasItem, onStopPassen }) {
       <div className="-mt-10 px-4 pb-4">
         <div className="relative h-20 w-20">
           <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-[var(--helix-surface-soft)]" style={frame?.previewStyle?.accent ? { borderColor: frame.previewStyle.accent } : undefined}>
-            {avatar?.imageUrl && <img src={avatar.imageUrl} alt="" className="h-full w-full object-cover" />}
+            <ProfielAvatar loadout={pasItem?.itemType === 'avatarSkin' ? null : loadout} plaatje={avatar} passend={pasAvatar} />
           </div>
           {frame?.imageUrl && <img src={frame.imageUrl} alt="" className="pointer-events-none absolute -inset-2 h-24 w-24 object-contain" />}
         </div>
