@@ -3,7 +3,7 @@
 De tabellen met cijfers komen rechtstreeks uit de curriculumbestanden, zodat
 het rapport niet uit de pas loopt met fase 2 en 3:
   dv-klas1-curriculum.json, dv-scenarios.json, genereer-fase2.mjs,
-  genereer-fase3.mjs en de docentkaarten uit dv-leerlijn-fase4-klas1-4.md.
+  genereer-fase3.mjs.
 
     python docs/curriculum/rapport/bouw-rapport.py
 
@@ -73,32 +73,10 @@ def vakmomenten(s):
     return "\n".join(rij)
 
 
-def docentkaarten():
-    tekst = (CURR / "dv-leerlijn-fase4-klas1-4.md").read_text(encoding="utf-8")
-    deel = tekst[tekst.index("### 6.3"):tekst.index("### 6.4")]
-    kaarten, huidige = [], []
-    for r in deel.splitlines():
-        if r.startswith(">"):
-            regel = r[1:].lstrip() if r != ">" else ""
-            # Een lijst heeft in markdown een lege regel ervoor nodig.
-            if re.match(r"\d+\. ", regel) and huidige and huidige[-1] and not re.match(r"\d+\. ", huidige[-1]):
-                huidige.append("")
-            # Vervolgregels van een lijstitem inspringen, anders worden ze een losse alinea.
-            if r.startswith(">    ") and not re.match(r"\d+\. ", regel):
-                regel = "   " + regel
-            huidige.append(regel)
-        elif huidige:
-            kaarten.append("\n".join(huidige))
-            huidige = []
-    if huidige:
-        kaarten.append("\n".join(huidige))
-    return "\n\n".join(f'<div class="kaart" markdown="1">\n\n{k}\n\n</div>' for k in kaarten)
-
-
 CSS = """
 @page { size: A4; margin: 22mm 20mm 20mm 20mm;
   @bottom-right { content: counter(page); font: 9pt 'Segoe UI', sans-serif; color: #6b7280; }
-  @bottom-left { content: 'Digitale geletterdheid vmbo · DaCapo College · versie 3.0, 22 september 2026'; font: 8pt 'Segoe UI', sans-serif; color: #9ca3af; } }
+  @bottom-left { content: 'Digitale geletterdheid vmbo · DaCapo College · versie 3.4, 23 september 2026'; font: 8pt 'Segoe UI', sans-serif; color: #9ca3af; } }
 @page :first { @bottom-right { content: none; } @bottom-left { content: none; } }
 :root { --inkt: #1f2937; --accent: #0f4c81; --zacht: #eef4fa; --lijn: #d1d5db; }
 body { font-family: 'Segoe UI', Calibri, sans-serif; font-size: 10.5pt; line-height: 1.5; color: var(--inkt); }
@@ -122,6 +100,8 @@ strong { color: #111827; }
 .bijlage { break-before: page; }
 .kaart { border: 1px solid var(--lijn); border-left: 4px solid var(--accent); padding: 4pt 12pt; margin: 0 0 12pt; break-inside: avoid; background: #fbfdff; }
 .matrix table { font-size: 8pt; }
+.kader { background: var(--zacht); border-left: 4px solid var(--accent); padding: 6pt 14pt; margin: 6pt 0 14pt; break-inside: avoid; }
+.kader table { background: #fff; }
 img { width: 100%; border: 1px solid var(--lijn); border-radius: 4pt; margin: 6pt 0 4pt; break-inside: avoid; }
 p em { color: #4b5563; font-size: 9pt; }
 """
@@ -139,7 +119,6 @@ def main():
         "{{SCENARIOCIJFERS}}": eerste_tabel(fase3),
         "{{VAKMOMENTEN}}": vakmomenten(s),
         "{{LESSENOVERZICHT}}": lessenoverzicht(c),
-        "{{DOCENTKAARTEN}}": docentkaarten(),
     }
     for sleutel, waarde in vervang.items():
         if sleutel not in bron:
@@ -150,7 +129,7 @@ def main():
     body = markdown.markdown(bron, extensions=["tables", "md_in_html", "sane_lists"])
     html = f"""<!doctype html>
 <html lang="nl"><head><meta charset="utf-8">
-<title>Digitale geletterdheid vmbo - rapport voor het MT</title>
+<title>Digitale geletterdheid vmbo: rapport voor het MT</title>
 <style>{CSS}</style></head><body>{body}</body></html>"""
 
     UIT.mkdir(parents=True, exist_ok=True)

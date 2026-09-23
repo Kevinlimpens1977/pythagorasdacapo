@@ -4,14 +4,14 @@
 
 # Digitale geletterdheid vmbo
 
-<p class="ondertitel">Van 20 lessen naar een duurzame leerlijn klas 1–4</p>
+<p class="ondertitel">Van 20 lessen naar een duurzame leerlijn voor klas 1 tot en met 4</p>
 
 <p class="meta">Visie- en beslisdocument voor teamleiding en MT<br>
 Opgesteld door Kevin Limpens, docent digitale vaardigheden<br>
-Versie 3.0 &middot; 22 september 2026<br>
-Nieuw ten opzichte van versie 2: waarop de verdeling over de lessen is gebaseerd (8.1 tot 8.3), de stand van de leeromgeving (hoofdstuk 10), wat meer tijd met de verankering doet (15.3) en waar digitale geletterdheid in klas 2 tot 4 kan landen (hoofdstuk 17)</p>
+Versie 3.4 &middot; 23 september 2026<br>
+Nieuw ten opzichte van versie 3.0: bijlage B, over waarom digitale geletterdheid bij DaCapo breder moet worden weggezet dan de kerndoelen vragen, met drie extra beslispunten in hoofdstuk 25, paragraaf 7.5 over wat de docent van de nulmeting ziet, en in hoofdstuk 11 wat twintig lessen zijn op een heel schooljaar</p>
 
-<p class="leeswijzer">Dit document is zelfstandig leesbaar. Kennis van het leerplatform HELIX is niet nodig. Waar dat telt, staat erbij of een uitspraak <strong>officieel</strong> is (SLO, wet), een <strong>analyse</strong>, een <strong>ontwerpkeuze</strong> van DaCapo, of een <strong>scenario</strong>.</p>
+<p class="leeswijzer">Dit document is zelfstandig leesbaar. Kennis van de digitale leeromgeving die bij DV wordt gebruikt is niet nodig. Waar dat telt, staat erbij of een uitspraak <strong>officieel</strong> is (SLO, wet), een <strong>analyse</strong>, een <strong>ontwerpkeuze</strong> van DaCapo, of een <strong>scenario</strong>.</p>
 
 </div>
 
@@ -40,14 +40,13 @@ Nieuw ten opzichte van versie 2: waarop de verdeling over de lessen is gebaseerd
 19. Een gemeenschappelijke digitale taal
 20. Vakoverstijgende projecten
 21. Beoordelen als AI beschikbaar is
-22. Toekomstbestendige digitale competenties
-23. Toekomstscenario's
-24. Concept voor een SLO-dashboard
-25. Organisatorische invoering
-26. Beslispunten voor het MT
-27. Bronnen
+22. Toekomstscenario's
+23. Concept voor een SLO-dashboard
+24. Organisatorische invoering
+25. Beslispunten voor het MT
+26. Bronnen
 
-Bijlagen: A. De 22 lessen · B. Docentkaarten
+Bijlagen: A. De 22 lessen · B. Voorsorteren: waarom digitale geletterdheid breder moet dan de kerndoelen
 
 </div>
 
@@ -55,7 +54,7 @@ Bijlagen: A. De 22 lessen · B. Docentkaarten
 
 **Waarom nu.** Digitale geletterdheid krijgt wettelijke kerndoelen. Ze gaan naar verwachting in 2027 in; vanaf augustus 2031 moet elke school ermee werken en houdt de inspectie toezicht. De kerndoelen gelden voor de hele onderbouw: op het vmbo klas 1 en 2. Er staat geen aantal lessen in.
 
-**Wat er nu is.** DaCapo heeft geen apart vak. Digitale geletterdheid krijgt in klas 1 tijd in de DIF-uren, samen met rekenen en begrijpend lezen: dit jaar 20 tot 24 lessen. In klas 2 is er geen vaste plek. Het huidige lesmateriaal behandelt twee van de negen kerndoelen niet (data en programmeren) en besteedt veel tijd aan Word en PowerPoint.
+**Wat er nu is.** DaCapo heeft geen apart vak. Digitale geletterdheid krijgt in klas 1 tijd in de DIF-uren, samen met rekenen en begrijpend lezen: dit jaar 20 tot 24 lessen, tot de kerstvakantie. In klas 2 is er geen vaste plek. Het lesmateriaal van schooljaar 25/26 (Wikiwijs-content) behandelde twee van de negen kerndoelen niet (data en programmeren) en besteedde veel tijd aan Word en PowerPoint.
 
 **Wat er ligt.** Een nieuw curriculum voor klas 1 van 22 lessen. Alle negen kerndoelen, en alle 45 onderdelen die SLO daarbij voor het vmbo noemt, komen aantoonbaar aan bod. Software is een middel, geen doel. De lessen zijn gekoppeld aan de nulmeting die de brugklassers in september maakten: elke leerling ziet bij de start van een les zijn eigen startscore voor dat onderdeel.
 
@@ -70,10 +69,12 @@ Bijlagen: A. De 22 lessen · B. Docentkaarten
 | 22 DV-lessen | geen | 9 | 0 |
 | 40 DV-lessen in klas 1 | 18 lessen in klas 1 | 39 | 0 |
 | 22 lessen + 16 vakmomenten (hybride) | geen extra lesuren; coördinatie | 29 | 30 |
-| 22 lessen + oefenen in HELIX | 6 × 15 minuten zelfstandig | 9 (meer herhaling, niet meer oefening) | 0 |
+| 22 lessen + zelfstandig oefenen | 6 × 15 minuten zelfstandig | 9 (meer herhaling, niet meer oefening) | 0 |
 | 22 in klas 1 + 18 in klas 2 | 18 lessen in klas 2 | 39 | 0 |
 
-**Beslispunten** (hoofdstuk 26): de DV-tijd in klas 1, een plek voor DV in klas 2 vanaf 2027-2028, de rol van andere vakken, oefenen in HELIX buiten de les, en het moment van overstappen op de nieuwe kerndoelen.
+**Beslispunten** (hoofdstuk 25): de DV-tijd in klas 1, een plek voor DV in klas 2 vanaf 2027-2028, de rol van andere vakken, zelfstandig oefenen buiten de les, en het moment van overstappen op de nieuwe kerndoelen.
+
+**En een vraag die verder gaat dan de kerndoelen.** De kerndoelen van 2006 stonden twintig jaar stil; de techniek waar ze over gaan niet. De brugklasser van dit jaar doet examen in 2031, ruim voordat er een volgende landelijke herziening in zicht is. Wat wij nu regelen is dus zijn digitale geletterdheid, en niets komt dat later voor hem corrigeren. **Bijlage B** werkt dat uit en legt er drie beslispunten bij: een plek in de lessentabel van klas 1 tot en met 4, scholing van collega's, en de vakgroepenquete als eerste meting.
 
 ## 2. Aanleiding en context
 
@@ -91,7 +92,7 @@ Dit document is het resultaat van een curriculumonderzoek in september 2026. Het
 - Nederlands en rekenen-wiskunde zijn op 1 augustus 2026 wettelijk ingegaan. De overige kerndoelen, waaronder digitale geletterdheid, volgen volgens SLO in 2027.
 - Daarna geldt een overgangsperiode: een school kiest per leergebied wanneer zij overstapt. In augustus 2031 moet elke school onderwijs geven dat op de nieuwe kerndoelen is gebaseerd. Dan begint het toezicht van de inspectie. De inspectie moedigt scholen aan om eerder te beginnen.
 - De kerndoelen gelden voor de onderbouw. Op het vmbo is dat klas 1 en 2. Alle leerwegen hebben dezelfde kerndoelen; voor havo-vwo zijn er een paar aanvullingen die voor het vmbo niet gelden.
-- SLO schrijft geen aantal lessen en geen minimumniveau voor. Wel noemt SLO dat alle kerndoelen samen ongeveer 70 procent van de onderwijstijd vragen.
+- SLO schrijft geen aantal lessen en geen minimumniveau voor. Wel noemt SLO dat alle kerndoelen van alle leergebieden samen ongeveer 70 procent van de onderwijstijd vragen; de overige 30 procent is vrije ruimte voor de school. Dat getal gaat dus over het hele programma, niet over digitale geletterdheid: hoeveel tijd dit leergebied krijgt, bepaalt de school zelf.
 - De school bepaalt zelf in welke vakken zij de kerndoelen onderbrengt. SLO noemt expliciet Nederlands, rekenen-wiskunde, mens en maatschappij, mens en natuur, burgerschap en de creatieve vakken.
 
 **Analyse.** DaCapo is niet te laat maar vroeg. De huidige brugklassers hebben de onderbouw afgerond voordat het toezicht begint. Beginnen is dus een kwaliteitskeuze, geen verplichting van dit moment. Wie nu begint, heeft wel tijd om te leren en bij te stellen.
@@ -123,13 +124,13 @@ Deze ontwerpkeuzes liggen onder het curriculum.
 5. **Evidence op twee niveaus.** Elke les sluit af met een korte check. Twaalf lessen leveren daarnaast een product op dat laat zien dat de leerling het kan.
 6. **Eén leerlijn voor iedereen.** Basis, kader en TL volgen dezelfde lessen. Het verschil zit in de steun (basis) en in een plusopdracht (TL).
 7. **Startscore uit de nulmeting.** Elke leerling ziet bij de start van een les zijn eigen score voor dat onderdeel.
-8. **Spellen om te oefenen.** Spellen in HELIX laten oefenen en leveren tokens op; ze vervangen de uitleg niet.
+8. **Spellen om te oefenen.** Spellen in de leeromgeving laten oefenen en leveren tokens op; ze vervangen de uitleg niet.
 
 ## 6. De huidige situatie bij DaCapo
 
 Volgens de lessentabel en de schoolgids 2026-2027:
 
-- **Geen eigen vak.** Digitale geletterdheid heeft in klas 1 een plek in de DIF-uren, samen met rekenen en begrijpend lezen. Dit schooljaar zijn dat 20 tot 24 lessen.
+- **Geen eigen vak.** Digitale geletterdheid is geen schoolvak. Het heeft in klas 1 een plek in de DIF-uren, samen met rekenen en begrijpend lezen. Dit schooljaar zijn dat 20 tot 24 lessen, tot de kerstvakantie.
 - **Klas 2 heeft geen plek.** De DIF-uren voor basisvaardigheden zijn er alleen in klas 1.
 - **LOB en mentor.** Basis en kader hebben in klas 1 en 2 twee uur LOB per week. Klas 1 heeft twee uur mentoraat, klas 2 één.
 - **Vakken in klas 1.** Basis en kader hebben geen aardrijkskunde, geschiedenis, economie of NaSk, wel natuur en techniek. TL heeft aardrijkskunde en geschiedenis.
@@ -140,11 +141,11 @@ Volgens de lessentabel en de schoolgids 2026-2027:
 
 ## 7. Bestaande lesstof en de nulmeting per leerweg
 
-**Het huidige lesmateriaal** (het Wikiwijs-arrangement van twintig lessen) is herkenbaar en praktisch, maar dekt twee kerndoelen niet: data (21C) en programmeren (22B). Vier van de twintig lessen gaan over Word en PowerPoint, twee zijn eindtoetsen. De kerndoelen over de samenleving (23C) komen nauwelijks aan bod. Een eerder uitgewerkte leerlijn in HELIX (acht hoofdstukken) is bruikbaar als grondstof, vooral voor veiligheid, privacy en mediawijsheid.
+**Het huidige lesmateriaal** (het Wikiwijs-arrangement van twintig lessen) is herkenbaar en praktisch, maar dekt twee kerndoelen niet: data (21C) en programmeren (22B). Vier van de twintig lessen gaan over Word en PowerPoint, twee zijn eindtoetsen. De kerndoelen over de samenleving (23C) komen nauwelijks aan bod. Een eerder uitgewerkte eigen leerlijn (acht hoofdstukken) is bruikbaar als grondstof, vooral voor veiligheid, privacy en mediawijsheid.
 
 ### 7.1 De nulmeting: opzet en deelname
 
-Alle brugklassen maken in september een nulmeting digitale vaardigheden in HELIX: twee delen van 27 vragen, samen 54, met zes vragen per kerndoel. De vragen zijn gesloten of kort; een leerling doet er ongeveer twee lesuren over. De uitkomst is geen cijfer maar een startprofiel per leerling.
+Alle brugklassen maken in september een nulmeting digitale vaardigheden in de digitale leeromgeving van DV: twee delen van 27 vragen, samen 54, met zes vragen per kerndoel. De vragen zijn gesloten of kort; een leerling doet er ongeveer twee lesuren over. De uitkomst is geen cijfer maar een startprofiel per leerling.
 
 **Deze cijfers zijn een momentopname van 22 september 2026.** De nulmeting loopt nog: in deze week maken de laatste leerlingen hun tweede deel af. De percentages hieronder verschuiven daardoor nog enkele punten, maar de verhoudingen tussen de leerwegen liggen er al duidelijk in.
 
@@ -192,23 +193,54 @@ De spreiding binnen een leerweg is groter dan het verschil tussen de leerwegen. 
 
 ### 7.4 Wat de leerling zelf ziet
 
-Elke leerling ziet zijn eigen uitslag in HELIX op zijn profielpagina, onder **Mijn startprofiel**. Geen cijfer en geen ranglijst: drie domeinscores, negen onderdelen met een label (Startniveau, Op weg, Sterk), zijn sterke punten en drie concrete vervolgstappen. De docent ziet dezelfde kaart, met daarnaast een signaal als deel A en deel B ver uit elkaar liggen.
+Elke leerling ziet zijn eigen uitslag in de leeromgeving op zijn profielpagina, onder **Mijn startprofiel**. Geen cijfer en geen ranglijst: drie domeinscores, negen onderdelen met een label (Startniveau, In ontwikkeling, Basis op orde, Extra uitdaging mogelijk), zijn sterke punten en drie concrete vervolgstappen. De docent ziet dezelfde kaart, met daarnaast een signaal als deel A en deel B ver uit elkaar liggen.
 
 ![Het startprofiel zoals een leerling het ziet](startprofiel-voorbeeld.png)
 
-*Voorbeeld met verzonnen gegevens. Deze leerling is sterk in data (6 van 6) en zwak in zelf maken en AI (2 van 6). De tekst bovenaan benoemt dat in zijn eigen woorden; rechtsonder staan drie vervolgstappen die bij zijn laagste onderdelen horen.*
+*Voorbeeld met verzonnen gegevens. Deze leerling is sterk in data (6 van 6) en staat op startniveau bij zelf digitale producten maken (1 van 6). De tekst bovenaan benoemt dat in zijn eigen woorden; rechtsonder staan drie vervolgstappen die bij zijn laagste onderdelen horen.*
 
 Waarom dit zo is vormgegeven: een leerling die 54 vragen maakt wil weten wat het betekende. Een percentage zegt hem niets, een label per onderdeel wel. En doordat hij zijn eigen zwakke punten in gewone taal terugleest, is het gesprek met de docent aan het begin van het jaar meteen concreet.
 
-### 7.5 Hoe HELIX per leerling op de uitslag inspeelt
+### 7.5 Wat de docent ziet
 
-De nulmeting is pas nuttig als er iets mee gebeurt. In HELIX gebeurt dat op drie manieren, en die werken vandaag al in de lessen die live staan.
+De nulmeting is voor de docent bedoeld, niet voor een dossier. Daarom zijn er twee beelden: het profiel van een leerling in één oogopslag, en daaronder precies wat die leerling bij elke vraag heeft ingevuld.
 
-**Extra uitleg waar het nodig is.** Elk onderdeel van het startprofiel is gekoppeld aan de lessen die erover gaan. Een leerling met Startniveau op "digitale producten creëren" krijgt bij die lessen de uitgebreide uitleg en een extra voorbeeld te zien; wie daar Sterk scoort, slaat die stap over en gaat door naar de opdracht. De les blijft dezelfde les, maar de weg erdoorheen verschilt.
+**Het startprofiel per leerling.** Vanuit het klasoverzicht opent de docent de leerling en ziet dezelfde kaart die de leerling zelf ziet, met een knop om hem opnieuw te laten berekenen als er antwoorden bij zijn gekomen.
 
-**Extra vragen of juist een uitdaging aan het eind van een paragraaf.** HELIX kijkt aan het eind van elke paragraaf naar wat de leerling werkelijk goed had. Zijn er kernvragen fout gebleven, dan volgt een herstelopdracht die precies over die stappen gaat. Is alles groen, dan volgt een uitdagende vraag die verder gaat dan de les. Dat gebeurt automatisch, per leerling, zonder dat de docent iets hoeft klaar te zetten.
+![Het startprofiel van een leerling, zoals de docent het ziet](docentprofiel-voorbeeld.png)
 
-**Een fout antwoord krijgt een tweede kans met de Digidocent.** Een fout beantwoorde vraag is in HELIX geen eindpunt. De leerling krijgt een nieuwe poging, en daarbij helpt de Digidocent - de AI-hulp in de les - volgens vaste huisregels: nooit het antwoord geven, één hint tegelijk, socratisch vragen stellen en wachten op de leerling. Het doel is dat de leerling zelf de denkfout vindt. De docent ziet achteraf hoe vaak die hulp is gebruikt, zodat "zelfstandig goed" en "goed na hulp" niet door elkaar lopen.
+*Echte gegevens van een leerling uit een brugklas; de naam is afgeschermd. Bovenaan de drie domeinscores, daaronder de negen onderdelen met hun label, onderaan de sterke punten en de vervolgstappen.*
+
+Per onderdeel staat hoeveel van de zes vragen goed waren, met een label dat zegt wat de docent ermee doet:
+
+| Label | Goed van de zes | Wat het betekent voor de les |
+| --- | --- | --- |
+| Startniveau | 0 of 1 | begin bij het begin: de uitgebreide uitleg en een extra voorbeeld |
+| In ontwikkeling | 2 of 3 | de gewone uitleg, met een extra oefening erna |
+| Basis op orde | 4 of 5 | de uitleg kort houden en door naar de opdracht |
+| Extra uitdaging mogelijk | 6 | de uitleg overslaan en een verdiepende opdracht geven |
+
+Onderaan de kaart staan **sterke punten** en **hier ga je mee verder**. Dat zijn geen aparte gegevens maar dezelfde uitslag in gewone taal: de drie hoogste onderdelen, en bij de drie laagste een concrete eerste stap. Voor de docent is dat de opening van het gesprek met een leerling; hij hoeft niet eerst zelf te bedenken wat hij zal zeggen.
+
+**Per leerling per vraag.** Klapt de docent een toets open, dan staat er van elke vraag wat de leerling heeft ingevuld, of het goed was, hoeveel pogingen het kostte en of de Digidocent erbij hielp.
+
+![De antwoorden per vraag van één leerling](nulmeting-per-vraag.png)
+
+*Deel A van dezelfde leerling: 21 van de 27 goed, met per vraag het gegeven antwoord. Bij vraag 8 staat waarom het fout ging; de vraag zelf is te lezen, dus de docent ziet of het een denkfout of een leesfout was.*
+
+Dat detail doet drie dingen die een percentage niet kan. Het laat zien **welke vraag een hele klas verkeerd had**, wat een klassikale uitleg van vijf minuten oplevert in plaats van negen losse gesprekken. Het laat het **verschil zien tussen zelfstandig goed en goed na hulp**: de kop telt de pogingen en de keren dat de Digidocent is gebruikt apart. En het maakt een **onverwachte uitslag controleerbaar**: wie een laag onderdeel niet vertrouwt, leest de zes vragen na en ziet meteen of de leerling de vraag niet begreep of de stof niet kende.
+
+De docent ziet dit alleen voor zijn eigen klassen. In dit rapport is de naam afgeschermd; de beelden staan er om te laten zien wat het systeem toont, niet wie deze leerling is.
+
+### 7.6 Hoe de leeromgeving per leerling op de uitslag inspeelt
+
+De nulmeting is pas nuttig als er iets mee gebeurt. In de leeromgeving gebeurt dat op drie manieren, en die werken vandaag al in de lessen die live staan.
+
+**Extra uitleg waar het nodig is.** Elk onderdeel van het startprofiel is gekoppeld aan de lessen die erover gaan. Een leerling met Startniveau op "digitale producten creëren" krijgt bij die lessen de uitgebreide uitleg en een extra voorbeeld te zien; wie daar "Extra uitdaging mogelijk" scoort, slaat die stap over en gaat door naar de opdracht. De les blijft dezelfde les, maar de weg erdoorheen verschilt.
+
+**Extra vragen of juist een uitdaging aan het eind van een paragraaf.** De leeromgeving kijkt aan het eind van elke paragraaf naar wat de leerling werkelijk goed had. Zijn er kernvragen fout gebleven, dan volgt een herstelopdracht die precies over die stappen gaat. Is alles groen, dan volgt een uitdagende vraag die verder gaat dan de les. Dat gebeurt automatisch, per leerling, zonder dat de docent iets hoeft klaar te zetten.
+
+**Een fout antwoord krijgt een tweede kans met de Digidocent.** Een fout beantwoorde vraag is geen eindpunt. De leerling krijgt een nieuwe poging, en daarbij helpt de Digidocent, de AI-hulp in de les, volgens vaste huisregels: nooit het antwoord geven, één hint tegelijk, socratisch vragen stellen en wachten op de leerling. Het doel is dat de leerling zelf de denkfout vindt. De docent ziet achteraf hoe vaak die hulp is gebruikt, zodat "zelfstandig goed" en "goed na hulp" niet door elkaar lopen.
 
 **Wat hier nog voor nodig is.** De koppeling tussen startprofiel en lesroute staat nu per les vast; de automatische start op het eigen niveau uit het profiel is uitgewerkt in het technische plan (fase 6) en nog niet gebouwd. De drie mechanismen hierboven werken al wel, en de nulmetinggegevens liggen klaar om ze te voeden.
 
@@ -224,13 +256,13 @@ De 22 lessen zijn niet ontstaan uit het bestaande lesmateriaal, maar uit zes reg
 
 **2. Zes blokken, in een opbouwende volgorde.** De volgorde is didactisch, niet alfabetisch. Blok A legt uit hoe een apparaat en een netwerk werken, want zonder dat begrip is "waarom is phishing gevaarlijk" iets om te onthouden in plaats van iets om te begrijpen. Blok B staat vooraan omdat brugklassers hun schoolaccount in de eerste weken nodig hebben. Blok E, zelf maken en programmeren, staat achteraan omdat het alles uit de eerdere blokken gebruikt. Blok F sluit af met de vraag wat dit alles met de samenleving doet.
 
-**3. Eén les is één hoofdstuk in de leeromgeving.** Elke les van 45 minuten is in HELIX één hoofdstuk met drie paragrafen: uitleg, voorbeeld, oefening en een check. Een leerling ziet per les een afgerond geheel, en een collega die invalt ziet wat er die les gebeurt zonder de hele leerlijn te kennen.
+**3. Eén les is één hoofdstuk in de leeromgeving.** Elke les van 45 minuten is in de leeromgeving één hoofdstuk met drie paragrafen: uitleg, voorbeeld, oefening en een check. Een leerling ziet per les een afgerond geheel, en een collega die invalt ziet wat er die les gebeurt zonder de hele leerlijn te kennen.
 
 **4. De nulmeting bepaalt de accenten.** De uitslag uit hoofdstuk 7 zit in de verdeling. Zelf digitale producten maken scoorde in alle leerwegen het laagst (41 tot 50 procent) en is daarom het grootste blok geworden: vijf van de 22 lessen gaan over ontwerpen, maken en programmeren. Data scoorde het hoogst, maar met de makkelijkste vragen; dat onderdeel houdt één volle les in plaats van twee.
 
 **5. Software is een middel, geen doel.** Er is geen Word-les en geen PowerPoint-les. Waar een leerling een tekstverwerker, een presentatie of een spreadsheet nodig heeft, gebeurt dat binnen een inhoudelijke les. Dat is een bewuste breuk met het huidige materiaal, waarin vier van de twintig lessen over Office gaan.
 
-**6. Elke les levert iets op.** Per les ligt vast welk bewijs de leerling maakt: een afsluitcheck, een uitwerking in HELIX of een product. Vijftien van de 22 lessen eindigen in een product. Dat is nodig om later te kunnen laten zien dat een kerndoel niet alleen behandeld, maar ook bereikt is.
+**6. Elke les levert iets op.** Per les ligt vast welk bewijs de leerling maakt: een afsluitcheck, een uitwerking in de leeromgeving of een product. Vijftien van de 22 lessen eindigen in een product. Dat is nodig om later te kunnen laten zien dat een kerndoel niet alleen behandeld, maar ook bereikt is.
 
 **Wat de verdeling niet is.** Geen methode en geen volgorde die vastligt voor de eeuwigheid. Elke les staat in één bestand, met zijn kerndoelonderdelen, leerdoelen, bewijs, differentiatie en de vakken waarbij hij past. Schuiven mag; de dekking wordt dan opnieuw geteld.
 
@@ -255,7 +287,7 @@ De volledige lijst staat in bijlage A. Enkele kenmerken:
 
 ### 8.3 Hoe één les eruitziet
 
-Elke les bestaat in HELIX uit drie paragrafen. Een paragraaf begint met een presentatie voor het digibord en bevat daarna uitleg, een voorbeeld uit de leefwereld van de leerling, een samenvatting en een korte quiz met directe feedback. Een les telt zo ongeveer zestien onderdelen, goed voor 45 minuten met ruimte voor verschil in tempo.
+Elke les bestaat uit drie paragrafen. Een paragraaf begint met een presentatie voor het digibord en bevat daarna uitleg, een voorbeeld uit de leefwereld van de leerling, een samenvatting en een korte quiz met directe feedback. Een les telt zo ongeveer zestien onderdelen, goed voor 45 minuten met ruimte voor verschil in tempo.
 
 Alle presentaties worden op dezelfde manier gemaakt en volgen één vormgevingssysteem, zodat een leerling in elk hoofdstuk dezelfde opbouw herkent: één denkstap per dia, een vaste kleurbetekenis en steeds een zichtbaar succescriterium. Hoofdstuk 10 laat zien wat daarvan nu al klaarstaat.
 
@@ -269,7 +301,7 @@ De matrix toont per kerndoel en per les welke rol de les heeft. **I** introducti
 
 ## 10. De stand van de leeromgeving vandaag
 
-Dit hoofdstuk beschrijft wat er op dit moment werkelijk in HELIX staat, zodat het MT het plan naast de praktijk kan leggen.
+Dit hoofdstuk beschrijft wat er op dit moment werkelijk klaarstaat in de digitale leeromgeving die ik voor mijn DV-lessen gebruik, zodat het MT het plan naast de praktijk kan leggen. Die omgeving is van het vak digitale vaardigheden; andere vakken werken er niet in.
 
 **Wat er live staat.**
 
@@ -287,6 +319,26 @@ Dit hoofdstuk beschrijft wat er op dit moment werkelijk in HELIX staat, zodat he
 **Wat er nog moet gebeuren.** De hoofdstukken 3 tot en met 23 van het curriculum worden in dezelfde vorm gebouwd; per les kost dat ongeveer een dagdeel, inclusief de presentatie. De volgorde volgt de blokken uit 8.2, zodat de klassen na de nulmeting zonder onderbreking verder kunnen.
 
 ## 11. De grens van twintig lessen
+
+<div class="kader" markdown="1">
+
+**Twintig lessen, naast een heel schooljaar gelegd**
+
+Een brugklasser heeft ongeveer 32 lesuren per week; bij 38 lesweken is dat zo'n 1.200 lesuren per jaar. Volgens SLO vragen alle kerndoelen van alle leergebieden samen ongeveer 70 procent daarvan. De overige 30 procent, negen à tien lesuren per week, is vrije ruimte voor de school. Bij DaCapo is die ruimte al grotendeels gevuld met mentoraat, LOB en de DIF-uren.
+
+Digitale geletterdheid is bij DaCapo geen schoolvak. Het heeft tot de kerstvakantie een plek in het DIF-uur, dat het deelt met rekenen en begrijpend lezen.
+
+| | Lesuren per jaar | Aandeel |
+| --- | --- | --- |
+| Een heel schooljaar in klas 1 | ± 1.200 | 100% |
+| Vrije ruimte buiten de kerndoelen | ± 360 | 30% |
+| Digitale geletterdheid | 20 tot 24 | ongeveer 2% |
+
+Ongeveer twee procent van de onderwijstijd in klas 1, en niets in klas 2, voor een leergebied met eigen wettelijke kerndoelen waarop vanaf 2031 de inspectie toeziet.
+
+*Aanname: 32 lesuren van 45 minuten per week en 38 lesweken. Bij 30 of 33 lesuren per week blijft het aandeel van digitale geletterdheid rond de 2 procent.*
+
+</div>
 
 **Analyse.** Met twintig lessen komt elk onderdeel één keer aan bod, maar komen er 14 van de 45 daarna niet meer terug. Met 22 lessen zijn dat er nog 5. Wat dan overblijft is het verschil tussen **dekking** en **leren**:
 
@@ -347,9 +399,9 @@ De 22 DV-lessen plus zestien vaste momenten verspreid over het jaar in de lessen
 | past bij SLO, dat de samenhang met andere vakken zelf noemt | zonder eigenaar en registratie verdampen de momenten |
 | vakdocenten hoeven niets nieuws uit te leggen | minder producten als bewijs binnen DV zelf |
 
-**Randvoorwaarden:** een eigenaar met tijd en mandaat, vaste weken in de jaarplanning, docentkaarten per routine (bijlage B), en registratie van elk vakmoment zodat zichtbaar blijft of het gebeurd is.
+**Randvoorwaarden:** een eigenaar met tijd en mandaat, vaste weken in de jaarplanning, collega's die de routines zelf kennen en kunnen voordoen (hoofdstuk 19), en registratie van elk vakmoment zodat zichtbaar blijft of het gebeurd is.
 
-**Aanvulling: oefenen in HELIX.** Na elk blok een herhaalronde van ongeveer vijftien minuten buiten de les, met een quiz en een spel. Goedkoop en goed voor onthouden, maar geen oefening of toepassing. Het werkt het best in combinatie met het hybride model.
+**Aanvulling: zelfstandig oefenen.** Na elk blok een herhaalronde van ongeveer vijftien minuten buiten de les, met een quiz en een spel. Goedkoop en goed voor onthouden, maar geen oefening of toepassing. Het werkt het best in combinatie met het hybride model.
 
 ## 15. Vergelijking van de scenario's
 
@@ -359,7 +411,7 @@ Berekend over de 45 onderdelen. "Stevig verankerd" betekent: na de introductie m
 
 {{SCENARIOCIJFERS}}
 
-Legenda: **A20** 20 DV-lessen, **A** 22 DV-lessen, **B** 40 DV-lessen in klas 1, **C** 22 lessen + 16 vakmomenten, **D** 22 lessen + oefenen in HELIX, **E** 22 lessen in klas 1 + 18 in klas 2, **C+D** hybride met oefenen in HELIX.
+Legenda: **A20** 20 DV-lessen, **A** 22 DV-lessen, **B** 40 DV-lessen in klas 1, **C** 22 lessen + 16 vakmomenten, **D** 22 lessen + zelfstandig oefenen, **E** 22 lessen in klas 1 + 18 in klas 2, **C+D** hybride met zelfstandig oefenen.
 
 ### 15.2 Op onderwijsaspecten
 
@@ -398,7 +450,7 @@ Drie dingen die het MT hieruit kan meenemen:
 
 1. **De derde kolom kost geen extra uren in klas 1.** 22 lessen in klas 1 plus 18 in klas 2 geeft exact dezelfde verankering als 40 lessen in klas 1, en sluit aan bij hoe de kerndoelen geschreven zijn: ze gelden voor de hele onderbouw, dus klas 1 én 2. Er is alleen nog geen plek voor in het rooster van klas 2.
 2. **Het hybride model is de goedkoopste winst**, maar verplaatst het werk naar de vakken: 30 onderdelen komen dan in een ander vak terug, en dat vraagt afstemming (hoofdstuk 18).
-3. **Wij bouwen nu op 20 tot 22 lessen in klas 1.** Het materiaal in HELIX is daarop gemaakt. Komt er later tijd bij, dan hoeft het curriculum niet opnieuw: de extra lessen zijn uitgewerkt en te koppelen aan de bestaande blokken.
+3. **Wij bouwen nu op 20 tot 22 lessen in klas 1.** Het lesmateriaal is daarop gemaakt. Komt er later tijd bij, dan hoeft het curriculum niet opnieuw: de extra lessen zijn uitgewerkt en te koppelen aan de bestaande blokken.
 
 ## 16. Doorlopende lijn klas 1 tot en met 4
 
@@ -457,40 +509,40 @@ In LOB ligt twee keer een directe koppeling: **"wie ben jij online"** (23B) als 
 
 Elke les in het curriculum heeft een veld met de vakken waar hij bij past. In het hybride scenario zijn dat zestien momenten, die 30 van de 45 onderdelen in een ander vak laten terugkomen. Maar dat ontwerp is gemaakt op grond van wat logisch lijkt, niet op grond van wat er in die vakken werkelijk gebeurt.
 
-**Daarom eerst de vakgroepenquête.** Vorig schooljaar is al voorbereid om een korte digitale enquête in de vakgroepen uit te zetten: welke onderdelen van digitale geletterdheid komen in jouw vak nu al aan bod, hoe vaak, en met welk bewijs? Die enquête is niet uitgezet, en ze is nog even nuttig als toen. Ze levert drie dingen op:
+**Daarom eerst de vakgroepenquête.** Die enquête bestaat al. Vorig schooljaar is er een webapplicatie voor gebouwd: per kerndoel een korte vragenreeks (komt het aan bod, hoe vaak, is er bewijs), een beheerdersoverzicht dat de antwoorden per vakgroep samenvat, en een export naar Word en PDF. Ze is destijds niet uitgezet. Technisch is ze klaar om deze periode de deur uit te gaan; wat ontbreekt is het besluit dat de vakgroepen hem invullen. Ze levert drie dingen op:
 
 1. **Een kaart van wat er al gebeurt.** Waarschijnlijk oefenen leerlingen bij Nederlands al met bronnen beoordelen en bij wiskunde al met grafieken lezen. Dat hoeft DV dan niet opnieuw te introduceren, maar wel te benoemen met dezelfde woorden.
 2. **Een realistische lijst vakmomenten.** De zestien momenten uit het hybride scenario kunnen dan worden aangeboden aan de vakken waar ze het beste passen, in plaats van toebedeeld.
 3. **Een nulmeting voor de school zelf.** Bij de invoering van de kerndoelen in 2027 moet de school kunnen laten zien waar digitale geletterdheid zit. Deze enquête is daarvan de eerste meting; herhaald na een jaar laat ze zien of er beweging is.
 
-De enquête is kort te houden: negen kerndoelen, per kerndoel drie vragen (komt het aan bod, hoe vaak, is er bewijs), plus één open vraag. Tien minuten per vakgroep, digitaal af te nemen en automatisch samen te vatten.
+De afname kost een vakgroep ongeveer tien minuten. Het uitzetten ervan is beslispunt 9 in hoofdstuk 25.
 
 ## 18. De rol van vakdocenten
 
 | Wie | Verantwoordelijk voor |
 | --- | --- |
-| DV-docent | de lessen in klas 1 (en klas 2 als die er komt); de routines; de docentkaarten; coördinatie van vakmomenten |
+| DV-docent | de lessen in klas 1 (en klas 2 als die er komt); de routines; coördinatie van vakmomenten |
 | Vakdocenten | de vakmomenten in hun eigen vak; dezelfde routinenamen gebruiken |
 | Mentoren | online gedrag, welzijn en LOB |
 | Profieldocenten klas 3-4 | toepassing in het beroepsveld |
 | Teamleiding | tijd voor coördinatie, plaats in de jaarplanning, jaarlijkse evaluatie |
 
-Het grootste risico van een doorlopende lijn is dat elke docent opnieuw begint. Drie dingen voorkomen dat: dezelfde namen voor de routines, een zichtbaar overzicht in HELIX van wat een klas al heeft gehad, en een vaste start in klas 2 die de routines herhaalt.
+Het grootste risico van een doorlopende lijn is dat elke docent opnieuw begint. Drie dingen voorkomen dat: dezelfde namen voor de routines, een zichtbaar overzicht van wat een klas al heeft gehad, en een vaste start in klas 2 die de routines herhaalt.
 
 ## 19. Een gemeenschappelijke digitale taal
 
 Zes routines die DV aanleert, zodat een vakdocent kan zeggen "doe de broncheck" zonder het opnieuw uit te leggen:
 
-| Routine | Aangeleerd in | Kern | Waar vakken hem gebruiken |
-| --- | --- | --- | --- |
-| Storingsplan | les 1 | zes stappen om een digitaal probleem zelf op te lossen | elk vak |
-| Privacycheck | les 7 | welke gegevens, nodig, wie krijgt ze, kan het minder? | mentor, wiskunde (enquête), Z&W |
-| Broncheck | les 9 | wie, wanneer, waarom, en klopt het elders? | Nederlands, elk werkstuk |
-| Datacheck | les 12 | vraag, data, wat zie je, wat níét? | wiskunde, natuur en techniek, LOB |
-| AI-check | les 15 | wat vroeg ik, klopt het, wat is van mij, mocht het? | elk vak waar AI mag |
-| Ontwerpcyclus | les 16 | doel en doelgroep, eisen, versie 1, feedback, versie 2 | beeldende vorming, praktijk- en profielvakken |
+| Routine | Aangeleerd in | Wat de leerling doet |
+| --- | --- | --- |
+| Storingsplan | les 1 | Bij een digitaal probleem niet meteen hulp roepen of de laptop herstarten, maar zes vaste stappen doorlopen: de melding lezen, nagaan of het om één programma gaat of om alles, het programma opnieuw openen, de verbinding controleren, na opslaan opnieuw opstarten. Pas daarna hulp vragen, en dan kunnen vertellen wat hij al heeft geprobeerd. |
+| Privacycheck | les 7 | Voordat hij een app, website of formulier gebruikt, vier vragen stellen: welke gegevens vraagt het, zijn die echt nodig, wie krijgt ze en hoe lang worden ze bewaard, en kan ik minder delen of iets uitzetten? |
+| Broncheck | les 9 | Bij elke bron vier vragen stellen: wie heeft het gemaakt, wanneer, met welk doel (informeren, verkopen of overtuigen), en staat het ook in een andere betrouwbare bron? Die laatste vraag weegt het zwaarst. |
+| Datacheck | les 12 | Bij elke tabel, grafiek of meting nagaan: wat was de vraag, welke data zijn er (van wie en hoeveel), wat laat de grafiek zien, en wat laten de data níét zien? Zo trekt hij geen conclusie over "iedereen" uit tien antwoorden. |
+| AI-check | les 15 | Bij alles wat AI voor hem maakt: wat heb ik precies gevraagd, klopt het (gecontroleerd met een andere bron, niet met dezelfde AI), wat heb ik zelf veranderd of toegevoegd, en mocht AI hier en heb ik dat vermeld? |
+| Ontwerpcyclus | les 16 | Een product in vijf stappen maken: doel en doelgroep bepalen, drie tot vijf eisen opstellen, versie 1 maken, feedback vragen die aan die eisen gekoppeld is, en versie 2 maken met een korte uitleg van wat er veranderde en waarom. |
 
-**Ondersteuning voor collega's:** een docentkaart van één pagina per routine (bijlage B), een microtraining van twintig minuten in een teamvergadering, een standaardrubric voor producten, en een overzicht in HELIX van welke routines een klas al heeft gehad.
+**Wat dit van collega's vraagt.** "Doe de broncheck" werkt alleen als de docent die het zegt zelf weet wat de vier vragen zijn en ze in zijn eigen vak kan voordoen. Een naam op het bord is nog geen routine. Een gemeenschappelijke taal vraagt dus eerst dat de docenten die hem gebruiken zelf geschoold zijn: dat ze de routines uit de eerste kolom kennen, de stappen kunnen uitleggen met een voorbeeld uit hun eigen vak, en zien wanneer een leerling een stap overslaat. Daarover gaan beslispunt 8 en bijlage B.
 
 ## 20. Vakoverstijgende projecten
 
@@ -519,25 +571,13 @@ Met alle profielen vanaf volgend jaar op één locatie worden projecten over pro
 | 3 Samen maken | AI maakt mee; de leerling verantwoordt wat van hem is | karakters maken met Copilot |
 | 4 Vrij | AI vrij, met volledige verantwoording | een eigen onderzoek in klas 4 |
 
-**Ontwerpkeuze:** de ladder wordt dit jaar in de DV-lessen uitgeprobeerd en daarna voorgesteld als schoolbrede afspraak. Dan weet een leerling bij elk vak wat er mag.
+**Ontwerpkeuze: de ladder is een docentafspraak, geen lesstof.** Hij staat niet als leerdoel in een les en wordt niet getoetst. De docent noemt bij elke opdracht hardop welke trede geldt, en dat is genoeg: de leerling hoort het vijf keer per periode en weet daarna wat de treden betekenen. In klas 1 hangt hij aan de AI-check uit les 15 (wat vroeg ik, klopt het, wat is van mij, mocht het?); dat is de enige plek waar een leerling leert wanneer AI-gebruik bij schoolwerk eerlijk is.
+
+Zo wordt de ladder dit jaar in de DV-lessen uitgeprobeerd en daarna voorgesteld als schoolbrede afspraak. Dan weet een leerling bij elk vak wat er mag, en hoeft geen enkel vak er een les voor in te ruimen.
 
 **Werkvormen die het proces zichtbaar maken:** tussenproducten inleveren, een korte AI-verantwoording, slechte AI-uitvoer laten verbeteren, werken met eigen klasdata, een mondelinge toelichting van twee minuten, en meekijken in de versiegeschiedenis.
 
-## 22. Toekomstbestendige digitale competenties
-
-De leerlingen van nu zitten over drie jaar in klas 4. Wat een knop in Word doet, kan dan anders zijn. Het curriculum onderscheidt daarom drie lagen, en toetst alleen de eerste:
-
-| Duurzaam concept | Hulpmiddel van nu | Tijdelijke handeling |
-| --- | --- | --- |
-| informatie structureren, samen bewerken en delen | Word, OneDrive | een inhoudsopgave invoegen |
-| informatie presenteren voor een doelgroep | PowerPoint, Canva | een dia-overgang kiezen |
-| doelgericht met AI werken en de uitkomst controleren | Copilot | een vaste promptformule |
-| data onderzoeken en eerlijk weergeven | Excel | een specifiek grafiekmenu |
-| een probleem in stappen oplossen | een blokkenomgeving | de knoppen van die omgeving |
-| je accounts en gegevens beschermen | tweestapsverificatie | een specifieke app |
-| bronnen beoordelen | zoekmachine, factcheck-sites | een specifieke zoekfunctie |
-
-## 23. Toekomstscenario's
+## 22. Toekomstscenario's
 
 Geen voorspellingen, maar drie mogelijke richtingen, en per richting de vraag: wat moet een leerling dan nog zelf kunnen?
 
@@ -549,9 +589,9 @@ Geen voorspellingen, maar drie mogelijke richtingen, en per richting de vraag: w
 
 **Analyse.** In alle drie de richtingen blijven dezelfde kernen overeind: een probleem helder formuleren, uitkomsten controleren, begrijpen hoe systemen en data werken, veiligheid en privacy, en verantwoordelijkheid voor het resultaat. Dat zijn precies de onderdelen die in het curriculum de meeste ruimte krijgen. Softwarebediening, die in alle richtingen minder belangrijk wordt, krijgt bewust geen eigen lessen.
 
-## 24. Concept voor een SLO-dashboard
+## 23. Concept voor een SLO-dashboard
 
-Een overzicht in HELIX waarmee docent en teamleiding op elk moment zien waar de school staat met de kerndoelen. Dit is een functioneel concept; het is nog niet gebouwd.
+Een overzicht waarmee docent en teamleiding op elk moment zien waar de school staat met de kerndoelen. Dit is een functioneel concept; het is nog niet gebouwd. Waar het komt te staan is een aparte keuze: dit gaat over alle vakken, en de leeromgeving van DV ziet alleen de DV-lessen.
 
 **Per kerndoel**
 
@@ -567,29 +607,32 @@ Een overzicht in HELIX waarmee docent en teamleiding op elk moment zien waar de 
 
 De informatie die daarvoor per les nodig is, ligt al vast in het curriculum: primair kerndoel, onderdelen, rol per onderdeel en soort evidence.
 
-## 25. Organisatorische invoering
+## 24. Organisatorische invoering
 
 | Wanneer | Wat |
 | --- | --- |
-| Schooljaar 2026-2027 | de 22 lessen in de DIF-uren van klas 1; de AI-ladder uitproberen in DV; eindmeting in HELIX aan het eind van het jaar |
+| Schooljaar 2026-2027 | de 22 lessen in de DIF-uren van klas 1; de AI-ladder uitproberen in DV als mondelinge afspraak per opdracht; eindmeting aan het eind van het jaar |
 | Voorjaar 2027 | besluit van het MT over het scenario en over een plek voor DV in klas 2; afspraken met vakgroepen over vakmomenten (bij het hybride scenario) |
 | Juni 2027 | evaluatie: resultaten van de eindmeting naast de nulmeting; bijstellen van het curriculum |
-| Schooljaar 2027-2028 | klas 2 volgens het gekozen scenario; microtraining voor collega's; de AI-ladder schoolbreed (bij akkoord); alle profielen op de Havikstraat |
+| Schooljaar 2027-2028 | klas 2 volgens het gekozen scenario; scholing van collega's in de routines (bij akkoord op beslispunt 8); de AI-ladder schoolbreed (bij akkoord); alle profielen op de Havikstraat |
 | Vanaf 2027 | de kerndoelen digitale geletterdheid treden wettelijk in werking; de school kan overstappen |
 | Augustus 2031 | verplicht voor alle scholen; toezicht van de inspectie |
 
 **Wat het van de school vraagt:** tijd voor coördinatie bij het hybride scenario, een plek in het rooster voor klas 2, en een jaarlijks evaluatiemoment.
 
-## 26. Beslispunten voor het MT
+## 25. Beslispunten voor het MT
 
 1. **Hoeveel DV-tijd in klas 1?** 20 tot 24 lessen binnen de DIF-uren, zoals nu, of meer.
-2. **Komt er vanaf 2027-2028 een plek voor DV in klas 2?** Zo ja, waar: DIF-uren doortrekken naar klas 2, een deel van de LOB-tijd, of een eigen uur. Zonder plek in klas 2 hangt de verankering af van andere vakken en van HELIX.
+2. **Komt er vanaf 2027-2028 een plek voor DV in klas 2?** Zo ja, waar: DIF-uren doortrekken naar klas 2, een deel van de LOB-tijd, of een eigen uur. Zonder plek in klas 2 hangt de verankering volledig af van andere vakken.
 3. **Worden andere vakken medeverantwoordelijk?** Zo ja: welke vakken, wie is eigenaar, en hoeveel coördinatietijd krijgt die?
-4. **Mag van leerlingen worden verwacht dat ze buiten de les in HELIX oefenen?** Als huiswerk of in een studie-uur.
+4. **Mag van leerlingen worden verwacht dat ze buiten de les zelfstandig oefenen?** Als huiswerk of in een studie-uur.
 5. **Wordt de AI-ladder na dit jaar een schoolbrede afspraak?**
 6. **Wanneer stapt DaCapo over op de nieuwe kerndoelen digitale geletterdheid?** Wettelijk kan het vanaf 2027, verplicht vanaf augustus 2031.
+7. **Krijgt digitale geletterdheid een zichtbare plek in de lessentabel van klas 1 tot en met 4?** Nu staat er alleen tijd in klas 1, binnen de DIF-uren. De kerndoelen vragen klas 1 en 2; over klas 3 en 4 zegt niemand iets. Zie bijlage B.
+8. **Wat doen we aan scholing van collega's?** De kerndoelen komen terecht in vakken waar de docent AI, data en veiligheid zelf nog aan het leren is. Niets doen is ook een keuze, met als gevolg dat digitale geletterdheid van één docent blijft. Zie bijlage B.
+9. **Zetten we de vakgroepenquête dit schooljaar uit?** De applicatie is klaar (17.4). Nodig is een besluit dat de vakgroepen hem invullen, en een moment in de jaarplanning.
 
-## 27. Bronnen
+## 26. Bronnen
 
 - SLO (2026). *Kerndoelen voortgezet onderwijs*, derde druk, 15 april 2026. slo.nl
 - SLO (2026). *Veelgestelde vragen actualisatie kerndoelen*, bijgewerkt 10 september 2026. slo.nl
@@ -600,7 +643,7 @@ De informatie die daarvoor per les nodig is, ligt al vast in het curriculum: pri
 - Netwerk Mediawijsheid, *Week van de Mediawijsheid 2026* (6-13 november 2026) en MediaMasters voor de brugklas. netwerkmediawijsheid.nl
 - Safer Internet Centre Nederland, *Safer Internet Day 2027* (9 februari 2027). saferinternetcentre.nl
 - Wijzer in geldzaken, *Week van het geld 2027* (15-19 maart 2027). weekvanhetgeld.nl
-- Eigen onderzoek, september 2026: curriculumanalyse, nulmeting digitale vaardigheden (stand 22 september 2026: 143 van de 145 brugklassers begonnen, 86 allebei de delen af), en de onderliggende curriculumbestanden in HELIX. De telling erachter staat in `docs/curriculum/nulmeting-stand-per-niveau.mjs`.
+- Eigen onderzoek, september 2026: curriculumanalyse, nulmeting digitale vaardigheden (stand 22 september 2026: 143 van de 145 brugklassers begonnen, 86 allebei de delen af), en de onderliggende curriculumbestanden. De telling erachter staat in `docs/curriculum/nulmeting-stand-per-niveau.mjs`.
 
 <div class="bijlage">
 
@@ -612,10 +655,61 @@ De informatie die daarvoor per les nodig is, ligt al vast in het curriculum: pri
 
 <div class="bijlage">
 
-## Bijlage B. Docentkaarten
+## Bijlage B. Voorsorteren: waarom digitale geletterdheid breder moet dan de kerndoelen
 
-Eén pagina per routine, voor een collega die een routine in zijn eigen vak wil gebruiken zonder zelf DV te geven.
+*Deze bijlage is een gespreksdocument, geen beleidsvoorstel. De hoofdstukken 3 tot en met 9 gaan over wat de kerndoelen vragen; dat voeren we uit, met de kerndoelen die er liggen. Deze bijlage gaat over de vraag daarnaast: is dat genoeg, en wat betekent het voor DaCapo als het antwoord nee is?*
 
-{{DOCENTKAARTEN}}
+### B.1 De rekensom van twintig jaar
+
+De kerndoelen voor de onderbouw van het voortgezet onderwijs gingen in op 1 augustus 2006. Er waren er 58, en ze zijn sindsdien niet veranderd. In diezelfde twintig jaar kwamen de smartphone, sociale media, streaming, de cloud en, sinds eind 2022, generatieve AI in de klas terecht. Het curriculum stond stil; waar het over gaat niet.
+
+![Twintig jaar tussen twee herzieningen, en een leerling die er dwars doorheen loopt](tijdlijn-kerndoelen.png)
+
+*De drie sporen lopen niet gelijk op. De onderste lijn is de leerling die dit jaar bij ons begon.*
+
+Trek die lijn door en de volgende herziening valt rond 2046. **Eerlijk is eerlijk: dat is een redenering, geen feit.** Er staat geen herzieningstermijn in de wet, en SLO werkt op dit moment aan een vorm van periodiek curriculumonderhoud; daar lopen tot eind 2026 pilots voor. Het kan dus sneller gaan dan twintig jaar. Maar er ligt vandaag geen vastgelegde cyclus en geen datum. De enige harde data die we hebben, zijn: invoering in 2027 en verplicht vanaf augustus 2031.
+
+En daar zit het punt. De leerling die dit jaar in onze brugklas begon, doet in 2031 examen. Hij is de school uit voordat het toezicht op de nieuwe kerndoelen goed en wel begint, en decennia voordat iemand landelijk opnieuw kijkt of die kerndoelen nog kloppen. Wat wij in deze jaren regelen, is zijn digitale geletterdheid. Er komt geen landelijke correctie meer op tijd voor hem.
+
+### B.2 Wat er verschuift: van bediening naar regie
+
+De eerlijke vraag bij ons eigen lesmateriaal: **waarom leren we een leerling nog een PowerPoint opmaken als AI dat sneller en beter doet?**
+
+Het antwoord is niet dat AI het toch niet zo goed kan. Het antwoord is dat de handeling waarde verliest en het oordeel niet. Wie een dia laat maken, moet nog steeds weten voor wie de presentatie is, wat er wel en niet in hoort, of de cijfers erin kloppen, en wat hij ervan zelf kan verantwoorden. Het curriculum maakt die scheiding al. Getoetst wordt wat blijft: een doel bepalen, iets voor een doelgroep maken, een uitkomst controleren. Niet de knoppen van het programma van dit moment. Dat is de goede kant op.
+
+Maar er schuift meer op dan wij nu opvangen. De arbeidsmarkt vraagt door AI minder om mensen die een vakhandeling beheersen, en meer om mensen met **innovatievermogen, initiatief en ondernemerschap**: mensen die zelf zien wat er moet gebeuren, iets nieuws proberen, en verantwoordelijkheid nemen voor de uitkomst.
+
+**Waar vinden we dat terug in ons eigen curriculum? Vrijwel nergens.** Innovatie, initiatief en ondernemerschap staan niet als leerdoel in het DV-programma, en ook niet als expliciete lijn in de andere onderbouwvakken. Het dichtstbijzijnde is kerndoel 22A, zelf digitale producten maken, en dat is precies het onderdeel waar onze leerlingen in de nulmeting het laagst scoren: 41 tot 50 procent, in alle drie de leerwegen (hoofdstuk 7).
+
+Dat is geen verwijt aan wie dan ook, want het staat ook niet in de kerndoelen. Maar het betekent wel dat we het er niet vanzelf bij krijgen. Wat een leerling nodig heeft om regie te voeren, leert hij niet van meer uitleg maar van meer maken: opdrachten met een open einde, waar niet één goed antwoord op is, waarbij hij zijn eigen keuzes moet verantwoorden en zijn eigen product moet kunnen uitleggen. Dat kost lestijd, en dat is de reden dat de scenariovergelijking in hoofdstuk 15 niet alleen over dekking gaat maar over verankering.
+
+### B.3 Waarom de school niet kan wachten
+
+Drie redenen om nu te beginnen in plaats van in 2031.
+
+**1. De leerling gaat sneller dan het curriculum.** Dat is de rekensom uit B.1. Een leerling doorloopt onze school in vier jaar; het landelijke curriculum vernieuwt zich in tientallen jaren. Elk jaar wachten is een lichting die het zonder doet.
+
+**2. Kerndoelen zijn een bodem, geen plafond.** SLO schrijft geen lesuren voor en geen te bereiken niveau. Een school die precies de bodem legt, levert leerlingen af die formeel gedekt zijn en praktisch niet veel kunnen. De nulmeting laat zien hoe dun die bodem is: 64 procent goed op vragen die het startniveau meten, en het laagst op het onderdeel dat er het meest toe doet.
+
+**3. Collega's meekrijgen kost jaren, geen studiemiddag.** Dit is de traagste factor, en de belangrijkste. De kerndoelen komen straks terecht in vakken waar de docent AI, data en online veiligheid zelf nog aan het leren is. Zolang dat zo is, blijft digitale geletterdheid het vak van één docent en hangt de hele leerlijn aan één persoon. Wie in 2031 een school wil hebben waar digitale geletterdheid overal zit, moet in 2026 beginnen met de mensen, niet met het lesmateriaal.
+
+Voorsorteren betekent in de praktijk drie dingen: digitale geletterdheid een zichtbare plek geven in de lessentabel en niet alleen in de restruimte van de DIF-uren; collega's scholen; en eerst meten waar het nu al zit, met de vakgroepenquête uit 17.4.
+
+### B.4 Twee vragen aan het MT
+
+**Vraag 1: welke plek krijgt digitale geletterdheid in de lessentabel van klas 1 tot en met 4?**
+
+Vandaag staat er tijd in klas 1, binnen de DIF-uren, gedeeld met rekenen en begrijpend lezen. In klas 2 staat niets, terwijl de kerndoelen over klas 1 en 2 samen gaan. Over klas 3 en 4 zegt geen enkele regeling iets, en juist daar zitten de leerlingen die het volgend jaar nodig hebben: stage, sollicitatie, een profielwerkstuk waar AI aan meewerkt.
+
+De opties lopen van klein naar groot: de DIF-uren doortrekken naar klas 2; digitale geletterdheid meenemen in projectweken en LOB in klas 2 tot en met 4, zoals hoofdstuk 17 beschrijft; of een eigen uur in de lessentabel. Het antwoord bepaalt hoeveel van hoofdstuk 16 werkelijkheid wordt en hoeveel papier blijft.
+
+**Vraag 2: wat doen we aan de scholing van collega's?**
+
+Ook hier drie niveaus. **Niets doen** is een keuze met een voorspelbare uitkomst: DV blijft van één docent, en valt weg als die docent wegvalt. **Een gedeelde taal** is de eerste stap: de zes routines uit hoofdstuk 19 in de vakgroepen behandelen, zodat elke docent dezelfde woorden gebruikt voor bronnen beoordelen, AI-gebruik verantwoorden en veilig omgaan met gegevens. Dat is meer dan een uitdeelblad: een docent moet de stappen zelf beheersen en kunnen voordoen voordat hij ze van een leerling kan vragen. **Een scholingslijn** is de echte stap: tijd en geld, gespreid over twee schooljaren, met een eigenaar.
+
+Wat daarvoor als eerste nodig is, is de vakgroepenquête: zonder te weten wat collega's nu al doen en waar ze zelf tegenaan lopen, is elke scholing een gok.
+
+*Deze bijlage vraagt niet om een ander standpunt over de kerndoelen. Die voeren we uit zoals ze komen. Ze vraagt of DaCapo daarnaast iets extra's doet, en zo ja: of we dat dit schooljaar besluiten of over vijf jaar.*
 
 </div>
+

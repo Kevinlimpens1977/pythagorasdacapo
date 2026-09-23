@@ -26,9 +26,9 @@ const scenarios = [
   { code: 'A', naam: '22 DV-lessen', eenheden: basis, dvLessen: 22, extraTijd: 'geen' },
   { code: 'B', naam: '40 DV-lessen in klas 1', eenheden: [...basis, ...extra], dvLessen: 40, extraTijd: '18 DV-lessen in klas 1' },
   { code: 'C', naam: '22 DV-lessen + 16 vakmomenten', eenheden: [...basis, ...vak], dvLessen: 22, extraTijd: '16 momenten binnen bestaande vaklessen' },
-  { code: 'D', naam: '22 DV-lessen + oefenen in HELIX', eenheden: [...basis, ...oefenrondes], dvLessen: 22, extraTijd: '6 x 15 minuten zelfstandig in HELIX' },
+  { code: 'D', naam: '22 DV-lessen + zelfstandig oefenen', eenheden: [...basis, ...oefenrondes], dvLessen: 22, extraTijd: '6 x 15 minuten zelfstandig' },
   { code: 'E', naam: 'onderbouwlijn: 22 in klas 1 + 18 in klas 2', eenheden: [...basis, ...extra], dvLessen: 40, extraTijd: '18 DV-lessen in klas 2' },
-  { code: 'C+D', naam: '22 DV-lessen + vakmomenten + HELIX', eenheden: [...basis, ...vak, ...oefenrondes], dvLessen: 22, extraTijd: 'vakmomenten en 6 x 15 minuten HELIX' }
+  { code: 'C+D', naam: '22 DV-lessen + vakmomenten + zelfstandig oefenen', eenheden: [...basis, ...vak, ...oefenrondes], dvLessen: 22, extraTijd: 'vakmomenten en 6 x 15 minuten zelfstandig' }
 ];
 
 const meet = (eenheden) => {

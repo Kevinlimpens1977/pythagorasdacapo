@@ -38,32 +38,38 @@ const profiel = {
   leerlingTekst: 'Je bent sterk in data en in veilig online zijn. Zelf dingen maken en AI zijn nog nieuw voor je: daar gaan je eerste lessen over.',
   domeinen: [
     { domein: 'Praktische kennis en vaardigheden', percentage: 71 },
-    { domein: 'Ontwerpen en maken', percentage: 42 },
-    { domein: 'De gedigitaliseerde wereld', percentage: 72 }
+    { domein: 'Ontwerpen en maken', percentage: 33 },
+    { domein: 'De gedigitaliseerde wereld', percentage: 61 }
   ],
   deelvaardigheden: [
-    { onderdeel: 'Digitale systemen', goed: 5, label: 'Op weg' },
-    { onderdeel: 'Digitale media en informatie', goed: 4, label: 'Op weg' },
-    { onderdeel: 'Data en dataverwerking', goed: 6, label: 'Sterk' },
-    { onderdeel: 'Artificiële intelligentie', goed: 2, label: 'Startniveau' },
-    { onderdeel: 'Digitale producten creëren', goed: 2, label: 'Startniveau' },
-    { onderdeel: 'Programmeren', goed: 3, label: 'Op weg' },
-    { onderdeel: 'Veiligheid en privacy', goed: 5, label: 'Op weg' },
-    { onderdeel: 'Jezelf en de ander', goed: 5, label: 'Op weg' },
-    { onderdeel: 'Digitale technologie en samenleving', goed: 2, label: 'Startniveau' }
+    { onderdeel: 'Digitale systemen', goed: 5, label: 'Basis op orde' },
+    { onderdeel: 'Digitale media en informatie', goed: 4, label: 'Basis op orde' },
+    { onderdeel: 'Data en dataverwerking', goed: 6, label: 'Extra uitdaging mogelijk' },
+    { onderdeel: 'Artificiële intelligentie', goed: 2, label: 'In ontwikkeling' },
+    { onderdeel: 'Digitale producten creëren', goed: 1, label: 'Startniveau' },
+    { onderdeel: 'Programmeren', goed: 3, label: 'In ontwikkeling' },
+    { onderdeel: 'Veiligheid en privacy', goed: 5, label: 'Basis op orde' },
+    { onderdeel: 'Digitale technologie, jezelf en de ander', goed: 4, label: 'Basis op orde' },
+    { onderdeel: 'Digitale technologie, samenleving en wereld', goed: 2, label: 'In ontwikkeling' }
   ],
-  sterkePunten: ['Data en dataverwerking', 'Veiligheid en privacy', 'Jezelf en de ander'],
+  sterkePunten: ['Data en dataverwerking', 'Veiligheid en privacy', 'Digitale systemen'],
   adviezen: [
     { onderdeel: 'Digitale producten creëren', advies: 'Maak stap voor stap een digitaal product: doel, ontwerp, testen, verbeteren.' },
     { onderdeel: 'Artificiële intelligentie', advies: 'Ontdek wat AI wel en niet kan, en wanneer je een AI-antwoord moet controleren.' },
-    { onderdeel: 'Digitale technologie en samenleving', advies: 'Kijk naar wat digitale technologie verandert in werk, samenleving en wereld.' }
+    { onderdeel: 'Digitale technologie, samenleving en wereld', advies: 'Kijk naar wat digitale technologie verandert in werk, samenleving en wereld.' }
   ]
 };
 
 // Dezelfde labelkleuren als src/lib/nulmetingProfielWeergave.js.
-const labelKlasse = (label) => (label === 'Startniveau'
-  ? 'bg-orange-50 text-orange-700 border-orange-200'
-  : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)] border-[var(--helix-border)]');
+const LABEL_KLEUR = {
+  Startniveau: 'bg-orange-50 text-orange-700 border-orange-200',
+  'In ontwikkeling': 'bg-amber-50 text-amber-800 border-amber-200',
+  'Basis op orde': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Extra uitdaging mogelijk': 'bg-blue-50 text-blue-700 border-blue-200'
+};
+
+const labelKlasse = (label) => LABEL_KLEUR[label]
+  || 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)] border-[var(--helix-border)]';
 
 const domeinTegel = (domein) => `
   <div class="rounded-xl border border-[var(--helix-border)] bg-white p-3">
