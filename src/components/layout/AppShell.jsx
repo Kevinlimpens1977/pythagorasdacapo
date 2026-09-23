@@ -9,6 +9,8 @@ import TestleerlingBalk from '../admin/TestleerlingBalk';
 import Meldbel from '../common/Meldbel';
 import { StudentBugReportContext } from '../studentBugReports/StudentBugReportContext';
 import TokenBalancePill from '../tokens/TokenBalancePill';
+import NiveauPill from '../tokens/NiveauPill';
+import WeekdoelPill from '../tokens/WeekdoelPill';
 import { BarChart3, BellRing, BookOpen, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import { isStudyRoutePath } from '../../lib/studyRouteState';
@@ -190,6 +192,9 @@ export default function AppShell() {
               <span className="sr-only sm:hidden">Spellen</span>
             </button>
           )}
+
+          {!isAdmin && <WeekdoelPill studentUid={currentUser?.uid} disabled={isDevBypass} />}
+          {!isAdmin && <NiveauPill studentUid={currentUser?.uid} disabled={isDevBypass} />}
 
           {!isAdmin && (
             <TokenBalancePill

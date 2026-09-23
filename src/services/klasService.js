@@ -284,14 +284,24 @@ export const updateKlasEnabledParagrafen = async (klasId, paragraafIds) => {
  * @param {Array<string>} hoofdstukIds - de hoofdstukken die op slot staan
  * @returns {Promise<void>}
  */
-export const updateKlasVergrendeldeHoofdstukken = async (klasId, hoofdstukIds) => {
+export const updateKlasVergrendeldeHoofdstukken = async (klasId, hoofdstukIds, { vrijgegeven = [] } = {}) => {
   if (!klasId || !Array.isArray(hoofdstukIds)) {
     throw new Error('klasId and hoofdstukIds array are required');
   }
 
+  // De vrijgavedatum per hoofdstuk bepaalt het DV-weekdoel: het hoofdstuk dat
+  // de klas deze week kreeg (SPELOPZET-TOKENS-EN-SHOP.md, deel B).
+  const vrijgaven = Object.fromEntries(
+    vrijgegeven
+      .map((id) => String(id || '').trim())
+      .filter(Boolean)
+      .map((id) => [`hoofdstukVrijgaven.${id}`, serverTimestamp()])
+  );
+
   try {
     await updateDoc(doc(db, 'klassen', klasId), {
       vergrendeldeHoofdstukken: hoofdstukIds,
+      ...vrijgaven,
       updatedAt: serverTimestamp()
     });
   } catch (error) {

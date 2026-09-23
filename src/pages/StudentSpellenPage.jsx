@@ -6,6 +6,7 @@ import { GAME_REGISTRY, GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { speelbareKlasSpellen } from '../lib/klasSpellen';
 import { getKlasVoorSpellen } from '../services/spelToewijzingService';
 import { awardTokensForActivity } from '../services/tokenService';
+import { beloningMelding } from '../lib/tokenAwardUtils';
 
 /**
  * De spellenpagina van de leerling: alles wat de docent voor zijn klas heeft
@@ -49,9 +50,10 @@ export default function StudentSpellenPage() {
           passed: true
         }
       });
-      if (award?.awarded && Number(award.amount) > 0) {
-        setTokenNotice(`+${award.amount} tokens verdiend met ${game.title}`);
-        window.setTimeout(() => setTokenNotice(''), 3600);
+      const melding = beloningMelding(award);
+      if (melding) {
+        setTokenNotice(`${game.title}: ${melding}`);
+        window.setTimeout(() => setTokenNotice(''), award?.niveauOmhoog ? 5200 : 3600);
       }
     } catch (err) {
       console.warn('Speltokens konden niet worden toegekend:', err);

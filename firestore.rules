@@ -373,6 +373,32 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Fase 1 tokens (23 sep 2026): XP, niveau en weekstand. Alleen de Cloud
+    // Function awardTokensForActivity schrijft; tokenBewijs staat hier bewust
+    // niet, zodat geen enkele client het kan lezen of schrijven.
+    match /leerlingVoortgang/{studentUid} {
+      allow read: if isOwner(studentUid) || isAdmin();
+      allow write: if false;
+    }
+
+    match /leerlingWeek/{weekId} {
+      allow read: if signedIn() && (
+        resource.data.studentUid == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    // Het niveau is voor de hele klas zichtbaar (besluit Kevin, 23 sep 2026).
+    match /leerlingNiveau/{studentUid} {
+      allow read: if signedIn() && (
+        isOwner(studentUid) ||
+        isAdmin() ||
+        resource.data.klasId == userDoc().data.klasId
+      );
+      allow write: if false;
+    }
+
     match /tokenTransactions/{transactionId} {
       allow read: if signedIn() && (
         resource.data.studentUid == request.auth.uid ||

@@ -89,7 +89,10 @@ export default function AdminVrijgevenPage() {
   );
 
   const schrijf = async (klas, nieuweLijst) => {
-    await klasService.updateKlasVergrendeldeHoofdstukken(klas.id, nieuweLijst);
+    // Wat nu van het slot af gaat, is vandaag vrijgegeven (voor het weekdoel).
+    const vorige = Array.isArray(klas.vergrendeldeHoofdstukken) ? klas.vergrendeldeHoofdstukken : [];
+    const vrijgegeven = vorige.filter((hoofdstukId) => !nieuweLijst.includes(hoofdstukId));
+    await klasService.updateKlasVergrendeldeHoofdstukken(klas.id, nieuweLijst, { vrijgegeven });
     setKlassen((huidig) => huidig.map((rij) => (
       rij.id === klas.id ? { ...rij, vergrendeldeHoofdstukken: nieuweLijst } : rij
     )));

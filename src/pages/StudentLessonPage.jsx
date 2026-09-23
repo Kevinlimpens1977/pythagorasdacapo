@@ -210,7 +210,7 @@ import {
   valideerInleverBestand
 } from '../lib/inleveringUtils';
 import { uploadInlevering } from '../services/inleveringService';
-import { buildTokenAwardPayload } from '../lib/tokenAwardUtils';
+import { beloningMelding, buildTokenAwardPayload } from '../lib/tokenAwardUtils';
 
 const blockIcons = {
   theory: BookOpen,
@@ -733,9 +733,10 @@ export default function StudentLessonPage() {
     if (tokenPayload) {
       try {
         const award = await awardTokensForActivity(tokenPayload);
-        if (award?.awarded && Number(award.amount) > 0) {
-          setTokenAwardNotice(`+${award.amount} tokens verdiend`);
-          window.setTimeout(() => setTokenAwardNotice(''), 3600);
+        const melding = beloningMelding(award);
+        if (melding) {
+          setTokenAwardNotice(melding);
+          window.setTimeout(() => setTokenAwardNotice(''), award?.niveauOmhoog ? 5200 : 3600);
         }
       } catch (tokenError) {
         console.warn('Tokens konden niet worden toegekend:', tokenError);

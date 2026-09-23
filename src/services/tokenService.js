@@ -61,6 +61,34 @@ export const subscribeTokenAccount = (studentUid, onNext, onError) => {
   );
 };
 
+// XP en niveau (fase 1). Alleen de server schrijft; de leerling leest zijn eigen document.
+export const subscribeLeerlingVoortgang = (studentUid, onNext, onError) => {
+  if (!studentUid) {
+    onNext?.({ xp: 0, niveau: 1, sterren: 0 });
+    return () => {};
+  }
+
+  return onSnapshot(
+    doc(db, 'leerlingVoortgang', studentUid),
+    (snapshot) => onNext?.({ xp: 0, niveau: 1, sterren: 0, ...(snapshot.exists() ? snapshot.data() : {}) }),
+    onError
+  );
+};
+
+// Weekstand per vak (deel B): tokens deze week, actieve dagen, DV-weekdoel.
+export const subscribeLeerlingWeek = (studentUid, vak, weekSleutel, onNext, onError) => {
+  if (!studentUid || !vak || !weekSleutel) {
+    onNext?.(null);
+    return () => {};
+  }
+
+  return onSnapshot(
+    doc(db, 'leerlingWeek', `${studentUid}_${vak}_${weekSleutel}`),
+    (snapshot) => onNext?.(snapshot.exists() ? snapshot.data() : null),
+    onError
+  );
+};
+
 export const subscribeStudentTokenTransactions = (studentUid, onNext, onError, maxItems = 20) => {
   if (!studentUid) {
     onNext?.([]);

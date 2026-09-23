@@ -93,6 +93,54 @@ export const HELP_ONDERWERPEN = [
       }
     ],
     bron: 'docs/PLAN-INCLUSIEVARIANTEN.md'
+  },
+  {
+    id: 'tokens',
+    titel: 'Tokens, XP en weekdoel',
+    samenvatting:
+      'Leerlingen verdienen XP (niveau, voor inzet) en tokens (shop, voor beheersing). Bij Digitale vaardigheden is het hoofdstuk van de week het weekdoel.',
+    secties: [
+      {
+        titel: 'Wat een leerling verdient',
+        tekst: [
+          'Elk afgerond blok: XP. Theorie 10, toets of quiz 20-30, spel 15.',
+          'Tokens naar beheersing: onder 60% niets, 60-74% 40%, 75-89% 70%, 90% of meer alles. De eerste keer 100%: een ster en 25% extra.',
+          'Een betere tweede poging levert alleen het verschil op.',
+          'Maximaal 200 tokens per vak per week (spellen tellen mee). Niveau omhoog: 25 tokens extra.'
+        ]
+      },
+      {
+        titel: 'Het weekdoel (alleen Digitale vaardigheden)',
+        opties: [
+          {
+            status: HELP_STATUS.NU,
+            titel: 'Geef het hoofdstuk van de week vrij',
+            tekst: 'Zet het hoofdstuk vooruit klaar met een slot, en haal het slot eraf op de dag van de les (Vrijgeven). Vanaf dat moment is dat hoofdstuk het weekdoel van die week.',
+            letOp: 'Alleen vrijgeven via het slot zet de datum. Een hoofdstuk dat je zonder slot klaarzet, telt niet als weekdoel.'
+          },
+          {
+            status: HELP_STATUS.NU,
+            titel: 'Weekkist en weekreeks',
+            tekst: 'Alle toegewezen blokken van het hoofdstuk af = de weekkist (30-60 tokens). Elke week achter elkaar telt voor de weekreeks; bij 3, 5, 10 en 20 weken komt er een bonus bij.',
+            letOp: 'Een week zonder vrijgave (vakantie, toetsweek) breekt de reeks niet. Eén gemiste week per 6 weken wordt overgeslagen.'
+          },
+          {
+            status: HELP_STATUS.NU,
+            titel: 'Huiswerkbonus',
+            tekst: 'Werkt een leerling op een tweede dag in dezelfde week aan DV, dan krijgt hij één keer 20 tokens.'
+          }
+        ]
+      },
+      {
+        titel: 'Let op',
+        tekst: [
+          'Binask heeft geen weekdoel; daar verdienen leerlingen per blok.',
+          'Het niveau is voor de hele klas zichtbaar. XP beloont inzet, zodat wie meedoet ook stijgt.',
+          'Instellingen per spel (maximum, opnieuw spelen): Spellen > kies het spel.'
+        ]
+      }
+    ],
+    bron: 'SPELOPZET-TOKENS-EN-SHOP.md'
   }
 ];
 

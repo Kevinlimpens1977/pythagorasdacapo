@@ -41,7 +41,9 @@ export const SHARED_ENTRY_POINTS = [
   // Het nulmetingsprofiel wordt server-side berekend (buildNulmetingProfiel),
   // met dezelfde regels als de tests en het leerlingscherm.
   'nulmetingProfiel.js',
-  'lesTaal.js'
+  'lesTaal.js',
+  // XP, niveau en tokens naar beheersing (fase 1 tokens): dezelfde regels in app en server.
+  'beloning.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(

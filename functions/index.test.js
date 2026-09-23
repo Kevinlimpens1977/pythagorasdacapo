@@ -216,6 +216,10 @@ test("approveStudentPhotoImportCrop copies a matched crop and updates the studen
   assert.equal(db.store.docs["photoImports/import-1/crops/crop-1"].status, "approved");
 });
 
+// Het antwoord bevat sinds fase 1 ook XP, niveau en reden; veel tests
+// vergelijken alleen de tokenkern.
+const kern = ({ awarded, amount, balance, reason }) => ({ awarded, amount, balance, ...(reason ? { reason } : {}) });
+
 const KLAS_MET_PARAGRAAF = {
   "users/student-1": { role: "student", displayName: "Ada", klasId: "klas-1" },
   "klassen/klas-1": { enabledParagrafen: ["par-1"] },
@@ -256,10 +260,10 @@ test("awardTokensForActivity awards configured tokens once per source version", 
     now: () => "later",
   });
 
-  assert.deepEqual(first, { awarded: true, amount: 12, balance: 12 });
-  assert.deepEqual(second, { awarded: false, amount: 0, balance: 12, reason: "already-awarded" });
-  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 12);
-  assert.equal(db.store.docs["tokenAwardClaims/student-1_contentBlock_block-1_v2"].amount, 12);
+  assert.deepEqual(kern(first), { awarded: true, amount: 15, balance: 15 });
+  assert.deepEqual(kern(second), { awarded: false, amount: 0, balance: 15, reason: "already-awarded" });
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 15);
+  assert.equal(db.store.docs["tokenAwardClaims/student-1_contentBlock_block-1_v2"].totalAwarded, 15);
   assert.equal(Object.keys(db.store.docs).filter((path) => path.startsWith("tokenTransactions/")).length, 1);
 });
 
@@ -282,7 +286,7 @@ test("awardTokensForActivity caps game rewards by the configured reward rule", a
     now: () => "timestamp",
   });
 
-  assert.deepEqual(result, { awarded: true, amount: 10, balance: 10 });
+  assert.deepEqual(kern(result), { awarded: true, amount: 10, balance: 10 });
   assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 10);
 });
 
@@ -307,10 +311,10 @@ test("awardTokensForActivity halves replay rewards and respects the total cap", 
   });
 
   const eerste = await speel();
-  assert.deepEqual(eerste, { awarded: true, amount: 200, balance: 200 });
+  assert.deepEqual(kern(eerste), { awarded: true, amount: 200, balance: 200 });
 
   const tweede = await speel();
-  assert.deepEqual(tweede, { awarded: false, amount: 0, balance: 200, reason: "replay-limit" });
+  assert.deepEqual(kern(tweede), { awarded: false, amount: 0, balance: 200, reason: "replay-limit" });
 });
 
 test("awardTokensForActivity replay decay pays out until the cap is reached", async () => {
@@ -334,9 +338,9 @@ test("awardTokensForActivity replay decay pays out until the cap is reached", as
   });
 
   // Beurt 1: 50% accuracy -> 100 tokens.
-  assert.deepEqual(await speel(50), { awarded: true, amount: 100, balance: 100 });
+  assert.deepEqual(kern(await speel(50)), { awarded: true, amount: 100, balance: 100 });
   // Beurt 2: helft van het basisbedrag (0.5 x 200) -> 100; totaal raakt het plafond van 200.
-  assert.deepEqual(await speel(100), { awarded: true, amount: 100, balance: 200 });
+  assert.deepEqual(kern(await speel(100)), { awarded: true, amount: 100, balance: 200 });
   // Beurt 3: plafond bereikt.
   const derde = await speel(100);
   assert.equal(derde.awarded, false);
@@ -366,12 +370,12 @@ test("awardTokensForActivity negeert een versie van de app: een andere versie le
     now: () => "timestamp",
   });
 
-  assert.equal((await claim("a")).amount, 20);
+  assert.equal((await claim("a")).amount, 25);
   const tweede = await claim("b");
   const derde = await claim(`poging-${Date.now()}`);
   assert.equal(tweede.awarded, false);
   assert.equal(derde.awarded, false);
-  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 20);
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 25);
 });
 
 test("awardTokensForActivity telt een oude claim onder een oude sleutel mee", async () => {
@@ -396,7 +400,8 @@ test("awardTokensForActivity telt een oude claim onder een oude sleutel mee", as
     now: () => "timestamp",
   });
 
-  assert.deepEqual(result, { awarded: false, amount: 0, balance: 20, reason: "already-awarded" });
+  assert.equal(result.amount, 0, "geen tokens meer voor een blok dat al beloond is");
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 20);
 });
 
 test("awardTokensForActivity geeft geen tokens voor een blok dat niet is toegewezen", async () => {
@@ -504,6 +509,185 @@ test("awardTokensForActivity noteert het serverbewijs bij een toets (schaduwmodu
   assert.equal(result.awarded, true);
   const claim = Object.entries(db.store.docs).find(([path]) => path.startsWith("tokenAwardClaims/"))[1];
   assert.deepEqual(claim.source.bewijs, { aantalItems: 2, aantalCorrect: 1, compleet: false });
+});
+
+test("fase 1: tokens naar beheersing, alleen het verschil bij een betere poging", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "publicContentBlocks/toets-2": {
+      status: "published", paragraafId: "par-1", type: "toets", vakId: "vak-binask-eoa",
+      content: { items: [{ id: "a" }], tokenConfig: { enabled: true, totalTokens: 40 } },
+    },
+  });
+  const maak = (score) => __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "toets-2", result: { completed: true, score, maxScore: 10 } },
+    db,
+    now: () => "timestamp",
+    nuDatum: new Date("2026-09-23T10:00:00Z"),
+  });
+
+  const zwak = await maak(5);
+  assert.equal(zwak.amount, 0);
+  assert.equal(zwak.xp, 20, "onder 60% wel XP");
+  assert.equal(zwak.awarded, true);
+
+  const beter = await maak(8);
+  assert.equal(beter.amount, 28, "80% = 70% van 40");
+  assert.equal(beter.xp, 5, "alleen het XP-verschil");
+
+  const top = await maak(10);
+  assert.equal(top.amount, 40 - 28 + 10, "100%: rest tot 40 plus eenmalige bonus van 25%");
+  assert.equal(top.ster, true);
+
+  const nogEens = await maak(10);
+  assert.equal(nogEens.awarded, false);
+  assert.equal(nogEens.reason, "already-awarded");
+
+  const week = db.store.docs["leerlingWeek/student-1_binask_2026-W39"];
+  assert.equal(week.tokens, 50);
+  assert.deepEqual(week.dagen, ["2026-09-23"]);
+  const voortgang = db.store.docs["leerlingVoortgang/student-1"];
+  assert.equal(voortgang.sterren, 1);
+  assert.equal(db.store.docs["leerlingNiveau/student-1"].klasId, "klas-1");
+});
+
+test("fase 1: weekplafond van 200 tokens per vak, spellen tellen mee", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "tokenGameRewardRules/groot": { enabled: true, min: 0, max: 400, basis: "score_accuracy_completion" },
+    "leerlingWeek/student-1_dv_2026-W39": { tokens: 150, xp: 0, dagen: [] },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "game", sourceId: "groot", result: { completed: true, passed: true, accuracy: 100 } },
+    db,
+    now: () => "timestamp",
+    nuDatum: new Date("2026-09-23T10:00:00Z"),
+  });
+
+  assert.equal(result.amount, 50);
+  assert.equal(result.plafondBereikt, true);
+  assert.equal(db.store.docs["leerlingWeek/student-1_dv_2026-W39"].tokens, 200);
+});
+
+test("fase 1: niveau omhoog geeft 25 tokens buiten het weekplafond", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "leerlingVoortgang/student-1": { xp: 95, niveau: 1, sterren: 0 },
+    "publicContentBlocks/theorie-1": {
+      status: "published", paragraafId: "par-1", type: "theory", vakId: "vak-digitale-vaardigheden",
+      content: {},
+    },
+  });
+
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "theorie-1", result: { completed: true } },
+    db,
+    now: () => "timestamp",
+  });
+
+  assert.equal(result.xp, 10);
+  assert.equal(result.niveau, 2);
+  assert.equal(result.niveauOmhoog, true);
+  assert.equal(result.amount, 25);
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 25);
+});
+
+test("fase 1: een niet afgerond blok levert niets op", async () => {
+  const db = createDb({ ...KLAS_MET_PARAGRAAF });
+  const result = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "x", result: { completed: false } },
+    db,
+    now: () => "timestamp",
+  });
+  assert.equal(result.awarded, false);
+  assert.equal(result.reason, "not-completed");
+});
+
+const DV_WEEK = () => ({
+  "users/student-1": { role: "student", displayName: "Ada", klasId: "klas-dv" },
+  "klassen/klas-dv": {
+    enabledParagrafen: ["par-dv-1"],
+    hoofdstukVrijgaven: { "hoofdstuk-dv-klas1-h3": "2026-09-22T08:00:00Z" },
+  },
+  "publicContentBlocks/dv-a": {
+    status: "published", paragraafId: "par-dv-1", hoofdstukId: "hoofdstuk-dv-klas1-h3",
+    vakId: "vak-digitale-vaardigheden", type: "theory", content: {},
+  },
+  "publicContentBlocks/dv-b": {
+    status: "published", paragraafId: "par-dv-1", hoofdstukId: "hoofdstuk-dv-klas1-h3",
+    vakId: "vak-digitale-vaardigheden", type: "quiz",
+    content: { items: [{ id: "q" }], tokenConfig: { enabled: true, totalTokens: 30 } },
+  },
+});
+
+const rondAf = (db, blokId, datum = "2026-09-23T09:00:00Z", result = { completed: true, score: 10, maxScore: 10 }) =>
+  __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: blokId, result },
+    db,
+    now: () => "timestamp",
+    nuDatum: new Date(datum),
+  });
+
+test("deel B: DV-weekdoel gehaald geeft weekkist en start de weekreeks", async () => {
+  const db = createDb({
+    ...DV_WEEK(),
+    "voortgang/student-1_dv-a": { completed: true },
+  });
+
+  const eerste = await rondAf(db, "dv-a");
+  assert.equal(eerste.weekdoel.gehaald, false, "blok b is nog niet af");
+  assert.equal(eerste.kistTokens, 0);
+
+  db.store.docs["voortgang/student-1_dv-b"] = { completed: true };
+  const tweede = await rondAf(db, "dv-b");
+  assert.equal(tweede.weekdoel.gehaald, true);
+  assert.equal(tweede.weekdoel.gedaan, 2);
+  assert.ok(tweede.kistTokens >= 30 && tweede.kistTokens <= 60);
+  assert.equal(tweede.reeks.aantal, 1);
+  assert.equal(db.store.docs["leerlingVoortgang/student-1"].dvReeks.aantal, 1);
+
+  // De kist komt één keer per week.
+  const nogEens = await rondAf(db, "dv-b");
+  assert.equal(nogEens.kistTokens || 0, 0);
+});
+
+test("deel B: een hoofdstuk dat vorige week is vrijgegeven is niet het weekdoel", async () => {
+  const docs = DV_WEEK();
+  docs["klassen/klas-dv"].hoofdstukVrijgaven = { "hoofdstuk-dv-klas1-h3": "2026-09-15T08:00:00Z" };
+  const db = createDb({ ...docs, "voortgang/student-1_dv-a": { completed: true } });
+  const result = await rondAf(db, "dv-a");
+  assert.equal(result.weekdoel, null);
+});
+
+test("deel B: huiswerkbonus op een tweede DV-dag in dezelfde week", async () => {
+  const db = createDb({
+    ...DV_WEEK(),
+    "leerlingWeek/student-1_dv_2026-W39": { tokens: 0, xp: 10, dagen: ["2026-09-22"] },
+  });
+  const result = await rondAf(db, "dv-a");
+  assert.equal(result.huiswerkTokens, 20);
+  const nogEens = await rondAf(db, "dv-b");
+  assert.equal(nogEens.huiswerkTokens, 0, "één keer per week");
+});
+
+test("deel B: Binask heeft geen weekdoel", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "publicContentBlocks/bi-1": {
+      status: "published", paragraafId: "par-1", hoofdstukId: "hoofdstuk-binask-eoa-1-h2",
+      vakId: "vak-binask-eoa", type: "theory", content: {},
+    },
+    "leerlingWeek/student-1_binask_2026-W39": { tokens: 0, dagen: ["2026-09-22"] },
+  });
+  const result = await rondAf(db, "bi-1");
+  assert.equal(result.weekdoel, null);
+  assert.equal(result.huiswerkTokens, 0);
 });
 
 test("awardTokensForActivity awards nothing for a game without reward rule", async () => {

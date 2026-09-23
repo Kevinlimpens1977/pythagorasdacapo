@@ -2613,7 +2613,82 @@ async function getCallerDoc({ auth, db, label = "Caller" }) {
   return caller;
 }
 
-async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+let beloningLayerPromise = null;
+
+function loadBeloningLayer() {
+  if (!beloningLayerPromise) {
+    beloningLayerPromise = import("./shared/beloning.js");
+  }
+  return beloningLayerPromise;
+}
+
+async function getLegacyContentClaim(db, uid, sourceKind, sourceId, huidigeClaimId) {
+  const snapshot = await db.collection("tokenAwardClaims").where("studentUid", "==", uid).get();
+  let gevonden = null;
+  for (const doc of snapshot.docs) {
+    if (doc.id === huidigeClaimId) continue;
+    const data = doc.data() || {};
+    if (data.source?.kind !== sourceKind || data.source?.id !== sourceId) continue;
+    // Claims van vóór fase 1 werden alleen bij een volledig goed resultaat gemaakt.
+    const tokens = normalizeNonNegativeInteger(data.totalAwarded ?? data.amount, 0);
+    const bestePercentage = Number.isFinite(Number(data.bestePercentage)) ? Number(data.bestePercentage) : 100;
+    if (!gevonden || tokens > gevonden.tokens) {
+      gevonden = { tokens, bestePercentage, xp: normalizeNonNegativeInteger(data.xp, 0) };
+    }
+  }
+  return gevonden;
+}
+
+function tijdstipNaarDatum(waarde) {
+  if (!waarde) return null;
+  if (typeof waarde.toDate === "function") return waarde.toDate();
+  if (waarde instanceof Date) return waarde;
+  if (typeof waarde === "string" || typeof waarde === "number") {
+    const datum = new Date(waarde);
+    return Number.isNaN(datum.getTime()) ? null : datum;
+  }
+  const seconden = waarde._seconds ?? waarde.seconds;
+  return Number.isFinite(seconden) ? new Date(seconden * 1000) : null;
+}
+
+const isDvHoofdstuk = (hoofdstukId = "") => /(^|-)dv(-|$)/.test(String(hoofdstukId));
+
+// De weken waarin de klas een DV-hoofdstuk kreeg (voor de weekreeks).
+function dvDoelWeken(klasData = {}, regels) {
+  const vrijgaven = klasData?.hoofdstukVrijgaven || {};
+  return Object.entries(vrijgaven)
+    .filter(([hoofdstukId]) => isDvHoofdstuk(hoofdstukId))
+    .map(([, tijdstip]) => tijdstipNaarDatum(tijdstip))
+    .filter(Boolean)
+    .map((datum) => regels.isoWeekSleutel(datum));
+}
+
+// Is dit blok deel van het DV-hoofdstuk van deze week, en hoeveel is er af?
+async function bepaalDvWeekdoel({ db, uid, klasData, hoofdstukId, weekSleutel, regels }) {
+  if (!klasData || !hoofdstukId || !isDvHoofdstuk(hoofdstukId)) return null;
+  const vrijgave = tijdstipNaarDatum(klasData.hoofdstukVrijgaven?.[hoofdstukId]);
+  if (!vrijgave || regels.isoWeekSleutel(vrijgave) !== weekSleutel) return null;
+
+  const snapshot = await db.collection("publicContentBlocks").where("hoofdstukId", "==", hoofdstukId).get();
+  const blokken = snapshot.docs
+    .map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
+    .filter((blok) =>
+      blok.status === "published" &&
+      blok.isArchived !== true &&
+      isParagraphAssignedToStudent(klasData, uid, blok.paragraafId) &&
+      isContentBlockAssignedToStudent(klasData, uid, blok.paragraafId, blok.id));
+  if (!blokken.length) return null;
+
+  const voortgang = await Promise.all(blokken.map((blok) => db.doc(`voortgang/${uid}_${blok.id}`).get()));
+  const gedaan = voortgang.filter((doc) => doc.exists && doc.data()?.completed === true).length;
+  return { hoofdstukId, gedaan, totaal: blokken.length, compleet: gedaan >= blokken.length };
+}
+
+function vandaagSleutel(datum = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Amsterdam" }).format(datum);
+}
+
+async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date() }) {
   const caller = await getCallerDoc({ auth, db, label: "Leerling" });
   if (caller.data.role !== "student") {
     throw new HttpsError("permission-denied", "Alleen leerlingen kunnen tokens verdienen.");
@@ -2625,27 +2700,32 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     throw new HttpsError("invalid-argument", "Onbekende tokenbron.");
   }
 
-  const result = data.result || {};
-  const completed = result.completed === true;
-  const isCorrect = result.isCorrect === true || result.passed === true || result.resultTier === "independent" || result.resultTier === "guided";
-  if (!completed || !isCorrect) {
+  const huidigSaldo = async () => {
     const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
-    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
-    return { awarded: false, amount: 0, balance: account.balance, reason: "not-correct" };
-  }
+    return normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {}).balance;
+  };
+  const niets = async (reason) => ({ awarded: false, amount: 0, balance: await huidigSaldo(), reason });
+
+  const result = data.result || {};
+  if (result.completed !== true) return niets("not-completed");
+
+  const regels = await loadBeloningLayer();
 
   // De versie komt nooit meer van de app (zie getContentBlockVersion).
   let sourceVersion = "";
-  let amount = 0;
   let sourceTitle = String(data.sourceTitle || "").trim();
   let gameRule = null;
   let bewijs = null;
+  let vak = "overig";
+  let blokType = "";
+  let blokTokens = 0;
+  let percentage = 0;
 
   if (sourceKind === "contentBlock" || sourceKind === "question") {
     const contentPath = sourceKind === "contentBlock" ? `publicContentBlocks/${sourceId}` : `publicQuestions/${sourceId}`;
     const contentDoc = await getRequiredDoc(db.doc(contentPath), sourceKind === "contentBlock" ? "Lesblok" : "Vraag");
 
-    // Alleen lesstof die echt aan deze leerling is toegewezen levert tokens op.
+    // Alleen lesstof die echt aan deze leerling is toegewezen levert iets op.
     try {
       if (sourceKind === "contentBlock") {
         await assertAssessmentBlockAssignedToCaller({
@@ -2658,33 +2738,37 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
       }
     } catch (error) {
       if (!(error instanceof HttpsError)) throw error;
-      const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
-      const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
-      return { awarded: false, amount: 0, balance: account.balance, reason: "not-assigned" };
+      return niets("not-assigned");
     }
 
     sourceVersion = getContentBlockVersion(contentDoc.data);
-    amount = getAwardAmountForContentBlock(contentDoc.data);
     sourceTitle = sourceTitle || contentDoc.data.title || contentDoc.data.content?.title || "";
+    blokType = String(contentDoc.data.type || (sourceKind === "question" ? "question" : ""));
+    blokTokens = getAwardAmountForContentBlock(contentDoc.data);
+    vak = regels.vakSleutel({ vakId: contentDoc.data.vakId });
+    percentage = regels.percentageVanResultaat(result);
 
-    if (sourceKind === "contentBlock" && (contentDoc.data.type === "quiz" || contentDoc.data.type === "toets")) {
+    if (sourceKind === "contentBlock" && (blokType === "quiz" || blokType === "toets")) {
       bewijs = await getTokenBewijs(db, auth.uid, contentDoc.data, sourceId);
-      if (TOKEN_BEWIJS_AFDWINGEN && bewijs && !bewijs.compleet) {
-        const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
-        const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
-        return { awarded: false, amount: 0, balance: account.balance, reason: "no-evidence" };
+      if (TOKEN_BEWIJS_AFDWINGEN && bewijs) {
+        percentage = Math.round((bewijs.aantalCorrect / Math.max(1, bewijs.aantalItems)) * 100);
       }
     }
   } else if (sourceKind === "game") {
+    const isGehaald = result.isCorrect === true || result.passed === true;
+    if (!isGehaald) return niets("not-correct");
     sourceVersion = GAME_CLAIM_VERSION;
     gameRule = await getGameRewardRule(db, sourceId);
-    amount = computeGameAwardAmount(gameRule, result);
-  }
-
-  if (amount <= 0) {
-    const accountSnapshot = await db.doc(`tokenAccounts/${auth.uid}`).get();
-    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
-    return { awarded: false, amount: 0, balance: account.balance, reason: "no-token-value" };
+    // Alleen bekende spellen (met een tokenregel) leveren iets op; anders kon
+    // een verzonnen spel-id eindeloos XP opleveren.
+    if (!gameRule) return niets("no-token-value");
+    let vakId = "";
+    const blockId = String(data.blockId || "").trim();
+    if (blockId) {
+      const blok = await db.doc(`publicContentBlocks/${blockId}`).get();
+      vakId = blok.exists ? String(blok.data()?.vakId || "") : "";
+    }
+    vak = regels.vakSleutel({ vakId, gameId: sourceId });
   }
 
   const claimId = [
@@ -2694,9 +2778,13 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     cleanIdPart(sourceVersion),
   ].join("_");
   const timestamp = getServerTimestamp(now);
+  const weekSleutel = regels.isoWeekSleutel(nuDatum);
+  const dag = vandaagSleutel(nuDatum);
   const accountRef = db.doc(`tokenAccounts/${auth.uid}`);
   const claimRef = db.doc(`tokenAwardClaims/${claimId}`);
-  const transactionRef = getTransactionRef(db, `earn_${claimId}`);
+  const weekRef = db.doc(`leerlingWeek/${auth.uid}_${vak}_${weekSleutel}`);
+  const voortgangRef = db.doc(`leerlingVoortgang/${auth.uid}`);
+  const niveauRef = db.doc(`leerlingNiveau/${auth.uid}`);
 
   const source = {
     kind: sourceKind,
@@ -2706,94 +2794,264 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     paragraafId: String(data.paragraafId || "").trim(),
     blockId: String(data.blockId || "").trim(),
     gameId: String(data.gameId || (sourceKind === "game" ? sourceId : "")).trim(),
+    vak,
     ...(bewijs ? { bewijs } : {}),
   };
 
+  // DV-weekdoel: het hoofdstuk dat de klas deze week kreeg (deel B).
+  let klasData = null;
+  let weekdoel = null;
+  if (vak === "dv") {
+    const klasId = String(caller.data.klasId || "").trim();
+    if (klasId) {
+      const klas = await db.doc(`klassen/${klasId}`).get();
+      klasData = klas.exists ? (klas.data() || {}) : null;
+    }
+    if (sourceKind === "contentBlock") {
+      const blok = await db.doc(`publicContentBlocks/${sourceId}`).get();
+      weekdoel = await bepaalDvWeekdoel({
+        db, uid: auth.uid, klasData, hoofdstukId: String(blok.data()?.hoofdstukId || ""), weekSleutel, regels,
+      });
+    }
+  }
+
   // Claims van vóór 23 sep 2026 stonden onder een andere sleutel (andere versie).
-  // Die tellen mee, zodat niemand voor hetzelfde blok of spel opnieuw begint.
-  const legacy = await getLegacyClaimTotals(db, auth.uid, sourceKind, sourceId, claimId);
+  const legacyGame = sourceKind === "game"
+    ? await getLegacyClaimTotals(db, auth.uid, sourceKind, sourceId, claimId)
+    : null;
+  const legacyContent = sourceKind === "game"
+    ? null
+    : await getLegacyContentClaim(db, auth.uid, sourceKind, sourceId, claimId);
 
   return runDbTransaction(db, async (transaction) => {
-    const [accountSnapshot, claimSnapshot] = await Promise.all([
+    const [accountSnapshot, claimSnapshot, weekSnapshot, voortgangSnapshot] = await Promise.all([
       transaction.get(accountRef),
       transaction.get(claimRef),
+      transaction.get(weekRef),
+      transaction.get(voortgangRef),
     ]);
     const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
-    const eerdereClaim = claimSnapshot.exists
-      ? (claimSnapshot.data() || {})
-      : (legacy.plays > 0 ? { plays: legacy.plays, totalAwarded: legacy.totalAwarded } : null);
+    const claim = claimSnapshot.exists ? (claimSnapshot.data() || {}) : null;
+    const week = weekSnapshot.exists ? (weekSnapshot.data() || {}) : {};
+    const voortgang = voortgangSnapshot.exists ? (voortgangSnapshot.data() || {}) : {};
 
-    if (eerdereClaim) {
-      const decay = gameRule?.replayDecay;
-      if (!decay) {
+    // 1. Wat levert deze activiteit op, vóór het weekplafond?
+    let xp = 0;
+    let tokensVoorPlafond = 0;
+    let ster = false;
+    let eersteKeerHonderd = false;
+    let claimPatch = {};
+    let reden = "";
+
+    if (sourceKind === "game") {
+      const eerder = claim || (legacyGame.plays > 0 ? { plays: legacyGame.plays, totalAwarded: legacyGame.totalAwarded } : null);
+      const basis = computeGameAwardAmount(gameRule, result);
+      if (!eerder) {
+        tokensVoorPlafond = basis;
+        xp = regels.XP_SPEL;
+        claimPatch = { plays: 1, totalAwarded: basis };
+      } else {
+        const decay = gameRule?.replayDecay;
+        const plays = Math.max(1, normalizeNonNegativeInteger(eerder.plays, 1));
+        const totalAwarded = normalizeNonNegativeInteger(eerder.totalAwarded ?? eerder.amount, 0);
+        if (!decay) return { awarded: false, amount: 0, balance: account.balance, reason: "already-awarded" };
+        if (gameRule.maxPlays > 0 && plays >= gameRule.maxPlays) {
+          return { awarded: false, amount: 0, balance: account.balance, reason: "play-limit" };
+        }
+        const vervallen = Math.round(basis * Math.pow(decay, plays));
+        tokensVoorPlafond = Math.max(0, Math.min(vervallen, (gameRule?.max || 0) - totalAwarded));
+        if (tokensVoorPlafond <= 0) return { awarded: false, amount: 0, balance: account.balance, reason: "replay-limit" };
+        xp = regels.XP_SPEL;
+        claimPatch = { plays: plays + 1, totalAwarded: totalAwarded + tokensVoorPlafond };
+      }
+      reden = "spel uitgespeeld";
+    } else {
+      const eerder = claim
+        ? {
+          bestePercentage: Number.isFinite(Number(claim.bestePercentage)) ? Number(claim.bestePercentage) : 100,
+          tokens: normalizeNonNegativeInteger(claim.totalAwarded ?? claim.amount, 0),
+          xp: normalizeNonNegativeInteger(claim.xp, 0),
+        }
+        : legacyContent;
+      const beloning = regels.beloningVoorBlok({ blokType, blokTokens, percentage, eerder });
+      const weekdoelNuGehaald = Boolean(weekdoel?.compleet && !week.weekdoel?.gehaald);
+      if (beloning.xp <= 0 && beloning.tokens <= 0 && !weekdoelNuGehaald) {
         return { awarded: false, amount: 0, balance: account.balance, reason: "already-awarded" };
       }
+      xp = beloning.xp;
+      tokensVoorPlafond = beloning.tokens;
+      ster = beloning.ster;
+      eersteKeerHonderd = beloning.eersteKeerHonderd;
+      claimPatch = {
+        bestePercentage: Math.max(percentage, eerder?.bestePercentage ?? 0),
+        totalAwarded: (eerder?.tokens || 0) + beloning.tokens,
+        xp: (eerder?.xp || 0) + beloning.xp,
+        plays: normalizeNonNegativeInteger(claim?.plays, 0) + 1,
+      };
+      reden = regels.redenVoorPercentage(percentage);
+    }
 
-      // Herhaalbeurt met verval: elke beurt levert decay^beurten van het basisbedrag op,
-      // tot het totaalplafond (rule.max) per leerling bereikt is.
-      const claim = eerdereClaim;
-      const plays = Math.max(1, normalizeNonNegativeInteger(claim.plays, 1));
-      const totalAwarded = normalizeNonNegativeInteger(claim.totalAwarded ?? claim.amount, 0);
-      if (gameRule.maxPlays > 0 && plays >= gameRule.maxPlays) {
-        return { awarded: false, amount: 0, balance: account.balance, reason: "play-limit" };
+    // 2. Weekplafond per vak (spellen tellen mee).
+    const alDezeWeek = normalizeNonNegativeInteger(week.tokens, 0);
+    const tokens = regels.binnenWeekplafond(tokensVoorPlafond, alDezeWeek);
+    const plafondBereikt = tokens < tokensVoorPlafond;
+
+    // 2b. DV: huiswerkbonus (tweede dag in de week, binnen het plafond),
+    // weekdoel, weekkist en weekreeks (buiten het plafond).
+    const dagenVoor = Array.isArray(week.dagen) ? week.dagen : [];
+    const dagenNa = dagenVoor.includes(dag) ? dagenVoor : [...dagenVoor, dag];
+    let huiswerkTokens = 0;
+    let kistTokens = 0;
+    let mijlpaalTokens = 0;
+    let reeks = null;
+    let weekdoelStand = week.weekdoel || null;
+    if (vak === "dv") {
+      if (dagenNa.length >= 2 && !week.huiswerkBonus) {
+        huiswerkTokens = regels.binnenWeekplafond(regels.HUISWERK_BONUS_TOKENS, alDezeWeek + tokens);
       }
-      const vervallenBedrag = Math.round(amount * Math.pow(decay, plays));
-      const beschikbaar = Math.max(0, gameRule.max - totalAwarded);
-      const herhaalBedrag = Math.max(0, Math.min(vervallenBedrag, beschikbaar));
-
-      if (herhaalBedrag <= 0) {
-        return { awarded: false, amount: 0, balance: account.balance, reason: "replay-limit" };
+      if (weekdoel) {
+        const alGehaald = week.weekdoel?.gehaald === true;
+        weekdoelStand = {
+          hoofdstukId: weekdoel.hoofdstukId,
+          gedaan: weekdoel.gedaan,
+          totaal: weekdoel.totaal,
+          gehaald: alGehaald || weekdoel.compleet,
+        };
+        if (weekdoel.compleet && !alGehaald) {
+          reeks = regels.volgendeWeekreeks({
+            reeks: voortgang.dvReeks || null,
+            week: weekSleutel,
+            doelWeken: dvDoelWeken(klasData, regels),
+          });
+          kistTokens = regels.weekkistTokens({ uid: auth.uid, week: weekSleutel, comeback: reeks.comeback });
+          mijlpaalTokens = reeks.mijlpaal?.tokens || 0;
+          weekdoelStand.kistTokens = kistTokens;
+        }
       }
+    }
 
-      const nextAccount = buildBalancePatch(account, herhaalBedrag, TOKEN_TRANSACTION_TYPES.EARN, timestamp);
-      const herhaalTransactionRef = getTransactionRef(db, `earn_${claimId}_p${plays + 1}`);
+    // 3. XP en niveau.
+    const xpVoor = normalizeNonNegativeInteger(voortgang.xp, 0);
+    const xpNa = xpVoor + xp;
+    const niveauVoor = regels.niveauVoorXp(xpVoor).niveau;
+    const niveauNa = regels.niveauVoorXp(xpNa);
+    const niveausErbij = Math.max(0, niveauNa.niveau - niveauVoor);
+    const niveauTokens = niveausErbij * regels.NIVEAU_BELONING_TOKENS;
 
-      transaction.set(accountRef, nextAccount, { merge: true });
-      transaction.set(herhaalTransactionRef, {
+    const totaalTokens = tokens + niveauTokens + huiswerkTokens + kistTokens + mijlpaalTokens;
+    const nextAccount = totaalTokens > 0
+      ? buildBalancePatch(account, totaalTokens, TOKEN_TRANSACTION_TYPES.EARN, timestamp)
+      : account;
+
+    // 4. Schrijven.
+    const betaling = normalizeNonNegativeInteger(claim?.betalingen, 0) + 1;
+    if (tokens > 0) {
+      const txRef = getTransactionRef(db, betaling === 1 ? `earn_${claimId}` : `earn_${claimId}_u${betaling}`);
+      transaction.set(txRef, {
         studentUid: auth.uid,
         type: TOKEN_TRANSACTION_TYPES.EARN,
-        amount: herhaalBedrag,
+        amount: tokens,
         source,
-        reason: "activity-replay",
+        reason: betaling === 1 ? "activity-correct" : "activity-improved",
+        detail: { percentage, reden, plafondBereikt },
+        createdBy: auth.uid,
+        createdAt: timestamp,
+        balanceAfter: account.balance + tokens,
+      });
+    }
+    if (niveauTokens > 0) {
+      transaction.set(getTransactionRef(db, `earn_niveau_${auth.uid}_${niveauNa.niveau}`), {
+        studentUid: auth.uid,
+        type: TOKEN_TRANSACTION_TYPES.EARN,
+        amount: niveauTokens,
+        source: { kind: "niveau", id: String(niveauNa.niveau), title: `Niveau ${niveauNa.niveau}` },
+        reason: "level-up",
         createdBy: auth.uid,
         createdAt: timestamp,
         balanceAfter: nextAccount.balance,
       });
-      transaction.set(claimRef, {
-        ...(claimSnapshot.exists ? {} : { studentUid: auth.uid, source, createdAt: timestamp }),
-        plays: plays + 1,
-        totalAwarded: totalAwarded + herhaalBedrag,
-        updatedAt: timestamp,
-      }, { merge: true });
-
-      return { awarded: true, amount: herhaalBedrag, balance: nextAccount.balance };
     }
+    const extraRegels = [
+      [huiswerkTokens, `earn_huiswerk_${auth.uid}_${weekSleutel}`, "homework-bonus", "Huiswerkbonus"],
+      [kistTokens, `earn_weekkist_${auth.uid}_${weekSleutel}`, "weekly-chest", "Weekkist"],
+      [mijlpaalTokens, `earn_reeks_${auth.uid}_${weekSleutel}`, "streak-milestone", `Weekreeks ${reeks?.aantal || ""}`.trim()],
+    ];
+    for (const [bedrag, id, reden2, titel] of extraRegels) {
+      if (bedrag <= 0) continue;
+      transaction.set(getTransactionRef(db, id), {
+        studentUid: auth.uid,
+        type: TOKEN_TRANSACTION_TYPES.EARN,
+        amount: bedrag,
+        source: { kind: "week", id: weekSleutel, title: titel, vak },
+        reason: reden2,
+        createdBy: auth.uid,
+        createdAt: timestamp,
+        balanceAfter: nextAccount.balance,
+      });
+    }
+    if (totaalTokens > 0) transaction.set(accountRef, nextAccount, { merge: true });
 
-    const nextAccount = buildBalancePatch(account, amount, TOKEN_TRANSACTION_TYPES.EARN, timestamp);
-    const transactionData = {
-      studentUid: auth.uid,
-      type: TOKEN_TRANSACTION_TYPES.EARN,
-      amount,
-      source,
-      reason: "activity-correct",
-      createdBy: auth.uid,
-      createdAt: timestamp,
-      balanceAfter: nextAccount.balance,
-    };
-
-    transaction.set(accountRef, nextAccount, { merge: true });
-    transaction.set(transactionRef, transactionData);
     transaction.set(claimRef, {
-      studentUid: auth.uid,
-      amount,
-      plays: 1,
-      totalAwarded: amount,
-      source,
-      transactionId: transactionRef.path.split("/").at(-1),
-      createdAt: timestamp,
-    });
+      ...(claim ? {} : { studentUid: auth.uid, source, createdAt: timestamp }),
+      ...claimPatch,
+      amount: normalizeNonNegativeInteger(claim?.amount, 0) || tokens,
+      betalingen: betaling,
+      updatedAt: timestamp,
+    }, { merge: true });
 
-    return { awarded: true, amount, balance: nextAccount.balance };
+    transaction.set(weekRef, {
+      studentUid: auth.uid,
+      klasId: String(caller.data.klasId || ""),
+      vak,
+      week: weekSleutel,
+      tokens: alDezeWeek + tokens + huiswerkTokens,
+      xp: normalizeNonNegativeInteger(week.xp, 0) + xp,
+      dagen: dagenNa,
+      ...(huiswerkTokens > 0 ? { huiswerkBonus: huiswerkTokens } : {}),
+      ...(weekdoelStand ? { weekdoel: weekdoelStand } : {}),
+      updatedAt: timestamp,
+    }, { merge: true });
+
+    const sterren = normalizeNonNegativeInteger(voortgang.sterren, 0) + (ster ? 1 : 0);
+    transaction.set(voortgangRef, {
+      studentUid: auth.uid,
+      xp: xpNa,
+      niveau: niveauNa.niveau,
+      sterren,
+      ...(reeks ? {
+        dvReeks: { aantal: reeks.aantal, laatsteWeek: reeks.laatsteWeek, bevriezingWeek: reeks.bevriezingWeek || null },
+      } : {}),
+      updatedAt: timestamp,
+    }, { merge: true });
+    transaction.set(niveauRef, {
+      studentUid: auth.uid,
+      klasId: String(caller.data.klasId || ""),
+      niveau: niveauNa.niveau,
+      updatedAt: timestamp,
+    }, { merge: true });
+
+    return {
+      awarded: totaalTokens > 0 || xp > 0,
+      amount: totaalTokens,
+      huiswerkTokens,
+      weekdoel: weekdoelStand,
+      kistTokens,
+      reeks: reeks ? { aantal: reeks.aantal, bevroren: reeks.bevroren, comeback: reeks.comeback } : null,
+      mijlpaalTokens,
+      balance: nextAccount.balance,
+      xp,
+      xpTotaal: xpNa,
+      niveau: niveauNa.niveau,
+      xpInNiveau: niveauNa.xpInNiveau,
+      xpNodig: niveauNa.xpNodig,
+      niveauOmhoog: niveausErbij > 0,
+      niveauTokens,
+      ster,
+      eersteKeerHonderd,
+      percentage,
+      reden,
+      plafondBereikt,
+    };
   });
 }
 
