@@ -397,6 +397,23 @@ service cloud.firestore {
     }
 
     // Het niveau is voor de hele klas zichtbaar (besluit Kevin, 23 sep 2026).
+    // Fase 3, samen. Het klasdoel zet de docent; de server telt de punten.
+    match /klasDoel/{klasId} {
+      allow read: if isAdmin() || (signedIn() && userDoc().data.klasId == klasId);
+      allow write: if isAdmin();
+    }
+
+    match /klasDoelBijdrage/{bijdrageId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Complimenten lopen via de callable geefCompliment; de klas ziet ze via getMijnKlas.
+    match /complimenten/{complimentId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     match /leerlingNiveau/{studentUid} {
       allow read: if signedIn() && (
         isOwner(studentUid) ||

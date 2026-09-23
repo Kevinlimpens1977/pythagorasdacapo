@@ -18,6 +18,7 @@ import { subscribeToNieuweMeldingenAantal } from '../../services/meldingenServic
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewards';
 import ProfielAvatar from '../avatar/ProfielAvatar';
+import KlasDoelPill from '../klas/KlasDoelPill';
 import helixLogo from '../../afbeeldingen/logo.png';
 
 const workspaceIcons = {
@@ -30,7 +31,7 @@ const workspaceIcons = {
 };
 
 export default function AppShell() {
-  const { currentUser, isAdmin, isDevBypass, logout } = useAuth();
+  const { currentUser, userData, isAdmin, isDevBypass, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [studentBugReportContext, setStudentBugReportContext] = useState({});
@@ -194,6 +195,23 @@ export default function AppShell() {
             </button>
           )}
 
+          {!isAdmin && (
+            <button
+              onClick={() => navigate('/klas')}
+              className={`flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border px-3 text-sm font-black transition ${
+                location.pathname === '/klas'
+                  ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+                  : 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
+              }`}
+              title="Mijn klas"
+            >
+              <Users size={18} />
+              <span className="hidden sm:inline">Mijn klas</span>
+              <span className="sr-only sm:hidden">Mijn klas</span>
+            </button>
+          )}
+
+          {!isAdmin && <KlasDoelPill klasId={userData?.klasId} disabled={isDevBypass} onOpen={() => navigate('/klas')} />}
           {!isAdmin && <WeekdoelPill studentUid={currentUser?.uid} disabled={isDevBypass} />}
           {!isAdmin && <NiveauPill studentUid={currentUser?.uid} disabled={isDevBypass} />}
 

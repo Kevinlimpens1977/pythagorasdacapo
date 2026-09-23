@@ -63,6 +63,7 @@ import NakijkPaneel from './NakijkPaneel';
 import LeerlingStappen, { StappenSpoor } from './LeerlingStappen';
 import NulmetingKlasOverzicht from './NulmetingKlasOverzicht';
 import KlasBeloningOverzicht from './KlasBeloningOverzicht';
+import KlasSamenBeheer from './KlasSamenBeheer';
 import NulmetingLeerlingPaneel from './NulmetingLeerlingPaneel';
 import StudentAvatar from '../common/StudentAvatar';
 import HelixBrandBanner from '../common/HelixBrandBanner';
@@ -1308,6 +1309,9 @@ export default function ClassOverview() {
       {activeLens === 'class' && selectedKlasId && (
         <div className="mb-8">
           <KlasBeloningOverzicht klasId={selectedKlasId} students={scopedStudents} />
+          <div className="mt-6">
+            <KlasSamenBeheer klasId={selectedKlasId} students={scopedStudents} />
+          </div>
         </div>
       )}
 

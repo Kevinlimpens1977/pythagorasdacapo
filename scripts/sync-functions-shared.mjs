@@ -45,7 +45,9 @@ export const SHARED_ENTRY_POINTS = [
   // XP, niveau en tokens naar beheersing (fase 1 tokens): dezelfde regels in app en server.
   'beloning.js',
   // Avatar-onderdelen (Shop 2.0 deel 2B): wat gratis is en wanneer een set compleet is.
-  'avatarDelen.js'
+  'avatarDelen.js',
+  // Klasdoel en complimenten (fase 3, samen).
+  'klasSamen.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(

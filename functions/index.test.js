@@ -2792,3 +2792,103 @@ test("Shop 2.0 deel 2C: emote opslaan vraagt aankoop, springen is gratis", async
   assert.equal((await sla({ emote: "emote-spring" })).avatar.emote, "emote-spring");
   await assert.rejects(() => sla({ emote: "emote-feest" }), (error) => error.code === "failed-precondition");
 });
+
+test("fase 3: een eerste afgerond blok vult het klasdoel, een herhaling niet", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "klasDoel/klas-1": { titel: "Spelkwartier", doel: 2, stand: 1, status: "actief" },
+    "publicContentBlocks/block-1": { status: "published", paragraafId: "par-1", content: { tokenConfig: { enabled: true, totalTokens: 12 } }, publishedVersion: "v1" },
+  });
+  const rond = () => __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "block-1", sourceVersion: "v1", result: { completed: true, isCorrect: true } },
+    db,
+    now: () => "t",
+    nuDatum: new Date("2026-09-23T10:00:00Z"),
+  });
+
+  const eerste = await rond();
+  assert.equal(eerste.klasdoelPunt, true);
+  assert.equal(db.store.docs["klasDoel/klas-1"].stand, 2);
+  assert.equal(db.store.docs["klasDoel/klas-1"].status, "gehaald");
+  assert.equal(db.store.docs["klasDoelBijdrage/student-1_2026-W39"].punten, 1);
+  await rond();
+  assert.equal(db.store.docs["klasDoel/klas-1"].stand, 2, "geen tweede punt voor hetzelfde blok");
+});
+
+test("fase 3: hooguit 10 klasdoelpunten per leerling per week", async () => {
+  const db = createDb({
+    ...KLAS_MET_PARAGRAAF,
+    "klasDoel/klas-1": { titel: "Film", doel: 100, stand: 40, status: "actief" },
+    "klasDoelBijdrage/student-1_2026-W39": { punten: 10 },
+    "publicContentBlocks/block-2": { status: "published", paragraafId: "par-1", content: { tokenConfig: { enabled: true, totalTokens: 12 } }, publishedVersion: "v1" },
+  });
+  const award = await __test.awardTokensForActivityCore({
+    auth: { uid: "student-1" },
+    data: { sourceKind: "contentBlock", sourceId: "block-2", sourceVersion: "v1", result: { completed: true, isCorrect: true } },
+    db,
+    now: () => "t",
+    nuDatum: new Date("2026-09-23T10:00:00Z"),
+  });
+  assert.equal(award.awarded, true, "tokens krijgt de leerling gewoon");
+  assert.equal(award.klasdoelPunt, false);
+  assert.equal(db.store.docs["klasDoel/klas-1"].stand, 40);
+});
+
+test("fase 3: complimenten alleen aan klasgenoten, 1 per klasgenoot en 3 per week", async () => {
+  const db = createDb({
+    "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+    "users/b": { role: "student", displayName: "Bo", klasId: "klas-1" },
+    "users/c": { role: "student", displayName: "Cas", klasId: "klas-1" },
+    "users/d": { role: "student", displayName: "Dex", klasId: "klas-1" },
+    "users/e": { role: "student", displayName: "Eva", klasId: "klas-1" },
+    "users/x": { role: "student", displayName: "Xander", klasId: "klas-2" },
+  });
+  const geef = (aanUid, soort = "geholpen") => __test.geefComplimentCore({
+    auth: { uid: "a" }, data: { aanUid, soort }, db, now: () => "t", nuDatum: new Date("2026-09-23T10:00:00Z"),
+  });
+
+  assert.equal((await geef("b")).over, 2);
+  await assert.rejects(() => geef("b", "inzet"), (error) => error.code === "already-exists");
+  await assert.rejects(() => geef("x"), (error) => error.code === "failed-precondition");
+  await assert.rejects(() => geef("a"), (error) => error.code === "invalid-argument");
+  await assert.rejects(() => geef("c", "vrije tekst"), (error) => error.code === "invalid-argument");
+  await geef("c");
+  await geef("d");
+  await assert.rejects(() => geef("e"), (error) => error.code === "resource-exhausted");
+});
+
+test("fase 3: Mijn klas toont alleen wat zichtbaar mag, op naam gesorteerd", async () => {
+  const db = createDb({
+    "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+    "users/b": { role: "student", displayName: "Bo", klasId: "klas-1" },
+    "users/t": { role: "student", displayName: "Test", klasId: "klas-1", isTestaccount: true },
+    "users/x": { role: "student", displayName: "Xander", klasId: "klas-2" },
+    "tokenAccounts/b": { balance: 999 },
+    "studentTokenLoadouts/b": {
+      avatarGetekend: true,
+      avatar: { huid: "huid-5", kapsel: "kapsel-afro" },
+      activeTitleBadgeId: "titel-1",
+      activePinIds: ["pin-1"],
+      vitrine: { toonTitel: false },
+    },
+    "leerlingNiveau/b": { niveau: 4, klasId: "klas-1" },
+    "tokenShopItems/titel-1": { title: "Rekenheld" },
+    "tokenShopItems/pin-1": { title: "Pin", imageUrl: "https://example.test/pin.png" },
+    "complimenten/a_b_2026-W39": { van: "a", aan: "b", klasId: "klas-1", soort: "geholpen", week: "2026-W39", verborgen: false },
+    "complimenten/c_b_2026-W39": { van: "c", aan: "b", klasId: "klas-1", soort: "geholpen", week: "2026-W39", verborgen: true },
+    "klasDoel/klas-1": { titel: "Spelkwartier", doel: 100, stand: 20, status: "actief" },
+  });
+  const klas = await __test.getMijnKlasCore({ auth: { uid: "a" }, data: {}, db, nuDatum: new Date("2026-09-23T10:00:00Z") });
+
+  assert.deepEqual(klas.kaarten.map((kaart) => kaart.naam), ["Ada", "Bo"], "geen testaccount, geen andere klas");
+  const bo = klas.kaarten[1];
+  assert.equal(bo.niveau, 4);
+  assert.equal(bo.avatar.kapsel, "kapsel-afro");
+  assert.equal(bo.titel, null, "titel verborgen");
+  assert.equal(bo.pins.length, 1);
+  assert.deepEqual(bo.complimenten, { geholpen: 1 }, "verborgen compliment telt niet");
+  assert.equal(JSON.stringify(klas).includes("999"), false, "nooit een saldo");
+  assert.equal(klas.klasDoel.stand, 20);
+  assert.deepEqual(klas.gegevenDezeWeek, [{ aan: "b", soort: "geholpen" }]);
+});

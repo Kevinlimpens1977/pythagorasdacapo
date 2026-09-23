@@ -25,6 +25,7 @@ import AdminSettingsPage from './pages/AdminSettingsPage';
 import AdminProjectKompasPage from './pages/AdminProjectKompasPage';
 import StudentTokenShopPage from './pages/StudentTokenShopPage';
 import StudentSpellenPage from './pages/StudentSpellenPage';
+import StudentKlasPage from './pages/StudentKlasPage';
 import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
 import AdminTestenPage from './pages/AdminTestenPage';
 import AdminVrijgevenPage from './pages/AdminVrijgevenPage';
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="profiel" element={<StudentProfilePage />} />
         <Route path="tokenshop" element={<StudentTokenShopPage />} />
         <Route path="spellen" element={<StudentSpellenPage />} />
+        <Route path="klas" element={<StudentKlasPage />} />
         <Route path="hoofdstuk/:chapterId" element={<StudentChapterPage />} />
         <Route path="chapter/:chapterId" element={<StudentLessonPage />} />
         <Route path="admin" element={

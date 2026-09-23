@@ -427,6 +427,11 @@ function isConfiguredAdminEmail(email = "") {
   return normalizeEmail(email) === ADMIN_EMAIL;
 }
 
+function isAdminCaller(callerData = {}) {
+  const role = String(callerData.role || "").trim().toLowerCase();
+  return role === "admin" || role === "supervisor" || isConfiguredAdminEmail(callerData.email);
+}
+
 function assertCanManageKlas(caller, klasId) {
   if (!allowedImportRoles.has(caller.role)) {
     throw new HttpsError("permission-denied", "Alleen admins en docenten mogen leerlingfoto-imports goedkeuren.");
@@ -2624,6 +2629,15 @@ function loadBeloningLayer() {
   return beloningLayerPromise;
 }
 
+let samenLayerPromise = null;
+
+function loadSamenLayer() {
+  if (!samenLayerPromise) {
+    samenLayerPromise = import("./shared/klasSamen.js");
+  }
+  return samenLayerPromise;
+}
+
 let avatarLayerPromise = null;
 
 function loadAvatarLayer() {
@@ -2796,6 +2810,11 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
   const weekRef = db.doc(`leerlingWeek/${auth.uid}_${vak}_${weekSleutel}`);
   const voortgangRef = db.doc(`leerlingVoortgang/${auth.uid}`);
   const niveauRef = db.doc(`leerlingNiveau/${auth.uid}`);
+  // Klasdoel (fase 3): elk eerste afgeronde blok telt mee, met een weekgrens.
+  const samen = await loadSamenLayer();
+  const leerlingKlasId = String(caller.data.klasId || "").trim();
+  const klasDoelRef = leerlingKlasId ? db.doc(`klasDoel/${leerlingKlasId}`) : null;
+  const bijdrageRef = db.doc(`klasDoelBijdrage/${auth.uid}_${weekSleutel}`);
 
   const source = {
     kind: sourceKind,
@@ -2835,11 +2854,13 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     : await getLegacyContentClaim(db, auth.uid, sourceKind, sourceId, claimId);
 
   return runDbTransaction(db, async (transaction) => {
-    const [accountSnapshot, claimSnapshot, weekSnapshot, voortgangSnapshot] = await Promise.all([
+    const [accountSnapshot, claimSnapshot, weekSnapshot, voortgangSnapshot, klasDoelSnapshot, bijdrageSnapshot] = await Promise.all([
       transaction.get(accountRef),
       transaction.get(claimRef),
       transaction.get(weekRef),
       transaction.get(voortgangRef),
+      klasDoelRef ? transaction.get(klasDoelRef) : Promise.resolve(null),
+      transaction.get(bijdrageRef),
     ]);
     const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
     const claim = claimSnapshot.exists ? (claimSnapshot.data() || {}) : null;
@@ -2853,11 +2874,13 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     let eersteKeerHonderd = false;
     let claimPatch = {};
     let reden = "";
+    let eersteKeer = false;
 
     if (sourceKind === "game") {
       const eerder = claim || (legacyGame.plays > 0 ? { plays: legacyGame.plays, totalAwarded: legacyGame.totalAwarded } : null);
       const basis = computeGameAwardAmount(gameRule, result);
       if (!eerder) {
+        eersteKeer = true;
         tokensVoorPlafond = basis;
         xp = regels.XP_SPEL;
         claimPatch = { plays: 1, totalAwarded: basis };
@@ -2889,6 +2912,7 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
       if (beloning.xp <= 0 && beloning.tokens <= 0 && !weekdoelNuGehaald) {
         return { awarded: false, amount: 0, balance: account.balance, reason: "already-awarded" };
       }
+      eersteKeer = !eerder;
       xp = beloning.xp;
       tokensVoorPlafond = beloning.tokens;
       ster = beloning.ster;
@@ -3056,8 +3080,32 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
       updatedAt: timestamp,
     }, { merge: true });
 
+    let klasdoelPunt = false;
+    if (klasDoelSnapshot?.exists && samen.teltVoorKlasdoel({ eersteKeer, soort: sourceKind, percentage })) {
+      const doel = klasDoelSnapshot.data() || {};
+      const bijdrage = bijdrageSnapshot.exists ? (bijdrageSnapshot.data() || {}) : {};
+      const puntenDezeWeek = normalizeNonNegativeInteger(bijdrage.punten, 0);
+      const na = samen.klasdoelNaPunt(doel, puntenDezeWeek);
+      if (na) {
+        klasdoelPunt = true;
+        transaction.set(klasDoelRef, {
+          stand: na.stand,
+          ...(na.gehaald ? { status: "gehaald", gehaaldOp: timestamp } : {}),
+          updatedAt: timestamp,
+        }, { merge: true });
+        transaction.set(bijdrageRef, {
+          studentUid: auth.uid,
+          klasId: leerlingKlasId,
+          week: weekSleutel,
+          punten: puntenDezeWeek + 1,
+          updatedAt: timestamp,
+        }, { merge: true });
+      }
+    }
+
     return {
       awarded: totaalTokens > 0 || xp > 0 || nieuweBadges.length > 0,
+      klasdoelPunt,
       nieuweBadges: nieuweBadges.map((id) => regels.BADGES.find((badge) => badge.id === id)?.titel || id),
       amount: totaalTokens,
       huiswerkTokens,
@@ -3270,6 +3318,165 @@ async function updateAvatarCore({ auth, data = {}, db, now = FieldValue.serverTi
   }, { merge: true });
 
   return { saved: true, avatar };
+}
+
+// Mijn klas (fase 3): de kaarten van klasgenoten, op de server samengesteld.
+// Alleen wat zichtbaar mag zijn: avatar, naam, niveau, titel, pins en
+// complimenten. Nooit saldo, scores of weekreeks.
+async function getMijnKlasCore({ auth, data = {}, db, nuDatum = new Date() }) {
+  const caller = await getCallerDoc({ auth, db, label: "Gebruiker" });
+  const isLeerling = caller.data.role === "student";
+  const klasId = isLeerling ? String(caller.data.klasId || "").trim() : String(data.klasId || "").trim();
+  if (!isLeerling && !isAdminCaller(caller.data)) {
+    throw new HttpsError("permission-denied", "Geen toegang.");
+  }
+  if (!klasId) return { klasId: "", kaarten: [], klasDoel: null, gegevenDezeWeek: [] };
+
+  const [avatarLaag, regels] = await Promise.all([loadAvatarLayer(), loadBeloningLayer()]);
+  const weekSleutel = regels.isoWeekSleutel(nuDatum);
+  const leerlingen = (await db.collection("users").where("klasId", "==", klasId).get()).docs
+    .map((doc) => ({ uid: doc.id, ...(doc.data() || {}) }))
+    .filter((leerling) => leerling.role === "student" && (leerling.isTestaccount !== true || leerling.uid === auth.uid));
+
+  const [loadouts, niveaus, itemsSnapshot, complimentenSnapshot, klasDoelSnapshot] = await Promise.all([
+    Promise.all(leerlingen.map((leerling) => db.doc(`studentTokenLoadouts/${leerling.uid}`).get())),
+    Promise.all(leerlingen.map((leerling) => db.doc(`leerlingNiveau/${leerling.uid}`).get())),
+    db.collection("tokenShopItems").get(),
+    db.collection("complimenten").where("klasId", "==", klasId).get(),
+    db.doc(`klasDoel/${klasId}`).get(),
+  ]);
+  const itemById = new Map(itemsSnapshot.docs.map((doc) => [doc.id, doc.data() || {}]));
+  const beeld = (id) => {
+    const item = itemById.get(id);
+    if (!item) return null;
+    return { title: item.title || "", imageUrl: item.imageUrl || "", accent: item.previewStyle?.accent || "" };
+  };
+
+  const complimenten = complimentenSnapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
+    .filter((compliment) => compliment.verborgen !== true);
+
+  const kaarten = leerlingen.map((leerling, index) => {
+    const loadout = loadouts[index].exists ? (loadouts[index].data() || {}) : {};
+    const vitrine = loadout.vitrine || {};
+    const getekend = loadout.avatarGetekend === true && loadout.avatar;
+    const telling = {};
+    for (const compliment of complimenten) {
+      if (compliment.aan === leerling.uid) telling[compliment.soort] = (telling[compliment.soort] || 0) + 1;
+    }
+    return {
+      uid: leerling.uid,
+      naam: String(leerling.displayName || leerling.naam || "Leerling"),
+      ikZelf: leerling.uid === auth.uid,
+      avatar: getekend ? avatarLaag.normaliseerAvatar(loadout.avatar) : null,
+      plaatje: getekend ? null : beeld(loadout.activeAvatarSkinId),
+      frame: beeld(loadout.activeAvatarFrameId),
+      niveau: niveaus[index].exists ? normalizeNonNegativeInteger(niveaus[index].data()?.niveau, 1) || 1 : 1,
+      titel: vitrine.toonTitel === false ? null : beeld(loadout.activeTitleBadgeId),
+      pins: vitrine.toonPins === false
+        ? []
+        : (Array.isArray(loadout.activePinIds) ? loadout.activePinIds : []).slice(0, 3).map(beeld).filter(Boolean),
+      complimenten: telling,
+    };
+  }).sort((a, b) => a.naam.localeCompare(b.naam, "nl"));
+
+  const eigenLoadout = loadouts[leerlingen.findIndex((leerling) => leerling.uid === auth.uid)];
+  const eigenVitrine = eigenLoadout?.exists ? (eigenLoadout.data()?.vitrine || {}) : {};
+  const klasDoel = klasDoelSnapshot.exists ? klasDoelSnapshot.data() || {} : null;
+
+  return {
+    klasId,
+    kaarten,
+    klasDoel: klasDoel ? {
+      titel: String(klasDoel.titel || ""),
+      doel: normalizeNonNegativeInteger(klasDoel.doel, 0),
+      stand: normalizeNonNegativeInteger(klasDoel.stand, 0),
+      status: String(klasDoel.status || ""),
+    } : null,
+    vitrine: { toonTitel: eigenVitrine.toonTitel !== false, toonPins: eigenVitrine.toonPins !== false },
+    gegevenDezeWeek: complimenten
+      .filter((compliment) => compliment.van === auth.uid && compliment.week === weekSleutel)
+      .map((compliment) => ({ aan: compliment.aan, soort: compliment.soort })),
+    ontvangen: complimenten
+      .filter((compliment) => compliment.aan === auth.uid)
+      .sort((a, b) => String(b.week).localeCompare(String(a.week)))
+      .slice(0, 12)
+      .map((compliment) => ({
+        soort: compliment.soort,
+        van: kaarten.find((kaart) => kaart.uid === compliment.van)?.naam || "Een klasgenoot",
+      })),
+  };
+}
+
+async function updateVitrineCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen hebben een kaart.");
+  }
+  const vitrine = {
+    toonTitel: data.toonTitel !== false,
+    toonPins: data.toonPins !== false,
+  };
+  await db.doc(`studentTokenLoadouts/${auth.uid}`).set({
+    studentUid: auth.uid,
+    vitrine,
+    updatedAt: getServerTimestamp(now),
+  }, { merge: true });
+  return { saved: true, vitrine };
+}
+
+// Een compliment geven (fase 3): uit de vaste lijst, aan een klasgenoot,
+// hooguit 3 per week en 1 per klasgenoot per week.
+async function geefComplimentCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date() }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen geven complimenten.");
+  }
+  const [samen, regels] = await Promise.all([loadSamenLayer(), loadBeloningLayer()]);
+  const soort = requireString(data.soort, "soort");
+  if (!samen.COMPLIMENTEN.some((compliment) => compliment.id === soort)) {
+    throw new HttpsError("invalid-argument", "Dit compliment bestaat niet.");
+  }
+  const aan = requireString(data.aanUid, "aanUid");
+  if (aan === auth.uid) {
+    throw new HttpsError("invalid-argument", "Een compliment geef je aan een ander.");
+  }
+  const klasId = String(caller.data.klasId || "").trim();
+  const ontvanger = await db.doc(`users/${aan}`).get();
+  if (!klasId || !ontvanger.exists || ontvanger.data()?.role !== "student" || String(ontvanger.data()?.klasId || "") !== klasId) {
+    throw new HttpsError("failed-precondition", "Je kunt alleen een klasgenoot een compliment geven.");
+  }
+
+  const week = regels.isoWeekSleutel(nuDatum);
+  const gegeven = await db.collection("complimenten").where("van", "==", auth.uid).get();
+  const dezeWeek = gegeven.docs.map((doc) => doc.data() || {}).filter((compliment) => compliment.week === week);
+  if (dezeWeek.some((compliment) => compliment.aan === aan)) {
+    throw new HttpsError("already-exists", "Deze klasgenoot kreeg deze week al een compliment van jou.");
+  }
+  if (dezeWeek.length >= samen.COMPLIMENTEN_PER_WEEK) {
+    throw new HttpsError("resource-exhausted", `Je hebt deze week al ${samen.COMPLIMENTEN_PER_WEEK} complimenten gegeven.`);
+  }
+
+  await db.doc(`complimenten/${cleanIdPart(auth.uid)}_${cleanIdPart(aan)}_${week}`).set({
+    van: auth.uid,
+    aan,
+    klasId,
+    soort,
+    week,
+    verborgen: false,
+    createdAt: getServerTimestamp(now),
+  });
+  return { gegeven: true, over: samen.COMPLIMENTEN_PER_WEEK - dezeWeek.length - 1 };
+}
+
+// De docent verbergt een compliment dat toch verkeerd valt.
+async function verbergComplimentCore({ auth, data = {}, db }) {
+  const caller = await getCallerDoc({ auth, db, label: "Beheerder" });
+  if (!isAdminCaller(caller.data)) {
+    throw new HttpsError("permission-denied", "Alleen de docent kan complimenten verbergen.");
+  }
+  const id = requireString(data.id, "id");
+  await db.doc(`complimenten/${id}`).set({ verborgen: data.verborgen !== false }, { merge: true });
+  return { id, verborgen: data.verborgen !== false };
 }
 
 async function hasPurchasedTokenShopItem({ db, studentUid, itemId }) {
@@ -3609,6 +3816,22 @@ exports.equipTokenShopItem = onCall({
     db: getFirestore(),
   });
 });
+
+exports.getMijnKlas = onCall({
+  region: REGION,
+}, async (request) => getMijnKlasCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.updateVitrine = onCall({
+  region: REGION,
+}, async (request) => updateVitrineCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.geefCompliment = onCall({
+  region: REGION,
+}, async (request) => geefComplimentCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.verbergCompliment = onCall({
+  region: REGION,
+}, async (request) => verbergComplimentCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
 
 exports.updateAvatar = onCall({
   region: REGION,
@@ -4615,6 +4838,10 @@ exports.__test = {
   getOpenRouterConfigStatusCore,
   purchaseTokenShopItemCore,
   updateAvatarCore,
+  getMijnKlasCore,
+  updateVitrineCore,
+  geefComplimentCore,
+  verbergComplimentCore,
   updateShopWensenCore,
   resetLeerlingBlokWerkCore,
   startTestleerlingSessieCore,
