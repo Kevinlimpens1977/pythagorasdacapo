@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BadgeCheck, CheckCircle2, Coins, Gift, Loader2, ReceiptText, ShoppingBag, Sparkles } from 'lucide-react';
+import {
+  CheckCircle2, Clock, Coins, Eye, Gift, Heart, Loader2, ReceiptText, ShoppingBag, Sparkles, Target, X
+} from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import {
   equipTokenShopItem,
   purchaseTokenShopItem,
   subscribeActiveTokenShopItems,
+  subscribeLeerlingShop,
   subscribeStudentTokenLoadout,
   subscribeStudentPurchases,
   subscribeStudentTokenTransactions,
-  subscribeTokenAccount
+  subscribeTokenAccount,
+  updateShopWensen
 } from '../services/tokenService';
 import {
   getActiveRewardItems,
@@ -17,6 +21,11 @@ import {
   normalizeLoadout,
   TOKEN_SHOP_ITEM_TYPES
 } from '../lib/tokenShopRewards';
+import { dagenTotNieuweEtalage, etalageVoorWeek, spaarVoortgang } from '../lib/shopEtalage';
+
+// Shop 2.0 (SPELOPZET-TOKENS-EN-SHOP.md, fase 2A): spaardoel met voorschot,
+// verlanglijst, een wisselende etalage, passen op je profiel, bevestigen,
+// uitpakken, en items weer uitzetten. Stijl: Helix Slide Design System v2.
 
 const SHOP_TAB_LABELS = {
   all: 'Alles',
@@ -24,11 +33,18 @@ const SHOP_TAB_LABELS = {
   avatarFrame: 'Frames',
   shopBadge: 'Pins',
   profileBanner: 'Banners',
-  victoryEffect: 'Effects',
+  victoryEffect: 'Effecten',
   titleBadge: 'Titels'
 };
 
 const SHOP_TABS = ['all', ...TOKEN_SHOP_ITEM_TYPES];
+const LOADOUT_VELD = {
+  avatarSkin: 'activeAvatarSkinId',
+  avatarFrame: 'activeAvatarFrameId',
+  profileBanner: 'activeProfileBannerId',
+  victoryEffect: 'activeVictoryEffectId',
+  titleBadge: 'activeTitleBadgeId'
+};
 
 const formatDate = (value) => {
   if (!value) return 'Zojuist';
@@ -37,6 +53,8 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat('nl-NL', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date);
 };
 
+const prijsVan = (item) => Math.max(0, Number(item?.price) || 0);
+
 export default function StudentTokenShopPage() {
   const { currentUser, isDevBypass } = useAuth();
   const [account, setAccount] = useState({ balance: 0 });
@@ -44,66 +62,66 @@ export default function StudentTokenShopPage() {
   const [transactions, setTransactions] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [loadout, setLoadout] = useState({ activePinIds: [] });
+  const [wensen, setWensen] = useState({ spaardoelId: null, verlanglijst: [] });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [buyingId, setBuyingId] = useState('');
-  const [equippingId, setEquippingId] = useState('');
+  const [bezigId, setBezigId] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [bevestigItem, setBevestigItem] = useState(null);
+  const [uitpakItem, setUitpakItem] = useState(null);
+  const [pasItem, setPasItem] = useState(null);
 
   useEffect(() => {
-    if (!currentUser?.uid || isDevBypass) {
-      return undefined;
-    }
-
+    if (!currentUser?.uid || isDevBypass) return undefined;
     const unsubscribers = [
       subscribeTokenAccount(currentUser.uid, setAccount, (err) => setError(err.message)),
       subscribeActiveTokenShopItems(setItems, (err) => setError(err.message)),
       subscribeStudentTokenTransactions(currentUser.uid, setTransactions, (err) => console.warn('Tokenhistoriek niet geladen:', err), 12),
       subscribeStudentPurchases(currentUser.uid, setPurchases, (err) => console.warn('Aankopen niet geladen:', err)),
-      subscribeStudentTokenLoadout(currentUser.uid, setLoadout, (err) => console.warn('Uitrusting niet geladen:', err))
+      subscribeStudentTokenLoadout(currentUser.uid, setLoadout, (err) => console.warn('Uitrusting niet geladen:', err)),
+      subscribeLeerlingShop(currentUser.uid, setWensen, (err) => console.warn('Spaardoel niet geladen:', err))
     ];
-
     return () => unsubscribers.forEach((unsubscribe) => unsubscribe?.());
   }, [currentUser?.uid, isDevBypass]);
 
-  const purchaseIds = useMemo(
-    () => new Set(purchases.map((purchase) => purchase.itemId)),
-    [purchases]
-  );
+  useEffect(() => {
+    if (!uitpakItem) return undefined;
+    const id = window.setTimeout(() => setUitpakItem(null), 2400);
+    return () => window.clearTimeout(id);
+  }, [uitpakItem]);
 
-  const itemsById = useMemo(
-    () => new Map(items.map((item) => [item.id, item])),
-    [items]
-  );
+  const saldo = Math.max(0, Number(account.balance) || 0);
+  const bezit = useMemo(() => new Set(purchases.map((purchase) => purchase.itemId)), [purchases]);
+  const itemsById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
+  const normalizedLoadout = useMemo(() => normalizeLoadout(loadout), [loadout]);
+  const activeIds = useMemo(() => new Set([
+    normalizedLoadout.activeAvatarFrameId,
+    normalizedLoadout.activeAvatarSkinId,
+    normalizedLoadout.activeProfileBannerId,
+    normalizedLoadout.activeVictoryEffectId,
+    normalizedLoadout.activeTitleBadgeId,
+    ...normalizedLoadout.activePinIds
+  ].filter(Boolean)), [normalizedLoadout]);
 
-  const normalizedLoadout = useMemo(
-    () => normalizeLoadout(loadout),
-    [loadout]
-  );
+  // Passen: het profiel laten zien alsof dit item actief is.
+  const pasLoadout = useMemo(() => {
+    if (!pasItem) return normalizedLoadout;
+    if (pasItem.itemType === 'shopBadge') {
+      return { ...normalizedLoadout, activePinIds: [...normalizedLoadout.activePinIds.filter((id) => id !== pasItem.id), pasItem.id].slice(-3) };
+    }
+    const veld = LOADOUT_VELD[pasItem.itemType];
+    return veld ? { ...normalizedLoadout, [veld]: pasItem.id } : normalizedLoadout;
+  }, [normalizedLoadout, pasItem]);
+  const profielItems = useMemo(() => getActiveRewardItems({ loadout: pasLoadout, items }), [items, pasLoadout]);
 
-  const activeRewardItems = useMemo(
-    () => getActiveRewardItems({ loadout: normalizedLoadout, items }),
-    [items, normalizedLoadout]
-  );
+  const ownedItems = useMemo(() => purchases
+    .map((purchase) => itemsById.get(purchase.itemId) || { id: purchase.itemId, ...(purchase.item || purchase.itemSnapshot || {}) })
+    .filter((item) => item?.id), [itemsById, purchases]);
 
-  const activeIds = useMemo(
-    () => new Set([
-      normalizedLoadout.activeAvatarFrameId,
-      normalizedLoadout.activeAvatarSkinId,
-      normalizedLoadout.activeProfileBannerId,
-      normalizedLoadout.activeVictoryEffectId,
-      normalizedLoadout.activeTitleBadgeId,
-      ...normalizedLoadout.activePinIds
-    ].filter(Boolean)),
-    [normalizedLoadout]
-  );
-
-  const ownedItems = useMemo(
-    () => purchases
-      .map((purchase) => itemsById.get(purchase.itemId) || { id: purchase.itemId, ...(purchase.item || purchase.itemSnapshot || {}) })
-      .filter((item) => item?.id),
-    [itemsById, purchases]
-  );
+  const etalage = useMemo(() => etalageVoorWeek(items, { bezit }), [items, bezit]);
+  const dagenTotWissel = dagenTotNieuweEtalage(new Date());
+  const spaardoel = wensen.spaardoelId ? itemsById.get(wensen.spaardoelId) : null;
+  const verlanglijst = (wensen.verlanglijst || []).map((id) => itemsById.get(id)).filter(Boolean);
 
   const itemCountByTab = useMemo(() => {
     const counts = { all: items.length };
@@ -112,255 +130,441 @@ export default function StudentTokenShopPage() {
     });
     return counts;
   }, [items]);
-
   const visibleItems = useMemo(
     () => (activeTab === 'all' ? items : items.filter((item) => item.itemType === activeTab)),
     [activeTab, items]
   );
 
-  const activeTitle = activeRewardItems.find((item) => item.itemType === 'titleBadge');
-  const activeAvatar = activeRewardItems.find((item) => item.itemType === 'avatarSkin');
-  const activeFrame = activeRewardItems.find((item) => item.itemType === 'avatarFrame');
-  const activeBanner = activeRewardItems.find((item) => item.itemType === 'profileBanner');
-  const activePins = activeRewardItems.filter((item) => item.itemType === 'shopBadge');
+  const meld = (tekst) => { setMessage(tekst); setError(''); };
+  const fout = (err, standaard) => { console.error(standaard, err); setError(err?.message || standaard); setMessage(''); };
 
-  const handleBuy = async (item) => {
-    setMessage('');
-    setError('');
-    setBuyingId(item.id);
+  const koop = async (item) => {
+    setBevestigItem(null);
+    setBezigId(item.id);
     try {
-      await purchaseTokenShopItem(item.id);
-      setMessage(`${item.title} is gekocht.`);
+      const resultaat = await purchaseTokenShopItem(item.id);
+      setUitpakItem(item);
+      meld(resultaat?.spaardoelGehaald
+        ? `Spaardoel gehaald: ${item.title}. Kies hieronder je volgende doel.`
+        : `${item.title} is van jou. Zet hem aan bij Mijn spullen.`);
     } catch (err) {
-      console.error('Tokenaankoop mislukt:', err);
-      setError(err.message || 'Aankoop is mislukt.');
+      fout(err, 'Aankoop is mislukt.');
     } finally {
-      setBuyingId('');
+      setBezigId('');
     }
   };
 
-  const handleEquip = async (item) => {
-    setMessage('');
-    setError('');
-    setEquippingId(item.id);
+  const zetAan = async (item, uit = false) => {
+    setBezigId(item.id);
     try {
-      await equipTokenShopItem(item.id);
-      setMessage(`${item.title} is nu actief.`);
+      await equipTokenShopItem(item.id, { unequip: uit });
+      meld(uit ? `${item.title} staat uit.` : `${item.title} staat aan.`);
     } catch (err) {
-      console.error('Shopitem activeren mislukt:', err);
-      setError(err.message || 'Activeren is mislukt.');
+      fout(err, 'Aanzetten is mislukt.');
     } finally {
-      setEquippingId('');
+      setBezigId('');
     }
   };
+
+  const kiesSpaardoel = async (item) => {
+    setBezigId(item.id);
+    try {
+      const resultaat = await updateShopWensen({ spaardoelId: item.id });
+      meld(resultaat?.voorschot > 0
+        ? `${item.title} is je spaardoel. Je krijgt ${resultaat.voorschot} tokens voorschot.`
+        : `${item.title} is je spaardoel.`);
+    } catch (err) {
+      fout(err, 'Spaardoel instellen is mislukt.');
+    } finally {
+      setBezigId('');
+    }
+  };
+
+  const wisselVerlanglijst = async (item) => {
+    const huidig = wensen.verlanglijst || [];
+    const staat = huidig.includes(item.id);
+    if (!staat && huidig.length >= 5) {
+      setError('Je verlanglijst is vol (5 items). Haal er eerst een af.');
+      return;
+    }
+    try {
+      await updateShopWensen({ verlanglijst: staat ? huidig.filter((id) => id !== item.id) : [...huidig, item.id] });
+    } catch (err) {
+      fout(err, 'Verlanglijst bijwerken is mislukt.');
+    }
+  };
+
+  const kaartProps = (item) => ({
+    item,
+    saldo,
+    bezit: bezit.has(item.id),
+    actief: activeIds.has(item.id),
+    bezig: bezigId === item.id,
+    isSpaardoel: wensen.spaardoelId === item.id,
+    opVerlanglijst: (wensen.verlanglijst || []).includes(item.id),
+    isPassend: pasItem?.id === item.id,
+    onKoop: () => setBevestigItem(item),
+    onZetAan: (uit) => zetAan(item, uit),
+    onSpaardoel: () => kiesSpaardoel(item),
+    onVerlanglijst: () => wisselVerlanglijst(item),
+    onPas: () => setPasItem(pasItem?.id === item.id ? null : item)
+  });
 
   return (
     <div className="helix-page min-h-full">
-      <div className="helix-container py-10 md:py-12">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="helix-eyebrow">Tokenshop</p>
-            <h1 className="helix-heading-xl mt-2">Sparen en uitgeven</h1>
-            <p className="helix-muted mt-3 max-w-2xl text-lg leading-8">
-              Kies een gadget wanneer je genoeg tokens hebt verdiend.
-            </p>
-          </div>
-          <div className="rounded-[var(--helix-radius-lg)] border border-amber-200 bg-amber-50 px-5 py-4 text-amber-900">
-            <div className="flex items-center gap-3">
-              <Coins size={24} />
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest">Actueel saldo</p>
-                <p className="text-3xl font-black">{Math.max(0, Number(account.balance) || 0)} tokens</p>
-              </div>
+      <div className="helix-container py-8 md:py-10">
+        <div className="overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFF7E8] shadow-[6px_6px_0_#0B0D0F]">
+          <header className="ds-anchor flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+            <h1 className="ds-display text-[34px]">Tokenshop</h1>
+            <div className="flex items-center gap-2 rounded-xl border-2 border-[#0B0D0F] bg-white px-3 py-1.5 text-lg font-extrabold">
+              <Coins size={20} className="text-[#B4520E]" aria-hidden="true" /> {saldo} tokens
             </div>
-          </div>
-        </div>
+          </header>
 
-        {message ? <div className="mt-5 rounded-[var(--helix-radius-md)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</div> : null}
-        {error ? <div className="mt-5 rounded-[var(--helix-radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{error}</div> : null}
+          <div className="grid gap-5 p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="min-w-0 space-y-6">
+              {message && <p className="rounded-xl border-2 border-[var(--color-green-ink)] bg-[var(--color-green-soft)] px-4 py-3 font-bold text-[var(--color-green-ink)]">{message}</p>}
+              {error && <p className="rounded-xl border-2 border-[#D83A2E] bg-[var(--color-red-soft)] px-4 py-3 font-bold text-[var(--color-red-ink)]">{error}</p>}
 
-        <section className="mt-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div>
-            <nav className="custom-scrollbar mb-4 flex gap-1.5 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1.5" aria-label="Shopcategorieën">
-              {SHOP_TABS.map((tab) => {
-                const isActiveTab = activeTab === tab;
-                return (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setActiveTab(tab)}
-                    className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-4 text-sm font-black transition ${
-                      isActiveTab
-                        ? 'bg-white text-[var(--helix-purple)] shadow-[var(--helix-shadow-card)] ring-1 ring-[var(--helix-purple)]/35'
-                        : 'text-[var(--helix-muted)] hover:bg-white/70 hover:text-[var(--helix-navy)]'
-                    }`}
-                  >
-                    {SHOP_TAB_LABELS[tab]}
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${isActiveTab ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]' : 'bg-white/80 text-[var(--helix-muted)]'}`}>
-                      {itemCountByTab[tab] || 0}
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-            <div className="grid gap-4 md:grid-cols-2">
-              {visibleItems.length === 0 ? (
-                <div className="helix-surface p-8 text-center md:col-span-2">
-                  <Gift size={42} className="mx-auto text-[var(--helix-purple)]/35" />
-                  <p className="mt-3 font-black text-[var(--helix-navy)]">
-                    {items.length === 0 ? 'De shop wordt gevuld' : `Nog geen ${SHOP_TAB_LABELS[activeTab]?.toLowerCase() || 'items'} in de shop`}
+              <SpaardoelKaart spaardoel={spaardoel} saldo={saldo} verlanglijst={verlanglijst} onKoop={setBevestigItem} onKies={kiesSpaardoel} />
+
+              <section>
+                <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                  <h2 className="ds-display text-[26px]">Etalage van deze week</h2>
+                  <p className="flex items-center gap-1 text-sm font-bold text-[var(--helix-muted)]">
+                    <Clock size={15} aria-hidden="true" /> Nieuwe etalage over {dagenTotWissel} {dagenTotWissel === 1 ? 'dag' : 'dagen'}. Alles komt later terug.
                   </p>
                 </div>
-              ) : visibleItems.map((item) => {
-                const price = Math.max(0, Number(item.price) || 0);
-                const canBuy = Number(account.balance || 0) >= price;
-                const bought = purchaseIds.has(item.id);
-                const active = activeIds.has(item.id);
-                return (
-                  <article
-                    key={item.id}
-                    className={`token-shop-card token-shop-rarity-${item.rarity || 'common'} token-shop-motion-${item.previewStyle?.motion || 'shine'} helix-card overflow-hidden`}
-                    style={{ '--token-avatar-accent': item.previewStyle?.accent || 'var(--helix-purple)' }}
-                  >
-                    <div className="token-shop-media aspect-[16/10] bg-[var(--helix-surface-soft)]">
-                      <span className="token-shop-sparkles" aria-hidden="true" />
-                      <span className="token-shop-shine" aria-hidden="true" />
-                      {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.title || ''} className="token-shop-avatar-image h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-[var(--helix-purple)]/40">
-                          <Gift size={52} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        <span className="helix-badge">{getRewardTypeLabel(item.itemType)}</span>
-                        <span className="helix-badge bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">{getRewardRarityLabel(item.rarity)}</span>
-                        {active ? <span className="helix-badge-success">Actief</span> : null}
-                      </div>
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h2 className="text-xl font-black text-[var(--helix-navy)]">{item.title || 'Shopitem'}</h2>
-                          <p className="helix-muted mt-2 text-sm leading-6">{item.description || 'Binnenkort meer details.'}</p>
-                        </div>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-sm font-black text-amber-700">
-                          <Coins size={15} />
-                          {price}
-                        </span>
-                      </div>
-                      {bought ? (
-                        <button
-                          type="button"
-                          onClick={() => handleEquip(item)}
-                          disabled={active || equippingId === item.id}
-                          className="btn-primary mt-5 min-h-11 w-full text-sm disabled:cursor-not-allowed disabled:opacity-45"
-                        >
-                          {equippingId === item.id ? <Loader2 size={18} className="animate-spin" /> : active ? <CheckCircle2 size={18} /> : <Sparkles size={18} />}
-                          {active ? 'Actief in je profiel' : 'Activeren'}
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleBuy(item)}
-                          disabled={!canBuy || buyingId === item.id}
-                          className="btn-primary mt-5 min-h-11 w-full text-sm disabled:cursor-not-allowed disabled:opacity-45"
-                        >
-                          {buyingId === item.id ? <Loader2 size={18} className="animate-spin" /> : <ShoppingBag size={18} />}
-                          {canBuy ? 'Kopen' : 'Nog even sparen'}
-                        </button>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+                {etalage.length === 0 ? (
+                  <p className="helix-muted text-sm">Je hebt alles al. Knap.</p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {etalage.map((item) => <ShopKaart key={item.id} {...kaartProps(item)} etalage />)}
+                  </div>
+                )}
+              </section>
+
+              <section>
+                <h2 className="ds-display mb-3 text-[26px]">De hele collectie</h2>
+                <nav className="mb-4 flex gap-1.5 overflow-x-auto rounded-xl border-2 border-[#0B0D0F] bg-white p-1.5" aria-label="Soorten">
+                  {SHOP_TABS.map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
+                      className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-extrabold ${activeTab === tab ? 'bg-[#0B0D0F] text-[#FFD33D]' : 'text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]'}`}
+                    >
+                      {SHOP_TAB_LABELS[tab]}
+                      <span className="rounded-full bg-white/80 px-2 text-[11px] text-[#0B0D0F]">{itemCountByTab[tab] || 0}</span>
+                    </button>
+                  ))}
+                </nav>
+                {visibleItems.length === 0 ? (
+                  <div className="rounded-xl border-2 border-dashed border-[var(--helix-border)] p-8 text-center">
+                    <Gift size={40} className="mx-auto text-[var(--helix-muted)]" aria-hidden="true" />
+                    <p className="mt-2 font-bold">{items.length === 0 ? 'De shop wordt gevuld.' : 'Nog niets in deze soort.'}</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {visibleItems.map((item) => <ShopKaart key={item.id} {...kaartProps(item)} />)}
+                  </div>
+                )}
+              </section>
             </div>
 
             <aside className="space-y-5">
-              <section className="helix-surface overflow-hidden p-0">
-                <div className="p-5" style={{ background: activeBanner?.previewStyle?.accent ? `${activeBanner.previewStyle.accent}18` : 'var(--helix-surface-soft)' }}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-widest text-[var(--helix-muted)]">Mijn profiel</p>
-                      <h2 className="mt-1 font-black text-[var(--helix-navy)]">{currentUser?.displayName || 'Leerling'}</h2>
-                      <p className="helix-muted mt-1 text-sm">{activeTitle?.title || activeAvatar?.title || 'Starter Avatar'}</p>
-                    </div>
-                    <div
-                      className="token-profile-avatar flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 bg-white shadow-[var(--helix-shadow-card)]"
-                      style={{
-                        '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)',
-                        borderColor: activeFrame?.previewStyle?.accent || activeAvatar?.previewStyle?.accent || 'var(--helix-border)'
-                      }}
-                    >
-                      {activeAvatar?.imageUrl ? (
-                        <img src={activeAvatar.imageUrl} alt={activeAvatar.title || 'Avatar'} className="h-full w-full object-cover" />
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {activePins.length === 0 ? (
-                      <span className="helix-badge">Nog geen actieve pins</span>
-                    ) : activePins.map((pin) => (
-                      <span key={pin.id} className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-black text-white" style={{ background: pin.previewStyle?.accent || 'var(--helix-purple)' }}>
-                        <BadgeCheck size={14} />
-                        {pin.title}
-                      </span>
+              <ProfielVoorbeeld naam={currentUser?.displayName || 'Leerling'} items={profielItems} pasItem={pasItem} onStopPassen={() => setPasItem(null)} />
+
+              <section className="rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
+                <h2 className="flex items-center gap-2 font-black text-[var(--helix-navy)]"><Heart size={18} className="text-[#D83A2E]" aria-hidden="true" /> Verlanglijst ({verlanglijst.length}/5)</h2>
+                {verlanglijst.length === 0 ? (
+                  <p className="helix-muted mt-2 text-sm">Klik op het hartje bij een item om het te bewaren.</p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {verlanglijst.map((item) => (
+                      <li key={item.id} className="rounded-lg bg-[var(--helix-surface-soft)] px-3 py-2">
+                        <div className="flex items-center justify-between gap-2 text-sm font-bold">
+                          <span>{item.title}</span>
+                          <span className="text-[var(--helix-muted)]">{prijsVan(item)}</span>
+                        </div>
+                        <Balk procent={spaarVoortgang(saldo, prijsVan(item))} />
+                      </li>
                     ))}
-                  </div>
-                </div>
+                  </ul>
+                )}
               </section>
 
-              <section className="helix-surface p-5">
-                <div className="flex items-center gap-2">
-                  <Gift size={18} className="text-[var(--helix-purple)]" />
-                  <h2 className="font-black text-[var(--helix-navy)]">Mijn spullen</h2>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {ownedItems.length === 0 ? (
-                    <p className="helix-muted text-sm">Koop je eerste gadget om hem hier te activeren.</p>
-                  ) : ownedItems.slice(0, 8).map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => handleEquip(item)}
-                      disabled={activeIds.has(item.id) || equippingId === item.id}
-                      className="flex w-full items-center justify-between gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-2 text-left disabled:opacity-70"
-                    >
-                      <span>
-                        <span className="block text-sm font-black text-[var(--helix-navy)]">{item.title || 'Gadget'}</span>
-                        <span className="helix-muted text-xs">{getRewardTypeLabel(item.itemType)}</span>
-                      </span>
-                      <span className="text-xs font-black text-[var(--helix-purple)]">{activeIds.has(item.id) ? 'Actief' : 'Kies'}</span>
-                    </button>
-                  ))}
-                </div>
+              <section className="rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
+                <h2 className="flex items-center gap-2 font-black text-[var(--helix-navy)]"><Gift size={18} aria-hidden="true" /> Mijn spullen ({ownedItems.length})</h2>
+                {ownedItems.length === 0 ? (
+                  <p className="helix-muted mt-2 text-sm">Koop je eerste item; daarna zet je het hier aan.</p>
+                ) : (
+                  <ul className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
+                    {ownedItems.map((item) => {
+                      const aan = activeIds.has(item.id);
+                      return (
+                        <li key={item.id} className="flex items-center justify-between gap-2 rounded-lg bg-[var(--helix-surface-soft)] px-3 py-2">
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-black text-[var(--helix-navy)]">{item.title || 'Item'}</span>
+                            <span className="text-xs text-[var(--helix-muted)]">{getRewardTypeLabel(item.itemType)}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => zetAan(item, aan)}
+                            disabled={bezigId === item.id}
+                            className={`shrink-0 rounded-lg border-2 border-[#0B0D0F] px-2.5 py-1 text-xs font-extrabold ${aan ? 'bg-white' : 'bg-[#087EB5] text-white'}`}
+                          >
+                            {aan ? 'Uitzetten' : 'Aanzetten'}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </section>
 
-              <section className="helix-surface p-5">
-                <div className="flex items-center gap-2">
-                  <ReceiptText size={18} className="text-[var(--helix-purple)]" />
-                  <h2 className="font-black text-[var(--helix-navy)]">Recente geschiedenis</h2>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {transactions.length === 0 ? (
-                    <p className="helix-muted text-sm">Nog geen tokenbewegingen.</p>
-                  ) : transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-2">
-                      <div>
-                        <p className="text-sm font-black text-[var(--helix-navy)]">{transaction.source?.title || transaction.reason || transaction.type}</p>
-                        <p className="helix-muted text-xs">{formatDate(transaction.createdAt)}</p>
-                      </div>
-                      <span className={`text-sm font-black ${Number(transaction.amount) >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
-                        {Number(transaction.amount) >= 0 ? '+' : ''}{transaction.amount}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              <section className="rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
+                <h2 className="flex items-center gap-2 font-black text-[var(--helix-navy)]"><ReceiptText size={18} aria-hidden="true" /> Geschiedenis</h2>
+                {transactions.length === 0 ? (
+                  <p className="helix-muted mt-2 text-sm">Nog geen tokenbewegingen.</p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {transactions.map((transaction) => (
+                      <li key={transaction.id} className="flex items-center justify-between gap-3 rounded-lg bg-[var(--helix-surface-soft)] px-3 py-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-[var(--helix-navy)]">{transaction.source?.title || transaction.reason || transaction.type}</p>
+                          <p className="text-xs text-[var(--helix-muted)]">{formatDate(transaction.createdAt)}</p>
+                        </div>
+                        <span className={`text-sm font-black ${Number(transaction.amount) >= 0 ? 'text-[var(--color-green-ink)]' : 'text-[var(--color-red-ink)]'}`}>
+                          {Number(transaction.amount) >= 0 ? '+' : ''}{transaction.amount}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </section>
             </aside>
-        </section>
+          </div>
+        </div>
       </div>
+
+      {bevestigItem && (
+        <BevestigVenster item={bevestigItem} saldo={saldo} onKoop={() => koop(bevestigItem)} onAnnuleer={() => setBevestigItem(null)} />
+      )}
+      {uitpakItem && <UitpakMoment item={uitpakItem} />}
+    </div>
+  );
+}
+
+function Balk({ procent }) {
+  return (
+    <span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-[var(--helix-border)]" aria-hidden="true">
+      <span className="block h-full rounded-full bg-[#2E9D63]" style={{ width: `${procent}%` }} />
+    </span>
+  );
+}
+
+function ItemBeeld({ item, className = '' }) {
+  return item?.imageUrl ? (
+    <img src={item.imageUrl} alt="" className={`h-full w-full object-contain ${className}`} />
+  ) : (
+    <Gift size={40} className="text-[var(--helix-muted)]" aria-hidden="true" />
+  );
+}
+
+export function SpaardoelKaart({ spaardoel, saldo, verlanglijst, onKoop, onKies }) {
+  if (!spaardoel) {
+    return (
+      <section className="flex flex-wrap items-center gap-4 rounded-2xl border-2 border-dashed border-[#0B0D0F] bg-white p-4">
+        <Target size={30} className="text-[#087EB5]" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <p className="font-black text-[var(--helix-navy)]">Kies een spaardoel</p>
+          <p className="text-sm text-[var(--helix-muted)]">Klik bij een item op "Spaardoel". Je krijgt meteen 10 tokens voorschot (één keer per week).</p>
+        </div>
+        {verlanglijst.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {verlanglijst.slice(0, 3).map((item) => (
+              <button key={item.id} type="button" onClick={() => onKies(item)} className="rounded-lg border-2 border-[#0B0D0F] bg-[#FFF0B8] px-3 py-1.5 text-sm font-bold">
+                {item.title}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
+  const prijs = prijsVan(spaardoel);
+  const nog = Math.max(0, prijs - saldo);
+  return (
+    <section className="flex flex-wrap items-center gap-4 rounded-2xl border-[3px] border-[#0B0D0F] bg-white p-4 shadow-[3px_3px_0_#0B0D0F]">
+      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-surface-soft)] p-1"><ItemBeeld item={spaardoel} /></div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-black uppercase tracking-wide text-[#066A99]">Mijn spaardoel</p>
+        <p className="text-lg font-black text-[var(--helix-navy)]">{spaardoel.title}</p>
+        <Balk procent={spaarVoortgang(saldo, prijs)} />
+        <p className="mt-1 text-sm font-bold">{nog > 0 ? `Nog ${nog} tokens (${saldo} van ${prijs})` : 'Je hebt genoeg tokens.'}</p>
+      </div>
+      {nog === 0 && (
+        <button type="button" onClick={() => onKoop(spaardoel)} className="rounded-xl border-[2.5px] border-[#0B0D0F] bg-[#2E9D63] px-4 py-2 font-extrabold text-white shadow-[3px_3px_0_#0B0D0F]">
+          Nu kopen
+        </button>
+      )}
+    </section>
+  );
+}
+
+export function ShopKaart({ item, saldo, bezit, actief, bezig, isSpaardoel, opVerlanglijst, isPassend, etalage = false, onKoop, onZetAan, onSpaardoel, onVerlanglijst, onPas }) {
+  const prijs = prijsVan(item);
+  const genoeg = saldo >= prijs;
+  return (
+    <article className={`flex flex-col overflow-hidden rounded-2xl border-2 border-[#0B0D0F] bg-white ${isPassend ? 'ring-4 ring-[#087EB5]/40' : ''}`}>
+      <div className="relative flex aspect-[16/10] items-center justify-center bg-[var(--helix-surface-soft)] p-2">
+        <ItemBeeld item={item} />
+        <span className="absolute left-2 top-2 rounded-full border border-[#0B0D0F] bg-white px-2 py-0.5 text-[11px] font-extrabold">{getRewardRarityLabel(item.rarity)}</span>
+        {etalage && <span className="absolute right-2 top-2 rounded-full border border-[#0B0D0F] bg-[#FFD33D] px-2 py-0.5 text-[11px] font-extrabold">Deze week</span>}
+        {!bezit && (
+          <button
+            type="button"
+            onClick={onVerlanglijst}
+            aria-pressed={opVerlanglijst}
+            aria-label={opVerlanglijst ? 'Van verlanglijst halen' : 'Op verlanglijst zetten'}
+            className="absolute bottom-2 right-2 rounded-full border border-[#0B0D0F] bg-white p-1.5"
+          >
+            <Heart size={16} className={opVerlanglijst ? 'fill-[#D83A2E] text-[#D83A2E]' : 'text-[#0B0D0F]'} />
+          </button>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="truncate font-black text-[var(--helix-navy)]">{item.title || 'Item'}</h3>
+            <p className="text-xs text-[var(--helix-muted)]">{getRewardTypeLabel(item.itemType)}</p>
+          </div>
+          <span className="flex shrink-0 items-center gap-1 rounded-full border border-[#0B0D0F] bg-[#FFF0B8] px-2 py-0.5 text-sm font-black"><Coins size={14} aria-hidden="true" />{prijs}</span>
+        </div>
+        {item.description && <p className="line-clamp-2 text-sm text-[var(--helix-muted)]">{item.description}</p>}
+        <div className="mt-auto flex flex-wrap gap-2 pt-1">
+          {bezit ? (
+            <button type="button" onClick={() => onZetAan(actief)} disabled={bezig} className={`flex-1 rounded-lg border-2 border-[#0B0D0F] px-3 py-2 text-sm font-extrabold ${actief ? 'bg-white' : 'bg-[#087EB5] text-white'}`}>
+              {bezig ? <Loader2 size={16} className="mx-auto animate-spin" /> : actief ? 'Uitzetten' : 'Aanzetten'}
+            </button>
+          ) : (
+            <>
+              <button type="button" onClick={onKoop} disabled={!genoeg || bezig} className="flex flex-1 items-center justify-center gap-1 rounded-lg border-2 border-[#0B0D0F] bg-[#087EB5] px-3 py-2 text-sm font-extrabold text-white disabled:bg-[var(--helix-surface-soft)] disabled:text-[var(--helix-muted)]">
+                {bezig ? <Loader2 size={16} className="animate-spin" /> : <ShoppingBag size={16} aria-hidden="true" />}
+                {genoeg ? 'Kopen' : `Nog ${prijs - saldo}`}
+              </button>
+              <button type="button" onClick={onSpaardoel} disabled={isSpaardoel || bezig} className="flex items-center gap-1 rounded-lg border-2 border-[#0B0D0F] bg-white px-2.5 py-2 text-sm font-extrabold disabled:bg-[#FFF0B8]">
+                <Target size={15} aria-hidden="true" />{isSpaardoel ? 'Doel' : 'Spaardoel'}
+              </button>
+            </>
+          )}
+          {item.itemType !== 'victoryEffect' && (
+            <button type="button" onClick={onPas} aria-pressed={isPassend} className="flex items-center gap-1 rounded-lg border-2 border-[#0B0D0F] bg-white px-2.5 py-2 text-sm font-extrabold">
+              <Eye size={15} aria-hidden="true" />{isPassend ? 'Stop' : 'Passen'}
+            </button>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export function ProfielVoorbeeld({ naam, items, pasItem, onStopPassen }) {
+  const van = (type) => items.find((item) => item.itemType === type);
+  const avatar = van('avatarSkin');
+  const frame = van('avatarFrame');
+  const banner = van('profileBanner');
+  const titel = van('titleBadge');
+  const pins = items.filter((item) => item.itemType === 'shopBadge');
+  return (
+    <section className="overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-white shadow-[3px_3px_0_#0B0D0F]">
+      <div
+        className="relative h-24 bg-[#DCEFFA] bg-cover bg-center"
+        style={banner?.imageUrl ? { backgroundImage: `url('${banner.imageUrl}')` } : undefined}
+      >
+        {pasItem && (
+          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full border border-[#0B0D0F] bg-[#FFD33D] px-2 py-0.5 text-xs font-extrabold">
+            <Eye size={12} aria-hidden="true" /> Passen: {pasItem.title}
+            <button type="button" onClick={onStopPassen} aria-label="Stop met passen"><X size={12} /></button>
+          </span>
+        )}
+      </div>
+      <div className="-mt-10 px-4 pb-4">
+        <div className="relative h-20 w-20">
+          <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-[var(--helix-surface-soft)]" style={frame?.previewStyle?.accent ? { borderColor: frame.previewStyle.accent } : undefined}>
+            {avatar?.imageUrl && <img src={avatar.imageUrl} alt="" className="h-full w-full object-cover" />}
+          </div>
+          {frame?.imageUrl && <img src={frame.imageUrl} alt="" className="pointer-events-none absolute -inset-2 h-24 w-24 object-contain" />}
+        </div>
+        <p className="mt-2 text-lg font-black text-[var(--helix-navy)]">{naam}</p>
+        {titel && (
+          <p className="mt-1 flex items-center gap-2 text-sm font-bold">
+            {titel.imageUrl && <img src={titel.imageUrl} alt="" className="h-6 w-6 object-contain" />}
+            {titel.title}
+          </p>
+        )}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {pins.length === 0 ? (
+            <span className="text-xs text-[var(--helix-muted)]">Nog geen pins aan.</span>
+          ) : pins.map((pin) => (
+            <span key={pin.id} className="flex items-center gap-1 rounded-full border border-[#0B0D0F] bg-[var(--helix-surface-soft)] py-0.5 pl-0.5 pr-2 text-xs font-bold">
+              {pin.imageUrl ? <img src={pin.imageUrl} alt="" className="h-6 w-6 object-contain" /> : <Sparkles size={14} />}
+              {pin.title}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function BevestigVenster({ item, saldo, onKoop, onAnnuleer }) {
+  const prijs = prijsVan(item);
+  useEffect(() => {
+    const opToets = (event) => { if (event.key === 'Escape') onAnnuleer(); };
+    window.addEventListener('keydown', opToets);
+    return () => window.removeEventListener('keydown', opToets);
+  }, [onAnnuleer]);
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#0B0D0F]/40 p-4" onClick={onAnnuleer}>
+      <div role="dialog" aria-modal="true" aria-label={`${item.title} kopen`} onClick={(event) => event.stopPropagation()} className="w-full max-w-sm overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFF7E8] shadow-[6px_6px_0_#0B0D0F]">
+        <div className="ds-anchor px-4 py-2"><p className="ds-display text-[24px]">Kopen?</p></div>
+        <div className="flex flex-col items-center gap-3 p-5 text-center">
+          <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-white p-2"><ItemBeeld item={item} /></div>
+          <p className="text-lg font-black">{item.title}</p>
+          <p className="text-sm">Voor <strong>{prijs} tokens</strong>. Daarna heb je nog {saldo - prijs}.</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={onAnnuleer} className="rounded-xl border-[2.5px] border-[#0B0D0F] bg-white px-4 py-2 font-extrabold">Toch niet</button>
+            <button type="button" onClick={onKoop} autoFocus className="rounded-xl border-[2.5px] border-[#0B0D0F] bg-[#2E9D63] px-4 py-2 font-extrabold text-white shadow-[3px_3px_0_#0B0D0F]">
+              <CheckCircle2 size={16} className="mr-1 inline" aria-hidden="true" />Kopen
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function UitpakMoment({ item }) {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[400] flex items-center justify-center" role="status" aria-live="polite">
+      <div className="uitpak-moment flex flex-col items-center gap-2 rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFD33D] px-8 py-5 text-center shadow-[6px_6px_0_#0B0D0F]">
+        <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-white p-2"><ItemBeeld item={item} /></div>
+        <p className="ds-display text-[34px] leading-none">Nieuw!</p>
+        <p className="font-extrabold">{item.title}</p>
+      </div>
+      <style>{`
+        .uitpak-moment { animation: uitpak 2.4s ease-out both; }
+        @keyframes uitpak {
+          0% { opacity: 0; transform: scale(0.6) rotate(-6deg); }
+          14% { opacity: 1; transform: scale(1.08) rotate(2deg); }
+          22% { transform: scale(1) rotate(0); }
+          85% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) { .uitpak-moment { animation: none; } }
+      `}</style>
     </div>
   );
 }

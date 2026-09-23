@@ -3082,12 +3082,20 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
   const itemRef = db.doc(`tokenShopItems/${itemId}`);
   const accountRef = db.doc(`tokenAccounts/${auth.uid}`);
   const transactionRef = getTransactionRef(db, `spend_${cleanIdPart(auth.uid)}_${cleanIdPart(itemId)}_${Date.now().toString(36)}`);
-  const purchaseRef = db.collection("tokenPurchases").doc(createGeneratedId("purchase"));
+  // Vaste id per leerling en item (Shop 2.0): twee snelle klikken kunnen een
+  // niet-herhaalbaar item zo nooit twee keer kopen. Herhaalbare items houden
+  // een eigen id per aankoop.
+  const vasteAankoopRef = db.doc(`tokenPurchases/${cleanIdPart(auth.uid)}_${cleanIdPart(itemId)}`);
+  const shopWensenRef = db.doc(`leerlingShop/${auth.uid}`);
+  // Aankopen van vóór 23 sep 2026 hebben een willekeurige id.
+  const alGekochtOudeStijl = await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId });
 
   return runDbTransaction(db, async (transaction) => {
-    const [itemSnapshot, accountSnapshot] = await Promise.all([
+    const [itemSnapshot, accountSnapshot, vasteAankoopSnapshot, wensenSnapshot] = await Promise.all([
       transaction.get(itemRef),
       transaction.get(accountRef),
+      transaction.get(vasteAankoopRef),
+      transaction.get(shopWensenRef),
     ]);
 
     if (!itemSnapshot.exists) {
@@ -3099,9 +3107,12 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
       throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
     }
 
-    if (item.repeatable !== true && await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId })) {
+    if (item.repeatable !== true && (vasteAankoopSnapshot.exists || alGekochtOudeStijl)) {
       throw new HttpsError("already-exists", "Je bezit dit shopitem al.");
     }
+    const purchaseRef = item.repeatable === true
+      ? db.collection("tokenPurchases").doc(createGeneratedId("purchase"))
+      : vasteAankoopRef;
 
     const price = normalizeNonNegativeInteger(item.price, 0);
     const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
@@ -3140,8 +3151,21 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
     transaction.set(transactionRef, transactionData);
     transaction.set(purchaseRef, purchaseData);
 
+    const wensen = wensenSnapshot.exists ? (wensenSnapshot.data() || {}) : {};
+    const wasSpaardoel = wensen.spaardoelId === itemId;
+    const verlanglijst = Array.isArray(wensen.verlanglijst) ? wensen.verlanglijst : [];
+    if (wasSpaardoel || verlanglijst.includes(itemId)) {
+      transaction.set(shopWensenRef, {
+        studentUid: auth.uid,
+        ...(wasSpaardoel ? { spaardoelId: null } : {}),
+        verlanglijst: verlanglijst.filter((id) => id !== itemId),
+        updatedAt: timestamp,
+      }, { merge: true });
+    }
+
     return {
       purchased: true,
+      spaardoelGehaald: wasSpaardoel,
       itemId,
       price,
       balance: nextAccount.balance,
@@ -3166,17 +3190,36 @@ async function equipTokenShopItemCore({ auth, data = {}, db, now = FieldValue.se
   }
 
   const itemId = requireString(data.itemId, "itemId");
+  const uitzetten = data.unequip === true;
   const itemSnapshot = await db.doc(`tokenShopItems/${itemId}`).get();
   if (!itemSnapshot.exists) {
     throw new HttpsError("not-found", "Shopitem bestaat niet.");
   }
 
   const item = itemSnapshot.data() || {};
-  if (item.enabled === false) {
+  if (item.enabled === false && !uitzetten) {
     throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
   }
 
-  const purchased = await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId });
+  // Uitzetten (Shop 2.0): het slot weer leeg maken, of één pin weghalen.
+  if (uitzetten) {
+    const itemType = normalizeShopItemType(item.itemType);
+    const loadoutRef = db.doc(`studentTokenLoadouts/${auth.uid}`);
+    const loadoutSnapshot = await loadoutRef.get();
+    const huidig = loadoutSnapshot.exists ? loadoutSnapshot.data() || {} : {};
+    const patch = { studentUid: auth.uid, updatedAt: getServerTimestamp(now) };
+    if (itemType === "shopBadge") {
+      patch.activePinIds = (Array.isArray(huidig.activePinIds) ? huidig.activePinIds : []).filter((id) => id && id !== itemId);
+    } else {
+      const fieldName = TOKEN_SHOP_LOADOUT_FIELD_BY_TYPE[itemType];
+      if (fieldName && huidig[fieldName] === itemId) patch[fieldName] = null;
+    }
+    await loadoutRef.set(patch, { merge: true });
+    return { equipped: false, itemId };
+  }
+
+  const vasteAankoop = await db.doc(`tokenPurchases/${cleanIdPart(auth.uid)}_${cleanIdPart(itemId)}`).get();
+  const purchased = vasteAankoop.exists || await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId });
   if (!purchased) {
     throw new HttpsError("failed-precondition", "Je kunt alleen gekochte shopitems activeren.");
   }
@@ -3212,6 +3255,89 @@ async function equipTokenShopItemCore({ auth, data = {}, db, now = FieldValue.se
     itemId,
     targetSlot,
   };
+}
+
+const MAX_VERLANGLIJST = 5;
+const SPAARDOEL_VOORSCHOT = 10;
+
+// Spaardoel en verlanglijst (Shop 2.0). Een nieuw spaardoel geeft een klein
+// voorschot van 10 tokens, hooguit één keer per week: wie een doel kiest dat al
+// een stukje gevuld is, haalt het vaker (endowed progress).
+async function updateShopWensenCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date() }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen hebben een spaardoel.");
+  }
+
+  const regels = await loadBeloningLayer();
+  const weekSleutel = regels.isoWeekSleutel(nuDatum);
+  const timestamp = getServerTimestamp(now);
+  const wensenRef = db.doc(`leerlingShop/${auth.uid}`);
+  const accountRef = db.doc(`tokenAccounts/${auth.uid}`);
+
+  const heeftSpaardoel = Object.prototype.hasOwnProperty.call(data, "spaardoelId");
+  const spaardoelId = heeftSpaardoel && data.spaardoelId ? String(data.spaardoelId).trim() : null;
+  const heeftLijst = Array.isArray(data.verlanglijst);
+  const verlanglijst = heeftLijst
+    ? [...new Set(data.verlanglijst.map((id) => String(id || "").trim()).filter(Boolean))].slice(0, MAX_VERLANGLIJST)
+    : null;
+
+  const teControleren = [...new Set([...(spaardoelId ? [spaardoelId] : []), ...(verlanglijst || [])])];
+  const items = await Promise.all(teControleren.map((id) => db.doc(`tokenShopItems/${id}`).get()));
+  for (const snapshot of items) {
+    if (!snapshot.exists || snapshot.data()?.enabled === false) {
+      throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
+    }
+  }
+  const spaardoelAlGekocht = spaardoelId
+    ? (await db.doc(`tokenPurchases/${cleanIdPart(auth.uid)}_${cleanIdPart(spaardoelId)}`).get()).exists ||
+      await hasPurchasedTokenShopItem({ db, studentUid: auth.uid, itemId: spaardoelId })
+    : false;
+  if (spaardoelAlGekocht) {
+    throw new HttpsError("already-exists", "Dit item heb je al.");
+  }
+
+  return runDbTransaction(db, async (transaction) => {
+    const [wensenSnapshot, accountSnapshot] = await Promise.all([
+      transaction.get(wensenRef),
+      transaction.get(accountRef),
+    ]);
+    const wensen = wensenSnapshot.exists ? (wensenSnapshot.data() || {}) : {};
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+
+    const nieuwDoel = heeftSpaardoel && spaardoelId && spaardoelId !== wensen.spaardoelId;
+    const voorschot = nieuwDoel && wensen.voorschotWeek !== weekSleutel ? SPAARDOEL_VOORSCHOT : 0;
+
+    const patch = { studentUid: auth.uid, updatedAt: timestamp };
+    if (heeftSpaardoel) patch.spaardoelId = spaardoelId;
+    if (heeftLijst) patch.verlanglijst = verlanglijst;
+    if (voorschot > 0) patch.voorschotWeek = weekSleutel;
+    transaction.set(wensenRef, patch, { merge: true });
+
+    let balance = account.balance;
+    if (voorschot > 0) {
+      const nextAccount = buildBalancePatch(account, voorschot, TOKEN_TRANSACTION_TYPES.EARN, timestamp);
+      balance = nextAccount.balance;
+      transaction.set(accountRef, nextAccount, { merge: true });
+      transaction.set(getTransactionRef(db, `earn_voorschot_${auth.uid}_${weekSleutel}`), {
+        studentUid: auth.uid,
+        type: TOKEN_TRANSACTION_TYPES.EARN,
+        amount: voorschot,
+        source: { kind: "spaardoel", id: spaardoelId, title: "Voorschot spaardoel" },
+        reason: "savings-goal-headstart",
+        createdBy: auth.uid,
+        createdAt: timestamp,
+        balanceAfter: balance,
+      });
+    }
+
+    return {
+      spaardoelId: heeftSpaardoel ? spaardoelId : (wensen.spaardoelId || null),
+      verlanglijst: heeftLijst ? verlanglijst : (wensen.verlanglijst || []),
+      voorschot,
+      balance,
+    };
+  });
 }
 
 async function adjustStudentTokensCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
@@ -3360,6 +3486,16 @@ exports.purchaseTokenShopItem = onCall({
   region: REGION,
 }, async (request) => {
   return purchaseTokenShopItemCore({
+    auth: request.auth,
+    data: request.data || {},
+    db: getFirestore(),
+  });
+});
+
+exports.updateShopWensen = onCall({
+  region: REGION,
+}, async (request) => {
+  return updateShopWensenCore({
     auth: request.auth,
     data: request.data || {},
     db: getFirestore(),
@@ -4370,6 +4506,7 @@ exports.__test = {
   getAiTutorRulesCore,
   getOpenRouterConfigStatusCore,
   purchaseTokenShopItemCore,
+  updateShopWensenCore,
   resetLeerlingBlokWerkCore,
   startTestleerlingSessieCore,
   resetStudentPasswordCore,

@@ -4,7 +4,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  limit,
   onSnapshot,
   query,
   serverTimestamp,
@@ -116,15 +115,19 @@ export const subscribeStudentTokenTransactions = (studentUid, onNext, onError, m
     return () => {};
   }
 
+  // Tot 23 sep 2026 stond hier limit() zonder volgorde: dan kwamen de eerste
+  // regels op document-id terug, niet de nieuwste. Een leerling heeft hooguit
+  // enkele honderden regels, dus alles ophalen en hier afkappen is prima.
   const tokenQuery = query(
     collection(db, 'tokenTransactions'),
-    where('studentUid', '==', studentUid),
-    limit(Math.max(1, maxItems))
+    where('studentUid', '==', studentUid)
   );
 
   return onSnapshot(
     tokenQuery,
-    (snapshot) => onNext?.(sortByNewest(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })))),
+    (snapshot) => onNext?.(
+      sortByNewest(snapshot.docs.map((item) => ({ id: item.id, ...item.data() }))).slice(0, Math.max(1, maxItems))
+    ),
     onError
   );
 };
@@ -250,10 +253,29 @@ export const purchaseTokenShopItem = async (itemId) => {
   return result.data;
 };
 
-export const equipTokenShopItem = async (itemId) => {
+export const equipTokenShopItem = async (itemId, { unequip = false } = {}) => {
   const equip = httpsCallable(functions, 'equipTokenShopItem');
-  const result = await equip({ itemId });
+  const result = await equip({ itemId, ...(unequip ? { unequip: true } : {}) });
   return result.data;
+};
+
+// Spaardoel en verlanglijst (Shop 2.0).
+export const updateShopWensen = async (wensen) => {
+  const call = httpsCallable(functions, 'updateShopWensen');
+  const result = await call(wensen);
+  return result.data;
+};
+
+export const subscribeLeerlingShop = (studentUid, onNext, onError) => {
+  if (!studentUid) {
+    onNext?.({ spaardoelId: null, verlanglijst: [] });
+    return () => {};
+  }
+  return onSnapshot(
+    doc(db, 'leerlingShop', studentUid),
+    (snapshot) => onNext?.({ spaardoelId: null, verlanglijst: [], ...(snapshot.exists() ? snapshot.data() : {}) }),
+    onError
+  );
 };
 
 export const adjustStudentTokens = async ({ studentUid, amount, reason }) => {

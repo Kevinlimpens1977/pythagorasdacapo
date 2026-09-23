@@ -755,6 +755,61 @@ test("purchaseTokenShopItem atomically spends tokens and records purchase snapsh
   assert.equal(db.store.docs[result.transactionPath].type, "spend");
 });
 
+test("Shop 2.0: tweede aankoop van hetzelfde item wordt geweigerd (vaste aankoop-id)", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenAccounts/student-1": { balance: 100, earnedTotal: 100, spentTotal: 0, adjustedTotal: 0 },
+    "tokenShopItems/pin-1": { title: "Pin", price: 30, enabled: true },
+  });
+  const koop = () => __test.purchaseTokenShopItemCore({ auth: { uid: "student-1" }, data: { itemId: "pin-1" }, db, now: () => "t" });
+
+  const eerste = await koop();
+  assert.equal(eerste.purchasePath, "tokenPurchases/student-1_pin-1");
+  await assert.rejects(koop, (error) => error instanceof HttpsError && error.code === "already-exists");
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 70);
+});
+
+test("Shop 2.0: spaardoel met voorschot (één keer per week), vrijgemaakt na aankoop", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenAccounts/student-1": { balance: 0, earnedTotal: 0, spentTotal: 0, adjustedTotal: 0 },
+    "tokenShopItems/frame-1": { title: "Frame", price: 15, enabled: true },
+    "tokenShopItems/frame-2": { title: "Frame 2", price: 400, enabled: true },
+  });
+  const zet = (data) => __test.updateShopWensenCore({
+    auth: { uid: "student-1" }, data, db, now: () => "t", nuDatum: new Date("2026-09-23T10:00:00Z"),
+  });
+
+  const eerste = await zet({ spaardoelId: "frame-1", verlanglijst: ["frame-2", "frame-2", "frame-1"] });
+  assert.equal(eerste.voorschot, 10);
+  assert.deepEqual(eerste.verlanglijst, ["frame-2", "frame-1"]);
+  const tweede = await zet({ spaardoelId: "frame-2" });
+  assert.equal(tweede.voorschot, 0, "hooguit één voorschot per week");
+  await zet({ spaardoelId: "frame-1" });
+
+  db.store.docs["tokenAccounts/student-1"].balance = 20;
+  const koop = await __test.purchaseTokenShopItemCore({ auth: { uid: "student-1" }, data: { itemId: "frame-1" }, db, now: () => "t" });
+  assert.equal(koop.spaardoelGehaald, true);
+  assert.equal(db.store.docs["leerlingShop/student-1"].spaardoelId, null);
+  assert.deepEqual(db.store.docs["leerlingShop/student-1"].verlanglijst, ["frame-2"]);
+
+  await assert.rejects(() => zet({ spaardoelId: "frame-1" }), (error) => error.code === "already-exists");
+});
+
+test("Shop 2.0: een item weer uitzetten", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenShopItems/titel-1": { title: "Topper", price: 10, enabled: true, itemType: "titleBadge" },
+    "tokenShopItems/pin-1": { title: "Pin", price: 10, enabled: true, itemType: "shopBadge" },
+    "studentTokenLoadouts/student-1": { activeTitleBadgeId: "titel-1", activePinIds: ["pin-1", "pin-2"] },
+  });
+  await __test.equipTokenShopItemCore({ auth: { uid: "student-1" }, data: { itemId: "titel-1", unequip: true }, db, now: () => "t" });
+  await __test.equipTokenShopItemCore({ auth: { uid: "student-1" }, data: { itemId: "pin-1", unequip: true }, db, now: () => "t" });
+  const loadout = db.store.docs["studentTokenLoadouts/student-1"];
+  assert.equal(loadout.activeTitleBadgeId, null);
+  assert.deepEqual(loadout.activePinIds, ["pin-2"]);
+});
+
 test("purchaseTokenShopItem prevents duplicate cosmetic purchases unless repeatable", async () => {
   const db = createDb({
     "users/student-1": { role: "student", displayName: "Ada" },

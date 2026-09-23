@@ -389,6 +389,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Shop 2.0: spaardoel en verlanglijst. Alleen via updateShopWensen
+    // (die geeft ook het voorschot), dus geen schrijfrechten vanuit de app.
+    match /leerlingShop/{studentUid} {
+      allow read: if isOwner(studentUid) || isAdmin();
+      allow write: if false;
+    }
+
     // Het niveau is voor de hele klas zichtbaar (besluit Kevin, 23 sep 2026).
     match /leerlingNiveau/{studentUid} {
       allow read: if signedIn() && (

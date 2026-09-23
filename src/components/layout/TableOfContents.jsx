@@ -207,13 +207,19 @@ function HoofdstukKaart({ chapter, taal, onOpen }) {
 
   // Een hoofdstuk op slot blijft staan, maar grijst weg en draagt een
   // slotsticker. De leerling ziet zo wat eraan komt zonder te denken dat hij
-  // iets is vergeten.
+  // iets is vergeten. Vormgeving: variant 18 uit de stickerkeuze van 23 sep
+  // 2026 - een gestippelde kaart, als een plek die nog klaargezet wordt, en
+  // een rustige gestippelde pil (geen oranje: dat betekent "hulp" in het DS).
   return (
-    <section className="helix-surface relative flex flex-col p-6">
+    <section
+      className={`relative flex flex-col p-6 ${opSlot
+        ? 'rounded-[20px] border-[2.5px] border-dashed border-[#BDB3A0] bg-[#FFFCF6]'
+        : 'helix-surface'}`}
+    >
       {/* De sticker blijft buiten de grijze laag: hij hoort juist op te vallen. */}
       {opSlot && (
-        <span className="absolute -right-2 -top-3 z-10 inline-flex rotate-6 items-center gap-1.5 rounded-full bg-[var(--helix-warning)] px-3 py-1.5 text-xs font-black uppercase tracking-wide text-[var(--helix-navy)] shadow-[var(--helix-shadow-card)]">
-          <Lock size={13} />
+        <span className="absolute right-4 -top-4 z-10 inline-flex items-center gap-1.5 rounded-full border-[2.5px] border-dashed border-[var(--helix-navy)] bg-[var(--helix-bg)] px-3 py-1.5 text-[13px] font-extrabold text-[var(--helix-navy)]">
+          <Lock size={14} aria-hidden="true" />
           {tekst('slot.label')}
         </span>
       )}
