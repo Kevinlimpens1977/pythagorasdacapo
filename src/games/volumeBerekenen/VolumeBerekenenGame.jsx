@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { CheckCircle2, Lightbulb, Trophy } from 'lucide-react';
+import { CheckCircle2, Lightbulb, Timer, Trophy } from 'lucide-react';
 import Balk from './componenten/Balk';
 import Maatcilinder from './componenten/Maatcilinder';
 import { VoorwerpIcoon } from './componenten/Voorwerp';
@@ -7,6 +7,7 @@ import { Knop, Schil, Split } from './componenten/Ui';
 import { DoeBalk, KijkBalk } from './MissieBalk';
 import { DoeDompel, KijkDompel } from './MissieDompel';
 import { DoeMaatcilinder, KijkMaatcilinder } from './MissieMaatcilinder';
+import Snelronde from './Snelronde';
 import { AANTAL_OPGAVEN, maakResultaat, maxScore, MISSIES, SCHALEN, telScore, vaaksteFout } from './volumeLogic';
 import { speelKlaar } from './volumeSounds';
 import { markeerVoorbeeldenGezien, voorbeeldenGezien } from './volumeVoortgang';
@@ -64,7 +65,7 @@ const TIPS = {
   eindvolume: 'Trek het beginvolume van het eindvolume af.'
 };
 
-const FASEN = { START: 'start', KIJK: 'kijk', DOE: 'doe', KLAAR: 'klaar' };
+const FASEN = { START: 'start', KIJK: 'kijk', DOE: 'doe', KLAAR: 'klaar', SNEL: 'snel' };
 
 export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onStart, onComplete }) {
   const info = INFO[missie] || INFO[MISSIES.MAATCILINDER];
@@ -74,6 +75,7 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
   const [isFinished, setIsFinished] = useState(false);
   const afgerond = useRef(false);
   const [kanOverslaan] = useState(() => voorbeeldenGezien(missie));
+  const [snelFase, setSnelFase] = useState('uitleg');
   const aantal = AANTAL_OPGAVEN[missie];
 
   const start = (metVoorbeelden) => {
@@ -111,7 +113,7 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
   };
 
   const voortgang = fase === FASEN.DOE ? `${Math.min(opgaven.length + 1, aantal)} van ${aantal}` : null;
-  const faseLabel = { start: null, kijk: 'KIJK', doe: 'DOE', klaar: 'KLAAR' }[fase];
+  const faseLabel = { start: null, kijk: 'KIJK', doe: 'DOE', klaar: 'KLAAR', snel: { uitleg: 'KIJK', bezig: 'DOE', check: 'CHECK' }[snelFase] }[fase];
 
   let inhoud;
   if (fase === FASEN.START) {
@@ -148,6 +150,8 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
       : missie === MISSIES.ONDERDOMPELEN
         ? <DoeDompel onOpgave={opgaveKlaar} />
         : <DoeMaatcilinder aantal={aantal} onOpgave={opgaveKlaar} />;
+  } else if (fase === FASEN.SNEL) {
+    inhoud = <Snelronde missie={missie} onFase={setSnelFase} onStop={() => { setSnelFase('uitleg'); setFase(FASEN.KLAAR); }} />;
   } else {
     const score = Math.min(maxScore(missie), telScore(opgaven));
     const resultaat = maakResultaat({ missie, opgaven });
@@ -180,7 +184,11 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
             )}
             <div className="mt-auto">
               {isFinished ? (
-                <p className="font-bold text-[#237A4D]">Je resultaat is opgeslagen.</p>
+                <div className="flex flex-col gap-2">
+                  <p className="font-bold text-[#237A4D]">Je resultaat is opgeslagen.</p>
+                  <p className="text-[15px] font-semibold text-[#5B5648]">Wil je nog sneller worden? Doe de snelronde. Die telt niet mee voor tokens.</p>
+                  <Knop variant="rustig" onClick={() => setFase(FASEN.SNEL)}><Timer size={18} aria-hidden="true" />Snelronde: 60 seconden</Knop>
+                </div>
               ) : (
                 <Knop variant="goed" onClick={rondAf} autoFocus>Afronden</Knop>
               )}
@@ -192,7 +200,7 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
   }
 
   return (
-    <Schil titel={fase === FASEN.KLAAR ? 'Klaar!' : info.titel} fase={faseLabel} voortgang={voortgang}>
+    <Schil titel={fase === FASEN.KLAAR ? 'Klaar!' : fase === FASEN.SNEL ? 'Snelronde' : info.titel} fase={faseLabel} voortgang={voortgang}>
       {inhoud}
     </Schil>
   );

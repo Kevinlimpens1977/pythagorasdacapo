@@ -26,3 +26,22 @@ export function markeerVoorbeeldenGezien(missie) {
     // niet erg
   }
 }
+
+// Beste snelronde-score per missie (alleen in deze browser).
+export function besteSnelronde(missie) {
+  const waarde = Number(lees().snel?.[missie]);
+  return Number.isFinite(waarde) ? waarde : 0;
+}
+
+export function bewaarSnelronde(missie, score) {
+  try {
+    const data = lees();
+    const oud = Number(data.snel?.[missie]) || 0;
+    if (score <= oud) return false;
+    data.snel = { ...(data.snel || {}), [missie]: score };
+    window.localStorage.setItem(SLEUTEL, JSON.stringify(data));
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -28,6 +28,7 @@ import StudentSpellenPage from './pages/StudentSpellenPage';
 import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
 import AdminTestenPage from './pages/AdminTestenPage';
 import AdminVrijgevenPage from './pages/AdminVrijgevenPage';
+import NieuweVersieMelding from './components/layout/NieuweVersieMelding';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
   const { user, isAdmin } = useAuth();
@@ -156,6 +157,7 @@ function AppWithModal() {
     <>
       <AppRoutes />
       <ClassSelectionModal />
+      <NieuweVersieMelding />
     </>
   );
 }

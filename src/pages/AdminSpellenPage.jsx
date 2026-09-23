@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Clock, Coins, Gamepad2, Goal, Layers3, Repeat, RotateCcw, Save, Sparkles } from 'lucide-react';
+import { Coins, Gamepad2, Goal, Repeat, RotateCcw, Save, Search, Sparkles, X } from 'lucide-react';
 import DvlingoWoordenPanel from '../components/games/DvlingoWoordenPanel';
 import GamePlayer from '../components/games/GamePlayer';
 import KlasSpelToewijzing from '../components/games/KlasSpelToewijzing';
@@ -16,6 +16,7 @@ import {
   PLAY_LIMIT_OPTIONS,
   SERVER_DEFAULT_GAME_REWARD_RULES
 } from '../lib/gameTokenRewardRules';
+import { ALLE, filterSpellen, vakkenVan } from '../lib/spellenOverzicht';
 import {
   deleteGameTokenRewardRule,
   saveGameTokenRewardRule,
@@ -23,10 +24,15 @@ import {
 } from '../services/tokenService';
 
 const statusCopy = {
-  [GAME_STATUSES.PLANNED]: 'Gepland',
   [GAME_STATUSES.PROTOTYPE]: 'Prototype',
   [GAME_STATUSES.ACTIVE]: 'Actief'
 };
+
+const STATUS_FILTERS = [
+  { value: ALLE, label: 'Alle' },
+  { value: GAME_STATUSES.ACTIVE, label: 'Actief' },
+  { value: GAME_STATUSES.PROTOTYPE, label: 'Prototype' }
+];
 
 const describeRewardRule = (rule) => {
   if (!rule) return 'Geen tokens';
@@ -40,6 +46,9 @@ export default function AdminSpellenPage() {
   const [lastResult, setLastResult] = useState(null);
   const [rewardRules, setRewardRules] = useState({});
   const [rewardRulesError, setRewardRulesError] = useState('');
+  const [zoek, setZoek] = useState('');
+  const [vak, setVak] = useState(ALLE);
+  const [status, setStatus] = useState(ALLE);
 
   useEffect(() => (
     subscribeGameTokenRewardRules(
@@ -56,8 +65,10 @@ export default function AdminSpellenPage() {
     [selectedGameId]
   );
 
-  const cmsReadyCount = GAME_REGISTRY.filter((game) => game.supportedModes.includes('cmsBlock')).length;
-  const prototypeCount = GAME_REGISTRY.filter((game) => game.status === GAME_STATUSES.PROTOTYPE).length;
+  const vakken = useMemo(() => vakkenVan(GAME_REGISTRY), []);
+  const gevonden = useMemo(() => filterSpellen(GAME_REGISTRY, { zoek, vak, status }), [zoek, vak, status]);
+  const filterActief = Boolean(zoek.trim()) || vak !== ALLE || status !== ALLE;
+  const telStatus = (waarde) => GAME_REGISTRY.filter((game) => game.status === waarde).length;
 
   return (
     <div className="helix-page">
@@ -76,80 +87,113 @@ export default function AdminSpellenPage() {
           </div>
         </div>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-3">
-          <StatCard label="Registry games" value={GAME_REGISTRY.length} description="Games en placeholders in code" icon={Gamepad2} />
-          <StatCard label="CMS-ready" value={cmsReadyCount} description="Ondersteunt cmsBlock modus" icon={Layers3} />
-          <StatCard label="Prototypegames" value={prototypeCount} description="Speelbaar of in testfase" icon={Sparkles} />
-        </section>
-
-        <section className="mt-8 grid gap-6 xl:grid-cols-[420px_1fr]">
-          <div className="space-y-4">
-            <div>
-              <h2 className="helix-heading-lg">Game registry</h2>
-              <p className="helix-muted mt-1 text-sm leading-6">
-                Metadata is bewust serialiseerbaar. Componenten blijven los, zodat CMS-selectie veilig kan filteren.
-              </p>
-            </div>
-
-            {GAME_REGISTRY.length === 0 && (
-              <div className="helix-card p-6 text-center">
-                <Gamepad2 size={34} className="mx-auto text-[var(--helix-purple)]" />
-                <p className="mt-3 font-black text-[var(--helix-navy)]">Nog geen spellen</p>
-                <p className="helix-muted mx-auto mt-2 max-w-sm text-sm leading-6">
-                  De registry is leeg. Bouw het eerste spel volgens <strong>STARTGIDS-NIEUW-SPEL.md</strong> in de projectroot;
-                  het verschijnt hier automatisch zodra het in <code>GAME_REGISTRY</code> staat.
-                </p>
-              </div>
-            )}
-
-            {GAME_REGISTRY.map((game) => {
-              const effective = getEffectiveGameRewardRule(game.gameId, rewardRules);
-              return (
-                <button
-                  key={game.gameId}
-                  onClick={() => setSelectedGameId(game.gameId)}
-                  className="helix-action-card w-full p-5 text-left"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-black text-[var(--helix-navy)]">{game.title}</h3>
-                      <p className="helix-muted mt-1 text-sm leading-5">{game.topic}</p>
-                    </div>
-                    <span className="helix-badge">
-                      {statusCopy[game.status] || game.status}
-                    </span>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <MetaPill>{game.subject}</MetaPill>
-                    <MetaPill>{game.level}</MetaPill>
-                    <MetaPill>
-                      <Clock size={13} />
-                      {game.estimatedMinutes} min
-                    </MetaPill>
-                    <MetaPill>
-                      <Coins size={13} />
-                      {describeRewardRule(effective.rule)}
-                    </MetaPill>
-                    <MetaPill>
-                      <Repeat size={13} />
-                      {describePlayLimit(getEffectiveMaxPlays(game.gameId, rewardRules, game.maxPlays))}
-                    </MetaPill>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {game.supportedModes.map((mode) => (
-                      <span
-                        key={mode}
-                        className="helix-badge-success"
-                      >
-                        {mode}
-                      </span>
-                    ))}
-                  </div>
-                </button>
-              );
-            })}
+        <section className="mt-8 helix-surface p-4 sm:p-5">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+            <label className="relative flex-1">
+              <span className="sr-only">Zoek een spel</span>
+              <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--helix-muted)]" />
+              <input
+                type="search"
+                value={zoek}
+                onChange={(event) => setZoek(event.target.value)}
+                placeholder="Zoek op naam, onderwerp of vaardigheid"
+                className="input-standard w-full !pl-10"
+              />
+            </label>
+            <FilterGroep
+              label="Vak"
+              waarde={vak}
+              onKies={setVak}
+              opties={[
+                { value: ALLE, label: `Alle (${GAME_REGISTRY.length})` },
+                ...vakken.map(({ vak: naam, aantal }) => ({ value: naam, label: `${naam} (${aantal})` }))
+              ]}
+            />
+            <FilterGroep
+              label="Status"
+              waarde={status}
+              onKies={setStatus}
+              opties={STATUS_FILTERS.map((optie) => ({
+                ...optie,
+                label: optie.value === ALLE ? optie.label : `${optie.label} (${telStatus(optie.value)})`
+              }))}
+            />
           </div>
 
+          <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+            <p className="font-bold text-[var(--helix-muted)]">
+              {gevonden.length} van {GAME_REGISTRY.length} spellen
+            </p>
+            {filterActief && (
+              <button
+                type="button"
+                onClick={() => { setZoek(''); setVak(ALLE); setStatus(ALLE); }}
+                className="inline-flex items-center gap-1 font-bold text-[var(--helix-purple)] hover:underline"
+              >
+                <X size={15} /> Filters wissen
+              </button>
+            )}
+          </div>
+
+          <div className="mt-3 overflow-x-auto rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)]">
+            <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+              <thead className="bg-[var(--helix-surface-soft)] text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
+                <tr>
+                  <th className="px-4 py-3">Spel</th>
+                  <th className="px-4 py-3">Vak</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Tijd</th>
+                  <th className="px-4 py-3">Tokens</th>
+                  <th className="px-4 py-3">Speellimiet</th>
+                </tr>
+              </thead>
+              <tbody>
+                {gevonden.map((game) => {
+                  const gekozen = game.gameId === selectedGame?.gameId;
+                  return (
+                    <tr
+                      key={game.gameId}
+                      onClick={() => setSelectedGameId(game.gameId)}
+                      className={`cursor-pointer border-t border-[var(--helix-border)] transition ${gekozen ? 'bg-[var(--helix-soft-lavender)]' : 'bg-white hover:bg-[var(--helix-surface-soft)]'}`}
+                    >
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={(event) => { event.stopPropagation(); setSelectedGameId(game.gameId); }}
+                          aria-pressed={gekozen}
+                          className="text-left font-black text-[var(--helix-navy)] hover:underline"
+                        >
+                          {game.title}
+                        </button>
+                        <p className="helix-muted mt-0.5 text-xs">{game.topic}</p>
+                      </td>
+                      <td className="px-4 py-3 font-semibold">{game.subject}</td>
+                      <td className="px-4 py-3">
+                        <span className={`helix-badge ${game.status === GAME_STATUSES.ACTIVE ? 'bg-[var(--color-green-soft)] text-[var(--color-green-ink)]' : ''}`}>
+                          {statusCopy[game.status] || game.status}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">{game.estimatedMinutes} min</td>
+                      <td className="whitespace-nowrap px-4 py-3">{describeRewardRule(getEffectiveGameRewardRule(game.gameId, rewardRules).rule)}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{describePlayLimit(getEffectiveMaxPlays(game.gameId, rewardRules, game.maxPlays))}</td>
+                    </tr>
+                  );
+                })}
+                {gevonden.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center">
+                      <Gamepad2 size={28} className="mx-auto text-[var(--helix-muted)]" />
+                      <p className="mt-2 font-bold text-[var(--helix-navy)]">Geen spel gevonden</p>
+                      <p className="helix-muted text-sm">Pas je zoekwoord of filters aan.</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-8">
           <div className="space-y-6">
             {selectedGame && (
               <>
@@ -415,26 +459,28 @@ function TokenRewardPanel({ game, rewardRules, rulesError }) {
   );
 }
 
-const StatCard = ({ label, value, description, icon: Icon }) => (
-  <div className="helix-card p-5">
-    <div className="flex items-start justify-between gap-4">
-      <div>
-        <p className="text-sm font-bold text-[var(--helix-muted)]">{label}</p>
-        <p className="mt-2 text-3xl font-black text-[var(--helix-navy)]">{value}</p>
-      </div>
-      <div className="flex h-12 w-12 items-center justify-center rounded-[var(--helix-radius-md)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-        <Icon size={22} />
-      </div>
+function FilterGroep({ label, waarde, opties, onKies }) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex flex-wrap items-center gap-1.5">
+      <span className="mr-1 text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">{label}</span>
+      {opties.map((optie) => {
+        const actief = optie.value === waarde;
+        return (
+          <button
+            key={optie.value}
+            type="button"
+            role="radio"
+            aria-checked={actief}
+            onClick={() => onKies(optie.value)}
+            className={`min-h-[36px] rounded-full border px-3 text-sm font-bold transition ${actief ? 'border-[var(--helix-navy)] bg-[var(--helix-navy)] text-white' : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]'}`}
+          >
+            {optie.label}
+          </button>
+        );
+      })}
     </div>
-    <p className="helix-muted mt-4 text-sm leading-5">{description}</p>
-  </div>
-);
-
-const MetaPill = ({ children }) => (
-  <span className="helix-badge inline-flex items-center gap-1.5">
-    {children}
-  </span>
-);
+  );
+}
 
 const DetailList = ({ title, items, icon: Icon }) => (
   <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
