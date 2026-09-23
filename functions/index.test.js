@@ -2768,3 +2768,27 @@ test("Shop 2.0 deel 2B: avatar opslaan controleert elk onderdeel", async () => {
   const hoofddoek = await sla({ kapsel: "kapsel-hoofddoek", stofkleur: "stof-roze" });
   assert.equal(hoofddoek.avatar.stofkleur, "stof-roze");
 });
+
+test("Shop 2.0 deel 2C: seizoensitem alleen in zijn seizoen te koop", async () => {
+  const db = createDb({
+    "users/student-1": { role: "student", displayName: "Ada" },
+    "tokenAccounts/student-1": { balance: 1000, earnedTotal: 1000, spentTotal: 0, adjustedTotal: 0 },
+    "tokenShopItems/avatar-accessoire-muts": { title: "Wintermuts", price: 180, enabled: true, itemType: "avatarOnderdeel" },
+    "tokenShopItems/avatar-accessoire-heksenhoed": { title: "Heksenhoed", price: 200, enabled: true, itemType: "avatarOnderdeel" },
+  });
+  const koop = (itemId) => __test.purchaseTokenShopItemCore({
+    auth: { uid: "student-1" }, data: { itemId }, db, now: () => "t", nuDatum: new Date("2026-10-10T10:00:00Z"),
+  });
+
+  await assert.rejects(() => koop("avatar-accessoire-muts"), (error) => error.code === "failed-precondition" && /Sinterklaas en winter/.test(error.message));
+  const hoed = await koop("avatar-accessoire-heksenhoed");
+  assert.equal(hoed.purchased, true);
+  assert.equal(db.store.docs["tokenAccounts/student-1"].balance, 800);
+});
+
+test("Shop 2.0 deel 2C: emote opslaan vraagt aankoop, springen is gratis", async () => {
+  const db = createDb({ "users/student-1": { role: "student", displayName: "Ada" } });
+  const sla = (avatar) => __test.updateAvatarCore({ auth: { uid: "student-1" }, data: { avatar }, db, now: () => "t" });
+  assert.equal((await sla({ emote: "emote-spring" })).avatar.emote, "emote-spring");
+  await assert.rejects(() => sla({ emote: "emote-feest" }), (error) => error.code === "failed-precondition");
+});

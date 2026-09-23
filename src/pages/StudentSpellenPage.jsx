@@ -6,8 +6,9 @@ import { GAME_REGISTRY, GAME_RESULT_HANDLING } from '../lib/gameRegistry';
 import { speelbareKlasSpellen } from '../lib/klasSpellen';
 import { getKlasVoorSpellen } from '../services/spelToewijzingService';
 import { awardTokensForActivity } from '../services/tokenService';
-import { beloningMelding } from '../lib/tokenAwardUtils';
+import { beloningMelding, isGoedResultaat } from '../lib/tokenAwardUtils';
 import NiveauOmhoogMoment from '../components/tokens/NiveauOmhoogMoment';
+import EmoteMoment from '../components/avatar/EmoteMoment';
 
 /**
  * De spellenpagina van de leerling: alles wat de docent voor zijn klas heeft
@@ -20,6 +21,7 @@ export default function StudentSpellenPage() {
   const [spellen, setSpellen] = useState(null);
   const [tokenNotice, setTokenNotice] = useState('');
   const [niveauMoment, setNiveauMoment] = useState(null);
+  const [emoteTeller, setEmoteTeller] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,6 +60,7 @@ export default function StudentSpellenPage() {
         window.setTimeout(() => setTokenNotice(''), award?.niveauOmhoog ? 5200 : 3600);
       }
       if (award?.niveauOmhoog) setNiveauMoment({ niveau: award.niveau, tokens: award.niveauTokens || 0 });
+      if (isGoedResultaat(award)) setEmoteTeller((teller) => teller + 1);
     } catch (err) {
       console.warn('Speltokens konden niet worden toegekend:', err);
     }
@@ -73,6 +76,7 @@ export default function StudentSpellenPage() {
         </p>
 
         <NiveauOmhoogMoment moment={niveauMoment} onKlaar={() => setNiveauMoment(null)} />
+        <EmoteMoment uid={currentUser?.uid} speel={emoteTeller} />
         {tokenNotice ? (
           <p className="mt-5 rounded-[var(--helix-radius-md)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
             {tokenNotice}

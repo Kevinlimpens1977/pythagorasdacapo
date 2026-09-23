@@ -67,6 +67,10 @@ export const buildTokenAwardPayload = ({
   };
 };
 
+// Een goed resultaat laat de avatar zijn emote doen (Shop 2.0 deel 2C).
+export const isGoedResultaat = (award = {}) => Boolean(award && award.awarded === true
+  && (Number(award.percentage) >= 90 || award.ster || award.niveauOmhoog));
+
 // De korte melding na een beloning, bijvoorbeeld "+30 XP · +12 tokens · 90% goed".
 export const beloningMelding = (award = {}) => {
   if (!award || award.awarded !== true) return '';

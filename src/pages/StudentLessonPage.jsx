@@ -210,8 +210,9 @@ import {
   valideerInleverBestand
 } from '../lib/inleveringUtils';
 import { uploadInlevering } from '../services/inleveringService';
-import { beloningMelding, buildTokenAwardPayload } from '../lib/tokenAwardUtils';
+import { beloningMelding, buildTokenAwardPayload, isGoedResultaat } from '../lib/tokenAwardUtils';
 import NiveauOmhoogMoment from '../components/tokens/NiveauOmhoogMoment';
+import EmoteMoment from '../components/avatar/EmoteMoment';
 
 const blockIcons = {
   theory: BookOpen,
@@ -296,6 +297,7 @@ export default function StudentLessonPage() {
   const [bevestigVerlatenBlokId, setBevestigVerlatenBlokId] = useState('');
   const [tokenAwardNotice, setTokenAwardNotice] = useState('');
   const [niveauMoment, setNiveauMoment] = useState(null);
+  const [emoteTeller, setEmoteTeller] = useState(0);
   const [victoryPlayback, setVictoryPlayback] = useState(null);
   const [rewardLoadout, setRewardLoadout] = useState({ activePinIds: [] });
   const [rewardItems, setRewardItems] = useState([]);
@@ -743,6 +745,7 @@ export default function StudentLessonPage() {
         if (award?.niveauOmhoog) {
           setNiveauMoment({ niveau: award.niveau, tokens: award.niveauTokens || 0 });
         }
+        if (isGoedResultaat(award)) setEmoteTeller((teller) => teller + 1);
       } catch (tokenError) {
         console.warn('Tokens konden niet worden toegekend:', tokenError);
       }
@@ -1257,6 +1260,7 @@ export default function StudentLessonPage() {
             )}
 
             <NiveauOmhoogMoment moment={niveauMoment} onKlaar={() => setNiveauMoment(null)} />
+            <EmoteMoment uid={isDevBypass ? '' : currentUser?.uid} speel={emoteTeller} />
             {tokenAwardNotice ? (
               <span className="hidden items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800 sm:inline-flex">
                 {tokenAwardNotice}

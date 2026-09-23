@@ -11,7 +11,7 @@
  */
 
 import { createRequire } from 'node:module';
-import { AVATAR_DELEN, AVATAR_SETS, shopItemIdVoorDeel } from '../src/lib/avatarDelen.js';
+import { AVATAR_DELEN, AVATAR_SETS, SEIZOENEN, shopItemIdVoorDeel } from '../src/lib/avatarDelen.js';
 
 const requireFromFunctions = createRequire(new URL('../functions/package.json', import.meta.url));
 const { applicationDefault, getApps, initializeApp } = requireFromFunctions('firebase-admin/app');
@@ -24,8 +24,8 @@ if (getApps().length === 0) {
 }
 const db = getFirestore();
 
-const SLOT_VOLGORDE = { kapsel: 0, kleding: 1, accessoire: 2, achtergrond: 3 };
-const SLOT_NAAM = { kapsel: 'Kapsel', kleding: 'Kleding', accessoire: 'Accessoire', achtergrond: 'Achtergrond' };
+const SLOT_VOLGORDE = { kapsel: 0, kleding: 1, accessoire: 2, achtergrond: 3, emote: 4 };
+const SLOT_NAAM = { kapsel: 'Kapsel', kleding: 'Kleding', accessoire: 'Accessoire', achtergrond: 'Achtergrond', emote: 'Emote' };
 
 const teKoop = AVATAR_DELEN.filter((deel) => deel.prijs > 0);
 let nieuw = 0;
@@ -37,17 +37,22 @@ for (const [index, deel] of teKoop.entries()) {
   const ref = db.doc(`tokenShopItems/${id}`);
   const bestaand = await ref.get();
   const set = AVATAR_SETS.find((kandidaat) => kandidaat.id === deel.set);
+  const seizoen = SEIZOENEN.find((kandidaat) => kandidaat.id === deel.seizoen);
   const payload = {
     title: deel.titel,
     description: set
       ? `${SLOT_NAAM[deel.slot]} uit de ${set.titel}. Heb je alle drie, dan krijg je een bonus.`
-      : `${SLOT_NAAM[deel.slot]} voor je avatar.`,
+      : seizoen
+        ? `${SLOT_NAAM[deel.slot]} voor ${seizoen.titel}. Alleen in dat seizoen te koop; volgend jaar terug.`
+        : deel.slot === 'emote'
+          ? 'Je avatar doet dit na een goed resultaat.'
+          : `${SLOT_NAAM[deel.slot]} voor je avatar.`,
     itemType: 'avatarOnderdeel',
     targetSlot: 'avatar',
     rarity: deel.zeldzaam,
     repeatable: false,
     sortOrder: 500 + SLOT_VOLGORDE[deel.slot] * 50 + index,
-    previewStyle: { avatarDeel: deel.id, avatarSlot: deel.slot, ...(set ? { avatarSet: set.id } : {}) },
+    previewStyle: { avatarDeel: deel.id, avatarSlot: deel.slot, ...(set ? { avatarSet: set.id } : {}), ...(seizoen ? { seizoen: seizoen.id } : {}) },
     imageUrl: '',
     imageStoragePath: '',
     updatedAt: FieldValue.serverTimestamp()

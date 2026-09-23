@@ -128,6 +128,72 @@ function Achtergrond({ soort, kleur, id }) {
           ))}
         </g>
       );
+    case 'achtergrond-herfst':
+      return (
+        <g>
+          <defs><Bol id={`${id}-bg`} kleur="#E8843A" cx="50%" cy="35%" r="85%" /></defs>
+          <rect width="200" height="200" fill={`url(#${id}-bg)`} />
+          {[[24, 28, 20, '#C0392B'], [168, 34, -30, '#F4B41A'], [150, 88, 60, '#8E3B12'], [30, 96, -50, '#F4B41A'], [60, 20, 110, '#D35400'], [182, 150, 15, '#C0392B'], [14, 160, 80, '#D35400'], [120, 14, -70, '#8E3B12']].map(([x, y, hoek, kleur], i) => (
+            <g key={i} transform={`translate(${x} ${y}) rotate(${hoek})`}>
+              <path d="M0 -10 C 8 -6, 8 6, 0 10 C -8 6, -8 -6, 0 -10 Z" fill={kleur} />
+              <path d="M0 -9 V 12" stroke={donker(kleur, 0.35)} strokeWidth="1.2" />
+            </g>
+          ))}
+          {[[22, 186], [178, 188]].map(([x, y]) => (
+            <g key={x}>
+              <ellipse cx={x} cy={y} rx="16" ry="12" fill="#F07A1A" stroke="#B4520E" strokeWidth="1.2" />
+              <path d={`M${x - 6} ${y - 11} C ${x - 8} ${y}, ${x - 8} ${y + 6}, ${x - 5} ${y + 11} M${x + 6} ${y - 11} C ${x + 8} ${y}, ${x + 8} ${y + 6}, ${x + 5} ${y + 11}`} fill="none" stroke="#B4520E" strokeWidth="1" opacity="0.6" />
+              <path d={`M${x} ${y - 11} q 2 -6 5 -7`} stroke="#4E7A2A" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+            </g>
+          ))}
+        </g>
+      );
+    case 'achtergrond-sneeuw':
+      return (
+        <g>
+          <defs>
+            <linearGradient id={`${id}-bg`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="#5E86C4" />
+              <stop offset="1" stopColor="#B9D3F0" />
+            </linearGradient>
+          </defs>
+          <rect width="200" height="200" fill={`url(#${id}-bg)`} />
+          {[[20, 20, 3], [52, 44, 2], [88, 14, 2.5], [150, 22, 3], [176, 56, 2], [130, 50, 1.8], [18, 72, 2.2], [182, 96, 2.8], [30, 120, 1.8], [168, 130, 2], [70, 70, 1.5]].map(([x, y, r], i) => (
+            <circle key={i} cx={x} cy={y} r={r} fill="#FFFFFF" opacity="0.9" />
+          ))}
+          <path d="M0 176 C 40 160, 70 172, 100 168 C 140 162, 170 158, 200 170 V200 H0 Z" fill="#F4F8FC" />
+        </g>
+      );
+    case 'achtergrond-confetti':
+      return (
+        <g>
+          <defs><Bol id={`${id}-bg`} kleur="#7A3FC8" cx="50%" cy="40%" r="80%" /></defs>
+          <rect width="200" height="200" fill={`url(#${id}-bg)`} />
+          {Array.from({ length: 28 }, (_, i) => {
+            const x = (i * 53) % 196 + 2;
+            const y = (i * 37) % 190 + 4;
+            const kleur = ['#FFD33D', '#E86AA6', '#3DDC84', '#35A7FF', '#FF7A3C'][i % 5];
+            return <rect key={i} x={x} y={y} width="6" height="3" rx="1" fill={kleur} transform={`rotate(${(i * 47) % 180} ${x + 3} ${y + 1.5})`} />;
+          })}
+        </g>
+      );
+    case 'achtergrond-strand':
+      return (
+        <g>
+          <defs>
+            <linearGradient id={`${id}-bg`} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="#4FB3F0" />
+              <stop offset="0.6" stopColor="#BFE6FA" />
+            </linearGradient>
+          </defs>
+          <rect width="200" height="200" fill={`url(#${id}-bg)`} />
+          <circle cx="164" cy="36" r="16" fill="#FFE066" />
+          <circle cx="164" cy="36" r="24" fill="#FFE066" opacity="0.25" />
+          <path d="M0 132 H200 V160 H0 Z" fill="#1E8FC8" />
+          <path d="M0 136 q 12 -4 25 0 t 25 0 t 25 0 t 25 0 t 25 0 t 25 0 t 25 0 t 25 0" fill="none" stroke="#FFFFFF" strokeWidth="1.5" opacity="0.6" />
+          <path d="M0 156 C 50 150, 150 150, 200 156 V200 H0 Z" fill="#F2D59A" />
+        </g>
+      );
     default:
       return (
         <g>
@@ -381,6 +447,50 @@ function Accessoire({ soort, stof, id }) {
           <circle cx="118" cy="51" r="3" fill="#2E9D63" />
         </g>
       );
+    case 'accessoire-heksenhoed':
+      return (
+        <g>
+          <defs><Bol id={`${id}-heks`} kleur="#4B2A7A" /></defs>
+          <path d="M72 60 C 84 40, 92 20, 104 4 C 110 0, 118 2, 122 8 C 114 8, 110 14, 112 22 C 116 36, 124 48, 128 60 Z" {...vorm(`${id}-heks`, '#4B2A7A')} />
+          <path d="M76 55 C 90 50, 112 50, 125 55 L 126 61 C 110 57, 90 57, 74 61 Z" fill="#F47A20" />
+          <ellipse cx="100" cy="62" rx="52" ry="9" {...vorm(`${id}-heks`, '#4B2A7A')} />
+          <path d="M96 30 l3 -4 l3 4 l-3 4 Z" fill="#FFD33D" />
+        </g>
+      );
+    case 'accessoire-muts':
+      return (
+        <g>
+          <defs><Bol id={`${id}-muts`} kleur={stof} /></defs>
+          <path d="M58 80 C 56 40, 144 40, 142 80 Z" {...vorm(`${id}-muts`, stof)} />
+          <path d="M56 70 C 80 64, 120 64, 144 70 L 145 84 C 120 78, 80 78, 55 84 Z" fill={licht(stof, 0.2)} stroke={donker(stof, 0.3)} strokeWidth="1.5" />
+          {[66, 78, 90, 102, 114, 126, 136].map((x) => <path key={x} d={`M${x} 70 V 81`} stroke={donker(stof, 0.2)} strokeWidth="1.5" opacity="0.6" />)}
+          <circle cx="100" cy="36" r="11" fill="#F7F4EC" stroke="#CFCAB9" strokeWidth="1.2" />
+          <circle cx="96" cy="32" r="4" fill="#FFFFFF" opacity="0.8" />
+        </g>
+      );
+    case 'accessoire-feesthoed':
+      return (
+        <g transform="rotate(-14 100 60)">
+          <path d="M82 60 L 100 10 L 118 60 Z" fill="#35A7FF" stroke="#1C6FA8" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M88 44 L 112 44 L 115 52 L 85 52 Z M94 28 L 106 28 L 108 34 L 92 34 Z" fill="#FFD33D" />
+          <circle cx="100" cy="9" r="6" fill="#E86AA6" />
+          <path d="M82 60 C 94 64, 106 64, 118 60" fill="none" stroke="#1C6FA8" strokeWidth="1.5" />
+        </g>
+      );
+    case 'accessoire-bloemenkrans':
+      return (
+        <g>
+          <path d="M60 70 C 80 56, 120 56, 140 70" fill="none" stroke="#4E9A3A" strokeWidth="4" strokeLinecap="round" />
+          {[[62, 68, '#F29BC0'], [76, 60, '#FFD33D'], [92, 56, '#FFFFFF'], [108, 56, '#E86AA6'], [124, 60, '#FFD33D'], [138, 68, '#F29BC0']].map(([x, y, kleur]) => (
+            <g key={x}>
+              {[0, 72, 144, 216, 288].map((hoek) => (
+                <ellipse key={hoek} cx={x} cy={y - 4.5} rx="3.2" ry="4.5" fill={kleur} stroke={donker(kleur, 0.2)} strokeWidth="0.6" transform={`rotate(${hoek} ${x} ${y})`} />
+              ))}
+              <circle cx={x} cy={y} r="2.6" fill="#F4A21E" />
+            </g>
+          ))}
+        </g>
+      );
     case 'accessoire-erlenmeyer':
       return (
         <g transform="translate(136 168)">
@@ -416,9 +526,47 @@ function Oog({ x, id }) {
   );
 }
 
+// De bewegingen van de emotes. Eén keer afspelen, of blijven herhalen in de maker.
+function emoteStijl(id, emote, herhaal) {
+  const keer = herhaal ? 'infinite' : '1';
+  const fig = `.${id}-fig`;
+  const regels = {
+    'emote-spring': `${fig}{animation:${id}-spring 1s ease-out ${keer};transform-origin:100px 200px}
+      @keyframes ${id}-spring{0%,100%{transform:translateY(0)}20%{transform:translateY(-18px)}40%{transform:translateY(0) scaleY(.96)}60%{transform:translateY(-10px)}80%{transform:translateY(0)}}`,
+    'emote-zwaai': `.${id}-hand{animation:${id}-zwaai .5s ease-in-out ${herhaal ? 'infinite' : '4'} alternate;transform-origin:150px 196px}
+      @keyframes ${id}-zwaai{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}`,
+    'emote-knipoog': `.${id}-knip{animation:${id}-knip 1.6s ease-in-out ${keer};transform-origin:116px 97px}
+      @keyframes ${id}-knip{0%,30%,70%,100%{transform:scaleY(1)}40%,60%{transform:scaleY(.08)}}`,
+    'emote-dans': `${fig}{animation:${id}-dans .5s ease-in-out ${herhaal ? 'infinite' : '4'} alternate;transform-origin:100px 200px}
+      @keyframes ${id}-dans{from{transform:rotate(-7deg) translateX(-4px)}to{transform:rotate(7deg) translateX(4px)}}`,
+    'emote-draai': `${fig}{animation:${id}-draai 1.2s ease-in-out ${keer};transform-origin:100px 120px}
+      @keyframes ${id}-draai{0%{transform:scaleX(1)}25%{transform:scaleX(0)}50%{transform:scaleX(-1)}75%{transform:scaleX(0)}100%{transform:scaleX(1)}}`,
+    'emote-feest': `${fig}{animation:${id}-spring 1s ease-out ${keer};transform-origin:100px 200px}
+      .${id}-snipper{animation:${id}-val 1.8s linear ${keer};opacity:0}
+      @keyframes ${id}-spring{0%,100%{transform:translateY(0)}25%{transform:translateY(-16px)}50%{transform:translateY(0)}}
+      @keyframes ${id}-val{0%{opacity:1;transform:translateY(-40px) rotate(0)}100%{opacity:0;transform:translateY(190px) rotate(300deg)}}`
+  };
+  return `${regels[emote] || ''}
+    @media (prefers-reduced-motion: reduce){.${id}-fig,.${id}-hand,.${id}-knip,.${id}-snipper{animation:none}}`;
+}
+
+function ZwaaiHand({ huid, id }) {
+  return (
+    <g className={`${id}-hand`}>
+      <path d="M150 200 L 152 158" stroke={donker(huid.kleur, 0.1)} strokeWidth="14" strokeLinecap="round" />
+      <ellipse cx="153" cy="148" rx="11" ry="12" {...vorm(`${id}-huid`, huid.kleur)} />
+      {[-8, -3, 2, 7].map((dx) => (
+        <rect key={dx} x={152 + dx - 2.4} y="128" width="4.8" height="14" rx="2.4" {...vorm(`${id}-huid`, huid.kleur)} />
+      ))}
+      <ellipse cx="141" cy="150" rx="3" ry="6" transform="rotate(-35 141 150)" {...vorm(`${id}-huid`, huid.kleur)} />
+    </g>
+  );
+}
+
 // De avatar. `avatar` bevat huid, haarkleur, kapsel, kleding, kledingkleur,
-// accessoire, achtergrond, achtergrondkleur en stofkleur (zie avatarDelen.js).
-export default function HelixAvatar({ avatar, className = '', titel = 'Avatar' }) {
+// accessoire, achtergrond, achtergrondkleur, stofkleur en emote (zie avatarDelen.js).
+// Met `beweeg` speelt de emote; met `herhaal` blijft hij spelen.
+export default function HelixAvatar({ avatar, className = '', titel = 'Avatar', beweeg = false, herhaal = false }) {
   const id = useId().replace(/:/g, '');
   const a = normaliseerAvatar(avatar);
   const huid = HUIDSKLEUREN.find((optie) => optie.id === a.huid) || HUIDSKLEUREN[0];
@@ -431,6 +579,7 @@ export default function HelixAvatar({ avatar, className = '', titel = 'Avatar' }
 
   return (
     <svg viewBox="0 0 200 200" className={className} role="img" aria-label={titel}>
+      {beweeg && <style>{emoteStijl(id, a.emote, herhaal)}</style>}
       <defs>
         <Bol id={`${id}-huid`} kleur={huid.kleur} cx="40%" cy="35%" r="70%" />
         <Bol id={`${id}-haar`} kleur={haar} cx="40%" cy="20%" r="80%" />
@@ -462,6 +611,7 @@ export default function HelixAvatar({ avatar, className = '', titel = 'Avatar' }
 
       <Achtergrond soort={a.achtergrond} kleur={kleurVan(STOFKLEUREN, a.achtergrondkleur)} id={id} />
       <ellipse cx="100" cy="200" rx="90" ry="22" fill={`url(#${id}-schaduw)`} />
+      <g className={`${id}-fig`}>
       {!hoofddoek && <HaarAchter soort={a.kapsel} haar={haar} id={id} />}
       <Kleding soort={a.kleding} kleur={kledingkleur} id={id} />
 
@@ -494,7 +644,7 @@ export default function HelixAvatar({ avatar, className = '', titel = 'Avatar' }
       <ellipse cx="124" cy="114" rx="10" ry="7" fill={`url(#${id}-wang)`} />
       <path d="M73 79 C 78 74, 88 74, 94 78 M106 78 C 112 74, 122 74, 127 79" fill="none" stroke={wenkbrauw} strokeWidth="4" strokeLinecap="round" />
       <Oog x={84} id={id} />
-      <Oog x={116} id={id} />
+      <g className={`${id}-knip`}><Oog x={116} id={id} /></g>
       <path d="M97 104 C 95 110, 97 113, 101 113 C 104 113, 106 111, 104 108" fill="none" stroke={donker(huid.kleur, 0.28)} strokeWidth="2.2" strokeLinecap="round" />
       <ellipse cx="99" cy="106" rx="2" ry="3" fill="#FFFFFF" opacity="0.25" />
       <path d="M86 119 C 92 130, 108 130, 114 119 Z" fill="#5A1E1E" stroke={donker(huid.kleur, 0.45)} strokeWidth="1.5" strokeLinejoin="round" />
@@ -507,6 +657,21 @@ export default function HelixAvatar({ avatar, className = '', titel = 'Avatar' }
         <HaarVoor soort={a.kapsel} haar={haar} id={id} />
       )}
       <Accessoire soort={a.accessoire} stof={stof} id={id} />
+      </g>
+      {beweeg && a.emote === 'emote-zwaai' && <ZwaaiHand huid={huid} id={id} />}
+      {beweeg && a.emote === 'emote-feest' && Array.from({ length: 18 }, (_, i) => (
+        <rect
+          key={i}
+          className={`${id}-snipper`}
+          x={(i * 41) % 190 + 5}
+          y={(i * 13) % 30}
+          width="6"
+          height="3"
+          rx="1"
+          fill={['#FFD33D', '#E86AA6', '#3DDC84', '#35A7FF', '#FF7A3C'][i % 5]}
+          style={{ animationDelay: `${(i % 6) * 0.12}s`, transformBox: 'fill-box', transformOrigin: 'center' }}
+        />
+      ))}
     </svg>
   );
 }

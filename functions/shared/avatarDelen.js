@@ -3,7 +3,17 @@
 // bestand gaat ook naar functions/shared, zodat de server weet wat gratis is,
 // wat een onderdeel kost en wanneer een set compleet is.
 
-export const AVATAR_SLOTS = ['kapsel', 'kleding', 'accessoire', 'achtergrond'];
+export const AVATAR_SLOTS = ['kapsel', 'kleding', 'accessoire', 'achtergrond', 'emote'];
+
+// Seizoenen (Shop 2.0 deel 2C). Een seizoensitem is alleen in zijn eigen
+// seizoen te koop en komt volgend jaar terug; wat je hebt, houd je. Datums als
+// maand-dag, in Nederlandse tijd. Van half juli tot 21 september is er geen seizoen.
+export const SEIZOENEN = [
+  { id: 'herfst', titel: 'Herfst en Halloween', van: '09-22', tot: '11-15' },
+  { id: 'winter', titel: 'Sinterklaas en winter', van: '11-16', tot: '01-31' },
+  { id: 'carnaval', titel: 'Carnaval', van: '02-01', tot: '03-15' },
+  { id: 'lente', titel: 'Lente en zomer', van: '03-16', tot: '07-15' }
+];
 
 export const HUIDSKLEUREN = [
   { id: 'huid-1', kleur: '#F9D9C3', schaduw: '#E8B99B' },
@@ -73,6 +83,10 @@ export const AVATAR_DELEN = [
   { id: 'accessoire-veiligheidsbril', slot: 'accessoire', titel: 'Veiligheidsbril', prijs: 160, zeldzaam: 'rare', set: 'labset' },
   { id: 'accessoire-headset', slot: 'accessoire', titel: 'Headset met microfoon', prijs: 160, zeldzaam: 'rare', set: 'hackerset' },
   { id: 'accessoire-kroon', slot: 'accessoire', titel: 'Kroon', prijs: 700, zeldzaam: 'epic' },
+  { id: 'accessoire-heksenhoed', slot: 'accessoire', titel: 'Heksenhoed', prijs: 200, zeldzaam: 'rare', seizoen: 'herfst' },
+  { id: 'accessoire-muts', slot: 'accessoire', titel: 'Wintermuts', prijs: 180, zeldzaam: 'rare', seizoen: 'winter', stof: true },
+  { id: 'accessoire-feesthoed', slot: 'accessoire', titel: 'Feesthoedje', prijs: 180, zeldzaam: 'rare', seizoen: 'carnaval' },
+  { id: 'accessoire-bloemenkrans', slot: 'accessoire', titel: 'Bloemenkrans', prijs: 180, zeldzaam: 'rare', seizoen: 'lente' },
 
   // Achtergronden
   { id: 'achtergrond-effen', slot: 'achtergrond', titel: 'Effen', prijs: 0, zeldzaam: 'common', stof: true },
@@ -80,7 +94,19 @@ export const AVATAR_DELEN = [
   { id: 'achtergrond-sterren', slot: 'achtergrond', titel: 'Sterrenhemel', prijs: 250, zeldzaam: 'rare' },
   { id: 'achtergrond-zonsondergang', slot: 'achtergrond', titel: 'Zonsondergang', prijs: 250, zeldzaam: 'rare' },
   { id: 'achtergrond-lab', slot: 'achtergrond', titel: 'Laboratorium', prijs: 200, zeldzaam: 'rare', set: 'labset' },
-  { id: 'achtergrond-code', slot: 'achtergrond', titel: 'Coderegen', prijs: 200, zeldzaam: 'rare', set: 'hackerset' }
+  { id: 'achtergrond-code', slot: 'achtergrond', titel: 'Coderegen', prijs: 200, zeldzaam: 'rare', set: 'hackerset' },
+  { id: 'achtergrond-herfst', slot: 'achtergrond', titel: 'Herfstbladeren', prijs: 200, zeldzaam: 'rare', seizoen: 'herfst' },
+  { id: 'achtergrond-sneeuw', slot: 'achtergrond', titel: 'Sneeuw', prijs: 200, zeldzaam: 'rare', seizoen: 'winter' },
+  { id: 'achtergrond-confetti', slot: 'achtergrond', titel: 'Confetti', prijs: 200, zeldzaam: 'rare', seizoen: 'carnaval' },
+  { id: 'achtergrond-strand', slot: 'achtergrond', titel: 'Strand', prijs: 200, zeldzaam: 'rare', seizoen: 'lente' },
+
+  // Emotes: een korte beweging na een goed resultaat.
+  { id: 'emote-spring', slot: 'emote', titel: 'Springen', prijs: 0, zeldzaam: 'common' },
+  { id: 'emote-zwaai', slot: 'emote', titel: 'Zwaaien', prijs: 100, zeldzaam: 'common' },
+  { id: 'emote-knipoog', slot: 'emote', titel: 'Knipoog', prijs: 120, zeldzaam: 'common' },
+  { id: 'emote-dans', slot: 'emote', titel: 'Dansje', prijs: 220, zeldzaam: 'rare' },
+  { id: 'emote-draai', slot: 'emote', titel: 'Rondje draaien', prijs: 260, zeldzaam: 'rare' },
+  { id: 'emote-feest', slot: 'emote', titel: 'Feest', prijs: 450, zeldzaam: 'epic' }
 ];
 
 // Een volle set geeft een onderdeel dat je niet kunt kopen.
@@ -103,7 +129,8 @@ export const STANDAARD_AVATAR = {
   accessoire: 'accessoire-geen',
   achtergrond: 'achtergrond-effen',
   achtergrondkleur: 'stof-geel',
-  stofkleur: 'stof-teal'
+  stofkleur: 'stof-teal',
+  emote: 'emote-spring'
 };
 
 const ALLE_DELEN = [...AVATAR_DELEN, ...AVATAR_BONUSDELEN];
@@ -151,4 +178,40 @@ export function completeSets(bezitteShopItemIds = new Set()) {
 
 export function kleurVan(lijst, id) {
   return (lijst.find((optie) => optie.id === id) || lijst[0]).kleur;
+}
+
+// Maand-dag ("09-23") van een datum in Nederlandse tijd.
+function maandDag(datum) {
+  const delen = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', month: '2-digit', day: '2-digit' })
+    .formatToParts(datum);
+  const deel = (type) => delen.find((stuk) => stuk.type === type)?.value;
+  return `${deel('month')}-${deel('day')}`;
+}
+
+const valtIn = (md, seizoen) => (seizoen.van <= seizoen.tot
+  ? md >= seizoen.van && md <= seizoen.tot
+  : md >= seizoen.van || md <= seizoen.tot);
+
+// Het seizoen van nu, of null.
+export function seizoenOp(datum = new Date()) {
+  const md = maandDag(datum);
+  return SEIZOENEN.find((seizoen) => valtIn(md, seizoen)) || null;
+}
+
+// Nog te koop op deze datum? Gewone onderdelen altijd.
+export function deelTeKoop(deelId, datum = new Date()) {
+  const deel = avatarDeel(deelId);
+  if (!deel) return false;
+  if (!deel.seizoen) return true;
+  return seizoenOp(datum)?.id === deel.seizoen;
+}
+
+// Hele dagen tot het seizoen van deze datum afloopt (de laatste dag telt mee).
+export function dagenTotEindeSeizoen(datum = new Date()) {
+  const seizoen = seizoenOp(datum);
+  if (!seizoen) return 0;
+  for (let dagen = 1; dagen <= 200; dagen += 1) {
+    if (seizoenOp(new Date(datum.getTime() + dagen * 86400000))?.id !== seizoen.id) return dagen;
+  }
+  return 0;
 }

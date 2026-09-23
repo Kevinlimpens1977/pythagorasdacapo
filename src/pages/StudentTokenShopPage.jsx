@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
-  CheckCircle2, Clock, Coins, Eye, Gift, Heart, Loader2, ReceiptText, ShoppingBag, Sparkles, Target, X
+  CheckCircle2, Clock, Coins, Eye, Gift, Heart, Leaf, Loader2, ReceiptText, ShoppingBag, Sparkles, Target, X
 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import {
@@ -23,7 +23,9 @@ import {
   TOKEN_SHOP_ITEM_TYPES
 } from '../lib/tokenShopRewards';
 import { dagenTotNieuweEtalage, etalageVoorWeek, spaarVoortgang } from '../lib/shopEtalage';
-import { AVATAR_SLOTS, avatarDeel, normaliseerAvatar, shopItemIdVoorDeel } from '../lib/avatarDelen';
+import {
+  AVATAR_SLOTS, avatarDeel, dagenTotEindeSeizoen, deelTeKoop, normaliseerAvatar, seizoenOp, shopItemIdVoorDeel
+} from '../lib/avatarDelen';
 import AvatarMaker from '../components/avatar/AvatarMaker';
 import HelixAvatar from '../components/avatar/HelixAvatar';
 import ProfielAvatar from '../components/avatar/ProfielAvatar';
@@ -72,7 +74,7 @@ const prijsVan = (item) => Math.max(0, Number(item?.price) || 0);
 export default function StudentTokenShopPage() {
   const { currentUser, isDevBypass } = useAuth();
   const [account, setAccount] = useState({ balance: 0 });
-  const [items, setItems] = useState([]);
+  const [alleItems, setItems] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [loadout, setLoadout] = useState({ activePinIds: [] });
@@ -106,6 +108,12 @@ export default function StudentTokenShopPage() {
 
   const saldo = Math.max(0, Number(account.balance) || 0);
   const bezit = useMemo(() => new Set(purchases.map((purchase) => purchase.itemId)), [purchases]);
+  // Seizoensitems buiten hun seizoen blijven uit beeld, behalve wat je al hebt.
+  const seizoen = seizoenOp(new Date());
+  const items = useMemo(() => alleItems.filter((item) => {
+    const deel = deelVanItem(item);
+    return !deel?.seizoen || deelTeKoop(deel.id) || bezit.has(item.id);
+  }), [alleItems, bezit]);
   const itemsById = useMemo(() => new Map(items.map((item) => [item.id, item])), [items]);
   const normalizedLoadout = useMemo(() => normalizeLoadout(loadout), [loadout]);
   const eigenAvatar = useMemo(() => normaliseerAvatar(normalizedLoadout.avatar || {}), [normalizedLoadout.avatar]);
@@ -281,6 +289,13 @@ export default function StudentTokenShopPage() {
                 onOpslaan={(avatar) => bewaarAvatar(avatar)}
                 onKoop={setBevestigItem}
               />
+
+              {seizoen && (
+                <p className="flex flex-wrap items-center gap-2 rounded-xl border-2 border-[#0B0D0F] bg-[#FFE3C8] px-4 py-3 font-bold">
+                  <Leaf size={18} className="text-[#B4520E]" aria-hidden="true" />
+                  Seizoen: {seizoen.titel}. Nog {dagenTotEindeSeizoen(new Date())} dagen; daarna komen de seizoensitems volgend jaar terug.
+                </p>
+              )}
 
               <section>
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-2">

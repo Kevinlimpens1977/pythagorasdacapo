@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, Coins, Gift, Loader2, Lock, RotateCcw, Save, ShoppingBag } from 'lucide-react';
+import { Check, Coins, Gift, Leaf, Loader2, Lock, Play, RotateCcw, Save, ShoppingBag } from 'lucide-react';
 import HelixAvatar from './HelixAvatar';
 import {
   AVATAR_BONUSDELEN, AVATAR_DELEN, AVATAR_SETS, avatarDeel, HAARKLEUREN, HUIDSKLEUREN, magDeelDragen,
@@ -15,10 +15,11 @@ const TABS = [
   { id: 'kapsel', label: 'Kapsel' },
   { id: 'kleding', label: 'Kleding' },
   { id: 'accessoire', label: 'Accessoire' },
-  { id: 'achtergrond', label: 'Achtergrond' }
+  { id: 'achtergrond', label: 'Achtergrond' },
+  { id: 'emote', label: 'Emote' }
 ];
 
-const SLOTS = ['kapsel', 'kleding', 'accessoire', 'achtergrond'];
+const SLOTS = ['kapsel', 'kleding', 'accessoire', 'achtergrond', 'emote'];
 
 function Kleurrij({ titel, lijst, waarde, onKies }) {
   return (
@@ -47,9 +48,13 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
   const basis = useMemo(() => normaliseerAvatar(opgeslagen || {}), [opgeslagen]);
   const [concept, setConcept] = useState(null);
   const [tab, setTab] = useState('huid');
+  const [speel, setSpeel] = useState(0);
   const huidig = concept || basis;
 
-  const zet = (veld, waarde) => setConcept({ ...huidig, [veld]: waarde });
+  const zet = (veld, waarde) => {
+    setConcept({ ...huidig, [veld]: waarde });
+    if (veld === 'emote') setSpeel((teller) => teller + 1);
+  };
   const heeftDeel = (deelId) => magDeelDragen(deelId, bezit);
   const nietVanJou = SLOTS.map((slot) => avatarDeel(huidig[slot])).filter((deel) => deel && !heeftDeel(deel.id));
   const gewijzigd = Boolean(concept) && JSON.stringify(concept) !== JSON.stringify(basis);
@@ -62,6 +67,7 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
   const kapselDeel = avatarDeel(huidig.kapsel);
   const kledingDeel = avatarDeel(huidig.kleding);
   const achtergrondDeel = avatarDeel(huidig.achtergrond);
+  const accessoireDeel = avatarDeel(huidig.accessoire);
 
   return (
     <section className="overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-white shadow-[3px_3px_0_#0B0D0F]">
@@ -73,8 +79,11 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
       <div className="grid gap-4 p-4 md:grid-cols-[200px_minmax(0,1fr)]">
         <div className="flex flex-col items-center gap-3">
           <div className="h-44 w-44 overflow-hidden rounded-full border-4 border-[#0B0D0F]">
-            <HelixAvatar avatar={huidig} className="h-full w-full" titel="Jouw avatar" />
+            <HelixAvatar key={speel} avatar={huidig} beweeg={speel > 0} className="h-full w-full" titel="Jouw avatar" />
           </div>
+          <button type="button" onClick={() => setSpeel((teller) => teller + 1)} className="flex items-center gap-1 text-sm font-bold text-[#066A99] underline">
+            <Play size={14} aria-hidden="true" /> Emote afspelen
+          </button>
           {nietVanJou.length > 0 ? (
             <div className="w-full space-y-2">
               {nietVanJou.map((deel) => {
@@ -136,7 +145,8 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
               ? <Kleurrij titel="Kleur hoofddoek" lijst={STOFKLEUREN} waarde={huidig.stofkleur} onKies={(id) => zet('stofkleur', id)} />
               : huidig.kapsel !== 'kapsel-geen' && <Kleurrij titel="Haarkleur" lijst={HAARKLEUREN} waarde={huidig.haarkleur} onKies={(id) => zet('haarkleur', id)} />)}
             {tab === 'kleding' && kledingDeel?.stof && <Kleurrij titel="Kleur" lijst={STOFKLEUREN} waarde={huidig.kledingkleur} onKies={(id) => zet('kledingkleur', id)} />}
-            {tab === 'accessoire' && huidig.accessoire === 'accessoire-pet' && <Kleurrij titel="Kleur pet" lijst={STOFKLEUREN} waarde={huidig.stofkleur} onKies={(id) => zet('stofkleur', id)} />}
+            {tab === 'accessoire' && accessoireDeel?.stof && <Kleurrij titel={`Kleur ${accessoireDeel.titel.toLowerCase()}`} lijst={STOFKLEUREN} waarde={huidig.stofkleur} onKies={(id) => zet('stofkleur', id)} />}
+            {tab === 'emote' && <p className="text-sm font-bold text-[var(--helix-muted)]">Je avatar doet dit na een goed resultaat: 90% of meer, een ster of een hoger niveau.</p>}
             {tab === 'achtergrond' && achtergrondDeel?.stof && <Kleurrij titel="Kleur" lijst={STOFKLEUREN} waarde={huidig.achtergrondkleur} onKies={(id) => zet('achtergrondkleur', id)} />}
 
             {tab !== 'huid' && (
@@ -155,9 +165,14 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
                       className={`relative flex flex-col items-center gap-1 rounded-xl border-2 p-1.5 text-center ${gekozen ? 'border-[#087EB5] bg-[#DCEFFA]' : 'border-[#0B0D0F] bg-white hover:bg-[var(--helix-surface-soft)]'}`}
                     >
                       <span className={`block aspect-square w-full overflow-hidden rounded-lg border border-[#0B0D0F] ${van ? '' : 'opacity-80'}`}>
-                        <HelixAvatar avatar={{ ...huidig, [tab]: deel.id }} className="h-full w-full" titel={deel.titel} />
+                        <HelixAvatar avatar={{ ...huidig, [tab]: deel.id }} beweeg={tab === 'emote'} herhaal className="h-full w-full" titel={deel.titel} />
                       </span>
                       <span className="line-clamp-2 text-[11px] font-extrabold leading-tight">{deel.titel.replace(' (setbonus)', '')}</span>
+                      {deel.seizoen && (
+                        <span className="absolute left-1 top-1 rounded-full border border-[#0B0D0F] bg-[#F47A20] p-0.5 text-white" title="Seizoensitem">
+                          <Leaf size={10} aria-hidden="true" />
+                        </span>
+                      )}
                       {!van && (
                         <span className="absolute right-1 top-1 flex items-center gap-0.5 rounded-full border border-[#0B0D0F] bg-[#FFF0B8] px-1.5 text-[10px] font-black">
                           {deel.bonusVan

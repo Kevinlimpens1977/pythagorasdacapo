@@ -3082,7 +3082,7 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
   });
 }
 
-async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date() }) {
   const caller = await getCallerDoc({ auth, db, label: "Leerling" });
   if (caller.data.role !== "student") {
     throw new HttpsError("permission-denied", "Alleen leerlingen kunnen tokens uitgeven.");
@@ -3118,6 +3118,15 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
     const item = itemSnapshot.data() || {};
     if (item.enabled === false) {
       throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
+    }
+
+    // Seizoensitems (deel 2C) zijn alleen in hun eigen seizoen te koop.
+    const seizoenDeel = normalizeShopItemType(item.itemType) === "avatarOnderdeel"
+      ? avatarLaag.avatarDeel(String(itemId).replace(/^avatar-/, ""))
+      : null;
+    if (seizoenDeel?.seizoen && !avatarLaag.deelTeKoop(seizoenDeel.id, nuDatum)) {
+      const seizoen = avatarLaag.SEIZOENEN.find((kandidaat) => kandidaat.id === seizoenDeel.seizoen);
+      throw new HttpsError("failed-precondition", `Dit seizoensitem is terug in ${seizoen?.titel || "zijn seizoen"}.`);
     }
 
     if (item.repeatable !== true && (vasteAankoopSnapshot.exists || alGekochtOudeStijl)) {
