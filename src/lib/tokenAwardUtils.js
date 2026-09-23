@@ -81,6 +81,7 @@ export const beloningMelding = (award = {}) => {
   const blokTokens = Math.max(0, (Number(award.amount) || 0) - extra);
   if (blokTokens > 0) delen.push(`+${blokTokens} tokens`);
   if (award.reden) delen.push(award.reden);
+  if (award.dubbeleXp && Number(award.xp) > 0) delen.push('dubbele XP');
   let tekst = delen.join(' · ');
   if (award.ster) tekst += ' · ster verdiend';
   if (award.plafondBereikt) tekst += ' · weekplafond bereikt';

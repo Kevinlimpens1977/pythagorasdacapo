@@ -2892,3 +2892,88 @@ test("fase 3: Mijn klas toont alleen wat zichtbaar mag, op naam gesorteerd", asy
   assert.equal(klas.klasDoel.stand, 20);
   assert.deepEqual(klas.gegevenDezeWeek, [{ aan: "b", soort: "geholpen" }]);
 });
+
+const PRIVILEGE_DB = () => createDb({
+  "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+  "users/b": { role: "student", displayName: "Bo", klasId: "klas-1" },
+  "users/t": { role: "student", displayName: "Test", klasId: "klas-1", isTestaccount: true },
+  "users/kevin": { role: "admin" },
+  "tokenAccounts/a": { balance: 3000, earnedTotal: 3000, spentTotal: 0, adjustedTotal: 0 },
+  "tokenAccounts/b": { balance: 3000, earnedTotal: 3000, spentTotal: 0, adjustedTotal: 0 },
+  "tokenShopItems/privilege-dj": { title: "DJ van de week", price: 1400, enabled: true, itemType: "privilege", voorraadPerWeek: 1, maxPerSchooljaar: 2 },
+  "tokenShopItems/privilege-muziek": { title: "Muziek", price: 250, enabled: true, itemType: "privilege", voorraadPerWeek: 3 },
+});
+
+test("fase 4: privilege aanvragen schrijft af, 1 per week, voorraad per klas", async () => {
+  const db = PRIVILEGE_DB();
+  const vraag = (uid, itemId, datum = "2026-09-23T10:00:00Z") => __test.vraagPrivilegeAanCore({
+    auth: { uid }, data: { itemId }, db, now: () => "t", nuDatum: new Date(datum),
+  });
+
+  const verzoek = await vraag("a", "privilege-dj");
+  assert.equal(verzoek.balance, 1600);
+  assert.equal(db.store.docs[`privilegeVerzoeken/${verzoek.verzoekId}`].status, "aangevraagd");
+  await assert.rejects(() => vraag("a", "privilege-muziek"), (error) => /al een privilege/.test(error.message));
+  await assert.rejects(() => vraag("b", "privilege-dj"), (error) => /op/.test(error.message), "voorraad DJ is 1");
+  assert.equal((await vraag("b", "privilege-muziek")).balance, 2750);
+  await assert.rejects(
+    () => __test.purchaseTokenShopItemCore({ auth: { uid: "b" }, data: { itemId: "privilege-muziek" }, db, now: () => "t" }),
+    (error) => /vraag je aan/.test(error.message),
+  );
+});
+
+test("fase 4: afwijzen geeft de tokens terug, daarna mag de leerling opnieuw", async () => {
+  const db = PRIVILEGE_DB();
+  const datum = new Date("2026-09-23T10:00:00Z");
+  const { verzoekId } = await __test.vraagPrivilegeAanCore({ auth: { uid: "a" }, data: { itemId: "privilege-muziek" }, db, now: () => "t", nuDatum: datum });
+  const beoordeel = (besluit) => __test.beoordeelPrivilegeCore({ auth: { uid: "kevin" }, data: { id: verzoekId, besluit, reden: "Nu even niet" }, db, now: () => "t" });
+
+  await assert.rejects(
+    () => __test.beoordeelPrivilegeCore({ auth: { uid: "a" }, data: { id: verzoekId, besluit: "goedgekeurd" }, db }),
+    (error) => error.code === "permission-denied",
+  );
+  await beoordeel("afgewezen");
+  assert.equal(db.store.docs["tokenAccounts/a"].balance, 3000);
+  assert.equal(db.store.docs[`privilegeVerzoeken/${verzoekId}`].reden, "Nu even niet");
+  await assert.rejects(() => beoordeel("goedgekeurd"), (error) => error.code === "failed-precondition");
+
+  const opnieuw = await __test.vraagPrivilegeAanCore({ auth: { uid: "a" }, data: { itemId: "privilege-muziek" }, db, now: () => "t", nuDatum: datum });
+  assert.equal(opnieuw.balance, 2750);
+  const stand = await __test.getMijnPrivilegesCore({ auth: { uid: "a" }, db, nuDatum: datum });
+  assert.equal(stand.privileges.find((item) => item.id === "privilege-muziek").overDezeWeek, 2);
+  assert.equal(stand.privileges.every((item) => item.mag === false), true, "deze week al een privilege");
+});
+
+test("fase 4: klasbonus voor iedereen in de klas, niet voor testaccounts", async () => {
+  const db = PRIVILEGE_DB();
+  const bonus = await __test.geefKlasBonusCore({ auth: { uid: "kevin" }, data: { klasId: "klas-1", bedrag: 20, reden: "Goed gewerkt" }, db, now: () => "t" });
+  assert.equal(bonus.aantal, 2);
+  assert.equal(db.store.docs["tokenAccounts/a"].balance, 3020);
+  assert.equal(db.store.docs["tokenAccounts/t"], undefined);
+  await assert.rejects(
+    () => __test.geefKlasBonusCore({ auth: { uid: "kevin" }, data: { klasId: "klas-1", bedrag: 500 }, db }),
+    (error) => error.code === "invalid-argument",
+  );
+});
+
+test("fase 4: een dubbele-XP-week verdubbelt XP, niet de tokens", async () => {
+  const blok = { status: "published", paragraafId: "par-1", content: { tokenConfig: { enabled: true, totalTokens: 12 } }, publishedVersion: "v1" };
+  const rond = async (metEvent) => {
+    const db = createDb({
+      ...KLAS_MET_PARAGRAAF,
+      "publicContentBlocks/block-1": blok,
+      ...(metEvent ? { "klasEvents/klas-1": { soort: "dubbeleXp", van: "2026-09-21", tot: "2026-09-27" } } : {}),
+    });
+    return __test.awardTokensForActivityCore({
+      auth: { uid: "student-1" },
+      data: { sourceKind: "contentBlock", sourceId: "block-1", sourceVersion: "v1", result: { completed: true, isCorrect: true } },
+      db, now: () => "t", nuDatum: new Date("2026-09-23T10:00:00Z"),
+    });
+  };
+  const gewoon = await rond(false);
+  const dubbel = await rond(true);
+  assert.equal(dubbel.dubbeleXp, true);
+  assert.equal(dubbel.xp, gewoon.xp * 2);
+  const blokTokens = (award) => award.amount - (award.niveauTokens || 0);
+  assert.equal(blokTokens(dubbel), blokTokens(gewoon), "de extra tokens komen alleen van een hoger niveau");
+});

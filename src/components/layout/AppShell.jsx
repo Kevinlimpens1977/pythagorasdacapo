@@ -19,6 +19,7 @@ import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../
 import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewards';
 import ProfielAvatar from '../avatar/ProfielAvatar';
 import KlasDoelPill from '../klas/KlasDoelPill';
+import EventPill from '../klas/EventPill';
 import helixLogo from '../../afbeeldingen/logo.png';
 
 const workspaceIcons = {
@@ -211,6 +212,7 @@ export default function AppShell() {
             </button>
           )}
 
+          {!isAdmin && <EventPill klasId={userData?.klasId} disabled={isDevBypass} />}
           {!isAdmin && <KlasDoelPill klasId={userData?.klasId} disabled={isDevBypass} onOpen={() => navigate('/klas')} />}
           {!isAdmin && <WeekdoelPill studentUid={currentUser?.uid} disabled={isDevBypass} />}
           {!isAdmin && <NiveauPill studentUid={currentUser?.uid} disabled={isDevBypass} />}

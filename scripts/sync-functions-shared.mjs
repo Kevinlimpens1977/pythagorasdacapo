@@ -47,7 +47,9 @@ export const SHARED_ENTRY_POINTS = [
   // Avatar-onderdelen (Shop 2.0 deel 2B): wat gratis is en wanneer een set compleet is.
   'avatarDelen.js',
   // Klasdoel en complimenten (fase 3, samen).
-  'klasSamen.js'
+  'klasSamen.js',
+  // Privileges en events (fase 4).
+  'privileges.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(

@@ -26,6 +26,7 @@ import AdminProjectKompasPage from './pages/AdminProjectKompasPage';
 import StudentTokenShopPage from './pages/StudentTokenShopPage';
 import StudentSpellenPage from './pages/StudentSpellenPage';
 import StudentKlasPage from './pages/StudentKlasPage';
+import { EigenCertificaatPage, KlasCertificatenPage } from './pages/CertificaatPage';
 import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
 import AdminTestenPage from './pages/AdminTestenPage';
 import AdminVrijgevenPage from './pages/AdminVrijgevenPage';
@@ -46,6 +47,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginScreen />} />
       <Route path="/login/beheer" element={<AdminLoginScreen />} />
+      {/* Certificaten staan buiten de app-schil, zodat ze schoon printen (fase 4). */}
+      <Route path="/certificaat" element={<PrivateRoute><EigenCertificaatPage /></PrivateRoute>} />
+      <Route path="/admin/certificaten/:klasId" element={<PrivateRoute requireAdmin={true}><KlasCertificatenPage /></PrivateRoute>} />
       <Route path="/" element={<PrivateRoute><AppShell /></PrivateRoute>}>
         <Route index element={<TableOfContents />} />
         <Route path="profiel" element={<StudentProfilePage />} />

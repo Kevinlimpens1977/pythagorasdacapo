@@ -414,6 +414,17 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Fase 4: privileges lopen via callables; events zet de docent.
+    match /privilegeVerzoeken/{verzoekId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.studentUid == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /klasEvents/{klasId} {
+      allow read: if isAdmin() || (signedIn() && userDoc().data.klasId == klasId);
+      allow write: if isAdmin();
+    }
+
     match /leerlingNiveau/{studentUid} {
       allow read: if signedIn() && (
         isOwner(studentUid) ||

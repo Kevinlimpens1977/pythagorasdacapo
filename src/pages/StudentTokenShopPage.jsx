@@ -29,6 +29,7 @@ import {
 import AvatarMaker from '../components/avatar/AvatarMaker';
 import HelixAvatar from '../components/avatar/HelixAvatar';
 import ProfielAvatar from '../components/avatar/ProfielAvatar';
+import PrivilegesSectie from '../components/shop/PrivilegesSectie';
 
 // Shop 2.0 (SPELOPZET-TOKENS-EN-SHOP.md, fase 2A): spaardoel met voorschot,
 // verlanglijst, een wisselende etalage, passen op je profiel, bevestigen,
@@ -53,7 +54,8 @@ const deelVanItem = (item) => (item?.itemType === 'avatarOnderdeel'
   ? avatarDeel(item.previewStyle?.avatarDeel || String(item.id || '').replace(/^avatar-/, ''))
   : null);
 
-const SHOP_TABS = ['all', ...TOKEN_SHOP_ITEM_TYPES];
+// Privileges hebben een eigen blok met aanvragen (fase 4), geen tab.
+const SHOP_TABS = ['all', ...TOKEN_SHOP_ITEM_TYPES.filter((type) => type !== 'privilege')];
 const LOADOUT_VELD = {
   avatarSkin: 'activeAvatarSkinId',
   avatarFrame: 'activeAvatarFrameId',
@@ -111,6 +113,7 @@ export default function StudentTokenShopPage() {
   // Seizoensitems buiten hun seizoen blijven uit beeld, behalve wat je al hebt.
   const seizoen = seizoenOp(new Date());
   const items = useMemo(() => alleItems.filter((item) => {
+    if (item.itemType === 'privilege') return false;
     const deel = deelVanItem(item);
     return !deel?.seizoen || deelTeKoop(deel.id) || bezit.has(item.id);
   }), [alleItems, bezit]);
@@ -289,6 +292,8 @@ export default function StudentTokenShopPage() {
                 onOpslaan={(avatar) => bewaarAvatar(avatar)}
                 onKoop={setBevestigItem}
               />
+
+              <PrivilegesSectie saldo={saldo} uit={isDevBypass} />
 
               {seizoen && (
                 <p className="flex flex-wrap items-center gap-2 rounded-xl border-2 border-[#0B0D0F] bg-[#FFE3C8] px-4 py-3 font-bold">

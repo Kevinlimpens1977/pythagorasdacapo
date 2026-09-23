@@ -119,6 +119,7 @@ const TOKEN_SHOP_ITEM_TYPES = new Set([
   "victoryEffect",
   "titleBadge",
   "avatarOnderdeel",
+  "privilege",
 ]);
 const TOKEN_SHOP_RARITIES = new Set(["common", "rare", "epic", "platinum", "legendary"]);
 const TOKEN_SHOP_TARGET_SLOT_BY_TYPE = {
@@ -129,6 +130,7 @@ const TOKEN_SHOP_TARGET_SLOT_BY_TYPE = {
   victoryEffect: "victoryEffect",
   titleBadge: "titleBadge",
   avatarOnderdeel: "avatar",
+  privilege: "privilege",
 };
 const TOKEN_SHOP_LOADOUT_FIELD_BY_TYPE = {
   avatarSkin: "activeAvatarSkinId",
@@ -355,6 +357,11 @@ function normalizeShopItemPayload(data = {}, existing = {}) {
     rarity,
     targetSlot: targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemType],
     previewStyle: normalizePreviewStyle(data.previewStyle ?? existing.previewStyle),
+    // Privileges (fase 4): voorraad per klas per week, en hoe vaak per schooljaar (0 = onbeperkt).
+    ...(itemType === "privilege" ? {
+      voorraadPerWeek: Math.max(0, normalizeInteger(data.voorraadPerWeek ?? existing.voorraadPerWeek, 0)),
+      maxPerSchooljaar: Math.max(0, normalizeInteger(data.maxPerSchooljaar ?? existing.maxPerSchooljaar, 0)),
+    } : {}),
   };
 }
 
@@ -2638,6 +2645,15 @@ function loadSamenLayer() {
   return samenLayerPromise;
 }
 
+let privilegeLayerPromise = null;
+
+function loadPrivilegeLayer() {
+  if (!privilegeLayerPromise) {
+    privilegeLayerPromise = import("./shared/privileges.js");
+  }
+  return privilegeLayerPromise;
+}
+
 let avatarLayerPromise = null;
 
 function loadAvatarLayer() {
@@ -2815,6 +2831,10 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
   const leerlingKlasId = String(caller.data.klasId || "").trim();
   const klasDoelRef = leerlingKlasId ? db.doc(`klasDoel/${leerlingKlasId}`) : null;
   const bijdrageRef = db.doc(`klasDoelBijdrage/${auth.uid}_${weekSleutel}`);
+  // Event van de klas (fase 4): een dubbele-XP-week verdubbelt alleen XP.
+  const privilegeLaag = await loadPrivilegeLayer();
+  const klasEvent = leerlingKlasId ? await db.doc(`klasEvents/${leerlingKlasId}`).get() : null;
+  const dubbeleXp = Boolean(klasEvent?.exists && privilegeLaag.eventActief(klasEvent.data(), nuDatum));
 
   const source = {
     kind: sourceKind,
@@ -2966,6 +2986,7 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     }
 
     // 3. XP en niveau.
+    if (dubbeleXp) xp *= 2;
     const xpVoor = normalizeNonNegativeInteger(voortgang.xp, 0);
     const xpNa = xpVoor + xp;
     const niveauVoor = regels.niveauVoorXp(xpVoor).niveau;
@@ -3106,6 +3127,7 @@ async function awardTokensForActivityCore({ auth, data = {}, db, now = FieldValu
     return {
       awarded: totaalTokens > 0 || xp > 0 || nieuweBadges.length > 0,
       klasdoelPunt,
+      dubbeleXp,
       nieuweBadges: nieuweBadges.map((id) => regels.BADGES.find((badge) => badge.id === id)?.titel || id),
       amount: totaalTokens,
       huiswerkTokens,
@@ -3166,6 +3188,9 @@ async function purchaseTokenShopItemCore({ auth, data = {}, db, now = FieldValue
     const item = itemSnapshot.data() || {};
     if (item.enabled === false) {
       throw new HttpsError("failed-precondition", "Dit shopitem is niet beschikbaar.");
+    }
+    if (normalizeShopItemType(item.itemType) === "privilege") {
+      throw new HttpsError("failed-precondition", "Een privilege vraag je aan; de docent keurt het goed.");
     }
 
     // Seizoensitems (deel 2C) zijn alleen in hun eigen seizoen te koop.
@@ -3477,6 +3502,228 @@ async function verbergComplimentCore({ auth, data = {}, db }) {
   const id = requireString(data.id, "id");
   await db.doc(`complimenten/${id}`).set({ verborgen: data.verborgen !== false }, { merge: true });
   return { id, verborgen: data.verborgen !== false };
+}
+
+// Privileges (fase 4). Een verzoek schrijft de tokens meteen af; bij afwijzen
+// komen ze terug. Grenzen: 1 per leerling per week, een voorraad per klas per
+// week, en soms een maximum per schooljaar.
+async function vraagPrivilegeAanCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date() }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") {
+    throw new HttpsError("permission-denied", "Alleen leerlingen vragen een privilege aan.");
+  }
+  const klasId = String(caller.data.klasId || "").trim();
+  if (!klasId) {
+    throw new HttpsError("failed-precondition", "Je zit nog niet in een klas.");
+  }
+  const itemId = requireString(data.itemId, "itemId");
+  const [laag, regels] = await Promise.all([loadPrivilegeLayer(), loadBeloningLayer()]);
+  const week = regels.isoWeekSleutel(nuDatum);
+  const schooljaar = laag.schooljaarSleutel(nuDatum);
+
+  const itemSnapshot = await db.doc(`tokenShopItems/${itemId}`).get();
+  const item = itemSnapshot.exists ? { id: itemId, ...(itemSnapshot.data() || {}) } : null;
+  if (!item || item.enabled === false || normalizeShopItemType(item.itemType) !== "privilege") {
+    throw new HttpsError("not-found", "Dit privilege bestaat niet of staat uit.");
+  }
+
+  const [eigenSnapshot, klasSnapshot] = await Promise.all([
+    db.collection("privilegeVerzoeken").where("studentUid", "==", auth.uid).get(),
+    db.collection("privilegeVerzoeken").where("klasId", "==", klasId).get(),
+  ]);
+  const eigen = eigenSnapshot.docs.map((doc) => doc.data() || {});
+  const klasDezeWeek = klasSnapshot.docs.map((doc) => doc.data() || {})
+    .filter((verzoek) => verzoek.itemId === itemId && verzoek.week === week);
+  const oordeel = laag.magPrivilegeAanvragen({ item, eigen, klasDezeWeek, week, schooljaar });
+  if (!oordeel.mag) {
+    throw new HttpsError("failed-precondition", oordeel.reden);
+  }
+
+  const timestamp = getServerTimestamp(now);
+  const prijs = normalizeNonNegativeInteger(item.price, 0);
+  const accountRef = db.doc(`tokenAccounts/${auth.uid}`);
+  const verzoekRef = db.doc(`privilegeVerzoeken/${cleanIdPart(auth.uid)}_${week}`);
+  const transactionRef = getTransactionRef(db, `spend_privilege_${cleanIdPart(auth.uid)}_${week}_${Date.now().toString(36)}`);
+
+  return runDbTransaction(db, async (transaction) => {
+    const [accountSnapshot, verzoekSnapshot] = await Promise.all([transaction.get(accountRef), transaction.get(verzoekRef)]);
+    if (verzoekSnapshot.exists && verzoekSnapshot.data()?.status !== "afgewezen") {
+      throw new HttpsError("already-exists", "Je hebt deze week al een privilege.");
+    }
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+    const nextAccount = buildBalancePatch(account, prijs, TOKEN_TRANSACTION_TYPES.SPEND, timestamp);
+    transaction.set(accountRef, nextAccount, { merge: true });
+    transaction.set(transactionRef, {
+      studentUid: auth.uid,
+      type: TOKEN_TRANSACTION_TYPES.SPEND,
+      amount: -prijs,
+      source: { kind: "privilege", id: itemId, title: item.title || "" },
+      reason: "privilege-request",
+      createdBy: auth.uid,
+      createdAt: timestamp,
+      balanceAfter: nextAccount.balance,
+    });
+    transaction.set(verzoekRef, {
+      studentUid: auth.uid,
+      naam: String(caller.data.displayName || ""),
+      klasId,
+      itemId,
+      titel: String(item.title || ""),
+      prijs,
+      week,
+      schooljaar,
+      status: "aangevraagd",
+      reden: "",
+      transactionId: transactionRef.path.split("/").at(-1),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+    return { aangevraagd: true, verzoekId: verzoekRef.path.split("/").at(-1), balance: nextAccount.balance };
+  });
+}
+
+// Wat de leerling in de shop ziet: per privilege of het kan, en zijn verzoeken.
+async function getMijnPrivilegesCore({ auth, db, nuDatum = new Date() }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  const klasId = String(caller.data.klasId || "").trim();
+  const [laag, regels] = await Promise.all([loadPrivilegeLayer(), loadBeloningLayer()]);
+  const week = regels.isoWeekSleutel(nuDatum);
+  const schooljaar = laag.schooljaarSleutel(nuDatum);
+  const [itemsSnapshot, eigenSnapshot, klasSnapshot] = await Promise.all([
+    db.collection("tokenShopItems").where("itemType", "==", "privilege").get(),
+    db.collection("privilegeVerzoeken").where("studentUid", "==", auth.uid).get(),
+    klasId ? db.collection("privilegeVerzoeken").where("klasId", "==", klasId).get() : Promise.resolve({ docs: [] }),
+  ]);
+  const eigen = eigenSnapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() || {}) }));
+  const klas = klasSnapshot.docs.map((doc) => doc.data() || {});
+  const privileges = itemsSnapshot.docs
+    .map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
+    .filter((item) => item.enabled !== false)
+    .sort((a, b) => normalizeInteger(a.sortOrder, 0) - normalizeInteger(b.sortOrder, 0))
+    .map((item) => {
+      const klasDezeWeek = klas.filter((verzoek) => verzoek.itemId === item.id && verzoek.week === week);
+      const oordeel = laag.magPrivilegeAanvragen({ item, eigen, klasDezeWeek, week, schooljaar });
+      const voorraad = normalizeNonNegativeInteger(item.voorraadPerWeek, 0);
+      const max = normalizeNonNegativeInteger(item.maxPerSchooljaar, 0);
+      return {
+        id: item.id,
+        titel: String(item.title || ""),
+        beschrijving: String(item.description || ""),
+        prijs: normalizeNonNegativeInteger(item.price, 0),
+        voorraadPerWeek: voorraad,
+        overDezeWeek: voorraad > 0 ? Math.max(0, voorraad - klasDezeWeek.filter(laag.telt).length) : null,
+        maxPerSchooljaar: max,
+        gebruiktDitSchooljaar: eigen.filter((verzoek) => laag.telt(verzoek) && verzoek.itemId === item.id && verzoek.schooljaar === schooljaar).length,
+        mag: oordeel.mag,
+        reden: oordeel.reden,
+      };
+    });
+  return {
+    privileges,
+    verzoeken: eigen
+      .sort((a, b) => String(b.week).localeCompare(String(a.week)))
+      .slice(0, 10)
+      .map((verzoek) => ({ id: verzoek.id, titel: verzoek.titel, week: verzoek.week, status: verzoek.status, reden: verzoek.reden || "" })),
+  };
+}
+
+const PRIVILEGE_OVERGANGEN = {
+  goedgekeurd: ["aangevraagd"],
+  afgewezen: ["aangevraagd", "goedgekeurd"],
+  ingewisseld: ["goedgekeurd", "aangevraagd"],
+};
+
+// De docent keurt goed, wijst af (tokens terug) of zet op ingewisseld.
+async function beoordeelPrivilegeCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Beheerder" });
+  if (!isAdminCaller(caller.data)) {
+    throw new HttpsError("permission-denied", "Alleen de docent beoordeelt privileges.");
+  }
+  const id = requireString(data.id, "id");
+  const besluit = String(data.besluit || "");
+  if (!PRIVILEGE_OVERGANGEN[besluit]) {
+    throw new HttpsError("invalid-argument", "Onbekend besluit.");
+  }
+  const reden = String(data.reden || "").trim().slice(0, 140);
+  const timestamp = getServerTimestamp(now);
+  const verzoekRef = db.doc(`privilegeVerzoeken/${id}`);
+
+  return runDbTransaction(db, async (transaction) => {
+    const verzoekSnapshot = await transaction.get(verzoekRef);
+    if (!verzoekSnapshot.exists) {
+      throw new HttpsError("not-found", "Dit verzoek bestaat niet.");
+    }
+    const verzoek = verzoekSnapshot.data() || {};
+    if (!PRIVILEGE_OVERGANGEN[besluit].includes(verzoek.status)) {
+      throw new HttpsError("failed-precondition", `Een verzoek met status ${verzoek.status} kan niet naar ${besluit}.`);
+    }
+    const accountRef = db.doc(`tokenAccounts/${verzoek.studentUid}`);
+    const accountSnapshot = besluit === "afgewezen" ? await transaction.get(accountRef) : null;
+
+    transaction.set(verzoekRef, {
+      status: besluit,
+      ...(besluit === "afgewezen" ? { reden } : {}),
+      beoordeeldDoor: auth.uid,
+      updatedAt: timestamp,
+    }, { merge: true });
+
+    if (besluit === "afgewezen") {
+      const prijs = normalizeNonNegativeInteger(verzoek.prijs, 0);
+      const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+      const nextAccount = buildBalancePatch(account, prijs, TOKEN_TRANSACTION_TYPES.ADJUSTMENT, timestamp);
+      transaction.set(accountRef, nextAccount, { merge: true });
+      transaction.set(getTransactionRef(db, `refund_privilege_${id}_${Date.now().toString(36)}`), {
+        studentUid: verzoek.studentUid,
+        type: TOKEN_TRANSACTION_TYPES.ADJUSTMENT,
+        amount: prijs,
+        source: { kind: "privilege", id: verzoek.itemId || "", title: `Terug: ${verzoek.titel || "privilege"}` },
+        reason: reden || "privilege-afgewezen",
+        createdBy: auth.uid,
+        createdAt: timestamp,
+        balanceAfter: nextAccount.balance,
+      });
+    }
+    return { id, status: besluit };
+  });
+}
+
+// Een bonus voor de hele klas. Telt niet mee voor het weekplafond.
+async function geefKlasBonusCore({ auth, data = {}, db, now = FieldValue.serverTimestamp }) {
+  const caller = await getCallerDoc({ auth, db, label: "Beheerder" });
+  if (!isAdminCaller(caller.data)) {
+    throw new HttpsError("permission-denied", "Alleen de docent geeft een klasbonus.");
+  }
+  const klasId = requireString(data.klasId, "klasId");
+  const bedrag = normalizeInteger(data.bedrag, 0);
+  if (bedrag < 1 || bedrag > 100) {
+    throw new HttpsError("invalid-argument", "Een klasbonus is 1 tot en met 100 tokens.");
+  }
+  const reden = String(data.reden || "").trim().slice(0, 80) || "Klasbonus";
+  const leerlingen = (await db.collection("users").where("klasId", "==", klasId).get()).docs
+    .filter((doc) => doc.data()?.role === "student" && doc.data()?.isTestaccount !== true);
+  const timestamp = getServerTimestamp(now);
+  const bonusId = `klasbonus_${cleanIdPart(klasId)}_${Date.now().toString(36)}`;
+
+  for (const leerling of leerlingen) {
+    const accountRef = db.doc(`tokenAccounts/${leerling.id}`);
+    await runDbTransaction(db, async (transaction) => {
+      const accountSnapshot = await transaction.get(accountRef);
+      const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+      const nextAccount = buildBalancePatch(account, bedrag, TOKEN_TRANSACTION_TYPES.EARN, timestamp);
+      transaction.set(accountRef, nextAccount, { merge: true });
+      transaction.set(getTransactionRef(db, `${bonusId}_${cleanIdPart(leerling.id)}`), {
+        studentUid: leerling.id,
+        type: TOKEN_TRANSACTION_TYPES.EARN,
+        amount: bedrag,
+        source: { kind: "klasbonus", id: klasId, title: reden },
+        reason: "klasbonus",
+        createdBy: auth.uid,
+        createdAt: timestamp,
+        balanceAfter: nextAccount.balance,
+      });
+    });
+  }
+  return { klasId, bedrag, aantal: leerlingen.length };
 }
 
 async function hasPurchasedTokenShopItem({ db, studentUid, itemId }) {
@@ -3816,6 +4063,22 @@ exports.equipTokenShopItem = onCall({
     db: getFirestore(),
   });
 });
+
+exports.vraagPrivilegeAan = onCall({
+  region: REGION,
+}, async (request) => vraagPrivilegeAanCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.getMijnPrivileges = onCall({
+  region: REGION,
+}, async (request) => getMijnPrivilegesCore({ auth: request.auth, db: getFirestore() }));
+
+exports.beoordeelPrivilege = onCall({
+  region: REGION,
+}, async (request) => beoordeelPrivilegeCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.geefKlasBonus = onCall({
+  region: REGION,
+}, async (request) => geefKlasBonusCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
 
 exports.getMijnKlas = onCall({
   region: REGION,
@@ -4839,6 +5102,10 @@ exports.__test = {
   purchaseTokenShopItemCore,
   updateAvatarCore,
   getMijnKlasCore,
+  vraagPrivilegeAanCore,
+  getMijnPrivilegesCore,
+  beoordeelPrivilegeCore,
+  geefKlasBonusCore,
   updateVitrineCore,
   geefComplimentCore,
   verbergComplimentCore,

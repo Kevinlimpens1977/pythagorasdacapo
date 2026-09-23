@@ -5,7 +5,8 @@ export const TOKEN_SHOP_ITEM_TYPES = [
   'profileBanner',
   'victoryEffect',
   'titleBadge',
-  'avatarOnderdeel'
+  'avatarOnderdeel',
+  'privilege'
 ];
 
 export const TOKEN_SHOP_TYPE_LABELS = {
@@ -15,7 +16,8 @@ export const TOKEN_SHOP_TYPE_LABELS = {
   profileBanner: 'Banner',
   victoryEffect: 'Effect',
   titleBadge: 'Titel',
-  avatarOnderdeel: 'Avatar-onderdeel'
+  avatarOnderdeel: 'Avatar-onderdeel',
+  privilege: 'Privilege'
 };
 
 export const TOKEN_SHOP_RARITY_LABELS = {
@@ -32,7 +34,9 @@ export const TOKEN_SHOP_TARGET_SLOT_BY_TYPE = {
   shopBadge: 'pin',
   profileBanner: 'profileBanner',
   victoryEffect: 'victoryEffect',
-  titleBadge: 'titleBadge'
+  titleBadge: 'titleBadge',
+  avatarOnderdeel: 'avatar',
+  privilege: 'privilege'
 };
 
 export const TOKEN_SHOP_LOADOUT_FIELDS = [

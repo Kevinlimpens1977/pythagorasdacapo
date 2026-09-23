@@ -44,7 +44,9 @@ const emptyItem = {
   motion: 'shine',
   shortLabel: '',
   effect: 'confetti',
-  sparkle: ''
+  sparkle: '',
+  voorraadPerWeek: 0,
+  maxPerSchooljaar: 0
 };
 
 export default function AdminTokenManagementPage() {
@@ -157,7 +159,9 @@ export default function AdminTokenManagementPage() {
       motion: previewStyle.motion || 'shine',
       shortLabel: previewStyle.shortLabel || '',
       effect: previewStyle.effect || 'confetti',
-      sparkle: previewStyle.sparkle || ''
+      sparkle: previewStyle.sparkle || '',
+      voorraadPerWeek: Number(item.voorraadPerWeek) || 0,
+      maxPerSchooljaar: Number(item.maxPerSchooljaar) || 0
     });
     setImageFile(null);
   };
@@ -200,6 +204,12 @@ export default function AdminTokenManagementPage() {
       ['accent', 'motion', 'shortLabel', 'effect', 'sparkle'].forEach((key) => delete draftFields[key]);
       await createOrUpdateTokenShopItem({
         ...draftFields,
+        // Een privilege vraag je elke keer opnieuw aan (fase 4).
+        ...(itemDraft.itemType === 'privilege' ? {
+          repeatable: true,
+          voorraadPerWeek: Number(itemDraft.voorraadPerWeek) || 0,
+          maxPerSchooljaar: Number(itemDraft.maxPerSchooljaar) || 0
+        } : {}),
         itemId,
         targetSlot: itemDraft.targetSlot || TOKEN_SHOP_TARGET_SLOT_BY_TYPE[itemDraft.itemType] || 'avatarSkin',
         imageUrl: image.downloadURL || '',
@@ -419,6 +429,18 @@ export default function AdminTokenManagementPage() {
                     ))}
                   </select>
                 </div>
+                {itemDraft.itemType === 'privilege' ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="text-xs font-bold text-[var(--helix-muted)]">
+                      Voorraad per klas per week (0 = onbeperkt)
+                      <input type="number" min="0" value={itemDraft.voorraadPerWeek} onChange={(event) => setItemDraft({ ...itemDraft, voorraadPerWeek: event.target.value })} className="input-standard mt-1" />
+                    </label>
+                    <label className="text-xs font-bold text-[var(--helix-muted)]">
+                      Hooguit per leerling per schooljaar (0 = onbeperkt)
+                      <input type="number" min="0" value={itemDraft.maxPerSchooljaar} onChange={(event) => setItemDraft({ ...itemDraft, maxPerSchooljaar: event.target.value })} className="input-standard mt-1" />
+                    </label>
+                  </div>
+                ) : null}
                 {itemDraft.itemType === 'shopBadge' ? (
                   <input
                     value={itemDraft.shortLabel}

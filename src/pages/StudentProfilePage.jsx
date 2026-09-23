@@ -1,6 +1,6 @@
 import BadgesPaneel from '../components/tokens/BadgesPaneel';
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, BadgeCheck, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, ShieldCheck, Star, UserCircle } from 'lucide-react';
+import { AlertCircle, BadgeCheck, BarChart3, BookOpen, CheckCircle2, GraduationCap, KeyRound, Loader2, Mail, Printer, ShieldCheck, Star, UserCircle } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
@@ -326,6 +326,13 @@ export default function StudentProfilePage() {
                 </span>
               </div>
             </div>
+
+            <a
+              href="/certificaat"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl border-2 border-[#0B0D0F] bg-[#FFD33D] px-3 py-2 text-sm font-extrabold text-[#0B0D0F]"
+            >
+              <Printer size={16} aria-hidden="true" /> Weekcertificaat printen
+            </a>
 
             {activePins.length > 0 ? (
               <div className="mt-4 flex flex-wrap gap-2">
