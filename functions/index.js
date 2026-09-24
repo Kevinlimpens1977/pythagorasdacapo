@@ -2665,6 +2665,15 @@ function loadFase5Layer() {
   return fase5LayerPromise;
 }
 
+let cijferLayerPromise = null;
+
+function loadCijferLayer() {
+  if (!cijferLayerPromise) {
+    cijferLayerPromise = import("./shared/spelCijfer.js");
+  }
+  return cijferLayerPromise;
+}
+
 let avatarLayerPromise = null;
 
 function loadAvatarLayer() {
@@ -3971,6 +3980,59 @@ async function getWedstrijdenCore({ auth, db }) {
   };
 }
 
+// Een cijfer uit spellen (Kevin, 24 sep 2026). Een cijfergroep
+// (`cijferGroepen/{id}`) noemt de spelblokken en klassen; alleen de eerste
+// volledige ronde per spel ná `vanaf` telt. Het cijfer staat in
+// `paragraafCijfers/{groepId}_{uid}` en komt pas als alle spellen af zijn.
+async function registreerSpelRondeCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date() }) {
+  const caller = await getCallerDoc({ auth, db, label: "Leerling" });
+  if (caller.data.role !== "student") return { geteld: false, reden: "geen-leerling" };
+  const blockId = requireString(data.blockId, "blockId");
+  const klasId = String(caller.data.klasId || "").trim();
+  const laag = await loadCijferLayer();
+  if (!laag.geldigeTelling(data.telling)) {
+    throw new HttpsError("invalid-argument", "Deze telling klopt niet.");
+  }
+
+  const groepen = await db.collection("cijferGroepen").where("blockIds", "array-contains", blockId).get();
+  const groep = groepen.docs.map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
+    .find((kandidaat) => kandidaat.status === "open" && (kandidaat.klasIds || []).includes(klasId));
+  if (!groep) return { geteld: false, reden: "geen-cijfergroep" };
+  const vanaf = typeof groep.vanaf?.toDate === "function" ? groep.vanaf.toDate() : new Date(groep.vanaf || 0);
+  if (nuDatum < vanaf) return { geteld: false, reden: "voor-de-start" };
+
+  const ref = db.doc(`paragraafCijfers/${cleanIdPart(groep.id)}_${cleanIdPart(auth.uid)}`);
+  return runDbTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    const bestaand = snapshot.exists ? (snapshot.data() || {}) : {};
+    const rondes = { ...(bestaand.rondes || {}) };
+    if (rondes[blockId]) {
+      return { geteld: false, reden: "al-geteld", cijfer: bestaand.cijfer ?? null };
+    }
+    rondes[blockId] = {
+      onderdelen: Number(data.telling.onderdelen),
+      minpunten: Number(data.telling.minpunten),
+      op: nuDatum.toISOString(),
+    };
+    const stand = laag.groepsCijfer(rondes, groep.blockIds || []);
+    transaction.set(ref, {
+      groepId: groep.id,
+      titel: String(groep.titel || ""),
+      studentUid: auth.uid,
+      naam: String(caller.data.displayName || ""),
+      klasId,
+      rondes,
+      onderdelen: stand.onderdelen,
+      minpunten: stand.minpunten,
+      aantalAf: stand.aantalAf,
+      aantalNodig: stand.aantalNodig,
+      cijfer: stand.cijfer,
+      updatedAt: getServerTimestamp(now),
+    }, { merge: true });
+    return { geteld: true, aantalAf: stand.aantalAf, aantalNodig: stand.aantalNodig, cijfer: stand.cijfer };
+  });
+}
+
 async function hasPurchasedTokenShopItem({ db, studentUid, itemId }) {
   const purchaseSnapshot = await db.collection("tokenPurchases").where("studentUid", "==", studentUid).get();
   return purchaseSnapshot.docs.some((purchase) => {
@@ -4308,6 +4370,10 @@ exports.equipTokenShopItem = onCall({
     db: getFirestore(),
   });
 });
+
+exports.registreerSpelRonde = onCall({
+  region: REGION,
+}, async (request) => registreerSpelRondeCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
 
 exports.updateCompanion = onCall({
   region: REGION,
@@ -5377,6 +5443,7 @@ exports.__test = {
   getMijnKlasCore,
   vraagPrivilegeAanCore,
   updateCompanionCore,
+  registreerSpelRondeCore,
   getBeloningMetingCore,
   stemCore,
   getStemmingenCore,

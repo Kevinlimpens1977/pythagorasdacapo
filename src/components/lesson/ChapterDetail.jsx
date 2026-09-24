@@ -472,7 +472,20 @@ function ParagraphPanel({ row, onStart, onCopyLink, taal = nederlandseTaalhulp }
         <>
           <p className="helix-eyebrow mt-4">{tekst('rubriek.onderdelen')}</p>
           <ul className="mt-2 space-y-1.5">
-            {row.onderdelen.map((onderdeel) => (
+            {row.onderdelen.map((onderdeel) => (onderdeel.vergrendeld ? (
+              <li
+                key={onderdeel.id}
+                className="flex items-center gap-3 rounded-[var(--helix-radius-md)] border-[2px] border-dashed border-[#BDB3A0] bg-[#FFFCF6] px-3 py-2"
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]">
+                  <Lock size={14} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-bold text-[var(--helix-navy)] opacity-70">{onderdeel.title}</span>
+                  <span className="block text-xs font-semibold text-[var(--helix-muted)]">{onderdeel.slotTekst}</span>
+                </span>
+              </li>
+            ) : (
               <li
                 key={onderdeel.id}
                 className="flex items-center gap-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white/80 px-3 py-2"
@@ -511,7 +524,7 @@ function ParagraphPanel({ row, onStart, onCopyLink, taal = nederlandseTaalhulp }
                   label={tekst('knop.meerOpties')}
                 />
               </li>
-            ))}
+            )))}
           </ul>
         </>
       ) : (

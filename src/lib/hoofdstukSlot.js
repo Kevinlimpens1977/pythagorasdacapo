@@ -49,6 +49,23 @@ export const isParagraafVergrendeld = (klasData = null, paragraaf = null) =>
   isHoofdstukVergrendeld(klasData, paragraaf?.hoofdstukId || '')
   || getVergrendeldeParagrafen(klasData).includes(schoon(paragraaf?.id));
 
+// Losse onderdelen (lesblokken) op slot, met een tekst erbij (Kevin, 24 sep
+// 2026: de drie volumespellen dicht tot de volgende les).
+export const VERGRENDELDE_BLOKKEN_VELD = 'vergrendeldeBlokken';
+export const STANDAARD_BLOKSLOT_TEKST = 'Dit onderdeel staat nog op slot. Je docent zet het open.';
+
+export const getVergrendeldeBlokken = (klasData = null) => {
+  const lijst = klasData?.[VERGRENDELDE_BLOKKEN_VELD];
+  if (!Array.isArray(lijst)) return [];
+  return [...new Set(lijst.map(schoon).filter(Boolean))];
+};
+
+export const isBlokVergrendeld = (klasData = null, blockId = '') =>
+  Boolean(schoon(blockId)) && getVergrendeldeBlokken(klasData).includes(schoon(blockId));
+
+export const blokSlotTekst = (klasData = null, blockId = '') =>
+  schoon(klasData?.blokSlotTeksten?.[schoon(blockId)]) || STANDAARD_BLOKSLOT_TEKST;
+
 /** Zet het slot van één paragraaf aan of uit en geeft de nieuwe lijst terug. */
 export const wisselParagraafSlot = (klasData = null, paragraafId = '', vergrendeld = true) => {
   const id = schoon(paragraafId);
@@ -80,21 +97,32 @@ export const wisselHoofdstukSlot = (klasData = null, hoofdstukId = '', vergrende
 export const markeerVergrendeldeHoofdstukken = (chapters = [], klasData = null) => {
   const opSlot = new Set(getVergrendeldeHoofdstukken(klasData));
   const paragrafenOpSlot = new Set(getVergrendeldeParagrafen(klasData));
+  const blokkenOpSlot = new Set(getVergrendeldeBlokken(klasData));
+  const markeerOnderdelen = (rij) => {
+    if (!blokkenOpSlot.size || !Array.isArray(rij?.onderdelen)) return rij;
+    const onderdelen = rij.onderdelen.map((onderdeel) => (blokkenOpSlot.has(onderdeel.id)
+      ? { ...onderdeel, vergrendeld: true, slotTekst: blokSlotTekst(klasData, onderdeel.id) }
+      : onderdeel));
+    const eerstOpen = onderdelen.find((onderdeel) => !onderdeel.isDone && !onderdeel.vergrendeld);
+    return { ...rij, onderdelen, resumeOnderdeelId: eerstOpen?.id || rij.resumeOnderdeelId };
+  };
   const markeerRijen = (rijen) => (Array.isArray(rijen)
-    ? rijen.map((rij) => (paragrafenOpSlot.has(rij?.id) ? { ...rij, vergrendeld: true } : rij))
+    ? rijen.map((rij) => markeerOnderdelen(paragrafenOpSlot.has(rij?.id) ? { ...rij, vergrendeld: true } : rij))
     : rijen);
 
   return (Array.isArray(chapters) ? chapters : []).map((chapter) => ({
     ...chapter,
     vergrendeld: opSlot.has(chapter.id),
-    ...(paragrafenOpSlot.size ? {
+    ...(paragrafenOpSlot.size || blokkenOpSlot.size ? {
       paragraphRows: markeerRijen(chapter.paragraphRows),
       voorkennisRows: markeerRijen(chapter.voorkennisRows),
       optioneleRows: markeerRijen(chapter.optioneleRows),
       // Een oefentoets of toets uit een paragraaf op slot hoort er nog niet bij.
       oefentoetsRows: (chapter.oefentoetsRows || []).filter((rij) => !paragrafenOpSlot.has(rij?.paragraafId)),
       toetsRows: (chapter.toetsRows || []).filter((rij) => !paragrafenOpSlot.has(rij?.paragraafId)),
-      introRow: chapter.introRow && paragrafenOpSlot.has(chapter.introRow.id) ? { ...chapter.introRow, vergrendeld: true } : chapter.introRow
+      introRow: chapter.introRow
+        ? markeerOnderdelen(paragrafenOpSlot.has(chapter.introRow.id) ? { ...chapter.introRow, vergrendeld: true } : chapter.introRow)
+        : chapter.introRow
     } : {})
   }));
 };

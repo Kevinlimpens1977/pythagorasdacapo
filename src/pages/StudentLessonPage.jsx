@@ -119,7 +119,8 @@ import TaalSchakelaar from '../components/lesson/TaalSchakelaar';
 import { haalVertaling } from '../services/vertaalService';
 import { antwoordInstructie, isVertaalbaarBlok, voegVertalingSamen } from '../lib/lesTaal';
 import { useLesstofTaal } from '../hooks/useLesstofTaal';
-import { isParagraafVergrendeld } from '../lib/hoofdstukSlot';
+import { blokSlotTekst, isBlokVergrendeld, isParagraafVergrendeld } from '../lib/hoofdstukSlot';
+import { registreerSpelRonde } from '../services/cijferService';
 import { spelSlotStatus } from '../lib/spelSlot';
 import { nulmetingDeelLetter, nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
 import { buildParagraphNavigation } from '../lib/chapterOutline';
@@ -1395,9 +1396,17 @@ export default function StudentLessonPage() {
                   gameRewardRules={gameRewardRules}
                   onSaveProgress={(completed, extra) => saveBlockProgress(currentBlock, completed, extra)}
                   spelSlot={spelSlot}
+                  blokSlot={!isAdmin && currentBlock && isBlokVergrendeld(klasData, currentBlock.id)
+                    ? { vergrendeld: true, tekst: blokSlotTekst(klasData, currentBlock.id) }
+                    : null}
                   onGameComplete={(result) => {
                     const prevCount = Number(getBlockProgressRecord(currentBlock?.id)?.gamePlayCount) || 0;
                     saveBlockProgress(currentBlock, true, { lastAnswer: result, gamePlayCount: prevCount + 1 });
+                    // Telt dit spel mee voor een cijfer? De server legt alleen de eerste ronde vast.
+                    const telling = result?.details?.cijferTelling;
+                    if (!isAdmin && currentBlock?.id && telling?.onderdelen > 0) {
+                      registreerSpelRonde(currentBlock.id, telling).catch((error) => console.warn('Cijferronde niet geregistreerd:', error));
+                    }
                   }}
                   onAutoAdvance={advanceToNextStep}
                   onConfirmRead={confirmCurrentBlockRead}
@@ -1558,7 +1567,8 @@ function LessonBlockContent({
   onSaveProgress,
   onGameComplete,
   onAutoAdvance,
-  onConfirmRead
+  onConfirmRead,
+  blokSlot = null
 }) {
   const content = block?.content || {};
   const linkedVraag = block?.linkedVraag || null;
@@ -1574,7 +1584,16 @@ function LessonBlockContent({
   return (
     <article className="study-block flex flex-col gap-6">
       <div className="min-w-0">
-        {block.type === 'game' ? (
+        {blokSlot?.vergrendeld ? (
+          // Een los onderdeel op slot: gestippeld, met de tekst van de docent.
+          <div className="flex items-start gap-3 rounded-[20px] border-[2.5px] border-dashed border-[#BDB3A0] bg-[#FFFCF6] p-6">
+            <Lock size={22} className="mt-0.5 shrink-0 text-[var(--helix-muted)]" aria-hidden="true" />
+            <div>
+              <p className="font-black text-[var(--helix-navy)]">{block.title || 'Dit onderdeel'} staat nu dicht</p>
+              <p className="helix-muted mt-2 text-sm leading-6">{blokSlot.tekst}</p>
+            </div>
+          </div>
+        ) : block.type === 'game' ? (
           spelSlot?.vergrendeld ? (
             <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-6">
               <p className="font-black text-[var(--helix-navy)]">Dit spel is de afsluiting van deze paragraaf</p>

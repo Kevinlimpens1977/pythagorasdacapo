@@ -87,8 +87,12 @@ const createDb = (initialDocs = {}) => {
           return createDocRef(`${name}/${id}`, store);
         },
         where(field, operator, value) {
-          if (operator !== "==" && operator !== "in") throw new Error(`Unsupported fake operator ${operator}`);
-          const past = (data) => (operator === "in" ? value.includes(data?.[field]) : data?.[field] === value);
+          if (!["==", "in", "array-contains"].includes(operator)) throw new Error(`Unsupported fake operator ${operator}`);
+          const past = (data) => (operator === "in"
+            ? value.includes(data?.[field])
+            : operator === "array-contains"
+              ? Array.isArray(data?.[field]) && data[field].includes(value)
+              : data?.[field] === value);
           return {
             async get() {
               return createQuerySnapshot(
@@ -3057,4 +3061,32 @@ test("fase 5: meting per week, zonder testaccounts", async () => {
     () => __test.getBeloningMetingCore({ auth: { uid: "a" }, data: { klasId: "klas-1" }, db }),
     (error) => error.code === "permission-denied",
   );
+});
+
+test("cijfer 2.2: alleen de eerste ronde na de start telt, cijfer pas na alle drie", async () => {
+  const db = createDb({
+    "users/a": { role: "student", displayName: "Ada", klasId: "klas-1" },
+    "users/x": { role: "student", displayName: "Xander", klasId: "klas-9" },
+    "cijferGroepen/binask-2-2": {
+      titel: "2.2 Volume", status: "open", klasIds: ["klas-1"], vanaf: "2026-09-24T12:00:00Z",
+      blockIds: ["spel-a", "spel-b", "spel-c"],
+    },
+  });
+  const ronde = (uid, blockId, telling, datum = "2026-09-25T09:00:00Z") => __test.registreerSpelRondeCore({
+    auth: { uid }, data: { blockId, telling }, db, now: () => "t", nuDatum: new Date(datum),
+  });
+
+  assert.equal((await ronde("a", "spel-a", { onderdelen: 20, minpunten: 2 }, "2026-09-24T08:00:00Z")).reden, "voor-de-start");
+  assert.equal((await ronde("x", "spel-a", { onderdelen: 20, minpunten: 0 })).reden, "geen-cijfergroep");
+  await assert.rejects(() => ronde("a", "spel-a", { onderdelen: 5, minpunten: 30 }), (error) => error.code === "invalid-argument");
+
+  const eerste = await ronde("a", "spel-a", { onderdelen: 20, minpunten: 2 });
+  assert.equal(eerste.geteld, true);
+  assert.equal(eerste.cijfer, null);
+  assert.equal((await ronde("a", "spel-a", { onderdelen: 20, minpunten: 0 })).reden, "al-geteld", "tweede potje telt niet");
+  await ronde("a", "spel-b", { onderdelen: 16, minpunten: 1 });
+  const laatste = await ronde("a", "spel-c", { onderdelen: 16, minpunten: 3 });
+  assert.equal(laatste.cijfer, 9);
+  assert.equal(db.store.docs["paragraafCijfers/binask-2-2_a"].cijfer, 9);
+  assert.equal(db.store.docs["paragraafCijfers/binask-2-2_a"].rondes["spel-a"].minpunten, 2);
 });

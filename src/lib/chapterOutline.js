@@ -309,7 +309,7 @@ export const buildResumePointer = (outlines = []) => {
   for (const outline of Array.isArray(outlines) ? outlines : []) {
     for (const row of rijenVanHoofdstuk(outline)) {
       if (row.optioneel === true || row.vergrendeld === true) continue;
-      const open = row.onderdelen?.find((onderdeel) => !onderdeel.isDone);
+      const open = row.onderdelen?.find((onderdeel) => !onderdeel.isDone && onderdeel.vergrendeld !== true);
       if (!open) continue;
 
       return {

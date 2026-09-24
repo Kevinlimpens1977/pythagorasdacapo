@@ -52,7 +52,9 @@ export const SHARED_ENTRY_POINTS = [
   'privileges.js',
   // Companion en meetadvies (fase 5).
   'companion.js',
-  'beloningMeting.js'
+  'beloningMeting.js',
+  // Cijfer uit spellen (Binask 2.2 Volume).
+  'spelCijfer.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(

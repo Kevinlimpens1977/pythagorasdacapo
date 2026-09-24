@@ -82,6 +82,9 @@ export function DoeBalk({ onOpgave }) {
   const [melding, setMelding] = useState(null);
   const [toonJuist, setToonJuist] = useState(false);
   const [hint, setHint] = useState(false);
+  // Per invulveld: in één keer goed of niet (voor het cijfer).
+  const [telling, setTelling] = useState({ onderdelen: 0, minpunten: 0 });
+  const registreer = (eersteKeer) => setTelling((oud) => ({ onderdelen: oud.onderdelen + 1, minpunten: oud.minpunten + (eersteKeer ? 0 : 1) }));
 
   const gegeven = Boolean(balk.gegeven);
   const puntenVolume = gegeven ? 5 : BALK_PUNTEN.volume;
@@ -114,6 +117,7 @@ export function DoeBalk({ onOpgave }) {
       if (maatGoed(invoer, juist)) {
         speelGoed();
         setPunten((p) => p + (poging === 1 ? BALK_PUNTEN.maat : 1));
+        registreer(poging === 1);
         setMaten((oud) => ({ ...oud, [stap]: leesGetal(invoer) }));
         naar(volgendeStap(stap));
         return;
@@ -129,6 +133,7 @@ export function DoeBalk({ onOpgave }) {
         setPoging(2);
         setMelding({ tekst });
       } else {
+        registreer(false);
         setToonJuist(true);
         setMaten((oud) => ({ ...oud, [stap]: juist }));
         setMelding({ tekst: `De ${MAATNAAM[stap]} is ${formatGetal(juist)} cm. Kijk hoe de liniaal moet liggen.`, verder: true });
@@ -141,6 +146,7 @@ export function DoeBalk({ onOpgave }) {
       if (uitslag === REKENFOUTEN.GOED) {
         speelGoed();
         setPunten((p) => p + (poging === 1 && !hint ? puntenVolume : Math.floor(puntenVolume / 2)));
+        registreer(poging === 1 && !hint);
         setVolume(eigenVolume);
         naar('omrekenen');
         return;
@@ -151,6 +157,7 @@ export function DoeBalk({ onOpgave }) {
         setPoging(2);
         setMelding({ tekst: REKENFEEDBACK[uitslag] || REKENFEEDBACK.anders });
       } else {
+        registreer(false);
         setVolume(eigenVolume);
         setMelding({
           tekst: `${REKENFEEDBACK[uitslag] || ''} V = ${formatGetal(eigen.l)} × ${formatGetal(eigen.b)} × ${formatGetal(eigen.h)} = ${formatGetal(eigenVolume)} cm³.`,
@@ -165,6 +172,7 @@ export function DoeBalk({ onOpgave }) {
       if (beoordeelOmrekening({ invoer, volumeCm3: cm3, doel: balk.doel })) {
         speelGoed();
         setPunten((p) => p + (poging === 1 ? puntenOmrekenen : Math.floor(puntenOmrekenen / 2)));
+        registreer(poging === 1);
         naar('klaar');
         return;
       }
@@ -177,6 +185,7 @@ export function DoeBalk({ onOpgave }) {
         setPoging(2);
         setMelding({ tekst: uitleg });
       } else {
+        registreer(false);
         const antwoord = balk.doel === 'l' ? `${formatGetal(cm3 / 1000)} l` : `${formatGetal(cm3)} ml`;
         setMelding({ tekst: `${uitleg} Het antwoord is ${antwoord}.`, verder: 'klaar' });
       }
@@ -189,7 +198,8 @@ export function DoeBalk({ onOpgave }) {
   };
 
   const volgendeBalk = () => {
-    onOpgave({ id: balk.id, punten: Math.min(10, punten), fouten });
+    onOpgave({ id: balk.id, punten: Math.min(10, punten), fouten, ...telling });
+    setTelling({ onderdelen: 0, minpunten: 0 });
     if (index + 1 >= balken.length) return;
     const nieuw = balken[index + 1];
     setIndex(index + 1);

@@ -237,7 +237,8 @@ export function DoeMaatcilinder({ aantal, onOpgave }) {
   };
 
   const volgende = () => {
-    onOpgave({ id: opgave.nr + 1, schaal: schaal.id, punten, fouten });
+    // Eén invulveld per opgave; niet de volle 10 punten = niet in één keer goed.
+    onOpgave({ id: opgave.nr + 1, schaal: schaal.id, punten, fouten, onderdelen: 1, minpunten: punten === PUNTEN_GOED ? 0 : 1 });
     const nieuweIndex = volgendeSchaalIndex(ladder);
     const verschoven = nieuweIndex !== ladder.index;
     setLadder(verschoven ? { index: nieuweIndex, reeksGoed: 0, reeksFout: 0 } : ladder);

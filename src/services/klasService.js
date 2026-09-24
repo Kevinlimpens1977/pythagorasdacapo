@@ -284,6 +284,17 @@ export const updateKlasEnabledParagrafen = async (klasId, paragraafIds) => {
  * @param {Array<string>} hoofdstukIds - de hoofdstukken die op slot staan
  * @returns {Promise<void>}
  */
+/** Losse onderdelen (lesblokken) op slot zetten of weer openen. */
+export const updateKlasVergrendeldeBlokken = async (klasId, blockIds) => {
+  if (!klasId || !Array.isArray(blockIds)) {
+    throw new Error('klasId and blockIds array are required');
+  }
+  await updateDoc(doc(db, 'klassen', klasId), {
+    vergrendeldeBlokken: blockIds,
+    updatedAt: serverTimestamp()
+  });
+};
+
 /** Losse paragrafen op slot zetten (een hoofdstuk half open). */
 export const updateKlasVergrendeldeParagrafen = async (klasId, paragraafIds) => {
   if (!klasId || !Array.isArray(paragraafIds)) {

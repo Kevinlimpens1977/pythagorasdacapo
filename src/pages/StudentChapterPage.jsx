@@ -149,7 +149,7 @@ export default function StudentChapterPage() {
     ...chapter.voorkennisRows,
     ...chapter.paragraphRows
   ].filter((row) => row.vergrendeld !== true).flatMap((row) => (row.onderdelen || [])
-    .filter((onderdeel) => !onderdeel.isDone)
+    .filter((onderdeel) => !onderdeel.isDone && onderdeel.vergrendeld !== true)
     .map((onderdeel) => ({ ...onderdeel, row })));
 
   return (

@@ -67,6 +67,7 @@ import KlasBeloningOverzicht from './KlasBeloningOverzicht';
 import KlasSamenBeheer from './KlasSamenBeheer';
 import KlasPrivilegesBeheer from './KlasPrivilegesBeheer';
 import KlasFase5Beheer from './KlasFase5Beheer';
+import KlasCijfers from './KlasCijfers';
 import NulmetingLeerlingPaneel from './NulmetingLeerlingPaneel';
 import StudentAvatar from '../common/StudentAvatar';
 import HelixBrandBanner from '../common/HelixBrandBanner';
@@ -1311,6 +1312,9 @@ export default function ClassOverview() {
       {/* XP, niveau, badges en het DV-weekdoel van deze week (tokens fase 1, deel C) */}
       {activeLens === 'class' && selectedKlasId && (
         <div className="mb-8">
+          <div className="mb-6">
+            <KlasCijfers klasId={selectedKlasId} klasData={klassenMap[selectedKlasId] || null} students={scopedStudents} />
+          </div>
           <KlasBeloningOverzicht klasId={selectedKlasId} students={scopedStudents} />
           <div className="mt-6">
             <KlasSamenBeheer klasId={selectedKlasId} students={scopedStudents} />

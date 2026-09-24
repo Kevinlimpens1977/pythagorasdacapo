@@ -135,6 +135,9 @@ export function DoeDompel({ onOpgave }) {
   const [melding, setMelding] = useState(null);
   const [keuze, setKeuze] = useState(null);
   const [niveau, setNiveau, stijgen] = useStijgen();
+  // Per invulveld: in één keer goed of niet (voor het cijfer).
+  const [telling, setTelling] = useState({ onderdelen: 0, minpunten: 0 });
+  const registreer = (eersteKeer) => setTelling((oud) => ({ onderdelen: oud.onderdelen + 1, minpunten: oud.minpunten + (eersteKeer ? 0 : 1) }));
 
   const huidigNiveau = niveau ?? opgave.begin;
   const erin = stap !== 'begin' && stap !== 'zakken';
@@ -155,6 +158,7 @@ export function DoeDompel({ onOpgave }) {
     if (uitslag.soort === AFLEESFOUTEN.GOED) {
       speelGoed();
       telOp(punt, 1);
+      registreer(poging === 1);
       naar(volgende);
       return;
     }
@@ -164,6 +168,7 @@ export function DoeDompel({ onOpgave }) {
       setPoging(2);
       setMelding({ tekst: AFLEESFEEDBACK[uitslag.soort] });
     } else {
+      registreer(false);
       setMelding({ tekst: `Het goede antwoord is ${formatVolume(juist, schaal)} ml.`, verder: volgende });
     }
   };
@@ -181,21 +186,21 @@ export function DoeDompel({ onOpgave }) {
     if (stap === 'verschil') {
       const uitslag = beoordeelVerschil({ invoer, begin: opgave.begin, eind: opgave.eind });
       if (uitslag === DOMPELFOUTEN.LEEG) { setMelding({ tekst: DOMPELFEEDBACK.leeg }); return; }
-      if (uitslag === DOMPELFOUTEN.GOED) { speelGoed(); telOp(DOMPEL_PUNTEN.verschil, 2); naar('cm3'); return; }
+      if (uitslag === DOMPELFOUTEN.GOED) { speelGoed(); telOp(DOMPEL_PUNTEN.verschil, 2); registreer(poging === 1); naar('cm3'); return; }
       speelFout();
       setFouten((oud) => [...oud, uitslag]);
       if (poging === 1) { setPoging(2); setMelding({ tekst: DOMPELFEEDBACK[uitslag] }); }
-      else setMelding({ tekst: `V = ${formatVolume(opgave.eind, schaal)} - ${formatVolume(opgave.begin, schaal)} = ${formatVolume(verschil, schaal)} ml.`, verder: 'cm3' });
+      else { registreer(false); setMelding({ tekst: `V = ${formatVolume(opgave.eind, schaal)} - ${formatVolume(opgave.begin, schaal)} = ${formatVolume(verschil, schaal)} ml.`, verder: 'cm3' }); }
       return;
     }
     if (stap === 'cm3') {
       const getal = leesGetal(invoer);
       if (getal === null) { setMelding({ tekst: 'Vul een getal in.' }); return; }
-      if (Math.abs(getal - verschil) < 0.001) { speelGoed(); telOp(DOMPEL_PUNTEN.eenheid, 1); naar('klaar'); return; }
+      if (Math.abs(getal - verschil) < 0.001) { speelGoed(); telOp(DOMPEL_PUNTEN.eenheid, 1); registreer(poging === 1); naar('klaar'); return; }
       speelFout();
       setFouten((oud) => [...oud, 'omrekenen']);
       if (poging === 1) { setPoging(2); setMelding({ tekst: '1 ml = 1 cm³. Het getal blijft hetzelfde.' }); }
-      else setMelding({ tekst: `${formatVolume(verschil, schaal)} ml = ${formatVolume(verschil, schaal)} cm³.`, verder: 'klaar' });
+      else { registreer(false); setMelding({ tekst: `${formatVolume(verschil, schaal)} ml = ${formatVolume(verschil, schaal)} cm³.`, verder: 'klaar' }); }
     }
   };
 
@@ -206,17 +211,22 @@ export function DoeDompel({ onOpgave }) {
     if (id === valkuil.goed) {
       speelGoed();
       setPunten((p) => p + (poging === 1 ? 8 : 4));
+      registreer(poging === 1);
       setStap('valkuilKlaar');
     } else {
       speelFout();
       setFouten((oud) => [...oud, `valkuil-${opgave.valkuil}`]);
       if (poging === 1) setPoging(2);
-      else setStap('valkuilKlaar');
+      else {
+        registreer(false);
+        setStap('valkuilKlaar');
+      }
     }
   };
 
   const volgendeVoorwerp = () => {
-    onOpgave({ id: `${index + 1}-${voorwerp.id}`, punten: Math.min(10, punten), fouten });
+    onOpgave({ id: `${index + 1}-${voorwerp.id}`, punten: Math.min(10, punten), fouten, ...telling });
+    setTelling({ onderdelen: 0, minpunten: 0 });
     if (index + 1 >= reeks.length) return;
     setIndex(index + 1);
     setPunten(0);

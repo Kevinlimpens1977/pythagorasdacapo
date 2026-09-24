@@ -371,6 +371,18 @@ export function telScore(opgaven) {
   return opgaven.reduce((som, opgave) => som + (Number(opgave?.punten) || 0), 0);
 }
 
+// Het cijfer van paragraaf 2.2 (Kevin, 24 sep 2026): elk invulveld is een
+// onderdeel; een onderdeel dat niet in één keer goed is, kost een minpunt (op
+// het oefenblad per foute poging, hooguit 2). Cijfer = 10 - 9 × minpunten /
+// onderdelen, nooit lager dan 1. Dezelfde formule staat in de server
+// (functions/shared/spelCijfer.js via src/lib/spelCijfer.js).
+export function telCijferOnderdelen(opgaven = []) {
+  return opgaven.reduce((som, opgave) => ({
+    onderdelen: som.onderdelen + Math.max(0, Number(opgave.onderdelen) || 0),
+    minpunten: som.minpunten + Math.max(0, Number(opgave.minpunten) || 0)
+  }), { onderdelen: 0, minpunten: 0 });
+}
+
 export function maakResultaat({ missie, opgaven, startedAt, completedAt, extra = {} }) {
   const fouten = {};
   for (const opgave of opgaven) {
@@ -385,8 +397,9 @@ export function maakResultaat({ missie, opgaven, startedAt, completedAt, extra =
     completedAt,
     details: {
       missie,
-      opgaven: opgaven.map((o) => ({ id: o.id, punten: o.punten, fouten: o.fouten || [] })),
+      opgaven: opgaven.map((o) => ({ id: o.id, punten: o.punten, fouten: o.fouten || [], onderdelen: o.onderdelen || 0, minpunten: o.minpunten || 0 })),
       fouten,
+      cijferTelling: telCijferOnderdelen(opgaven),
       ...extra
     }
   };

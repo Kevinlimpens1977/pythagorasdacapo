@@ -445,6 +445,16 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Cijfers uit spellen: de docent zet de groep klaar, de server schrijft het cijfer.
+    match /cijferGroepen/{groepId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /paragraafCijfers/{cijferId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     match /leerlingNiveau/{studentUid} {
       allow read: if signedIn() && (
         isOwner(studentUid) ||
