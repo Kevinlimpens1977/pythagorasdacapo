@@ -8,7 +8,8 @@ import { DoeBalk, KijkBalk } from './MissieBalk';
 import { DoeDompel, KijkDompel } from './MissieDompel';
 import { DoeMaatcilinder, KijkMaatcilinder } from './MissieMaatcilinder';
 import Snelronde from './Snelronde';
-import { AANTAL_OPGAVEN, maakResultaat, maxScore, MISSIES, SCHALEN, telScore, vaaksteFout } from './volumeLogic';
+import Oefenblad from './Oefenblad';
+import { AANTAL_OEFENVRAGEN, AANTAL_OPGAVEN, maakResultaat, maxScore, MISSIES, SCHALEN, telScore, vaaksteFout } from './volumeLogic';
 import { speelKlaar } from './volumeSounds';
 import { markeerVoorbeeldenGezien, voorbeeldenGezien } from './volumeVoortgang';
 
@@ -62,10 +63,11 @@ const TIPS = {
   bodem: 'Vergeet de hoogte niet: bodem × hoogte.',
   omrekenen: '1 cm³ = 1 ml, en 1000 cm³ = 1 liter.',
   negatief: 'V = V eind - V begin. Het grootste getal eerst.',
-  eindvolume: 'Trek het beginvolume van het eindvolume af.'
+  eindvolume: 'Trek het beginvolume van het eindvolume af.',
+  oefenblad: 'Lees de uitwerkingen van het oefenblad nog eens rustig na.'
 };
 
-const FASEN = { START: 'start', KIJK: 'kijk', DOE: 'doe', KLAAR: 'klaar', SNEL: 'snel' };
+const FASEN = { START: 'start', KIJK: 'kijk', DOE: 'doe', OEFEN: 'oefen', KLAAR: 'klaar', SNEL: 'snel' };
 
 export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onStart, onComplete }) {
   const info = INFO[missie] || INFO[MISSIES.MAATCILINDER];
@@ -93,10 +95,14 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
   const opgaveKlaar = (opgave) => {
     const nieuw = [...opgaven, opgave];
     setOpgaven(nieuw);
-    if (nieuw.length >= aantal) {
-      speelKlaar();
-      setFase(FASEN.KLAAR);
-    }
+    // Na de opgaven komt het oefenblad; daarna de uitslag.
+    if (nieuw.length >= aantal) setFase(FASEN.OEFEN);
+  };
+
+  const oefenbladKlaar = (oefenOpgaven) => {
+    setOpgaven((huidig) => [...huidig, ...oefenOpgaven]);
+    speelKlaar();
+    setFase(FASEN.KLAAR);
   };
 
   const rondAf = () => {
@@ -113,7 +119,7 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
   };
 
   const voortgang = fase === FASEN.DOE ? `${Math.min(opgaven.length + 1, aantal)} van ${aantal}` : null;
-  const faseLabel = { start: null, kijk: 'KIJK', doe: 'DOE', klaar: 'KLAAR', snel: { uitleg: 'KIJK', bezig: 'DOE', check: 'CHECK' }[snelFase] }[fase];
+  const faseLabel = { start: null, kijk: 'KIJK', doe: 'DOE', oefen: 'OEFEN', klaar: 'KLAAR', snel: { uitleg: 'KIJK', bezig: 'DOE', check: 'CHECK' }[snelFase] }[fase];
 
   let inhoud;
   if (fase === FASEN.START) {
@@ -125,11 +131,11 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
             <p className="text-sm font-extrabold uppercase tracking-wide text-[#066A99]">Binask 2.2 Volume</p>
             <p className="text-xl font-extrabold leading-snug">{info.doel}</p>
             <ol className="grid grid-cols-2 gap-2 text-sm font-extrabold sm:grid-cols-4">
-              {['KIJK', 'DOE', 'CHECK', 'KLAAR'].map((stap, i) => (
+              {['KIJK', 'DOE', 'OEFEN', 'KLAAR'].map((stap, i) => (
                 <li key={stap} className="rounded-lg border-2 border-[#0B0D0F] bg-[#FFF0B8] px-2 py-1 text-center">{i + 1}. {stap}</li>
               ))}
             </ol>
-            <p className="text-[15px] font-semibold text-[#5B5648]">Eerst voorbeelden, dan {aantal} opgaven. Na elke opgave zie je direct of het goed is.</p>
+            <p className="text-[15px] font-semibold text-[#5B5648]">Eerst voorbeelden, dan {aantal} opgaven en een oefenblad met {AANTAL_OEFENVRAGEN} sommen. Na elke opgave zie je direct of het goed is.</p>
             <div className="mt-auto flex flex-wrap gap-2">
               <Knop onClick={() => start(true)} autoFocus>Start met voorbeelden</Knop>
               {kanOverslaan && <Knop variant="rustig" onClick={() => start(false)}>Voorbeelden overslaan</Knop>}
@@ -150,6 +156,8 @@ export default function VolumeBerekenenGame({ missie = MISSIES.MAATCILINDER, onS
       : missie === MISSIES.ONDERDOMPELEN
         ? <DoeDompel onOpgave={opgaveKlaar} />
         : <DoeMaatcilinder aantal={aantal} onOpgave={opgaveKlaar} />;
+  } else if (fase === FASEN.OEFEN) {
+    inhoud = <Oefenblad missie={missie} onKlaar={oefenbladKlaar} />;
   } else if (fase === FASEN.SNEL) {
     inhoud = <Snelronde missie={missie} onFase={setSnelFase} onStop={() => { setSnelFase('uitleg'); setFase(FASEN.KLAAR); }} />;
   } else {

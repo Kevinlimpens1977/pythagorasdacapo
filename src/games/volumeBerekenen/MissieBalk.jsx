@@ -232,7 +232,7 @@ export function DoeBalk({ onOpgave }) {
         klein={balk.doel === 'l' ? `${somRegel} = ${formatGetal(cm3)} cm³` : `${somRegel} = ${formatGetal(cm3)} cm³ = ${formatGetal(cm3)} ml`}
         punten={Math.min(10, punten)}
         onVolgende={volgendeBalk}
-        knopTekst={index + 1 >= balken.length ? 'Naar de uitslag' : 'Volgend blok'}
+        knopTekst={index + 1 >= balken.length ? 'Naar het oefenblad' : 'Volgend blok'}
       />
     );
   } else {

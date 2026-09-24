@@ -188,14 +188,17 @@ export function volgendeSchaalIndex({ index, reeksGoed, reeksFout }) {
   return index;
 }
 
+// 24 sep 2026: twee opgaven extra per missie, en daarna een oefenblad met acht
+// invulsommen (volumeOefenblad.js) dat meetelt in de score.
 export const AANTAL_OPGAVEN = {
-  maatcilinder: 10,
-  balk: 6,
-  onderdompelen: 6
+  maatcilinder: 12,
+  balk: 8,
+  onderdompelen: 8
 };
+export const AANTAL_OEFENVRAGEN = 8;
 
 export function maxScore(missie) {
-  return AANTAL_OPGAVEN[missie] * PUNTEN_GOED;
+  return (AANTAL_OPGAVEN[missie] + AANTAL_OEFENVRAGEN) * PUNTEN_GOED;
 }
 
 // ---------- Missie 2: balk ----------
@@ -211,9 +214,11 @@ export function maakBalken(rng = Math.random) {
     { id: 'gum', naam: 'Gum', l: 5, b: 3, h: 2, doel: 'ml' },
     { id: 'doosje', naam: 'Doosje', l: heel(6, 10), b: heel(3, 5), h: heel(2, 4), doel: 'ml' },
     { id: 'blok', naam: 'Houten blok', l: heel(4, 9), b: heel(2, 5), h: heel(3, 6), doel: 'ml' },
+    { id: 'boekje', naam: 'Boekje', l: heel(8, 12), b: heel(5, 8), h: heel(1, 3), doel: 'ml' },
     // Halve centimeters: meten in millimeters.
     { id: 'zeep', naam: 'Stuk zeep', l: heel(6, 8) + 0.5, b: half(3, 5), h: 2, doel: 'ml' },
     { id: 'kubus', naam: 'Dobbelsteen', l: kubus, b: kubus, h: kubus, doel: 'ml' },
+    { id: 'melkpak', naam: 'Pak melk', l: 7, b: 7, h: 20, doel: 'l', gegeven: true },
     { id: 'aquarium', naam: 'Aquarium', l: 50, b: 30, h: 40, doel: 'l', gegeven: true }
   ].map((balk) => ({ ...balk, l: rondAf(balk.l, 1), b: rondAf(balk.b, 1), h: rondAf(balk.h, 1) }));
 }
@@ -302,7 +307,9 @@ export function maakDompelReeks(rng = Math.random) {
     { ...maakDompelOpgave({ schaal: s.ml100, voorwerp: v.kurk, volumeStreepjes: 3, rng }), valkuil: 'drijft' },
     maakDompelOpgave({ schaal: s.ml25, voorwerp: v.knikker, volumeStreepjes: r(5, 12), rng }),
     { ...maakDompelOpgave({ schaal: s.ml50, voorwerp: v.poppetje, volumeStreepjes: 8, beginDeel: [0.06, 0.1], rng }), valkuil: 'teWeinig' },
-    maakDompelOpgave({ schaal: s.ml250, voorwerp: v.dobbelsteen, volumeStreepjes: r(8, 20), rng })
+    maakDompelOpgave({ schaal: s.ml250, voorwerp: v.dobbelsteen, volumeStreepjes: r(8, 20), rng }),
+    maakDompelOpgave({ schaal: s.ml10, voorwerp: v.schroef, volumeStreepjes: r(5, 12), rng }),
+    maakDompelOpgave({ schaal: s.ml100, voorwerp: v.steen, volumeStreepjes: r(10, 25), rng })
   ];
 }
 

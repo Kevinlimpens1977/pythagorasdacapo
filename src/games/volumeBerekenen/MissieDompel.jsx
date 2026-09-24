@@ -247,7 +247,7 @@ export function DoeDompel({ onOpgave }) {
         klein={`V = ${formatVolume(opgave.eind, schaal)} - ${formatVolume(opgave.begin, schaal)}. Dit is het volume van de ${voorwerp.naam.toLowerCase()}.`}
         punten={Math.min(10, punten)}
         onVolgende={volgendeVoorwerp}
-        knopTekst={laatste ? 'Naar de uitslag' : 'Volgend voorwerp'}
+        knopTekst={laatste ? 'Naar het oefenblad' : 'Volgend voorwerp'}
       />
     );
   } else if (stap === 'valkuil' || stap === 'valkuilKlaar') {
@@ -262,7 +262,7 @@ export function DoeDompel({ onOpgave }) {
         {stap === 'valkuilKlaar' && (
           <>
             <p className={`rounded-xl px-3 py-2 font-bold ${goed ? 'bg-[#DFF2E7] text-[#237A4D]' : 'bg-[#FADDDA] text-[#B42F25]'}`}>{valkuil.uitleg}</p>
-            <Knop onClick={volgendeVoorwerp} autoFocus>{laatste ? 'Naar de uitslag' : 'Volgend voorwerp'}</Knop>
+            <Knop onClick={volgendeVoorwerp} autoFocus>{laatste ? 'Naar het oefenblad' : 'Volgend voorwerp'}</Knop>
           </>
         )}
       </>

@@ -131,9 +131,9 @@ test('balk: meten met 1 mm speling en volume met eigen maten', () => {
   assert.equal(beoordeelOmrekening({ invoer: '0,03', volumeCm3: 30, doel: 'ml' }), false);
 });
 
-test('maakBalken geeft zes blokken met meetbare maten', () => {
+test('maakBalken geeft acht blokken met meetbare maten', () => {
   const balken = maakBalken(vast([0.1, 0.9, 0.5, 0.3]));
-  assert.equal(balken.length, 6);
+  assert.equal(balken.length, 8);
   for (const balk of balken.filter((b) => !b.gegeven)) {
     for (const m of [balk.l, balk.b, balk.h]) {
       assert.ok(m >= 1 && m <= 12, `${balk.id}: ${m}`);
@@ -173,7 +173,7 @@ test('resultaat: maxScore > 0, score begrensd, fouten geteld', () => {
     completedAt: 'b'
   });
   assert.equal(resultaat.score, 15);
-  assert.equal(resultaat.maxScore, 100);
+  assert.equal(resultaat.maxScore, 200, '12 opgaven en 8 oefensommen van 10 punten');
   assert.equal(resultaat.details.fouten.bovenkant, 2);
   assert.deepEqual(vaaksteFout(resultaat.details.fouten), { soort: 'bovenkant', aantal: 2 });
   assert.equal(vaaksteFout({ eenheid: 1 }), null);

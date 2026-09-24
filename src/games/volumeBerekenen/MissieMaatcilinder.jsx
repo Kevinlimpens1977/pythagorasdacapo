@@ -314,7 +314,7 @@ export function DoeMaatcilinder({ aantal, onOpgave }) {
           klein={`= ${juistTekst} cm³${schaal.max >= 1000 ? ` = ${formatGetal(juist / 1000, 2)} l` : ''}`}
           punten={punten}
           onVolgende={volgende}
-          knopTekst={opgave.nr + 1 >= aantal ? 'Naar de uitslag' : 'Volgende'}
+          knopTekst={opgave.nr + 1 >= aantal ? 'Naar het oefenblad' : 'Volgende'}
         />
         {melding && <p className="font-bold text-[#B4520E]">{melding.tekst}</p>}
       </>
@@ -323,7 +323,7 @@ export function DoeMaatcilinder({ aantal, onOpgave }) {
     paneel = (
       <>
         <FoutKaart tekst={melding?.tekst} stappen={melding?.stappen} />
-        <Knop onClick={volgende} autoFocus>{opgave.nr + 1 >= aantal ? 'Naar de uitslag' : 'Begrepen, volgende'}</Knop>
+        <Knop onClick={volgende} autoFocus>{opgave.nr + 1 >= aantal ? 'Naar het oefenblad' : 'Begrepen, volgende'}</Knop>
       </>
     );
   } else {
