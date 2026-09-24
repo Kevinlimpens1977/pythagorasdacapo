@@ -72,3 +72,21 @@ test('aangekondigde hoofdstukken: op slot en nog zonder kaart', async () => {
   assert.deepEqual(aangekondigdeHoofdstukIds([{ id: 'h1' }, { id: 'h2' }], klas), ['h3', 'h4']);
   assert.deepEqual(aangekondigdeHoofdstukIds([], null), []);
 });
+
+test('paragraaf los op slot: rij gemarkeerd, toets eruit, verder-waar-je-was slaat hem over', async () => {
+  const { isParagraafVergrendeld, markeerVergrendeldeHoofdstukken, wisselParagraafSlot } = await import('./hoofdstukSlot.js');
+  const { buildResumePointer } = await import('./chapterOutline.js');
+  const klas = { vergrendeldeParagrafen: ['p3'] };
+  assert.equal(isParagraafVergrendeld(klas, { id: 'p3', hoofdstukId: 'h2' }), true);
+  assert.equal(isParagraafVergrendeld(klas, { id: 'p2', hoofdstukId: 'h2' }), false);
+  assert.deepEqual(wisselParagraafSlot(klas, 'p4', true), ['p3', 'p4']);
+  assert.deepEqual(wisselParagraafSlot(klas, 'p3', false), []);
+
+  const rij = (id, klaar) => ({ id, title: id, number: id, progress: { done: 0, total: 1 }, onderdelen: [{ id: `${id}-b`, isDone: klaar }] });
+  const [hoofdstuk] = markeerVergrendeldeHoofdstukken([{
+    id: 'h2', paragraphRows: [rij('p2', true), rij('p3', false)], voorkennisRows: [], oefentoetsRows: [{ id: 'q', paragraafId: 'p3' }], toetsRows: []
+  }], klas);
+  assert.equal(hoofdstuk.paragraphRows[1].vergrendeld, true);
+  assert.equal(hoofdstuk.oefentoetsRows.length, 0);
+  assert.equal(buildResumePointer([hoofdstuk]), null, 'alleen p3 is nog open, en die staat op slot');
+});

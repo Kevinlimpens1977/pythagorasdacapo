@@ -308,7 +308,7 @@ const rijenVanHoofdstuk = (outline = null) => [
 export const buildResumePointer = (outlines = []) => {
   for (const outline of Array.isArray(outlines) ? outlines : []) {
     for (const row of rijenVanHoofdstuk(outline)) {
-      if (row.optioneel === true) continue;
+      if (row.optioneel === true || row.vergrendeld === true) continue;
       const open = row.onderdelen?.find((onderdeel) => !onderdeel.isDone);
       if (!open) continue;
 

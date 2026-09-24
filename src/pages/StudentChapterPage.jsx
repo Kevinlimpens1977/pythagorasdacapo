@@ -148,7 +148,7 @@ export default function StudentChapterPage() {
     ...(chapter.introRow && chapter.introRow.kind !== 'chapterIntro' ? [chapter.introRow] : []),
     ...chapter.voorkennisRows,
     ...chapter.paragraphRows
-  ].flatMap((row) => (row.onderdelen || [])
+  ].filter((row) => row.vergrendeld !== true).flatMap((row) => (row.onderdelen || [])
     .filter((onderdeel) => !onderdeel.isDone)
     .map((onderdeel) => ({ ...onderdeel, row })));
 

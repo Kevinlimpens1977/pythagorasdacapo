@@ -9,6 +9,7 @@ import {
   Compass,
   Link2,
   ListChecks,
+  Lock,
   MoreVertical,
   PlayCircle,
   Sparkles,
@@ -85,7 +86,20 @@ export function ChapterDetailView({
   const plusRows = chapter.paragraphRows.filter((row) => row.optioneel);
   const plusDone = plusRows.filter((row) => row.progress.isCompleted).length;
 
-  const renderParagraphRow = (row, label) => (
+  const renderParagraphRow = (row, label) => (row.vergrendeld ? (
+    // Een paragraaf op slot staat erbij, grijs en zonder knop: de leerling
+    // ziet wat eraan komt, maar kan er nog niet in.
+    <OutlineRow
+      key={row.id}
+      rowId={row.id}
+      label={label}
+      title={paragraafInfo(row.id)?.titel || row.title}
+      icon={Lock}
+      meta={`${tekst('slot.label')} · ${tekst('slot.uitleg')}`}
+      vergrendeld
+      taal={taal}
+    />
+  ) : (
     <OutlineRow
       key={row.id}
       rowId={row.id}
@@ -104,7 +118,7 @@ export function ChapterDetailView({
     >
       <ParagraphPanel row={row} onStart={onStart} onCopyLink={onCopyLink} taal={taal} />
     </OutlineRow>
-  );
+  ));
 
   return (
     <section id={chapter.anchorId} className="helix-surface scroll-mt-28 p-5 md:p-7">
@@ -278,10 +292,29 @@ function OutlineRow({
   onToggle,
   startLabel = '',
   onStart = null,
+  vergrendeld = false,
   taal = nederlandseTaalhulp,
   children
 }) {
   const panelId = `paneel-${rowId}`;
+
+  if (vergrendeld) {
+    return (
+      <div className="flex items-center gap-3 rounded-[var(--helix-radius-lg)] border-[2px] border-dashed border-[#BDB3A0] bg-[#FFFCF6] p-3 opacity-70 sm:p-4">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]">
+          <Icon size={19} />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate font-display text-[15px] font-extrabold text-[var(--helix-navy)] md:text-base">
+            {label && <span className="text-[var(--helix-muted)]">{label}</span>}
+            {label && title ? ' ' : ''}
+            {title}
+          </span>
+          {meta && <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--helix-muted)]">{meta}</span>}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div

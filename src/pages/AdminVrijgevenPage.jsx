@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Loader2, Lock, LockOpen, RefreshCw } from 'lucide-react';
 
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
-import { isHoofdstukVergrendeld, wisselHoofdstukSlot } from '../lib/hoofdstukSlot';
+import { getVergrendeldeParagrafen, isHoofdstukVergrendeld, wisselHoofdstukSlot, wisselParagraafSlot } from '../lib/hoofdstukSlot';
+import { paragraafLabel } from '../lib/chapterOutline';
 
 /**
  * Hoofdstukken vrijgeven: één scherm, alle klassen naast elkaar.
@@ -29,6 +30,8 @@ export default function AdminVrijgevenPage() {
   const [fout, setFout] = useState('');
   const [bezig, setBezig] = useState('');
   const [melding, setMelding] = useState('');
+  const [paragraafInfo, setParagraafInfo] = useState({});
+  const [openHoofdstukken, setOpenHoofdstukken] = useState([]);
 
   const laden = useCallback(async () => {
     setLoading(true);
@@ -38,6 +41,7 @@ export default function AdminVrijgevenPage() {
       const vakken = await cmsService.getVakken();
       const rijen = [];
       const paragrafenMap = {};
+      const info = {};
 
       for (const vak of vakken) {
         for (const leerjaar of await cmsService.getLeerjaren(vak.id)) {
@@ -45,6 +49,7 @@ export default function AdminVrijgevenPage() {
             for (const hoofdstuk of await cmsService.getHoofdstukken(niveau.id)) {
               const paragrafen = await cmsService.getParagrafen(hoofdstuk.id);
               paragrafenMap[hoofdstuk.id] = paragrafen.map((paragraaf) => paragraaf.id);
+              paragrafen.forEach((paragraaf) => { info[paragraaf.id] = paragraaf; });
               rijen.push({
                 id: hoofdstuk.id,
                 titel: hoofdstuk.title || 'Hoofdstuk',
@@ -63,6 +68,7 @@ export default function AdminVrijgevenPage() {
       setKlassen(alleKlassen);
       setHoofdstukken(rijen);
       setParagrafenPerHoofdstuk(paragrafenMap);
+      setParagraafInfo(info);
     } catch (error) {
       console.error('Vrijgeefscherm laden mislukt:', error);
       setFout('De hoofdstukken en klassen konden niet geladen worden.');
@@ -110,6 +116,30 @@ export default function AdminVrijgevenPage() {
       setMelding(opSlot
         ? `${klasNaam(klas)} kan nu in dit hoofdstuk.`
         : `${klasNaam(klas)} ziet dit hoofdstuk staan, maar kan er nog niet in.`);
+    } catch (error) {
+      console.error('Slot wisselen mislukt:', error);
+      setFout('Opslaan lukte niet. Probeer het zo nog eens.');
+    } finally {
+      setBezig('');
+    }
+  };
+
+  // Een losse paragraaf op slot, zodat een hoofdstuk half open kan staan.
+  const wisselParagraaf = async (klas, paragraafId) => {
+    const sleutel = `${klas.id}:${paragraafId}`;
+    setBezig(sleutel);
+    setFout('');
+    setMelding('');
+    try {
+      const opSlot = getVergrendeldeParagrafen(klas).includes(paragraafId);
+      const nieuweLijst = wisselParagraafSlot(klas, paragraafId, !opSlot);
+      await klasService.updateKlasVergrendeldeParagrafen(klas.id, nieuweLijst);
+      setKlassen((huidig) => huidig.map((rij) => (
+        rij.id === klas.id ? { ...rij, vergrendeldeParagrafen: nieuweLijst } : rij
+      )));
+      setMelding(opSlot
+        ? `${klasNaam(klas)} kan nu in ${paragraafLabel(paragraafInfo[paragraafId] || {})}.`
+        : `${klasNaam(klas)} ziet ${paragraafLabel(paragraafInfo[paragraafId] || {})} staan, maar kan er nog niet in.`);
     } catch (error) {
       console.error('Slot wisselen mislukt:', error);
       setFout('Opslaan lukte niet. Probeer het zo nog eens.');
@@ -196,7 +226,8 @@ export default function AdminVrijgevenPage() {
               </thead>
               <tbody>
                 {zichtbareHoofdstukken.map((hoofdstuk) => (
-                  <tr key={hoofdstuk.id} className="border-t border-[var(--helix-border)]">
+                  <Fragment key={hoofdstuk.id}>
+                  <tr className="border-t border-[var(--helix-border)]">
                     <td className="sticky left-0 z-10 bg-[var(--helix-surface)] p-3 align-top">
                       <p className="font-bold text-[var(--helix-navy)]">{hoofdstuk.titel}</p>
                       {/* Het niveau staat erbij omdat drie hoofdstukken dezelfde
@@ -225,6 +256,14 @@ export default function AdminVrijgevenPage() {
                           Alles op slot
                         </button>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setOpenHoofdstukken((huidig) => (huidig.includes(hoofdstuk.id) ? huidig.filter((id) => id !== hoofdstuk.id) : [...huidig, hoofdstuk.id]))}
+                        className="mt-2 text-xs font-bold text-[var(--helix-purple)] underline"
+                        aria-expanded={openHoofdstukken.includes(hoofdstuk.id)}
+                      >
+                        {openHoofdstukken.includes(hoofdstuk.id) ? 'Paragrafen verbergen' : 'Per paragraaf op slot'}
+                      </button>
                     </td>
 
                     {klassen.map((klas) => {
@@ -259,6 +298,34 @@ export default function AdminVrijgevenPage() {
                       );
                     })}
                   </tr>
+                  {openHoofdstukken.includes(hoofdstuk.id) && (paragrafenPerHoofdstuk[hoofdstuk.id] || []).map((paragraafId) => (
+                    <tr key={paragraafId} className="bg-[var(--helix-surface-soft)]/60">
+                      <td className="sticky left-0 z-10 bg-[var(--helix-surface-soft)] p-2 pl-6 text-xs font-bold text-[var(--helix-navy)]">
+                        {paragraafLabel(paragraafInfo[paragraafId] || {})}
+                      </td>
+                      {klassen.map((klas) => {
+                        const toegewezen = Array.isArray(klas.enabledParagrafen) && klas.enabledParagrafen.includes(paragraafId);
+                        if (!toegewezen) return <td key={klas.id} className="p-2 text-center text-[var(--helix-muted)]">&ndash;</td>;
+                        const hoofdstukDicht = isHoofdstukVergrendeld(klas, hoofdstuk.id);
+                        const opSlot = hoofdstukDicht || getVergrendeldeParagrafen(klas).includes(paragraafId);
+                        const sleutel = `${klas.id}:${paragraafId}`;
+                        return (
+                          <td key={klas.id} className="p-2 text-center">
+                            <input
+                              type="checkbox"
+                              checked={opSlot}
+                              disabled={hoofdstukDicht || bezig === sleutel}
+                              onChange={() => wisselParagraaf(klas, paragraafId)}
+                              title={hoofdstukDicht ? 'Het hele hoofdstuk staat op slot' : ''}
+                              className="h-4 w-4 cursor-pointer accent-[var(--helix-warning)]"
+                              aria-label={`${paragraafLabel(paragraafInfo[paragraafId] || {})} op slot voor ${klasNaam(klas)}`}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

@@ -17,6 +17,9 @@
 const schoon = (waarde) => String(waarde ?? '').trim();
 
 export const VERGRENDELDE_HOOFDSTUKKEN_VELD = 'vergrendeldeHoofdstukken';
+// Hetzelfde slot, maar voor losse paragrafen: een hoofdstuk half open zetten
+// (Kevin, 24 sep 2026: 2.1 en 2.2 open, 2.3 t/m 2.5 pas volgende week).
+export const VERGRENDELDE_PARAGRAFEN_VELD = 'vergrendeldeParagrafen';
 
 /** De hoofdstukken die voor deze klas op slot staan, zonder rommel of dubbele. */
 export const getVergrendeldeHoofdstukken = (klasData = null) => {
@@ -31,12 +34,29 @@ export const isHoofdstukVergrendeld = (klasData = null, hoofdstukId = '') => {
   return getVergrendeldeHoofdstukken(klasData).includes(id);
 };
 
+/** De paragrafen die voor deze klas los op slot staan. */
+export const getVergrendeldeParagrafen = (klasData = null) => {
+  const lijst = klasData?.[VERGRENDELDE_PARAGRAFEN_VELD];
+  if (!Array.isArray(lijst)) return [];
+  return [...new Set(lijst.map(schoon).filter(Boolean))];
+};
+
 /**
- * Dezelfde vraag, maar dan voor een paragraaf: waar hoort hij bij, en staat dat
- * hoofdstuk op slot? De lespagina kent alleen de paragraaf.
+ * Staat deze paragraaf op slot? Dat kan los, of doordat zijn hoofdstuk op slot
+ * staat. De lespagina kent alleen de paragraaf.
  */
 export const isParagraafVergrendeld = (klasData = null, paragraaf = null) =>
-  isHoofdstukVergrendeld(klasData, paragraaf?.hoofdstukId || '');
+  isHoofdstukVergrendeld(klasData, paragraaf?.hoofdstukId || '')
+  || getVergrendeldeParagrafen(klasData).includes(schoon(paragraaf?.id));
+
+/** Zet het slot van één paragraaf aan of uit en geeft de nieuwe lijst terug. */
+export const wisselParagraafSlot = (klasData = null, paragraafId = '', vergrendeld = true) => {
+  const id = schoon(paragraafId);
+  const huidig = getVergrendeldeParagrafen(klasData);
+  if (!id) return huidig;
+  if (vergrendeld) return huidig.includes(id) ? huidig : [...huidig, id];
+  return huidig.filter((bestaand) => bestaand !== id);
+};
 
 /**
  * Zet het slot aan of uit voor één hoofdstuk en geeft de nieuwe lijst terug.
@@ -59,11 +79,23 @@ export const wisselHoofdstukSlot = (klasData = null, hoofdstukId = '', vergrende
  */
 export const markeerVergrendeldeHoofdstukken = (chapters = [], klasData = null) => {
   const opSlot = new Set(getVergrendeldeHoofdstukken(klasData));
-  if (!opSlot.size) return (Array.isArray(chapters) ? chapters : []).map((chapter) => ({ ...chapter, vergrendeld: false }));
+  const paragrafenOpSlot = new Set(getVergrendeldeParagrafen(klasData));
+  const markeerRijen = (rijen) => (Array.isArray(rijen)
+    ? rijen.map((rij) => (paragrafenOpSlot.has(rij?.id) ? { ...rij, vergrendeld: true } : rij))
+    : rijen);
 
   return (Array.isArray(chapters) ? chapters : []).map((chapter) => ({
     ...chapter,
-    vergrendeld: opSlot.has(chapter.id)
+    vergrendeld: opSlot.has(chapter.id),
+    ...(paragrafenOpSlot.size ? {
+      paragraphRows: markeerRijen(chapter.paragraphRows),
+      voorkennisRows: markeerRijen(chapter.voorkennisRows),
+      optioneleRows: markeerRijen(chapter.optioneleRows),
+      // Een oefentoets of toets uit een paragraaf op slot hoort er nog niet bij.
+      oefentoetsRows: (chapter.oefentoetsRows || []).filter((rij) => !paragrafenOpSlot.has(rij?.paragraafId)),
+      toetsRows: (chapter.toetsRows || []).filter((rij) => !paragrafenOpSlot.has(rij?.paragraafId)),
+      introRow: chapter.introRow && paragrafenOpSlot.has(chapter.introRow.id) ? { ...chapter.introRow, vergrendeld: true } : chapter.introRow
+    } : {})
   }));
 };
 
