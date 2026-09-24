@@ -177,7 +177,9 @@ export const GAME_REGISTRY = [
     tokenRewardPotential: { min: 0, max: 400, basis: 'score_accuracy_completion' },
     // Onbeperkt spelen; de opbrengst halveert server-side per beurt (replayDecay).
     maxPlays: 0,
-    status: GAME_STATUSES.PROTOTYPE
+    // Actief sinds 24 sep 2026: open voor de EOA-klassen (klas.enabledGames),
+    // met de standaardlijst die per leerling geschud wordt.
+    status: GAME_STATUSES.ACTIVE
   },
   {
     gameId: 'binask-volume-maatcilinder',
