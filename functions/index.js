@@ -4906,6 +4906,8 @@ function getLesTaalLayer() {
       bronVingerafdruk: layer.bronVingerafdruk,
       isLesTaal: layer.isLesTaal,
       isVertaalbaarBlok: layer.isVertaalbaarBlok,
+      leesbareTekst: layer.leesbareTekst,
+      lijktNogNederlands: layer.lijktNogNederlands,
       taalNederlands: layer.taalNederlands,
       tekstVingerafdruk: layer.tekstVingerafdruk,
     }));
@@ -5001,7 +5003,7 @@ function bouwVertaalBericht({ teVertalen, taalNaam }) {
 }
 
 async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openrouterApiKeyProvider, nowMs = Date.now() }) {
-  const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok, taalNederlands } = await getLesTaalLayer();
+  const { bronVingerafdruk, isLesTaal, isVertaalbaarBlok, leesbareTekst, lijktNogNederlands, taalNederlands } = await getLesTaalLayer();
 
   if (!auth?.uid) {
     throw new HttpsError("unauthenticated", "Je moet ingelogd zijn.");
@@ -5041,9 +5043,14 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
   const vertalingRef = db.doc(`vertalingen/${blockId}__${taal}`);
   const bestaand = await vertalingRef.get();
 
+  const bronLeesbaar = leesbareTekst({ html: blok.content?.html, items: blok.content?.items });
   if (bestaand.exists) {
     const opgeslagen = bestaand.data() || {};
-    if (opgeslagen.bronVingerafdruk === vingerafdruk) {
+    // Een AI-vertaling die toch Nederlands is gebleven (het model gaf de bron
+    // terug) gooien we weg in plaats van hem eeuwig te blijven tonen.
+    const nogNederlands = opgeslagen.bron !== "docent"
+      && lijktNogNederlands(bronLeesbaar, leesbareTekst(opgeslagen));
+    if (opgeslagen.bronVingerafdruk === vingerafdruk && !nogNederlands) {
       return { success: true, vertaling: opgeslagen, verouderd: false };
     }
     // Werk van de docent overschrijven we niet stil: teruggeven met een vlag.
@@ -5071,35 +5078,51 @@ async function vertaalLesblokCore({ auth, data, db, fetchImpl = fetch, openroute
 
   const teVertalen = bouwVertaalInvoer(blok);
 
-  const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${runtimeConfig.apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://stellingvanpythagoras.nl",
-      "X-Title": "HELIX App"
-    },
-    body: JSON.stringify({
-      model: runtimeConfig.model,
-      messages: bouwVertaalBericht({ teVertalen, taalNaam }),
-      // De vertaling heeft dezelfde vorm als de invoer, dus de lengte van die
-      // invoer is hier de beste maat voor wat het antwoord mag kosten.
-      max_tokens: vertaalTokenBudget(JSON.stringify(teVertalen).length),
-      response_format: { type: "json_object" }
-    })
-  });
+  const vraagModel = async (nadruk = false) => {
+    const berichten = bouwVertaalBericht({ teVertalen, taalNaam });
+    if (nadruk) {
+      berichten[0].content += `\n- Let op: je vorige antwoord was nog Nederlands. Vertaal ALLE zinnen naar het ${taalNaam}; laat geen Nederlandse zin staan.`;
+    }
+    const response = await fetchImpl("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${runtimeConfig.apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://stellingvanpythagoras.nl",
+        "X-Title": "HELIX App"
+      },
+      body: JSON.stringify({
+        model: runtimeConfig.model,
+        messages: berichten,
+        // De vertaling heeft dezelfde vorm als de invoer, dus de lengte van die
+        // invoer is hier de beste maat voor wat het antwoord mag kosten.
+        max_tokens: vertaalTokenBudget(JSON.stringify(teVertalen).length),
+        response_format: { type: "json_object" }
+      })
+    });
+    if (!response.ok) {
+      throw new HttpsError("unavailable", "Vertalen lukt nu even niet.");
+    }
+    const payload = await response.json();
+    // Robuust lezen, net als bij vertaalLesstofInfo: een model zet er soms een
+    // codeblok omheen of een accolade te veel achter.
+    const gelezen = leesJsonObject(payload?.choices?.[0]?.message?.content);
+    if (!gelezen || typeof gelezen !== "object") {
+      throw new HttpsError("internal", "De vertaling kwam niet in het juiste formaat terug.");
+    }
+    return gelezen;
+  };
 
-  if (!response.ok) {
-    throw new HttpsError("unavailable", "Vertalen lukt nu even niet.");
-  }
-
-  const payload = await response.json();
-  const rauw = payload?.choices?.[0]?.message?.content || "";
-  let vertaald;
-  try {
-    vertaald = JSON.parse(rauw);
-  } catch {
-    throw new HttpsError("internal", "De vertaling kwam niet in het juiste formaat terug.");
+  // Is het antwoord nog Nederlands, dan één nieuwe poging met nadruk. Lukt ook
+  // die niet, dan bewaren we niets: de leerling ziet de melding met "Opnieuw
+  // proberen" in plaats van een Nederlandse tekst onder een vertaalknop.
+  let vertaald = await vraagModel(false);
+  const nogNederlands = (antwoord) => lijktNogNederlands(bronLeesbaar, leesbareTekst(antwoord));
+  if (nogNederlands(vertaald)) {
+    vertaald = await vraagModel(true);
+    if (nogNederlands(vertaald)) {
+      throw new HttpsError("unavailable", "De vertaling lukte nu niet. Probeer het zo nog eens.");
+    }
   }
 
   // Afbeeldingen tellen vóór het opslaan. Laat het model er een weg, dan is de

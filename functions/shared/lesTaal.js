@@ -47,7 +47,9 @@ export const taalNederlands = (code) =>
  * spellen zijn beeld; daar valt niets te vertalen zonder het materiaal zelf te
  * verbouwen.
  */
-export const VERTAALBARE_BLOKTYPEN = new Set(['theory', 'question', 'quiz', 'toets', 'summary']);
+// Ook voorbeelden en media hebben leestekst (24 sep 2026: bij Binask bleven de
+// voorbeeldblokken altijd Nederlands staan).
+export const VERTAALBARE_BLOKTYPEN = new Set(['theory', 'question', 'quiz', 'toets', 'summary', 'example', 'media']);
 
 /**
  * Een vraagblok dat naar de vragenbank verwijst (linkedVraagId) haalt zijn
@@ -212,3 +214,33 @@ export const controleerTalenCompleet = (talen = LES_TALEN) => {
 };
 
 controleerTalenCompleet();
+
+// ---------- is een vertaling echt vertaald? ----------
+
+const zichtbareWoorden = (tekst) => String(tekst || '')
+  .replace(/<[^>]+>/g, ' ')
+  .replace(/&[a-z]+;/gi, ' ')
+  .toLowerCase()
+  .split(/[^a-zà-ÿ]+/i)
+  // Getallen, eenheden en korte woordjes (ml, cm, l) zeggen niets over de taal.
+  .filter((woord) => woord.length >= 4);
+
+/**
+ * Lijkt deze "vertaling" nog op de Nederlandse bron? Een model geeft soms de
+ * brontekst ongewijzigd terug; die werd dan bewaard en bleef voor altijd staan
+ * (24 sep 2026, Schriftopdracht 2.2 in het Oekraïens). Grens: meer dan de helft
+ * van de langere woorden staat letterlijk ook in de bron.
+ */
+export const lijktNogNederlands = (bron = '', vertaald = '') => {
+  const bronWoorden = new Set(zichtbareWoorden(bron));
+  const woorden = zichtbareWoorden(vertaald);
+  if (bronWoorden.size < 3 || woorden.length < 3) return false;
+  const gelijk = woorden.filter((woord) => bronWoorden.has(woord)).length;
+  return gelijk / woorden.length > 0.5;
+};
+
+/** De tekst van een blok of vertaling die de leerling leest: html en vragen. */
+export const leesbareTekst = ({ html = '', items = [] } = {}) => [
+  html,
+  ...(Array.isArray(items) ? items : []).flatMap((item) => [item?.prompt, ...(item?.options || []).map((optie) => optie?.text)])
+].filter(Boolean).join(' ');

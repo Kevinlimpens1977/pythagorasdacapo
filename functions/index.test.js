@@ -3090,3 +3090,60 @@ test("cijfer 2.2: alleen de eerste ronde na de start telt, cijfer pas na alle dr
   assert.equal(db.store.docs["paragraafCijfers/binask-2-2_a"].cijfer, 9);
   assert.equal(db.store.docs["paragraafCijfers/binask-2-2_a"].rondes["spel-a"].minpunten, 2);
 });
+
+const SCHRIFT_BLOK = {
+  id: "blok-nl",
+  type: "theory",
+  status: "published",
+  paragraafId: "para-1",
+  title: "Schriftopdracht",
+  content: { html: "<ol><li>Wat vertelt het volume van een voorwerp?</li><li>Een maatcilinder bevat water. Hoeveel kubieke centimeter is dit?</li></ol>", items: [] }
+};
+const modelAntwoord = (html) => ({
+  ok: true,
+  json: async () => ({ choices: [{ message: { content: JSON.stringify({ titel: "Titel", html, items: [] }) } }] })
+});
+const OEKRAIENS = "<ol><li>Що говорить об'єм предмета?</li><li>Мірний циліндр містить воду. Скільки це кубічних сантиметрів?</li></ol>";
+
+test("vertaalLesblok: een Nederlands antwoord wordt niet bewaard, ook niet na een tweede poging", async () => {
+  const db = vertaalDb({ publiekBlok: SCHRIFT_BLOK, bestaandeVertaling: null, caller: { role: "student", klasId: "klas-1" } });
+  let aanroepen = 0;
+  await assert.rejects(
+    () => vertaalLesblokCore({
+      auth: { uid: "leerling-1" }, data: { blockId: "blok-nl", taal: "uk" }, db,
+      fetchImpl: async () => { aanroepen += 1; return modelAntwoord(SCHRIFT_BLOK.content.html); },
+      openrouterApiKeyProvider: () => "sk-or-test",
+    }),
+    (error) => error.code === "unavailable",
+  );
+  assert.equal(aanroepen, 2);
+  assert.equal(db.store["vertalingen/blok-nl__uk"], undefined);
+});
+
+test("vertaalLesblok: tweede poging is wel vertaald en wordt bewaard", async () => {
+  const db = vertaalDb({ publiekBlok: SCHRIFT_BLOK, bestaandeVertaling: null, caller: { role: "student", klasId: "klas-1" } });
+  const antwoorden = [SCHRIFT_BLOK.content.html, OEKRAIENS];
+  const resultaat = await vertaalLesblokCore({
+    auth: { uid: "leerling-1" }, data: { blockId: "blok-nl", taal: "uk" }, db,
+    fetchImpl: async () => modelAntwoord(antwoorden.shift()),
+    openrouterApiKeyProvider: () => "sk-or-test",
+  });
+  assert.equal(resultaat.success, true);
+  assert.equal(db.store["vertalingen/blok-nl__uk"].html, OEKRAIENS);
+});
+
+test("vertaalLesblok: een bewaarde vertaling die Nederlands bleef, wordt opnieuw gemaakt", async () => {
+  const db = vertaalDb({
+    publiekBlok: SCHRIFT_BLOK,
+    bestaandeVertaling: { bronVingerafdruk: bronVingerafdruk(SCHRIFT_BLOK), titel: "Schriftopdracht", html: SCHRIFT_BLOK.content.html, items: [], bron: "ai" },
+    caller: { role: "student", klasId: "klas-1" },
+  });
+  let gebeld = false;
+  await vertaalLesblokCore({
+    auth: { uid: "leerling-1" }, data: { blockId: "blok-nl", taal: "uk" }, db,
+    fetchImpl: async () => { gebeld = true; return modelAntwoord(OEKRAIENS); },
+    openrouterApiKeyProvider: () => "sk-or-test",
+  });
+  assert.equal(gebeld, true);
+  assert.equal(db.store["vertalingen/blok-nl__uk"].html, OEKRAIENS);
+});

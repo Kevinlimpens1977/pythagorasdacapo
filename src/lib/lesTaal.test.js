@@ -72,8 +72,10 @@ test('alleen tekstblokken zijn vertaalbaar', () => {
   assert.equal(isVertaalbaarBlok({ type: 'quiz' }), true);
   assert.equal(isVertaalbaarBlok({ type: 'toets' }), true);
   assert.equal(isVertaalbaarBlok({ type: 'summary' }), true);
+  // Voorbeelden en de tekst bij media ook (24 sep 2026); het beeld zelf niet.
+  assert.equal(isVertaalbaarBlok({ type: 'example' }), true);
+  assert.equal(isVertaalbaarBlok({ type: 'media' }), true);
   assert.equal(isVertaalbaarBlok({ type: 'slidedeck' }), false);
-  assert.equal(isVertaalbaarBlok({ type: 'media' }), false);
   assert.equal(isVertaalbaarBlok({ type: 'game' }), false);
   assert.equal(isVertaalbaarBlok(null), false);
 });
@@ -162,4 +164,13 @@ test('een taal zonder antwoordinstructie of Nederlandse naam faalt hard, niet st
     () => controleerTalenCompleet([{ code: 'el', label: 'Ελληνικά' }]),
     /Nederlandse naam/i
   );
+});
+
+test('lijktNogNederlands: herkent een niet-vertaalde tekst, laat een echte vertaling door', async () => {
+  const { lijktNogNederlands } = await import('./lesTaal.js');
+  const bron = '<ol><li>Leerstof: Wat vertelt het volume van een voorwerp?</li><li>Een maatcilinder bevat 35 ml water. Hoeveel cm³ is dit?</li></ol>';
+  assert.equal(lijktNogNederlands(bron, bron), true);
+  assert.equal(lijktNogNederlands(bron, '<ol><li>Навчальний матеріал: Що говорить об’єм предмета?</li><li>Мірний циліндр містить 35 мл води. Скільки це см³?</li></ol>'), false);
+  assert.equal(lijktNogNederlands(bron, '<ol><li>Material: What does the volume of an object tell you?</li><li>A measuring cylinder contains 35 ml of water. How many cm³ is that?</li></ol>'), false);
+  assert.equal(lijktNogNederlands('Kort', 'Kort'), false, 'te kort om iets te zeggen');
 });
