@@ -73,8 +73,8 @@ function practicumStappen(p, niveau) {
         oplossing: () => `m = ${f(p.m, 1)} g.`
       },
       {
-        id: 'erin', soort: 'actie', regel: 'gegeven', knop: `Laat de ${NAAM_VORM[p.vorm]} in het water zakken`,
-        opdracht: `Sleep de ${NAAM_VORM[p.vorm]} in de maatcilinder.`
+        id: 'erin', soort: 'actie', regel: 'gegeven',
+        opdracht: `Pak de ${NAAM_VORM[p.vorm]} van de weegschaal, sleep hem boven de maatcilinder en laat los.`
       },
       {
         id: 'Veind', soort: 'getal', regel: 'gegeven',
@@ -147,8 +147,8 @@ function bonusStappen(p) {
       oplossing: () => 'Een volume is in cm³.'
     },
     {
-      id: 'controle', soort: 'actie', regel: null, knop: 'Controleer: laat de schroef in het water zakken',
-      opdracht: `Klopt het? In de maatcilinder staat ${VOORGEVULD} ml water. Laat de schroef erin zakken.`
+      id: 'controle', soort: 'actie', regel: null,
+      opdracht: `Klopt het? In de maatcilinder staat ${VOORGEVULD} ml water. Pak de schroef, sleep hem boven de maatcilinder en laat los.`
     }
   ];
 }
@@ -174,8 +174,8 @@ function kurkStappen(k) {
         oplossing: () => `V begin = ${VOORGEVULD} ml.`
       },
       {
-        id: 'erin', soort: 'actie', regel: 'gegeven', knop: 'Laat de kurk in het water vallen',
-        opdracht: 'Sleep de kurk in de maatcilinder.'
+        id: 'erin', soort: 'actie', regel: 'gegeven',
+        opdracht: 'Pak de kurk van de weegschaal, sleep hem boven de maatcilinder en laat los.'
       },
       {
         id: 'Vdrijf', soort: 'getal', regel: 'gegeven',
