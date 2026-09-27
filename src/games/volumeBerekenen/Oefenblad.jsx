@@ -11,8 +11,16 @@ import { speelFout, speelGoed } from './volumeSounds';
 // sep 2026); na twee foute pogingen staan het antwoord en de uitwerking erbij.
 const MAX_MINPUNTEN = 2;
 
-export default function Oefenblad({ missie, onKlaar }) {
-  const [vragen] = useState(() => maakOefenblad(missie));
+// Het dichtheidsspel gebruikt dezelfde pagina met eigen sommen: `maakVragen`,
+// `antwoordGoed` en `toonAntwoord` zijn dan meegegeven.
+export default function Oefenblad({
+  missie,
+  onKlaar,
+  maakVragen = maakOefenblad,
+  antwoordGoed = oefenAntwoordGoed,
+  toonAntwoord = (vraag) => formatGetal(vraag.antwoord)
+}) {
+  const [vragen] = useState(() => maakVragen(missie));
   const [antwoorden, setAntwoorden] = useState(() => vragen.map(() => ''));
   const [foutePogingen, setFoutePogingen] = useState(() => vragen.map(() => 0));
   const [goedGezet, setGoedGezet] = useState(() => vragen.map(() => false));
@@ -27,7 +35,7 @@ export default function Oefenblad({ missie, onKlaar }) {
     const nieuwFout = [...foutePogingen];
     let ietsFout = false;
     for (const index of openVragen) {
-      if (oefenAntwoordGoed(antwoorden[index], vragen[index].antwoord)) {
+      if (antwoordGoed(antwoorden[index], vragen[index].antwoord, vragen[index])) {
         nieuwGoed[index] = true;
       } else {
         nieuwFout[index] += 1;
@@ -101,7 +109,7 @@ export default function Oefenblad({ missie, onKlaar }) {
               {rood && fout === 1 && <p className="text-sm font-semibold">Nog niet goed. Reken het nog eens na en verbeter je antwoord.</p>}
               {rood && fout >= MAX_MINPUNTEN && (
                 <p className="text-sm font-semibold">
-                  <span className="font-extrabold">Antwoord: {formatGetal(vraag.antwoord)} {vraag.eenheid}. </span>
+                  <span className="font-extrabold">Antwoord: {toonAntwoord(vraag)} {vraag.eenheid}. </span>
                   {vraag.uitwerking} Vul het goede antwoord in.
                 </p>
               )}

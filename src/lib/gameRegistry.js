@@ -252,6 +252,30 @@ export const GAME_REGISTRY = [
     // Opgaven worden steeds nieuw gemaakt: onbeperkt oefenen, opbrengst halveert per beurt (replayDecay).
     maxPlays: 0,
     status: GAME_STATUSES.PROTOTYPE
+  },
+  {
+    gameId: 'binask-dichtheid',
+    title: 'Dichtheid: meten, rekenen en ontdekken',
+    description:
+      'Drie missies: meet en weeg een blokje en bereken de dichtheid, reken met de formuledriehoek, en ontdek in een practicum van welke stof een voorwerp is. Met het boekje met dichtheden.',
+    subject: 'Binask',
+    topic: 'Dichtheid (hoofdstuk 2.3)',
+    level: 'VMBO leerjaar 1',
+    learningGoals: [
+      'Dichtheid berekenen met ρ = m : V en afronden op één decimaal',
+      'Met de formuledriehoek massa of volume uitrekenen',
+      'Met een practicum bepalen van welke stof een voorwerp is'
+    ],
+    skills: ['meten', 'rekenen', 'onderzoeken'],
+    estimatedMinutes: 30,
+    route: '/admin/spellen/binask-dichtheid',
+    componentKey: 'dichtheid',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 100, basis: 'score_accuracy_completion' },
+    // Oefenspel zonder cijfer (Kevin, 27 sep 2026); onbeperkt spelen, opbrengst halveert per beurt.
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
   }
 ];
 

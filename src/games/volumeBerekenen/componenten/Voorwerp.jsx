@@ -80,6 +80,21 @@ function Vorm({ vorm }) {
           <circle cx="2" cy="-19" r="1.2" fill="#8a5a2b" />
         </g>
       );
+    case 'naald':
+      return (
+        <g>
+          <line x1="0" y1="-4" x2="0" y2="-190" stroke="#8C8C8C" strokeWidth="3" strokeLinecap="round" />
+          <line x1="0" y1="-4" x2="0" y2="-190" stroke={INK} strokeWidth="1" strokeLinecap="round" />
+          <rect x="-7" y="-214" width="14" height="26" rx="4" fill="#D83A2E" stroke={INK} strokeWidth="2.5" />
+        </g>
+      );
+    case 'zinker':
+      return (
+        <g>
+          <rect x="-16" y="-24" width="32" height="24" rx="3" fill="#5B6068" stroke={INK} strokeWidth="3" />
+          <path d="M -9 -24 q 9 -12 18 0" fill="none" stroke={INK} strokeWidth="2.5" />
+        </g>
+      );
     case 'blokje':
       return (
         <g>

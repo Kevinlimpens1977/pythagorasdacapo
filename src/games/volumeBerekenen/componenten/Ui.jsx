@@ -86,10 +86,10 @@ export function GetalVeld({ waarde, onChange, label, eenheid, onEnter, autoFocus
   );
 }
 
-export function EenheidKeuze({ waarde, onChange, disabled = false }) {
+export function EenheidKeuze({ waarde, onChange, disabled = false, eenheden = EENHEDEN }) {
   return (
-    <div className="flex gap-2" role="radiogroup" aria-label="Eenheid">
-      {EENHEDEN.map((eenheid) => (
+    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Eenheid">
+      {eenheden.map((eenheid) => (
         <button
           key={eenheid}
           type="button"

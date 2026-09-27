@@ -1,3 +1,4 @@
+import BinasLink from '../games/dichtheid/componenten/BinasLink';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -1117,8 +1118,12 @@ export default function StudentLessonPage() {
   }
 
   const ActiveStepIcon = blockIcons[currentBlock?.type] || BookOpen;
+  // In de balk bovenaan de vertaalde bloktitel als die er is (24 sep 2026).
+  const vertaaldeBlokTitel = taalActief && lesTaal
+    ? String(vertaalResultaten[currentBlock?.id]?.vertaling?.titel || '').trim()
+    : '';
   const currentStepTitle =
-    currentBlock?.title || CONTENT_BLOCK_LABELS[currentBlock?.type] || 'Lesblok';
+    vertaaldeBlokTitel || currentBlock?.title || CONTENT_BLOCK_LABELS[currentBlock?.type] || 'Lesblok';
   const hoofdstukLabel =
     taalHulp.hoofdstukInfo(hoofdstuk?.id || '')?.titel
     || hoofdstuk?.title
@@ -1196,6 +1201,8 @@ export default function StudentLessonPage() {
   return (
     <div className="study-surface study-shell flex flex-col">
       <VictoryEffectOverlay playback={victoryPlayback} onDone={finishVictoryPlayback} />
+      {/* Een link "Binas" in de lesstof (href="#binas") opent het boekje met dichtheden. */}
+      <BinasLink />
       <LearningGoalsIntro
         open={showLearningGoals}
         intro={learningGoalsIntro}

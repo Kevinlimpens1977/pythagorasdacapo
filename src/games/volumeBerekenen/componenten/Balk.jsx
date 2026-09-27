@@ -1,4 +1,5 @@
 import { formatGetal } from '../volumeLogic';
+import { KLEUREN } from './balkKleuren';
 
 // Balk in schuine projectie (zoals de balken in het deck): voorvlak recht,
 // diepte schuin naar achteren. Optioneel opgebouwd uit kubusjes van 1 cm³ (GeoGebra-idee).
@@ -23,12 +24,6 @@ function Kubus({ p, x, y, z, kleur }) {
     </g>
   );
 }
-
-const KLEUREN = {
-  blauw: { voor: '#3FA7DB', boven: '#8FD0F0', rechts: '#1F7DB0' },
-  groen: { voor: '#3DB57A', boven: '#8EDDB4', rechts: '#237A4D' },
-  hout: { voor: '#D9A066', boven: '#EDC69A', rechts: '#B07A43' }
-};
 
 // l, b, h in cm. `lagen`: aantal zichtbare kubuslagen (voor de KIJK-animatie), of null voor een dichte balk.
 export default function Balk({ l, b, h, lagen = null, accent = null, toonMaten = false, kleur = 'blauw', className = '' }) {

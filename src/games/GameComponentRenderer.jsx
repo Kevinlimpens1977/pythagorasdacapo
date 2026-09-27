@@ -1,5 +1,6 @@
 import { GAME_COMPONENT_KEYS } from './gameComponentKeys';
 import DataKoerierGame from './dataKoerier/DataKoerierGame';
+import DichtheidGame from './dichtheid/DichtheidGame';
 import DVLingoGame from './dvlingo/DVLingoGame';
 import PacoPacManGame from './pacoPacMan/PacoPacManGame';
 import SocialMediaZoektochtGame from './socialMediaZoektocht/SocialMediaZoektochtGame';
@@ -43,6 +44,11 @@ export default function GameComponentRenderer({ componentKey, onComplete, onStar
 
   if (componentKey === GAME_COMPONENT_KEYS.VOLUME_ONDERDOMPELEN) {
     return <VolumeBerekenenGame missie="onderdompelen" onStart={onStart} onComplete={onComplete} />;
+  }
+
+  // Dichtheid: één spel met drie missies en een menu (Binask 2.3).
+  if (componentKey === GAME_COMPONENT_KEYS.DICHTHEID) {
+    return <DichtheidGame onStart={onStart} onComplete={onComplete} />;
   }
 
   return null;

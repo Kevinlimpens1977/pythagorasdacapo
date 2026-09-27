@@ -7,7 +7,8 @@ export const GAME_COMPONENT_KEYS = {
   DVLINGO: 'dvlingo',
   VOLUME_MAATCILINDER: 'volumeMaatcilinder',
   VOLUME_BALK: 'volumeBalk',
-  VOLUME_ONDERDOMPELEN: 'volumeOnderdompelen'
+  VOLUME_ONDERDOMPELEN: 'volumeOnderdompelen',
+  DICHTHEID: 'dichtheid'
 };
 
 export const PLAYABLE_GAME_COMPONENT_KEYS = Object.values(GAME_COMPONENT_KEYS);

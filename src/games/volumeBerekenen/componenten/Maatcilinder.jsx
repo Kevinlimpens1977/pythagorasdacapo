@@ -25,13 +25,14 @@ function streepjes(schaal) {
 }
 
 // De inhoud (glas, schaal, water) als groep, zodat de loep dezelfde tekening kan inzoomen.
-export function CilinderInhoud({ schaal, niveau, markers = [], labelAccenten = [], voorwerp = null, idPrefix = 'mc' }) {
+// `zonderSchaal`: geen streepjes en geen getallen (het dichtheidsspel vult onder de kraan).
+export function CilinderInhoud({ schaal, niveau, markers = [], labelAccenten = [], voorwerp = null, idPrefix = 'mc', zonderSchaal = false }) {
   const g = geometrieVoor(schaal);
   const yNiveau = yVoorWaarde(niveau, schaal);
   const afstand = (g.yNul - g.yMax) / Math.round(schaal.max / schaal.stap);
   const meniscus = Math.max(2.5, Math.min(7, afstand));
   const midden = (g.binnenLinks + g.binnenRechts) / 2;
-  const lijnen = streepjes(schaal);
+  const lijnen = zonderSchaal ? [] : streepjes(schaal);
   const decimalenLabel = String(schaal.labelStap).includes('.') ? String(schaal.labelStap).split('.')[1].length : 0;
 
   const waterPad = [
@@ -75,7 +76,7 @@ export function CilinderInhoud({ schaal, niveau, markers = [], labelAccenten = [
         </>
       )}
 
-      {voorwerp && <Voorwerp {...voorwerp} />}
+      {voorwerp && (Array.isArray(voorwerp) ? voorwerp : [voorwerp]).map((ding) => <Voorwerp key={ding.vorm} {...ding} />)}
 
       {/* schaal */}
       {lijnen.map(({ k, waarde, isLabel, isMidden }) => {
@@ -124,7 +125,7 @@ export function CilinderInhoud({ schaal, niveau, markers = [], labelAccenten = [
       )}
       <line x1={g.binnenRechts - 10} x2={g.binnenRechts - 10} y1={g.yMax - 20} y2={g.yNul - 10} stroke="#ffffff" strokeOpacity="0.7" strokeWidth="4" strokeLinecap="round" />
       <text x={midden} y={g.yMax - 48} textAnchor="middle" fontSize="13" fontWeight="700" fill={INK} fontFamily="Atkinson Hyperlegible Next Variable, Arial, sans-serif">
-        {schaal.soort === 'spuit' ? '1 ml' : schaal.max >= 1000 ? '1 l' : `${schaal.max} ml`}
+        {zonderSchaal ? '' : schaal.soort === 'spuit' ? '1 ml' : schaal.max >= 1000 ? '1 l' : `${schaal.max} ml`}
       </text>
     </g>
   );
