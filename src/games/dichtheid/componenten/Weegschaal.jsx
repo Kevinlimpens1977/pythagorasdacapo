@@ -46,7 +46,7 @@ const Weegschaal = forwardRef(function Weegschaal({ massa = null, children, acti
         <rect x="46" y="36" width="168" height="44" rx="6" fill="#16261C" stroke={INK} strokeWidth="3" />
         <text x="198" y="68" textAnchor="end" fontFamily="ui-monospace, Consolas, monospace" fontSize="30" fontWeight="700" fill="#7CF29C">{tekst}</text>
         <text x="206" y="68" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="700" fill="#7CF29C">g</text>
-        <text x="46" y="102" fontFamily="Arial, sans-serif" fontSize="11" fontWeight="700" fill={INK}>max 500 g</text>
+        <text x="46" y="102" fontFamily="Arial, sans-serif" fontSize="11" fontWeight="700" fill={INK}>max 2 kg</text>
         {/* de nulknop: de weegschaal staat al op nul (spelopzet §6) */}
         <rect x="170" y="88" width="44" height="18" rx="9" fill="#ffffff" stroke={INK} strokeWidth="2" />
         <text x="192" y="101" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="11" fontWeight="700" fill={INK}>NUL</text>

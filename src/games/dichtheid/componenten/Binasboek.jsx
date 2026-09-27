@@ -90,7 +90,7 @@ export function Binasboek() {
         aria-modal="true"
         aria-label="Boekje met dichtheden"
         onClick={(event) => event.stopPropagation()}
-        className="dichtheid-boek flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFFDF6] shadow-[6px_6px_0_#0B0D0F]"
+        className="dichtheid-boek flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFFDF6] text-[#0B0D0F] shadow-[6px_6px_0_#0B0D0F] [color-scheme:light]"
       >
         <div className="flex items-center justify-between gap-2 border-b-[3px] border-[#0B0D0F] bg-[#087EB5] px-4 py-2 text-white">
           <p className="flex items-center gap-2 text-lg font-extrabold"><BookOpen size={22} aria-hidden="true" /> Dichtheid van stoffen</p>
@@ -99,7 +99,7 @@ export function Binasboek() {
         <div className="flex flex-wrap items-center gap-2 border-b-2 border-[#E8DCC3] px-4 py-2">
           <label className="flex items-center gap-2 rounded-lg border-2 border-[#0B0D0F] bg-white px-2">
             <Search size={16} aria-hidden="true" />
-            <input value={zoek} onChange={(event) => setZoek(event.target.value)} placeholder="Zoek een stof" className="w-36 py-1.5 font-semibold outline-none" aria-label="Zoek een stof" />
+            <input value={zoek} onChange={(event) => setZoek(event.target.value)} placeholder="Zoek een stof" className="w-36 bg-white py-1.5 font-semibold text-[#0B0D0F] outline-none placeholder:text-[#8A8373]" aria-label="Zoek een stof" />
           </label>
           <div className="flex gap-1" role="group" aria-label="Sorteren">
             {[['rho', 'op dichtheid'], ['naam', 'op naam']].map(([id, tekst]) => (
