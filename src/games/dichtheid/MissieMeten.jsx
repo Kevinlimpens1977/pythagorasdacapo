@@ -54,8 +54,8 @@ function maakStappenVoor(opgave, niveau) {
       },
       {
         id: 'gewogen', soort: 'actie', regel: 'gegeven', vooraf: vooraf.includes('gewogen'),
-        opdracht: 'Sleep het blokje naar de weegschaal.',
-        knop: 'Leg het blokje op de weegschaal'
+        // Alleen slepen, geen knop (Kevin, 27 sep 2026): de leerling legt het zelf neer.
+        opdracht: 'Weeg het blokje. Pak het met de muis of je vinger, sleep het naar de weegschaal en laat los.'
       },
       {
         id: 'm', soort: 'getal', regel: 'gegeven', vooraf: vooraf.includes('m'),

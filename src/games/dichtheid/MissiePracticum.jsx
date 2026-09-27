@@ -63,8 +63,8 @@ function practicumStappen(p, niveau) {
         oplossing: () => `Het water staat op ${w.begin} ml.`
       },
       {
-        id: 'gewogen', soort: 'actie', regel: 'gegeven', knop: `Leg de ${NAAM_VORM[p.vorm]} op de weegschaal`,
-        opdracht: `Weeg eerst de ${NAAM_VORM[p.vorm]}: sleep hem naar de weegschaal. Een nat voorwerp weeg je niet.`
+        id: 'gewogen', soort: 'actie', regel: 'gegeven',
+        opdracht: `Weeg eerst de ${NAAM_VORM[p.vorm]}. Pak hem met de muis of je vinger, sleep hem naar de weegschaal en laat los. Een nat voorwerp weeg je niet.`
       },
       {
         id: 'm', soort: 'getal', regel: 'gegeven',
@@ -104,8 +104,8 @@ function bonusStappen(p) {
   const rho = stof(p.stof).rho;
   return (w) => [
     {
-      id: 'gewogen', soort: 'actie', regel: 'gegeven', knop: 'Leg de schroef op de weegschaal',
-      opdracht: 'Sleep de schroef naar de weegschaal.'
+      id: 'gewogen', soort: 'actie', regel: 'gegeven',
+      opdracht: 'Weeg de schroef. Pak hem met de muis of je vinger, sleep hem naar de weegschaal en laat los.'
     },
     {
       id: 'm', soort: 'getal', regel: 'gegeven',
@@ -158,8 +158,8 @@ function kurkStappen(k) {
   return (w) => {
     const stappen = [
       {
-        id: 'gewogen', soort: 'actie', regel: 'gegeven', knop: 'Leg de kurk op de weegschaal',
-        opdracht: 'Als laatste: een kurk. Sleep hem naar de weegschaal.'
+        id: 'gewogen', soort: 'actie', regel: 'gegeven',
+        opdracht: 'Als laatste: een kurk. Pak hem met de muis of je vinger, sleep hem naar de weegschaal en laat los.'
       },
       {
         id: 'm', soort: 'getal', regel: 'gegeven',
