@@ -327,8 +327,20 @@ function PracticumBeeld({ soort, p, stap, w, klaarActie, kies }) {
 
 // ---------- de opgaven ----------
 
+// De afgelezen volumes blijven op het kladblad staan, zodat de leerling bij
+// V = V eind - V begin kan terugkijken wat hij heeft afgelezen.
+const afgelezen = (w, velden) => velden
+  .filter(([key]) => w[key] !== undefined)
+  .map(([key, label]) => `${label} = ${f(w[key])} ml`)
+  .join('  ·  ');
+const gegevenMetVolumes = (w, velden, vLeeg) => [
+  `m = ${w.m !== undefined ? f(w.m) : '…'} g`,
+  afgelezen(w, velden),
+  `V = ${w.V !== undefined ? `${f(w.V)} cm³` : vLeeg}`
+].filter(Boolean).join('    ');
+
 const SOORTEN = {
-  practicum: { stappen: practicumStappen, kladblad: (w) => kladbladRho(w, `m = ${w.m !== undefined ? f(w.m) : '…'} g    V = ${w.V !== undefined ? `${f(w.V)} cm³` : 'V eind - V begin'}`) },
+  practicum: { stappen: practicumStappen, kladblad: (w) => kladbladRho(w, gegevenMetVolumes(w, [['Vbegin', 'V begin'], ['Veind', 'V eind']], 'V eind - V begin')) },
   bonus: {
     stappen: bonusStappen,
     kladblad: (w) => ({
@@ -340,7 +352,7 @@ const SOORTEN = {
       eenheid: w.eenheid ? `V = ${f(w.Vuit)} ${w.eenheid}` : ''
     })
   },
-  kurk: { stappen: kurkStappen, kladblad: (w) => kladbladRho(w, `m = ${w.m !== undefined ? f(w.m) : '…'} g    V = ${w.V !== undefined ? `${f(w.V)} cm³` : '…'}`) }
+  kurk: { stappen: kurkStappen, kladblad: (w) => kladbladRho(w, gegevenMetVolumes(w, [['Vbegin', 'V begin'], ['Vzinker', 'V1'], ['Vsamen', 'V2'], ['Vonder', 'V eind']], '…')) }
 };
 
 function Opgave({ soort, p, niveau, telt, kop, knopTekst, onKlaar }) {
