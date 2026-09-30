@@ -13,10 +13,10 @@ const SCHAAL = SCHALEN[PRACTICUM_SCHAAL];
 const ML_PER_SECONDE = 14;
 
 // De maatcilinder van het practicum als losse tekening met een vaste hoogte.
-export function Cilinder({ niveau, voorwerp = null, zonderSchaal = false, hoogte = 'h-[300px] sm:h-[380px]', idPrefix = 'pc' }) {
+export function Cilinder({ niveau, voorwerp = null, zonderSchaal = false, hoogte = 'h-[300px] sm:h-[380px]', idPrefix = 'pc', vloeistofKleur }) {
   return (
     <svg viewBox={`0 0 ${GEOMETRIE.breedte} ${GEOMETRIE.hoogte}`} className={`${hoogte} w-auto shrink-0 select-none`} role="img" aria-label={zonderSchaal ? 'Maatcilinder zonder schaal' : 'Maatcilinder van 100 ml'}>
-      <CilinderInhoud schaal={SCHAAL} niveau={niveau} voorwerp={voorwerp} zonderSchaal={zonderSchaal} idPrefix={idPrefix} />
+      <CilinderInhoud schaal={SCHAAL} niveau={niveau} voorwerp={voorwerp} zonderSchaal={zonderSchaal} idPrefix={idPrefix} {...(vloeistofKleur ? { vloeistofKleur } : {})} />
     </svg>
   );
 }

@@ -29,9 +29,10 @@ function useDisplay(doel) {
 
 // Digitale weegschaal. `massa` null = leeg (0,0 g). `children` ligt op de schaal.
 // De ref wijst naar de weegplaat: daar sleep je iets naartoe.
-const Weegschaal = forwardRef(function Weegschaal({ massa = null, children, actief = false, className = '' }, ref) {
-  const getoond = useDisplay(massa === null ? 0 : massa);
-  const tekst = formatGetal(Math.max(0, Math.round(getoond * 10) / 10), 1);
+// `tarra`: wat de NUL-knop eraf haalt. Met `onNul` is de NUL-knop echt te bedienen (Vloeistoffenlab).
+const Weegschaal = forwardRef(function Weegschaal({ massa = null, tarra = 0, onNul = null, nulActief = false, children, actief = false, className = '' }, ref) {
+  const getoond = useDisplay((massa === null ? 0 : massa) - tarra);
+  const tekst = formatGetal(Math.round(getoond * 10) / 10 || 0, 1);
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <div
@@ -51,6 +52,16 @@ const Weegschaal = forwardRef(function Weegschaal({ massa = null, children, acti
         <rect x="170" y="88" width="44" height="18" rx="9" fill="#ffffff" stroke={INK} strokeWidth="2" />
         <text x="192" y="101" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="11" fontWeight="700" fill={INK}>NUL</text>
       </svg>
+      {onNul && (
+        <button
+          type="button"
+          onClick={onNul}
+          className={`-mt-1 rounded-full border-[2.5px] border-[#0B0D0F] px-4 py-1 text-sm font-extrabold shadow-[2px_2px_0_#0B0D0F] ${nulActief ? 'bg-[#FFD33D]' : 'bg-white'}`}
+          aria-label="NUL: zet de weegschaal op nul (tarra)"
+        >
+          NUL
+        </button>
+      )}
     </div>
   );
 });

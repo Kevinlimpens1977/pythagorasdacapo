@@ -276,6 +276,30 @@ export const GAME_REGISTRY = [
     // Oefenspel zonder cijfer (Kevin, 27 sep 2026); onbeperkt spelen, opbrengst halveert per beurt.
     maxPlays: 0,
     status: GAME_STATUSES.PROTOTYPE
+  },
+  {
+    gameId: 'binask-vloeistoffenlab',
+    title: 'Vloeistoffenlab: drijven en zinken',
+    description:
+      'Weeg vloeistoffen door af te trekken en met tarra, bouw een dichtheidstoren en voorspel waar voorwerpen blijven drijven, zweven of zinken.',
+    subject: 'Binask',
+    topic: 'Uitdaging drijven en zinken (hoofdstuk 2.6)',
+    level: 'VMBO leerjaar 1, uitdaging',
+    learningGoals: [
+      'De dichtheid van een vloeistof bepalen met aftrekken of met tarra',
+      'De lagen van een dichtheidstoren voorspellen',
+      'Voorspellen of een voorwerp drijft, zweeft of zinkt'
+    ],
+    skills: ['meten', 'rekenen', 'voorspellen'],
+    estimatedMinutes: 20,
+    route: '/admin/spellen/binask-vloeistoffenlab',
+    componentKey: 'vloeistoffenlab',
+    cmsEmbeddable: true,
+    supportedModes: [GAME_MODES.STANDALONE, GAME_MODES.CMS_BLOCK],
+    tokenRewardPotential: { min: 0, max: 100, basis: 'score_accuracy_completion' },
+    // Uitdaging, niet verplicht (Kevin, 30 sep 2026); onbeperkt spelen, opbrengst halveert per beurt.
+    maxPlays: 0,
+    status: GAME_STATUSES.PROTOTYPE
   }
 ];
 

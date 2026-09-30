@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "vak": "Binask",
+    "bron": "Uitdagingsparagraaf 2.6 drijven en zinken, geschreven met Kevin (30 september 2026)",
+    "afspraak": "Alleen paragraaf 2.6. Niet via bouw-hoofdstuk-seed importeren: die vervangt heel H2 en het H2-bronbestand loopt achter op live. Plaatsen met scripts/plaats-paragraaf-2-6-uitdaging.mjs; het deck met plaats-hoofdstuk-slidedecks.mjs en dit bestand.",
+    "niveauId": "niveau-binask-eoa-1-lr3",
+    "leerjaarId": "leerjaar-binask-eoa-1",
+    "vakId": "vak-binask-eoa",
+    "seedBestand": "docs/seeds/binask-eoa.seed.json",
+    "blokPrefix": "binask-eoa-1",
+    "deckPrefix": "binask-eoa",
+    "deckMap": "sources/binask-jpeg",
+    "controleerTeksten": [
+      "ρ = m / V",
+      "g/cm³"
+    ]
+  },
+  "hoofdstuk": {
+    "id": "hoofdstuk-binask-eoa-1-h2",
+    "nummer": 2,
+    "titel": "Massa, volume en dichtheid"
+  },
+  "paragrafen": [
+    {
+      "id": "paragraaf-binask-eoa-1-2-6",
+      "code": "2.6",
+      "titel": "Uitdaging: drijven en zinken",
+      "beschrijving": "Extra en niet verplicht. Waarom drijft iets in de ene vloeistof en zinkt het in de andere?",
+      "optioneel": true,
+      "leerdoelen": [
+        "Je kunt met dichtheden voorspellen of een voorwerp drijft, zweeft of zinkt.",
+        "Je kunt de dichtheid van een vloeistof bepalen met aftrekken of met tarra.",
+        "Je kunt de lagen van een dichtheidstoren voorspellen en verklaren.",
+        "Je kunt uitleggen waarom een schip van staal toch drijft."
+      ],
+      "slidedeck": {
+        "sleutel": "h2-drijven-zinken",
+        "bestand": "h2-2.6-drijven-zinken.pdf",
+        "titel": "Presentatie 2.6 - Drijven en zinken"
+      },
+      "blokken": [
+        {
+          "type": "theory",
+          "titel": "Drijven, zweven of zinken?",
+          "html": "<p>Deze paragraaf is extra. Hij is niet verplicht. Hij is voor wie meer wil weten.</p><p>Je weet al: kurk drijft op water en ijzer zinkt. Maar waarom? Het gaat niet om zwaar of licht. Een zware boomstam drijft ook. Het gaat om de dichtheid.</p><p>Vergelijk de dichtheid van het voorwerp met de dichtheid van de vloeistof:</p><ul><li>ρ voorwerp is kleiner dan ρ vloeistof: het voorwerp <strong>drijft</strong>.</li><li>ρ voorwerp is even groot als ρ vloeistof: het voorwerp <strong>zweeft</strong>. Het blijft ergens in de vloeistof hangen.</li><li>ρ voorwerp is groter dan ρ vloeistof: het voorwerp <strong>zinkt</strong>.</li></ul><p>Let op: water is niet de enige vloeistof. Olie heeft een dichtheid van 0,92 g/cm³. Zout water heeft 1,20 g/cm³. Hetzelfde voorwerp kan in water zinken en in zout water drijven.</p><p>Een schip van staal drijft toch. Hoe kan dat? Een schip is hol. Binnenin zit veel lucht. Je rekent dan met de gemiddelde dichtheid: de massa van het hele schip gedeeld door het volume van het hele schip. Die gemiddelde dichtheid is kleiner dan 1,00 g/cm³.</p>",
+          "kernbegrippen": [
+            {
+              "begrip": "drijven",
+              "uitleg": "ρ voorwerp is kleiner dan ρ vloeistof."
+            },
+            {
+              "begrip": "zweven",
+              "uitleg": "ρ voorwerp is even groot als ρ vloeistof."
+            },
+            {
+              "begrip": "zinken",
+              "uitleg": "ρ voorwerp is groter dan ρ vloeistof."
+            },
+            {
+              "begrip": "gemiddelde dichtheid",
+              "uitleg": "De massa van het hele voorwerp gedeeld door het volume van het hele voorwerp, met de lucht erin."
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "titel": "Voorbeeld - een druif in water en in zout water",
+          "html": "<p>Een druif heeft een massa van 5,15 g en een volume van 5,0 cm³.</p><ol><li>Stap 1: Bereken de dichtheid: ρ = m / V = 5,15 / 5,0 = 1,03 g/cm³.</li><li>Stap 2: Vergelijk met water: 1,03 is groter dan 1,00. De druif zinkt in water.</li><li>Stap 3: Vergelijk met zout water: 1,03 is kleiner dan 1,20. De druif drijft in zout water.</li></ol><p>Conclusie: dezelfde druif zinkt in water en drijft in zout water.</p>"
+        },
+        {
+          "type": "theory",
+          "titel": "Vloeistoffen wegen met tarra",
+          "html": "<p>Een vloeistof kun je niet los op een weegschaal leggen. Je hebt altijd een bakje nodig, bijvoorbeeld een maatcilinder. De weegschaal weegt dan het bakje en de vloeistof samen. Dat los je op twee manieren op.</p><p><strong>Manier 1: aftrekken.</strong> Weeg eerst de lege maatcilinder. Weeg daarna de maatcilinder met de vloeistof. Massa vloeistof = massa vol - massa leeg.</p><p><strong>Manier 2: tarra.</strong> Zet de lege maatcilinder op de weegschaal. Druk op de knop NUL. Het scherm staat nu op 0,0 g. Schenk de vloeistof erin. Nu zie je alleen de massa van de vloeistof.</p><p>Het volume lees je af op de maatcilinder. Daarna reken je de dichtheid uit met ρ = m / V.</p><p>Sommige vloeistoffen mengen niet, of heel langzaam. Schenk je ze voorzichtig in één glas, dan krijg je lagen. De vloeistof met de grootste dichtheid ligt onderop. De vloeistof met de kleinste dichtheid ligt bovenop. Zo maak je een dichtheidstoren.</p>",
+          "kernbegrippen": [
+            {
+              "begrip": "tarra",
+              "uitleg": "De weegschaal op nul zetten terwijl het lege bakje erop staat."
+            },
+            {
+              "begrip": "massa vloeistof",
+              "uitleg": "Massa vol - massa leeg."
+            },
+            {
+              "begrip": "dichtheidstoren",
+              "uitleg": "Lagen vloeistof in één glas, met de grootste dichtheid onderop."
+            }
+          ]
+        },
+        {
+          "type": "example",
+          "titel": "Voorbeeld - de dichtheid van olie",
+          "html": "<p>Een lege maatcilinder weegt 60,0 g. Je schenkt er 50 ml olie in. Samen wegen ze 106,0 g.</p><ol><li>Stap 1: Massa olie = 106,0 - 60,0 = 46,0 g.</li><li>Stap 2: Volume olie = 50 ml = 50 cm³.</li><li>Stap 3: ρ = m / V = 46,0 / 50 = 0,92 g/cm³.</li><li>Stap 4: 0,92 is kleiner dan 1,00. Olie drijft dus op water.</li></ol><p>Conclusie: de dichtheid van olie is 0,92 g/cm³.</p>"
+        },
+        {
+          "type": "summary",
+          "titel": "Samenvatting",
+          "html": "<ul><li>Vergelijk ρ voorwerp met ρ vloeistof.</li><li>Kleiner: het voorwerp drijft. Even groot: het zweeft. Groter: het zinkt.</li><li>Het gaat om de dichtheid, niet om zwaar of licht.</li><li>Een hol voorwerp, zoals een schip: reken met de gemiddelde dichtheid.</li><li>Een vloeistof weeg je met aftrekken (vol - leeg) of met tarra (NUL met het lege bakje erop).</li><li>In een dichtheidstoren ligt de grootste dichtheid onderop.</li></ul>",
+          "kernbegrippen": [
+            {
+              "begrip": "drijven, zweven, zinken",
+              "uitleg": "ρ voorwerp kleiner, gelijk of groter dan ρ vloeistof."
+            },
+            {
+              "begrip": "tarra",
+              "uitleg": "De weegschaal op nul met het lege bakje erop."
+            },
+            {
+              "begrip": "dichtheidstoren",
+              "uitleg": "Lagen vloeistof, de grootste dichtheid onderop."
+            },
+            {
+              "begrip": "gemiddelde dichtheid",
+              "uitleg": "Totale massa gedeeld door totaal volume."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

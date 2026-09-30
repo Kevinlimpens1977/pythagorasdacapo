@@ -80,6 +80,28 @@ function Vorm({ vorm }) {
           <circle cx="2" cy="-19" r="1.2" fill="#8a5a2b" />
         </g>
       );
+    case 'druif':
+      return (
+        <g>
+          <ellipse cx="0" cy="-13" rx="11" ry="13" fill="#7B3F8C" stroke={INK} strokeWidth="3" />
+          <ellipse cx="-4" cy="-18" rx="3" ry="4" fill="#ffffff" opacity="0.5" />
+          <path d="M 0 -26 q 2 -6 6 -8" fill="none" stroke="#3E6B2F" strokeWidth="2.5" strokeLinecap="round" />
+        </g>
+      );
+    case 'ijsblokje':
+      return (
+        <g>
+          <rect x="-14" y="-28" width="28" height="28" rx="5" fill="#E8F6FC" fillOpacity="0.85" stroke={INK} strokeWidth="3" />
+          <path d="M -8 -22 l 6 0 M -8 -17 l 3 0" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+        </g>
+      );
+    case 'gum':
+      return (
+        <g>
+          <rect x="-16" y="-14" width="32" height="14" rx="3" fill="#F29BB5" stroke={INK} strokeWidth="3" />
+          <rect x="-16" y="-14" width="12" height="14" rx="3" fill="#6FA8DC" stroke={INK} strokeWidth="3" />
+        </g>
+      );
     case 'naald':
       return (
         <g>

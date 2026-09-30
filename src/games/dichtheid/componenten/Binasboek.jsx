@@ -6,14 +6,18 @@ import { BoekContext, useBoek } from './boekContext';
 // Het boekje met dichtheden, zoals Binas: klein icoon rechtsboven, klik en het
 // klapt open. In een stap "welke stof is het?" kiest de leerling hier de stof.
 
-export function BoekProvider({ children }) {
+// `stoffen`, `decimalen` en `titel`: een ander spel kan het boekje met een eigen lijst vullen.
+export function BoekProvider({ children, stoffen = STOFFEN, decimalen = 1, titel = 'Dichtheid van stoffen' }) {
   const [staat, setStaat] = useState({ open: false, onKies: null });
   const waarde = useMemo(() => ({
+    stoffen,
+    decimalen,
+    titel,
     open: (onKies = null) => setStaat({ open: true, onKies }),
     sluit: () => setStaat({ open: false, onKies: null }),
     isOpen: staat.open,
     onKies: staat.onKies
-  }), [staat]);
+  }), [staat, stoffen, decimalen, titel]);
   return <BoekContext.Provider value={waarde}>{children}</BoekContext.Provider>;
 }
 
@@ -32,7 +36,7 @@ export function BoekKnop() {
   );
 }
 
-function Kolom({ stoffen, onKies }) {
+function Kolom({ stoffen, onKies, decimalen }) {
   return (
     <table className="w-full border-collapse text-[15px]">
       <thead>
@@ -46,7 +50,7 @@ function Kolom({ stoffen, onKies }) {
         {stoffen.map((stof) => (
           <tr key={stof.id} className="border-b border-[#E8DCC3]">
             <td className="py-1 pr-2 font-semibold">{stof.naam}</td>
-            <td className="py-1 text-right font-mono font-bold">{fRho(stof.rho)}</td>
+            <td className="py-1 text-right font-mono font-bold">{decimalen === 2 ? stof.rho.toFixed(2).replace('.', ',') : fRho(stof.rho)}</td>
             {onKies && (
               <td className="py-0.5 pl-2 text-right">
                 <button type="button" onClick={() => onKies(stof.id)} className="rounded-md border-2 border-[#0B0D0F] bg-[#087EB5] px-2 py-0.5 text-xs font-extrabold text-white" aria-label={`${stof.naam} is het`}>
@@ -77,7 +81,7 @@ export function Binasboek() {
 
   if (!boek.isOpen) return null;
 
-  const lijst = STOFFEN
+  const lijst = (boek.stoffen || STOFFEN)
     .filter((stof) => stof.naam.toLowerCase().includes(zoek.trim().toLowerCase()))
     .sort((a, b) => (sortering === 'rho' ? a.rho - b.rho : a.naam.localeCompare(b.naam, 'nl')));
   const helft = Math.ceil(lijst.length / 2);
@@ -93,7 +97,7 @@ export function Binasboek() {
         className="dichtheid-boek flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFFDF6] text-[#0B0D0F] shadow-[6px_6px_0_#0B0D0F] [color-scheme:light]"
       >
         <div className="flex items-center justify-between gap-2 border-b-[3px] border-[#0B0D0F] bg-[#087EB5] px-4 py-2 text-white">
-          <p className="flex items-center gap-2 text-lg font-extrabold"><BookOpen size={22} aria-hidden="true" /> Dichtheid van stoffen</p>
+          <p className="flex items-center gap-2 text-lg font-extrabold"><BookOpen size={22} aria-hidden="true" /> {boek.titel || 'Dichtheid van stoffen'}</p>
           <button ref={sluitRef} type="button" onClick={boek.sluit} className="rounded-lg border-2 border-white p-1" aria-label="Boekje sluiten"><X size={20} /></button>
         </div>
         <div className="flex flex-wrap items-center gap-2 border-b-2 border-[#E8DCC3] px-4 py-2">
@@ -111,8 +115,8 @@ export function Binasboek() {
           {kies && <p className="w-full text-sm font-bold text-[#066A99]">Kies de stof die bij jouw dichtheid hoort.</p>}
         </div>
         <div className="grid gap-x-6 overflow-y-auto px-4 py-2 sm:grid-cols-2">
-          <Kolom stoffen={lijst.slice(0, helft)} onKies={kies} />
-          <Kolom stoffen={lijst.slice(helft)} onKies={kies} />
+          <Kolom stoffen={lijst.slice(0, helft)} onKies={kies} decimalen={boek.decimalen} />
+          <Kolom stoffen={lijst.slice(helft)} onKies={kies} decimalen={boek.decimalen} />
           {lijst.length === 0 && <p className="py-4 font-bold">Geen stof gevonden.</p>}
         </div>
       </div>

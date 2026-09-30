@@ -26,7 +26,7 @@ function streepjes(schaal) {
 
 // De inhoud (glas, schaal, water) als groep, zodat de loep dezelfde tekening kan inzoomen.
 // `zonderSchaal`: geen streepjes en geen getallen (het dichtheidsspel vult onder de kraan).
-export function CilinderInhoud({ schaal, niveau, markers = [], labelAccenten = [], voorwerp = null, idPrefix = 'mc', zonderSchaal = false }) {
+export function CilinderInhoud({ schaal, niveau, markers = [], labelAccenten = [], voorwerp = null, idPrefix = 'mc', zonderSchaal = false, vloeistofKleur = WATER }) {
   const g = geometrieVoor(schaal);
   const yNiveau = yVoorWaarde(niveau, schaal);
   const afstand = (g.yNul - g.yMax) / Math.round(schaal.max / schaal.stap);
@@ -68,10 +68,10 @@ export function CilinderInhoud({ schaal, niveau, markers = [], labelAccenten = [
 
       {/* water */}
       {schaal.soort === 'spuit' ? (
-        <rect x={g.binnenLinks} y={yNiveau} width={g.binnenRechts - g.binnenLinks} height={g.yNul - yNiveau + 4} fill={WATER} />
+        <rect x={g.binnenLinks} y={yNiveau} width={g.binnenRechts - g.binnenLinks} height={g.yNul - yNiveau + 4} fill={vloeistofKleur} />
       ) : (
         <>
-          <path d={waterPad} fill={WATER} />
+          <path d={waterPad} fill={vloeistofKleur} />
           <path d={oppervlak} fill="none" stroke={WATER_RAND} strokeWidth="1.6" />
         </>
       )}
@@ -162,7 +162,7 @@ export default function Maatcilinder({ schaal, niveau, markers, labelAccenten, v
 }
 
 // Loep: dezelfde tekening, ingezoomd rond de meniscus (Stark Science).
-export function Loep({ schaal, niveau, markers, lijnen = [], zoom = 1, className = '' }) {
+export function Loep({ schaal, niveau, markers, lijnen = [], zoom = 1, className = '', vloeistofKleur }) {
   const g = geometrieVoor(schaal);
   const y = yVoorWaarde(niveau, schaal);
   const hoogte = 64 / zoom;
@@ -176,7 +176,7 @@ export function Loep({ schaal, niveau, markers, lijnen = [], zoom = 1, className
       </div>
       <svg viewBox={`${x0} ${y - hoogte / 2} ${breedte} ${hoogte}`} className="block h-auto w-full" role="img" aria-label="Ingezoomd beeld van de meniscus">
         <rect x={x0} y={y - hoogte / 2} width={breedte} height={hoogte} fill="#FFF7E8" />
-        <CilinderInhoud schaal={schaal} niveau={niveau} markers={markers} idPrefix="loep" />
+        <CilinderInhoud schaal={schaal} niveau={niveau} markers={markers} idPrefix="loep" vloeistofKleur={vloeistofKleur} />
         {lijnen.map((lijn, i) => {
           const r = 5.5 / zoom;
           const cx = x0 + breedte - r * (2.4 * (lijnen.length - i));

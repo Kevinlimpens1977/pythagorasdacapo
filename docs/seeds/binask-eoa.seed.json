@@ -289,6 +289,35 @@
         "Je kunt eerst een eenheid omrekenen en daarna een formule gebruiken.",
         "Je kunt met een berekening controleren of een materiaal bij een gegeven dichtheid past."
       ]
+    },
+    {
+      "id": "paragraaf-binask-eoa-1-2-6",
+      "vakId": "vak-binask-eoa",
+      "leerjaarId": "leerjaar-binask-eoa-1",
+      "niveauId": "niveau-binask-eoa-1-lr3",
+      "hoofdstukId": "hoofdstuk-binask-eoa-1-h2",
+      "code": "2.6",
+      "title": "2.6 Uitdaging: drijven en zinken",
+      "beschrijving": "Extra en niet verplicht. Waarom drijft iets in de ene vloeistof en zinkt het in de andere?",
+      "order": 6,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": true,
+      "verplicht": false,
+      "learningGoals": [
+        "Je kunt met dichtheden voorspellen of een voorwerp drijft, zweeft of zinkt.",
+        "Je kunt de dichtheid van een vloeistof bepalen met aftrekken of met tarra.",
+        "Je kunt de lagen van een dichtheidstoren voorspellen en verklaren.",
+        "Je kunt uitleggen waarom een schip van staal toch drijft."
+      ],
+      "leerdoelen": [
+        "Je kunt met dichtheden voorspellen of een voorwerp drijft, zweeft of zinkt.",
+        "Je kunt de dichtheid van een vloeistof bepalen met aftrekken of met tarra.",
+        "Je kunt de lagen van een dichtheidstoren voorspellen en verklaren.",
+        "Je kunt uitleggen waarom een schip van staal toch drijft."
+      ]
     }
   ],
   "contentBlocks": [
