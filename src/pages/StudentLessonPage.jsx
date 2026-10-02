@@ -591,8 +591,13 @@ export default function StudentLessonPage() {
   // is (klas-instelling spelAlsAfsluiting, standaard aan). Navigeren naar de
   // spelstap mag altijd; alleen de speelknop zit op slot.
   const spelSlot = useMemo(
-    () => spelSlotStatus({ blocks, progressRecords, klasSettings: isAdmin ? { spelAlsAfsluiting: false } : klasData?.settings }),
-    [blocks, progressRecords, klasData?.settings, isAdmin]
+    () => spelSlotStatus({
+      blocks,
+      progressRecords,
+      klasSettings: isAdmin ? { spelAlsAfsluiting: false } : klasData?.settings,
+      spelBlok: currentBlock?.type === 'game' ? currentBlock : null
+    }),
+    [blocks, progressRecords, klasData?.settings, isAdmin, currentBlock]
   );
   // Nulmeting: deel B pas als deel A helemaal is ingeleverd (nulmetingVolgorde.js).
   const nulmetingSlot = useMemo(
@@ -1603,9 +1608,9 @@ function LessonBlockContent({
         ) : block.type === 'game' ? (
           spelSlot?.vergrendeld ? (
             <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-6">
-              <p className="font-black text-[var(--helix-navy)]">Dit spel is de afsluiting van deze paragraaf</p>
+              <p className="font-black text-[var(--helix-navy)]">Dit spel gaat open na de stappen hiervoor</p>
               <p className="helix-muted mt-2 text-sm leading-6">
-                Maak eerst de andere stappen af, dan gaat het spel open. Nog te doen:{' '}
+                Maak eerst de stappen hiervoor af, dan gaat het spel open. Nog te doen:{' '}
                 {spelSlot.resterend.slice(0, 4).join(', ')}
                 {spelSlot.resterend.length > 4 ? ` en nog ${spelSlot.resterend.length - 4} stappen` : ''}.
               </p>
