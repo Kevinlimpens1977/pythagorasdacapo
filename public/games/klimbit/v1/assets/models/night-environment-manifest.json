@@ -1,0 +1,1227 @@
+{
+  "revision": 4,
+  "source": "assets/blender/night-environment.blend",
+  "units": "metres",
+  "upAxis": "+Y",
+  "baselineCommit": "51b67bf",
+  "models": {
+    "adventure_conveyor": {
+      "file": "adventure_conveyor.glb",
+      "dimensions": [
+        1.7999999523162842,
+        0.5199999809265137,
+        4.0
+      ],
+      "min": [
+        -0.8999999761581421,
+        -0.5199999809265137,
+        -2.0
+      ],
+      "max": [
+        0.8999999761581421,
+        0.0,
+        2.0
+      ],
+      "kitMember": false,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 5020,
+      "materials": 3,
+      "bytes": 710476,
+      "sha256": "03d14f7990820b7b4b51b5a56820ee7ea029709019ed466a88c32d427ca67aa8",
+      "vertices": 14656,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "adventure_hanger": {
+      "file": "adventure_hanger.glb",
+      "dimensions": [
+        2.7000001668930054,
+        4.400000095367432,
+        2.0
+      ],
+      "min": [
+        -1.350000023841858,
+        0.0,
+        -1.0
+      ],
+      "max": [
+        1.3500001430511475,
+        4.400000095367432,
+        1.0
+      ],
+      "kitMember": false,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 5072,
+      "materials": 3,
+      "bytes": 494672,
+      "sha256": "d86da8be323008d85b1bfbbaba8626f1635f0dd1563baf61786af7fee3874f5d",
+      "vertices": 9744,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_ai": {
+      "file": "app_ai.glb",
+      "dimensions": [
+        1.0,
+        0.15700000524520874,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.15700000524520874,
+        0.5
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 628,
+      "materials": 3,
+      "bytes": 120868,
+      "sha256": "f985681825535da365b847e211b58fe575343699f0c1594b22ec4d39965e52fe",
+      "vertices": 1855,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_browser": {
+      "file": "app_browser.glb",
+      "dimensions": [
+        1.0,
+        0.1510000079870224,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.1510000079870224,
+        0.5
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 2076,
+      "materials": 3,
+      "bytes": 301120,
+      "sha256": "82cd1cd55dc1fa31bd22597777c59cd2a0c932248bb8aeda3f886b2fc36f088e",
+      "vertices": 5754,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_code": {
+      "file": "app_code.glb",
+      "dimensions": [
+        1.0,
+        0.15800000727176666,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.15800000727176666,
+        0.5
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 548,
+      "materials": 3,
+      "bytes": 110396,
+      "sha256": "1e229c96787c989f70adab29840928082da412585f68c50cd15df597ba41c58f",
+      "vertices": 1628,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_files": {
+      "file": "app_files.glb",
+      "dimensions": [
+        1.0,
+        0.15900000929832458,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.15900000929832458,
+        0.5
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 568,
+      "materials": 3,
+      "bytes": 112800,
+      "sha256": "7c38bda1fb068da9bda0229a125682fca334b16d39f939b7820e698221d20c41",
+      "vertices": 1680,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_shield": {
+      "file": "app_shield.glb",
+      "dimensions": [
+        1.0,
+        0.16200001537799835,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.16200001537799835,
+        0.5
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 584,
+      "materials": 3,
+      "bytes": 114756,
+      "sha256": "106fbb5c3cd0660df6682c5a7558dc38337c43e3ed1e57230108abc1de58e551",
+      "vertices": 1722,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "beam": {
+      "file": "beam.glb",
+      "dimensions": [
+        1.0,
+        0.2250000201165676,
+        0.1599999964237213
+      ],
+      "min": [
+        -0.5,
+        -0.22300001978874207,
+        -0.07999999821186066
+      ],
+      "max": [
+        0.5,
+        0.0020000003278255463,
+        0.07999999821186066
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 836,
+      "materials": 3,
+      "bytes": 110884,
+      "sha256": "61bea9a7e916eb78fd67ef6ed23e3ace4210217146ac8ea43bba44c64e4f82d6",
+      "vertices": 1608,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "building": {
+      "file": "building.glb",
+      "dimensions": [
+        2.0799999237060547,
+        9.039999961853027,
+        2.0799999237060547
+      ],
+      "min": [
+        -1.0399999618530273,
+        -0.039999961853027344,
+        -1.0399999618530273
+      ],
+      "max": [
+        1.0399999618530273,
+        9.0,
+        1.0399999618530273
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 22928,
+      "materials": 4,
+      "bytes": 2323216,
+      "sha256": "c46decfadaa0e58a020069713b9abcabb1b5debaa06817198ad3f36e5a0de52f",
+      "vertices": 48844,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "building_lod": {
+      "file": "building_lod.glb",
+      "dimensions": [
+        2.1399998664855957,
+        9.0,
+        2.3324999809265137
+      ],
+      "min": [
+        -1.0699999332427979,
+        0.0,
+        -1.0699999332427979
+      ],
+      "max": [
+        1.0699999332427979,
+        9.0,
+        1.2625000476837158
+      ],
+      "kitMember": false,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 876,
+      "materials": 3,
+      "bytes": 216844,
+      "sha256": "7e1409ffb1a0842a380501a77d1b2613b38a0570867f42859cdc831fc8043f9a",
+      "vertices": 2440,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "cable": {
+      "file": "cable.glb",
+      "dimensions": [
+        1.015565276145935,
+        0.04184649884700775,
+        0.24554114043712616
+      ],
+      "min": [
+        -0.5088602304458618,
+        0.004076749086380005,
+        -0.13356101512908936
+      ],
+      "max": [
+        0.5067050457000732,
+        0.045923247933387756,
+        0.1119801253080368
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1464,
+      "materials": 3,
+      "bytes": 204224,
+      "sha256": "1a795eb9980eb4e90a72d739b891231904d360d330653104cc64fc572eda9319",
+      "vertices": 3653,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "capacitor": {
+      "file": "capacitor.glb",
+      "dimensions": [
+        0.1965000033378601,
+        0.3474999964237213,
+        0.19200000166893005
+      ],
+      "min": [
+        -0.09600000083446503,
+        0.0,
+        -0.09600000083446503
+      ],
+      "max": [
+        0.10050000250339508,
+        0.3474999964237213,
+        0.09600000083446503
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1871,
+      "materials": 4,
+      "bytes": 292608,
+      "sha256": "2ec9e744872bccf4ab0b74bbdb54075e9ab51e9b546b66cf558cef3c9a2821a0",
+      "vertices": 5558,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "city_balcony_apartment": {
+      "file": "city_balcony_apartment.glb",
+      "dimensions": [
+        4.800000190734863,
+        7.299999713897705,
+        4.3750001192092896
+      ],
+      "min": [
+        -2.4000000953674316,
+        0.0,
+        -1.850000023841858
+      ],
+      "max": [
+        2.4000000953674316,
+        7.299999713897705,
+        2.5250000953674316
+      ],
+      "kitMember": false,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1484,
+      "materials": 3,
+      "bytes": 224324,
+      "sha256": "395eaae0979f2dcbc24d5e2cf153fcaf59206a6455a0e4d224caa3a3e8f49ef8",
+      "vertices": 4092,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "city_gable_house": {
+      "file": "city_gable_house.glb",
+      "dimensions": [
+        3.0999999046325684,
+        7.320000648498535,
+        3.8845001459121704
+      ],
+      "min": [
+        -1.5499999523162842,
+        0.0,
+        -1.8600000143051147
+      ],
+      "max": [
+        1.5499999523162842,
+        7.320000648498535,
+        2.0245001316070557
+      ],
+      "kitMember": false,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1488,
+      "materials": 2,
+      "bytes": 220360,
+      "sha256": "353e9e8e673308a59d3a9db6adec706ae11956ff414a86ee3babb9e3b38c524e",
+      "vertices": 4030,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "city_planter": {
+      "file": "city_planter.glb",
+      "dimensions": [
+        1.2999999523162842,
+        1.159999966621399,
+        0.7599999904632568
+      ],
+      "min": [
+        -0.6499999761581421,
+        0.0,
+        -0.3799999952316284
+      ],
+      "max": [
+        0.6499999761581421,
+        1.159999966621399,
+        0.3799999952316284
+      ],
+      "kitMember": false,
+      "geometryPass": "individual folded leaves and branching",
+      "triangles": 1032,
+      "materials": 2,
+      "bytes": 148160,
+      "sha256": "87707e11dcb6b6084fdee3a33b901893c391698aa12bdebbcc428e50323be2ad",
+      "vertices": 2448,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "city_terrace_tower": {
+      "file": "city_terrace_tower.glb",
+      "dimensions": [
+        4.300000190734863,
+        10.044977188110352,
+        4.300000190734863
+      ],
+      "min": [
+        -2.1500000953674316,
+        0.0,
+        -2.1500000953674316
+      ],
+      "max": [
+        2.1500000953674316,
+        10.044977188110352,
+        2.1500000953674316
+      ],
+      "kitMember": false,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1496,
+      "materials": 3,
+      "bytes": 215968,
+      "sha256": "c2ba442b7ee2e5c8678dffbfad52f58d56ec2fb158fe0d3c573278a27d5c1b57",
+      "vertices": 3900,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "city_tree": {
+      "file": "city_tree.glb",
+      "dimensions": [
+        2.3727524280548096,
+        3.2699999809265137,
+        1.5999999046325684
+      ],
+      "min": [
+        -1.173487663269043,
+        0.0,
+        -0.7999999523162842
+      ],
+      "max": [
+        1.1992647647857666,
+        3.2699999809265137,
+        0.7999999523162842
+      ],
+      "kitMember": false,
+      "geometryPass": "individual folded leaves and branching",
+      "triangles": 1716,
+      "materials": 1,
+      "bytes": 261104,
+      "sha256": "57f76570b6880bd924515d43e47b7dae58de62176097d49fee9fcaa1bd765b32",
+      "vertices": 4950,
+      "meshCount": 1,
+      "primitives": 1,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "climb_radio_landmark": {
+      "file": "climb_radio_landmark.glb",
+      "dimensions": [
+        9.050004005432129,
+        58.0,
+        7.599999904632568
+      ],
+      "min": [
+        -4.525002479553223,
+        0.0,
+        -4.75
+      ],
+      "max": [
+        4.525001525878906,
+        58.0,
+        2.8499999046325684
+      ],
+      "kitMember": false,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 2716,
+      "materials": 4,
+      "bytes": 406912,
+      "sha256": "e7b2a3c27bee2cadea6e4edcc69a1af39b3e86d8e4bef98d136e1a8ed37f2385",
+      "vertices": 8044,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "climb_server_landmark": {
+      "file": "climb_server_landmark.glb",
+      "dimensions": [
+        6.0,
+        27.600000381469727,
+        5.005000114440918
+      ],
+      "min": [
+        -3.0,
+        0.0,
+        -2.5
+      ],
+      "max": [
+        3.0,
+        27.600000381469727,
+        2.505000114440918
+      ],
+      "kitMember": false,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 4484,
+      "materials": 4,
+      "bytes": 641732,
+      "sha256": "f1306c5a8edeec442e77306b94c1fc656a05b411b920e40d67159211cd50cf15",
+      "vertices": 13140,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "fan": {
+      "file": "fan.glb",
+      "dimensions": [
+        0.3800000101327896,
+        0.11300000548362732,
+        0.3799999952316284
+      ],
+      "min": [
+        -0.1899999976158142,
+        0.0,
+        -0.1899999976158142
+      ],
+      "max": [
+        0.1900000125169754,
+        0.11300000548362732,
+        0.1899999976158142
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 4872,
+      "materials": 2,
+      "bytes": 682156,
+      "sha256": "b3f9ff42cc24d282726f253297e04e988afaa0045cac02ee8c934c9b5b87f2ec",
+      "vertices": 14060,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "grate": {
+      "file": "grate.glb",
+      "dimensions": [
+        1.0,
+        0.15000000596046448,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        -0.15000000596046448,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.0,
+        0.5
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1804,
+      "materials": 3,
+      "bytes": 203644,
+      "sha256": "abb54249b5cf3d0d69081441a38db3ac5a75bc619ec0cf9cf1864bb0b6d02dd2",
+      "vertices": 3576,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "hdmi_connector": {
+      "file": "hdmi_connector.glb",
+      "dimensions": [
+        0.20999999344348907,
+        0.10000000149011612,
+        0.6200000196695328
+      ],
+      "min": [
+        -0.10499999672174454,
+        0.0,
+        -0.4300000071525574
+      ],
+      "max": [
+        0.10499999672174454,
+        0.10000000149011612,
+        0.1900000125169754
+      ],
+      "kitMember": false,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 2700,
+      "materials": 2,
+      "bytes": 406276,
+      "sha256": "d60095e8bd35173d164d051f2385215ec04f3cc77efc28ddf38ef48b02fa045c",
+      "vertices": 8086,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "heatsink": {
+      "file": "heatsink.glb",
+      "dimensions": [
+        0.47999998927116394,
+        0.22300001978874207,
+        0.3700000047683716
+      ],
+      "min": [
+        -0.23999999463558197,
+        0.0,
+        -0.1850000023841858
+      ],
+      "max": [
+        0.23999999463558197,
+        0.22300001978874207,
+        0.1850000023841858
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 2148,
+      "materials": 1,
+      "bytes": 324164,
+      "sha256": "b447507b4b4136d3647643db8244d6a1af35092b90c79a964a56c0b2847e0e23",
+      "vertices": 6324,
+      "meshCount": 1,
+      "primitives": 1,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "keyboard": {
+      "file": "keyboard.glb",
+      "dimensions": [
+        0.7200000286102295,
+        0.07349999994039536,
+        0.2800000011920929
+      ],
+      "min": [
+        -0.36000001430511475,
+        0.0,
+        -0.14000000059604645
+      ],
+      "max": [
+        0.36000001430511475,
+        0.07349999994039536,
+        0.14000000059604645
+      ],
+      "kitMember": true,
+      "geometryPass": "rebuilt sculpted keycaps and legends",
+      "triangles": 7508,
+      "materials": 4,
+      "bytes": 764132,
+      "sha256": "f7fe6ed409c64fbce1260ea636327c882f9cf24f21cbb6983516784986c5e672",
+      "vertices": 15506,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "led": {
+      "file": "led.glb",
+      "dimensions": [
+        0.14800000190734863,
+        0.24000000953674316,
+        0.14800000190734863
+      ],
+      "min": [
+        -0.07400000095367432,
+        0.0,
+        -0.07400000095367432
+      ],
+      "max": [
+        0.07400000095367432,
+        0.24000000953674316,
+        0.07400000095367432
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 1396,
+      "materials": 2,
+      "bytes": 156984,
+      "sha256": "4443e77427b12b9b9fea4cf7201ece81e08f86873c997dea610930ee95152905",
+      "vertices": 2600,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "monitor": {
+      "file": "monitor.glb",
+      "dimensions": [
+        1.100000023841858,
+        1.0099999904632568,
+        0.3199999928474426
+      ],
+      "min": [
+        -0.550000011920929,
+        0.0,
+        -0.1599999964237213
+      ],
+      "max": [
+        0.550000011920929,
+        1.0099999904632568,
+        0.1599999964237213
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 1512,
+      "materials": 4,
+      "bytes": 194956,
+      "sha256": "c6e4645b10f4982cce6ddf1fc28fc1562fbb20236d9eb060e5f58cec6dace233",
+      "vertices": 3394,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "mouse": {
+      "file": "mouse.glb",
+      "dimensions": [
+        0.18000005930662155,
+        0.1340000033378601,
+        0.2800000309944153
+      ],
+      "min": [
+        -0.09000004827976227,
+        0.0,
+        -0.14000000059604645
+      ],
+      "max": [
+        0.09000001102685928,
+        0.1340000033378601,
+        0.14000003039836884
+      ],
+      "kitMember": true,
+      "geometryPass": "rebuilt smooth ergonomic shell with separate contoured buttons",
+      "triangles": 3144,
+      "materials": 3,
+      "bytes": 324616,
+      "sha256": "aa3fb8e70f5114a60f2da2e9cd220caa6ebd161056e50ea37b26554b3a74c2ea",
+      "vertices": 6140,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "neon": {
+      "file": "neon.glb",
+      "dimensions": [
+        1.0,
+        0.3199999928474426,
+        0.09249999932944775
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.029999999329447746
+      ],
+      "max": [
+        0.5,
+        0.3199999928474426,
+        0.0625
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 1100,
+      "materials": 3,
+      "bytes": 162232,
+      "sha256": "dd22c57fbb9ac8c63c823e833ff483e14820aadd4b862ce4c583a2731c37dcf3",
+      "vertices": 2732,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "pcb": {
+      "file": "pcb.glb",
+      "dimensions": [
+        1.0,
+        0.10199999436736107,
+        0.800000011920929
+      ],
+      "min": [
+        -0.5,
+        -0.03200000151991844,
+        -0.4000000059604645
+      ],
+      "max": [
+        0.5,
+        0.06999999284744263,
+        0.4000000059604645
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 10728,
+      "materials": 3,
+      "bytes": 1434572,
+      "sha256": "f1dc3e0025714703cfed505ef0e87fd098a7c420c4da725299b793902e6d51a1",
+      "vertices": 30333,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "perforated_deck": {
+      "file": "perforated_deck.glb",
+      "dimensions": [
+        1.0,
+        0.07999999821186066,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        -0.07999999821186066,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.0,
+        0.5
+      ],
+      "kitMember": false,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 4472,
+      "materials": 3,
+      "bytes": 613068,
+      "sha256": "3765e82aecdd824488e8e691e243927c727f1cc5bf21ac6f4109aacabe1e0947",
+      "vertices": 12516,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "pipe": {
+      "file": "pipe.glb",
+      "dimensions": [
+        0.32000014185905457,
+        0.3200000822544098,
+        1.0000001192092896
+      ],
+      "min": [
+        -0.16000007092952728,
+        -0.1600000411272049,
+        -0.5000000596046448
+      ],
+      "max": [
+        0.16000007092952728,
+        0.1600000411272049,
+        0.5000000596046448
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1600,
+      "materials": 2,
+      "bytes": 181896,
+      "sha256": "c0a9ebc849f57f3878f5cbdb69addc3df787de2384611d35e53e2cb3d3df2871",
+      "vertices": 3136,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "platform": {
+      "file": "platform.glb",
+      "dimensions": [
+        1.0,
+        0.15000000596046448,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        -0.15000000596046448,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.0,
+        0.5
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 1480,
+      "materials": 3,
+      "bytes": 173184,
+      "sha256": "e78d1c0c9cd0ab56dc097709d8dcfd3345586d9ab28b6c5396ba2b68710cb12d",
+      "vertices": 2928,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "plug": {
+      "file": "plug.glb",
+      "dimensions": [
+        0.18000000715255737,
+        0.12999999523162842,
+        0.46000000834465027
+      ],
+      "min": [
+        -0.09000000357627869,
+        0.0,
+        -0.23000000417232513
+      ],
+      "max": [
+        0.09000000357627869,
+        0.12999999523162842,
+        0.23000000417232513
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 660,
+      "materials": 2,
+      "bytes": 117424,
+      "sha256": "93b34457a7c96d48d73186273cb81da95f305da097a870aa903806fa6a01fd69",
+      "vertices": 1800,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "printer3d": {
+      "file": "printer3d.glb",
+      "dimensions": [
+        0.910999983549118,
+        1.1870884895324707,
+        0.7459999918937683
+      ],
+      "min": [
+        -0.5109999775886536,
+        0.0,
+        -0.3449999988079071
+      ],
+      "max": [
+        0.4000000059604645,
+        1.1870884895324707,
+        0.4009999930858612
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 6188,
+      "materials": 6,
+      "bytes": 846120,
+      "sha256": "dd829c35246a77ecb9cd30a3ada502e343c7408f24a150acde0681979222a984",
+      "vertices": 17497,
+      "meshCount": 1,
+      "primitives": 6,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "resistor": {
+      "file": "resistor.glb",
+      "dimensions": [
+        0.6356993317604065,
+        0.1384129300713539,
+        0.1080000102519989
+      ],
+      "min": [
+        -0.31784966588020325,
+        0.005587078630924225,
+        -0.05400000512599945
+      ],
+      "max": [
+        0.31784966588020325,
+        0.14400000870227814,
+        0.05400000512599945
+      ],
+      "kitMember": true,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 2860,
+      "materials": 4,
+      "bytes": 413236,
+      "sha256": "61e7acca328a3a9485dd3f08b7835091c6046a4d62f3dbad3a192a8b6ef6af35",
+      "vertices": 8166,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "router": {
+      "file": "router.glb",
+      "dimensions": [
+        0.5,
+        0.5419201254844666,
+        0.36242231726646423
+      ],
+      "min": [
+        -0.25,
+        0.0,
+        -0.19642232358455658
+      ],
+      "max": [
+        0.25,
+        0.5419201254844666,
+        0.16599999368190765
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 2620,
+      "materials": 5,
+      "bytes": 346156,
+      "sha256": "78e750a1b928f3ce3e5c874b39427c4b9ed3cd3caf33564c34cc088efdcc654a",
+      "vertices": 6647,
+      "meshCount": 1,
+      "primitives": 5,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "spiral_core": {
+      "file": "spiral_core.glb",
+      "dimensions": [
+        1.399999976158142,
+        4.5,
+        1.399999976158142
+      ],
+      "min": [
+        -0.699999988079071,
+        0.0,
+        -0.699999988079071
+      ],
+      "max": [
+        0.699999988079071,
+        4.5,
+        0.699999988079071
+      ],
+      "kitMember": false,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 2344,
+      "materials": 3,
+      "bytes": 353700,
+      "sha256": "740ee355a89baa26ff4222534dd38842b0e4f38151e2c6c5d69a933467437311",
+      "vertices": 6912,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "ssd": {
+      "file": "ssd.glb",
+      "dimensions": [
+        0.4000000059604645,
+        0.05400000512599945,
+        0.2985000014305115
+      ],
+      "min": [
+        -0.20000000298023224,
+        0.0,
+        -0.14000000059604645
+      ],
+      "max": [
+        0.20000000298023224,
+        0.05400000512599945,
+        0.15850000083446503
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 2476,
+      "materials": 3,
+      "bytes": 369128,
+      "sha256": "d0424cee04c5a91337c0456d39a715f9d4a13adfce9e75babf810c4130064e66",
+      "vertices": 7244,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "stairs": {
+      "file": "stairs.glb",
+      "dimensions": [
+        1.0,
+        1.1985453441739082,
+        2.0397419929504395
+      ],
+      "min": [
+        -0.5,
+        0.0014545843005180359,
+        -1.0198709964752197
+      ],
+      "max": [
+        0.5,
+        1.1999999284744263,
+        1.0198709964752197
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 4232,
+      "materials": 3,
+      "bytes": 425236,
+      "sha256": "0504eebce0f4742c0133d3e7dbc6e5eee53d42429c2588b1151feae1f102e983",
+      "vertices": 8280,
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "tablet": {
+      "file": "tablet.glb",
+      "dimensions": [
+        0.6499999761581421,
+        0.05849999934434891,
+        0.4399999976158142
+      ],
+      "min": [
+        -0.32499998807907104,
+        0.0,
+        -0.2199999988079071
+      ],
+      "max": [
+        0.32499998807907104,
+        0.05849999934434891,
+        0.2199999988079071
+      ],
+      "kitMember": true,
+      "geometryPass": "bounded manufactured details plus PBR",
+      "triangles": 892,
+      "materials": 4,
+      "bytes": 124660,
+      "sha256": "3ee0646a01650fdcfc6589f8fc4e10ebbde497485978e25836ad7b67a534342b",
+      "vertices": 1881,
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "usb_c_connector": {
+      "file": "usb_c_connector.glb",
+      "dimensions": [
+        0.1899999976158142,
+        0.10000000149011612,
+        0.6100000292062759
+      ],
+      "min": [
+        -0.0949999988079071,
+        0.0,
+        -0.4300000071525574
+      ],
+      "max": [
+        0.0949999988079071,
+        0.10000000149011612,
+        0.18000002205371857
+      ],
+      "kitMember": false,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 2904,
+      "materials": 2,
+      "bytes": 434432,
+      "sha256": "9d628f56789cc32d45d5ebcbb0fd34765c3962283a803b808d1f64571100246b",
+      "vertices": 8698,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "usb_c_port": {
+      "file": "usb_c_port.glb",
+      "dimensions": [
+        0.2800000011920929,
+        0.17000000178813934,
+        0.08300000056624413
+      ],
+      "min": [
+        -0.14000000059604645,
+        0.0,
+        -0.03400000184774399
+      ],
+      "max": [
+        0.14000000059604645,
+        0.17000000178813934,
+        0.04899999871850014
+      ],
+      "kitMember": false,
+      "geometryPass": "PBR finish, vertex color, shared textures; baseline authored geometry retained",
+      "triangles": 1192,
+      "materials": 2,
+      "bytes": 198624,
+      "sha256": "927136b096e6fc9ee9077c406f8109364b6b6ce41b627b8a3f28126c212b9b3d",
+      "vertices": 3572,
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    }
+  }
+}

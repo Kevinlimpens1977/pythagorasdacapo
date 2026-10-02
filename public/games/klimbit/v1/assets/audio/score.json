@@ -1,0 +1,41 @@
+{
+  "original": true,
+  "version": 2,
+  "tempo": 132,
+  "bars": 32,
+  "beats": 128,
+  "key": "D major",
+  "composer": "KlimBit original procedural score",
+  "cues": [
+    {
+      "cue": "daylight",
+      "version": 2,
+      "seconds": 58.18181405895692,
+      "sampleRate": 44100,
+      "peak": 0.64,
+      "rms": 0.11156,
+      "loopBoundaryDelta": 0.005696,
+      "bytes": 882532
+    },
+    {
+      "cue": "clouds",
+      "version": 2,
+      "seconds": 58.18181405895692,
+      "sampleRate": 44100,
+      "peak": 0.64,
+      "rms": 0.11482,
+      "loopBoundaryDelta": 0.005822,
+      "bytes": 980657
+    },
+    {
+      "cue": "space",
+      "version": 2,
+      "seconds": 58.18181405895692,
+      "sampleRate": 44100,
+      "peak": 0.64,
+      "rms": 0.11244,
+      "loopBoundaryDelta": 0.007422,
+      "bytes": 985676
+    }
+  ]
+}
