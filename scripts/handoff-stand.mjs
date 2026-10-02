@@ -97,6 +97,16 @@ if (skillInProfiel) {
   console.log('                              LET OP: er staat ook een kopie in ~/.claude/skills/; die kan uit de pas gaan lopen');
 }
 console.log('Firestore, Storage en de bucketinstelling staan per definitie buiten git. Zie hieronder.');
+const explainerSkill = fs.existsSync(path.resolve('.claude/skills/explainer-helix-maker/SKILL.md'));
+console.log(`skill explainer-helix-maker: ${explainerSkill ? 'in de repo (.claude/skills/)' : 'ONTBREEKT in de repo'}`);
+const explainerMap = path.resolve('video/public/hoofdstukken');
+if (fs.existsSync(explainerMap)) {
+  for (const id of fs.readdirSync(explainerMap)) {
+    const heeft = (naam) => fs.existsSync(path.join(explainerMap, id, naam));
+    const mp4 = fs.existsSync(path.resolve('exports/video', id, 'explainer.mp4'));
+    console.log(`  explainer ${id}: draaiboek ${heeft('draaiboek.json') ? 'ja' : 'nee'}, timing ${heeft('timing.json') ? 'ja' : 'nee'}, mp4 ${mp4 ? 'ja (lokaal)' : 'nee'}`);
+  }
+}
 
 if (kort) {
   console.log('');

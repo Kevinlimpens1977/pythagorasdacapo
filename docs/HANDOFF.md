@@ -302,6 +302,29 @@ De slotteksten staan in alle tien de talen.
 De knop Projectkompas is dezelfde dag uit de adminbalk gehaald; de pagina blijft
 op `/admin/vrijgeven`'s buurroute `/admin/projectkompas` bestaan.
 
+### Explainervideo's - 2 oktober 2026
+
+Per hoofdstuk één uitlegvideo van max 3:00, gemaakt met de skill
+`/explainer-helix-maker` (`.claude/skills/explainer-helix-maker/`). Ontwerp:
+`docs/superpowers/specs/2026-10-02-explainer-helix-maker-design.md`.
+
+- Vaste stemmen: docent Thomas, leerling Sami (Mette), `eleven_v4`, via de
+  ElevenLabs-MCP. Portretten van Sami in `video/public/sami/`.
+- Gereedschap in `video/` (Remotion, Blender-scripts). Draaiboek en timing per
+  hoofdstuk in `video/public/hoofdstukken/<id>/` (in git); audio en shots daar
+  buiten git; eindresultaat in `exports/video/<id>/` (buiten git).
+- De video staat als media-blok direct vóór de Samenvatting van de gekozen
+  paragraaf, met een los ondertitelspoor.
+- Ondertitels in de moedertaal: een `.vtt` per taal van de taalknop naast `nl`;
+  de speler kiest de taal van de leerling als zijn taalknop aan staat, anders
+  Nederlands (ontwerp §19, skill stap 4b).
+- Eerste video: Binask H2. Gerenderd en klaar voor 2.4 Herhalingsopdrachten,
+  maar nog niet geplaatst: de dry run is gedaan, `--apply` wacht op Kevins
+  akkoord (en op de deploy van de ondertitelcode). Staat hij nog niet in 2.4,
+  dan is dat dus geen fout. Let op bij plaatsen: het nieuwe videoblok telt mee
+  in de voortgang, dus wie 2.4 al af had, ziet hem weer als niet af tot de video
+  bevestigd is.
+
 ### Presentaties - 16 september 2026
 
 De trage presentaties kwamen niet door de bestanden maar door de bucket: die
