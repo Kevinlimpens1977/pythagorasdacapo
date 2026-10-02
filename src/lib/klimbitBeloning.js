@@ -17,17 +17,19 @@ export const KLIMBIT_DREMPEL_METER = 400;
 // Basisbedrag per keer boven de drempel: eerste, tweede en derde keer.
 export const KLIMBIT_BASIS_PER_KEER = [300, 200, 100];
 
-// VOORLOPIG. De hoogste klimsnelheid die een echte speler kan halen, in meters
-// per seconde. De server erkent nooit meer dan duur x deze snelheid (plus een
-// kleine marge), zodat een verzonnen hoogte niets oplevert. De hoofdsessie
-// vervangt dit door de gemeten waarde uit de KlimBit-build; zet hem liever iets
-// te ruim dan te krap, anders verliest een goede speler meters.
-export const KLIMBIT_MAX_KLIMSNELHEID_MPS = 6;
+// De hoogste klimsnelheid die de server erkent, in meters per seconde. Gemeten
+// op 2 okt 2026 in de KlimBit-repo (tests/helix-climb-speed.test.ts, docs/HELIX.md):
+// een bot over de snelste route haalt gemiddeld 1,61 m/s en in het snelste
+// venster van 30 s 1,68 m/s. 2,5 is 1,5 x die piek, zodat een goede speler
+// nooit meters verliest en een verzonnen hoogte niets oplevert. Verandert de
+// route of de physics, meet dan opnieuw.
+export const KLIMBIT_MAX_KLIMSNELHEID_MPS = 2.5;
 // Ruimte voor afronding en netwerkvertraging bovenop duur x snelheid.
-export const KLIMBIT_HOOGTE_MARGE_METER = 25;
-// VOORLOPIG. Hoger dan dit erkent de server nooit, hoe lang een poging ook duurt.
-// Ook deze waarde wordt door de hoofdsessie vervangen.
-export const KLIMBIT_MAX_HOOGTE = 20000;
+export const KLIMBIT_HOOGTE_MARGE_METER = 10;
+// De route is eindeloos ("Voorbij de horizon"). Hoger dan dit erkent de server
+// nooit, hoe lang een poging ook duurt: bij 1,6 m/s is 5000 m bijna een uur
+// onafgebroken klimmen. Voorlopige keuze, door Kevin te bevestigen.
+export const KLIMBIT_MAX_HOOGTE = 5000;
 
 const RANGWOORDEN = ['Eerste', 'Tweede', 'Derde'];
 

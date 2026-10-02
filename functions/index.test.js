@@ -3198,12 +3198,12 @@ test("klimbit: eerste keer boven 400 m geeft 300 + meters, buiten het weekplafon
 test("klimbit: de erkende hoogte wordt afgekapt op de gemeten duur", async () => {
   const db = klimbitDb();
   await klimbitStart(db, "leerling-1", "snel");
-  // 10 seconden en 5000 m ingestuurd: hooguit 10 x 6 + 25 = 85 m erkend.
+  // 10 seconden en 5000 m ingestuurd: hooguit 10 x 2,5 + 10 = 35 m erkend.
   const uit = await klimbitAf(db, "leerling-1", "snel", 5000, "2026-10-02T09:00:10Z");
   assert.equal(uit.ingestuurdeHoogte, 5000);
-  assert.equal(uit.hoogte, 85);
+  assert.equal(uit.hoogte, 35);
   assert.equal(uit.tokens, 0);
-  assert.equal(db.store.docs["klimbitPogingen/snel"].erkendeHoogte, 85);
+  assert.equal(db.store.docs["klimbitPogingen/snel"].erkendeHoogte, 35);
   assert.equal(db.store.docs["klimbitPogingen/snel"].duurMs, 10000);
   assert.equal(db.store.docs["tokenTransactions/earn_klimbit_snel"], undefined);
 });
@@ -3268,7 +3268,7 @@ test("klimbit: tweede, derde en vierde keer boven 400 m", async () => {
   assert.equal(lager.record, 401);
   assert.equal((await ronde("c", 450, "2026-10-02T09:20:00Z", "2026-10-02T09:25:00Z")).tokens, 250);
   assert.equal((await ronde("d", 500, "2026-10-02T09:30:00Z", "2026-10-02T09:35:00Z")).tokens, 200);
-  const vierde = await ronde("e", 900, "2026-10-02T09:40:00Z", "2026-10-02T09:45:00Z");
+  const vierde = await ronde("e", 900, "2026-10-02T09:40:00Z", "2026-10-02T09:50:00Z");
   assert.equal(vierde.tokens, 0);
   assert.equal(vierde.runNummer, 4);
   assert.equal(vierde.nieuwRecord, true);
@@ -3281,7 +3281,7 @@ test("klimbit: tweede, derde en vierde keer boven 400 m", async () => {
 test("klimbit: een beheerder speelt mee, krijgt een record maar nooit tokens", async () => {
   const db = klimbitDb();
   await klimbitStart(db, "beheer-1", "b1");
-  const uit = await klimbitAf(db, "beheer-1", "b1", 800, "2026-10-02T09:05:00Z");
+  const uit = await klimbitAf(db, "beheer-1", "b1", 800, "2026-10-02T09:10:00Z");
   assert.equal(uit.tokens, 0);
   assert.equal(uit.uitleg, "Beheerders verdienen geen tokens.");
   assert.equal(db.store.docs["spelRecords/klimbit_beheer-1"].besteHoogte, 800);
