@@ -54,7 +54,9 @@ export const SHARED_ENTRY_POINTS = [
   'companion.js',
   'beloningMeting.js',
   // Cijfer uit spellen (Binask 2.2 Volume).
-  'spelCijfer.js'
+  'spelCijfer.js',
+  // KlimBit: erkende hoogte en tokens per poging (buiten het weekplafond).
+  'klimbitBeloning.js'
 ];
 
 export const SHARED_PACKAGE_JSON = `${JSON.stringify(

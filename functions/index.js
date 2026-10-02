@@ -2665,6 +2665,16 @@ function loadFase5Layer() {
   return fase5LayerPromise;
 }
 
+let klimbitLayerPromise = null;
+
+// KlimBit: erkende hoogte en tokens per poging.
+function loadKlimbitLayer() {
+  if (!klimbitLayerPromise) {
+    klimbitLayerPromise = import("./shared/klimbitBeloning.js");
+  }
+  return klimbitLayerPromise;
+}
+
 let cijferLayerPromise = null;
 
 function loadCijferLayer() {
@@ -4033,6 +4043,200 @@ async function registreerSpelRondeCore({ auth, data = {}, db, now = FieldValue.s
   });
 }
 
+// KlimBit (Kevin, 1 okt 2026). Een poging loopt van startKlimbitPoging tot
+// rondKlimbitPogingAf; de server meet zelf hoe lang hij duurde en erkent nooit
+// meer hoogte dan in die tijd te klimmen was. Tokens alleen voor leerlingen,
+// alleen boven 400 m en alleen de eerste drie keer (klimbitBeloning.js).
+// Bewust BUITEN het weekplafond: leerlingWeek en leerlingVoortgang blijven
+// onaangeroerd, het saldo en het grootboek wel, zodat tokenbeheer het ziet.
+// Paden (alleen de server schrijft): klimbitPogingen/{pogingId},
+// klimbitTeller/{uid} (runsBoven400, openPogingId) en spelRecords/klimbit_{uid}.
+const KLIMBIT_POGING_ID_PATROON = /^[A-Za-z0-9_-]{1,128}$/;
+
+async function klimbitRolVan({ auth, db }) {
+  const snapshot = await db.doc(`users/${auth.uid}`).get();
+  const data = snapshot.exists ? (snapshot.data() || {}) : {};
+  if (isConfiguredAdminEmail(auth.token?.email || data.email)) return "admin";
+  return String(data.role || "");
+}
+
+async function startKlimbitPogingCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date(), maakId = randomUUID }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om KlimBit te spelen.");
+  }
+
+  const laag = await loadKlimbitLayer();
+  const pogingId = cleanIdPart(maakId());
+  const pogingRef = db.doc(`klimbitPogingen/${pogingId}`);
+  const tellerRef = db.doc(`klimbitTeller/${auth.uid}`);
+  const timestamp = getServerTimestamp(now);
+  const spelPogingNr = Number.isInteger(data.pogingNr) && data.pogingNr > 0 ? data.pogingNr : null;
+
+  return runDbTransaction(db, async (transaction) => {
+    const tellerSnapshot = await transaction.get(tellerRef);
+    const teller = tellerSnapshot.exists ? (tellerSnapshot.data() || {}) : {};
+    const vorigeId = typeof teller.openPogingId === "string" ? teller.openPogingId : "";
+    const vorigeRef = vorigeId && vorigeId !== pogingId ? db.doc(`klimbitPogingen/${vorigeId}`) : null;
+    const vorigeSnapshot = vorigeRef ? await transaction.get(vorigeRef) : null;
+    const vorige = vorigeSnapshot?.exists ? (vorigeSnapshot.data() || {}) : null;
+
+    // Hooguit één open poging per speler: een oudere open poging vervalt.
+    if (vorige && vorige.status === "open" && vorige.uid === auth.uid) {
+      transaction.set(vorigeRef, { status: "verlopen", verlopenOp: timestamp }, { merge: true });
+    }
+
+    transaction.set(pogingRef, {
+      uid: auth.uid,
+      gameId: laag.KLIMBIT_GAME_ID,
+      status: "open",
+      startedAt: timestamp,
+      // Servertijd in milliseconden: hiermee rekent rondKlimbitPogingAf de duur uit.
+      startedAtMs: nuDatum.getTime(),
+      ...(spelPogingNr ? { spelPogingNr } : {}),
+    });
+    transaction.set(tellerRef, { uid: auth.uid, openPogingId: pogingId, updatedAt: timestamp }, { merge: true });
+
+    return { pogingId };
+  });
+}
+
+async function rondKlimbitPogingAfCore({ auth, data = {}, db, now = FieldValue.serverTimestamp, nuDatum = new Date() }) {
+  if (!auth?.uid) {
+    throw new HttpsError("unauthenticated", "Log in om KlimBit te spelen.");
+  }
+
+  const pogingId = requireString(data.pogingId, "pogingId");
+  if (!KLIMBIT_POGING_ID_PATROON.test(pogingId)) {
+    throw new HttpsError("invalid-argument", "Onbekende poging.");
+  }
+
+  const laag = await loadKlimbitLayer();
+  if (!laag.isGeldigeKlimbitHoogte(data.piekHoogte)) {
+    throw new HttpsError("invalid-argument", "piekHoogte moet een getal van 0 of meer zijn.");
+  }
+
+  const rol = await klimbitRolVan({ auth, db });
+  const timestamp = getServerTimestamp(now);
+  const pogingRef = db.doc(`klimbitPogingen/${pogingId}`);
+  const recordRef = db.doc(`spelRecords/${laag.KLIMBIT_GAME_ID}_${auth.uid}`);
+  const tellerRef = db.doc(`klimbitTeller/${auth.uid}`);
+  const accountRef = db.doc(`tokenAccounts/${auth.uid}`);
+
+  return runDbTransaction(db, async (transaction) => {
+    const [pogingSnapshot, recordSnapshot, tellerSnapshot, accountSnapshot] = await Promise.all([
+      transaction.get(pogingRef),
+      transaction.get(recordRef),
+      transaction.get(tellerRef),
+      transaction.get(accountRef),
+    ]);
+
+    if (!pogingSnapshot.exists) {
+      throw new HttpsError("not-found", "Deze poging bestaat niet.");
+    }
+    const poging = pogingSnapshot.data() || {};
+    if (poging.uid !== auth.uid) {
+      throw new HttpsError("permission-denied", "Dit is niet jouw poging.");
+    }
+    // Idempotent: een tweede keer afronden geeft dezelfde uitkomst, zonder tokens.
+    if (poging.status === "afgerond" && poging.resultaat) {
+      return { ...poging.resultaat, alAfgerond: true };
+    }
+    if (poging.status !== "open") {
+      throw new HttpsError("failed-precondition", "Deze poging is al gesloten. Start een nieuwe klim.");
+    }
+
+    const startMs = Number(poging.startedAtMs);
+    const duurMs = Number.isFinite(startMs) ? Math.max(0, nuDatum.getTime() - startMs) : 0;
+    const ingestuurdeHoogte = Number(data.piekHoogte);
+    const hoogte = laag.erkendeKlimbitHoogte({ piekHoogte: ingestuurdeHoogte, duurMs });
+
+    const recordVoor = recordSnapshot.exists ? (recordSnapshot.data() || {}) : {};
+    const besteVoor = normalizeNonNegativeInteger(recordVoor.besteHoogte, 0);
+    const nieuwRecord = hoogte > besteVoor;
+    const record = Math.max(besteVoor, hoogte);
+
+    const teller = tellerSnapshot.exists ? (tellerSnapshot.data() || {}) : {};
+    const keerEerder = normalizeNonNegativeInteger(teller.runsBoven400, 0);
+    const beloning = laag.klimbitTokens({ hoogte, keerBoven400Eerder: keerEerder, rol });
+
+    const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
+    const nextAccount = beloning.tokens > 0
+      ? buildBalancePatch(account, beloning.tokens, TOKEN_TRANSACTION_TYPES.EARN, timestamp)
+      : account;
+
+    const resultaat = {
+      pogingId,
+      hoogte,
+      ingestuurdeHoogte,
+      record,
+      nieuwRecord,
+      tokens: beloning.tokens,
+      runNummer: beloning.runNummer,
+      basis: beloning.basis,
+      extraMeters: beloning.extraMeters,
+      uitleg: beloning.uitleg,
+      balance: nextAccount.balance,
+    };
+
+    if (beloning.tokens > 0) {
+      transaction.set(getTransactionRef(db, `earn_klimbit_${pogingId}`), {
+        studentUid: auth.uid,
+        type: TOKEN_TRANSACTION_TYPES.EARN,
+        amount: beloning.tokens,
+        source: {
+          kind: "game",
+          id: laag.KLIMBIT_GAME_ID,
+          version: "poging",
+          title: `KlimBit: ${hoogte} m (${beloning.runNummer}e keer boven 400 m)`,
+          gameId: laag.KLIMBIT_GAME_ID,
+          pogingId,
+        },
+        reason: "klimbit-height",
+        detail: {
+          hoogte,
+          ingestuurdeHoogte,
+          duurMs,
+          runNummer: beloning.runNummer,
+          basis: beloning.basis,
+          extraMeters: beloning.extraMeters,
+          buitenWeekplafond: true,
+        },
+        createdBy: auth.uid,
+        createdAt: timestamp,
+        balanceAfter: nextAccount.balance,
+      });
+      transaction.set(accountRef, nextAccount, { merge: true });
+    }
+
+    transaction.set(pogingRef, {
+      status: "afgerond",
+      ingestuurdeHoogte,
+      erkendeHoogte: hoogte,
+      duurMs,
+      rol,
+      afgerondOp: timestamp,
+      resultaat,
+    }, { merge: true });
+
+    transaction.set(recordRef, {
+      uid: auth.uid,
+      gameId: laag.KLIMBIT_GAME_ID,
+      besteHoogte: record,
+      aantalPogingen: normalizeNonNegativeInteger(recordVoor.aantalPogingen, 0) + 1,
+      bijgewerktOp: timestamp,
+    }, { merge: true });
+
+    transaction.set(tellerRef, {
+      uid: auth.uid,
+      runsBoven400: keerEerder + (beloning.teltMee ? 1 : 0),
+      openPogingId: teller.openPogingId === pogingId ? null : (teller.openPogingId ?? null),
+      updatedAt: timestamp,
+    }, { merge: true });
+
+    return resultaat;
+  });
+}
+
 async function hasPurchasedTokenShopItem({ db, studentUid, itemId }) {
   const purchaseSnapshot = await db.collection("tokenPurchases").where("studentUid", "==", studentUid).get();
   return purchaseSnapshot.docs.some((purchase) => {
@@ -4374,6 +4578,14 @@ exports.equipTokenShopItem = onCall({
 exports.registreerSpelRonde = onCall({
   region: REGION,
 }, async (request) => registreerSpelRondeCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.startKlimbitPoging = onCall({
+  region: REGION,
+}, async (request) => startKlimbitPogingCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
+
+exports.rondKlimbitPogingAf = onCall({
+  region: REGION,
+}, async (request) => rondKlimbitPogingAfCore({ auth: request.auth, data: request.data || {}, db: getFirestore() }));
 
 exports.updateCompanion = onCall({
   region: REGION,
@@ -5467,6 +5679,8 @@ exports.__test = {
   vraagPrivilegeAanCore,
   updateCompanionCore,
   registreerSpelRondeCore,
+  startKlimbitPogingCore,
+  rondKlimbitPogingAfCore,
   getBeloningMetingCore,
   stemCore,
   getStemmingenCore,

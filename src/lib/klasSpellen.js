@@ -5,12 +5,13 @@ import { GAME_STATUSES } from './gameRegistry.js';
  * klas heeft klaargezet (klas.enabledGames) en wat in het register echt
  * speelbaar is (status actief). Een spel dat later op prototype teruggaat,
  * verdwijnt zo vanzelf ook bij de leerling.
+ * Een actief spel met `voorIedereen: true` (KlimBit) staat er altijd bij, ook
+ * zonder klas of klastoewijzing.
  */
 export const speelbareKlasSpellen = (klas = {}, registry = []) => {
   const enabled = Array.isArray(klas?.enabledGames) ? klas.enabledGames : [];
-  if (!enabled.length) return [];
   return (Array.isArray(registry) ? registry : []).filter(
-    (game) => game?.status === GAME_STATUSES.ACTIVE && enabled.includes(game.gameId)
+    (game) => game?.status === GAME_STATUSES.ACTIVE && (game.voorIedereen === true || enabled.includes(game.gameId))
   );
 };
 

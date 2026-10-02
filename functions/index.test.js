@@ -3147,3 +3147,144 @@ test("vertaalLesblok: een bewaarde vertaling die Nederlands bleef, wordt opnieuw
   assert.equal(gebeld, true);
   assert.equal(db.store["vertalingen/blok-nl__uk"].html, OEKRAIENS);
 });
+
+// KlimBit: poging starten en afronden, los van Firestore (zelfde nep-db als hierboven).
+const klimbitDb = (extra = {}) => createDb({
+  "users/leerling-1": { role: "student", klasId: "klas-1" },
+  "users/leerling-2": { role: "student", klasId: "klas-1" },
+  "users/beheer-1": { role: "admin" },
+  "tokenAccounts/leerling-1": { balance: 50, earnedTotal: 50, spentTotal: 0, adjustedTotal: 0 },
+  ...extra,
+});
+const klimbitStart = (db, uid, id, nu = "2026-10-02T09:00:00Z") => __test.startKlimbitPogingCore({
+  auth: { uid }, data: { pogingNr: 1 }, db, now: () => "t", nuDatum: new Date(nu), maakId: () => id,
+});
+const klimbitAf = (db, uid, pogingId, piekHoogte, nu) => __test.rondKlimbitPogingAfCore({
+  auth: { uid }, data: { pogingId, piekHoogte }, db, now: () => "t", nuDatum: new Date(nu),
+});
+
+test("klimbit: eerste keer boven 400 m geeft 300 + meters, buiten het weekplafond", async () => {
+  const db = klimbitDb();
+  const { pogingId } = await klimbitStart(db, "leerling-1", "p1");
+  assert.equal(pogingId, "p1");
+  assert.equal(db.store.docs["klimbitPogingen/p1"].status, "open");
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].openPogingId, "p1");
+
+  // 5 minuten klimmen: ruim genoeg voor 437 m.
+  const uit = await klimbitAf(db, "leerling-1", "p1", 437.8, "2026-10-02T09:05:00Z");
+  assert.equal(uit.hoogte, 437);
+  assert.equal(uit.tokens, 337);
+  assert.equal(uit.runNummer, 1);
+  assert.equal(uit.nieuwRecord, true);
+  assert.equal(uit.record, 437);
+  assert.equal(uit.uitleg, "Eerste keer boven 400 m: 300 + 37 = 337 tokens.");
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 387);
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].earnedTotal, 387);
+  const regel = db.store.docs["tokenTransactions/earn_klimbit_p1"];
+  assert.equal(regel.amount, 337);
+  assert.equal(regel.type, "earn");
+  assert.equal(regel.source.gameId, "klimbit");
+  assert.equal(regel.balanceAfter, 387);
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].runsBoven400, 1);
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].openPogingId, null);
+  assert.deepEqual(
+    { uid: db.store.docs["spelRecords/klimbit_leerling-1"].uid, beste: db.store.docs["spelRecords/klimbit_leerling-1"].besteHoogte, aantal: db.store.docs["spelRecords/klimbit_leerling-1"].aantalPogingen },
+    { uid: "leerling-1", beste: 437, aantal: 1 },
+  );
+  assert.equal(Object.keys(db.store.docs).some((pad) => pad.startsWith("leerlingWeek/")), false, "geen weekplafond-administratie");
+  assert.equal(Object.keys(db.store.docs).some((pad) => pad.startsWith("leerlingVoortgang/")), false);
+});
+
+test("klimbit: de erkende hoogte wordt afgekapt op de gemeten duur", async () => {
+  const db = klimbitDb();
+  await klimbitStart(db, "leerling-1", "snel");
+  // 10 seconden en 5000 m ingestuurd: hooguit 10 x 6 + 25 = 85 m erkend.
+  const uit = await klimbitAf(db, "leerling-1", "snel", 5000, "2026-10-02T09:00:10Z");
+  assert.equal(uit.ingestuurdeHoogte, 5000);
+  assert.equal(uit.hoogte, 85);
+  assert.equal(uit.tokens, 0);
+  assert.equal(db.store.docs["klimbitPogingen/snel"].erkendeHoogte, 85);
+  assert.equal(db.store.docs["klimbitPogingen/snel"].duurMs, 10000);
+  assert.equal(db.store.docs["tokenTransactions/earn_klimbit_snel"], undefined);
+});
+
+test("klimbit: twee keer afronden is idempotent en levert maar één keer tokens", async () => {
+  const db = klimbitDb();
+  await klimbitStart(db, "leerling-1", "p1");
+  const eerste = await klimbitAf(db, "leerling-1", "p1", 500, "2026-10-02T09:05:00Z");
+  const tweede = await klimbitAf(db, "leerling-1", "p1", 900, "2026-10-02T09:06:00Z");
+  assert.equal(eerste.tokens, 400);
+  assert.equal(tweede.tokens, 400);
+  assert.equal(tweede.hoogte, 500);
+  assert.equal(tweede.alAfgerond, true);
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 450);
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].runsBoven400, 1);
+  assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].aantalPogingen, 1);
+});
+
+test("klimbit: een poging van iemand anders wordt geweigerd", async () => {
+  const db = klimbitDb();
+  await klimbitStart(db, "leerling-1", "p1");
+  await assert.rejects(
+    () => klimbitAf(db, "leerling-2", "p1", 500, "2026-10-02T09:05:00Z"),
+    (error) => error instanceof HttpsError && error.code === "permission-denied",
+  );
+  assert.equal(db.store.docs["klimbitPogingen/p1"].status, "open");
+});
+
+test("klimbit: een gesloten of verlopen poging wordt geweigerd", async () => {
+  const db = klimbitDb();
+  await klimbitStart(db, "leerling-1", "oud");
+  await klimbitStart(db, "leerling-1", "nieuw", "2026-10-02T09:01:00Z");
+  assert.equal(db.store.docs["klimbitPogingen/oud"].status, "verlopen", "hooguit één open poging");
+  await assert.rejects(
+    () => klimbitAf(db, "leerling-1", "oud", 500, "2026-10-02T09:05:00Z"),
+    (error) => error.code === "failed-precondition",
+  );
+  await assert.rejects(
+    () => klimbitAf(db, "leerling-1", "bestaat-niet", 500, "2026-10-02T09:05:00Z"),
+    (error) => error.code === "not-found",
+  );
+  await assert.rejects(
+    () => klimbitAf(db, "leerling-1", "nieuw", -3, "2026-10-02T09:05:00Z"),
+    (error) => error.code === "invalid-argument",
+  );
+  await assert.rejects(
+    () => __test.startKlimbitPogingCore({ auth: null, db }),
+    (error) => error.code === "unauthenticated",
+  );
+});
+
+test("klimbit: tweede, derde en vierde keer boven 400 m", async () => {
+  const db = klimbitDb();
+  const ronde = async (id, hoogte, start, eind) => {
+    await klimbitStart(db, "leerling-1", id, start);
+    return klimbitAf(db, "leerling-1", id, hoogte, eind);
+  };
+  await ronde("a", 401, "2026-10-02T09:00:00Z", "2026-10-02T09:05:00Z");
+  const lager = await ronde("b", 300, "2026-10-02T09:10:00Z", "2026-10-02T09:15:00Z");
+  assert.equal(lager.tokens, 0, "onder 400 m telt niet als keer");
+  assert.equal(lager.nieuwRecord, false);
+  assert.equal(lager.record, 401);
+  assert.equal((await ronde("c", 450, "2026-10-02T09:20:00Z", "2026-10-02T09:25:00Z")).tokens, 250);
+  assert.equal((await ronde("d", 500, "2026-10-02T09:30:00Z", "2026-10-02T09:35:00Z")).tokens, 200);
+  const vierde = await ronde("e", 900, "2026-10-02T09:40:00Z", "2026-10-02T09:45:00Z");
+  assert.equal(vierde.tokens, 0);
+  assert.equal(vierde.runNummer, 4);
+  assert.equal(vierde.nieuwRecord, true);
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].runsBoven400, 4);
+  assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].besteHoogte, 900);
+  assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].aantalPogingen, 5);
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 50 + 301 + 250 + 200);
+});
+
+test("klimbit: een beheerder speelt mee, krijgt een record maar nooit tokens", async () => {
+  const db = klimbitDb();
+  await klimbitStart(db, "beheer-1", "b1");
+  const uit = await klimbitAf(db, "beheer-1", "b1", 800, "2026-10-02T09:05:00Z");
+  assert.equal(uit.tokens, 0);
+  assert.equal(uit.uitleg, "Beheerders verdienen geen tokens.");
+  assert.equal(db.store.docs["spelRecords/klimbit_beheer-1"].besteHoogte, 800);
+  assert.equal(db.store.docs["tokenAccounts/beheer-1"], undefined);
+  assert.equal(db.store.docs["klimbitTeller/beheer-1"].runsBoven400, 0);
+});

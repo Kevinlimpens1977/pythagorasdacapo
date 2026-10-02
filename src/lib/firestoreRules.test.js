@@ -127,3 +127,17 @@ test('firestore rules keep assessment item progress readable and writable by its
   // niet laten verdwijnen.
   assert.match(block, /allow delete: if isAdmin\(\)/);
 });
+
+test('firestore rules keep KlimBit attempts and the run counter server-only', () => {
+  const pogingen = getRuleBlock('match /klimbitPogingen/{pogingId}');
+  assert.match(pogingen, /match \/klimbitPogingen\/\{pogingId\} \{\s*allow read, write: if false;/);
+  assert.match(pogingen, /match \/klimbitTeller\/\{studentUid\} \{\s*allow read, write: if false;/);
+});
+
+test('firestore rules let a player read only his own game record, never write it', () => {
+  const block = getRuleBlock('match /spelRecords/{recordId}');
+  assert.match(block, /recordId\.matches\('\^\[a-z0-9-\]\+_' \+ request\.auth\.uid \+ '\$'\)/);
+  assert.match(block, /resource == null \|\| resource\.data\.uid == request\.auth\.uid/);
+  assert.match(block, /isAdmin\(\)/);
+  assert.match(block, /allow write: if false;/);
+});

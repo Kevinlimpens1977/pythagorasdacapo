@@ -23,3 +23,18 @@ test('toggle zet aan en weer uit', () => {
   assert.deepEqual(toggleSpelVoorKlas(['turbo-typen'], 'turbo-typen'), []);
   assert.deepEqual(toggleSpelVoorKlas(['a'], 'b'), ['a', 'b']);
 });
+
+test('een spel voor iedereen staat er altijd bij, ook zonder klas of toewijzing', () => {
+  const metKlimbit = [...registry, { gameId: 'klimbit', status: GAME_STATUSES.ACTIVE, voorIedereen: true }];
+  assert.deepEqual(speelbareKlasSpellen(null, metKlimbit).map((g) => g.gameId), ['klimbit']);
+  assert.deepEqual(speelbareKlasSpellen({}, metKlimbit).map((g) => g.gameId), ['klimbit']);
+  assert.deepEqual(
+    speelbareKlasSpellen({ enabledGames: ['turbo-typen'] }, metKlimbit).map((g) => g.gameId),
+    ['turbo-typen', 'klimbit']
+  );
+});
+
+test('een spel voor iedereen dat niet actief is, blijft weg', () => {
+  const prototype = [{ gameId: 'klimbit', status: GAME_STATUSES.PROTOTYPE, voorIedereen: true }];
+  assert.deepEqual(speelbareKlasSpellen({}, prototype), []);
+});

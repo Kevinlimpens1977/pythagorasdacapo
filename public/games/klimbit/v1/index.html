@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KlimBit (placeholder)</title>
+  <!--
+    PLACEHOLDER, ALLEEN VOOR LOKAAL TESTEN.
+    Dit is NIET het echte spel. Het bootst alleen het berichtcontract na,
+    zodat de HELIX-kant (KlimbitGame, startKlimbitPoging, rondKlimbitPogingAf)
+    getest kan worden. De echte KlimBit-build vervangt deze hele map
+    (public/games/klimbit/v1/) en wordt door de hoofdsessie hierheen gekopieerd.
+
+    Contract (spel -> platform, postMessage naar window.parent, eigen origin):
+      { bron: 'klimbit', soort: 'gereed', op }
+      { bron: 'klimbit', soort: 'gestart', details: { pogingNr }, op }
+      { bron: 'klimbit', soort: 'klaar', punten: floor(piekHoogte),
+        details: { piekHoogte, duurMs, pogingNr }, op }
+    op = Date.now() in milliseconden.
+  -->
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f4f1fb; color: #1d1b4f; }
+    main { width: min(420px, calc(100% - 32px)); padding: 24px; border-radius: 16px; background: #fff; border: 2px dashed #b9a8e8; }
+    .label { display: inline-block; padding: 4px 8px; border-radius: 8px; background: #fde68a; font-size: 12px; font-weight: 800; letter-spacing: .05em; }
+    h1 { margin: 12px 0 4px; font-size: 22px; }
+    p { margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #57537a; }
+    label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #c9c3e3; border-radius: 10px; margin-bottom: 12px; }
+    .knoppen { display: flex; gap: 8px; }
+    button { flex: 1; padding: 10px; font-size: 15px; font-weight: 800; border: 0; border-radius: 10px; cursor: pointer; background: #6d4ae0; color: #fff; }
+    button:disabled { background: #c9c3e3; cursor: not-allowed; }
+    #status { margin-top: 14px; font-size: 13px; color: #57537a; }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="label">PLACEHOLDER, NIET HET ECHTE SPEL</span>
+    <h1>KlimBit</h1>
+    <p>Alleen om de koppeling met HELIX te testen. Start een klim, vul een hoogte in en beëindig de klim.</p>
+    <label for="hoogte">Piekhoogte in meters</label>
+    <input id="hoogte" type="number" min="0" step="0.1" value="437.5">
+    <div class="knoppen">
+      <button id="start" type="button">Start</button>
+      <button id="stop" type="button" disabled>Klim beëindigen</button>
+    </div>
+    <div id="status">Klaar om te klimmen.</div>
+  </main>
+  <script>
+    (function () {
+      var BRON = 'klimbit';
+      var pogingNr = 0;
+      var startOp = 0;
+      var startKnop = document.getElementById('start');
+      var stopKnop = document.getElementById('stop');
+      var status = document.getElementById('status');
+      var hoogteVeld = document.getElementById('hoogte');
+
+      function stuur(bericht) {
+        if (window.parent && window.parent !== window) {
+          bericht.bron = BRON;
+          bericht.op = Date.now();
+          window.parent.postMessage(bericht, window.location.origin);
+        }
+      }
+
+      // Een klik in het spel zet het toetsenbord in het spel.
+      window.addEventListener('pointerdown', function () { window.focus(); });
+
+      startKnop.addEventListener('click', function () {
+        pogingNr += 1;
+        startOp = Date.now();
+        startKnop.disabled = true;
+        stopKnop.disabled = false;
+        status.textContent = 'Poging ' + pogingNr + ' loopt...';
+        stuur({ soort: 'gestart', details: { pogingNr: pogingNr } });
+      });
+
+      stopKnop.addEventListener('click', function () {
+        var piek = Math.max(0, Number(hoogteVeld.value) || 0);
+        var duurMs = Date.now() - startOp;
+        startKnop.disabled = false;
+        stopKnop.disabled = true;
+        status.textContent = 'Poging ' + pogingNr + ' klaar: ' + Math.floor(piek) + ' m in ' + Math.round(duurMs / 1000) + ' s.';
+        stuur({
+          soort: 'klaar',
+          punten: Math.floor(piek),
+          details: { piekHoogte: piek, duurMs: duurMs, pogingNr: pogingNr }
+        });
+      });
+
+      stuur({ soort: 'gereed' });
+    })();
+  </script>
+</body>
+</html>

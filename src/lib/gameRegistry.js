@@ -300,6 +300,34 @@ export const GAME_REGISTRY = [
     // Uitdaging, niet verplicht (Kevin, 30 sep 2026); onbeperkt spelen, opbrengst halveert per beurt.
     maxPlays: 0,
     status: GAME_STATUSES.PROTOTYPE
+  },
+  {
+    gameId: 'klimbit',
+    title: 'KlimBit',
+    description: 'Klim zo hoog mogelijk langs computeronderdelen.',
+    subject: 'Digitale vaardigheden',
+    topic: 'Onderdelen van een computer',
+    level: 'VMBO basis/kader/TL leerjaar 1-2',
+    learningGoals: [
+      'Computeronderdelen herkennen terwijl je klimt',
+      'Doorzetten en je eigen record verbeteren'
+    ],
+    skills: ['reactievermogen', 'doorzetten', 'computeronderdelen'],
+    estimatedMinutes: 10,
+    route: '/admin/spellen/klimbit',
+    componentKey: 'klimbit',
+    // Geen lesblok: KlimBit rekent zijn tokens zelf af per poging
+    // (startKlimbitPoging en rondKlimbitPogingAf), niet via awardTokensForActivity.
+    cmsEmbeddable: false,
+    supportedModes: [GAME_MODES.STANDALONE],
+    // Tokens buiten het weekplafond: 300/200/100 + meters boven 400 m, de eerste
+    // drie keer (src/lib/klimbitBeloning.js). De tokenregel in /admin/spellen
+    // heeft op KlimBit geen invloed.
+    tokenRewardPotential: { min: 0, max: 0, basis: 'klimbit_hoogte' },
+    maxPlays: 0,
+    // Voor iedereen te kiezen, ook zonder klastoewijzing (Kevin, 1 okt 2026).
+    voorIedereen: true,
+    status: GAME_STATUSES.ACTIVE
   }
 ];
 
