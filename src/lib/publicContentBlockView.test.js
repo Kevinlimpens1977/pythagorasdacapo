@@ -265,3 +265,24 @@ test('de leerling krijgt de vlag `multiple` mee bij meerkeuze met meer dan één
   // De sleutel zelf blijft weg.
   assert.deepEqual(Object.keys(build([{ id: 'a', text: 'A', correct: true }]).options[0]), ['id', 'text']);
 });
+
+test('buildPublicContentBlockSnapshot houdt ondertitels bij een videoblok', () => {
+  const snapshot = buildPublicContentBlockSnapshot({
+    id: 'block-video',
+    type: 'media',
+    status: 'published',
+    content: {
+      mediaKind: 'video',
+      mediaUrl: 'https://example.test/uitleg.mp4',
+      fileName: 'uitleg.mp4',
+      ondertitels: [
+        { taal: 'nl', label: 'Nederlands', url: 'https://example.test/nl.vtt', storagePath: 'explainers/x/ondertitels.nl.vtt' },
+        { taal: 'xx', url: 'ftp://niet-toegestaan' }
+      ]
+    }
+  });
+  assert.deepEqual(snapshot.content.ondertitels, [
+    { taal: 'nl', label: 'Nederlands', url: 'https://example.test/nl.vtt', storagePath: 'explainers/x/ondertitels.nl.vtt' }
+  ]);
+  assert.equal(snapshot.content.fileName, undefined);
+});

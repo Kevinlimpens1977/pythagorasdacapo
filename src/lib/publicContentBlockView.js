@@ -1,4 +1,5 @@
 import { normalizeContentBlockSettings } from './contentBlockUtils.js';
+import { normalizeOndertitels } from './mediaUtils.js';
 import { sanitizePublicExercise } from './exerciseBlockUtils.js';
 import { buildAssessmentMatchOptions } from './assessmentItemGrading.js';
 
@@ -175,7 +176,9 @@ const sanitizeContent = (block = {}) => {
     thumbnailUrl: content.thumbnailUrl || '',
     caption: content.caption || '',
     altText: content.altText || '',
-    crops: Array.isArray(content.crops) ? content.crops : []
+    crops: Array.isArray(content.crops) ? content.crops : [],
+    // Ondertitelsporen van een video; zonder deze regel ziet de leerling ze nooit.
+    ondertitels: normalizeOndertitels(content.ondertitels)
   };
 
   if (block.type === 'quiz' || block.type === 'toets') {

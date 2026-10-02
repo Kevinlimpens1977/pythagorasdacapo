@@ -69,6 +69,35 @@ export const isSupportedMediaFile = (file = {}, mediaKind = '') => {
   return mediaKind ? detectedKind === mediaKind : true;
 };
 
+// Ondertitelsporen bij een video. Een lijst, zodat er later vertalingen bij
+// kunnen. Alleen http(s)-adressen: de url komt in een <track src>.
+export const normalizeOndertitels = (value) =>
+  (Array.isArray(value) ? value : [])
+    .map((item) => ({
+      taal: String(item?.taal || '').trim().toLowerCase(),
+      label: String(item?.label || '').trim(),
+      url: String(item?.url || '').trim(),
+      storagePath: String(item?.storagePath || '').trim()
+    }))
+    .filter((item) => item.taal && /^https?:\/\//i.test(item.url))
+    .map((item) => ({ ...item, label: item.label || item.taal.toUpperCase() }));
+
+/**
+ * Welk ondertitelspoor staat standaard aan? De voorkeurstaal van de leerling
+ * als dat spoor er is, anders Nederlands, anders het eerste spoor. Een lege
+ * lijst geeft '' (geen spoor, dus ook niets om aan te zetten).
+ */
+export const kiesOndertitelTaal = (ondertitels, voorkeurTaal = '') => {
+  const talen = (Array.isArray(ondertitels) ? ondertitels : [])
+    .map((spoor) => String(spoor?.taal || '').trim().toLowerCase())
+    .filter(Boolean);
+  const voorkeur = String(voorkeurTaal || '').trim().toLowerCase();
+
+  if (voorkeur && talen.includes(voorkeur)) return voorkeur;
+  if (talen.includes('nl')) return 'nl';
+  return talen[0] || '';
+};
+
 export const normalizeMediaContent = (content = {}) => {
   const legacyUrl =
     content.mediaUrl ||
@@ -96,7 +125,8 @@ export const normalizeMediaContent = (content = {}) => {
     altText: content.altText || '',
     thumbnailUrl: content.thumbnailUrl || '',
     html: content.html || '',
-    crops: Array.isArray(content.crops) ? content.crops : []
+    crops: Array.isArray(content.crops) ? content.crops : [],
+    ondertitels: normalizeOndertitels(content.ondertitels)
   };
 };
 

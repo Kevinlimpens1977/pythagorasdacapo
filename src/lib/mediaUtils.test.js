@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {
   MEDIA_KINDS,
   getMediaKindFromFile,
+  kiesOndertitelTaal,
   normalizeMediaContent,
+  normalizeOndertitels,
   parseYouTubeUrl
 } from './mediaUtils.js';
 
@@ -48,7 +50,8 @@ test('normalizeMediaContent keeps legacy image media usable', () => {
       altText: '',
       thumbnailUrl: '',
       html: '',
-      crops: []
+      crops: [],
+      ondertitels: []
     }
   );
 });
@@ -71,7 +74,8 @@ test('normalizeMediaContent supports uploaded video aliases', () => {
       altText: '',
       thumbnailUrl: '',
       html: '',
-      crops: []
+      crops: [],
+      ondertitels: []
     }
   );
 });
@@ -81,4 +85,55 @@ test('normalizeMediaContent treats normal web pages as external links', () => {
     normalizeMediaContent({ mediaUrl: 'https://schooltv.nl/video-item/wat-is-phishing' }).mediaKind,
     MEDIA_KINDS.LINK
   );
+});
+
+test('normalizeOndertitels houdt alleen bruikbare sporen over', () => {
+  assert.deepEqual(
+    normalizeOndertitels([
+      { taal: 'NL', label: 'Nederlands', url: 'https://example.test/nl.vtt', storagePath: 'explainers/h2/ondertitels.nl.vtt' },
+      { taal: 'ar', url: 'https://example.test/ar.vtt' },
+      { taal: '', url: 'https://example.test/leeg.vtt' },
+      { taal: 'en', url: 'javascript:alert(1)' },
+      null
+    ]),
+    [
+      { taal: 'nl', label: 'Nederlands', url: 'https://example.test/nl.vtt', storagePath: 'explainers/h2/ondertitels.nl.vtt' },
+      { taal: 'ar', label: 'AR', url: 'https://example.test/ar.vtt', storagePath: '' }
+    ]
+  );
+  assert.deepEqual(normalizeOndertitels(undefined), []);
+  assert.deepEqual(normalizeOndertitels('geen lijst'), []);
+});
+
+test('normalizeMediaContent geeft ondertitels door', () => {
+  const media = normalizeMediaContent({
+    mediaUrl: 'https://example.test/uitleg.mp4',
+    ondertitels: [{ taal: 'nl', label: 'Nederlands', url: 'https://example.test/nl.vtt' }]
+  });
+  assert.equal(media.mediaKind, 'video');
+  assert.deepEqual(media.ondertitels, [
+    { taal: 'nl', label: 'Nederlands', url: 'https://example.test/nl.vtt', storagePath: '' }
+  ]);
+});
+
+test('kiesOndertitelTaal kiest de voorkeurstaal als het spoor bestaat', () => {
+  const sporen = [{ taal: 'nl' }, { taal: 'ar' }, { taal: 'en' }];
+  assert.equal(kiesOndertitelTaal(sporen, 'ar'), 'ar');
+  assert.equal(kiesOndertitelTaal(sporen, 'en'), 'en');
+});
+
+test('kiesOndertitelTaal valt terug op nl, dan op de eerste taal', () => {
+  // Geen voorkeur (beheer, digibord, taalknop uit): Nederlands.
+  assert.equal(kiesOndertitelTaal([{ taal: 'en' }, { taal: 'nl' }], ''), 'nl');
+  // Een taal waar dit blok geen spoor voor heeft: ook Nederlands.
+  assert.equal(kiesOndertitelTaal([{ taal: 'en' }, { taal: 'nl' }], 'tr'), 'nl');
+  // Geen Nederlands in de lijst: de eerste taal.
+  assert.equal(kiesOndertitelTaal([{ taal: 'en' }, { taal: 'ar' }], 'tr'), 'en');
+  assert.equal(kiesOndertitelTaal([{ taal: 'en' }, { taal: 'ar' }]), 'en');
+});
+
+test('kiesOndertitelTaal geeft een lege tekst bij een lege of ongeldige lijst', () => {
+  assert.equal(kiesOndertitelTaal([], 'ar'), '');
+  assert.equal(kiesOndertitelTaal(undefined, 'ar'), '');
+  assert.equal(kiesOndertitelTaal('geen lijst', 'nl'), '');
 });

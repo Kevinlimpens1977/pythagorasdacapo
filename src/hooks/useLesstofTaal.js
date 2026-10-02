@@ -57,6 +57,25 @@ const schrijfKeuze = (uid, aan) => {
   }
 };
 
+/**
+ * In welke taal wil deze leerling de ondertitels van een video lezen?
+ *
+ * Alleen lezen: de taal staat op zijn gebruikersdocument en de keuze (aan of
+ * uit) in localStorage, precies zoals useLesstofTaal ze bijhoudt. Geen
+ * Firestore-schrijfacties en geen callable. '' betekent: geen voorkeur, dus
+ * Nederlands (beheer, digibord, taalknop uit).
+ *
+ * De keuze wordt bij elke render opnieuw gelezen, niet in een state bewaard.
+ * Zet de leerling in de les de taalknop om, dan rendert de lespagina opnieuw en
+ * komt de nieuwe waarde vanzelf bij de speler.
+ */
+export const useOndertitelTaal = () => {
+  const { currentUser, userData } = useAuth() || {};
+  const uid = currentUser?.uid || '';
+  const lesTaal = getLesTaal(userData);
+  return lesTaal && leesKeuze(uid) ? lesTaal : '';
+};
+
 export const useLesstofTaal = ({ paragraafIds = [], hoofdstukIds = [] } = {}) => {
   const { currentUser, userData } = useAuth();
   const uid = currentUser?.uid || '';

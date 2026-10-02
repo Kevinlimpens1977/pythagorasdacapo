@@ -1,19 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, FileText, Link as LinkIcon, Maximize2 } from 'lucide-react';
 import FullscreenSurface from '../common/FullscreenSurface';
-import { MEDIA_KINDS, normalizeMediaContent, parseYouTubeUrl } from '../../lib/mediaUtils';
+import { useOndertitelTaal } from '../../hooks/useLesstofTaal';
+import { MEDIA_KINDS, kiesOndertitelTaal, normalizeMediaContent, parseYouTubeUrl } from '../../lib/mediaUtils';
 
 const getYoutubeEmbedUrl = (url) => parseYouTubeUrl(url)?.embedUrl || '';
 
 export default function MediaRenderer({ media = {}, title = 'Media', variant = 'lesson' }) {
   const [fullscreenOpen, setFullscreenOpen] = useState(false);
+  const voorkeurTaal = useOndertitelTaal();
+  const isPresenter = variant === 'presenter';
   const normalizedMedia = normalizeMediaContent(media);
   const mediaKind = normalizedMedia.mediaKind;
   const mediaUrl = normalizedMedia.mediaUrl || '';
   const caption = normalizedMedia.caption || '';
   const altText = normalizedMedia.altText || title;
+  const ondertitels = normalizedMedia.ondertitels;
+  // De taal waarin de ondertitels staan: die van de leerling als de taalknop aan
+  // staat en dit blok dat spoor heeft, anders Nederlands. Op het digibord (de
+  // hele klas kijkt mee) negeren we de voorkeur: daar altijd Nederlands.
+  const toonTaal = kiesOndertitelTaal(ondertitels, isPresenter ? '' : voorkeurTaal);
+  const poster = normalizedMedia.thumbnailUrl || '';
   const canOpen = Boolean(mediaUrl);
-  const isPresenter = variant === 'presenter';
 
   if (!mediaUrl) {
     return (
@@ -41,6 +49,9 @@ export default function MediaRenderer({ media = {}, title = 'Media', variant = '
               mediaUrl={mediaUrl}
               title={title}
               altText={altText}
+              ondertitels={ondertitels}
+              toonTaal={toonTaal}
+              poster={poster}
               presenter={isPresenter && !active}
               fullscreen={active}
             />
@@ -65,8 +76,35 @@ export default function MediaRenderer({ media = {}, title = 'Media', variant = '
   );
 }
 
-function MediaSurface({ mediaKind, mediaUrl, title, altText, fullscreen = false, presenter = false }) {
+function MediaSurface({ mediaKind, mediaUrl, title, altText, ondertitels = [], toonTaal = '', poster = '', fullscreen = false, presenter = false }) {
   const frameClass = fullscreen || presenter ? 'h-full w-full' : 'aspect-video w-full';
+  const videoRef = useRef(null);
+  const vorigeTaal = useRef(toonTaal);
+
+  // Zet het spoor van de gekozen taal aan en de rest uit, maar alleen als die
+  // taal verandert NA het laden. Zo wisselt de ondertitel mee als de leerling in
+  // de les de taalknop omzet. Een gewone re-render raakt de tracks niet aan, dus
+  // een leerling die via de CC-knop de ondertitels uitzette ziet ze niet
+  // terugkomen.
+  //
+  // De eerste keer slaan we over: de beginkeuze is het default-attribuut op de
+  // <track>. Zetten we de modes al bij het laden, dan ziet Chrome en Edge de
+  // andere sporen als ongeconfigureerd (disabled op iets dat al disabled is
+  // verandert niets) en zet zijn eigen automatische keuze er een aan: twee
+  // ondertitels tegelijk.
+  useEffect(() => {
+    if (vorigeTaal.current === toonTaal) return;
+    vorigeTaal.current = toonTaal;
+    const tracks = videoRef.current?.textTracks;
+    if (!tracks) return;
+    const sporen = Array.from({ length: tracks.length }, (_, index) => tracks[index])
+      .filter((spoor) => spoor.kind === 'subtitles' || spoor.kind === 'captions');
+    // Eerst alles uit, dan pas het gekozen spoor aan; Chromium let op die volgorde.
+    sporen.forEach((spoor) => { spoor.mode = 'disabled'; });
+    sporen
+      .filter((spoor) => toonTaal && spoor.language === toonTaal)
+      .forEach((spoor) => { spoor.mode = 'showing'; });
+  }, [toonTaal]);
 
   if (mediaKind === MEDIA_KINDS.YOUTUBE) {
     const embedUrl = getYoutubeEmbedUrl(mediaUrl);
@@ -86,13 +124,31 @@ function MediaSurface({ mediaKind, mediaUrl, title, altText, fullscreen = false,
   }
 
   if (mediaKind === MEDIA_KINDS.VIDEO) {
+    // crossOrigin alleen bij ondertitels: een .vtt van Storage is een ander
+    // domein en wordt anders geblokkeerd. Zonder ondertitels blijft alles zoals
+    // het was, zodat video's van sites zonder CORS blijven spelen.
+    const heeftOndertitels = ondertitels.length > 0;
     return (
       <video
+        ref={videoRef}
         src={mediaUrl}
         controls
         playsInline
+        poster={poster || undefined}
+        crossOrigin={heeftOndertitels ? 'anonymous' : undefined}
         className={`${frameClass} bg-black object-contain`}
-      />
+      >
+        {ondertitels.map((spoor) => (
+          <track
+            key={`${spoor.taal}-${spoor.url}`}
+            kind="subtitles"
+            srcLang={spoor.taal}
+            label={spoor.label}
+            src={spoor.url}
+            default={spoor.taal === toonTaal}
+          />
+        ))}
+      </video>
     );
   }
 
