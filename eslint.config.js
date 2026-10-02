@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'test-results', 'playwright-report', '.agents', '.superpowers', 'exports']),
+  globalIgnores(['dist', 'test-results', 'playwright-report', '.agents', '.superpowers', 'exports', 'video']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

@@ -1,0 +1,134 @@
+{
+  "hoofdstukId": "hoofdstuk-binask-eoa-1-h2",
+  "doelParagraafId": "paragraaf-binask-eoa-1-2-4",
+  "titel": "Massa, volume en dichtheid",
+  "kijkvraag": "Hoe meet je het volume van een steen, en hoe reken je de dichtheid uit?",
+  "meta": "Binask H2",
+  "scenes": [
+    {
+      "id": "s0", "kop": "MASSA, VOLUME EN DICHTHEID", "fase": "KIJK", "indeling": "FOCUS",
+      "shot": { "naam": "opening-blokjes", "frames": 1 },
+      "kernwoorden": [], "getekend": [],
+      "regels": [
+        { "id": "s0-r1", "spreker": "sami", "samiUitdrukking": "vragend", "tekst": "Deze twee blokjes zijn even groot. Toch is dit blokje veel zwaarder. Hoe kan dat?", "uitspraak": "[curious] Deze twee blokjes zijn even groot. Toch is dit blokje veel zwaarder. Hoe kan dat?" },
+        { "id": "s0-r2", "spreker": "docent", "tekst": "Dat ontdek je zo. Eerst leer je drie begrippen: massa, volume en dichtheid.", "uitspraak": "Dat ontdek je zo. Eerst leer je drie begrippen: massa, volume en dichtheid." }
+      ]
+    },
+    {
+      "id": "s1", "kop": "MASSA", "fase": "KIJK", "indeling": "SPLIT",
+      "shot": { "naam": "massa-rijst", "frames": 1 },
+      "kernwoorden": [
+        { "tekst": "massa", "bij": "s1-r1" },
+        { "tekst": "weegschaal", "bij": "s1-r1" },
+        { "tekst": "letter: m", "bij": "s1-r4" },
+        { "tekst": "gram (g), kilogram (kg)", "bij": "s1-r5" },
+        { "tekst": "1 kg = 1000 g", "bij": "s1-r5", "accent": true }
+      ],
+      "getekend": [
+        { "type": "weegschaal", "items": [{ "label": "pak rijst", "waarde": 750 }], "eenheid": "g", "bij": "s1-r2" }
+      ],
+      "regels": [
+        { "id": "s1-r1", "spreker": "docent", "tekst": "Massa is hoeveel gram of kilogram iets is. Je meet massa met een weegschaal.", "uitspraak": "Massa is hoeveel gram of kilogram iets is. Je meet massa met een weegschaal." },
+        { "id": "s1-r2", "spreker": "docent", "tekst": "Dit pak rijst heeft een massa van 750 g.", "uitspraak": "Dit pak rijst heeft een massa van zevenhonderdvijftig gram." },
+        { "id": "s1-r3", "spreker": "sami", "samiUitdrukking": "nadenkend", "tekst": "Thuis zeggen we: het gewicht.", "uitspraak": "Thuis zeggen we: het gewicht." },
+        { "id": "s1-r4", "spreker": "docent", "tekst": "Dat zeggen veel mensen. In de les zeggen we massa. De letter is m.", "uitspraak": "Dat zeggen veel mensen. In de les zeggen we massa. De letter is em." },
+        { "id": "s1-r5", "spreker": "docent", "tekst": "Kleine voorwerpen meet je in gram, zware in kilogram. 1 kg is 1000 g.", "uitspraak": "Kleine voorwerpen meet je in gram, zware in kilogram. Eén kilogram is duizend gram." }
+      ]
+    },
+    {
+      "id": "s2", "kop": "VOLUME", "fase": "KIJK", "indeling": "SPLIT",
+      "shot": { "naam": "volume-dozen", "frames": 1 },
+      "kernwoorden": [
+        { "tekst": "volume", "bij": "s2-r2" },
+        { "tekst": "letter: V", "bij": "s2-r2" },
+        { "tekst": "maatcilinder", "bij": "s2-r3" },
+        { "tekst": "1 ml = 1 cm³", "bij": "s2-r4", "accent": true }
+      ],
+      "getekend": [
+        { "type": "maatcilinder", "van": 35, "max": 50, "stap": 10, "eenheid": "ml", "bij": "s2-r3", "oog": true }
+      ],
+      "regels": [
+        { "id": "s2-r1", "spreker": "sami", "samiUitdrukking": "vragend", "tekst": "En wat is volume?", "uitspraak": "[curious] En wat is volume?" },
+        { "id": "s2-r2", "spreker": "docent", "tekst": "Volume is hoeveel ruimte iets inneemt. De letter is V.", "uitspraak": "Volume is hoeveel ruimte iets inneemt. De letter is vee." },
+        { "id": "s2-r3", "spreker": "docent", "tekst": "Water meet je met een maatcilinder. Hier staat het water op 35 ml.", "uitspraak": "Water meet je met een maatcilinder. Hier staat het water op vijfendertig milliliter." },
+        { "id": "s2-r4", "spreker": "docent", "tekst": "Bij vaste voorwerpen gebruik je cm³. Onthoud: 1 ml is 1 cm³.", "uitspraak": "Bij vaste voorwerpen gebruik je kubieke centimeter. Onthoud: één milliliter is één kubieke centimeter." }
+      ]
+    },
+    {
+      "id": "s3", "kop": "ONDERDOMPELMETHODE", "fase": "KIJK", "indeling": "SPLIT",
+      "shot": { "naam": "onderdompel-steen", "frames": 90, "startBij": "s3-r3" },
+      "geluiden": [{ "bestand": "audio/plons.mp3", "bij": "s3-r3", "na": 0.35 }],
+      "kernwoorden": [
+        { "tekst": "onderdompelmethode", "bij": "s3-r2" },
+        { "tekst": "volume voorwerp = eindvolume − beginvolume", "bij": "s3-r4" },
+        { "tekst": "25 − 15 = 10 ml", "bij": "s3-r4" },
+        { "tekst": "10 ml = 10 cm³", "bij": "s3-r4", "accent": true }
+      ],
+      "getekend": [
+        { "type": "maatcilinder", "van": 15, "naar": 25, "max": 30, "stap": 5, "eenheid": "ml", "bij": "s3-r2", "stijgBij": "s3-r3", "voorwerp": "steen", "labels": true }
+      ],
+      "regels": [
+        { "id": "s3-r1", "spreker": "sami", "samiUitdrukking": "vragend", "tekst": "Maar een steen heeft geen nette vorm. Hoe meet ik het volume van een steen?", "uitspraak": "[curious] Maar een steen heeft geen nette vorm. Hoe meet ik het volume van een steen?" },
+        { "id": "s3-r2", "spreker": "docent", "tekst": "Met de onderdompelmethode. Stap 1: lees het water af. Het staat op 15 ml.", "uitspraak": "Met de onderdompelmethode. Stap één: lees het water af. Het staat op vijftien milliliter." },
+        { "id": "s3-r3", "spreker": "docent", "tekst": "Stap 2: laat de steen helemaal onder water zakken. Lees opnieuw af: 25 ml.", "uitspraak": "Stap twee: laat de steen helemaal onder water zakken. Lees opnieuw af: vijfentwintig milliliter." },
+        { "id": "s3-r4", "spreker": "docent", "tekst": "Stap 3: reken het verschil uit. 25 − 15 = 10. De steen heeft een volume van 10 cm³.", "uitspraak": "Stap drie: reken het verschil uit. Vijfentwintig min vijftien is tien. De steen heeft een volume van tien kubieke centimeter." },
+        { "id": "s3-r5", "spreker": "sami", "samiUitdrukking": "verbaasd", "tekst": "Het water stijgt, omdat de steen ruimte inneemt.", "uitspraak": "Het water stijgt, omdat de steen ruimte inneemt." },
+        { "id": "s3-r6", "spreker": "docent", "tekst": "Precies.", "uitspraak": "[warmly] Precies." }
+      ]
+    },
+    {
+      "id": "s4", "kop": "DICHTHEID", "fase": "KIJK", "indeling": "SPLIT",
+      "shot": { "naam": "dichtheid-weegschalen", "frames": 1 },
+      "kernwoorden": [
+        { "tekst": "dichtheid", "bij": "s4-r3" },
+        { "tekst": "teken: ρ (rho)", "bij": "s4-r4" },
+        { "tekst": "eenheid: g/cm³", "bij": "s4-r5" },
+        { "tekst": "stofeigenschap", "bij": "s4-r7", "accent": true }
+      ],
+      "getekend": [
+        { "type": "weegschaal", "items": [{ "label": "aluminium", "waarde": 27 }, { "label": "ijzer", "waarde": 79 }], "eenheid": "g", "bij": "s4-r2", "tot": "s4-r4" },
+        { "type": "formule", "bij": "s4-r4", "tot": "s4-r7", "regels": [
+          { "tekst": "ρ = m / V", "bij": "s4-r4" },
+          { "tekst": "ijzer: 79 / 10 = 7,9 g/cm³", "bij": "s4-r5" },
+          { "tekst": "aluminium: 27 / 10 = 2,7 g/cm³", "bij": "s4-r5" }
+        ] },
+        { "type": "driehoek", "bij": "s4-r7", "boven": "m", "linksOnder": "ρ", "rechtsOnder": "V", "formules": ["ρ = m / V", "m = ρ × V", "V = m / ρ"] }
+      ],
+      "regels": [
+        { "id": "s4-r1", "spreker": "docent", "tekst": "Terug naar de blokjes. Ze hebben allebei een volume van 10 cm³.", "uitspraak": "Terug naar de blokjes. Ze hebben allebei een volume van tien kubieke centimeter." },
+        { "id": "s4-r2", "spreker": "docent", "tekst": "Het blokje aluminium heeft een massa van 27 g. Het blokje ijzer 79 g.", "uitspraak": "Het blokje aluminium heeft een massa van zevenentwintig gram. Het blokje ijzer negenenzeventig gram." },
+        { "id": "s4-r3", "spreker": "docent", "tekst": "Dat komt door de dichtheid. Dichtheid is hoeveel massa er in 1 cm³ van een stof zit.", "uitspraak": "Dat komt door de dichtheid. Dichtheid is hoeveel massa er in één kubieke centimeter van een stof zit." },
+        { "id": "s4-r4", "spreker": "docent", "tekst": "Het teken is de Griekse letter ρ (rho). De formule: ρ = m / V.", "uitspraak": "Het teken is de Griekse letter ro. De formule: ro is em gedeeld door vee." },
+        { "id": "s4-r5", "spreker": "docent", "tekst": "IJzer: 79 / 10 = 7,9 g/cm³. Aluminium: 27 / 10 = 2,7.", "uitspraak": "IJzer: negenenzeventig gedeeld door tien is zeven komma negen gram per kubieke centimeter. Aluminium: zevenentwintig gedeeld door tien is twee komma zeven." },
+        { "id": "s4-r6", "spreker": "sami", "samiUitdrukking": "blij", "tekst": "Dus in ijzer zit meer massa in dezelfde ruimte.", "uitspraak": "Dus in ijzer zit meer massa in dezelfde ruimte." },
+        { "id": "s4-r7", "spreker": "docent", "tekst": "Ja. Dichtheid is een stofeigenschap. Met de formuledriehoek reken je ook m of V uit.", "uitspraak": "Ja. Dichtheid is een stofeigenschap. Met de formuledriehoek reken je ook em of vee uit." }
+      ]
+    },
+    {
+      "id": "s5", "kop": "REKEN ZELF", "fase": "CHECK", "indeling": "STATUS",
+      "kernwoorden": [],
+      "getekend": [
+        { "type": "opgave", "vraag": ["m = 106,8 g", "V = 12 cm³", "ρ = ?"], "aftelBij": "s5-r1", "aftelSeconden": 4, "antwoord": ["ρ = 106,8 / 12 = 8,9 g/cm³", "Het blokje kan van koper zijn."], "antwoordBij": "s5-r2" }
+      ],
+      "regels": [
+        { "id": "s5-r1", "spreker": "docent", "pauzeNa": 4, "tekst": "Nu jij. Een blokje heeft een massa van 106,8 g en een volume van 12 cm³. Wat is de dichtheid? Zet de video op pauze en reken het uit.", "uitspraak": "Nu jij. Een blokje heeft een massa van honderdzes komma acht gram en een volume van twaalf kubieke centimeter. Wat is de dichtheid? Zet de video op pauze en reken het uit." },
+        { "id": "s5-r2", "spreker": "docent", "tekst": "106,8 / 12 = 8,9 g/cm³. Het blokje kan van koper zijn.", "uitspraak": "Honderdzes komma acht gedeeld door twaalf is acht komma negen gram per kubieke centimeter. Het blokje kan van koper zijn." }
+      ]
+    },
+    {
+      "id": "s6", "kop": "DIT WEET JE NU", "fase": "KLAAR", "indeling": "STATUS",
+      "kernwoorden": [],
+      "getekend": [
+        { "type": "kaarten", "bij": "s6-r1", "kaarten": [
+          { "kop": "MASSA", "regels": ["weegschaal", "g en kg"] },
+          { "kop": "VOLUME", "regels": ["maatcilinder", "ml en cm³"] },
+          { "kop": "DICHTHEID", "regels": ["ρ = m / V", "g/cm³"] }
+        ] }
+      ],
+      "regels": [
+        { "id": "s6-r1", "spreker": "docent", "tekst": "Massa meet je met een weegschaal. Volume met een maatcilinder. Dichtheid is massa gedeeld door volume.", "uitspraak": "Massa meet je met een weegschaal. Volume met een maatcilinder. Dichtheid is massa gedeeld door volume." },
+        { "id": "s6-r2", "spreker": "sami", "samiUitdrukking": "blij", "tekst": "Nu ga ik de herhalingsopdrachten maken.", "uitspraak": "[happy] Nu ga ik de herhalingsopdrachten maken." }
+      ]
+    }
+  ]
+}

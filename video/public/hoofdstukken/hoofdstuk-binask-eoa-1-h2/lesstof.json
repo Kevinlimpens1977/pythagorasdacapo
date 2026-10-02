@@ -1,0 +1,237 @@
+{
+  "hoofdstukId": "hoofdstuk-binask-eoa-1-h2",
+  "titel": "Massa, volume en dichtheid",
+  "vakId": "vak-binask-eoa",
+  "gelezenOp": "2026-10-02T11:04:25.151Z",
+  "paragrafen": [
+    {
+      "id": "paragraaf-binask-eoa-1-2-1",
+      "code": "2.1",
+      "titel": "2.1 Massa",
+      "order": 1,
+      "heeftSamenvatting": true,
+      "blokken": [
+        {
+          "id": "block-binask-eoa-1-21-theory-2",
+          "type": "theory",
+          "titel": "Wat is massa?",
+          "tekst": "Alles om je heen heeft een massa. Een boek, een telefoon, een appel en een fiets hebben allemaal een massa. In deze lessen betekent massa: hoeveel gram of kilogram iets is.\nJe meet massa met een weegschaal. Leg het voorwerp op de weegschaal en lees het getal af. Staat er bijvoorbeeld 180 g? Dan is de massa van het voorwerp 180 gram.\nVoor massa gebruiken we de letter m. De twee belangrijkste eenheden zijn gram (g) en kilogram (kg). Kleine voorwerpen geven we vaak in gram. Zwaardere voorwerpen geven we vaak in kilogram.\nIn het dagelijks leven zeggen mensen vaak 'gewicht'. Bij BiNaSk gebruiken we in deze lessen het woord massa.\nKernbegrippen\nmassaHoeveel gram of kilogram een voorwerp is.weegschaalMeetinstrument waarmee je massa meet.gram (g)Eenheid voor kleine massa's.kilogram (kg)Eenheid voor grotere massa's.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-21-example-3",
+          "type": "example",
+          "titel": "Voorbeeld - een pak rijst wegen",
+          "tekst": "Je legt een pak rijst op een weegschaal. Op het scherm staat 750 g.\n- Stap 1: Het meetinstrument is de weegschaal.\n- Stap 2: De grootheid die je meet is massa.\n- Stap 3: De eenheid is gram (g).\nConclusie: De massa van het pak rijst is 750 g.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-21-theory-4",
+          "type": "theory",
+          "titel": "Gram en kilogram",
+          "tekst": "Gram en kilogram zijn twee eenheden voor massa. Je moet ze soms naar elkaar omrekenen.\n1 kilogram = 1000 gram. Van kilogram naar gram doe je keer 1000. Voorbeeld: 3 kg = 3 × 1000 = 3000 g.\nVan gram naar kilogram doe je delen door 1000. Voorbeeld: 2500 g = 2500 : 1000 = 2,5 kg.\nLet bij een som altijd eerst op de eenheid. Als je twee massa's bij elkaar optelt, moeten ze in dezelfde eenheid staan.\nKernbegrippen\nomrekenenEen getal in een andere eenheid schrijven zonder de hoeveelheid te veranderen.1 kg = 1000 gDe belangrijkste omzetting voor massa.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-21-summary-6",
+          "type": "summary",
+          "titel": "Samenvatting",
+          "tekst": "- Massa zegt hoeveel gram of kilogram iets is.\n- Je meet massa met een weegschaal.\n- Voor massa gebruiken we de letter m.\n- Gram schrijf je als g.\n- Kilogram schrijf je als kg.\n- 1 kg is 1000 g.\n- Van kg naar g doe je × 1000; van g naar kg doe je : 1000.\nKernbegrippen\nmassaHoeveel gram of kilogram een voorwerp is.weegschaalMeetinstrument voor massa.gramgkilogramkg",
+          "kernbegrippen": []
+        }
+      ]
+    },
+    {
+      "id": "paragraaf-binask-eoa-1-2-2",
+      "code": "2.2",
+      "titel": "2.2 Volume",
+      "order": 2,
+      "heeftSamenvatting": true,
+      "blokken": [
+        {
+          "id": "block-binask-eoa-1-22-theory-2",
+          "type": "theory",
+          "titel": "Wat is volume?",
+          "tekst": "Het volume vertelt hoeveel ruimte een voorwerp of een vloeistof inneemt. Een grote doos neemt meer ruimte in dan een klein doosje. De grote doos heeft dan een groter volume.\nVoor volume gebruiken we de letter V. Bij vloeistoffen gebruiken we vaak milliliter (ml) en liter (l). Bij vaste voorwerpen gebruiken we vaak kubieke centimeter (cm³).\nEen belangrijke afspraak is: 1 ml = 1 cm³. Dus 20 ml water heeft hetzelfde volume als 20 cm³.\nVoor grotere volumes geldt ook: 1 liter = 1 dm³. In dit hoofdstuk werken we vooral met ml en cm³.\nKernbegrippen\nvolumeHoeveel ruimte iets inneemt.milliliterEenheid voor volume; afkorting ml.kubieke centimeterEenheid voor volume; afkorting cm³.1 ml = 1 cm³Twee verschillende schrijfwijzen voor hetzelfde volume.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-22-example-3",
+          "type": "example",
+          "titel": "Voorbeeld - water in een maatcilinder",
+          "tekst": "In een maatcilinder staat het water bij 35 ml.\n- Stap 1: Lees de schaal van de maatcilinder af.\n- Stap 2: De eenheid is ml.\n- Stap 3: Omdat 1 ml = 1 cm³, is 35 ml ook 35 cm³.\nConclusie: Het volume van het water is 35 ml = 35 cm³.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-22-theory-4",
+          "type": "theory",
+          "titel": "Volume van een voorwerp",
+          "tekst": "Heeft een voorwerp de vorm van een blok? Dan kun je het volume berekenen met lengte × breedte × hoogte. Meet alle drie de maten in centimeter. De uitkomst is dan in cm³.\nVoorbeeld: een blok is 5 cm lang, 3 cm breed en 2 cm hoog. Dan is V = 5 × 3 × 2 = 30 cm³.\nEen steen of sleutel heeft geen nette blokvorm. Dan kun je de onderdompelmethode gebruiken. Lees eerst het volume van het water af. Doe daarna het voorwerp helemaal in het water en lees opnieuw af.\nHet volume van het voorwerp is: eindvolume - beginvolume. Stond het water eerst op 15 ml en daarna op 25 ml? Dan is het volume 25 - 15 = 10 ml = 10 cm³.\nKernbegrippen\nmaatcilinderMeetinstrument voor het volume van een vloeistof.V = lengte × breedte × hoogteFormule voor een rechthoekig blok.onderdompelmethodeMethode om het volume van een onregelmatig voorwerp met water te meten.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-22-example-5",
+          "type": "example",
+          "titel": "Voorbeeld - volume van een steen",
+          "tekst": "In een maatcilinder zit eerst 15 ml water. Je laat een steen helemaal onder water zakken. Daarna staat het water op 25 ml.\n- Stap 1: Beginvolume = 15 ml.\n- Stap 2: Eindvolume = 25 ml.\n- Stap 3: Volume steen = 25 - 15 = 10 ml.\n- Stap 4: 10 ml = 10 cm³.\nConclusie: Het volume van de steen is 10 cm³.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-22-summary-7",
+          "type": "summary",
+          "titel": "Samenvatting",
+          "tekst": "- Volume zegt hoeveel ruimte iets inneemt.\n- Voor volume gebruiken we de letter V.\n- Bij vloeistoffen gebruiken we vaak ml of l.\n- Bij vaste voorwerpen gebruiken we vaak cm³.\n- 1 ml is hetzelfde volume als 1 cm³.\n- Voor een blok geldt: V = lengte × breedte × hoogte.\n- Bij de onderdompelmethode geldt: volume voorwerp = eindvolume - beginvolume.\nKernbegrippen\nvolumeHoeveel ruimte iets inneemt.maatcilinderMeetinstrument voor vloeistofvolume.cm³Kubieke centimeter.onderdompelmethodeVolume bepalen met het verschil in waterstand.",
+          "kernbegrippen": []
+        }
+      ]
+    },
+    {
+      "id": "paragraaf-binask-eoa-1-2-3",
+      "code": "2.3",
+      "titel": "2.3 Dichtheid",
+      "order": 3,
+      "heeftSamenvatting": true,
+      "blokken": [
+        {
+          "id": "block-binask-eoa-1-23-theory-2",
+          "type": "theory",
+          "titel": "Wat is dichtheid?",
+          "tekst": "Twee blokjes kunnen even groot zijn, maar toch een andere massa hebben. Een blokje ijzer voelt bijvoorbeeld zwaarder dan een even groot blokje aluminium. Dat komt door de dichtheid.\nDe dichtheid vertelt hoeveel massa een bepaalde hoeveelheid van een stof heeft. Bij vaste stoffen kijken we vaak naar de massa van 1 cm³.\nDichtheid is een stofeigenschap. Daardoor kun je stoffen met elkaar vergelijken. Aluminium heeft bijvoorbeeld een dichtheid van ongeveer 2,7 g/cm³. IJzer heeft een dichtheid van ongeveer 7,9 g/cm³.\nVoor dichtheid gebruiken we de Griekse letter ρ. Deze letter heet rho en spreek je uit als 'roo'. De eenheid die we in dit hoofdstuk gebruiken is g/cm³.\nDe formule\nρ = m / V\nIn woorden: dichtheid = massa : volume. Gebruik massa in gram en volume in cm³.\nKernbegrippen\ndichtheidMassa per volume-eenheid van een stof.stofeigenschapEigenschap waarmee je een stof kunt herkennen.ρ (rho)Symbool voor dichtheid.g/cm³Eenheid voor dichtheid in dit hoofdstuk.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-23-example-3",
+          "type": "example",
+          "titel": "Voorbeeld - dichtheid berekenen",
+          "tekst": "Een metalen blokje heeft een massa van 106,8 g en een volume van 12 cm³.\n- Gegeven: m = 106,8 g en V = 12 cm³.\n- Gevraagd: ρ = ? g/cm³.\n- Formule: ρ = m / V.\n- Invullen: ρ = 106,8 / 12.\n- Uitkomst: ρ = 8,9 g/cm³.\nIn een dichtheidstabel in Binas hoort ongeveer 8,9 g/cm³ bij koper. Het blokje kan dus van koper zijn.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-23-theory-4",
+          "type": "theory",
+          "titel": "De formuledriehoek gebruiken",
+          "tekst": "Met de formuledriehoek kun je drie verschillende dingen berekenen. Boven staat de massa m. Onder staan dichtheid ρ en volume V.\nDek met je hand af wat je zoekt. Zoek je ρ? Dan blijft m boven V over: ρ = m / V. Zoek je m? Dan blijven ρ en V naast elkaar staan: m = ρ × V. Zoek je V? Dan blijft m boven ρ over: V = m / ρ.\nSchrijf bij elke berekening eerst op wat je weet. Kies daarna de formule. Vul pas daarna de getallen in. Schrijf als laatste de juiste eenheid op.\nKernbegrippen\nρ = m / VDichtheid = massa gedeeld door volume.m = ρ × VMassa = dichtheid keer volume.V = m / ρVolume = massa gedeeld door dichtheid.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-23-example-5",
+          "type": "example",
+          "titel": "Voorbeelden - massa en volume berekenen",
+          "tekst": "Massa: Een stuk aluminium heeft een dichtheid van 2,7 g/cm³ en een volume van 10 cm³. m = ρ × V = 2,7 × 10 = 27 g.\nVolume: Een stuk ijzer heeft een massa van 79 g en een dichtheid van 7,9 g/cm³. V = m / ρ = 79 / 7,9 = 10 cm³.\nControleer vóór het rekenen altijd of de massa in gram staat en het volume in cm³. Moet je eerst omrekenen? Doe dat vóór je de dichtheidsformule gebruikt.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-23-summary-7",
+          "type": "summary",
+          "titel": "Samenvatting",
+          "tekst": "- Dichtheid is een stofeigenschap.\n- Voor dichtheid gebruiken we de letter ρ (rho).\n- In dit hoofdstuk gebruiken we g/cm³ als eenheid voor dichtheid.\n- De formule is ρ = m / V.\n- Massa bereken je met m = ρ × V.\n- Volume bereken je met V = m / ρ.\n- Met een dichtheidstabel in Binas kun je een onbekende stof herkennen.\n- Gebruik voor deze berekeningen massa in g en volume in cm³.\nKernbegrippen\ndichtheidMassa per volume-eenheid.ρSymbool voor dichtheid.formuledriehoekHulp om de juiste formule te kiezen.BinasTabellenboek waarin je onder andere dichtheden kunt opzoeken.",
+          "kernbegrippen": []
+        }
+      ]
+    },
+    {
+      "id": "paragraaf-binask-eoa-1-2-4",
+      "code": "2.4",
+      "titel": "2.4 Herhalingsopdrachten",
+      "order": 4,
+      "heeftSamenvatting": true,
+      "blokken": [
+        {
+          "id": "block-binask-eoa-1-24-theory-1",
+          "type": "theory",
+          "titel": "Hoe pak je een gemengde opgave aan?",
+          "tekst": "Bij herhalingsopgaven staat niet altijd meteen welke formule je nodig hebt. Lees daarom eerst de hele vraag. Onderstreep de getallen en schrijf de eenheden erbij.\nVraag jezelf daarna af: wat moet ik vinden? Gaat het om massa, volume of dichtheid? Kies pas daarna de formule of meetmethode.\nSoms moet je eerst een tussenstap doen. Je berekent bijvoorbeeld eerst het volume van een blok en daarna de dichtheid. Of je zet eerst kilogram om naar gram.\nGebruik steeds dezelfde volgorde: gegevens - gevraagd - formule of methode - berekening - antwoord met eenheid. Zo voorkom je dat je een getal in de verkeerde formule zet.\nKernbegrippen\ngegevensDe informatie en getallen die je al hebt.gevraagdWat je aan het einde moet weten.tussenstapEen berekening die je eerst nodig hebt voordat je het eindantwoord kunt berekenen.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-24-example-2",
+          "type": "example",
+          "titel": "Voorbeeld - van afmetingen naar dichtheid",
+          "tekst": "Een metalen blok is 5 cm lang, 2 cm breed en 2 cm hoog. De massa is 54 g.\n- Stap 1: Bereken het volume: V = 5 × 2 × 2 = 20 cm³.\n- Stap 2: Bereken de dichtheid: ρ = m / V = 54 / 20 = 2,7 g/cm³.\n- Stap 3: In Binas kun je zien dat 2,7 g/cm³ ongeveer bij aluminium hoort.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-24-summary-4",
+          "type": "summary",
+          "titel": "Samenvatting",
+          "tekst": "- Lees eerst wat je weet en wat je moet berekenen.\n- Zet eenheden om voordat je gaat rekenen.\n- Massa meet je in g of kg.\n- Volume gebruik je vaak in ml of cm³.\n- Voor dichtheid gebruik je ρ = m / V.\n- Soms heb je eerst een tussenstap nodig.\n- Schrijf altijd een eenheid achter je eindantwoord.\nKernbegrippen\nstappenplanGegevens - gevraagd - formule/methode - berekening - antwoord.tussenstapEen extra berekening die nodig is voor het eindantwoord.",
+          "kernbegrippen": []
+        }
+      ]
+    },
+    {
+      "id": "paragraaf-binask-eoa-1-2-5",
+      "code": "2.5",
+      "titel": "2.5 Plusopdrachten",
+      "order": 5,
+      "heeftSamenvatting": true,
+      "blokken": [
+        {
+          "id": "block-binask-eoa-1-25-theory-1",
+          "type": "theory",
+          "titel": "Plusniveau - meerdere stappen combineren",
+          "tekst": "Bij plusopgaven krijg je niet altijd alles in de vorm die je nodig hebt. Je moet soms eerst een eenheid omrekenen, het volume bepalen of de massa van alleen een vloeistof uitrekenen.\nWerk daarom rustig en schrijf elke stap apart. Zet bijvoorbeeld eerst 1,78 kg om naar 1780 g. Gebruik daarna pas de formule voor dichtheid.\nControleer ook of je antwoord logisch is. Een dichtheid van 8,9 g/cm³ past bijvoorbeeld bij een metaal zoals koper. Een heel klein getal past daar niet goed bij.\nBij een onbekende stof mag je als laatste stap een dichtheidstabel in Binas gebruiken. Je berekening komt altijd vóór het opzoeken.\nKernbegrippen\nmeerstapsopgaveEen opgave waarin je twee of meer berekeningen achter elkaar doet.controleNagaan of je antwoord en eenheid logisch zijn.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-25-example-2",
+          "type": "example",
+          "titel": "Voorbeeld - eerst omrekenen, dan dichtheid",
+          "tekst": "Een voorwerp heeft een massa van 1,78 kg en een volume van 200 cm³.\n- Stap 1: Zet de massa om: 1,78 kg = 1780 g.\n- Stap 2: Gebruik ρ = m / V.\n- Stap 3: ρ = 1780 / 200 = 8,9 g/cm³.\n- Stap 4: Zoek 8,9 g/cm³ op in Binas. Dit past ongeveer bij koper.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-25-summary-4",
+          "type": "summary",
+          "titel": "Samenvatting",
+          "tekst": "- Bij een moeilijke opgave maak je eerst een plan.\n- Zet eenheden om vóórdat je een formule gebruikt.\n- Bereken een tussenstap als dat nodig is.\n- Gebruik de formuledriehoek om de juiste dichtheidsformule te kiezen.\n- Controleer of je antwoord een logische eenheid heeft.\n- Gebruik Binas pas nadat je de dichtheid hebt berekend.\nKernbegrippen\nmeerstapsopgaveEen opgave met meerdere berekeningen.BinasGebruik je na de berekening om een stof te vergelijken of te herkennen.",
+          "kernbegrippen": []
+        }
+      ]
+    },
+    {
+      "id": "paragraaf-binask-eoa-1-2-6",
+      "code": "2.6",
+      "titel": "2.6 Uitdaging: drijven en zinken",
+      "order": 6,
+      "heeftSamenvatting": true,
+      "blokken": [
+        {
+          "id": "block-binask-eoa-1-26-theory-2",
+          "type": "theory",
+          "titel": "Drijven, zweven of zinken?",
+          "tekst": "Deze paragraaf is extra. Hij is niet verplicht. Hij is voor wie meer wil weten.\nJe weet al: kurk drijft op water en ijzer zinkt. Maar waarom? Het gaat niet om zwaar of licht. Een zware boomstam drijft ook. Het gaat om de dichtheid.\nVergelijk de dichtheid van het voorwerp met de dichtheid van de vloeistof:\n- ρ voorwerp is kleiner dan ρ vloeistof: het voorwerp drijft.\n- ρ voorwerp is even groot als ρ vloeistof: het voorwerp zweeft. Het blijft ergens in de vloeistof hangen.\n- ρ voorwerp is groter dan ρ vloeistof: het voorwerp zinkt.\nLet op: water is niet de enige vloeistof. Olie heeft een dichtheid van 0,92 g/cm³. Zout water heeft 1,20 g/cm³. Hetzelfde voorwerp kan in water zinken en in zout water drijven.\nEen schip van staal drijft toch. Hoe kan dat? Een schip is hol. Binnenin zit veel lucht. Je rekent dan met de gemiddelde dichtheid: de massa van het hele schip gedeeld door het volume van het hele schip. Die gemiddelde dichtheid is kleiner dan 1,00 g/cm³.\nKernbegrippen\ndrijvenρ voorwerp is kleiner dan ρ vloeistof.zwevenρ voorwerp is even groot als ρ vloeistof.zinkenρ voorwerp is groter dan ρ vloeistof.gemiddelde dichtheidDe massa van het hele voorwerp gedeeld door het volume van het hele voorwerp, met de lucht erin.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-26-example-3",
+          "type": "example",
+          "titel": "Voorbeeld - een druif in water en in zout water",
+          "tekst": "Een druif heeft een massa van 5,15 g en een volume van 5,0 cm³.\n- Stap 1: Bereken de dichtheid: ρ = m / V = 5,15 / 5,0 = 1,03 g/cm³.\n- Stap 2: Vergelijk met water: 1,03 is groter dan 1,00. De druif zinkt in water.\n- Stap 3: Vergelijk met zout water: 1,03 is kleiner dan 1,20. De druif drijft in zout water.\nConclusie: dezelfde druif zinkt in water en drijft in zout water.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-26-theory-4",
+          "type": "theory",
+          "titel": "Vloeistoffen wegen met tarra",
+          "tekst": "Een vloeistof kun je niet los op een weegschaal leggen. Je hebt altijd een bakje nodig, bijvoorbeeld een maatcilinder. De weegschaal weegt dan het bakje en de vloeistof samen. Dat los je op twee manieren op.\nManier 1: aftrekken. Weeg eerst de lege maatcilinder. Weeg daarna de maatcilinder met de vloeistof. Massa vloeistof = massa vol - massa leeg.\nManier 2: tarra. Zet de lege maatcilinder op de weegschaal. Druk op de knop NUL. Het scherm staat nu op 0,0 g. Schenk de vloeistof erin. Nu zie je alleen de massa van de vloeistof.\nHet volume lees je af op de maatcilinder. Daarna reken je de dichtheid uit met ρ = m / V.\nSommige vloeistoffen mengen niet, of heel langzaam. Schenk je ze voorzichtig in één glas, dan krijg je lagen. De vloeistof met de grootste dichtheid ligt onderop. De vloeistof met de kleinste dichtheid ligt bovenop. Zo maak je een dichtheidstoren.\nKernbegrippen\ntarraDe weegschaal op nul zetten terwijl het lege bakje erop staat.massa vloeistofMassa vol - massa leeg.dichtheidstorenLagen vloeistof in één glas, met de grootste dichtheid onderop.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-26-example-5",
+          "type": "example",
+          "titel": "Voorbeeld - de dichtheid van olie",
+          "tekst": "Een lege maatcilinder weegt 60,0 g. Je schenkt er 50 ml olie in. Samen wegen ze 106,0 g.\n- Stap 1: Massa olie = 106,0 - 60,0 = 46,0 g.\n- Stap 2: Volume olie = 50 ml = 50 cm³.\n- Stap 3: ρ = m / V = 46,0 / 50 = 0,92 g/cm³.\n- Stap 4: 0,92 is kleiner dan 1,00. Olie drijft dus op water.\nConclusie: de dichtheid van olie is 0,92 g/cm³.",
+          "kernbegrippen": []
+        },
+        {
+          "id": "block-binask-eoa-1-26-summary-8",
+          "type": "summary",
+          "titel": "Samenvatting",
+          "tekst": "- Vergelijk ρ voorwerp met ρ vloeistof.\n- Kleiner: het voorwerp drijft. Even groot: het zweeft. Groter: het zinkt.\n- Het gaat om de dichtheid, niet om zwaar of licht.\n- Een hol voorwerp, zoals een schip: reken met de gemiddelde dichtheid.\n- Een vloeistof weeg je met aftrekken (vol - leeg) of met tarra (NUL met het lege bakje erop).\n- In een dichtheidstoren ligt de grootste dichtheid onderop.\nKernbegrippen\ndrijven, zweven, zinkenρ voorwerp kleiner, gelijk of groter dan ρ vloeistof.tarraDe weegschaal op nul met het lege bakje erop.dichtheidstorenLagen vloeistof, de grootste dichtheid onderop.gemiddelde dichtheidTotale massa gedeeld door totaal volume.",
+          "kernbegrippen": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "fps": 30,
+  "regels": {
+    "s0-r1": {
+      "bestand": "audio/s0-r1.mp3",
+      "duur": 6.32
+    },
+    "s0-r2": {
+      "bestand": "audio/s0-r2.mp3",
+      "duur": 5.6
+    },
+    "s1-r1": {
+      "bestand": "audio/s1-r1.mp3",
+      "duur": 5.2
+    },
+    "s1-r2": {
+      "bestand": "audio/s1-r2.mp3",
+      "duur": 3.52
+    },
+    "s1-r3": {
+      "bestand": "audio/s1-r3.mp3",
+      "duur": 2.16
+    },
+    "s1-r4": {
+      "bestand": "audio/s1-r4.mp3",
+      "duur": 5.04
+    },
+    "s1-r5": {
+      "bestand": "audio/s1-r5.mp3",
+      "duur": 6.16
+    },
+    "s2-r1": {
+      "bestand": "audio/s2-r1.mp3",
+      "duur": 1.92
+    },
+    "s2-r2": {
+      "bestand": "audio/s2-r2.mp3",
+      "duur": 4.24
+    },
+    "s2-r3": {
+      "bestand": "audio/s2-r3.mp3",
+      "duur": 5.04
+    },
+    "s2-r4": {
+      "bestand": "audio/s2-r4.mp3",
+      "duur": 7.04
+    },
+    "s3-r1": {
+      "bestand": "audio/s3-r1.mp3",
+      "duur": 4.64
+    },
+    "s3-r2": {
+      "bestand": "audio/s3-r2.mp3",
+      "duur": 6.4
+    },
+    "s3-r3": {
+      "bestand": "audio/s3-r3.mp3",
+      "duur": 6.64
+    },
+    "s3-r4": {
+      "bestand": "audio/s3-r4.mp3",
+      "duur": 8.64
+    },
+    "s3-r5": {
+      "bestand": "audio/s3-r5.mp3",
+      "duur": 3.52
+    },
+    "s3-r6": {
+      "bestand": "audio/s3-r6.mp3",
+      "duur": 1.2
+    },
+    "s4-r1": {
+      "bestand": "audio/s4-r1.mp3",
+      "duur": 4.72
+    },
+    "s4-r2": {
+      "bestand": "audio/s4-r2.mp3",
+      "duur": 6.16
+    },
+    "s4-r3": {
+      "bestand": "audio/s4-r3.mp3",
+      "duur": 6.16
+    },
+    "s4-r4": {
+      "bestand": "audio/s4-r4.mp3",
+      "duur": 5.68
+    },
+    "s4-r5": {
+      "bestand": "audio/s4-r5.mp3",
+      "duur": 9.84
+    },
+    "s4-r6": {
+      "bestand": "audio/s4-r6.mp3",
+      "duur": 3.76
+    },
+    "s4-r7": {
+      "bestand": "audio/s4-r7.mp3",
+      "duur": 6
+    },
+    "s5-r1": {
+      "bestand": "audio/s5-r1.mp3",
+      "duur": 10.88
+    },
+    "s5-r2": {
+      "bestand": "audio/s5-r2.mp3",
+      "duur": 7.44
+    },
+    "s6-r1": {
+      "bestand": "audio/s6-r1.mp3",
+      "duur": 6.96
+    },
+    "s6-r2": {
+      "bestand": "audio/s6-r2.mp3",
+      "duur": 2.64
+    }
+  }
+}

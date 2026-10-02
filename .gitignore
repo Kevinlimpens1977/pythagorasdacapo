@@ -32,3 +32,11 @@ dvlingo_startbestanden/keuring/
 # Back-ups van de leeromgeving-opruimactie. Bevatten leerlingnamen, e-mailadressen
 # en voortgang, dus die horen nooit in git of op GitHub.
 exports/reset-backups/
+
+# Explainervideo's: gegenereerde stemmen en Blender-renders horen niet in git.
+# Draaiboek, timing en lesstof per hoofdstuk wel.
+video/public/hoofdstukken/*/audio/
+video/public/hoofdstukken/*/shots/
+video/out/
+# Python-cache van de Blender-scripts (video/blender/).
+__pycache__/
