@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "titel": "Lesideeën DV klas 1, hoofdstuk 4 tot en met 23",
+    "datum": "2026-09-30",
+    "uitleg": "Per hoofdstuk de opening, één doorlopende beeldspraak, werkvormen die digitaal kunnen, basis, TL-plus en een inclusie-idee. Paragrafen, leerdoelen en kerndoelelementen komen uit dv-klas1-curriculum.json. Tintara is alleen inspiratie voor werkvormen en beeldspraak: niets is overgenomen, de lesnummers staan erbij zodat je weet waar het idee vandaan komt."
+  },
+  "hoofdstukken": {
+    "4": {
+      "opening": "Een schermafbeelding van een rommelige Downloads-map: Document1, nieuw (3), werkstuk definitief ECHT. Vraag: waar is je Engels-verslag?",
+      "beeldspraak": "Je digitale kast. Mappen zijn laden, de bestandsnaam is het etiket. Lokaal opslaan is een kast thuis, de cloud een kast op school waar je overal bij kunt. Delen is een sleutel uitlenen: een kijksleutel of een werksleutel. De versiegeschiedenis is een fotoalbum van je kast.",
+      "werkvormen": ["Bestanden in de juiste la slepen en het beste etiket kiezen uit drie namen.", "Casus: Aya deelt haar verslag met Tim, die alleen mag lezen. Welke sleutel geeft ze?", "In tweetallen één gedeeld document: afspraken bovenaan, commentaar in plaats van wissen, daarna bewust een alinea wissen en de oude versie terughalen (bewijs)."],
+      "basis": "Stappenkaart met schermafbeeldingen.",
+      "tlPlus": "Een map voor een groepsproject inrichten met afspraken over namen en rechten.",
+      "inclusie": "Eén scherm per stap: map maken, naam geven, Delen, oogje of potlood. Klikvraag met twee plaatjes: oog of potlood.",
+      "inspiratie": "Tintara les 2 en 7 (mappen, cloud tegenover lokaal, rechten, versiegeschiedenis)."
+    },
+    "5": {
+      "opening": "Een foto van een supermarktkassa: hoeveel computers zie je? Daarna de systemen die je niet ziet: scanner, voorraad, bestelling, camera.",
+      "beeldspraak": "Achter de toonbank kijken. Elke werkplek heeft een voorkant die jij ziet en een achterkant waar de systemen werken. Rode draad: de mens blijft aan het stuur.",
+      "werkvormen": ["Vier werkplekken (supermarkt, ziekenhuis, garage, gemeente) koppelen aan hun systemen en taken.", "Klikvragen AI of geen AI: spamfilter, gezichtsontgrendeling, vertaalapp, lichtknop.", "Beroepenkaarten (monteur, verpleegkundige, logistiek, kapper): mens of machine, en past dit bij mij?"],
+      "basis": "Kiezen uit vier uitgewerkte werkplekken.",
+      "tlPlus": "Een nieuwsbericht over nieuwe technologie beoordelen: kan het, en waar houdt het op?",
+      "inclusie": "Eén werkplek per scherm: plaatje, drie pictogrammen, welk apparaat helpt hier? Afsluiten met duim omhoog of omlaag bij twee beroepen.",
+      "inspiratie": "Tintara les 49, 52 en 56 (AI die je al gebruikt, banen en AI, mens beslist). De systemen per werkplek en het bijhouden van ontwikkelingen zijn eigen werk."
+    },
+    "6": {
+      "opening": "Een dief heeft je wachtwoord. Komt hij binnen? Eerst stemmen, dan de uitleg.",
+      "beeldspraak": "Je account is je huis. Het wachtwoord is het slot, tweestapsverificatie een tweede slot waarvan alleen jij de sleutel bij je hebt (iets wat je weet en iets wat je hebt). Een update repareert een kapot raam. Openbaar wifi is praten in een volle bus.",
+      "werkvormen": ["Zoekplaat: een huis of laptop met open ramen (oude update, wachtwoord op een briefje, overal hetzelfde wachtwoord). Aanklikken.", "Casus: Daan is zijn telefoon kwijt. De stappen in de goede volgorde zetten.", "Ja of nee op openbaar wifi: filmpje kijken, inloggen bij de bank, wachtwoord typen."],
+      "basis": "Controlelijst van vijf punten, en het spel Wachtwoord Detective.",
+      "tlPlus": "Rekenen waarom vier losse woorden sterker zijn dan acht rare tekens.",
+      "inclusie": "Per scherm één slot met één vraag. Bij het huisplaatje: welk raam is open? Drie keuzes.",
+      "inspiratie": "Tintara les 1, 48, 70 en 72 (wachtwoordzin, weten en hebben, zwak apparaat, de mens als zwakste schakel). Openbaar wifi en telefoon kwijt zijn eigen werk."
+    },
+    "7": {
+      "opening": "Een nep-sms van de bank: zou je klikken? Anoniem stemmen.",
+      "beeldspraak": "De hengel. De oplichter vist, jij bent de vis. Het aas is angst, haast of een beloning. Het haakje is de link. Wie het aas herkent, bijt niet.",
+      "werkvormen": ["Nep-inbox met vijf berichten (bank, DigiD, pakket, gratis skins, prijsvraag): rode vlaggen aantikken, en zien waar de link echt heen gaat.", "Casus: Yusuf verkoopt zijn fiets online en krijgt een raar betaalverzoek. Welke stap is het haakje?", "Wat-nu-route op volgorde: niet reageren, screenshot, blokkeren, vertellen, melden, bij geld de bank bellen."],
+      "basis": "Drie uitgewerkte voorbeeldberichten.",
+      "tlPlus": "Zelf een nepbericht met twee trucs bouwen; een klasgenoot zoekt ze. Wat is malware en hoe komt het binnen?",
+      "inclusie": "Eén bericht per scherm: echt of nep? Daarna: wat is het aas? Drie pictogrammen: klok, cadeau, boos gezicht.",
+      "inspiratie": "Tintara les 10 en 72 (haast en angst, link checken, familiewachtwoord). De wat-nu-route en oplichting via marktplaatsen zijn eigen werk."
+    },
+    "8": {
+      "opening": "Welke drie dingen weet je telefoon al over jou sinds je vanochtend wakker werd?",
+      "beeldspraak": "Puzzelstukjes. Eén gegeven zegt weinig, samen vormen ze een puzzel van jou. Bedrijven leggen die puzzel. De AVG zegt: jij mag vragen welke stukjes ze hebben, en eisen dat ze weggaan.",
+      "werkvormen": ["Sorteren: persoonsgegeven of niet (naam, adres, foto, lievelingskleur, locatie, spelersnaam).", "Privacycheck met app-kaarten: past de toestemming bij wat de app doet?", "Casus: Noor wil weten wat een spelletjesbedrijf over haar bewaart. Inzage of verwijderen?", "Waarom is Alles accepteren fel gekleurd en Weigeren grijs?"],
+      "basis": "Twee bekende apps beoordelen met een ingevulde voorbeeldcheck.",
+      "tlPlus": "Een echte privacyverklaring lezen en drie gegevens noemen die de app verzamelt.",
+      "inclusie": "Eén puzzelstukje per scherm: zegt dit iets over jou? De privacycheck als drie klikvragen: wat doet de app, wat wil hij, past dat?",
+      "inspiratie": "Tintara les 11, 12 en 45 (cookies en knoppen, toestemmingen, de AVG in gewone taal, datapunten)."
+    },
+    "9": {
+      "opening": "Een lange vraag als zin in de zoekbalk tegenover drie kernwoorden. Welke vindt het sneller?",
+      "beeldspraak": "De gereedschapskist. De zoekmachine is de hamer, filters zijn de zeef, het woordenboek de liniaal. De AI-zoeker is een handig hulpje dat soms iets verzint: controleer met ander gereedschap.",
+      "werkvormen": ["In een vraagzin de woorden aantikken die in de zoekbalk horen.", "Zoekrace met aanhalingstekens en het minteken (jaguar het dier, zonder de auto).", "Zoekdagboek: wat typte ik, wat vond ik, wat doe ik de volgende keer anders? (21B-3)."],
+      "basis": "Eerst zoektermen kiezen uit een lijst, daarna zelf formuleren.",
+      "tlPlus": "Dezelfde zoekvraag in het Nederlands en in het Engels vergelijken.",
+      "inclusie": "Eén vraag per scherm: welk woord is belangrijk? Drie woordknoppen. Het gereedschap met pictogrammen.",
+      "inspiratie": "Tintara les 41 en 43 (kernwoorden, zoekcodes, naslagwerk als springplank). De reflectie op je zoekaanpak is eigen werk."
+    },
+    "10": {
+      "opening": "Drie beelden: een echte foto, een AI-foto en een oude foto met een nieuw verhaal. Welke is echt?",
+      "beeldspraak": "De paspoortcontrole. Elke bewering moet langs de douane en krijgt vier vragen: wie ben je, wanneer ben je gemaakt, waarom ben je hier, en wie kan dat bevestigen?",
+      "werkvormen": ["Echt of nep met beeld, en daarna aantikken waar de fout zit (handen, tekst op de achtergrond).", "Zijwaarts controleren: in een nieuw tabblad opzoeken wat anderen over de bron zeggen.", "Casus: Mila krijgt een spraakbericht van haar tante die snel geld vraagt. Welke douanevraag helpt?", "Twee koppen over hetzelfde feit: welke geloof je sneller, en waarom? (21B-5)."],
+      "basis": "De broncheck met aankruisvakken.",
+      "tlPlus": "Twee bronnen vergelijken en uitleggen welke het bruikbaarst is.",
+      "inclusie": "Eén douanevraag per scherm met een pictogram (persoon, kalender, doel, twee bronnen). Antwoordknoppen: ja, nee, weet ik niet.",
+      "inspiratie": "Tintara les 22, 33, 34 en 36 (clickbait, deepfakes, zijwaarts lezen, bevestigingsdrang). Spel: Eiland van Echt en Nep."
+    },
+    "11": {
+      "opening": "Hoe vaak heb je gisteren gescrold tot je niet meer wist waarom?",
+      "beeldspraak": "De sushiband. De band stopt nooit, hij onthoudt welke bordjes jij pakt en brengt daar meer van. Het restaurant verdient aan hoe lang jij blijft zitten.",
+      "werkvormen": ["Feed-simulator: tien posts aanklikken en zien hoe de feed eenzijdig wordt; daarna de band ontregelen.", "Truc en werking koppelen: oneindig scrollen, rode bolletjes, streaks, autoplay.", "Casus: Lina slaapt slecht. Welke gewoonte past ze aan?", "Eigen schermtijd (thuis genoteerd, want telefoons mogen de klas niet in) in een tabel, en één verandering kiezen (bewijs)."],
+      "basis": "Een ingevuld voorbeeldoverzicht als model; het spel Social Media Zoektocht.",
+      "tlPlus": "Grof uitrekenen wat jouw kijktijd een gratis app oplevert aan reclame.",
+      "inclusie": "Eén truc per scherm: pictogram, één zin, ken je dit? Schermtijd met een schuifje in plaats van getallen typen.",
+      "inspiratie": "Tintara les 21, 22, 25, 26 en 27 (aandachtseconomie, filterbubbel, slaap, multitasken). De schermtijd-opdracht is aangepast aan het telefoonverbod."
+    },
+    "12": {
+      "opening": "Twee profielen van dezelfde verzonnen leerling. Wie lijkt deze persoon, en waarom denk je dat?",
+      "beeldspraak": "Je etalage. Jij kiest wat erin ligt, en iedereen die langsloopt kijkt, ook later nog. Een gemene reactie is een steen door andermans ruit.",
+      "werkvormen": ["Etalage inrichten: berichten en foto's sorteren in openbaar, alleen vrienden, nooit.", "Een botte reactie herschrijven tot een respectvolle die het toch oneens is.", "Schuifbalk grapje of pesten bij vier situaties, waaronder een AI-bewerkte foto.", "Casus in een groepsapp: Sem wordt uitgelachen. Wat doe jij als omstander?"],
+      "basis": "Keuzes maken in uitgewerkte situaties. Terugverwijzen naar de Week tegen Pesten.",
+      "tlPlus": "Het eigen profiel bekijken met de blik van een toekomstige werkgever.",
+      "inclusie": "Eén situatie per scherm met een plaatje: is dit oké? De omstander-stappen als drie grote knoppen: steun, bewaar, vertel.",
+      "inspiratie": "Tintara les 9, 29 en 31 (digitale voetafdruk, omstander, online ontremming)."
+    },
+    "13": {
+      "opening": "Dertig losse getallen tegenover dezelfde getallen als staafdiagram. Wat zie je nu in één oogopslag?",
+      "beeldspraak": "Het sleutelgat. Een dataset is kijken door een sleutelgat: je ziet een echt stukje van de kamer, maar niet alles. Wie zat er niet in de klas? Welke vraag is niet gesteld?",
+      "werkvormen": ["Sturende en neutrale enquêtevragen sorteren.", "Opschonen in Excel: onzin weghalen, een vreemde maar mogelijke uitschieter laten staan en uitleggen waarom.", "Grafiek maken, daarna de grafiektest: een klasgenoot noemt de conclusie zonder uitleg.", "Sleutelgatvraag: noem één ding dat je data niet laten zien (21C-1)."],
+      "basis": "Een klaargezette dataset en een half-af grafiek, kaal opgemaakt.",
+      "tlPlus": "Een open dataset van het CBS, met gemiddelde, modus en mediaan. Of samenhang tegenover oorzaak.",
+      "inclusie": "Stap voor stap: één kolom kiezen, één knop grafiek, welke staaf is het hoogst? De beperking als klikvraag: wie ontbreekt er?",
+      "inspiratie": "Tintara les 45, 46, 57, 58 en 59 (datapunten, levende grafiek, neutrale vraag, opschonen, grafiektest)."
+    },
+    "14": {
+      "opening": "Een foto van een supermarktbon: wat weet de winkel nu over jou? Drie dingen aanklikken uit acht.",
+      "beeldspraak": "De soepkeuken. Een systeem met vaste regels volgt een recept. Een AI is een leerling-kok die duizenden soepen proeft en zelf gaat raden. Rotte groenten erin, vieze soep eruit.",
+      "werkvormen": ["Tien voorbeelden sorteren naar recept of proeft en leert (stoplicht, Spotify-tips, rekenmachine, gezichtsontgrendeling).", "Casus: Samira's snackautomaat leerde alleen van maandag en gaat op vrijdag de mist in. Waarom?", "Een mini-dataset van zes rijen: welke rij is rommel?"],
+      "basis": "Het sorteren naar recept of leren.",
+      "tlPlus": "In drie zinnen uitleggen wat machine learning is; samenhang tegenover oorzaak (ijsjes en zwemongelukken).",
+      "inclusie": "Eén ingrediënt per scherm. Plaatjes van een kok met recept en een kok die proeft. Klikvraag: leert dit van voorbeelden? Invulzin: slechte data, slechte ___.",
+      "inspiratie": "Tintara les 45, 46, 47, 49, 53 en 54 (datapunten, voorspellen op kans, regels tegenover leren, bias)."
+    },
+    "15": {
+      "opening": "Maak de zin af: ik eet mijn patat met ... Bijna iedereen kiest hetzelfde. Zo werkt Copilot ook.",
+      "beeldspraak": "De voorspel-papegaai. Hij heeft miljoenen gesprekken gehoord en zegt het woord dat het vaakst volgt. Hij klinkt slim maar begrijpt niets, en zegt soms met zekerheid iets wat niet klopt.",
+      "werkvormen": ["Prompt-menu in drie kolommen (wie, doet wat, in welke stijl) en met Copilot een plaatje maken.", "Namaak-uitdaging: een prompt schrijven die zo dicht mogelijk bij een gegeven AI-plaatje komt.", "Sorteerexperiment: zes voorbeelden geven (fruit of geen fruit), de computer raadt nieuwe plaatjes; met een scheve set gaat het mis (21D-5, zonder een model te trainen)."],
+      "basis": "Een tekst met een van drie vaste prompts.",
+      "tlPlus": "Twee Copilot-antwoorden op dezelfde vraag vergelijken en uitleggen waarom ze verschillen.",
+      "inclusie": "Eerst alleen een plaatje maken. Knoppen met prompt-bouwstenen in plaats van typen. Na het experiment één klikvraag met drie plaatjes: waarom raadde de computer fout?",
+      "inspiratie": "Tintara les 49, 50 en 51 (klas als dataset, onderdelen van een prompt, prompt-menu). Het digitale sorteerexperiment is eigen werk."
+    },
+    "16": {
+      "opening": "Wie leert zwemmen door een ander te zien zwemmen?",
+      "beeldspraak": "De zwemcoach langs de kant. Een goede coach roept tips en stelt vragen, maar springt niet voor jou het water in. Copilot mag coach zijn, geen invaller. De AI-check is de coach nakijken: klopt zijn tip wel?",
+      "werkvormen": ["Leergesprek met een vaste openingsprompt: stel mij één vraag tegelijk over ..., geef geen antwoorden (bewijs).", "Foutenjacht: een AI-antwoord met een verstopte fout (verzonnen jaartal, rekenfout) vinden en verbeteren.", "Dilemma-kaarten met leerlingnamen: eerlijk, niet eerlijk of hangt ervan af? En wat deel je niet in een gesprek?"],
+      "basis": "Het leergesprek met de kant-en-klare openingsprompt.",
+      "tlPlus": "Een eigen prompt ontwerpen die Copilot dwingt alleen vragen te stellen, en testen of hij zich eraan houdt.",
+      "inclusie": "Drie kaarten met één pictogram per stap: vraag stellen, zelf antwoorden, nakijken. Klikvraag per dilemma. De prompt kopiëren met één knop.",
+      "inspiratie": "Tintara les 41, 42, 44 en 73 (zoekmachine tegenover verzinnen, plagiaat, denkwerk overnemen, zoek de AI-fout). Copilot als socratische coach is eigen werk."
+    },
+    "17": {
+      "opening": "Twee posters voor hetzelfde schoolfeest, een voor brugklassers en een voor ouders. Welke is voor wie?",
+      "beeldspraak": "De kleermaker. Eerst maat nemen (doelgroep en eisen), dan een eerste pasbeurt (versie 1), dan vermaken tot het past (versie 2). Een jas voor iedereen past niemand.",
+      "werkvormen": ["Eisen-kiezer: uit een lijst de vijf eisen kiezen die passen bij doel en doelgroep.", "Feedbackronde met top, tip en vraag. De maker legt niets uit: snapt de lezer het zonder hulp?", "Beeld-check: zes plaatjes, mag ik dit gebruiken? En één bronregel schrijven."],
+      "basis": "Het vaste sjabloon voor de eisen.",
+      "tlPlus": "Het product testen bij twee echte gebruikers en noteren wat je veranderde.",
+      "inclusie": "Een sjabloon met drie vakken: titel, plaatje, één zin. Feedback met twee duimknoppen en één keuzezin.",
+      "inspiratie": "Tintara les 8, 19, 65 en 67 (weinig tekst, vrij beeld, top en tip, testen zonder uitleg)."
+    },
+    "18": {
+      "opening": "Zes stripplaatjes door elkaar. Zet ze op volgorde: begin, probleem, einde.",
+      "beeldspraak": "Jij bent de regisseur, Copilot is je tekenaar. De regisseur bepaalt wat er gebeurt en hoe iemand zich voelt; de tekenaar maakt het plaatje. Het plan, het storyboard, is van jou.",
+      "werkvormen": ["Storyboard met zes vakken: drie vaste (begin, probleem, oplossing) en drie eigen, met per vak één zin en één gevoel.", "Karakterkaart: uiterlijk, kleur, stemming en stijl kiezen met knoppen; zo ontstaat een prompt. Twee keer maken: blijft het karakter hetzelfde?", "Casussen over eigenaarschap: Milan zet zijn AI-karakter op een T-shirt en verkoopt het. Mag dat?"],
+      "basis": "Het storyboard met de drie vaste vakken ingevuld.",
+      "tlPlus": "De animatie echt maken, bijvoorbeeld met overgangen in PowerPoint, en presenteren.",
+      "inclusie": "Drie vakken in plaats van zes. Plaatjes kiezen uit een bank in plaats van zelf prompten. Per vak één klik op een emotie-pictogram.",
+      "inspiratie": "Tintara heeft hier weinig: alleen les 51 (AI-beeld en auteursrecht). Storyboard, karakters en animatie zijn eigen werk."
+    },
+    "19": {
+      "opening": "Een robot die doe je jas aan letterlijk uitvoert en de jas op zijn hoofd zet.",
+      "beeldspraak": "De letterlijke robot. Hij doet precies wat er staat, niet wat je bedoelt. Een algoritme is een routebeschrijving voor zo'n robot; het stroomschema is de plattegrond, de ruit een splitsing met ja of nee.",
+      "werkvormen": ["Stappen op volgorde slepen (tanden poetsen, een broodje smeren): welke stap ontbreekt?", "Een stroomschema aanvullen: de ochtend met de wekker en de snoozeknop.", "Klikvragen: kan een computer dit? Sommen sorteren wel, bepalen of een grap leuk is niet."],
+      "basis": "Het half ingevulde stroomschema.",
+      "tlPlus": "Een getal tussen 1 en 100 raden door steeds te halveren, als algoritme.",
+      "inclusie": "Een stroomschema met voorgedrukte vormen, alleen woorden invullen, maximaal vier stappen. Pictogrammen voor start, doen, kiezen en stop.",
+      "inspiratie": "Tintara les 61 en 62 (letterlijke robot, stroomschema-symbolen, ochtend-algoritme)."
+    },
+    "20": {
+      "opening": "Waarom gaat de schooldeur open als je ervoor staat? Dat is een event.",
+      "beeldspraak": "De schoolportier. Een event is de bel die gaat; de portier doet pas iets als er gebeld wordt. Een lijst is zijn gastenlijst. EN: pasje én op de lijst. OF: pasje óf een begeleider. NIET: wie op de verboden lijst staat, mag er niet in.",
+      "werkvormen": ["Een half af blokprogramma: een klik toont een naam uit een lijst; de leerling voegt de voorwaarde toe.", "Portierquiz: acht bezoekers, mag erin of niet, bij een gegeven EN- of OF-regel.", "Foutenjacht: de score springt bij elke klik op nul. Eerst per blok uitleggen wat het doet, dan de fout verbeteren."],
+      "basis": "Het half afgemaakte programma.",
+      "tlPlus": "Een eigen functie toevoegen en in twee zinnen documenteren.",
+      "inclusie": "Eén begrip per scherm: eerst alleen het event, dan alleen de lijst. Kranenbeeld voor EN en OF. Klikvragen met groen en rood.",
+      "inspiratie": "Tintara les 63, 64, 73 en 74 (blokprogrammeren, variabele als doos, uitleggen om de fout te vinden, EN/OF/NIET)."
+    },
+    "21": {
+      "opening": "Dertig seconden een simpel vangspel spelen: wat start het, wat houdt het bij, wanneer win je?",
+      "beeldspraak": "De gamestudio. Jij bent eerst ontwerper (bouwtekening op papier), dan bouwer, dan tester. Een studio levert pas uit na de test.",
+      "werkvormen": ["Bouwtekening met drie vakken: start-event, lijst, win-voorwaarde. Basisrecept: afval scheiden met een prullenbak onderaan.", "Bouwen in een sjabloon waarin het event al staat.", "Testlijst voor een klasgenoot (Maxime test het spel van Yusuf): start het, telt de score, klopt winnen? Probeer het ook kapot te krijgen, en leg één verbetering vast."],
+      "basis": "Het sjabloon met het event erin.",
+      "tlPlus": "Een tweede level dat de score of lijst van level 1 gebruikt.",
+      "inclusie": "Alleen de lijst of de voorwaarde toevoegen in een bijna klaar spel. Een testlijst met vijf ja/nee-vinkjes.",
+      "inspiratie": "Tintara les 65 tot en met 68 (spel met een doel, ontwerp op papier, mini-hackathon, testen zonder uitleg)."
+    },
+    "22": {
+      "opening": "Camera's met gezichtsherkenning bij de schoolingang: ja of nee?",
+      "beeldspraak": "Vier brillen: de hart-bril (is het eerlijk?), de mensen-bril (wat doet het met ons?), de geld-bril en de aarde-bril. Je zet ze om de beurt op.",
+      "werkvormen": ["Brillenkaart: per bril één zin afmaken bij het dilemma, met een voorbeeldzin.", "Regelmaker: als inspecteur zes AI-toepassingen sorteren op risico (laag, hoog, verboden) en kiezen waar een mens meebeslist.", "Wat als Microsoft of Google een week plat ligt? Aanklikken wat op school stopt: mail, Teams, inloggen."],
+      "basis": "De brillenkaart met voorbeeldzinnen.",
+      "tlPlus": "Een standpunt verdedigen in een kort debat met vaste spreektijden.",
+      "inclusie": "Eén bril per scherm met een groot pictogram. Voor of tegen, plus één keuzereden. Risico sorteren in drie gekleurde bakken.",
+      "inspiratie": "Tintara les 12, 16, 38, 52, 55 en 56 (AVG, e-waste, debat, beroepen, veiligheid tegenover privacy, AI-wet). Afhankelijkheid van grote techbedrijven en de vier brillen als vast kader zijn eigen werk."
+    },
+    "23": {
+      "opening": "De klasgrafiek staat al klaar, bijvoorbeeld uren slaap op een schooldag. Wat valt op?",
+      "beeldspraak": "Het weerbericht van de klas. De data zijn de metingen, de grafiek is de weerkaart en de campagne is het advies. Een eerlijk weerbericht zegt ook wat het niet weet.",
+      "werkvormen": ["Welke enquêtevraag stuurt en welke is neutraal? Kiezen en herschrijven.", "Onzin-antwoorden (1000 uur) aanklikken, verwijderen en uitleggen waarom.", "De grafiektest, daarna de campagne bouwen met het basissjabloon.", "Terugkijkkaart met drie vakken: technologie, ik, de ander."],
+      "basis": "Het campagnesjabloon.",
+      "tlPlus": "De campagne testen bij twee leerlingen uit een andere klas; eventueel een concreet advies aan de school.",
+      "inclusie": "Eén klasgrafiek, één conclusiezin (de grafiek laat zien dat ...), één advies. De terugblik als duimpjes bij zes plaatjes van eerdere hoofdstukken.",
+      "inspiratie": "Tintara les 25, 46 en 57 tot en met 60 (slaap, levende grafiek, neutrale vraag, opschonen, grafiektest, presenteren). De campagnevorm is eigen werk."
+    }
+  }
+}

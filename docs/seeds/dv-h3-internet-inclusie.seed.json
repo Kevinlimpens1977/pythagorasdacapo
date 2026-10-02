@@ -1,0 +1,1508 @@
+{
+  "meta": {
+    "omschrijving": "Seed voor DV hoofdstuk 2 (curriculum klas 1, les 1). Eigen bestand, want digitale-vaardigheden-vmbo1.seed.json wordt volledig opnieuw gegenereerd.",
+    "seedId": "dv-h2-device"
+  },
+  "vakken": [
+    {
+      "id": "vak-digitale-vaardigheden",
+      "name": "Digitale vaardigheden",
+      "code": "DV",
+      "description": "Digitale vaardigheden voor VMBO leerjaar 1",
+      "order": 99,
+      "isActive": true,
+      "color": "#2563eb",
+      "emoji": "DV"
+    }
+  ],
+  "leerjaren": [
+    {
+      "id": "leerjaar-digitale-vaardigheden-vmbo1",
+      "vakId": "vak-digitale-vaardigheden",
+      "year": 1,
+      "label": "Leerjaar 1",
+      "order": 1,
+      "isActive": true
+    }
+  ],
+  "niveaus": [
+    {
+      "id": "niveau-dv-vmbo1-kb",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "leerweg": "kb",
+      "label": "Kaderberoepsgerichte leerweg",
+      "name": "Groene route",
+      "description": "Groene route (Kaderberoepsgerichte leerweg) van Digitale vaardigheden, VMBO leerjaar 1.",
+      "order": 2,
+      "isActive": true
+    }
+  ],
+  "hoofdstukken": [
+    {
+      "id": "hoofdstuk-dv-klas1-h3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "number": 3,
+      "title": "Hoe reist jouw bericht over internet?",
+      "description": "Wat er gebeurt tussen versturen en ontvangen: netwerk, router, server en datacenter. Slimme apparaten zitten ook op dat netwerk. Wat gebeurt er als het uitvalt, en wat kost het aan energie?",
+      "order": 3,
+      "published": true,
+      "isArchived": false
+    }
+  ],
+  "paragrafen": [
+    {
+      "id": "paragraaf-dv-klas1-incl-31",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "code": "3.1",
+      "title": "3.1 Van jouw scherm naar een server en terug",
+      "beschrijving": "De reis van een appje, stap voor stap.",
+      "order": 1,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt in stappen uitleggen hoe een bericht over internet reist.",
+        "Je weet wat een router, een server en een datacenter zijn."
+      ],
+      "leerdoelen": [
+        "Je kunt in stappen uitleggen hoe een bericht over internet reist.",
+        "Je weet wat een router, een server en een datacenter zijn."
+      ]
+    },
+    {
+      "id": "paragraaf-dv-klas1-incl-32",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "code": "3.2",
+      "title": "3.2 Slimme apparaten op het netwerk",
+      "beschrijving": "Apparaten die zelf berichten sturen.",
+      "order": 2,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt voorbeelden geven van slimme apparaten.",
+        "Je weet dat een slim apparaat een wachtwoord en updates nodig heeft."
+      ],
+      "leerdoelen": [
+        "Je kunt voorbeelden geven van slimme apparaten.",
+        "Je weet dat een slim apparaat een wachtwoord en updates nodig heeft."
+      ]
+    },
+    {
+      "id": "paragraaf-dv-klas1-incl-33",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "code": "3.3",
+      "title": "3.3 Als internet uitvalt: afhankelijk en energie",
+      "beschrijving": "Eén storing, veel mensen. En datacenters gebruiken veel stroom.",
+      "order": 3,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt uitleggen waarom een storing bij een grote dienst veel mensen raakt.",
+        "Je weet dat datacenters veel stroom gebruiken."
+      ],
+      "leerdoelen": [
+        "Je kunt uitleggen waarom een storing bij een grote dienst veel mensen raakt.",
+        "Je weet dat datacenters veel stroom gebruiken."
+      ]
+    }
+  ],
+  "contentBlocks": [
+    {
+      "id": "block-dv-klas1-incl-31-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "theory",
+      "order": 2,
+      "title": "Je appje maakt een reis",
+      "status": "published",
+      "content": {
+        "html": "<p>Je stuurt een appje naar een vriendin. Een seconde later heeft zij het.</p><p>Het lijkt snel en makkelijk. Maar je appje maakt een reis. De reis heeft zes stappen.</p><img src=\"/lesstof/dv-h3-route.svg\" alt=\"De zes stappen: jouw telefoon, wifi, router, kabels, server in een datacenter, telefoon van je vriendin.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>We lopen de stappen een voor een door.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-theory-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "theory",
+      "order": 3,
+      "title": "Stap 1: je telefoon maakt pakketjes",
+      "status": "published",
+      "content": {
+        "html": "<img src=\"/lesstof/dv-h3-route-1.svg\" alt=\"Stap 1: jouw telefoon.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Je drukt op Verstuur.</p><p>Je telefoon knipt je bericht in kleine stukjes. Die stukjes heten <strong>pakketjes</strong>.</p><p>Kleine pakketjes reizen makkelijk.</p><h3>Kernbegrippen</h3><dl><dt>pakketje</dt><dd>Een klein stukje van je bericht.</dd></dl>",
+        "keyTerms": [
+          "pakketje"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-theory-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "theory",
+      "order": 4,
+      "title": "Stap 2 en 3: wifi en de router",
+      "status": "published",
+      "content": {
+        "html": "<img src=\"/lesstof/dv-h3-route-3.svg\" alt=\"Stap 3: de router.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>De pakketjes gaan via <strong>wifi</strong> naar de <strong>router</strong>.</p><p>De router is een kastje in je huis of op school. Hij stuurt de pakketjes het internet op.</p><p>Let op: wifi is niet het internet. Wifi is alleen het korte stukje naar de router.</p><h3>Kernbegrippen</h3><dl><dt>router</dt><dd>Het kastje dat je apparaten met internet verbindt.</dd></dl>",
+        "keyTerms": [
+          "router"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-theory-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "theory",
+      "order": 5,
+      "title": "Stap 4: kabels, ook onder zee",
+      "status": "published",
+      "content": {
+        "html": "<img src=\"/lesstof/dv-h3-route-4.svg\" alt=\"Stap 4: kabels.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>De router stuurt de pakketjes door <strong>kabels</strong>.</p><p>Die kabels liggen onder de straat. Tussen landen liggen ze zelfs op de bodem van de zee.</p><p>Internet gaat dus vooral door kabels. Niet door de lucht.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-theory-6",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "theory",
+      "order": 6,
+      "title": "Stap 5 en 6: de server en je vriendin",
+      "status": "published",
+      "content": {
+        "html": "<img src=\"/lesstof/dv-h3-route-5.svg\" alt=\"Stap 5: de server in een datacenter.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>De pakketjes komen bij een <strong>server</strong> van WhatsApp. Een server is een computer die berichten doorstuurt.</p><p>Die server staat in een <strong>datacenter</strong>. Dat is een groot gebouw vol servers.</p><p>De server stuurt je appje naar je vriendin. Haar telefoon zet de pakketjes weer in elkaar.</p><h3>Kernbegrippen</h3><dl><dt>server</dt><dd>Een computer die berichten bewaart en doorstuurt.</dd><dt>datacenter</dt><dd>Een groot gebouw vol servers.</dd></dl>",
+        "keyTerms": [
+          "server",
+          "datacenter"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-theory-7",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "theory",
+      "order": 7,
+      "title": "Internet is net als de post",
+      "status": "published",
+      "content": {
+        "html": "<p>Internet lijkt op de post:</p><ul><li>je bericht is een <strong>brief</strong>;</li><li>de router is je <strong>brievenbus</strong>;</li><li>de server is het <strong>postkantoor</strong>.</li></ul><p>Maar internet is veel sneller. Het duurt maar een seconde.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-summary-8",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "summary",
+      "order": 8,
+      "title": "Samenvatting 3.1",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Je telefoon maakt pakketjes.</li><li>Wifi en de router sturen ze het internet op.</li><li>Kabels brengen ze naar een server.</li><li>De server staat in een datacenter.</li><li>De server stuurt je appje naar je vriendin.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-quiz-9",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "quiz",
+      "order": 9,
+      "title": "Quiz 3.1",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Drie vragen. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je stuurt een appje. Waar gaat het eerst naartoe?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Naar een server",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Rechtstreeks naar je vriendin",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Naar de maan",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Naar een server",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Rechtstreeks naar je vriendin",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Naar de maan",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Je appje gaat eerst naar een server. Die stuurt het door.",
+            "tokens": 10,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Wifi en internet zijn hetzelfde.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Wifi is alleen het korte stukje naar de router.",
+            "tokens": 10,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat is een datacenter?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Een winkel voor telefoons",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Een app op je telefoon",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een groot gebouw vol servers",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Een winkel voor telefoons",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Een app op je telefoon",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een groot gebouw vol servers",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "In een datacenter staan heel veel servers bij elkaar.",
+            "tokens": 10,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-31-question-10",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-31",
+      "type": "question",
+      "order": 10,
+      "title": "Vul in: het kastje",
+      "status": "published",
+      "content": {
+        "html": "<p>Typ één woord.</p>\n<p><strong>1. Het kastje in huis dat je apparaten met internet verbindt, heet de ...</strong></p>",
+        "exercise": {
+          "fields": [
+            {
+              "id": "vraag-1",
+              "label": "Het kastje in huis dat je apparaten met internet verbindt, heet de ...",
+              "answer": "",
+              "modelAnswer": "router",
+              "explanation": "De router verbindt je apparaten met internet."
+            }
+          ]
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-32-theory-1",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-32",
+      "type": "theory",
+      "order": 1,
+      "title": "Wat is een slim apparaat?",
+      "status": "published",
+      "content": {
+        "html": "<p>Een <strong>slim apparaat</strong> zit op internet.</p><p>Voorbeelden:</p><ul><li>een slimme deurbel;</li><li>een lamp die je met een app bedient;</li><li>een slimme speaker;</li><li>een smartwatch.</li></ul><p>Een gewone wekker of broodrooster is niet slim. Die zitten niet op internet.</p><h3>Kernbegrippen</h3><dl><dt>slim apparaat</dt><dd>Een apparaat dat op internet zit.</dd></dl>",
+        "keyTerms": [
+          "slim apparaat"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-32-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-32",
+      "type": "theory",
+      "order": 2,
+      "title": "De deurbel stuurt een bericht",
+      "status": "published",
+      "content": {
+        "html": "<img src=\"/lesstof/dv-h3-deurbel.svg\" alt=\"De deurbel stuurt een melding via wifi naar de cloud, en de cloud stuurt hem naar jouw telefoon.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Iemand drukt op de slimme deurbel.</p><p>De deurbel stuurt een bericht via wifi naar de <strong>cloud</strong>.</p><p>De cloud stuurt het naar jouw telefoon. Nu weet je: er staat iemand voor de deur.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-32-theory-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-32",
+      "type": "theory",
+      "order": 3,
+      "title": "De cloud is geen wolk",
+      "status": "published",
+      "content": {
+        "html": "<p>De cloud klinkt als een wolk in de lucht. Maar dat is het niet.</p><p>De cloud is een <strong>datacenter</strong>. Daar staan echte computers.</p><p>Werkt het internet niet? Dan werkt je slimme deurbel vaak ook niet.</p><h3>Kernbegrippen</h3><dl><dt>cloud</dt><dd>Computers in een datacenter. Geen wolk.</dd></dl>",
+        "keyTerms": [
+          "cloud"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-32-theory-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-32",
+      "type": "theory",
+      "order": 4,
+      "title": "Een slim apparaat is een deur",
+      "status": "published",
+      "content": {
+        "html": "<p>Elk slim apparaat is een <strong>deur</strong> naar je huis op internet.</p><p>Een deur moet op slot. Zo doe je dat:</p><ul><li>verander het wachtwoord als je het apparaat koopt;</li><li>installeer de <strong>updates</strong>.</li></ul><p>Een update repareert zwakke plekken.</p><h3>Kernbegrippen</h3><dl><dt>update</dt><dd>Een verbetering die zwakke plekken repareert.</dd></dl>",
+        "keyTerms": [
+          "update"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-32-summary-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-32",
+      "type": "summary",
+      "order": 5,
+      "title": "Samenvatting 3.2",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Een slim apparaat zit op internet.</li><li>Het stuurt berichten via de cloud.</li><li>De cloud is een datacenter, geen wolk.</li><li>Verander het wachtwoord en installeer updates.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-32-quiz-6",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-32",
+      "type": "quiz",
+      "order": 6,
+      "title": "Quiz 3.2",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Drie vragen. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk apparaat is slim?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Een gewone wekker",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Een slimme deurbel",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een broodrooster",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Een gewone wekker",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Een slimme deurbel",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een broodrooster",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een slimme deurbel zit op internet. Een gewone wekker niet.",
+            "tokens": 10,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "De cloud is een wolk in de lucht.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De cloud is een datacenter met echte computers.",
+            "tokens": 10,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat maakt een slim apparaat veiliger?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Updates uitzetten",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Nooit het wachtwoord veranderen",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Het wachtwoord veranderen",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Updates uitzetten",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Nooit het wachtwoord veranderen",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Het wachtwoord veranderen",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een nieuw wachtwoord doet de deur op slot.",
+            "tokens": 10,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-32-question-7",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-32",
+      "type": "question",
+      "order": 7,
+      "title": "Vul in: de deur op slot",
+      "status": "published",
+      "content": {
+        "html": "<p>Typ één woord.</p>\n<p><strong>1. Een verbetering die zwakke plekken repareert, heet een ...</strong></p>",
+        "exercise": {
+          "fields": [
+            {
+              "id": "vraag-1",
+              "label": "Een verbetering die zwakke plekken repareert, heet een ...",
+              "answer": "",
+              "modelAnswer": "update",
+              "explanation": "Een update repareert zwakke plekken in een apparaat."
+            }
+          ]
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-33-theory-1",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-33",
+      "type": "theory",
+      "order": 1,
+      "title": "Jouw router of een groot kantoor",
+      "status": "published",
+      "content": {
+        "html": "<p>Is jouw router kapot? Dan heb alleen jij geen internet.</p><img src=\"/lesstof/dv-h3-storing.svg\" alt=\"Eén groot datacenter valt uit en veel telefoons tegelijk hebben geen WhatsApp.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Maar valt een groot kantoor uit, zoals de servers van WhatsApp? Dan hebben miljoenen mensen tegelijk last.</p><h3>Kernbegrippen</h3><dl><dt>storing</dt><dd>Iets werkt tijdelijk niet.</dd></dl>",
+        "keyTerms": [
+          "storing"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-33-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-33",
+      "type": "theory",
+      "order": 2,
+      "title": "Een echte storing",
+      "status": "published",
+      "content": {
+        "html": "<p>Op 4 oktober 2021 ging het mis.</p><p>WhatsApp, Instagram en Facebook werkten bijna zes uur niet. Overal ter wereld.</p><p>Miljoenen mensen konden geen berichten sturen.</p><p>Hoe meer mensen een dienst gebruiken, hoe groter de storing. Dat heet <strong>afhankelijkheid</strong>.</p><h3>Kernbegrippen</h3><dl><dt>afhankelijkheid</dt><dd>Veel mensen hebben dezelfde dienst nodig.</dd></dl>",
+        "keyTerms": [
+          "afhankelijkheid"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-33-theory-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-33",
+      "type": "theory",
+      "order": 3,
+      "title": "Datacenters worden heet",
+      "status": "published",
+      "content": {
+        "html": "<img src=\"/lesstof/dv-h3-stroom.svg\" alt=\"Servers worden heet en hebben veel stroom nodig.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Servers staan dag en nacht aan. Ze worden heet.</p><p>Daarom moeten ze gekoeld worden. Dat kost veel stroom.</p><p>In Nederland gaat bijna 1 op de 20 stopcontacten naar datacenters.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-33-summary-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-33",
+      "type": "summary",
+      "order": 4,
+      "title": "Samenvatting 3.3",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Jouw router kapot: alleen jij hebt last.</li><li>Een groot kantoor kapot: miljoenen mensen hebben last.</li><li>Dat heet afhankelijkheid.</li><li>Datacenters worden heet en gebruiken veel stroom.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-33-quiz-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-33",
+      "type": "quiz",
+      "order": 5,
+      "title": "Afsluitcheck H3",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Vijf vragen over het hele hoofdstuk. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Jouw router thuis is kapot. Wie heeft last?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Alleen jij",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Heel Nederland",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Iedereen met WhatsApp",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Alleen jij",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Heel Nederland",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Iedereen met WhatsApp",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De router is van jouw huis. Alleen jij hebt dan geen internet.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "De servers van WhatsApp vallen uit. Wie heeft last?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Alleen jij",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Miljoenen mensen tegelijk",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Niemand",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Alleen jij",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Miljoenen mensen tegelijk",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Niemand",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Heel veel mensen gebruiken WhatsApp. Dan heeft iedereen tegelijk last.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Datacenters gebruiken veel stroom.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Klopt. De servers staan altijd aan en moeten gekoeld worden.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waar staat een server?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "In je broekzak",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "In een datacenter",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "In de lucht",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "In je broekzak",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "In een datacenter",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "In de lucht",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Servers staan in een datacenter, een groot gebouw.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Internet gaat tussen landen vooral door kabels onder de zee.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Klopt. Tussen landen liggen kabels op de bodem van de zee.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-incl-33-question-6",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-incl-33",
+      "type": "question",
+      "order": 6,
+      "title": "Vul in: een groot gebouw",
+      "status": "published",
+      "content": {
+        "html": "<p>Typ één woord.</p>\n<p><strong>1. Een groot gebouw vol servers heet een ...</strong></p>",
+        "exercise": {
+          "fields": [
+            {
+              "id": "vraag-1",
+              "label": "Een groot gebouw vol servers heet een ...",
+              "answer": "",
+              "modelAnswer": "datacenter",
+              "explanation": "In een datacenter staan heel veel servers bij elkaar."
+            }
+          ]
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    }
+  ],
+  "badges": [],
+  "certificates": []
+}

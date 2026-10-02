@@ -1,0 +1,1841 @@
+{
+  "meta": {
+    "omschrijving": "Seed voor DV hoofdstuk 2 (curriculum klas 1, les 1). Eigen bestand, want digitale-vaardigheden-vmbo1.seed.json wordt volledig opnieuw gegenereerd.",
+    "seedId": "dv-h2-device"
+  },
+  "vakken": [
+    {
+      "id": "vak-digitale-vaardigheden",
+      "name": "Digitale vaardigheden",
+      "code": "DV",
+      "description": "Digitale vaardigheden voor VMBO leerjaar 1",
+      "order": 99,
+      "isActive": true,
+      "color": "#2563eb",
+      "emoji": "DV"
+    }
+  ],
+  "leerjaren": [
+    {
+      "id": "leerjaar-digitale-vaardigheden-vmbo1",
+      "vakId": "vak-digitale-vaardigheden",
+      "year": 1,
+      "label": "Leerjaar 1",
+      "order": 1,
+      "isActive": true
+    }
+  ],
+  "niveaus": [
+    {
+      "id": "niveau-dv-vmbo1-kb",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "leerweg": "kb",
+      "label": "Kaderberoepsgerichte leerweg",
+      "name": "Groene route",
+      "description": "Groene route (Kaderberoepsgerichte leerweg) van Digitale vaardigheden, VMBO leerjaar 1.",
+      "order": 2,
+      "isActive": true
+    }
+  ],
+  "hoofdstukken": [
+    {
+      "id": "hoofdstuk-dv-klas1-h3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "number": 3,
+      "title": "Hoe reist jouw bericht over internet?",
+      "description": "Wat er gebeurt tussen versturen en ontvangen: netwerk, router, server en datacenter. Slimme apparaten zitten ook op dat netwerk. Wat gebeurt er als het uitvalt, en wat kost het aan energie?",
+      "order": 3,
+      "published": true,
+      "isArchived": false
+    }
+  ],
+  "paragrafen": [
+    {
+      "id": "paragraaf-dv-klas1-31",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "code": "3.1",
+      "title": "3.1 Van jouw scherm naar een server en terug",
+      "beschrijving": "De reis van een appje: wifi, router, kabels, server. Internet als de post.",
+      "order": 1,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt in stappen uitleggen hoe een bericht over internet reist.",
+        "Je kunt uitleggen wat een router, een server en een datacenter doen."
+      ],
+      "leerdoelen": [
+        "Je kunt in stappen uitleggen hoe een bericht over internet reist.",
+        "Je kunt uitleggen wat een router, een server en een datacenter doen."
+      ]
+    },
+    {
+      "id": "paragraaf-dv-klas1-32",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "code": "3.2",
+      "title": "3.2 Slimme apparaten op het netwerk",
+      "beschrijving": "Deurbellen, lampen en speakers die zelf post sturen: handig, en een deur die op slot moet.",
+      "order": 2,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt voorbeelden geven van slimme apparaten en uitleggen hoe ze met internet verbonden zijn.",
+        "Je kunt een voordeel en een risico van een slim apparaat noemen."
+      ],
+      "leerdoelen": [
+        "Je kunt voorbeelden geven van slimme apparaten en uitleggen hoe ze met internet verbonden zijn.",
+        "Je kunt een voordeel en een risico van een slim apparaat noemen."
+      ]
+    },
+    {
+      "id": "paragraaf-dv-klas1-33",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "code": "3.3",
+      "title": "3.3 Als internet uitvalt: afhankelijk en energie",
+      "beschrijving": "Waarom één storing miljoenen mensen raakt, en waarom datacenters veel stroom gebruiken.",
+      "order": 3,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt uitleggen waarom een storing bij een grote dienst veel mensen tegelijk raakt.",
+        "Je kunt uitleggen dat datacenters veel energie gebruiken, en waarom."
+      ],
+      "leerdoelen": [
+        "Je kunt uitleggen waarom een storing bij een grote dienst veel mensen tegelijk raakt.",
+        "Je kunt uitleggen dat datacenters veel energie gebruiken, en waarom."
+      ]
+    }
+  ],
+  "contentBlocks": [
+    {
+      "id": "block-dv-klas1-31-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-31",
+      "type": "theory",
+      "order": 2,
+      "title": "Wat gebeurt er als je op Verstuur drukt?",
+      "status": "published",
+      "content": {
+        "html": "<p>Je stuurt een appje naar een vriendin. Een seconde later heeft zij het. Het lijkt of het bericht door de lucht vliegt. Maar het maakt een hele reis.</p><img src=\"/lesstof/dv-h3-route.svg\" alt=\"De route van een appje: telefoon, wifi, router, kabels, server in een datacenter, en weer terug naar de telefoon van je vriendin.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><ol><li><strong>Je telefoon</strong> knipt je bericht in kleine stukjes. Die heten <strong>pakketjes</strong>.</li><li>De pakketjes gaan via <strong>wifi</strong> naar de <strong>router</strong> in je huis of op school.</li><li>De router stuurt ze via <strong>kabels</strong> het internet op. Tussen landen liggen die kabels zelfs op de bodem van de zee.</li><li>De pakketjes komen aan bij een <strong>server</strong> van WhatsApp. Die staat in een <strong>datacenter</strong>.</li><li>De server stuurt het bericht door naar de telefoon van je vriendin. Die zet de pakketjes weer in elkaar.</li></ol><p>Je appje gaat dus niet rechtstreeks naar je vriendin. Het gaat eerst langs een server.</p><h3>Kernbegrippen</h3><dl><dt>pakketje</dt><dd>Een klein stukje van je bericht. Een bericht reist in veel pakketjes.</dd><dt>router</dt><dd>Het kastje dat jouw apparaten met internet verbindt en de pakketjes de goede kant op stuurt.</dd><dt>server</dt><dd>Een computer die berichten, foto's en websites bewaart en doorstuurt.</dd><dt>datacenter</dt><dd>Een groot gebouw vol servers.</dd></dl>",
+        "keyTerms": [
+          "pakketje",
+          "router",
+          "server",
+          "datacenter"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-31-theory-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-31",
+      "type": "theory",
+      "order": 3,
+      "title": "Internet werkt als de post",
+      "status": "published",
+      "content": {
+        "html": "<p>Je kunt internet vergelijken met de post.</p><ul><li>Je bericht is een <strong>brief</strong>. Die wordt geknipt in genummerde <strong>pakketjes</strong>.</li><li>Op elk pakketje staat een <strong>adres</strong>. Op internet heet dat het <strong>IP-adres</strong>.</li><li>Je <strong>router</strong> is de brievenbus van je huis. Wifi is het korte pad van je kamer naar die brievenbus.</li><li>Onderweg zijn er <strong>sorteercentra</strong>: andere routers die de pakketjes de goede kant op sturen.</li><li>De <strong>server</strong> is het kantoor waar je brief naartoe moet.</li></ul><p>Maar internet is anders dan de post. De post doet er een dag over, internet een fractie van een seconde. En je stuurt een kopie: het origineel blijft op je eigen telefoon.</p><h3>Kernbegrippen</h3><dl><dt>IP-adres</dt><dd>Het adres van een apparaat op internet, zodat de pakketjes weten waar ze heen moeten.</dd><dt>wifi</dt><dd>Een draadloze verbinding van je apparaat naar de router. Wifi is niet hetzelfde als internet.</dd></dl>",
+        "keyTerms": [
+          "IP-adres",
+          "wifi"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-31-example-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-31",
+      "type": "example",
+      "order": 4,
+      "title": "Voorbeeld: het appje van Amira",
+      "status": "published",
+      "content": {
+        "html": "<p>Amira woont in Rotterdam. Ze stuurt een foto naar haar nicht Lina in Marokko.</p><ol><li>Amira drukt op Verstuur. Haar telefoon knipt de foto in honderden pakketjes.</li><li>De pakketjes gaan via de wifi naar de router in de woonkamer.</li><li>De router stuurt ze via de kabel naar het internet. Ze gaan van sorteercentrum naar sorteercentrum.</li><li>Ze komen bij een server van WhatsApp in een datacenter.</li><li>De server stuurt de pakketjes naar Lina. Haar telefoon zet de foto weer in elkaar.</li></ol><p>Eén pakketje raakt onderweg kwijt. Lina's telefoon merkt dat en vraagt het opnieuw op. Daarom ziet Lina de foto toch helemaal. Dat doet de echte post niet.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-31-summary-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-31",
+      "type": "summary",
+      "order": 5,
+      "title": "Samenvatting 3.1",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Een bericht reist in kleine pakketjes.</li><li>De route: telefoon, wifi, router, kabels, server in een datacenter, telefoon van de ontvanger.</li><li>Je bericht gaat eerst langs een server, niet rechtstreeks naar je vriend.</li><li>Internet werkt als de post: het IP-adres is het adres, routers zijn sorteercentra, de server is het kantoor.</li><li>Wifi is alleen het laatste stukje in huis. Wifi is niet het internet.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-31-quiz-6",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-31",
+      "type": "quiz",
+      "order": 6,
+      "title": "Quiz 3.1",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Vijf vragen. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je stuurt een appje naar een vriend. Waar gaat het eerst naartoe?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Rechtstreeks naar de telefoon van je vriend",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Naar een server van WhatsApp",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Naar een satelliet in de ruimte",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Rechtstreeks naar de telefoon van je vriend",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Naar een server van WhatsApp",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Naar een satelliet in de ruimte",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Je bericht gaat eerst naar een server van WhatsApp. Die stuurt het door naar je vriend.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat doet een router?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Hij bewaart al je foto's.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Hij knipt je bericht in stukjes.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Hij verbindt jouw apparaten met internet en stuurt de pakketjes de goede kant op.",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Hij bewaart al je foto's.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Hij knipt je bericht in stukjes.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Hij verbindt jouw apparaten met internet en stuurt de pakketjes de goede kant op.",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De router is de brievenbus van je huis: hij verbindt je apparaten met internet en stuurt pakketjes door.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Wifi en internet zijn hetzelfde.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Wifi is alleen het korte stukje van je apparaat naar de router. Het internet is het grote netwerk daarachter.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Hoe gaat het meeste internetverkeer tussen Europa en Amerika?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Via kabels op de bodem van de zee",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Via satellieten",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Via wifi",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Via kabels op de bodem van de zee",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Via satellieten",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Via wifi",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Bijna al het verkeer tussen werelddelen gaat via kabels op de zeebodem. Satellieten zijn veel trager.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk deel van de post is op internet het IP-adres?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "De postzegel",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "De brievenbus",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Het adres op het pakketje",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "De postzegel",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "De brievenbus",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Het adres op het pakketje",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Het IP-adres vertelt waar de pakketjes heen moeten, net als het adres op een brief.",
+            "tokens": 6,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-31-question-7",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-31",
+      "type": "question",
+      "order": 7,
+      "title": "Jouw strip: de reis van een appje",
+      "status": "published",
+      "content": {
+        "html": "<p>Beschrijf de reis van een appje in vijf stappen. Schrijf per stap één korte zin, zoals in een strip met vijf vakken.</p>\n<p><strong>1. Beschrijf in vijf korte stappen hoe een appje van jouw telefoon bij je vriend komt.</strong></p>",
+        "exercise": {
+          "fields": [
+            {
+              "id": "vraag-1",
+              "label": "Beschrijf in vijf korte stappen hoe een appje van jouw telefoon bij je vriend komt.",
+              "answer": "",
+              "modelAnswer": "1. Mijn telefoon knipt het bericht in pakketjes. 2. De pakketjes gaan via wifi naar de router. 3. De router stuurt ze via kabels over het internet. 4. Ze komen bij een server van WhatsApp in een datacenter. 5. De server stuurt ze naar de telefoon van mijn vriend.",
+              "explanation": "Het gaat om de volgorde: telefoon, wifi en router, kabels, server, telefoon van de ander."
+            }
+          ]
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-32-theory-1",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-32",
+      "type": "theory",
+      "order": 1,
+      "title": "Apparaten die zelf post sturen",
+      "status": "published",
+      "content": {
+        "html": "<p>Niet alleen jouw telefoon zit op internet. Steeds meer apparaten in huis doen dat ook. We noemen ze <strong>slimme apparaten</strong>. Denk aan een slimme deurbel, een thermostaat, een lamp, een speaker of een smartwatch.</p><img src=\"/lesstof/dv-h3-deurbel.svg\" alt=\"Een slimme deurbel stuurt een melding via wifi en de router naar de cloud, en die stuurt hem door naar jouw telefoon.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Een slim apparaat stuurt zelf post, dag en nacht. Neem de slimme deurbel. Iemand drukt op de bel. De deurbel stuurt een pakketje via de wifi en de router naar een server van de fabrikant. Die server heet vaak de <strong>cloud</strong>. De cloud stuurt het bericht door naar jouw telefoon: er staat iemand voor de deur.</p><p>De cloud is dus geen wolk in de lucht. Het zijn computers in een datacenter. Daarom werkt veel slims alleen als het internet werkt.</p><h3>Kernbegrippen</h3><dl><dt>slim apparaat</dt><dd>Een apparaat dat met internet verbonden is en zelf gegevens verstuurt, zoals een slimme deurbel of thermostaat.</dd><dt>cloud</dt><dd>Servers in een datacenter die gegevens bewaren en doorsturen. Geen wolk, maar echte computers.</dd></dl>",
+        "keyTerms": [
+          "slim apparaat",
+          "cloud"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-32-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-32",
+      "type": "theory",
+      "order": 2,
+      "title": "Handig, maar het is ook een deur",
+      "status": "published",
+      "content": {
+        "html": "<p>Slimme apparaten zijn handig. Je ziet wie er aanbelt, ook als je niet thuis bent. De verwarming gaat aan voordat je thuiskomt.</p><p>Maar elk slim apparaat is ook een <strong>deur</strong> naar je netwerk. Zit er een zwak slot op, dan kan iemand anders naar binnen. Een slot is hier een wachtwoord of een update. Daarom:</p><ul><li>verander het wachtwoord dat erop zit als je het apparaat koopt;</li><li>installeer updates, zodat kapotte sloten gerepareerd worden;</li><li>denk na over wat het apparaat over jou verstuurt, zoals beelden of wanneer je thuis bent.</li></ul><p>En valt het internet of de cloud uit? Dan werkt je slimme apparaat vaak niet meer.</p><h3>Kernbegrippen</h3><dl><dt>update</dt><dd>Een verbetering voor de software van een apparaat. Vaak repareert een update een zwakke plek.</dd></dl>",
+        "keyTerms": [
+          "update"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-32-example-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-32",
+      "type": "example",
+      "order": 3,
+      "title": "Voorbeeld: waarom werkt de deurbel van Daan niet?",
+      "status": "published",
+      "content": {
+        "html": "<p>De slimme deurbel van Daan doet het niet. Er kunnen drie dingen aan de hand zijn.</p><ol><li><strong>De router thuis staat uit.</strong> De deurbel kan geen post versturen. Alleen Daans huis heeft last.</li><li><strong>De cloud van de fabrikant heeft een storing.</strong> Het kantoor is dicht. Iedereen met zo'n deurbel heeft last, in het hele land.</li><li><strong>Het wifi-wachtwoord is veranderd.</strong> De deurbel komt niet meer bij de router. Daan moet het nieuwe wachtwoord invullen.</li></ol><p>Daan kijkt eerst of zijn andere apparaten nog internet hebben. Zo weet hij of het probleem thuis zit of bij de fabrikant.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-32-summary-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-32",
+      "type": "summary",
+      "order": 4,
+      "title": "Samenvatting 3.2",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Slimme apparaten zitten op internet en versturen zelf gegevens.</li><li>Ze sturen hun post via wifi en de router naar de cloud. De cloud is een datacenter, geen wolk.</li><li>Zonder internet of cloud werkt een slim apparaat vaak niet.</li><li>Elk slim apparaat is een deur naar je netwerk: verander het wachtwoord en installeer updates.</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-32-quiz-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-32",
+      "type": "quiz",
+      "order": 5,
+      "title": "Quiz 3.2",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Vier vragen. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk apparaat is een slim apparaat?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Een gewone wekker op batterijen",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Een thermostaat die je met een app bedient",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Een broodrooster",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Een gewone wekker op batterijen",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Een thermostaat die je met een app bedient",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Een broodrooster",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een thermostaat die je met een app bedient, is met internet verbonden. Dat maakt hem slim.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "De cloud is een wolk in de lucht waar je gegevens in zitten.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De cloud bestaat uit echte computers, servers, in een datacenter. Het woord wolk is alleen een naam.",
+            "tokens": 8,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "De cloud van de fabrikant van een slimme deurbel heeft een storing. Wie heeft er last van?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Alleen jij",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Alleen jouw straat",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Iedereen met die deurbel",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Alleen jij",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Alleen jouw straat",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Iedereen met die deurbel",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Alle deurbellen van die fabrikant sturen hun post naar hetzelfde kantoor. Is dat dicht, dan heeft iedereen last.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat is een goede eerste stap als je een slim apparaat koopt?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het wachtwoord veranderen dat erop zit",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Updates uitzetten",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Het apparaat nooit meer uitzetten",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het wachtwoord veranderen dat erop zit",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Updates uitzetten",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Het apparaat nooit meer uitzetten",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een standaardwachtwoord is een zwak slot. Verander het meteen, en laat updates juist aan staan.",
+            "tokens": 7,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-33-theory-1",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-33",
+      "type": "theory",
+      "order": 1,
+      "title": "Eén storing, miljoenen mensen",
+      "status": "published",
+      "content": {
+        "html": "<p>Is jouw router kapot, dan heb alleen jij geen internet. Maar gaat één groot kantoor dicht, dan blijft de post van miljoenen mensen tegelijk liggen.</p><img src=\"/lesstof/dv-h3-storing.svg\" alt=\"Eén groot datacenter valt uit en miljoenen telefoons tegelijk hebben geen WhatsApp.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Dat gebeurde op 4 oktober 2021. Door een fout bij onderhoud werkten WhatsApp, Instagram en Facebook bijna zes uur niet. Overal ter wereld. De rest van het internet wist de weg naar de servers van Meta niet meer. Het was alsof alle wegwijzers naar het kantoor waren verdwenen.</p><p>Een ander voorbeeld: in juni 2019 was het alarmnummer 112 ruim drie uur slecht te bereiken. Alle 112-gesprekken in Nederland lopen via het netwerk van één bedrijf. Daar ging iets mis.</p><p>Hoe meer mensen dezelfde dienst gebruiken, hoe groter de gevolgen van één storing. Dat noemen we <strong>afhankelijkheid</strong>.</p><h3>Kernbegrippen</h3><dl><dt>storing</dt><dd>Een dienst of verbinding werkt tijdelijk niet.</dd><dt>afhankelijkheid</dt><dd>Veel mensen hebben dezelfde dienst nodig. Valt die uit, dan heeft iedereen tegelijk last.</dd></dl>",
+        "keyTerms": [
+          "storing",
+          "afhankelijkheid"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-33-theory-2",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-33",
+      "type": "theory",
+      "order": 2,
+      "title": "Datacenters gebruiken veel stroom",
+      "status": "published",
+      "content": {
+        "html": "<p>Een datacenter staat vol servers die dag en nacht aan staan. Servers worden warm, net als een laptop die hard werkt. Daarom zijn er ook grote koelmachines nodig. Dat kost veel stroom.</p><img src=\"/lesstof/dv-h3-stroom.svg\" alt=\"Servers worden heet en hebben veel stroom nodig.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>In Nederland staan ongeveer 200 datacenters, de meeste rond Amsterdam. Samen gebruikten ze in 2024 ongeveer 4,6 procent van alle stroom in ons land. Dat is bijna 1 op de 20 stopcontacten (CBS). En het wordt meer, vooral door AI.</p><p>Digitaal is dus niet gratis voor het milieu. Elke foto die je in de cloud bewaart en elke video die je streamt, draait ergens op een server.</p><h3>Kernbegrippen</h3><dl><dt>energieverbruik</dt><dd>Hoeveel stroom iets gebruikt. Datacenters gebruiken stroom voor de servers en voor de koeling.</dd></dl>",
+        "keyTerms": [
+          "energieverbruik"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-33-example-3",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-33",
+      "type": "example",
+      "order": 3,
+      "title": "Voorbeeld: Sem denkt dat het hele internet plat ligt",
+      "status": "published",
+      "content": {
+        "html": "<p>Sem kan geen appjes versturen. Hij roept: het hele internet ligt eruit!</p><ol><li>Sem opent een website. Die werkt gewoon. Zijn internet is dus in orde.</li><li>Hij vraagt aan zijn zus of WhatsApp bij haar werkt. Ook niet.</li><li>Op een nieuwssite leest hij dat WhatsApp een storing heeft.</li></ol><p>Conclusie: niet het hele internet ligt plat. Eén dienst heeft een storing. Omdat bijna iedereen die dienst gebruikt, merken miljoenen mensen het tegelijk.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-33-summary-4",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-33",
+      "type": "summary",
+      "order": 4,
+      "title": "Samenvatting 3.3",
+      "status": "published",
+      "content": {
+        "html": "<ul><li>Een storing bij een grote dienst raakt miljoenen mensen tegelijk. Dat heet afhankelijkheid.</li><li>Voorbeelden: WhatsApp, Instagram en Facebook lagen in 2021 bijna zes uur plat; 112 was in 2019 ruim drie uur slecht bereikbaar.</li><li>Eén dienst plat is niet hetzelfde als het hele internet plat.</li><li>Datacenters gebruiken veel stroom, voor servers en koeling: in Nederland ongeveer 4,6 procent van alle stroom (2024).</li></ul>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-33-quiz-5",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-33",
+      "type": "quiz",
+      "order": 5,
+      "title": "Afsluitcheck H3",
+      "status": "published",
+      "tokenTotal": 30,
+      "content": {
+        "html": "<p>Tien vragen over het hele hoofdstuk. Je mag het vaker proberen.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Zet in gedachten de reis van een appje op volgorde. Wat komt direct na je telefoon?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "De server",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Wifi en de router",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "De telefoon van je vriend",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "De server",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Wifi en de router",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "De telefoon van je vriend",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Eerst gaan de pakketjes via wifi naar de router. Daarna pas het internet op, naar de server.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een datacenter is een groot gebouw vol servers.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Klopt. In een datacenter staan honderden of duizenden servers die dag en nacht aan staan.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waarom wordt een bericht in pakketjes geknipt?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Zodat het sneller en veiliger over het netwerk kan reizen, en een kwijt pakketje opnieuw gestuurd kan worden",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Omdat een telefoon geen hele berichten kan maken",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Omdat WhatsApp dat grappig vindt",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Zodat het sneller en veiliger over het netwerk kan reizen, en een kwijt pakketje opnieuw gestuurd kan worden",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Omdat een telefoon geen hele berichten kan maken",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Omdat WhatsApp dat grappig vindt",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Kleine pakketjes reizen makkelijk over het netwerk. Raakt er een kwijt, dan wordt alleen dat stukje opnieuw gestuurd.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Je wifi thuis valt uit. Wat klopt?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het hele internet ligt plat.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Alleen jouw huis heeft geen verbinding.",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Alle WhatsApp-servers zijn kapot.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het hele internet ligt plat.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Alleen jouw huis heeft geen verbinding.",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Alle WhatsApp-servers zijn kapot.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Wifi is het laatste stukje in jouw huis. Valt het uit, dan heb alleen jij last.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een slimme deurbel werkt ook als de cloud van de fabrikant uitvalt.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "De deurbel stuurt zijn meldingen via de cloud. Is die uit, dan komt het bericht niet op je telefoon.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-6",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waarom raakte de storing van 4 oktober 2021 zoveel mensen?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Omdat alle telefoons tegelijk kapot gingen",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Omdat miljarden mensen dezelfde diensten van één bedrijf gebruiken",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Omdat de zeekabels waren doorgeknipt",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Omdat alle telefoons tegelijk kapot gingen",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Omdat miljarden mensen dezelfde diensten van één bedrijf gebruiken",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Omdat de zeekabels waren doorgeknipt",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "WhatsApp, Instagram en Facebook zijn van één bedrijf. Valt dat uit, dan heeft een groot deel van de wereld tegelijk last.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-7",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Waarom gebruiken datacenters zoveel stroom?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Voor de servers en voor het koelen ervan",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Alleen voor de lampen in het gebouw",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Voor de wifi in de buurt",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Voor de servers en voor het koelen ervan",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Alleen voor de lampen in het gebouw",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Voor de wifi in de buurt",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Servers staan altijd aan en worden warm. Het koelen kost ook veel stroom.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-8",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Ongeveer hoeveel van alle stroom in Nederland ging in 2024 naar datacenters?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Bijna 1 op de 1000",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Bijna 1 op de 20",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Bijna de helft",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Bijna 1 op de 1000",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Bijna 1 op de 20",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Bijna de helft",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Het CBS berekende 4,6 procent voor 2024. Dat is bijna 1 op de 20, en het wordt meer.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-9",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Wat is een goede manier om een slim apparaat beter te beveiligen?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Het standaardwachtwoord laten staan",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Updates uitzetten",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Updates installeren en het wachtwoord veranderen",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Het standaardwachtwoord laten staan",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Updates uitzetten",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Updates installeren en het wachtwoord veranderen",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een nieuw wachtwoord en updates maken het slot op die deur sterker.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-10",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Een bericht dat je verstuurt, is weg van je telefoon.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Je stuurt een kopie. Het origineel blijft op je eigen telefoon staan, en de server heeft ook een kopie gehad.",
+            "tokens": 3,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": null,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 30
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-dv-klas1-33-question-6",
+      "vakId": "vak-digitale-vaardigheden",
+      "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+      "niveauId": "niveau-dv-vmbo1-kb",
+      "hoofdstukId": "hoofdstuk-dv-klas1-h3",
+      "paragraafId": "paragraaf-dv-klas1-33",
+      "type": "question",
+      "order": 6,
+      "title": "Plusopdracht: hoeveel stroom? (voor wie meer wil)",
+      "status": "published",
+      "content": {
+        "html": "<p>Deze opdracht is niet verplicht. Zoek het op en schrijf de bron en het jaar erbij.</p>\n<p><strong>1. Zoek op hoeveel stroom de datacenters in Nederland gebruiken. Schrijf het getal op, de bron en het jaar. Leg daarna in één zin uit waarom het verbruik groeit.</strong></p>",
+        "exercise": {
+          "fields": [
+            {
+              "id": "vraag-1",
+              "label": "Zoek op hoeveel stroom de datacenters in Nederland gebruiken. Schrijf het getal op, de bron en het jaar. Leg daarna in één zin uit waarom het verbruik groeit.",
+              "answer": "",
+              "modelAnswer": "Volgens het CBS gebruikten de datacenters in Nederland in 2024 ongeveer 5.100 gigawattuur, 4,6 procent van alle stroom. Het groeit omdat we steeds meer in de cloud doen en omdat AI veel rekenkracht nodig heeft.",
+              "explanation": "Een goed antwoord noemt een getal, een betrouwbare bron zoals het CBS, het jaar en een reden."
+            }
+          ]
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Curriculum DV klas 1, les 2 (docs/curriculum/dv-klas1-curriculum.json). Tekst nieuw geschreven. Feiten: CBS (datacenters 2024, gepubliceerd dec 2025), Meta Engineering (storing 4 okt 2021), Inspectie JenV (112-storing 24 jun 2019). Tintara les 7b en 35b alleen als inspiratie voor werkvormen, niets overgenomen."
+      },
+      "settings": {
+        "allowAiHelp": true,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    }
+  ],
+  "badges": [],
+  "certificates": []
+}

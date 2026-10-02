@@ -1,0 +1,207 @@
+{
+  "meta": {
+    "vak": "Digitale vaardigheden",
+    "bron": "Inclusieversie van DV H3 (docs/seeds/dv-h3-internet.json) voor klas H1i1. Zelfde inhoud en leerdoelen, in kleine stappen. Afspraak Kevin 30 sep 2026: hooguit 60 tot 70 woorden en één idee per stap, korte zinnen, bij elke stap een beeld, klikvragen en eenvoudige invulvragen, geen plusopdracht",
+    "afspraak": "Inclusievariant: paragrafen met variantProfiel inclusie (gezet door scripts/zet-dv-h3-inclusie-klaar.mjs), alleen toegewezen aan H1i1. Eigen blokPrefix zodat de id's niet botsen met de basisversie; hetzelfde hoofdstuk.",
+    "vakId": "vak-digitale-vaardigheden",
+    "leerjaarId": "leerjaar-digitale-vaardigheden-vmbo1",
+    "niveauId": "niveau-dv-vmbo1-kb",
+    "seedBestand": "docs/seeds/dv-h3-internet-inclusie.seed.json",
+    "blokPrefix": "dv-klas1-incl",
+    "deckPrefix": "dv-klas1-incl",
+    "deckMap": "sources/dv-jpeg",
+    "controleerTeksten": ["datacenter", "router"]
+  },
+  "hoofdstuk": {
+    "id": "hoofdstuk-dv-klas1-h3",
+    "nummer": 3,
+    "titel": "Hoe reist jouw bericht over internet?",
+    "beschrijving": "Wat er gebeurt tussen versturen en ontvangen: netwerk, router, server en datacenter. Slimme apparaten zitten ook op dat netwerk. Wat gebeurt er als het uitvalt, en wat kost het aan energie?"
+  },
+  "paragrafen": [
+    {
+      "code": "3.1",
+      "titel": "Van jouw scherm naar een server en terug",
+      "beschrijving": "De reis van een appje, stap voor stap.",
+      "leerdoelen": [
+        "Je kunt in stappen uitleggen hoe een bericht over internet reist.",
+        "Je weet wat een router, een server en een datacenter zijn."
+      ],
+      "slidedeck": { "sleutel": "dv-h3-internet-inclusie", "bestand": "dv-h3-internet-inclusie.pdf", "titel": "Presentatie H3 - De reis van een appje" },
+      "blokken": [
+        {
+          "type": "theory",
+          "titel": "Je appje maakt een reis",
+          "html": "<p>Je stuurt een appje naar een vriendin. Een seconde later heeft zij het.</p><p>Het lijkt snel en makkelijk. Maar je appje maakt een reis. De reis heeft zes stappen.</p><img src=\"/lesstof/dv-h3-route.svg\" alt=\"De zes stappen: jouw telefoon, wifi, router, kabels, server in een datacenter, telefoon van je vriendin.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>We lopen de stappen een voor een door.</p>"
+        },
+        {
+          "type": "theory",
+          "titel": "Stap 1: je telefoon maakt pakketjes",
+          "html": "<img src=\"/lesstof/dv-h3-route-1.svg\" alt=\"Stap 1: jouw telefoon.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Je drukt op Verstuur.</p><p>Je telefoon knipt je bericht in kleine stukjes. Die stukjes heten <strong>pakketjes</strong>.</p><p>Kleine pakketjes reizen makkelijk.</p>",
+          "kernbegrippen": [{ "begrip": "pakketje", "uitleg": "Een klein stukje van je bericht." }]
+        },
+        {
+          "type": "theory",
+          "titel": "Stap 2 en 3: wifi en de router",
+          "html": "<img src=\"/lesstof/dv-h3-route-3.svg\" alt=\"Stap 3: de router.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>De pakketjes gaan via <strong>wifi</strong> naar de <strong>router</strong>.</p><p>De router is een kastje in je huis of op school. Hij stuurt de pakketjes het internet op.</p><p>Let op: wifi is niet het internet. Wifi is alleen het korte stukje naar de router.</p>",
+          "kernbegrippen": [{ "begrip": "router", "uitleg": "Het kastje dat je apparaten met internet verbindt." }]
+        },
+        {
+          "type": "theory",
+          "titel": "Stap 4: kabels, ook onder zee",
+          "html": "<img src=\"/lesstof/dv-h3-route-4.svg\" alt=\"Stap 4: kabels.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>De router stuurt de pakketjes door <strong>kabels</strong>.</p><p>Die kabels liggen onder de straat. Tussen landen liggen ze zelfs op de bodem van de zee.</p><p>Internet gaat dus vooral door kabels. Niet door de lucht.</p>"
+        },
+        {
+          "type": "theory",
+          "titel": "Stap 5 en 6: de server en je vriendin",
+          "html": "<img src=\"/lesstof/dv-h3-route-5.svg\" alt=\"Stap 5: de server in een datacenter.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>De pakketjes komen bij een <strong>server</strong> van WhatsApp. Een server is een computer die berichten doorstuurt.</p><p>Die server staat in een <strong>datacenter</strong>. Dat is een groot gebouw vol servers.</p><p>De server stuurt je appje naar je vriendin. Haar telefoon zet de pakketjes weer in elkaar.</p>",
+          "kernbegrippen": [
+            { "begrip": "server", "uitleg": "Een computer die berichten bewaart en doorstuurt." },
+            { "begrip": "datacenter", "uitleg": "Een groot gebouw vol servers." }
+          ]
+        },
+        {
+          "type": "theory",
+          "titel": "Internet is net als de post",
+          "html": "<p>Internet lijkt op de post:</p><ul><li>je bericht is een <strong>brief</strong>;</li><li>de router is je <strong>brievenbus</strong>;</li><li>de server is het <strong>postkantoor</strong>.</li></ul><p>Maar internet is veel sneller. Het duurt maar een seconde.</p>"
+        },
+        {
+          "type": "summary",
+          "titel": "Samenvatting 3.1",
+          "html": "<ul><li>Je telefoon maakt pakketjes.</li><li>Wifi en de router sturen ze het internet op.</li><li>Kabels brengen ze naar een server.</li><li>De server staat in een datacenter.</li><li>De server stuurt je appje naar je vriendin.</li></ul>"
+        },
+        {
+          "type": "quiz",
+          "titel": "Quiz 3.1",
+          "inleiding": "Drie vragen. Je mag het vaker proberen.",
+          "vragen": [
+            { "prompt": "Je stuurt een appje. Waar gaat het eerst naartoe?", "options": [{ "text": "Naar een server" , "correct": true }, { "text": "Rechtstreeks naar je vriendin" }, { "text": "Naar de maan" }], "feedback": "Je appje gaat eerst naar een server. Die stuurt het door." },
+            { "prompt": "Wifi en internet zijn hetzelfde.", "waar": false, "feedback": "Wifi is alleen het korte stukje naar de router." },
+            { "prompt": "Wat is een datacenter?", "options": [{ "text": "Een winkel voor telefoons" }, { "text": "Een app op je telefoon" }, { "text": "Een groot gebouw vol servers", "correct": true }], "feedback": "In een datacenter staan heel veel servers bij elkaar." }
+          ]
+        },
+        {
+          "type": "question",
+          "titel": "Vul in: het kastje",
+          "inleiding": "Typ één woord.",
+          "vragen": [
+            { "vraag": "Het kastje in huis dat je apparaten met internet verbindt, heet de ...", "modelantwoord": "router", "uitleg": "De router verbindt je apparaten met internet." }
+          ],
+          "digidocent": true
+        }
+      ]
+    },
+    {
+      "code": "3.2",
+      "titel": "Slimme apparaten op het netwerk",
+      "beschrijving": "Apparaten die zelf berichten sturen.",
+      "leerdoelen": [
+        "Je kunt voorbeelden geven van slimme apparaten.",
+        "Je weet dat een slim apparaat een wachtwoord en updates nodig heeft."
+      ],
+      "blokken": [
+        {
+          "type": "theory",
+          "titel": "Wat is een slim apparaat?",
+          "html": "<p>Een <strong>slim apparaat</strong> zit op internet.</p><p>Voorbeelden:</p><ul><li>een slimme deurbel;</li><li>een lamp die je met een app bedient;</li><li>een slimme speaker;</li><li>een smartwatch.</li></ul><p>Een gewone wekker of broodrooster is niet slim. Die zitten niet op internet.</p>",
+          "kernbegrippen": [{ "begrip": "slim apparaat", "uitleg": "Een apparaat dat op internet zit." }]
+        },
+        {
+          "type": "theory",
+          "titel": "De deurbel stuurt een bericht",
+          "html": "<img src=\"/lesstof/dv-h3-deurbel.svg\" alt=\"De deurbel stuurt een melding via wifi naar de cloud, en de cloud stuurt hem naar jouw telefoon.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Iemand drukt op de slimme deurbel.</p><p>De deurbel stuurt een bericht via wifi naar de <strong>cloud</strong>.</p><p>De cloud stuurt het naar jouw telefoon. Nu weet je: er staat iemand voor de deur.</p>"
+        },
+        {
+          "type": "theory",
+          "titel": "De cloud is geen wolk",
+          "html": "<p>De cloud klinkt als een wolk in de lucht. Maar dat is het niet.</p><p>De cloud is een <strong>datacenter</strong>. Daar staan echte computers.</p><p>Werkt het internet niet? Dan werkt je slimme deurbel vaak ook niet.</p>",
+          "kernbegrippen": [{ "begrip": "cloud", "uitleg": "Computers in een datacenter. Geen wolk." }]
+        },
+        {
+          "type": "theory",
+          "titel": "Een slim apparaat is een deur",
+          "html": "<p>Elk slim apparaat is een <strong>deur</strong> naar je huis op internet.</p><p>Een deur moet op slot. Zo doe je dat:</p><ul><li>verander het wachtwoord als je het apparaat koopt;</li><li>installeer de <strong>updates</strong>.</li></ul><p>Een update repareert zwakke plekken.</p>",
+          "kernbegrippen": [{ "begrip": "update", "uitleg": "Een verbetering die zwakke plekken repareert." }]
+        },
+        {
+          "type": "summary",
+          "titel": "Samenvatting 3.2",
+          "html": "<ul><li>Een slim apparaat zit op internet.</li><li>Het stuurt berichten via de cloud.</li><li>De cloud is een datacenter, geen wolk.</li><li>Verander het wachtwoord en installeer updates.</li></ul>"
+        },
+        {
+          "type": "quiz",
+          "titel": "Quiz 3.2",
+          "inleiding": "Drie vragen. Je mag het vaker proberen.",
+          "vragen": [
+            { "prompt": "Welk apparaat is slim?", "options": [{ "text": "Een gewone wekker" }, { "text": "Een slimme deurbel", "correct": true }, { "text": "Een broodrooster" }], "feedback": "Een slimme deurbel zit op internet. Een gewone wekker niet." },
+            { "prompt": "De cloud is een wolk in de lucht.", "waar": false, "feedback": "De cloud is een datacenter met echte computers." },
+            { "prompt": "Wat maakt een slim apparaat veiliger?", "options": [{ "text": "Updates uitzetten" }, { "text": "Nooit het wachtwoord veranderen" }, { "text": "Het wachtwoord veranderen", "correct": true }], "feedback": "Een nieuw wachtwoord doet de deur op slot." }
+          ]
+        },
+        {
+          "type": "question",
+          "titel": "Vul in: de deur op slot",
+          "inleiding": "Typ één woord.",
+          "vragen": [
+            { "vraag": "Een verbetering die zwakke plekken repareert, heet een ...", "modelantwoord": "update", "uitleg": "Een update repareert zwakke plekken in een apparaat." }
+          ],
+          "digidocent": true
+        }
+      ]
+    },
+    {
+      "code": "3.3",
+      "titel": "Als internet uitvalt: afhankelijk en energie",
+      "beschrijving": "Eén storing, veel mensen. En datacenters gebruiken veel stroom.",
+      "leerdoelen": [
+        "Je kunt uitleggen waarom een storing bij een grote dienst veel mensen raakt.",
+        "Je weet dat datacenters veel stroom gebruiken."
+      ],
+      "blokken": [
+        {
+          "type": "theory",
+          "titel": "Jouw router of een groot kantoor",
+          "html": "<p>Is jouw router kapot? Dan heb alleen jij geen internet.</p><img src=\"/lesstof/dv-h3-storing.svg\" alt=\"Eén groot datacenter valt uit en veel telefoons tegelijk hebben geen WhatsApp.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Maar valt een groot kantoor uit, zoals de servers van WhatsApp? Dan hebben miljoenen mensen tegelijk last.</p>",
+          "kernbegrippen": [{ "begrip": "storing", "uitleg": "Iets werkt tijdelijk niet." }]
+        },
+        {
+          "type": "theory",
+          "titel": "Een echte storing",
+          "html": "<p>Op 4 oktober 2021 ging het mis.</p><p>WhatsApp, Instagram en Facebook werkten bijna zes uur niet. Overal ter wereld.</p><p>Miljoenen mensen konden geen berichten sturen.</p><p>Hoe meer mensen een dienst gebruiken, hoe groter de storing. Dat heet <strong>afhankelijkheid</strong>.</p>",
+          "kernbegrippen": [{ "begrip": "afhankelijkheid", "uitleg": "Veel mensen hebben dezelfde dienst nodig." }]
+        },
+        {
+          "type": "theory",
+          "titel": "Datacenters worden heet",
+          "html": "<img src=\"/lesstof/dv-h3-stroom.svg\" alt=\"Servers worden heet en hebben veel stroom nodig.\" style=\"width:100%;max-width:720px;height:auto;margin:0 auto;display:block\" /><p>Servers staan dag en nacht aan. Ze worden heet.</p><p>Daarom moeten ze gekoeld worden. Dat kost veel stroom.</p><p>In Nederland gaat bijna 1 op de 20 stopcontacten naar datacenters.</p>"
+        },
+        {
+          "type": "summary",
+          "titel": "Samenvatting 3.3",
+          "html": "<ul><li>Jouw router kapot: alleen jij hebt last.</li><li>Een groot kantoor kapot: miljoenen mensen hebben last.</li><li>Dat heet afhankelijkheid.</li><li>Datacenters worden heet en gebruiken veel stroom.</li></ul>"
+        },
+        {
+          "type": "quiz",
+          "titel": "Afsluitcheck H3",
+          "inleiding": "Vijf vragen over het hele hoofdstuk. Je mag het vaker proberen.",
+          "vragen": [
+            { "prompt": "Jouw router thuis is kapot. Wie heeft last?", "options": [{ "text": "Alleen jij", "correct": true }, { "text": "Heel Nederland" }, { "text": "Iedereen met WhatsApp" }], "feedback": "De router is van jouw huis. Alleen jij hebt dan geen internet." },
+            { "prompt": "De servers van WhatsApp vallen uit. Wie heeft last?", "options": [{ "text": "Alleen jij" }, { "text": "Miljoenen mensen tegelijk", "correct": true }, { "text": "Niemand" }], "feedback": "Heel veel mensen gebruiken WhatsApp. Dan heeft iedereen tegelijk last." },
+            { "prompt": "Datacenters gebruiken veel stroom.", "waar": true, "feedback": "Klopt. De servers staan altijd aan en moeten gekoeld worden." },
+            { "prompt": "Waar staat een server?", "options": [{ "text": "In je broekzak" }, { "text": "In een datacenter", "correct": true }, { "text": "In de lucht" }], "feedback": "Servers staan in een datacenter, een groot gebouw." },
+            { "prompt": "Internet gaat tussen landen vooral door kabels onder de zee.", "waar": true, "feedback": "Klopt. Tussen landen liggen kabels op de bodem van de zee." }
+          ]
+        },
+        {
+          "type": "question",
+          "titel": "Vul in: een groot gebouw",
+          "inleiding": "Typ één woord.",
+          "vragen": [
+            { "vraag": "Een groot gebouw vol servers heet een ...", "modelantwoord": "datacenter", "uitleg": "In een datacenter staan heel veel servers bij elkaar." }
+          ],
+          "digidocent": true
+        }
+      ]
+    }
+  ]
+}
