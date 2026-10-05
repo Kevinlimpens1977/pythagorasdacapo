@@ -9,7 +9,8 @@ export const GAME_COMPONENT_KEYS = {
   VOLUME_BALK: 'volumeBalk',
   VOLUME_ONDERDOMPELEN: 'volumeOnderdompelen',
   DICHTHEID: 'dichtheid',
-  VLOEISTOFFENLAB: 'vloeistoffenlab'
+  VLOEISTOFFENLAB: 'vloeistoffenlab',
+  KLIMBIT: 'klimbit'
 };
 
 export const PLAYABLE_GAME_COMPONENT_KEYS = Object.values(GAME_COMPONENT_KEYS);

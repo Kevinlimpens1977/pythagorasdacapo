@@ -1,0 +1,280 @@
+{
+  "version": 3,
+  "units": "metres",
+  "upAxis": "+Y",
+  "forward": "+Z",
+  "source": "assets/blender/avatar-wardrobe.blend",
+  "file": "avatar-wardrobe.glb",
+  "canopy": "parachute-canopy.glb",
+  "bones": 17,
+  "animations": [
+    "Idle",
+    "Walk",
+    "Stairs",
+    "Jump",
+    "Fall",
+    "Land",
+    "Glide"
+  ],
+  "bodyMorph": {
+    "name": "FemaleBody",
+    "male": 0,
+    "female": 1
+  },
+  "hideHairFor": [
+    "helmet",
+    "hijab"
+  ],
+  "default": {
+    "body": "male",
+    "hair": "short",
+    "headwear": "none",
+    "facialHair": "none",
+    "outfit": "jeans",
+    "shoes": "sneakers",
+    "gloves": "none",
+    "glasses": "none",
+    "backpack": "none"
+  },
+  "parts": {
+    "body/male": {
+      "node": "part__body__male",
+      "triangles": 8412,
+      "materials": [
+        "AvatarSkin",
+        "AvatarIvory",
+        "AvatarIris",
+        "AvatarEyes",
+        "AvatarHair",
+        "AvatarSmile"
+      ]
+    },
+    "body/female": {
+      "node": "part__body__female",
+      "triangles": 8412,
+      "materials": [
+        "AvatarSkin",
+        "AvatarIvory",
+        "AvatarIris",
+        "AvatarEyes",
+        "AvatarHair",
+        "AvatarSmile"
+      ]
+    },
+    "hair/short": {
+      "node": "part__hair__short",
+      "triangles": 6000,
+      "materials": [
+        "AvatarHair"
+      ]
+    },
+    "hair/bob": {
+      "node": "part__hair__bob",
+      "triangles": 5996,
+      "materials": [
+        "AvatarHair"
+      ]
+    },
+    "hair/long": {
+      "node": "part__hair__long",
+      "triangles": 5999,
+      "materials": [
+        "AvatarHair"
+      ]
+    },
+    "hair/curls": {
+      "node": "part__hair__curls",
+      "triangles": 6000,
+      "materials": [
+        "AvatarHair"
+      ]
+    },
+    "headwear/helmet": {
+      "node": "part__headwear__helmet",
+      "triangles": 1396,
+      "materials": [
+        "AvatarIvory",
+        "AvatarAccent",
+        "AvatarNavy"
+      ]
+    },
+    "headwear/visor": {
+      "node": "part__headwear__visor",
+      "triangles": 716,
+      "materials": [
+        "AvatarAccent"
+      ]
+    },
+    "headwear/hijab": {
+      "node": "part__headwear__hijab",
+      "triangles": 7848,
+      "materials": [
+        "AvatarCloth",
+        "AvatarAccent"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "facialHair/moustache": {
+      "node": "part__facialHair__moustache",
+      "triangles": 576,
+      "materials": [
+        "AvatarHair"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "facialHair/beard": {
+      "node": "part__facialHair__beard",
+      "triangles": 1476,
+      "materials": [
+        "AvatarHair"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "facialHair/beard_moustache": {
+      "node": "part__facialHair__beard_moustache",
+      "triangles": 2052,
+      "materials": [
+        "AvatarHair"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "outfit/astronaut": {
+      "node": "part__outfit__astronaut",
+      "triangles": 17514,
+      "materials": [
+        "AvatarAccent",
+        "AvatarIvory",
+        "AvatarNavy",
+        "AvatarMetal"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "outfit/dress": {
+      "node": "part__outfit__dress",
+      "triangles": 11652,
+      "materials": [
+        "AvatarCloth",
+        "AvatarAccent",
+        "AvatarSkin"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "outfit/jeans": {
+      "node": "part__outfit__jeans",
+      "triangles": 15204,
+      "materials": [
+        "AvatarAccent",
+        "AvatarCloth",
+        "AvatarDenim",
+        "AvatarSkin",
+        "AvatarNavy"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "outfit/shorts": {
+      "node": "part__outfit__shorts",
+      "triangles": 13498,
+      "materials": [
+        "AvatarAccent",
+        "AvatarCloth",
+        "AvatarDenim",
+        "AvatarSkin"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "outfit/football": {
+      "node": "part__outfit__football",
+      "triangles": 14662,
+      "materials": [
+        "AvatarAccent",
+        "AvatarCloth",
+        "AvatarSkin",
+        "AvatarIvory"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    },
+    "shoes/sneakers": {
+      "node": "part__shoes__sneakers",
+      "triangles": 9000,
+      "materials": [
+        "AvatarShoes",
+        "AvatarIvory",
+        "AvatarMetal",
+        "AvatarNavy",
+        "AvatarAccent"
+      ]
+    },
+    "shoes/boots": {
+      "node": "part__shoes__boots",
+      "triangles": 9184,
+      "materials": [
+        "AvatarShoes",
+        "AvatarNavy",
+        "AvatarIvory",
+        "AvatarMetal",
+        "AvatarAccent"
+      ]
+    },
+    "shoes/football": {
+      "node": "part__shoes__football",
+      "triangles": 10296,
+      "materials": [
+        "AvatarShoes",
+        "AvatarNavy",
+        "AvatarIvory",
+        "AvatarMetal",
+        "AvatarAccent"
+      ]
+    },
+    "gloves/gloves": {
+      "node": "part__gloves__gloves",
+      "triangles": 3784,
+      "materials": [
+        "AvatarNavy",
+        "AvatarAccent",
+        "AvatarMetal"
+      ]
+    },
+    "glasses/glasses": {
+      "node": "part__glasses__glasses",
+      "triangles": 616,
+      "materials": [
+        "AvatarGlasses"
+      ]
+    },
+    "backpack/parachute": {
+      "node": "part__backpack__parachute",
+      "triangles": 780,
+      "materials": [
+        "AvatarAccent",
+        "AvatarCloth",
+        "AvatarNavy",
+        "AvatarIvory"
+      ],
+      "morphs": [
+        "FemaleBody"
+      ]
+    }
+  },
+  "canopyTriangles": 12160,
+  "maxVisibleTriangles": 51302,
+  "artRevision": "graphics-night-round4-final"
+}

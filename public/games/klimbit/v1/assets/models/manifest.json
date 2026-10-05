@@ -1,0 +1,1071 @@
+{
+  "version": 1,
+  "units": "metres",
+  "up": "+Y",
+  "character": {
+    "file": "character.glb",
+    "height": 1.749,
+    "forward": "+Z",
+    "animations": [
+      "Idle",
+      "Walk",
+      "Stairs",
+      "Jump",
+      "Fall",
+      "Land"
+    ],
+    "bones": 17,
+    "version": 3,
+    "style": "Colorful adventure character with open helmet and friendly face"
+  },
+  "models": {
+    "platform": {
+      "file": "platform.glb",
+      "dimensions": [
+        1.0,
+        0.15,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        -0.15,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.0,
+        0.5
+      ],
+      "vertices": 2928,
+      "polygons": 1480,
+      "triangles": 1480,
+      "materials": 3,
+      "bytes": 173184,
+      "sha256": "e78d1c0c9cd0ab56dc097709d8dcfd3345586d9ab28b6c5396ba2b68710cb12d",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "grate": {
+      "file": "grate.glb",
+      "dimensions": [
+        1.0,
+        0.15,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        -0.15,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.0,
+        0.5
+      ],
+      "vertices": 3576,
+      "polygons": 1804,
+      "triangles": 1804,
+      "materials": 3,
+      "bytes": 203644,
+      "sha256": "abb54249b5cf3d0d69081441a38db3ac5a75bc619ec0cf9cf1864bb0b6d02dd2",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "beam": {
+      "file": "beam.glb",
+      "dimensions": [
+        1.0,
+        0.225,
+        0.16
+      ],
+      "min": [
+        -0.5,
+        -0.223,
+        -0.08
+      ],
+      "max": [
+        0.5,
+        0.002,
+        0.08
+      ],
+      "vertices": 1608,
+      "polygons": 836,
+      "triangles": 836,
+      "materials": 3,
+      "bytes": 110884,
+      "sha256": "61bea9a7e916eb78fd67ef6ed23e3ace4210217146ac8ea43bba44c64e4f82d6",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "stairs": {
+      "file": "stairs.glb",
+      "dimensions": [
+        1.0,
+        1.1985,
+        2.0397
+      ],
+      "min": [
+        -0.5,
+        0.0015,
+        -1.0199
+      ],
+      "max": [
+        0.5,
+        1.2,
+        1.0199
+      ],
+      "vertices": 8280,
+      "polygons": 4232,
+      "triangles": 4232,
+      "materials": 3,
+      "bytes": 425236,
+      "sha256": "0504eebce0f4742c0133d3e7dbc6e5eee53d42429c2588b1151feae1f102e983",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "pcb": {
+      "file": "pcb.glb",
+      "dimensions": [
+        1.0,
+        0.102,
+        0.8
+      ],
+      "min": [
+        -0.5,
+        -0.032,
+        -0.4
+      ],
+      "max": [
+        0.5,
+        0.07,
+        0.4
+      ],
+      "vertices": 30333,
+      "polygons": 10728,
+      "triangles": 10728,
+      "materials": 3,
+      "bytes": 1434572,
+      "sha256": "f1dc3e0025714703cfed505ef0e87fd098a7c420c4da725299b793902e6d51a1",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "monitor": {
+      "file": "monitor.glb",
+      "dimensions": [
+        1.1,
+        1.01,
+        0.32
+      ],
+      "min": [
+        -0.55,
+        0.0,
+        -0.16
+      ],
+      "max": [
+        0.55,
+        1.01,
+        0.16
+      ],
+      "vertices": 3394,
+      "polygons": 1512,
+      "triangles": 1512,
+      "materials": 4,
+      "bytes": 194956,
+      "sha256": "c6e4645b10f4982cce6ddf1fc28fc1562fbb20236d9eb060e5f58cec6dace233",
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "tablet": {
+      "file": "tablet.glb",
+      "dimensions": [
+        0.65,
+        0.0585,
+        0.44
+      ],
+      "min": [
+        -0.325,
+        0.0,
+        -0.22
+      ],
+      "max": [
+        0.325,
+        0.0585,
+        0.22
+      ],
+      "vertices": 1881,
+      "polygons": 892,
+      "triangles": 892,
+      "materials": 4,
+      "bytes": 124660,
+      "sha256": "3ee0646a01650fdcfc6589f8fc4e10ebbde497485978e25836ad7b67a534342b",
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "mouse": {
+      "file": "mouse.glb",
+      "dimensions": [
+        0.18,
+        0.134,
+        0.28
+      ],
+      "min": [
+        -0.09,
+        0.0,
+        -0.14
+      ],
+      "max": [
+        0.09,
+        0.134,
+        0.14
+      ],
+      "vertices": 6140,
+      "polygons": 3144,
+      "triangles": 3144,
+      "materials": 3,
+      "bytes": 324616,
+      "sha256": "aa3fb8e70f5114a60f2da2e9cd220caa6ebd161056e50ea37b26554b3a74c2ea",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "keyboard": {
+      "file": "keyboard.glb",
+      "dimensions": [
+        0.72,
+        0.0735,
+        0.28
+      ],
+      "min": [
+        -0.36,
+        0.0,
+        -0.14
+      ],
+      "max": [
+        0.36,
+        0.0735,
+        0.14
+      ],
+      "vertices": 15506,
+      "polygons": 7508,
+      "triangles": 7508,
+      "materials": 4,
+      "bytes": 764132,
+      "sha256": "f7fe6ed409c64fbce1260ea636327c882f9cf24f21cbb6983516784986c5e672",
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "ssd": {
+      "file": "ssd.glb",
+      "dimensions": [
+        0.4,
+        0.054,
+        0.2985
+      ],
+      "min": [
+        -0.2,
+        0.0,
+        -0.14
+      ],
+      "max": [
+        0.2,
+        0.054,
+        0.1585
+      ],
+      "vertices": 7244,
+      "polygons": 2476,
+      "triangles": 2476,
+      "materials": 3,
+      "bytes": 369128,
+      "sha256": "d0424cee04c5a91337c0456d39a715f9d4a13adfce9e75babf810c4130064e66",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "router": {
+      "file": "router.glb",
+      "dimensions": [
+        0.5,
+        0.5419,
+        0.3624
+      ],
+      "min": [
+        -0.25,
+        0.0,
+        -0.1964
+      ],
+      "max": [
+        0.25,
+        0.5419,
+        0.166
+      ],
+      "vertices": 6647,
+      "polygons": 2620,
+      "triangles": 2620,
+      "materials": 5,
+      "bytes": 346156,
+      "sha256": "78e750a1b928f3ce3e5c874b39427c4b9ed3cd3caf33564c34cc088efdcc654a",
+      "meshCount": 1,
+      "primitives": 5,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "cable": {
+      "file": "cable.glb",
+      "dimensions": [
+        1.0156,
+        0.0418,
+        0.2455
+      ],
+      "min": [
+        -0.5089,
+        0.0041,
+        -0.1336
+      ],
+      "max": [
+        0.5067,
+        0.0459,
+        0.112
+      ],
+      "vertices": 3653,
+      "polygons": 1464,
+      "triangles": 1464,
+      "materials": 3,
+      "bytes": 204224,
+      "sha256": "1a795eb9980eb4e90a72d739b891231904d360d330653104cc64fc572eda9319",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "plug": {
+      "file": "plug.glb",
+      "dimensions": [
+        0.18,
+        0.13,
+        0.46
+      ],
+      "min": [
+        -0.09,
+        0.0,
+        -0.23
+      ],
+      "max": [
+        0.09,
+        0.13,
+        0.23
+      ],
+      "vertices": 1800,
+      "polygons": 660,
+      "triangles": 660,
+      "materials": 2,
+      "bytes": 117424,
+      "sha256": "93b34457a7c96d48d73186273cb81da95f305da097a870aa903806fa6a01fd69",
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "pipe": {
+      "file": "pipe.glb",
+      "dimensions": [
+        0.32,
+        0.32,
+        1.0
+      ],
+      "min": [
+        -0.16,
+        -0.16,
+        -0.5
+      ],
+      "max": [
+        0.16,
+        0.16,
+        0.5
+      ],
+      "vertices": 3136,
+      "polygons": 1600,
+      "triangles": 1600,
+      "materials": 2,
+      "bytes": 181896,
+      "sha256": "c0a9ebc849f57f3878f5cbdb69addc3df787de2384611d35e53e2cb3d3df2871",
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "building": {
+      "file": "building.glb",
+      "dimensions": [
+        2.08,
+        9.04,
+        2.08
+      ],
+      "min": [
+        -1.04,
+        -0.04,
+        -1.04
+      ],
+      "max": [
+        1.04,
+        9.0,
+        1.04
+      ],
+      "vertices": 48844,
+      "polygons": 22928,
+      "triangles": 22928,
+      "materials": 4,
+      "bytes": 2323216,
+      "sha256": "c46decfadaa0e58a020069713b9abcabb1b5debaa06817198ad3f36e5a0de52f",
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "neon": {
+      "file": "neon.glb",
+      "dimensions": [
+        1.0,
+        0.32,
+        0.0925
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.03
+      ],
+      "max": [
+        0.5,
+        0.32,
+        0.0625
+      ],
+      "vertices": 2732,
+      "polygons": 1100,
+      "triangles": 1100,
+      "materials": 3,
+      "bytes": 162232,
+      "sha256": "dd22c57fbb9ac8c63c823e833ff483e14820aadd4b862ce4c583a2731c37dcf3",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "capacitor": {
+      "file": "capacitor.glb",
+      "dimensions": [
+        0.1965,
+        0.3475,
+        0.192
+      ],
+      "min": [
+        -0.096,
+        0.0,
+        -0.096
+      ],
+      "max": [
+        0.1005,
+        0.3475,
+        0.096
+      ],
+      "vertices": 5558,
+      "polygons": 1871,
+      "triangles": 1871,
+      "materials": 4,
+      "bytes": 292608,
+      "sha256": "2ec9e744872bccf4ab0b74bbdb54075e9ab51e9b546b66cf558cef3c9a2821a0",
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "resistor": {
+      "file": "resistor.glb",
+      "dimensions": [
+        0.6357,
+        0.1384,
+        0.108
+      ],
+      "min": [
+        -0.3178,
+        0.0056,
+        -0.054
+      ],
+      "max": [
+        0.3178,
+        0.144,
+        0.054
+      ],
+      "vertices": 8166,
+      "polygons": 2860,
+      "triangles": 2860,
+      "materials": 4,
+      "bytes": 413236,
+      "sha256": "61e7acca328a3a9485dd3f08b7835091c6046a4d62f3dbad3a192a8b6ef6af35",
+      "meshCount": 1,
+      "primitives": 4,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "led": {
+      "file": "led.glb",
+      "dimensions": [
+        0.148,
+        0.24,
+        0.148
+      ],
+      "min": [
+        -0.074,
+        0.0,
+        -0.074
+      ],
+      "max": [
+        0.074,
+        0.24,
+        0.074
+      ],
+      "vertices": 2600,
+      "polygons": 1396,
+      "triangles": 1396,
+      "materials": 2,
+      "bytes": 156984,
+      "sha256": "4443e77427b12b9b9fea4cf7201ece81e08f86873c997dea610930ee95152905",
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "printer3d": {
+      "file": "printer3d.glb",
+      "dimensions": [
+        0.911,
+        1.1871,
+        0.746
+      ],
+      "min": [
+        -0.511,
+        0.0,
+        -0.345
+      ],
+      "max": [
+        0.4,
+        1.1871,
+        0.401
+      ],
+      "vertices": 17497,
+      "polygons": 6188,
+      "triangles": 6188,
+      "materials": 6,
+      "bytes": 846120,
+      "sha256": "dd829c35246a77ecb9cd30a3ada502e343c7408f24a150acde0681979222a984",
+      "meshCount": 1,
+      "primitives": 6,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "heatsink": {
+      "file": "heatsink.glb",
+      "dimensions": [
+        0.48,
+        0.223,
+        0.37
+      ],
+      "min": [
+        -0.24,
+        0.0,
+        -0.185
+      ],
+      "max": [
+        0.24,
+        0.223,
+        0.185
+      ],
+      "vertices": 6324,
+      "polygons": 2148,
+      "triangles": 2148,
+      "materials": 1,
+      "bytes": 324164,
+      "sha256": "b447507b4b4136d3647643db8244d6a1af35092b90c79a964a56c0b2847e0e23",
+      "meshCount": 1,
+      "primitives": 1,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "fan": {
+      "file": "fan.glb",
+      "dimensions": [
+        0.38,
+        0.113,
+        0.38
+      ],
+      "min": [
+        -0.19,
+        0.0,
+        -0.19
+      ],
+      "max": [
+        0.19,
+        0.113,
+        0.19
+      ],
+      "vertices": 14060,
+      "polygons": 4872,
+      "triangles": 4872,
+      "materials": 2,
+      "bytes": 682156,
+      "sha256": "b3f9ff42cc24d282726f253297e04e988afaa0045cac02ee8c934c9b5b87f2ec",
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_browser": {
+      "file": "app_browser.glb",
+      "dimensions": [
+        1.0,
+        0.151,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.151,
+        0.5
+      ],
+      "vertices": 5754,
+      "polygons": 2076,
+      "triangles": 2076,
+      "materials": 3,
+      "bytes": 301120,
+      "sha256": "82cd1cd55dc1fa31bd22597777c59cd2a0c932248bb8aeda3f886b2fc36f088e",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_files": {
+      "file": "app_files.glb",
+      "dimensions": [
+        1.0,
+        0.159,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.159,
+        0.5
+      ],
+      "vertices": 1680,
+      "polygons": 568,
+      "triangles": 568,
+      "materials": 3,
+      "bytes": 112800,
+      "sha256": "7c38bda1fb068da9bda0229a125682fca334b16d39f939b7820e698221d20c41",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_shield": {
+      "file": "app_shield.glb",
+      "dimensions": [
+        1.0,
+        0.162,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.162,
+        0.5
+      ],
+      "vertices": 1722,
+      "polygons": 584,
+      "triangles": 584,
+      "materials": 3,
+      "bytes": 114756,
+      "sha256": "106fbb5c3cd0660df6682c5a7558dc38337c43e3ed1e57230108abc1de58e551",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_code": {
+      "file": "app_code.glb",
+      "dimensions": [
+        1.0,
+        0.158,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.158,
+        0.5
+      ],
+      "vertices": 1628,
+      "polygons": 548,
+      "triangles": 548,
+      "materials": 3,
+      "bytes": 110396,
+      "sha256": "1e229c96787c989f70adab29840928082da412585f68c50cd15df597ba41c58f",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "app_ai": {
+      "file": "app_ai.glb",
+      "dimensions": [
+        1.0,
+        0.157,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        0.0,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.157,
+        0.5
+      ],
+      "vertices": 1855,
+      "polygons": 628,
+      "triangles": 628,
+      "materials": 3,
+      "bytes": 120868,
+      "sha256": "f985681825535da365b847e211b58fe575343699f0c1594b22ec4d39965e52fe",
+      "meshCount": 1,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    }
+  },
+  "standaloneModels": {
+    "building_lod": {
+      "file": "building_lod.glb",
+      "dimensions": [
+        2.14,
+        9.0,
+        2.3325
+      ],
+      "min": [
+        -1.07,
+        0.0,
+        -1.07
+      ],
+      "max": [
+        1.07,
+        9.0,
+        1.2625
+      ],
+      "vertices": 2440,
+      "triangles": 876,
+      "kitMember": false,
+      "source": "assets/blender/night-environment.blend",
+      "usage": "Instanced background city",
+      "textureSize": [
+        512,
+        512
+      ],
+      "materials": 3,
+      "bytes": 216844,
+      "sha256": "7e1409ffb1a0842a380501a77d1b2613b38a0570867f42859cdc831fc8043f9a",
+      "meshCount": 1,
+      "primitives": 3,
+      "nightRevision": 4
+    },
+    "usb_c_connector": {
+      "file": "usb_c_connector.glb",
+      "dimensions": [
+        0.19,
+        0.1,
+        0.61
+      ],
+      "min": [
+        -0.095,
+        0.0,
+        -0.43
+      ],
+      "max": [
+        0.095,
+        0.1,
+        0.18
+      ],
+      "vertices": 8698,
+      "triangles": 2904,
+      "kitMember": false,
+      "forward": "+Z",
+      "matingCenter": [
+        0,
+        0.05,
+        0.18
+      ],
+      "shape": "Reversible rounded rectangle; hollow plug cavity",
+      "connectorType": "USB-C",
+      "materials": 2,
+      "bytes": 434432,
+      "sha256": "9d628f56789cc32d45d5ebcbb0fd34765c3962283a803b808d1f64571100246b",
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "hdmi_connector": {
+      "file": "hdmi_connector.glb",
+      "dimensions": [
+        0.21,
+        0.1,
+        0.62
+      ],
+      "min": [
+        -0.105,
+        0.0,
+        -0.43
+      ],
+      "max": [
+        0.105,
+        0.1,
+        0.19
+      ],
+      "vertices": 8086,
+      "triangles": 2700,
+      "kitMember": false,
+      "forward": "+Z",
+      "matingCenter": [
+        0,
+        0.05,
+        0.19
+      ],
+      "shape": "Asymmetric trapezoid with flat wide top and tapered lower corners",
+      "connectorType": "HDMI",
+      "materials": 2,
+      "bytes": 406276,
+      "sha256": "d60095e8bd35173d164d051f2385215ec04f3cc77efc28ddf38ef48b02fa045c",
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "usb_c_port": {
+      "file": "usb_c_port.glb",
+      "dimensions": [
+        0.28,
+        0.17,
+        0.083
+      ],
+      "min": [
+        -0.14,
+        0.0,
+        -0.034
+      ],
+      "max": [
+        0.14,
+        0.17,
+        0.049
+      ],
+      "vertices": 3572,
+      "triangles": 1192,
+      "kitMember": false,
+      "forward": "+Z",
+      "matingCenter": [
+        0,
+        0.085,
+        0.045
+      ],
+      "aperture": [
+        0.13,
+        0.042
+      ],
+      "shape": "Female USB-C oval aperture with central tongue",
+      "connectorType": "USB-C",
+      "materials": 2,
+      "bytes": 198624,
+      "sha256": "927136b096e6fc9ee9077c406f8109364b6b6ce41b627b8a3f28126c212b9b3d",
+      "meshCount": 1,
+      "primitives": 2,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "city_gable_house": {
+      "file": "city_gable_house.glb",
+      "dimensions": [
+        3.1,
+        7.32,
+        3.8845
+      ],
+      "min": [
+        -1.55,
+        0.0,
+        -1.86
+      ],
+      "max": [
+        1.55,
+        7.32,
+        2.0245
+      ],
+      "triangles": 1488,
+      "vertices": 4030,
+      "materials": 2,
+      "kitMember": false,
+      "source": "assets/blender/night-environment.blend",
+      "description": "Terracotta Dutch stepped gable with cream lintels, pitched roof and chimney",
+      "bytes": 220360,
+      "sha256": "353e9e8e673308a59d3a9db6adec706ae11956ff414a86ee3babb9e3b38c524e",
+      "meshCount": 1,
+      "primitives": 2,
+      "nightRevision": 4
+    },
+    "city_balcony_apartment": {
+      "file": "city_balcony_apartment.glb",
+      "dimensions": [
+        4.8,
+        7.3,
+        4.375
+      ],
+      "min": [
+        -2.4,
+        0.0,
+        -1.85
+      ],
+      "max": [
+        2.4,
+        7.3,
+        2.525
+      ],
+      "triangles": 1484,
+      "vertices": 4092,
+      "materials": 3,
+      "kitMember": false,
+      "source": "assets/blender/night-environment.blend",
+      "description": "Pastel teal apartment with coral trim and four tangible recessed balconies",
+      "bytes": 224324,
+      "sha256": "395eaae0979f2dcbc24d5e2cf153fcaf59206a6455a0e4d224caa3a3e8f49ef8",
+      "meshCount": 1,
+      "primitives": 3,
+      "nightRevision": 4
+    },
+    "city_terrace_tower": {
+      "file": "city_terrace_tower.glb",
+      "dimensions": [
+        4.3,
+        10.04498,
+        4.3
+      ],
+      "min": [
+        -2.15,
+        0.0,
+        -2.15
+      ],
+      "max": [
+        2.15,
+        10.04498,
+        2.15
+      ],
+      "triangles": 1496,
+      "vertices": 3900,
+      "materials": 3,
+      "kitMember": false,
+      "source": "assets/blender/night-environment.blend",
+      "description": "Rounded cream tower with teal setback terraces and a pitched rooftop solar canopy",
+      "bytes": 215968,
+      "sha256": "c2ba442b7ee2e5c8678dffbfad52f58d56ec2fb158fe0d3c573278a27d5c1b57",
+      "meshCount": 1,
+      "primitives": 3,
+      "nightRevision": 4
+    },
+    "city_tree": {
+      "file": "city_tree.glb",
+      "dimensions": [
+        2.37275,
+        3.27,
+        1.6
+      ],
+      "min": [
+        -1.17349,
+        0.0,
+        -0.8
+      ],
+      "max": [
+        1.19926,
+        3.27,
+        0.8
+      ],
+      "triangles": 1716,
+      "vertices": 4950,
+      "materials": 1,
+      "kitMember": false,
+      "source": "assets/blender/night-environment.blend",
+      "description": "Soft rounded green tree canopy with visible branching trunk",
+      "bytes": 261104,
+      "sha256": "57f76570b6880bd924515d43e47b7dae58de62176097d49fee9fcaa1bd765b32",
+      "meshCount": 1,
+      "primitives": 1,
+      "nightRevision": 4
+    },
+    "city_planter": {
+      "file": "city_planter.glb",
+      "dimensions": [
+        1.3,
+        1.16,
+        0.76
+      ],
+      "min": [
+        -0.65,
+        0.0,
+        -0.38
+      ],
+      "max": [
+        0.65,
+        1.16,
+        0.38
+      ],
+      "triangles": 1032,
+      "vertices": 2448,
+      "materials": 2,
+      "kitMember": false,
+      "source": "assets/blender/night-environment.blend",
+      "description": "Rounded coral campus planter with three compact green shrubs",
+      "bytes": 148160,
+      "sha256": "87707e11dcb6b6084fdee3a33b901893c391698aa12bdebbcc428e50323be2ad",
+      "meshCount": 1,
+      "primitives": 2,
+      "nightRevision": 4
+    }
+  }
+}

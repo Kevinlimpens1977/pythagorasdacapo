@@ -3,6 +3,7 @@ import DataKoerierGame from './dataKoerier/DataKoerierGame';
 import DichtheidGame from './dichtheid/DichtheidGame';
 import VloeistoffenlabGame from './vloeistoffenlab/VloeistoffenlabGame';
 import DVLingoGame from './dvlingo/DVLingoGame';
+import KlimbitGame from './klimbit/KlimbitGame';
 import PacoPacManGame from './pacoPacMan/PacoPacManGame';
 import SocialMediaZoektochtGame from './socialMediaZoektocht/SocialMediaZoektochtGame';
 import TurboTypenGame from './turboTypen/TurboTypenGame';
@@ -55,6 +56,12 @@ export default function GameComponentRenderer({ componentKey, onComplete, onStar
   // Vloeistoffenlab: uitdaging drijven en zinken (Binask 2.6, niet verplicht).
   if (componentKey === GAME_COMPONENT_KEYS.VLOEISTOFFENLAB) {
     return <VloeistoffenlabGame onStart={onStart} onComplete={onComplete} />;
+  }
+
+  // KlimBit: meerdere pogingen per bezoek, tokens per poging via eigen
+  // callables. Daarom krijgt het spel bewust geen onComplete.
+  if (componentKey === GAME_COMPONENT_KEYS.KLIMBIT) {
+    return <KlimbitGame onStart={onStart} />;
   }
 
   return null;

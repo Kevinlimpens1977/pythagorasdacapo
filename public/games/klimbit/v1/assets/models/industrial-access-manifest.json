@@ -1,0 +1,75 @@
+{
+  "units": "metres",
+  "upAxis": "+Y",
+  "forward": "+Z",
+  "source": "assets/blender/night-environment.blend",
+  "models": {
+    "perforated_deck": {
+      "file": "perforated_deck.glb",
+      "dimensions": [
+        1.0,
+        0.08,
+        1.0
+      ],
+      "min": [
+        -0.5,
+        -0.08,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.0,
+        0.5
+      ],
+      "triangles": 4472,
+      "materials": 3,
+      "meshCount": 1,
+      "origin": "top center",
+      "topY": 0,
+      "holeCount": 64,
+      "holeDiameter": 0.07,
+      "sheetTopY": -0.008,
+      "sheetThickness": 0.023,
+      "collisionRecommendation": "Flat route slab matched to outer bounds; 70 mm holes are below capsule size. No full backing surface in visual mesh.",
+      "bytes": 613068,
+      "sha256": "3765e82aecdd824488e8e691e243927c727f1cc5bf21ac6f4109aacabe1e0947",
+      "vertices": 12516,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    },
+    "spiral_core": {
+      "file": "spiral_core.glb",
+      "dimensions": [
+        1.4,
+        4.5,
+        1.4
+      ],
+      "min": [
+        -0.7,
+        0.0,
+        -0.7
+      ],
+      "max": [
+        0.7,
+        4.5,
+        0.7
+      ],
+      "triangles": 2344,
+      "materials": 3,
+      "meshCount": 1,
+      "origin": "base center",
+      "baseY": 0,
+      "bodyDiameter": 1.1,
+      "flangeDiameter": 1.4,
+      "height": 4.5,
+      "collisionRecommendation": "Use a cylinder or conservative central collider; scale X and Z equally to preserve circular form.",
+      "bytes": 353700,
+      "sha256": "740ee355a89baa26ff4222534dd38842b0e4f38151e2c6c5d69a933467437311",
+      "vertices": 6912,
+      "primitives": 3,
+      "source": "assets/blender/night-environment.blend",
+      "nightRevision": 4
+    }
+  }
+}
