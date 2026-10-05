@@ -455,7 +455,8 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // KlimBit (okt 2026): pogingen en de teller "keer boven 400 m" zijn
+    // KlimBit (okt 2026): pogingen en de teller (uitbetaaldTokens: wat de
+    // leerling in totaal via KlimBit kreeg, hooguit 350, plus openPogingId) zijn
     // uitsluitend van de callables startKlimbitPoging en rondKlimbitPogingAf.
     match /klimbitPogingen/{pogingId} {
       allow read, write: if false;

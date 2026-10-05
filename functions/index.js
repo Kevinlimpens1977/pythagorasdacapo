@@ -4045,12 +4045,15 @@ async function registreerSpelRondeCore({ auth, data = {}, db, now = FieldValue.s
 
 // KlimBit (Kevin, 1 okt 2026). Een poging loopt van startKlimbitPoging tot
 // rondKlimbitPogingAf; de server meet zelf hoe lang hij duurde en erkent nooit
-// meer hoogte dan in die tijd te klimmen was. Tokens alleen voor leerlingen,
-// alleen boven 400 m en alleen de eerste drie keer (klimbitBeloning.js).
+// meer hoogte dan in die tijd te klimmen was. Tokens alleen voor leerlingen
+// (besluit Kevin, 5 okt 2026): elke hoogte heeft een waarde volgens de staffel
+// in klimbitBeloning.js, en een poging levert alleen het verschil op met wat
+// al via KlimBit is uitbetaald, tot in totaal hooguit 350 per leerling.
 // Bewust BUITEN het weekplafond: leerlingWeek en leerlingVoortgang blijven
 // onaangeroerd, het saldo en het grootboek wel, zodat tokenbeheer het ziet.
 // Paden (alleen de server schrijft): klimbitPogingen/{pogingId},
-// klimbitTeller/{uid} (runsBoven400, openPogingId) en spelRecords/klimbit_{uid}.
+// klimbitTeller/{uid} (uitbetaaldTokens: wat de leerling in totaal via KlimBit
+// kreeg, gaat nooit terug; openPogingId) en spelRecords/klimbit_{uid}.
 const KLIMBIT_POGING_ID_PATROON = /^[A-Za-z0-9_-]{1,128}$/;
 
 async function klimbitRolVan({ auth, db }) {
@@ -4156,8 +4159,11 @@ async function rondKlimbitPogingAfCore({ auth, data = {}, db, now = FieldValue.s
     const record = Math.max(besteVoor, hoogte);
 
     const teller = tellerSnapshot.exists ? (tellerSnapshot.data() || {}) : {};
-    const keerEerder = normalizeNonNegativeInteger(teller.runsBoven400, 0);
-    const beloning = laag.klimbitTokens({ hoogte, keerBoven400Eerder: keerEerder, rol });
+    // De gedeelde laag maakt hier een heel getal van 0 of meer van (gebroken
+    // getallen naar boven), zodat er nooit te veel uitgaat.
+    const beloning = laag.klimbitTokens({ hoogte, alUitbetaald: teller.uitbetaaldTokens, rol });
+    // Alleen bij een leerling loopt het uitbetaalde totaal op.
+    const uitbetaaldNa = rol === "student" ? beloning.nieuwUitbetaald : beloning.alUitbetaald;
 
     const account = normalizeTokenAccount(accountSnapshot.exists ? accountSnapshot.data() : {});
     const nextAccount = beloning.tokens > 0
@@ -4171,9 +4177,8 @@ async function rondKlimbitPogingAfCore({ auth, data = {}, db, now = FieldValue.s
       record,
       nieuwRecord,
       tokens: beloning.tokens,
-      runNummer: beloning.runNummer,
-      basis: beloning.basis,
-      extraMeters: beloning.extraMeters,
+      waarde: beloning.waarde,
+      alUitbetaald: beloning.alUitbetaald,
       uitleg: beloning.uitleg,
       balance: nextAccount.balance,
     };
@@ -4187,7 +4192,7 @@ async function rondKlimbitPogingAfCore({ auth, data = {}, db, now = FieldValue.s
           kind: "game",
           id: laag.KLIMBIT_GAME_ID,
           version: "poging",
-          title: `KlimBit: ${hoogte} m (${beloning.runNummer}e keer boven 400 m)`,
+          title: `KlimBit: ${hoogte} m (nieuw record, ${beloning.tokens} tokens)`,
           gameId: laag.KLIMBIT_GAME_ID,
           pogingId,
         },
@@ -4196,9 +4201,9 @@ async function rondKlimbitPogingAfCore({ auth, data = {}, db, now = FieldValue.s
           hoogte,
           ingestuurdeHoogte,
           duurMs,
-          runNummer: beloning.runNummer,
-          basis: beloning.basis,
-          extraMeters: beloning.extraMeters,
+          waarde: beloning.waarde,
+          alUitbetaald: beloning.alUitbetaald,
+          nieuwUitbetaald: uitbetaaldNa,
           buitenWeekplafond: true,
         },
         createdBy: auth.uid,
@@ -4228,7 +4233,7 @@ async function rondKlimbitPogingAfCore({ auth, data = {}, db, now = FieldValue.s
 
     transaction.set(tellerRef, {
       uid: auth.uid,
-      runsBoven400: keerEerder + (beloning.teltMee ? 1 : 0),
+      uitbetaaldTokens: uitbetaaldNa,
       openPogingId: teller.openPogingId === pogingId ? null : (teller.openPogingId ?? null),
       updatedAt: timestamp,
     }, { merge: true });

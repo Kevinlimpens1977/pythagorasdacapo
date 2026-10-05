@@ -4,7 +4,7 @@ import ExternalGameHost from '../../components/games/ExternalGameHost';
 import { useAuth } from '../../components/auth/AuthProvider';
 import { leesKlimbitRecord, rondKlimbitPogingAf, startKlimbitPoging } from '../../services/klimbitService';
 import { afgekaptTekst, KLIMBIT_BRON, leesKlimbitBericht } from './klimbitBericht';
-import { KLIMBIT_BASIS_PER_KEER, KLIMBIT_DREMPEL_METER } from '../../lib/klimbitBeloning';
+import { KLIMBIT_DREMPEL_METER, KLIMBIT_MAX_TOKENS, KLIMBIT_STAFFEL } from '../../lib/klimbitBeloning';
 
 // KlimBit draait als losse statische map in public/games/ (net als DVLingo).
 // Deze component is de koppeling met het platform: per poging vraagt hij de
@@ -14,6 +14,13 @@ import { KLIMBIT_BASIS_PER_KEER, KLIMBIT_DREMPEL_METER } from '../../lib/klimbit
 // naar de GamePlayer: die gaat uit van één uitslag per bezoek en zou via
 // awardTokensForActivity onder het weekplafond uitbetalen.
 const SPEL_URL = '/games/klimbit/v1/index.html';
+
+// De tokenregel in één zin, uit dezelfde staffel als de server:
+// "1000 m is 200 waard, 2000 m 250, 3000 m 350".
+const STAFFEL_TEKST = KLIMBIT_STAFFEL.slice(1)
+  .map(([meters, waarde], i) => (i === 0 ? `${meters} m is ${waarde} waard` : `${meters} m ${waarde}`))
+  .join(', ');
+const TOKENREGEL_TEKST = `Boven ${KLIMBIT_DREMPEL_METER} m verdien je tokens, tot ${KLIMBIT_MAX_TOKENS} als je hoger klimt dan ooit. ${STAFFEL_TEKST}.`;
 
 const kaartStijl = {
   border: '1px solid var(--helix-border)',
@@ -129,7 +136,7 @@ export default function KlimbitGame({ onStart }) {
         <span className="helix-muted">
           {isAdmin
             ? 'Als beheerder speel je mee zonder tokens.'
-            : `Boven ${KLIMBIT_DREMPEL_METER} m verdien je tokens: de eerste keer ${KLIMBIT_BASIS_PER_KEER[0]}, de tweede ${KLIMBIT_BASIS_PER_KEER[1]}, de derde ${KLIMBIT_BASIS_PER_KEER[2]}, plus 1 per meter boven ${KLIMBIT_DREMPEL_METER}.`}
+            : TOKENREGEL_TEKST}
         </span>
       </div>
 

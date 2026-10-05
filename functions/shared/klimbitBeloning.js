@@ -3,19 +3,32 @@
 // erkent en hoeveel tokens een poging oplevert. Het gaat via
 // scripts/sync-functions-shared.mjs ook naar functions/shared; bewerk het hier.
 //
-// De regels in het kort:
+// De regels in het kort (besluit Kevin, 5 okt 2026):
 // - Tokens alleen voor leerlingen, aan het einde van een poging, op de
-//   piekhoogte in hele meters.
-// - Tot en met 400 m: niets. Daarboven: de eerste keer 300 + de meters boven
-//   400, de tweede keer 200 + die meters, de derde keer 100 + die meters.
-//   Vanaf de vierde keer boven 400 m: niets meer, ook geen meters.
-// - De teller "keer boven 400 m" staat alleen op de server en gaat nooit terug.
+//   erkende piekhoogte in hele meters.
+// - Elke hoogte heeft een waarde (KLIMBIT_STAFFEL): tot en met 400 m 0, dan
+//   lineair naar 200 bij 1000 m, 250 bij 2000 m en 350 bij 3000 m. Hoger levert
+//   niets extra op. Altijd naar beneden afgerond op hele tokens.
+// - Je krijgt alleen het verschil met wat je eerder via KlimBit kreeg:
+//   max(0, waarde - alUitbetaald). Dus alleen een klim die meer waard is dan
+//   alles wat al is uitbetaald, levert iets op, en in totaal nooit meer dan
+//   KLIMBIT_MAX_TOKENS (350) per leerling. Het record telt altijd.
+// - Het uitbetaalde totaal (klimbitTeller/{uid}.uitbetaaldTokens) staat alleen
+//   op de server en gaat nooit terug.
 // - KlimBit valt buiten het weekplafond van 200 tokens per vak.
 
 export const KLIMBIT_GAME_ID = 'klimbit';
 export const KLIMBIT_DREMPEL_METER = 400;
-// Basisbedrag per keer boven de drempel: eerste, tweede en derde keer.
-export const KLIMBIT_BASIS_PER_KEER = [300, 200, 100];
+// Staffel als [hoogte in meters, waarde in tokens]. Tussen twee punten loopt de
+// waarde lineair op; boven het laatste punt blijft hij gelijk.
+export const KLIMBIT_STAFFEL = [
+  [KLIMBIT_DREMPEL_METER, 0],
+  [1000, 200],
+  [2000, 250],
+  [3000, 350]
+];
+// Meer dan dit krijgt een leerling in totaal nooit met KlimBit.
+export const KLIMBIT_MAX_TOKENS = 350;
 
 // De hoogste klimsnelheid die de server erkent, in meters per seconde. Gemeten
 // op 2 okt 2026 in de KlimBit-repo (tests/helix-climb-speed.test.ts, docs/HELIX.md):
@@ -30,8 +43,6 @@ export const KLIMBIT_HOOGTE_MARGE_METER = 10;
 // nooit, hoe lang een poging ook duurt: bij 1,6 m/s is 5000 m bijna een uur
 // onafgebroken klimmen. Voorlopige keuze, door Kevin te bevestigen.
 export const KLIMBIT_MAX_HOOGTE = 5000;
-
-const RANGWOORDEN = ['Eerste', 'Tweede', 'Derde'];
 
 const heleMeters = (waarde) => {
   const getal = Number(waarde);
@@ -62,55 +73,79 @@ export function erkendeKlimbitHoogte({
 }
 
 /**
+ * De waarde van een hoogte in hele tokens, volgens KLIMBIT_STAFFEL. Tot en met
+ * het eerste punt (400 m) 0, boven het laatste punt (3000 m) het maximum.
+ * Eerst hele meters, daarna naar beneden afgerond op hele tokens.
+ */
+export function klimbitWaarde(hoogte = 0) {
+  const meters = heleMeters(hoogte);
+  const [eersteHoogte, eersteWaarde] = KLIMBIT_STAFFEL[0];
+  if (meters <= eersteHoogte) return eersteWaarde;
+
+  for (let i = 1; i < KLIMBIT_STAFFEL.length; i += 1) {
+    const [vanHoogte, vanWaarde] = KLIMBIT_STAFFEL[i - 1];
+    const [totHoogte, totWaarde] = KLIMBIT_STAFFEL[i];
+    if (meters < totHoogte) {
+      // Alles in hele getallen: (meters boven het punt) x (stijging) / (stuklengte).
+      const erbij = Math.floor(((meters - vanHoogte) * (totWaarde - vanWaarde)) / (totHoogte - vanHoogte));
+      return Math.min(KLIMBIT_MAX_TOKENS, vanWaarde + erbij);
+    }
+  }
+  return Math.min(KLIMBIT_MAX_TOKENS, KLIMBIT_STAFFEL[KLIMBIT_STAFFEL.length - 1][1]);
+}
+
+// Wat al is uitbetaald, als heel getal van 0 of meer. Een gebroken getal gaat
+// naar boven, zodat er nooit te veel uitgaat; rommel telt als 0.
+const heelUitbetaald = (waarde) => {
+  const getal = Number(waarde);
+  if (!Number.isFinite(getal) || getal <= 0) return 0;
+  return Math.ceil(getal);
+};
+
+/**
  * Tokens voor één afgeronde poging.
  * - hoogte: de erkende hoogte in meters
- * - keerBoven400Eerder: hoe vaak deze speler al eerder boven 400 m kwam (servertelling)
+ * - alUitbetaald: wat deze speler al eerder via KlimBit kreeg (servertelling)
  * - rol: de rol uit users/{uid} ('student', 'admin', ...)
- * Geeft terug: tokens, basis, extraMeters, runNummer (de hoeveelste keer boven
- * 400 m dit is, of null), teltMee (moet de teller omhoog) en een uitleg in
- * gewone taal voor het eindscherm.
+ * Geeft terug: tokens (wat nu wordt uitbetaald), waarde (wat deze hoogte waard
+ * is), alUitbetaald, nieuwUitbetaald (alUitbetaald + tokens; bij andere rollen
+ * dan student gelijk aan alUitbetaald) en een uitleg voor het eindscherm.
  */
-export function klimbitTokens({ hoogte = 0, keerBoven400Eerder = 0, rol = '' } = {}) {
+export function klimbitTokens({ hoogte = 0, alUitbetaald = 0, rol = '' } = {}) {
   const meters = heleMeters(hoogte);
-  const eerder = Math.max(0, Math.floor(Number(keerBoven400Eerder) || 0));
-  const leeg = { tokens: 0, basis: 0, extraMeters: 0, runNummer: null, teltMee: false };
+  const eerder = heelUitbetaald(alUitbetaald);
+  const waarde = klimbitWaarde(meters);
+  const zonderTokens = (uitleg) => ({ tokens: 0, waarde, alUitbetaald: eerder, nieuwUitbetaald: eerder, uitleg });
 
   if (rol !== 'student') {
     const isBeheer = rol === 'admin' || rol === 'supervisor';
-    return {
-      ...leeg,
-      uitleg: isBeheer ? 'Beheerders verdienen geen tokens.' : 'Alleen leerlingen verdienen tokens met KlimBit.'
-    };
+    return zonderTokens(isBeheer ? 'Beheerders verdienen geen tokens.' : 'Alleen leerlingen verdienen tokens met KlimBit.');
+  }
+
+  if (eerder >= KLIMBIT_MAX_TOKENS) {
+    return zonderTokens(`Je hebt het maximum van ${KLIMBIT_MAX_TOKENS} tokens met KlimBit al verdiend. Je record telt wel.`);
   }
 
   if (meters <= KLIMBIT_DREMPEL_METER) {
-    const nogNodig = KLIMBIT_DREMPEL_METER - meters + 1;
-    return {
-      ...leeg,
-      uitleg: `Boven ${KLIMBIT_DREMPEL_METER} m verdien je tokens. Je kwam tot ${meters} m, je moet nog ${nogNodig} m hoger.`
-    };
+    return zonderTokens(`Boven ${KLIMBIT_DREMPEL_METER} m verdien je tokens. Je kwam tot ${meters} m.`);
   }
 
-  const runNummer = eerder + 1;
-  const extraMeters = meters - KLIMBIT_DREMPEL_METER;
-  const basis = KLIMBIT_BASIS_PER_KEER[runNummer - 1];
-
-  if (basis === undefined) {
-    return {
-      ...leeg,
-      runNummer,
-      teltMee: true,
-      uitleg: `Dit is je ${runNummer}e keer boven ${KLIMBIT_DREMPEL_METER} m. Tokens verdien je alleen de eerste drie keer; je record telt wel.`
-    };
+  if (waarde === 0) {
+    return zonderTokens(`Je kwam tot ${meters} m. Dat is nog geen hele token waard, klim iets hoger.`);
   }
 
-  const tokens = basis + extraMeters;
-  return {
-    tokens,
-    basis,
-    extraMeters,
-    runNummer,
-    teltMee: true,
-    uitleg: `${RANGWOORDEN[runNummer - 1]} keer boven ${KLIMBIT_DREMPEL_METER} m: ${basis} + ${extraMeters} = ${tokens} tokens.`
-  };
+  // Nooit meer dan wat nog onder het maximum past.
+  const tokens = Math.min(Math.max(0, waarde - eerder), KLIMBIT_MAX_TOKENS - eerder);
+
+  if (tokens === 0) {
+    const alGehad = waarde === eerder ? 'Dat had je al' : `Je had al ${eerder}`;
+    return zonderTokens(`Deze klim is ${waarde} tokens waard. ${alGehad}, dus nu 0. Klim hoger dan je record voor meer.`);
+  }
+
+  const nieuwUitbetaald = eerder + tokens;
+  const delen = [`Nieuwe hoogste opbrengst: ${meters} m is ${waarde} tokens waard.`];
+  delen.push(eerder > 0 ? `Je had al ${eerder}, dus je krijgt ${tokens}.` : `Je krijgt ${tokens}.`);
+  if (nieuwUitbetaald >= KLIMBIT_MAX_TOKENS) delen.push('Dat is het maximum met KlimBit.');
+
+  return { tokens, waarde, alUitbetaald: eerder, nieuwUitbetaald, uitleg: delen.join(' ') };
 }

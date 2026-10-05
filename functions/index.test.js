@@ -3163,33 +3163,51 @@ const klimbitAf = (db, uid, pogingId, piekHoogte, nu) => __test.rondKlimbitPogin
   auth: { uid }, data: { pogingId, piekHoogte }, db, now: () => "t", nuDatum: new Date(nu),
 });
 
-test("klimbit: eerste keer boven 400 m geeft 300 + meters, buiten het weekplafond", async () => {
+const klimbitGrootboek = (db) => Object.keys(db.store.docs).filter((pad) => pad.startsWith("tokenTransactions/")).sort();
+
+test("klimbit: eerste klim boven 400 m levert de waarde uit de staffel, buiten het weekplafond", async () => {
   const db = klimbitDb();
   const { pogingId } = await klimbitStart(db, "leerling-1", "p1");
   assert.equal(pogingId, "p1");
   assert.equal(db.store.docs["klimbitPogingen/p1"].status, "open");
   assert.equal(db.store.docs["klimbitTeller/leerling-1"].openPogingId, "p1");
 
-  // 5 minuten klimmen: ruim genoeg voor 437 m.
-  const uit = await klimbitAf(db, "leerling-1", "p1", 437.8, "2026-10-02T09:05:00Z");
-  assert.equal(uit.hoogte, 437);
-  assert.equal(uit.tokens, 337);
-  assert.equal(uit.runNummer, 1);
+  // 5 minuten klimmen: hooguit 300 x 2,5 + 10 = 760 m, dus 700 m telt.
+  const uit = await klimbitAf(db, "leerling-1", "p1", 700.8, "2026-10-02T09:05:00Z");
+  assert.equal(uit.hoogte, 700);
+  assert.equal(uit.waarde, 100);
+  assert.equal(uit.alUitbetaald, 0);
+  assert.equal(uit.tokens, 100);
   assert.equal(uit.nieuwRecord, true);
-  assert.equal(uit.record, 437);
-  assert.equal(uit.uitleg, "Eerste keer boven 400 m: 300 + 37 = 337 tokens.");
-  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 387);
-  assert.equal(db.store.docs["tokenAccounts/leerling-1"].earnedTotal, 387);
+  assert.equal(uit.record, 700);
+  assert.equal(uit.uitleg, "Nieuwe hoogste opbrengst: 700 m is 100 tokens waard. Je krijgt 100.");
+  for (const oudVeld of ["runNummer", "basis", "extraMeters"]) {
+    assert.equal(oudVeld in uit, false, `${oudVeld} hoort niet meer in het resultaat`);
+  }
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 150);
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].earnedTotal, 150);
   const regel = db.store.docs["tokenTransactions/earn_klimbit_p1"];
-  assert.equal(regel.amount, 337);
+  assert.equal(regel.amount, 100);
   assert.equal(regel.type, "earn");
+  assert.equal(regel.reason, "klimbit-height");
   assert.equal(regel.source.gameId, "klimbit");
-  assert.equal(regel.balanceAfter, 387);
-  assert.equal(db.store.docs["klimbitTeller/leerling-1"].runsBoven400, 1);
+  assert.equal(regel.source.title, "KlimBit: 700 m (nieuw record, 100 tokens)");
+  assert.deepEqual(regel.detail, {
+    hoogte: 700,
+    ingestuurdeHoogte: 700.8,
+    duurMs: 300000,
+    waarde: 100,
+    alUitbetaald: 0,
+    nieuwUitbetaald: 100,
+    buitenWeekplafond: true,
+  });
+  assert.equal(regel.balanceAfter, 150);
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].uitbetaaldTokens, 100);
+  assert.equal("runsBoven400" in db.store.docs["klimbitTeller/leerling-1"], false, "de oude teller is weg");
   assert.equal(db.store.docs["klimbitTeller/leerling-1"].openPogingId, null);
   assert.deepEqual(
     { uid: db.store.docs["spelRecords/klimbit_leerling-1"].uid, beste: db.store.docs["spelRecords/klimbit_leerling-1"].besteHoogte, aantal: db.store.docs["spelRecords/klimbit_leerling-1"].aantalPogingen },
-    { uid: "leerling-1", beste: 437, aantal: 1 },
+    { uid: "leerling-1", beste: 700, aantal: 1 },
   );
   assert.equal(Object.keys(db.store.docs).some((pad) => pad.startsWith("leerlingWeek/")), false, "geen weekplafond-administratie");
   assert.equal(Object.keys(db.store.docs).some((pad) => pad.startsWith("leerlingVoortgang/")), false);
@@ -3206,20 +3224,23 @@ test("klimbit: de erkende hoogte wordt afgekapt op de gemeten duur", async () =>
   assert.equal(db.store.docs["klimbitPogingen/snel"].erkendeHoogte, 35);
   assert.equal(db.store.docs["klimbitPogingen/snel"].duurMs, 10000);
   assert.equal(db.store.docs["tokenTransactions/earn_klimbit_snel"], undefined);
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].uitbetaaldTokens, 0);
 });
 
 test("klimbit: twee keer afronden is idempotent en levert maar één keer tokens", async () => {
   const db = klimbitDb();
   await klimbitStart(db, "leerling-1", "p1");
-  const eerste = await klimbitAf(db, "leerling-1", "p1", 500, "2026-10-02T09:05:00Z");
-  const tweede = await klimbitAf(db, "leerling-1", "p1", 900, "2026-10-02T09:06:00Z");
-  assert.equal(eerste.tokens, 400);
-  assert.equal(tweede.tokens, 400);
-  assert.equal(tweede.hoogte, 500);
+  // 7 minuten: hooguit 1060 m.
+  const eerste = await klimbitAf(db, "leerling-1", "p1", 1000, "2026-10-02T09:07:00Z");
+  const tweede = await klimbitAf(db, "leerling-1", "p1", 2000, "2026-10-02T09:20:00Z");
+  assert.equal(eerste.tokens, 200);
+  assert.equal(tweede.tokens, 200);
+  assert.equal(tweede.hoogte, 1000);
   assert.equal(tweede.alAfgerond, true);
-  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 450);
-  assert.equal(db.store.docs["klimbitTeller/leerling-1"].runsBoven400, 1);
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 250);
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].uitbetaaldTokens, 200);
   assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].aantalPogingen, 1);
+  assert.deepEqual(klimbitGrootboek(db), ["tokenTransactions/earn_klimbit_p1"]);
 });
 
 test("klimbit: een poging van iemand anders wordt geweigerd", async () => {
@@ -3255,27 +3276,72 @@ test("klimbit: een gesloten of verlopen poging wordt geweigerd", async () => {
   );
 });
 
-test("klimbit: tweede, derde en vierde keer boven 400 m", async () => {
+const klimbitRonde = async (db, uid, id, hoogte, start, eind) => {
+  await klimbitStart(db, uid, id, start);
+  return klimbitAf(db, uid, id, hoogte, eind);
+};
+
+test("klimbit: een hogere klim levert alleen het verschil op, een lagere niets", async () => {
   const db = klimbitDb();
-  const ronde = async (id, hoogte, start, eind) => {
-    await klimbitStart(db, "leerling-1", id, start);
-    return klimbitAf(db, "leerling-1", id, hoogte, eind);
-  };
-  await ronde("a", 401, "2026-10-02T09:00:00Z", "2026-10-02T09:05:00Z");
-  const lager = await ronde("b", 300, "2026-10-02T09:10:00Z", "2026-10-02T09:15:00Z");
-  assert.equal(lager.tokens, 0, "onder 400 m telt niet als keer");
+  const eerste = await klimbitRonde(db, "leerling-1", "a", 1000, "2026-10-02T09:00:00Z", "2026-10-02T09:07:00Z");
+  assert.equal(eerste.tokens, 200);
+
+  const onderDrempel = await klimbitRonde(db, "leerling-1", "b", 300, "2026-10-02T09:10:00Z", "2026-10-02T09:15:00Z");
+  assert.equal(onderDrempel.tokens, 0);
+  assert.equal(onderDrempel.nieuwRecord, false);
+  assert.equal(onderDrempel.record, 1000);
+  assert.equal(onderDrempel.uitleg, "Boven 400 m verdien je tokens. Je kwam tot 300 m.");
+
+  // 10 minuten: hooguit 1510 m.
+  const hoger = await klimbitRonde(db, "leerling-1", "c", 1500, "2026-10-02T09:20:00Z", "2026-10-02T09:30:00Z");
+  assert.equal(hoger.waarde, 225);
+  assert.equal(hoger.alUitbetaald, 200);
+  assert.equal(hoger.tokens, 25);
+  assert.equal(hoger.nieuwRecord, true);
+  assert.equal(hoger.uitleg, "Nieuwe hoogste opbrengst: 1500 m is 225 tokens waard. Je had al 200, dus je krijgt 25.");
+  const regelC = db.store.docs["tokenTransactions/earn_klimbit_c"];
+  assert.equal(regelC.amount, 25);
+  assert.equal(regelC.source.title, "KlimBit: 1500 m (nieuw record, 25 tokens)");
+  assert.equal(regelC.detail.waarde, 225);
+  assert.equal(regelC.detail.alUitbetaald, 200);
+  assert.equal(regelC.detail.nieuwUitbetaald, 225);
+
+  const lager = await klimbitRonde(db, "leerling-1", "d", 1200, "2026-10-02T09:40:00Z", "2026-10-02T09:50:00Z");
+  assert.equal(lager.waarde, 210);
+  assert.equal(lager.alUitbetaald, 225);
+  assert.equal(lager.tokens, 0);
   assert.equal(lager.nieuwRecord, false);
-  assert.equal(lager.record, 401);
-  assert.equal((await ronde("c", 450, "2026-10-02T09:20:00Z", "2026-10-02T09:25:00Z")).tokens, 250);
-  assert.equal((await ronde("d", 500, "2026-10-02T09:30:00Z", "2026-10-02T09:35:00Z")).tokens, 200);
-  const vierde = await ronde("e", 900, "2026-10-02T09:40:00Z", "2026-10-02T09:50:00Z");
-  assert.equal(vierde.tokens, 0);
-  assert.equal(vierde.runNummer, 4);
-  assert.equal(vierde.nieuwRecord, true);
-  assert.equal(db.store.docs["klimbitTeller/leerling-1"].runsBoven400, 4);
-  assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].besteHoogte, 900);
-  assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].aantalPogingen, 5);
-  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 50 + 301 + 250 + 200);
+  assert.equal(lager.uitleg, "Deze klim is 210 tokens waard. Je had al 225, dus nu 0. Klim hoger dan je record voor meer.");
+
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].uitbetaaldTokens, 225);
+  assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].besteHoogte, 1500);
+  assert.equal(db.store.docs["spelRecords/klimbit_leerling-1"].aantalPogingen, 4);
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 50 + 200 + 25);
+  assert.deepEqual(klimbitGrootboek(db), ["tokenTransactions/earn_klimbit_a", "tokenTransactions/earn_klimbit_c"]);
+});
+
+test("klimbit: in totaal nooit meer dan 350 tokens per leerling", async () => {
+  const db = klimbitDb({ "klimbitTeller/leerling-2": { uid: "leerling-2", uitbetaaldTokens: 300 } });
+
+  // 40 minuten: hooguit 6010 m, dus 4800 m telt.
+  const top = await klimbitRonde(db, "leerling-1", "a", 4800, "2026-10-02T09:00:00Z", "2026-10-02T09:40:00Z");
+  assert.equal(top.waarde, 350);
+  assert.equal(top.tokens, 350);
+  const nogHoger = await klimbitRonde(db, "leerling-1", "b", 5000, "2026-10-02T10:00:00Z", "2026-10-02T10:40:00Z");
+  assert.equal(nogHoger.tokens, 0);
+  assert.equal(nogHoger.nieuwRecord, true, "het record telt wel");
+  assert.equal(nogHoger.record, 5000);
+  assert.equal(nogHoger.uitleg, "Je hebt het maximum van 350 tokens met KlimBit al verdiend. Je record telt wel.");
+  assert.equal(db.store.docs["klimbitTeller/leerling-1"].uitbetaaldTokens, 350);
+  assert.equal(db.store.docs["tokenAccounts/leerling-1"].balance, 50 + 350);
+  assert.deepEqual(klimbitGrootboek(db), ["tokenTransactions/earn_klimbit_a"]);
+
+  // Een leerling die al 300 kreeg, krijgt bij 3000 m alleen de laatste 50.
+  const rest = await klimbitRonde(db, "leerling-2", "c", 3000, "2026-10-02T09:00:00Z", "2026-10-02T09:30:00Z");
+  assert.equal(rest.alUitbetaald, 300);
+  assert.equal(rest.tokens, 50);
+  assert.equal(db.store.docs["klimbitTeller/leerling-2"].uitbetaaldTokens, 350);
+  assert.equal(db.store.docs["tokenTransactions/earn_klimbit_c"].amount, 50);
 });
 
 test("klimbit: een beheerder speelt mee, krijgt een record maar nooit tokens", async () => {
@@ -3283,8 +3349,10 @@ test("klimbit: een beheerder speelt mee, krijgt een record maar nooit tokens", a
   await klimbitStart(db, "beheer-1", "b1");
   const uit = await klimbitAf(db, "beheer-1", "b1", 800, "2026-10-02T09:10:00Z");
   assert.equal(uit.tokens, 0);
+  assert.equal(uit.alUitbetaald, 0);
   assert.equal(uit.uitleg, "Beheerders verdienen geen tokens.");
   assert.equal(db.store.docs["spelRecords/klimbit_beheer-1"].besteHoogte, 800);
   assert.equal(db.store.docs["tokenAccounts/beheer-1"], undefined);
-  assert.equal(db.store.docs["klimbitTeller/beheer-1"].runsBoven400, 0);
+  assert.equal(db.store.docs["klimbitTeller/beheer-1"].uitbetaaldTokens, 0);
+  assert.deepEqual(klimbitGrootboek(db), []);
 });

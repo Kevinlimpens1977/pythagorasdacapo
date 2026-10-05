@@ -15,12 +15,24 @@ en de DV-H3-plaatjes) live blijft.
   `ExternalGameHost`.
 - Een poging begint bij **Begin de klim** en eindigt met **Klim beëindigen** (of
   "Opnieuw vanaf de grond"). Pas dan telt de eindscore: de hoogste hoogte in die poging.
-- **Tokens (alleen rol `student`)**, op de erkende eindhoogte:
-  onder of gelijk aan 400 m: 0. Boven 400 m: 1e keer 300 + (m − 400), 2e keer 200 + (m − 400),
-  3e keer 100 + (m − 400), vanaf de 4e keer 0. De teller staat alleen op de server en wordt
-  nooit gereset. **Buiten het weekplafond**; `leerlingWeek`, XP en niveau blijven ongemoeid.
-  Wel een grootboekregel in `tokenTransactions` (reason `klimbit-height`), dus zichtbaar in
-  tokenbeheer.
+- **Tokens (alleen rol `student`)**, op de erkende eindhoogte in hele meters. Besluit van
+  Kevin op **5 oktober 2026**, vóór de eerste uitrol (de oude regel per keer, 300/200/100 plus
+  meters, is nooit live geweest):
+  - Elke hoogte heeft een **waarde** (`KLIMBIT_STAFFEL`), stuksgewijs lineair en naar beneden
+    afgerond op hele tokens: tot en met 400 m 0; van 400 naar 1000 m van 0 naar 200; van 1000
+    naar 2000 m van 200 naar 250; van 2000 naar 3000 m van 250 naar 350; vanaf 3000 m 350.
+    Voorbeelden: 700 m = 100, 1500 m = 225, 2500 m = 300, 4800 m = 350.
+  - **Alleen bij een nieuwe hoogste opbrengst**: een poging levert
+    `max(0, waarde − alUitbetaald)` op. Een klim die niet meer waard is dan wat al uitbetaald
+    is, levert 0 op; het record telt dan wel. In totaal nooit meer dan **350**
+    (`KLIMBIT_MAX_TOKENS`) per leerling.
+  - Het uitbetaalde totaal staat alleen op de server, in `klimbitTeller/{uid}.uitbetaaldTokens`,
+    en gaat nooit terug. Bij beheerders en andere rollen loopt het niet op.
+  - **Buiten het weekplafond**; `leerlingWeek`, XP en niveau blijven ongemoeid. Wel een
+    grootboekregel in `tokenTransactions` (reason `klimbit-height`, titel
+    `KlimBit: {hoogte} m (nieuw record, {tokens} tokens)`, in `detail` de velden `waarde`,
+    `alUitbetaald` en `nieuwUitbetaald`), dus zichtbaar in tokenbeheer. Afronden is idempotent
+    per poging.
 - **Persoonlijk record** per speler, geen ranglijst (HELIX-beleid).
 - KlimbitGame stuurt bewust geen `onComplete` naar de GamePlayer, anders betaalt
   `awardTokensForActivity` uit binnen het weekplafond.
@@ -98,7 +110,11 @@ In `src/lib/klimbitBeloning.js`, gespiegeld naar `functions/shared/`:
   gemiddeld, 1,68 m/s in het snelste venster van 30 s; 2,5 is 1,5 × die piek.
 - `KLIMBIT_MAX_HOOGTE = 5000`: de route is eindeloos, dus dit is een vaste bovengrens
   (bij 1,6 m/s bijna een uur onafgebroken klimmen). **Voorlopige keuze, door Kevin te
-  bevestigen.** Bij 5000 m is één run maximaal 300 + 4600 tokens.
+  bevestigen.** Sinds de tokenregel van 5 oktober 2026 telt hij niet meer voor de tokens:
+  boven 3000 m is elke hoogte 350 waard.
+- `KLIMBIT_MAX_TOKENS = 350`: meer krijgt een leerling in totaal nooit met KlimBit, hoe vaak
+  of hoe hoog hij ook klimt. Wie de grenzen hierboven weet te omzeilen, haalt dus hooguit
+  350 tokens, één keer.
 - Wie de callable zelf aanroept en een poging lang open laat staan, krijgt erkend wat in
   die tijd fysiek haalbaar is. Elke poging staat met ingestuurde en erkende hoogte in
   `klimbitPogingen`, dus misbruik is terug te zien.
@@ -107,8 +123,8 @@ In `src/lib/klimbitBeloning.js`, gespiegeld naar `functions/shared/`:
 
 | | Resultaat |
 |---|---|
-| `node --test src/lib/` | 1112 tests, alle groen |
-| `functions`: `node --test` | 149 tests, alle groen |
+| `node --test src/lib/` | 1127 tests, alle groen (5 oktober 2026, na de nieuwe tokenregel; bij de overdracht 1112) |
+| `functions`: `node --test` | 150 tests, alle groen (5 oktober 2026, na de nieuwe tokenregel; bij de overdracht 149) |
 | `npm run check:functions-shared` | in sync (20 bestanden) |
 | `npm run build` | geslaagd, KlimBit (81 bestanden) zit in `dist/games/klimbit/v1/` |
 | KlimBit-repo | 435 tests groen, lint, build en build:helix geslaagd |
@@ -126,9 +142,11 @@ opgeslagen", zoals te verwachten zolang de functies niet uitgerold zijn.
    hoogte en het record, zonder foutmelding. In Firestore: `klimbitPogingen/{id}` staat op
    afgerond, `spelRecords/klimbit_{uid}` bestaat.
 3. Tokens boven 400 m: het snelst via een poging die echt boven 400 m komt (ongeveer 4 tot
-   5 minuten klimmen). Verwacht: "Eerste keer boven 400 m: 300 + X". Controleer
-   `tokenAccounts`, de regel `earn_klimbit_{pogingId}` in `tokenTransactions` en dat
-   `leerlingWeek` niet is opgehoogd.
+   5 minuten klimmen). Verwacht: "Nieuwe hoogste opbrengst: X m is Y tokens waard. Je krijgt
+   Y." (bij 403 m is dat 1 token, bij 700 m 100). Controleer `tokenAccounts`, de regel
+   `earn_klimbit_{pogingId}` in `tokenTransactions`, `klimbitTeller/{uid}.uitbetaaldTokens`
+   en dat `leerlingWeek` niet is opgehoogd. Een tweede klim die niet hoger uitkomt, levert 0
+   op.
 4. Log in als **beheerder**: de knop Spellen staat in de balk, KlimBit is speelbaar, en het
    paneel zegt "Als beheerder speel je mee zonder tokens".
 5. Toetsenbord: spatie en pijltjes bewegen de klimmer en scrollen de pagina niet. Test ook
