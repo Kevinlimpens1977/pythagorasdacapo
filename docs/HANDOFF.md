@@ -326,12 +326,20 @@ Per hoofdstuk één uitlegvideo van max 3:00, gemaakt met de skill
   Het videoblok telt mee in de voortgang: wie 2.4 al af had, ziet hem weer als
   niet af tot de video bevestigd is. Nog te doen: controle als testleerling,
   ook op iPad/iOS Safari.
-- KlimBit staat op branch `feat/klimbit` (worktree `C:\Projecten\helix-klimbit`)
-  en is nog NIET gemerged of uitgerold. Kevin koos een nieuwe tokenregel
-  (oplopend tot 200 bij 1000 m, 250 bij 2000 m, 350 bij 3000 m, alleen bij een
-  nieuw record, max 350 totaal); die moet na de merge nog in
-  `src/lib/klimbitBeloning.js` en `rondKlimbitPogingAf`. Uitrollen alleen vanuit
-  deze hoofdmap, nooit vanuit de worktree.
+- KlimBit is **live sinds 5 oktober 2026** (gemerged in `4617fbc`, tokenregel
+  in `364ae17`): voor iedereen op `/spellen`, callables `startKlimbitPoging` en
+  `rondKlimbitPogingAf` (europe-west1), regels voor `klimbitPogingen`,
+  `klimbitTeller` en `spelRecords`. Tokenregel van Kevin: oplopend van 0 bij
+  400 m naar 200 bij 1000 m, 250 bij 2000 m en 350 bij 3000 m; alleen het
+  verschil bij een nieuw record, hooguit 350 per leerling, buiten het
+  weekplafond. Back-up van de regels van vóór de uitrol:
+  `exports/reset-backups/firestore-rules-live-voor-klimbit-*.rules`. Details en
+  de handmatige test: `docs/OVERDRACHT-KLIMBIT-2026-10-02.md`. De worktree
+  `C:\Projecten\helix-klimbit` mag weg; volg de opruimstappen in die overdracht
+  (eerst de node_modules-koppelingen los).
+- Functions uitrollen gaf op 5 oktober "User code failed to load ... Timeout
+  after 10000"; met `FUNCTIONS_DISCOVERY_TIMEOUT=60` ervoor lukte het. Node.js
+  20 voor functions verloopt op 30 oktober 2026: daarna eerst upgraden.
 
 ### Presentaties - 16 september 2026
 
