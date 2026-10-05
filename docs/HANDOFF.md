@@ -318,12 +318,20 @@ Per hoofdstuk één uitlegvideo van max 3:00, gemaakt met de skill
 - Ondertitels in de moedertaal: een `.vtt` per taal van de taalknop naast `nl`;
   de speler kiest de taal van de leerling als zijn taalknop aan staat, anders
   Nederlands (ontwerp §19, skill stap 4b).
-- Eerste video: Binask H2. Gerenderd en klaar voor 2.4 Herhalingsopdrachten,
-  maar nog niet geplaatst: de dry run is gedaan, `--apply` wacht op Kevins
-  akkoord (en op de deploy van de ondertitelcode). Staat hij nog niet in 2.4,
-  dan is dat dus geen fout. Let op bij plaatsen: het nieuwe videoblok telt mee
-  in de voortgang, dus wie 2.4 al af had, ziet hem weer als niet af tot de video
-  bevestigd is.
+- Eerste video: Binask H2, **live sinds 5 oktober 2026** in 2.4
+  Herhalingsopdrachten (blok 4, vóór de Samenvatting) voor ER3L1A en ER3L2A,
+  met ondertitels in 10 talen. Blok `block-binask-eoa-1-h2-explainer-video`,
+  bestanden in Storage onder `explainers/hoofdstuk-binask-eoa-1-h2/`. Back-up
+  van vóór de plaatsing: `exports/reset-backups/explainer-hoofdstuk-binask-eoa-1-h2-*.json`.
+  Het videoblok telt mee in de voortgang: wie 2.4 al af had, ziet hem weer als
+  niet af tot de video bevestigd is. Nog te doen: controle als testleerling,
+  ook op iPad/iOS Safari.
+- KlimBit staat op branch `feat/klimbit` (worktree `C:\Projecten\helix-klimbit`)
+  en is nog NIET gemerged of uitgerold. Kevin koos een nieuwe tokenregel
+  (oplopend tot 200 bij 1000 m, 250 bij 2000 m, 350 bij 3000 m, alleen bij een
+  nieuw record, max 350 totaal); die moet na de merge nog in
+  `src/lib/klimbitBeloning.js` en `rondKlimbitPogingAf`. Uitrollen alleen vanuit
+  deze hoofdmap, nooit vanuit de worktree.
 
 ### Presentaties - 16 september 2026
 
