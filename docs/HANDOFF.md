@@ -236,7 +236,23 @@ tekst die 4,5:1 haalt) en de sleutel `knop.startHier` in tien talen. De
 inlogtests in `tests/e2e/auth-admin-smoke.spec.js` zijn bijgewerkt en groen.
 Markering `leeromgeving-fase-2a`, Vercel-deploy `dpl_CxaYxBFeVKC65ekSQbbZ9bAQb18B`. Kevin test nog
 als testleerling (H1i1, een vmbo-klas, ER3L1A), ook op telefoon of iPad.
-Volgende: fase 2b en 2c.
+
+**7 oktober: Leeromgeving-stijl fase 2b live.** De lespagina: het lesblok is
+een witte kaart, de stappenbalk een lijst met nummerblokjes (geel bij de
+huidige stap), boven- en voetbalk wit met een lijn, "Volgende stap" als
+hoofdknop. Leerdoelen, de zwevende bevestiging, quiz, toets (nummerpillen),
+Digidocent, voorbeelden en slides zijn mee. De gedeelde oude knoppen krijgen
+binnen de scope `.study-stijl` het nieuwe uiterlijk (zie
+`docs/LEEROMGEVING-STIJL.md`, paragraaf Lespagina). Werking ongewijzigd. Nog
+oud: rekenbladen wiskunde, `InleveringVak`, `MediaRenderer`, presenter. Op een
+telefoon is de knop volledig scherm weg uit de bovenbalk (hij viel daar buiten
+beeld). Tekst op `--lo-oranje-zacht` staat in inkt: `--lo-oranje-inkt` haalt
+daar maar 4,2:1, dus het label "op slot" uit fase 1 (12px) zit net onder AA;
+dat token aanpassen is een keuze voor fase 4.
+Stijlgids heeft een sectie Lespagina; `src/lib/lespaginaStijl.test.js` en de
+tweede test in `tests/e2e/leeromgeving-stijl.spec.js` bewaken hem.
+Markering `leeromgeving-fase-2b`, Vercel-deploy DEPLOY_2B.
+Volgende: fase 2c.
 
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
 nulmeting kreeg `resultTier: failed` zodra niet alles goed was, en het
@@ -419,11 +435,17 @@ deck van 3 MB in tienden van seconden, als echte dia's met een kloppende teller.
 
 In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij.
 
-1. **Leeromgeving-stijl fase 2b en 2c.** Fase 2a staat live (inloggen, menubalk,
-   startpagina, hoofdstukpagina). Nog te doen volgens
+1. **Leeromgeving-stijl fase 2c.** Fase 2a en 2b staan live (inloggen,
+   menubalk, startpagina, hoofdstukpagina, lespagina). Nog te doen volgens
    docs/superpowers/specs/2026-10-07-leeromgeving-stijl-design.md, paragraaf 3.2:
-   2b is de lespagina, 2c het profiel, de tokenshop, de spellen en Mijn klas.
-   Eerst een plan per fase. Rode tekst gebruikt `--lo-rood-inkt`.
+   het profiel, de tokenshop, het spellenoverzicht, Mijn klas en de pillen in de
+   menubalk. Eerst een plan. Kevin test 2a en 2b samen als testleerling
+   (ER3L1A, een vmbo-klas, H1i1): startpagina, hoofdstuk, een paragraaf met
+   leesstap, quiz, presentatie en leerdoelen, ook op een telefoon.
+   Fase 3 (docentomgeving) neemt Kevins vraag van 7 oktober mee: de
+   knoppenbalken van beheer (menubalk en de knoppen onder de paginakop) op één
+   regel, gelijk van hoogte, in de nieuwe stijl. Inventaris en voorstel:
+   `exports/leeromgeving/fase-3-knoppenbalken-inventaris.md`.
 
 2. **Infographic storingsplan (7 oktober 2026).** Gemaakt via de Helix
    Lesstudio (NotebookLM, Helix-opmaak), voor de gewone klassen en voor H1i1.

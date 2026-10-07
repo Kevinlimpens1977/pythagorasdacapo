@@ -67,6 +67,27 @@ inkt, hoek 8px. Start-knop: padding 6px 10px, hoek 8px.
 `ParagraafRij`, `StartKnop`, `Label`, `Keuzeknoppen`, `PaginaKop`. Gebruik die
 in plaats van eigen opmaak. Iconen alleen uit lucide-react.
 
+## Lespagina
+
+De lespagina (`StudentLessonPage.jsx`) deelt een paar oude klassen met andere
+pagina's: `btn-primary`, `btn-secondary`, `helix-btn-solid`, `helix-eyebrow`,
+`input-standard` en `lesson-prose`. Binnen de scope `.study-stijl` (op de wortel
+van de lespagina en op het voorbeeld in de stijlgids) krijgen ze het uiterlijk
+van `.lo-knop`, `.lo-knop-tweede`, `.lo-eyebrow` en `.lo-invoer`, en leestekst
+in inkt. Alleen kleur, rand, hoek, letter en schaduw; de binnenmarges blijven,
+zodat de vragen en de toetsstepper niet verspringen. Het blok staat onderaan
+`src/index.css`: `designTokenStyles.test.js` leest per klasse de eerste regel.
+
+- Lesblok: `.study-block`, een witte kaart (hoek 20px, kaartschaduw, 22px
+  binnenmarge, 16px op een telefoon).
+- Stappenbalk: een `.lo-lijst` met per stap een nummerblokje
+  (`.study-step-nummer`, crème). De huidige stap heeft een geel blokje op een
+  lichtgele regel. Rechts het type-icoon en een vinkje of een open rondje.
+- Voetbalk: "Vorige" als tweede knop, "Volgende stap" als hoofdknop.
+- Nog in de oude vorm, bewust: de rekenbladen en de rekenmachine van wiskunde,
+  `InleveringVak`, de donkere achtergrond achter lades en dialogen,
+  `MediaRenderer` en de presenter. Die komen in fase 4.
+
 ## Regels
 
 - Iets wat dicht is, toont het slotje en een uitgeschakelde knop.
