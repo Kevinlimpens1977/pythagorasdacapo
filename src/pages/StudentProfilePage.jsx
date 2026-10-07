@@ -345,11 +345,11 @@ export default function StudentProfilePage() {
               <div className="px-6 pb-6">
               <div className="lo-lijst mt-1">
                 <div className="lo-rij">
-                  <Mail size={18} className="text-[var(--lo-grijs)]" />
+                  <Mail size={18} className="shrink-0 text-[var(--lo-grijs)]" aria-hidden="true" />
                   <span className="lo-rij-tekst [overflow-wrap:anywhere]">{email}</span>
                 </div>
                 <div className="lo-rij">
-                  <GraduationCap size={18} className="text-[var(--lo-grijs)]" />
+                  <GraduationCap size={18} className="shrink-0 text-[var(--lo-grijs)]" aria-hidden="true" />
                   <span className="lo-rij-tekst [overflow-wrap:anywhere]">{klasName}</span>
                 </div>
               </div>
