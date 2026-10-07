@@ -87,3 +87,12 @@ test('het logo heeft de merkkleuren en drie golvende stipjes die stilstaan bij m
   assert.match(regel('.lo-logo-stip:nth-child(3)'), /animation-delay:\s*0\.3s/);
   assert.match(css, /prefers-reduced-motion: reduce\)\s*\{\s*\.lo-logo-stip\s*\{\s*animation:\s*none/);
 });
+
+test('de pillen in de menubalk zijn groot genoeg om met een vinger te raken', () => {
+  assert.match(regel('.lo-pil'), /min-height:\s*44px/);
+  assert.match(regel('.lo-pil'), /border-radius:\s*999px/);
+  assert.match(regel('.lo-pil'), /font-size:\s*13px/);
+  assert.match(regel('.lo-pil--groen'), /background:\s*var\(--lo-groen-zacht\)/);
+  assert.match(regel('.lo-pil--geel'), /background:\s*var\(--lo-geel\)/);
+  assert.match(regel('.lo-pil-balk'), /height:\s*6px/);
+});

@@ -26,12 +26,12 @@ export default function TokenBalancePill({ studentUid, onOpenShop, disabled = fa
     <button
       type="button"
       onClick={onOpenShop}
-      className="inline-flex min-h-11 items-center gap-2 rounded-[var(--helix-radius-md)] border border-amber-200 bg-amber-50 px-3 text-sm font-black text-amber-800 shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-100 focus:outline-none focus:ring-4 focus:ring-amber-100"
+      className="lo-pil"
       title="Open tokenshop"
     >
-      <Coins size={18} />
+      <Coins size={17} className="lo-pil-icoon text-[var(--lo-oranje-inkt)]" />
       <span>{Math.max(0, Number(balance) || 0)}</span>
-      <ShoppingBag size={16} className="hidden sm:block" />
+      <ShoppingBag size={15} className="lo-pil-icoon hidden sm:block" />
     </button>
   );
 }

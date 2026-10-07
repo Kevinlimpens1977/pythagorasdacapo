@@ -20,7 +20,7 @@ export default function KlasDoelPill({ klasId, disabled = false, onOpen }) {
       <button
         type="button"
         onClick={onOpen}
-        className="hidden min-h-11 items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--color-green-ink)] bg-[var(--color-green-soft)] px-3 text-sm font-black text-[var(--color-green-ink)] shadow-sm md:inline-flex"
+        className="lo-pil lo-pil--groen hidden md:inline-flex"
         title={`Klasdoel gehaald: ${doel.titel}`}
       >
         <PartyPopper size={17} aria-hidden="true" />
@@ -33,14 +33,12 @@ export default function KlasDoelPill({ klasId, disabled = false, onOpen }) {
     <button
       type="button"
       onClick={onOpen}
-      className="hidden min-h-11 items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-black text-[var(--helix-navy)] shadow-sm hover:border-[var(--helix-purple)] lg:inline-flex"
+      className="lo-pil hidden lg:inline-flex"
       title={`Klasdoel: ${doel.titel}. Elk blok dat je afmaakt met 60% of meer telt mee.`}
     >
-      <Users size={17} className="text-[var(--helix-purple)]" aria-hidden="true" />
+      <Users size={17} className="lo-pil-icoon text-[var(--lo-blauw)]" aria-hidden="true" />
       <span>Klas {doel.stand}/{doel.doel}</span>
-      <span className="h-1.5 w-12 overflow-hidden rounded-full bg-[var(--helix-border)]" aria-hidden="true">
-        <span className="block h-full rounded-full bg-[var(--helix-purple)]" style={{ width: `${klasdoelProcent(doel)}%` }} />
-      </span>
+      <span className="lo-pil-balk lo-pil-balk--blauw" aria-hidden="true"><i style={{ width: `${klasdoelProcent(doel)}%` }} /></span>
     </button>
   );
 }

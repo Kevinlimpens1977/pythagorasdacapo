@@ -151,6 +151,18 @@
     .lo-laden { animation: none; }
   }
 
+  /* Pil in de menubalk (tokens, niveau, weekdoel, klasdoel, event). 44px hoog,
+     zoals de knoppen ernaast: een label van 22px is te klein voor een vinger. */
+  .lo-pil { display: inline-flex; flex: none; align-items: center; gap: 7px; min-height: 44px; padding: 0 12px; border: 1px solid var(--lo-lijn); border-radius: 999px; background: var(--lo-kaart); color: var(--lo-inkt); font-family: var(--lo-letter); font-size: 13px; line-height: 19.5px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  button.lo-pil { cursor: pointer; }
+  button.lo-pil:hover { border-color: var(--lo-blauw); }
+  .lo-pil--groen { border-color: transparent; background: var(--lo-groen-zacht); color: var(--lo-groen-inkt); }
+  .lo-pil--geel { border-color: var(--lo-inkt); background: var(--lo-geel); color: var(--lo-inkt); }
+  .lo-pil-icoon { flex: none; color: var(--lo-grijs); }
+  .lo-pil-balk { display: block; flex: none; width: 44px; height: 6px; overflow: hidden; border-radius: 999px; background: var(--lo-papier-2); }
+  .lo-pil-balk > i { display: block; height: 100%; border-radius: 999px; background: var(--lo-groen); }
+  .lo-pil-balk--blauw > i { background: var(--lo-blauw); }
+
   /* Kleurstalen in de stijlgids */
   .lo-stalen { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .lo-staal { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; line-height: 18.75px; color: var(--lo-grijs); }

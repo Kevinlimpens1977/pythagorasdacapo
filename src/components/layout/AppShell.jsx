@@ -109,7 +109,7 @@ export default function AppShell() {
 
   return (
     <StudentBugReportContext.Provider value={{ context: studentBugReportContext, setContext: setStudentBugReportContext }}>
-    <div className="helix-page flex min-h-screen flex-col font-sans selection:bg-fuchsia-100 selection:text-[var(--helix-navy)]">
+    <div className="helix-page flex min-h-screen flex-col font-sans selection:bg-[var(--lo-geel-zacht)] selection:text-[var(--helix-navy)]">
       <NameSetupModal />
       <TestleerlingBalk />
 
@@ -254,7 +254,7 @@ export default function AppShell() {
               <span
                 className="token-header-avatar flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 bg-white"
                 style={{
-                  '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--helix-purple)',
+                  '--token-avatar-accent': activeAvatar?.previewStyle?.accent || 'var(--lo-blauw)',
                   borderColor: activeFrame?.previewStyle?.accent || activeAvatar?.previewStyle?.accent || 'transparent'
                 }}
               >
@@ -268,8 +268,8 @@ export default function AppShell() {
                     {activePins.map((pin) => (
                       <span
                         key={pin.id}
-                        className="rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-white"
-                        style={{ background: pin.previewStyle?.accent || 'var(--helix-purple)' }}
+                        className="rounded-full px-1.5 py-0.5 text-[9px] font-extrabold text-white"
+                        style={{ background: pin.previewStyle?.accent || 'var(--lo-blauw)' }}
                       >
                         {pin.previewStyle?.shortLabel || pin.title}
                       </span>

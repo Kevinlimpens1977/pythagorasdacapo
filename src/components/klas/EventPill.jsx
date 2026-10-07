@@ -15,7 +15,7 @@ export default function EventPill({ klasId, disabled = false }) {
   if (!eventActief(event)) return null;
   return (
     <div
-      className="hidden min-h-11 items-center gap-2 rounded-[var(--helix-radius-md)] border-2 border-[#0B0D0F] bg-[#FFD33D] px-3 text-sm font-black text-[#0B0D0F] shadow-sm md:inline-flex"
+      className="lo-pil lo-pil--geel hidden md:inline-flex"
       title={`Dubbele XP tot en met ${event.tot}. Tokens tellen gewoon.`}
     >
       <Sparkles size={17} aria-hidden="true" />

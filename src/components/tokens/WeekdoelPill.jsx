@@ -24,7 +24,7 @@ export default function WeekdoelPill({ studentUid, disabled = false }) {
 
   if (doel.gehaald) {
     return (
-      <div className="hidden min-h-11 items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--color-green-ink)] bg-[var(--color-green-soft)] px-3 text-sm font-black text-[var(--color-green-ink)] shadow-sm md:inline-flex">
+      <div className="lo-pil lo-pil--groen hidden md:inline-flex">
         <CheckCircle2 size={17} aria-hidden="true" />
         <span>Weekdoel gehaald</span>
       </div>
@@ -34,14 +34,12 @@ export default function WeekdoelPill({ studentUid, disabled = false }) {
   const procent = Math.round((doel.gedaan / doel.totaal) * 100);
   return (
     <div
-      className="hidden min-h-11 items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-black text-[var(--helix-navy)] shadow-sm md:inline-flex"
+      className="lo-pil hidden md:inline-flex"
       title="Weekdoel: maak het hoofdstuk van deze week af. Dan krijg je de weekkist."
     >
-      <Target size={17} className="text-[#087EB5]" aria-hidden="true" />
+      <Target size={17} className="lo-pil-icoon text-[var(--lo-blauw)]" aria-hidden="true" />
       <span>Weekdoel {doel.gedaan}/{doel.totaal}</span>
-      <span className="h-1.5 w-12 overflow-hidden rounded-full bg-[var(--helix-border)]" aria-hidden="true">
-        <span className="block h-full rounded-full bg-[#2E9D63]" style={{ width: `${procent}%` }} />
-      </span>
+      <span className="lo-pil-balk" aria-hidden="true"><i style={{ width: `${procent}%` }} /></span>
     </div>
   );
 }

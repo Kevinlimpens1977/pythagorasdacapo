@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Coins, House, Lightbulb, ListChecks, Lock, Presentation, RefreshCw } from 'lucide-react';
+import { BookOpen, Coins, House, Lightbulb, ListChecks, Lock, Presentation, RefreshCw, Sparkles, Star, Target, Users } from 'lucide-react';
 
 import { HoofdstukRij, Kaart, KaartKop, Keuzeknoppen, Label, PaginaKop, ParagraafRij, StartKnop } from '../components/leeromgeving';
 import StudyStepRail from '../components/lesson/StudyStepRail';
@@ -68,6 +68,16 @@ export default function AdminStijlgidsPage() {
           <Kaart>
             <KaartKop titel="Laden" uitleg="Als een pagina of onderdeel laadt: drie stipjes die om de beurt een klein beetje omhoog gaan." />
             <HelixLaden className="min-h-0 py-6" tekst="Voorbeeld van laden" />
+          </Kaart>
+          <Kaart data-stijlgids="pillen">
+            <KaartKop titel="Pillen in de menubalk" uitleg="Tokens, niveau, weekdoel, klasdoel en een event. 44px hoog, net als de knoppen ernaast." />
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" className="lo-pil"><Coins size={17} className="lo-pil-icoon text-[var(--lo-oranje-inkt)]" /><span>159</span></button>
+              <span className="lo-pil"><Star size={17} className="lo-pil-icoon text-[var(--lo-oranje-inkt)]" aria-hidden="true" /><span>Niveau 4</span><span className="lo-pil-balk lo-pil-balk--blauw" aria-hidden="true"><i style={{ width: '60%' }} /></span></span>
+              <span className="lo-pil"><Target size={17} className="lo-pil-icoon text-[var(--lo-blauw)]" aria-hidden="true" /><span>Weekdoel 3/7</span><span className="lo-pil-balk" aria-hidden="true"><i style={{ width: '43%' }} /></span></span>
+              <span className="lo-pil lo-pil--groen"><Users size={17} aria-hidden="true" /><span>Klasdoel gehaald</span></span>
+              <span className="lo-pil lo-pil--geel"><Sparkles size={17} aria-hidden="true" /><span>Dubbele XP</span></span>
+            </div>
           </Kaart>
         </div>
 

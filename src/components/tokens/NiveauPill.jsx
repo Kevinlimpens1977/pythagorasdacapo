@@ -21,13 +21,13 @@ export default function NiveauPill({ studentUid, disabled = false }) {
 
   return (
     <div
-      className="hidden min-h-11 items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-sm font-black text-[var(--helix-navy)] shadow-sm sm:inline-flex"
+      className="lo-pil hidden sm:inline-flex"
       title={xpNodig > 0 ? `Niveau ${niveau}: nog ${xpNodig - xpInNiveau} XP tot niveau ${niveau + 1}` : `Niveau ${niveau}: het hoogste niveau`}
     >
-      <Star size={17} className="text-[#B4520E]" aria-hidden="true" />
+      <Star size={17} className="lo-pil-icoon text-[var(--lo-oranje-inkt)]" aria-hidden="true" />
       <span>Niveau {niveau}</span>
-      <span className="h-1.5 w-12 overflow-hidden rounded-full bg-[var(--helix-border)]" aria-hidden="true">
-        <span className="block h-full rounded-full bg-[#087EB5]" style={{ width: `${procent}%` }} />
+      <span className="lo-pil-balk lo-pil-balk--blauw" aria-hidden="true">
+        <i style={{ width: `${procent}%` }} />
       </span>
     </div>
   );
