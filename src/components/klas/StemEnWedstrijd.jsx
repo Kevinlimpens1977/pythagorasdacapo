@@ -3,6 +3,7 @@ import { Brush, CheckCircle2, Clock, Loader2, Trophy, Upload, Vote, XCircle } fr
 import {
   afbeeldingUrl, getStemmingen, getWedstrijden, leverOntwerpIn, stem
 } from '../../services/fase5Service';
+import { Kaart, KaartKop } from '../leeromgeving';
 
 // Fase 5 op Mijn klas: stemmen over wat de klas krijgt, en de ontwerpwedstrijd.
 
@@ -15,7 +16,7 @@ function Afbeelding({ pad, alt }) {
   }, [pad]);
   return url
     ? <img src={url} alt={alt} className="h-full w-full object-contain" />
-    : <span className="flex h-full items-center justify-center"><Loader2 size={20} className="animate-spin text-[var(--helix-muted)]" /></span>;
+    : <span className="flex h-full items-center justify-center"><Loader2 size={20} className="animate-spin text-[var(--lo-grijs)]" /></span>;
 }
 
 export function StemmingenSectie() {
@@ -48,14 +49,14 @@ export function StemmingenSectie() {
   };
 
   return (
-    <section className="space-y-3">
-      <h2 className="ds-display text-[26px]">Stem mee</h2>
-      {fout && <p className="rounded-xl border-2 border-[#D83A2E] bg-[var(--color-red-soft)] px-4 py-2 font-bold text-[var(--color-red-ink)]">{fout}</p>}
+    <Kaart>
+      <KaartKop titel="Stem mee" />
+      {fout && <p className="lo-melding lo-melding--fout">{fout}</p>}
       {stemmingen.map((stemming) => {
         const totaal = (stemming.uitslag || []).reduce((som, aantal) => som + aantal, 0);
         return (
-          <article key={stemming.id} className="rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
-            <p className="flex items-center gap-2 font-black text-[var(--helix-navy)]"><Vote size={18} aria-hidden="true" /> {stemming.vraag}</p>
+          <article key={stemming.id} className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] p-4">
+            <p className="flex items-center gap-2 font-extrabold text-[var(--lo-inkt)]"><Vote size={18} aria-hidden="true" /> {stemming.vraag}</p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {stemming.opties.map((optie, index) => {
                 const gekozen = stemming.mijnKeuze === index;
@@ -66,26 +67,26 @@ export function StemmingenSectie() {
                     type="button"
                     disabled={stemming.mijnKeuze !== null || stemming.status !== 'open' || bezig === stemming.id}
                     onClick={() => kies(stemming, index)}
-                    className={`relative overflow-hidden rounded-xl border-2 px-3 py-2 text-left text-sm font-extrabold ${gekozen ? 'border-[#087EB5] bg-[#DCEFFA]' : 'border-[#0B0D0F] bg-white enabled:hover:bg-[#FFF0B8]'}`}
+                    className={`relative overflow-hidden rounded-[var(--lo-hoek-m)] border px-3 py-2 text-left text-sm font-extrabold ${gekozen ? 'border-[var(--lo-inkt)] bg-[var(--lo-geel-zacht)]' : 'border-[var(--lo-lijn)] bg-[var(--lo-kaart)] enabled:hover:border-[var(--lo-blauw)]'}`}
                   >
-                    {procent !== null && <span className="absolute inset-y-0 left-0 bg-[#FFD33D]/40" style={{ width: `${procent}%` }} aria-hidden="true" />}
+                    {procent !== null && <span className="absolute inset-y-0 left-0 bg-[var(--lo-blauw-zacht)]" style={{ width: `${procent}%` }} aria-hidden="true" />}
                     <span className="relative flex items-center justify-between gap-2">
                       {optie}
-                      {gekozen && <CheckCircle2 size={16} className="text-[#087EB5]" aria-label="Jouw stem" />}
+                      {gekozen && <CheckCircle2 size={16} className="text-[var(--lo-blauw)]" aria-label="Jouw stem" />}
                       {procent !== null && <span>{procent}%</span>}
                     </span>
                   </button>
                 );
               })}
             </div>
-            <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
+            <p className="lo-onderregel mt-2">
               {stemming.mijnKeuze !== null ? 'Je hebt gestemd.' : stemming.status === 'open' ? 'Je kunt één keer stemmen.' : 'De stemming is gesloten.'}
               {!stemming.uitslag && ' De uitslag komt als je docent hem laat zien.'}
             </p>
           </article>
         );
       })}
-    </section>
+    </Kaart>
   );
 }
 
@@ -130,17 +131,17 @@ export function WedstrijdSectie({ uid }) {
   };
 
   return (
-    <section className="space-y-3">
-      <h2 className="ds-display text-[26px]">Ontwerpwedstrijd</h2>
-      {melding && <p className="rounded-xl border-2 border-[var(--color-green-ink)] bg-[var(--color-green-soft)] px-4 py-2 font-bold text-[var(--color-green-ink)]">{melding}</p>}
-      {fout && <p className="rounded-xl border-2 border-[#D83A2E] bg-[var(--color-red-soft)] px-4 py-2 font-bold text-[var(--color-red-ink)]">{fout}</p>}
+    <Kaart>
+      <KaartKop titel="Ontwerpwedstrijd" />
+      {melding && <p className="lo-melding bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]">{melding}</p>}
+      {fout && <p className="lo-melding lo-melding--fout">{fout}</p>}
       {wedstrijden.map((wedstrijd) => {
         const status = wedstrijd.mijnInzending ? INZENDING_STATUS[wedstrijd.mijnInzending.status] : null;
         const magInleveren = wedstrijd.status === 'open' && (!wedstrijd.mijnInzending || wedstrijd.mijnInzending.status === 'afgewezen');
         return (
-          <article key={wedstrijd.id} className="rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
-            <p className="flex items-center gap-2 text-lg font-black text-[var(--helix-navy)]"><Brush size={20} aria-hidden="true" /> {wedstrijd.thema}</p>
-            {wedstrijd.uitleg && <p className="mt-1 text-sm text-[var(--helix-muted)]">{wedstrijd.uitleg}</p>}
+          <article key={wedstrijd.id} className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] p-4">
+            <p className="flex items-center gap-2 text-lg font-extrabold text-[var(--lo-inkt)]"><Brush size={20} aria-hidden="true" /> {wedstrijd.thema}</p>
+            {wedstrijd.uitleg && <p className="mt-1 text-sm text-[var(--lo-grijs)]">{wedstrijd.uitleg}</p>}
             <p className="mt-1 text-sm font-bold">Het winnende ontwerp komt in de tokenshop, met jouw naam erbij.</p>
 
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -157,27 +158,27 @@ export function WedstrijdSectie({ uid }) {
                     type="button"
                     onClick={() => invoer.current[wedstrijd.id]?.click()}
                     disabled={bezig === wedstrijd.id}
-                    className="flex items-center gap-1.5 rounded-lg border-2 border-[#0B0D0F] bg-[#FFD33D] px-3 py-2 text-sm font-extrabold"
+                    className="lo-knop px-3 py-2 text-sm"
                   >
                     {bezig === wedstrijd.id ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} aria-hidden="true" />}
                     Ontwerp inleveren
                   </button>
-                  <span className="text-xs text-[var(--helix-muted)]">Een foto of afbeelding van je tekening, png of jpg, hooguit 4 MB.</span>
+                  <span className="lo-onderregel">Een foto of afbeelding van je tekening, png of jpg, hooguit 4 MB.</span>
                 </>
               )}
               {status && (
                 <span className="flex items-center gap-1.5 text-sm font-bold"><status.Icoon size={16} aria-hidden="true" /> {status.label}</span>
               )}
-              {wedstrijd.status === 'gesloten' && !status && <span className="text-sm font-bold text-[var(--helix-muted)]">Deze wedstrijd is gesloten.</span>}
+              {wedstrijd.status === 'gesloten' && !status && <span className="text-sm font-bold text-[var(--lo-grijs)]">Deze wedstrijd is gesloten.</span>}
             </div>
 
             {wedstrijd.galerij.length > 0 && (
               <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {wedstrijd.galerij.map((inzending) => (
-                  <figure key={inzending.id} className={`overflow-hidden rounded-xl border-2 ${wedstrijd.winnaarId === inzending.id ? 'border-[#FFB400] ring-4 ring-[#FFD33D]/50' : 'border-[#0B0D0F]'}`}>
-                    <div className="aspect-square bg-[var(--helix-surface-soft)]"><Afbeelding pad={inzending.publiekPad} alt={`Ontwerp van ${inzending.naam}`} /></div>
+                  <figure key={inzending.id} className={`overflow-hidden rounded-[var(--lo-hoek-m)] border bg-[var(--lo-kaart)] ${wedstrijd.winnaarId === inzending.id ? 'border-[var(--lo-geel)] ring-2 ring-[var(--lo-geel)]' : 'border-[var(--lo-lijn)]'}`}>
+                    <div className="aspect-square bg-[var(--lo-papier)]"><Afbeelding pad={inzending.publiekPad} alt={`Ontwerp van ${inzending.naam}`} /></div>
                     <figcaption className="flex items-center justify-center gap-1 px-2 py-1 text-xs font-bold">
-                      {wedstrijd.winnaarId === inzending.id && <Trophy size={13} className="text-[#B4520E]" aria-label="Winnaar" />}
+                      {wedstrijd.winnaarId === inzending.id && <Trophy size={13} className="text-[var(--lo-oranje-inkt)]" aria-label="Winnaar" />}
                       {inzending.naam}
                     </figcaption>
                   </figure>
@@ -187,6 +188,6 @@ export function WedstrijdSectie({ uid }) {
           </article>
         );
       })}
-    </section>
+    </Kaart>
   );
 }
