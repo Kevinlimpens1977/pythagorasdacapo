@@ -67,6 +67,12 @@ inkt, hoek 8px. Start-knop: padding 6px 10px, hoek 8px.
 `ParagraafRij`, `StartKnop`, `Label`, `Keuzeknoppen`, `PaginaKop`. Gebruik die
 in plaats van eigen opmaak. Iconen alleen uit lucide-react.
 
+`.lo-pil` is de pil in de menubalk (tokens, niveau, weekdoel, klasdoel, event):
+44px hoog zoals de knoppen ernaast, rand `--lo-lijn`, 13px/800. Varianten
+`--groen` (gehaald) en `--geel` (event); een mini-balkje met `.lo-pil-balk`.
+Een uitgeschakelde `.lo-knop` is crème met grijze tekst, zodat er nog te lezen
+staat waarom hij uit staat ("Nog 15").
+
 ## Logo
 
 Het logo (Kevin, 7 oktober 2026): geel H-blok met zwarte rand, "ELIX" in zwart,
@@ -106,5 +112,6 @@ zodat de vragen en de toetsstepper niet verspringen. Het blok staat onderaan
 
 - Iets wat dicht is, toont het slotje en een uitgeschakelde knop.
 - Aantallen voluit: "1 paragraaf", "3 paragrafen", "1 lesblok", "9 lesblokken".
-- Koppen nooit in hoofdletters en nooit in Bangers.
+- Koppen nooit in hoofdletters en nooit in Bangers. Bangers staat alleen nog in
+  de spellen en het certificaat (en tot fase 3 in het Help-paneel).
 - Eigen uiterlijk houden: de spellen, de presenter en het digibord, het certificaat.

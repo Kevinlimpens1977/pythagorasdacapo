@@ -258,7 +258,17 @@ een telefoon alleen het H-blok), op de inlogpagina's, in de Voortgang-banner en
 als tabbladicoon. Bij het laden staat het logo met drie golvende blauwe stipjes
 in beeld (`HelixLaden`, ook in `index.html` tot de app er is). Beheerpagina's
 laden nog met hun eigen spinners; dat gaat mee in fase 3. Commit e564001.
-Volgende: fase 2c.
+**7 oktober: Leeromgeving-stijl fase 2c live.** De pillen in de menubalk
+(tokens, niveau, weekdoel, klasdoel, event) zijn `.lo-pil` (44px, met
+balkje). Profiel, tokenshop (met avatarmaker en privileges), Mijn klas (met
+stemmen en wedstrijd), het spellenoverzicht en het niveau-moment staan in de
+nieuwe stijl: geen Bangers, gele banden, inktranden of harde schaduwen meer.
+Een uitgeschakelde hoofdknop is nu crème met grijze tekst (leesbaar). De
+achtergrond is lichter: `--lo-papier` #FFFBF4 (was #FFF7E8). Werking
+ongewijzigd. Bekend en bewust gelaten: op /spellen staat de spelnaam dubbel
+(GamePlayer heeft een eigen kop; fase 3). Markering `leeromgeving-fase-2c`,
+Vercel-deploy DEPLOY_2C.
+Volgende: fase 3 (docentomgeving).
 
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
 nulmeting kreeg `resultTier: failed` zodra niet alles goed was, en het
@@ -441,13 +451,14 @@ deck van 3 MB in tienden van seconden, als echte dia's met een kloppende teller.
 
 In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij.
 
-1. **Leeromgeving-stijl fase 2c.** Fase 2a en 2b staan live (inloggen,
-   menubalk, startpagina, hoofdstukpagina, lespagina). Nog te doen volgens
-   docs/superpowers/specs/2026-10-07-leeromgeving-stijl-design.md, paragraaf 3.2:
-   het profiel, de tokenshop, het spellenoverzicht, Mijn klas en de pillen in de
-   menubalk. Eerst een plan. Kevin test 2a en 2b samen als testleerling
-   (ER3L1A, een vmbo-klas, H1i1): startpagina, hoofdstuk, een paragraaf met
-   leesstap, quiz, presentatie en leerdoelen, ook op een telefoon.
+1. **Leeromgeving-stijl fase 3 (docentomgeving).** Fase 2a, 2b en 2c staan
+   live: de hele leerlingkant. Fase 3 volgens de spec, paragraaf 3.3. De
+   inventarissen liggen klaar in `exports/leeromgeving/`:
+   `fase-3-knoppenbalken-inventaris.md`, `fase-3-inventaris-overzicht.md`,
+   `fase-3-inventaris-lijsten.md` (en een derde voor de grote werktuigen).
+   Eerst een plan. Kevin test de leerlingkant als testleerling (ER3L1A, een
+   vmbo-klas, H1i1): startpagina, hoofdstuk, les, profiel, tokenshop, Mijn
+   klas, spellen, ook op een telefoon.
    Fase 3 (docentomgeving) neemt Kevins vraag van 7 oktober mee: de
    knoppenbalken van beheer (menubalk en de knoppen onder de paginakop) op één
    regel, gelijk van hoogte, in de nieuwe stijl. Inventaris en voorstel:
