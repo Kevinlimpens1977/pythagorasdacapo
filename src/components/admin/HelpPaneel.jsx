@@ -34,7 +34,7 @@ export default function HelpPaneel() {
         onClick={() => setOpen(true)}
         className="lo-knop-tweede lo-knop--klein"
         aria-haspopup="dialog"
-        aria-label="Help"
+        title="Help"
       >
         <CircleHelp size={16} aria-hidden="true" />
         <span className="sr-only">Help</span>
@@ -99,7 +99,7 @@ export default function HelpPaneel() {
                       {sectie.opties.map((optie) => (
                         <article
                           key={optie.titel}
-                          className={`rounded-[var(--lo-hoek-l)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-4 ${optie.status === HELP_STATUS.NU ? '' : 'border-dashed bg-[var(--lo-papier)]'}`}
+                          className={`rounded-[var(--lo-hoek-l)] border border-[var(--lo-lijn)] p-4 ${optie.status === HELP_STATUS.NU ? 'bg-[var(--lo-kaart)]' : 'border-dashed bg-[var(--lo-papier)]'}`}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <p className="font-extrabold text-[var(--lo-inkt)]">{optie.titel}</p>

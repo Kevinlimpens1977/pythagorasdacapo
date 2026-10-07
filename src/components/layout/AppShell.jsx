@@ -130,7 +130,7 @@ export default function AppShell() {
           <nav
             className={
               isAdmin
-                ? 'nav-scroll-onzichtbaar lo-keuzes min-w-0 flex-nowrap overflow-x-auto p-1'
+                ? 'nav-scroll-onzichtbaar lo-keuzes min-w-0 flex-nowrap overflow-x-auto p-1.5'
                 : 'lo-keuzes flex-nowrap'
             }
           >
@@ -145,10 +145,10 @@ export default function AppShell() {
                     onClick={() => navigate(workspace.path)}
                     className="lo-keuze min-h-10 shrink-0"
                     aria-current={isActive ? 'page' : undefined}
-                    aria-label={workspace.label}
+                    title={workspace.label}
                   >
-                    <Icon size={18} />
-                    <span className="hidden xl:inline">{workspace.label}</span>
+                    <Icon size={18} aria-hidden="true" />
+                    <span className="sr-only xl:not-sr-only">{workspace.label}</span>
                     {workspace.id === 'instellingen' && openBugReportCount > 0 && (
                       <span
                         className="admin-nav-alert"
