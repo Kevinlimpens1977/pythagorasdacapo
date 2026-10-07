@@ -209,6 +209,19 @@ in Vercel (die deploy weer naar productie zetten) of met `git revert` van de
 latere fasecommits en `npx vercel --prod --yes`. Ontwerp:
 `docs/superpowers/specs/2026-10-07-leeromgeving-stijl-design.md`.
 
+**7 oktober: HELIX Leeromgeving-stijl, fase 1 live.** De website heeft een eigen
+stijl, los van het Slide Design System: `docs/LEEROMGEVING-STIJL.md`,
+`src/styles/leeromgeving.css` (tokens `--lo-*`, klassen `.lo-*`) en de bouwstenen
+in `src/components/leeromgeving/`. Stijlgids op `/admin/stijlgids` (ingang op
+Instellingen), opgemeten door `tests/e2e/leeromgeving-stijl.spec.js`. Testen als
+leerling staat in optie D: klassen met dezelfde lesstof in één kaart, en starten
+kan op de startpagina, bij een hoofdstuk of in een paragraaf. Markering
+`leeromgeving-fase-1`, Vercel-deploy `<id uit stap 5>`. Volgende fase: de
+leerlingomgeving (ontwerp paragraaf 3.2). De twee tests in
+`tests/e2e/auth-admin-smoke.spec.js` zijn verouderd (ze zoeken de oude
+ontwikkelaarsknoppen op /login) en falen; dat is geen regressie, ze worden in
+fase 2 bijgewerkt.
+
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
 nulmeting kreeg `resultTier: failed` zodra niet alles goed was, en het
 klasoverzicht las dat als "vastgelopen": een klas die de hele nulmeting had
@@ -390,6 +403,11 @@ deck van 3 MB in tienden van seconden, als echte dia's met een kloppende teller.
 
 In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij.
 
+0. **Leeromgeving-stijl fase 2**: inlogpagina's en leerlingomgeving, volgens
+   docs/superpowers/specs/2026-10-07-leeromgeving-stijl-design.md, paragraaf 3.2.
+   Eerst een plan. Vóór fase 2: `--lo-rood` op `--lo-rood-zacht` haalt geen
+   4,5:1; een donkerdere roodtint voor tekst toevoegen.
+
 0. **Infographic storingsplan (7 oktober 2026).** Gemaakt via de Helix
    Lesstudio (NotebookLM, Helix-opmaak), voor de gewone klassen en voor H1i1.
    Versie 2 wacht op Kevins akkoord: `exports/infographics/dv-h2-storingsplan-v2-verbeterd.png`
@@ -470,7 +488,7 @@ Kevin bepaalt wanneer dat gebeurt. Het staat wel live: gedeployd met
 | `PROJECTKOMPAS-HELIX.md` (gewijzigd) | bijgewerkt naar 22 september; verwijst voor de dagstand naar deze handoff |
 | `scripts/ruim-leeg-dubbelaccount-op.mjs`, `scripts/voeg-dubbelaccount-samen.mjs` (nieuw) | dubbele leerlingaccounts opruimen of samenvoegen (allebei al uitgevoerd) |
 
-**Stand 7 oktober 2026, nog niet gecommit** (de tekeningen staan wel live):
+**Stand 7 oktober 2026: gecommit in ebfbd62** (inclusieversie H2); fase 1 van de Leeromgeving-stijl staat in de commits tot de markering `leeromgeving-fase-1`.
 
 | Pad | Wat het is |
 | --- | --- |
