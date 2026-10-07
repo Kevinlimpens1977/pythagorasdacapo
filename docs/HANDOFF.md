@@ -267,7 +267,7 @@ Een uitgeschakelde hoofdknop is nu crème met grijze tekst (leesbaar). De
 achtergrond is lichter: `--lo-papier` #FFFBF4 (was #FFF7E8). Werking
 ongewijzigd. Bekend en bewust gelaten: op /spellen staat de spelnaam dubbel
 (GamePlayer heeft een eigen kop; fase 3). Markering `leeromgeving-fase-2c`,
-Vercel-deploy DEPLOY_2C.
+Vercel-deploy `dpl_69kvnG6skRDikkXJjS8q5jngTJec`.
 Volgende: fase 3 (docentomgeving).
 
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
