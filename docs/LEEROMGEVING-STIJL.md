@@ -41,7 +41,7 @@ Altijd via de tokens, nooit een losse hexwaarde in een component.
 | `--lo-paars` / `-inkt` / `-zacht` | #793AC7 / #5F2C9E / #ECE3F8 | kolf-icoon / label inclusie |
 | `--lo-groen` / `-inkt` / `-zacht` | #2E9D63 / #237A4D / #DFF2E7 | af en voortgang |
 | `--lo-oranje-inkt` / `-zacht` | #B4520E / #FDE7D6 | op slot |
-| `--lo-rood` / `-zacht` | #D83A2E / #FADDDA | fouten |
+| `--lo-rood` / `-inkt` / `-zacht` | #D83A2E / #B42F25 / #FADDDA | fouten; tekst altijd in -inkt (4,5:1 op -zacht) |
 
 ## Letter en maten
 

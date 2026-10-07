@@ -27,6 +27,7 @@
   --lo-oranje-inkt: #B4520E;
   --lo-oranje-zacht: #FDE7D6;
   --lo-rood: #D83A2E;
+  --lo-rood-inkt: #B42F25;
   --lo-rood-zacht: #FADDDA;
   --lo-hoek-s: 8px;
   --lo-hoek-m: 12px;
@@ -93,7 +94,7 @@
   .lo-label--paars { background: var(--lo-paars-zacht); color: var(--lo-paars-inkt); }
   .lo-label--groen { background: var(--lo-groen-zacht); color: var(--lo-groen-inkt); }
   .lo-label--oranje { background: var(--lo-oranje-zacht); color: var(--lo-oranje-inkt); }
-  .lo-label--rood { background: var(--lo-rood-zacht); color: var(--lo-rood); }
+  .lo-label--rood { background: var(--lo-rood-zacht); color: var(--lo-rood-inkt); }
 
   /* Keuzeknoppen */
   .lo-keuzegroep { display: flex; flex-direction: column; gap: 6px; }
@@ -105,8 +106,17 @@
 
   /* Meldingen */
   .lo-melding { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px 14px; border-radius: var(--lo-hoek-m); font-size: 14px; line-height: 21px; font-weight: 600; }
-  .lo-melding--fout { background: var(--lo-rood-zacht); color: var(--lo-rood); }
+  .lo-melding--fout { background: var(--lo-rood-zacht); color: var(--lo-rood-inkt); }
   .lo-melding--info { background: var(--lo-papier-2); color: var(--lo-grijs); }
+
+  /* Voortgangsbalk */
+  .lo-voortgang { display: block; height: 8px; overflow: hidden; border-radius: 999px; background: var(--lo-papier-2); }
+  .lo-voortgang > i { display: block; height: 100%; border-radius: 999px; background: var(--lo-groen); }
+
+  /* Invoerveld */
+  .lo-invoer { display: block; width: 100%; padding: 12px 14px; border: 1px solid var(--lo-lijn); border-radius: var(--lo-hoek-m); background: var(--lo-kaart); color: var(--lo-inkt); font-family: var(--lo-letter); font-size: 15px; line-height: 1.5; }
+  .lo-invoer:focus-visible { outline: 3px solid var(--lo-blauw); outline-offset: 2px; border-color: var(--lo-blauw); }
+  .lo-veldlabel { display: block; margin-bottom: 6px; font-size: 14px; line-height: 21px; font-weight: 700; color: var(--lo-inkt); }
 
   /* Kleurstalen in de stijlgids */
   .lo-stalen { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }

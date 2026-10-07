@@ -62,3 +62,15 @@ export const neemTestsessieDoel = (opslag, uid) => {
     return null;
   }
 };
+
+/** Welke knoptekst (uiTaal-sleutel) een hoofdstuk krijgt, naar de voortgang. */
+export const hoofdstukKnopSleutel = (progress = {}) => {
+  if (progress?.isCompleted) return 'knop.bekijkTerug';
+  return (progress?.done || 0) > 0 ? 'knop.gaVerder' : 'knop.start';
+};
+
+/** Welke knoptekst (uiTaal-sleutel) een paragraaf krijgt, naar de voortgang. */
+export const paragraafKnopSleutel = (progress = {}) => {
+  if (progress?.isCompleted) return 'knop.bekijkTerug';
+  return (progress?.done || 0) > 0 ? 'knop.gaVerder' : 'knop.startHier';
+};

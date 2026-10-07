@@ -21,7 +21,7 @@ test('alle kleuren van de leeromgeving staan er met hun vaste waarde', () => {
     '--lo-blauw': '#087EB5', '--lo-blauw-inkt': '#066A99', '--lo-blauw-zacht': '#E1F0F8',
     '--lo-paars': '#793AC7', '--lo-paars-inkt': '#5F2C9E', '--lo-paars-zacht': '#ECE3F8',
     '--lo-groen': '#2E9D63', '--lo-groen-inkt': '#237A4D', '--lo-groen-zacht': '#DFF2E7',
-    '--lo-oranje-inkt': '#B4520E', '--lo-oranje-zacht': '#FDE7D6', '--lo-rood': '#D83A2E', '--lo-rood-zacht': '#FADDDA'
+    '--lo-oranje-inkt': '#B4520E', '--lo-oranje-zacht': '#FDE7D6', '--lo-rood': '#D83A2E', '--lo-rood-inkt': '#B42F25', '--lo-rood-zacht': '#FADDDA'
   };
   for (const [naam, waarde] of Object.entries(verwacht)) {
     assert.match(css, new RegExp(`${naam}:\\s*${waarde};`, 'i'), `${naam} moet ${waarde} zijn`);
@@ -54,6 +54,14 @@ test('de knoppen, labels en keuzeknoppen uit de bijlage', () => {
   assert.match(regel('.lo-label'), /font-size:\s*12px/);
   assert.match(regel('.lo-keuze'), /padding:\s*5px 11px/);
   assert.match(regel(".lo-keuze[aria-pressed='true']"), /background:\s*var\(--lo-inkt\)/);
+});
+
+test('rode tekst is donker genoeg en er is een voortgangsbalk en een invoerveld', () => {
+  assert.match(regel('.lo-label--rood'), /color:\s*var\(--lo-rood-inkt\)/);
+  assert.match(regel('.lo-melding--fout'), /color:\s*var\(--lo-rood-inkt\)/);
+  assert.match(regel('.lo-voortgang'), /height:\s*8px/);
+  assert.match(regel('.lo-invoer'), /border:\s*1px solid var\(--lo-lijn\)/);
+  assert.match(regel('.lo-invoer'), /border-radius:\s*var\(--lo-hoek-m\)/);
 });
 
 test('de leeromgeving staat los van het Slide Design System', () => {

@@ -8,7 +8,9 @@ import {
   hoofdstukOnderregel,
   splitsParagraafLabel,
   testsessieDoelRoute,
-  zonderHoofdstukVoorvoegsel
+  zonderHoofdstukVoorvoegsel,
+  hoofdstukKnopSleutel,
+  paragraafKnopSleutel
 } from './leeromgeving.js';
 
 test('aantallen staan voluit, enkelvoud bij precies één', () => {
@@ -55,4 +57,14 @@ test('de plek van een testsessie wordt onthouden tot precies die testleerling bi
   fake.setItem('helix-testsessie-doel', '{kapot');
   assert.equal(neemTestsessieDoel(fake, 'testleerling-h1i1'), null);
   assert.equal(neemTestsessieDoel(null, 'x'), null, 'zonder opslag geen fout');
+});
+
+test('de knop van een hoofdstuk en een paragraaf volgt de voortgang', () => {
+  assert.equal(hoofdstukKnopSleutel({ done: 0, total: 5, isCompleted: false }), 'knop.start');
+  assert.equal(hoofdstukKnopSleutel({ done: 2, total: 5, isCompleted: false }), 'knop.gaVerder');
+  assert.equal(hoofdstukKnopSleutel({ done: 5, total: 5, isCompleted: true }), 'knop.bekijkTerug');
+  assert.equal(hoofdstukKnopSleutel(undefined), 'knop.start');
+  assert.equal(paragraafKnopSleutel({ done: 0, total: 7, isCompleted: false }), 'knop.startHier');
+  assert.equal(paragraafKnopSleutel({ done: 3, total: 7, isCompleted: false }), 'knop.gaVerder');
+  assert.equal(paragraafKnopSleutel({ done: 7, total: 7, isCompleted: true }), 'knop.bekijkTerug');
 });

@@ -64,7 +64,7 @@ hij is; de oude namen als `--helix-purple` (blauw) en `--helix-pink` (teal) verd
 | `--lo-paars-zacht` | #ECE3F8 | label inclusie, rand van de inclusiekaart |
 | `--lo-groen` / `-inkt` / `-zacht` | #2E9D63 / #237A4D / #DFF2E7 | af, voortgang, label open |
 | `--lo-oranje-inkt` / `-zacht` | #B4520E / #FDE7D6 | label op slot |
-| `--lo-rood` / `-zacht` | #D83A2E / #FADDDA | fouten en problemen |
+| `--lo-rood` / `-inkt` / `-zacht` | #D83A2E / #B42F25 / #FADDDA | fouten en problemen; tekst altijd in -inkt (4,5:1 op -zacht) |
 
 ### 2.2 Vormen en letter
 

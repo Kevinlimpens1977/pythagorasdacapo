@@ -33,3 +33,8 @@ test('uiStudieduur rekent net als formatStudyDuration, maar vertaald', () => {
   assert.equal(uiStudieduur(95, 'nl'), '1 uur 35 min');
   assert.equal(uiStudieduur(95, 'el'), '1 ώρες 35 λεπτά');
 });
+
+test('Start hier staat in alle talen', () => {
+  assert.equal(uiTekst('knop.startHier', 'nl'), 'Start hier');
+  assert.equal(uiTekst('knop.startHier', 'en'), 'Start here');
+});
