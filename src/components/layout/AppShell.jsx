@@ -127,11 +127,11 @@ export default function AppShell() {
           </h1>
 
           <nav
-            className={`nav-scroll-onzichtbaar max-w-[54vw] overflow-x-auto md:max-w-none ${
+            className={
               isAdmin
-                ? 'flex gap-1 rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:gap-2'
+                ? 'nav-scroll-onzichtbaar flex max-w-[54vw] gap-1 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:max-w-none md:gap-2'
                 : 'lo-keuzes flex-nowrap'
-            }`}
+            }
           >
             {isAdmin ? (
               ADMIN_WORKSPACES.map((workspace) => {
@@ -161,7 +161,7 @@ export default function AppShell() {
             ) : (
               <button
                 onClick={() => navigate('/')}
-                className="lo-keuze shrink-0"
+                className="lo-keuze min-h-10 shrink-0"
                 aria-pressed={
                   location.pathname === '/' ||
                   location.pathname.includes('/chapter/') ||
@@ -170,6 +170,7 @@ export default function AppShell() {
               >
                 <BookOpen size={18} />
                 <span className="hidden md:inline">Lesmateriaal</span>
+                <span className="sr-only md:hidden">Lesmateriaal</span>
               </button>
             )}
           </nav>
