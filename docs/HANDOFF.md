@@ -234,7 +234,7 @@ slot zonder stippellijn. Rijen breken af op een telefoon en elke Start-knop
 heeft een `aria-label` met de titel van de rij. Nieuw: `--lo-rood-inkt` (rode
 tekst die 4,5:1 haalt) en de sleutel `knop.startHier` in tien talen. De
 inlogtests in `tests/e2e/auth-admin-smoke.spec.js` zijn bijgewerkt en groen.
-Markering `leeromgeving-fase-2a`, Vercel-deploy (id volgt na de deploy). Kevin test nog
+Markering `leeromgeving-fase-2a`, Vercel-deploy `dpl_CxaYxBFeVKC65ekSQbbZ9bAQb18B`. Kevin test nog
 als testleerling (H1i1, een vmbo-klas, ER3L1A), ook op telefoon of iPad.
 Volgende: fase 2b en 2c.
 
