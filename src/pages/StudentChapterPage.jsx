@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, ListTodo, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, ListTodo } from 'lucide-react';
 
 import { useStudentOutline } from '../hooks/useStudentOutline';
 import { useLesstofTaal } from '../hooks/useLesstofTaal';
 import { ChapterDetailView } from '../components/lesson/ChapterDetail';
+import { Kaart, KaartKop } from '../components/leeromgeving';
 import TaalSchakelaar from '../components/lesson/TaalSchakelaar';
 import { buildLessonPath } from '../lib/chapterOutline';
 
@@ -86,8 +87,8 @@ export default function StudentChapterPage() {
       <PageShell>
         <div className="space-y-6" aria-busy="true" aria-live="polite">
           <span className="sr-only">{tekst('hoofdstuk.laden')}</span>
-          <div className="helix-surface h-28 animate-pulse bg-[var(--helix-surface-soft)]" />
-          <div className="helix-surface h-72 animate-pulse bg-[var(--helix-surface-soft)]" />
+          <div className="lo-kaart animate-pulse" style={{ height: 112 }} aria-hidden="true" />
+          <div className="lo-kaart animate-pulse" style={{ height: 288 }} aria-hidden="true" />
         </div>
       </PageShell>
     );
@@ -99,21 +100,15 @@ export default function StudentChapterPage() {
   if (chapter?.vergrendeld === true) {
     return (
       <PageShell>
-        <div className="helix-surface p-10 text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-[var(--helix-warning)]/25 text-[var(--helix-navy)]">
-            <Lock size={30} />
+        <Kaart>
+          <KaartKop titel={tekst('slot.titel')} uitleg={tekst('slot.uitleg')} />
+          <div>
+            <button type="button" onClick={() => navigate('/')} className="lo-knop">
+              <ArrowLeft size={18} aria-hidden="true" />
+              {tekst('knop.terugNaarOverzicht')}
+            </button>
           </div>
-          <p className="font-display text-xl font-extrabold text-[var(--helix-navy)]">
-            {tekst('slot.titel')}
-          </p>
-          <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
-            {tekst('slot.uitleg')}
-          </p>
-          <button type="button" onClick={() => navigate('/')} className="btn-primary mt-6 px-5 py-3 text-sm">
-            <ArrowLeft size={17} />
-            {tekst('knop.terugNaarOverzicht')}
-          </button>
-        </div>
+        </Kaart>
       </PageShell>
     );
   }
@@ -121,21 +116,15 @@ export default function StudentChapterPage() {
   if (!chapter) {
     return (
       <PageShell>
-        <div className="helix-surface p-10 text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-            <BookOpen size={32} />
+        <Kaart>
+          <KaartKop titel={tekst('hoofdstuk.nietVoorJou.titel')} uitleg={tekst('hoofdstuk.nietVoorJou.tekst')} />
+          <div>
+            <button type="button" onClick={() => navigate('/')} className="lo-knop">
+              <ArrowLeft size={18} aria-hidden="true" />
+              {tekst('knop.terugNaarOverzicht')}
+            </button>
           </div>
-          <p className="font-display text-xl font-extrabold text-[var(--helix-navy)]">
-            {tekst('hoofdstuk.nietVoorJou.titel')}
-          </p>
-          <p className="mt-2 text-sm font-semibold text-[var(--helix-muted)]">
-            {tekst('hoofdstuk.nietVoorJou.tekst')}
-          </p>
-          <button type="button" onClick={() => navigate('/')} className="btn-primary mt-6 px-5 py-3 text-sm">
-            <ArrowLeft size={17} />
-            {tekst('knop.terugNaarOverzicht')}
-          </button>
-        </div>
+        </Kaart>
       </PageShell>
     );
   }
@@ -163,9 +152,9 @@ export default function StudentChapterPage() {
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="inline-flex items-center gap-2 text-sm font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-purple)]"
+              className="lo-knop-tweede"
             >
-              <ArrowLeft size={17} />
+              <ArrowLeft size={17} aria-hidden="true" />
               {tekst('knop.terugNaarOverzicht')}
             </button>
             <TaalSchakelaar
@@ -194,7 +183,7 @@ export default function StudentChapterPage() {
       {notice && (
         <div
           role="status"
-          className="fixed bottom-6 left-1/2 z-[200] -translate-x-1/2 rounded-full bg-[var(--helix-navy)] px-5 py-2.5 text-sm font-extrabold text-white shadow-[var(--helix-shadow-soft)]"
+          className="fixed bottom-6 left-1/2 z-[200] -translate-x-1/2 rounded-full bg-[var(--lo-inkt)] px-5 py-2.5 text-sm font-extrabold text-[var(--lo-papier)] shadow-[var(--lo-schaduw-kaart)]"
         >
           {notice}
         </div>
@@ -204,7 +193,11 @@ export default function StudentChapterPage() {
 }
 
 function PageShell({ children }) {
-  return <div className="mx-auto w-full max-w-7xl pad-content">{children}</div>;
+  return (
+    <div className="helix-page lo-tekst">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:py-10">{children}</div>
+    </div>
+  );
 }
 
 /**
@@ -215,54 +208,51 @@ function NogTeDoen({ onderdelen, onStart, taal }) {
   const { tekst, aantal, paragraafInfo } = taal;
 
   return (
-    <aside className="helix-surface p-5 lg:sticky lg:top-24">
-      <p className="helix-eyebrow inline-flex items-center gap-2">
-        <ListTodo size={14} />
-        {tekst('nogTeDoen.kop')}
-      </p>
+    <Kaart as="aside" className="lg:sticky lg:top-24">
+      <div>
+        <p className="lo-eyebrow inline-flex items-center gap-2">
+          <ListTodo size={14} aria-hidden="true" />
+          {tekst('nogTeDoen.kop')}
+        </p>
+        {onderdelen.length > 0 && (
+          <p className="lo-kaart-uitleg">{aantal('onderdeel.aantal', onderdelen.length)}</p>
+        )}
+      </div>
 
       {onderdelen.length === 0 ? (
-        <p className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-emerald-700">
-          <CheckCircle2 size={17} />
+        <p className="lo-melding lo-melding--info">
+          <CheckCircle2 size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--lo-groen)]" />
           {tekst('nogTeDoen.klaar')}
         </p>
       ) : (
         <>
-          <p className="mt-2 text-sm font-bold text-[var(--helix-muted)]">
-            {aantal('onderdeel.aantal', onderdelen.length)}
-          </p>
-          <ol className="mt-3 space-y-1.5">
+          <ol className="lo-lijst">
             {onderdelen.slice(0, 8).map((onderdeel) => (
               <li key={`${onderdeel.row.id}-${onderdeel.id}`}>
                 <button
                   type="button"
                   onClick={() => onStart(onderdeel.row.id, onderdeel.id)}
-                  className="group flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition hover:bg-[var(--helix-surface-soft)]"
+                  className="lo-rij w-full cursor-pointer text-left hover:bg-[var(--lo-papier)]"
                 >
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-extrabold text-[var(--helix-navy)]">
-                      {onderdeel.title}
-                    </span>
-                    <span className="block truncate text-xs font-bold text-[var(--helix-muted)]">
+                  <span className="lo-rij-tekst">
+                    <span className="lo-rij-titel">{onderdeel.title}</span>
+                    <span className="lo-onderregel">
                       {onderdeel.row.number ? `${onderdeel.row.number} ` : ''}
                       {paragraafInfo(onderdeel.row.id)?.titel || onderdeel.row.title}
                     </span>
                   </span>
-                  <ArrowRight
-                    size={15}
-                    className="shrink-0 text-[var(--helix-muted)] transition group-hover:text-[var(--helix-purple)]"
-                  />
+                  <ArrowRight size={15} aria-hidden="true" className="shrink-0 text-[var(--lo-grijs)]" />
                 </button>
               </li>
             ))}
           </ol>
           {onderdelen.length > 8 && (
-            <p className="mt-2 px-3 text-xs font-bold text-[var(--helix-muted)]">
+            <p className="lo-onderregel">
               {tekst('nogTeDoen.rest', { aantal: onderdelen.length - 8 })}
             </p>
           )}
         </>
       )}
-    </aside>
+    </Kaart>
   );
 }

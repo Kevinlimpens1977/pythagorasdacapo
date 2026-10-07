@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ArrowRight,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { getVisibleParagraphRows, shouldOfferShowAll } from '../../lib/chapterOutline';
 import { nederlandseTaalhulp } from '../../hooks/useLesstofTaal';
+import { HBlok, Kaart, Label, StartKnop } from '../leeromgeving';
 
 // De binnenkant van een hoofdstuk: de paragrafen met hun onderdelen, en de
 // toetsen die niet al in een paragraaf staan. Gedeeld door de hoofdstukpagina
@@ -86,13 +87,16 @@ export function ChapterDetailView({
   const plusRows = chapter.paragraphRows.filter((row) => row.optioneel);
   const plusDone = plusRows.filter((row) => row.progress.isCompleted).length;
 
-  const renderParagraphRow = (row, label) => (row.vergrendeld ? (
+  // `blok` is de tekst in het gele blokje links (het paragraafnummer). Rijen
+  // zonder nummer krijgen in plaats daarvan hun icoon in een crème blokje.
+  const renderParagraphRow = (row, label, blok = '') => (row.vergrendeld ? (
     // Een paragraaf op slot staat erbij, grijs en zonder knop: de leerling
     // ziet wat eraan komt, maar kan er nog niet in.
     <OutlineRow
       key={row.id}
       rowId={row.id}
       label={label}
+      blok={blok}
       title={paragraafInfo(row.id)?.titel || row.title}
       icon={Lock}
       meta={`${tekst('slot.label')} · ${tekst('slot.uitleg')}`}
@@ -104,6 +108,7 @@ export function ChapterDetailView({
       key={row.id}
       rowId={row.id}
       label={label}
+      blok={blok}
       title={paragraafInfo(row.id)?.titel || row.title}
       icon={row.optioneel ? Star : (row.progress.isCompleted ? CheckCircle2 : PlayCircle)}
       isDone={row.progress.isCompleted}
@@ -121,68 +126,50 @@ export function ChapterDetailView({
   ));
 
   return (
-    <section id={chapter.anchorId} className="helix-surface scroll-mt-28 p-5 md:p-7">
-      <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--helix-border)] pb-4">
-        <div className="min-w-0">
-          <p className="helix-eyebrow">
-            {chapter.number === null
-              ? tekst('hoofdstuk.kop')
-              : tekst('hoofdstuk.kopMetNummer', { nummer: chapter.number })}
-          </p>
-          <h2 className="mt-1 font-display text-xl font-extrabold tracking-tight text-[var(--helix-navy)] md:text-2xl">
-            {vertaaldHoofdstuk?.titel || chapter.title}
-          </h2>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <span className="helix-badge normal-case tracking-normal">
-              {aantal('paragraaf.aantal', verplichteRows.length)}
-            </span>
-            {plusRows.length > 0 && (
-              <span
-                title={tekst('plus.uitleg')}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2.5 py-1 text-xs font-black normal-case tracking-normal text-[var(--helix-purple)]"
-              >
-                <Star size={13} />
-                {plusRows.length} {tekst('plus.label')}
-              </span>
-            )}
-            {duration && (
-              <span className="helix-badge inline-flex items-center gap-1.5 normal-case tracking-normal">
-                <Clock3 size={13} />
-                {duration}
-              </span>
-            )}
-            {chapter.badge && (
-              <span className="helix-badge inline-flex items-center gap-1.5 normal-case tracking-normal">
-                <Sparkles size={13} />
-                {chapter.badge}
-              </span>
-            )}
+    <Kaart id={chapter.anchorId} className="scroll-mt-28">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-3">
+          <HBlok nummer={chapter.number} />
+          <div className="min-w-0">
+            <p className="lo-eyebrow">
+              {chapter.number === null
+                ? tekst('hoofdstuk.kop')
+                : tekst('hoofdstuk.kopMetNummer', { nummer: chapter.number })}
+            </p>
+            <h2 className="lo-kaart-titel mt-1">
+              {vertaaldHoofdstuk?.titel || chapter.title}
+            </h2>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Label kleur="blauw">{aantal('paragraaf.aantal', verplichteRows.length)}</Label>
+              {plusRows.length > 0 && (
+                <span title={tekst('plus.uitleg')}>
+                  <Label kleur="blauw" icoon={Star}>
+                    {plusRows.length} {tekst('plus.label')}
+                  </Label>
+                </span>
+              )}
+              {duration && <Label kleur="blauw" icoon={Clock3}>{duration}</Label>}
+              {chapter.badge && <Label kleur="blauw" icoon={Sparkles}>{chapter.badge}</Label>}
+            </div>
           </div>
         </div>
 
         {chapter.progress.total > 0 && (
           <div className="w-full max-w-56 sm:w-56">
-            <div className="mb-1 flex items-center justify-between text-xs font-bold text-[var(--helix-muted)]">
+            <div className="lo-onderregel mb-1 flex items-center justify-between font-bold">
               <span>{tekst('rubriek.voortgang')}</span>
               <span>
                 {chapter.progress.done} / {chapter.progress.total}
               </span>
             </div>
-            <div className="helix-progress-track h-2 w-full">
-              <div
-                className={
-                  chapter.progress.isCompleted
-                    ? 'h-full rounded-full bg-[var(--helix-success)] transition-all duration-500'
-                    : 'helix-progress-fill'
-                }
-                style={{ width: `${chapter.progress.percentage}%` }}
-              />
-            </div>
+            <span className="lo-voortgang" aria-hidden="true">
+              <i style={{ width: `${chapter.progress.percentage}%` }} />
+            </span>
             {/* De plusstof staat bewust ONDER de balk en niet erin: de balk
                 toont wat af moet, deze regel wat je extra deed. */}
             {plusRows.length > 0 && (
-              <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-bold text-[var(--helix-purple)]">
-                <Star size={12} />
+              <p className="lo-onderregel mt-1.5 flex items-center gap-1.5 font-bold">
+                <Star size={12} aria-hidden="true" />
                 {plusDone > 0
                   ? tekst('plus.extraAf', { done: plusDone, total: plusRows.length })
                   : tekst('plus.staatKlaar')}
@@ -192,7 +179,7 @@ export function ChapterDetailView({
         )}
       </header>
 
-      <div className="mt-4 space-y-2">
+      <div className="lo-lijst">
         {chapter.introRow && chapter.introRow.kind === 'chapterIntro' && (
           <OutlineRow
             rowId={chapter.introRow.id}
@@ -204,7 +191,7 @@ export function ChapterDetailView({
             onToggle={() => onToggleRow(chapter.introRow.id)}
             taal={taal}
           >
-            <p className="lesson-prose text-sm">
+            <p className="lo-kaart-uitleg m-0">
               {vertaaldHoofdstuk?.beschrijving || chapter.introRow.description}
             </p>
           </OutlineRow>
@@ -215,18 +202,24 @@ export function ChapterDetailView({
 
         {chapter.voorkennisRows.map((row) => renderParagraphRow(row, tekst(rubriekSleutels.voorkennis)))}
 
-        {visibleParagraphRows.map((row) => renderParagraphRow(row, row.number))}
+        {visibleParagraphRows.map((row) => renderParagraphRow(row, row.number, row.number))}
 
         {canShowAll && (
-          <button
-            type="button"
-            onClick={() => onToggleShowAll(chapter.id)}
-            aria-expanded={showAll}
-            className="flex w-full items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-dashed border-[var(--helix-border)] bg-white/60 px-4 py-2.5 text-sm font-extrabold text-[var(--helix-purple)] transition-colors hover:border-[var(--helix-purple)] hover:bg-[var(--helix-soft-lavender)]/60"
-          >
-            {toonAllesLabel(chapter.paragraphRows, showAll, tekst)}
-            <ChevronDown size={16} className={showAll ? 'rotate-180 transition-transform' : 'transition-transform'} />
-          </button>
+          <div className="flex justify-center p-3">
+            <button
+              type="button"
+              onClick={() => onToggleShowAll(chapter.id)}
+              aria-expanded={showAll}
+              className="lo-knop-tweede w-full justify-center"
+            >
+              {toonAllesLabel(chapter.paragraphRows, showAll, tekst)}
+              <ChevronDown
+                size={15}
+                aria-hidden="true"
+                className={showAll ? 'rotate-180 transition-transform' : 'transition-transform'}
+              />
+            </button>
+          </div>
         )}
 
         {losseOefentoetsRows.length > 0 && (
@@ -257,7 +250,7 @@ export function ChapterDetailView({
           />
         )}
       </div>
-    </section>
+    </Kaart>
   );
 }
 
@@ -282,6 +275,7 @@ function buildParagraphMeta(row, taal) {
 function OutlineRow({
   rowId,
   label,
+  blok = '',
   title,
   meta,
   icon: Icon = PlayCircle,
@@ -297,112 +291,75 @@ function OutlineRow({
   children
 }) {
   const panelId = `paneel-${rowId}`;
+  // Heeft de rij een eigen blokje (het paragraafnummer), dan staat het label niet
+  // nog eens voor de titel.
+  const titelTekst = blok ? title : [label, title].filter(Boolean).join(' ');
 
   if (vergrendeld) {
     return (
-      <div className="flex items-center gap-3 rounded-[var(--helix-radius-lg)] border-[2px] border-dashed border-[#BDB3A0] bg-[#FFFCF6] p-3 opacity-70 sm:p-4">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]">
-          <Icon size={19} />
-        </span>
-        <span className="min-w-0">
-          <span className="block truncate font-display text-[15px] font-extrabold text-[var(--helix-navy)] md:text-base">
-            {label && <span className="text-[var(--helix-muted)]">{label}</span>}
-            {label && title ? ' ' : ''}
-            {title}
+      <div className="lo-rij">
+        <div className="lo-rij-toggle cursor-default">
+          <span className="lo-hblok lo-hblok--dicht">{blok || <Icon size={15} aria-hidden="true" />}</span>
+          <span className="lo-rij-tekst">
+            <span className="lo-rij-titel">{titelTekst}</span>
+            {meta && <span className="lo-onderregel">{meta}</span>}
           </span>
-          {meta && <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--helix-muted)]">{meta}</span>}
-        </span>
+          {blok && <Lock size={15} aria-hidden="true" />}
+        </div>
+        <StartKnop disabled>{taal.tekst('knop.start')}</StartKnop>
       </div>
     );
   }
 
+  const Pijl = expanded ? ChevronDown : ChevronRight;
+
   return (
-    <div
-      className={`rounded-[var(--helix-radius-lg)] border transition-colors ${
-        optioneel
-          ? 'border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)]/35 hover:border-[var(--helix-purple)]'
-          : expanded
-            ? 'border-[rgba(122,60,255,0.32)] bg-white'
-            : 'border-[var(--helix-border)] bg-white/70 hover:border-[rgba(122,60,255,0.28)]'
-      }`}
-    >
-      <div className="flex items-center gap-2 p-3 sm:gap-3 sm:p-4">
+    <div>
+      <div className="lo-rij">
         <button
           type="button"
           onClick={onToggle}
           aria-expanded={expanded}
           aria-controls={panelId}
-          className="flex min-w-0 flex-1 items-center gap-3 text-left focus:outline-none focus-visible:rounded-[var(--helix-radius-md)] focus-visible:shadow-[var(--helix-focus)]"
+          className="lo-rij-toggle"
         >
-          <span className="text-[var(--helix-muted)]">
-            {expanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-          </span>
-          <span
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
-              isDone
-                ? 'bg-[rgba(34,197,94,0.14)] text-[#237A4D]'
-                : optioneel
-                  ? 'bg-white text-[var(--helix-purple)] ring-1 ring-[rgba(122,60,255,0.35)]'
-                  : 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-            }`}
-          >
-            <Icon size={19} />
-          </span>
-          <span className="min-w-0">
-            <span className="flex min-w-0 items-center gap-2">
-              <span className="truncate font-display text-[15px] font-extrabold text-[var(--helix-navy)] md:text-base">
-                {label && <span className="text-[var(--helix-purple)]">{label}</span>}
-                {label && title ? ' ' : ''}
-                {title}
-              </span>
-              {optioneel && <PlusLabel taal={taal} />}
+          {blok ? (
+            <span className="lo-hblok">{blok}</span>
+          ) : (
+            <span className="lo-hblok lo-hblok--dicht">
+              <Icon size={15} aria-hidden="true" />
             </span>
-            {meta && (
-              <span className="mt-0.5 block truncate text-xs font-semibold text-[var(--helix-muted)]">{meta}</span>
-            )}
+          )}
+          <span className="lo-rij-tekst">
+            <span className="lo-rij-titel">{titelTekst}</span>
+            {meta && <span className="lo-onderregel">{meta}</span>}
           </span>
+          {optioneel && <PlusLabel taal={taal} />}
+          {isDone && <Label kleur="groen" icoon={Check}>{taal.tekst('status.af')}</Label>}
+          <Pijl size={15} aria-hidden="true" />
         </button>
 
-        {/* Een plusparagraaf waar nog niets aan gedaan is krijgt geen lege balk:
-            een balk op nul leest als achterstand, en dat is dit niet. */}
+        {/* Een plusparagraaf waar nog niets aan gedaan is krijgt geen telling:
+            "0 / 5" leest als achterstand, en dat is dit niet. */}
         {optioneel && progress?.total > 0 && progress.done === 0 && (
-          <span className="hidden shrink-0 text-xs font-bold text-[var(--helix-purple)] sm:block">
+          <span className="lo-onderregel hidden shrink-0 font-bold sm:block">
             {taal.tekst('plus.kort')}
           </span>
         )}
 
         {progress?.total > 0 && !(optioneel && progress.done === 0) && (
-          <div className="hidden flex-col items-end sm:flex">
-            <span className="mb-1 text-xs font-bold text-[var(--helix-muted)]">
-              {progress.done} / {progress.total}
-            </span>
-            <span className="helix-progress-track block h-2 w-20">
-              <span
-                className={
-                  progress.isCompleted
-                    ? 'block h-full rounded-full bg-[var(--helix-success)] transition-all duration-500'
-                    : 'helix-progress-fill block'
-                }
-                style={{ width: `${progress.percentage}%` }}
-              />
-            </span>
-          </div>
+          <span className="lo-onderregel hidden shrink-0 sm:block">
+            {progress.done} / {progress.total}
+          </span>
         )}
 
         {onStart && (
-          <button
-            type="button"
-            onClick={onStart}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--helix-navy)] transition-colors hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] focus:outline-none focus-visible:shadow-[var(--helix-focus)]"
-          >
-            {startLabel}
-            <ArrowRight size={14} />
-          </button>
+          <StartKnop onClick={onStart}>{startLabel}</StartKnop>
         )}
       </div>
 
       {expanded && (
-        <div id={panelId} className="border-t border-[var(--helix-border)] px-4 pb-4 pt-4 sm:px-5">
+        <div id={panelId} className="lo-paragrafen">
           {children}
         </div>
       )}
@@ -411,17 +368,13 @@ function OutlineRow({
 }
 
 /**
- * Het merkteken van een vrijwillige plusparagraaf. Bewust in de accentkleur van
- * HELIX en niet in grijs of oranje: dit is een aanbod, geen waarschuwing.
+ * Het merkteken van een vrijwillige plusparagraaf. Bewust een label in de
+ * accentkleur en niet in grijs of oranje: dit is een aanbod, geen waarschuwing.
  */
 function PlusLabel({ taal = nederlandseTaalhulp }) {
   return (
-    <span
-      title={taal.tekst('plus.uitleg')}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
-    >
-      <Star size={11} />
-      {taal.tekst('plus.label')}
+    <span title={taal.tekst('plus.uitleg')} className="shrink-0">
+      <Label kleur="blauw" icoon={Star}>{taal.tekst('plus.label')}</Label>
     </span>
   );
 }
@@ -432,87 +385,67 @@ function ParagraphPanel({ row, onStart, onCopyLink, taal = nederlandseTaalhulp }
   const leerdoelen = vertaald?.leerdoelen?.length ? vertaald.leerdoelen : row.learningGoals;
 
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       {row.optioneel && (
-        <div className="mb-3 rounded-[var(--helix-radius-md)] border border-[rgba(122,60,255,0.3)] bg-[var(--helix-soft-lavender)]/70 p-4">
-          <p className="flex items-center gap-2 font-display text-sm font-extrabold text-[var(--helix-purple)]">
-            <Star size={15} />
-            {tekst('plus.label')}
-          </p>
-          <p className="mt-1.5 text-sm font-semibold leading-6 text-[var(--helix-navy)]">
-            {tekst('plus.uitleg')}
-          </p>
-        </div>
+        <p className="lo-melding lo-melding--info">
+          <Star size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
+          <span>
+            <strong>{tekst('plus.label')}</strong> {tekst('plus.uitleg')}
+          </span>
+        </p>
       )}
 
       {leerdoelen.length > 0 && (
-        <div className="rounded-[var(--helix-radius-md)] border border-[rgba(122,60,255,0.18)] bg-[var(--helix-soft-lavender)]/60 p-4">
-          <p className="helix-eyebrow flex items-center gap-2">
-            <Target size={14} />
-            {tekst('intro.watJeGaatLeren')}
-          </p>
-          <ul className="mt-2 space-y-1.5">
-            {leerdoelen.map((goal, index) => (
-              <li key={`${row.id}-doel-${index}`} className="flex items-start gap-2.5">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--helix-purple)]" />
-                <span className="text-sm font-semibold leading-6 text-[var(--helix-navy)]">{goal}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="lo-melding lo-melding--info">
+          <div className="min-w-0">
+            <p className="lo-eyebrow flex items-center gap-2">
+              <Target size={14} aria-hidden="true" />
+              {tekst('intro.watJeGaatLeren')}
+            </p>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              {leerdoelen.map((goal, index) => (
+                <li key={`${row.id}-doel-${index}`}>{goal}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
       {(vertaald?.beschrijving || row.description) && (
-        <p className="mt-3 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+        <p className="lo-kaart-uitleg m-0">
           {vertaald?.beschrijving || row.description}
         </p>
       )}
 
       {row.onderdelen.length > 0 ? (
-        <>
-          <p className="helix-eyebrow mt-4">{tekst('rubriek.onderdelen')}</p>
-          <ul className="mt-2 space-y-1.5">
+        <div>
+          <p className="lo-eyebrow">{tekst('rubriek.onderdelen')}</p>
+          <ul className="lo-paragrafen mt-1 p-0">
             {row.onderdelen.map((onderdeel) => (onderdeel.vergrendeld ? (
-              <li
-                key={onderdeel.id}
-                className="flex items-center gap-3 rounded-[var(--helix-radius-md)] border-[2px] border-dashed border-[#BDB3A0] bg-[#FFFCF6] px-3 py-2"
-              >
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]">
-                  <Lock size={14} />
+              <li key={onderdeel.id} className="lo-paragraafrij">
+                <span className="flex w-5 shrink-0 justify-center text-[var(--lo-grijs)]">
+                  <Lock size={16} aria-hidden="true" />
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold text-[var(--helix-navy)] opacity-70">{onderdeel.title}</span>
-                  <span className="block text-xs font-semibold text-[var(--helix-muted)]">{onderdeel.slotTekst}</span>
+                <span className="lo-rij-tekst">
+                  <span className="lo-rij-titel">{onderdeel.title}</span>
+                  <span className="lo-onderregel">{onderdeel.slotTekst}</span>
                 </span>
+                <StartKnop disabled icoon={null}>{tekst('knop.start')}</StartKnop>
               </li>
             ) : (
-              <li
-                key={onderdeel.id}
-                className="flex items-center gap-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white/80 px-3 py-2"
-              >
-                <span
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
-                    onderdeel.isDone
-                      ? 'bg-[rgba(34,197,94,0.14)] text-[#237A4D]'
-                      : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
-                  }`}
-                >
-                  {onderdeel.isDone ? <CheckCircle2 size={15} /> : onderdeel.number}
+              <li key={onderdeel.id} className="lo-paragraafrij">
+                <span className="flex w-5 shrink-0 justify-center text-[13px] font-extrabold text-[var(--lo-grijs)]">
+                  {onderdeel.isDone
+                    ? <CheckCircle2 size={16} aria-hidden="true" className="text-[var(--lo-groen)]" />
+                    : onderdeel.number}
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold text-[var(--helix-navy)]">{onderdeel.title}</span>
-                  <span className="text-[11px] font-black uppercase tracking-wide text-[var(--helix-muted)]">
-                    {onderdeel.typeLabel}
-                  </span>
+                <span className="lo-rij-tekst">
+                  <span className="lo-rij-titel">{onderdeel.title}</span>
+                  <span className="lo-onderregel">{onderdeel.typeLabel}</span>
                 </span>
-                <button
-                  type="button"
-                  onClick={() => onStart(row.id, onderdeel.id)}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--helix-border)] bg-white px-3 py-1.5 text-xs font-extrabold text-[var(--helix-navy)] transition-colors hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] focus:outline-none focus-visible:shadow-[var(--helix-focus)]"
-                >
+                <StartKnop onClick={() => onStart(row.id, onderdeel.id)} icoon={null}>
                   {onderdeel.isDone ? tekst('knop.opnieuw') : tekst('knop.start')}
-                  <ArrowRight size={13} />
-                </button>
+                </StartKnop>
                 <RowOptionsMenu
                   items={buildOnderdeelMenuItems({
                     paragraafId: row.id,
@@ -526,9 +459,9 @@ function ParagraphPanel({ row, onStart, onCopyLink, taal = nederlandseTaalhulp }
               </li>
             )))}
           </ul>
-        </>
+        </div>
       ) : (
-        <p className="mt-4 text-sm font-semibold text-[var(--helix-muted)]">
+        <p className="lo-kaart-uitleg m-0">
           {tekst('paragraaf.geenOnderdelen')}
         </p>
       )}
@@ -559,38 +492,26 @@ function AssessmentRow({ rowId, label, icon, rows, expanded, onToggle, onStart, 
       onToggle={() => onToggle(rowId)}
       taal={taal}
     >
-      <ul className="space-y-1.5">
+      <ul className="lo-paragrafen p-0">
         {rows.map((row) => (
-          <li
-            key={row.id}
-            className="flex items-center gap-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white/80 px-3 py-2"
-          >
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                row.isDone
-                  ? 'bg-[rgba(34,197,94,0.14)] text-[#237A4D]'
-                  : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]'
-              }`}
-            >
-              {row.isDone ? <CheckCircle2 size={15} /> : <ClipboardCheck size={14} />}
+          <li key={row.id} className="lo-paragraafrij">
+            <span className="flex w-5 shrink-0 justify-center text-[var(--lo-grijs)]">
+              {row.isDone
+                ? <CheckCircle2 size={16} aria-hidden="true" className="text-[var(--lo-groen)]" />
+                : <ClipboardCheck size={16} aria-hidden="true" />}
             </span>
-            <span className="min-w-0 flex-1">
+            <span className="lo-rij-tekst">
               <span className="flex min-w-0 items-center gap-2">
-                <span className="truncate text-sm font-bold text-[var(--helix-navy)]">{row.title}</span>
+                <span className="lo-rij-titel">{row.title}</span>
                 {row.optioneel && <PlusLabel taal={taal} />}
               </span>
-              <span className="block truncate text-[11px] font-semibold text-[var(--helix-muted)]">
+              <span className="lo-onderregel">
                 {[row.paragraafNumber, row.paragraafTitle].filter(Boolean).join(' · ')}
               </span>
             </span>
-            <button
-              type="button"
-              onClick={() => onStart(row.paragraafId, row.id)}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--helix-border)] bg-white px-3 py-1.5 text-xs font-extrabold text-[var(--helix-navy)] transition-colors hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] focus:outline-none focus-visible:shadow-[var(--helix-focus)]"
-            >
+            <StartKnop onClick={() => onStart(row.paragraafId, row.id)} icoon={null}>
               {row.isDone ? tekst('knop.opnieuw') : tekst('knop.start')}
-              <ArrowRight size={13} />
-            </button>
+            </StartKnop>
             <RowOptionsMenu
               items={buildOnderdeelMenuItems({
                 paragraafId: row.paragraafId,
@@ -664,19 +585,15 @@ function RowOptionsMenu({ items = [], label = 'Meer opties' }) {
         aria-label={label}
         title={label}
         onClick={() => setOpen((current) => !current)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:shadow-[var(--helix-focus)] ${
-          open
-            ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-            : 'border-transparent text-[var(--helix-muted)] hover:border-[var(--helix-border)] hover:bg-white'
-        }`}
+        className={`lo-knop-tweede h-9 w-9 justify-center p-0 ${open ? 'border-[var(--lo-blauw)]' : ''}`}
       >
-        <MoreVertical size={16} />
+        <MoreVertical size={16} aria-hidden="true" />
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-30 mt-1 w-56 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white p-1 shadow-[var(--helix-shadow-soft)]"
+          className="lo-kaart absolute right-0 top-full z-30 mt-1 w-56 gap-0 p-1.5"
         >
           {items.map((item) => {
             const ItemIcon = item.icon;
@@ -689,9 +606,9 @@ function RowOptionsMenu({ items = [], label = 'Meer opties' }) {
                   setOpen(false);
                   item.onSelect();
                 }}
-                className="flex w-full items-center gap-2.5 rounded-[var(--helix-radius-sm)] px-3 py-2 text-left text-sm font-bold text-[var(--helix-navy)] transition-colors hover:bg-[var(--helix-surface-soft)]"
+                className="lo-knop-tweede w-full justify-start border-transparent px-3 py-2 text-left hover:bg-[var(--lo-papier-2)]"
               >
-                {ItemIcon && <ItemIcon size={15} className="text-[var(--helix-purple)]" />}
+                {ItemIcon && <ItemIcon size={15} aria-hidden="true" className="text-[var(--lo-blauw-inkt)]" />}
                 {item.label}
               </button>
             );
