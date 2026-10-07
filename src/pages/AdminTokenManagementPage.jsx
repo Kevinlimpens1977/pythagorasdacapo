@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Coins, ImagePlus, Loader2, PlusCircle, Save, Search, ShoppingBag, SlidersHorizontal, Sparkles, UserRoundCog } from 'lucide-react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { HelixLaden } from '../components/merk/HelixLogo';
+import { Label, PaginaKop } from '../components/leeromgeving';
 import {
   adjustStudentTokens,
   createOrUpdateTokenShopItem,
@@ -267,61 +269,59 @@ export default function AdminTokenManagementPage() {
   };
 
   return (
-    <div className="helix-page min-h-full">
-      <div className="helix-container py-10 md:py-12">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="helix-eyebrow">Dashboard</p>
-            <h1 className="helix-heading-xl mt-2">Tokenbeheer</h1>
-            <p className="helix-muted mt-3 max-w-2xl text-lg leading-8">
-              Beheer saldo's, aankopen en de catalogus voor de tokenshop.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Stat label="Tokens in omloop" value={totalBalance} icon={Coins} />
-            <Stat label="Shopitems" value={items.length} icon={ShoppingBag} />
-            <Stat label="Aankopen" value={purchases.length} icon={UserRoundCog} />
-          </div>
-        </div>
+    <div className="helix-page beheer-stijl lo-tekst min-h-full">
+      <div className="helix-container flex flex-col gap-8 py-10 md:py-12">
+        <PaginaKop
+          eyebrow="Dashboard"
+          titel="Tokenbeheer"
+          uitleg="Beheer saldo's, aankopen en de catalogus voor de tokenshop."
+          acties={(
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Stat label="Tokens in omloop" value={totalBalance} icon={Coins} />
+              <Stat label="Shopitems" value={items.length} icon={ShoppingBag} />
+              <Stat label="Aankopen" value={purchases.length} icon={UserRoundCog} />
+            </div>
+          )}
+        />
 
-        {message ? <div className="mt-5 rounded-[var(--helix-radius-md)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">{message}</div> : null}
-        {error ? <div className="mt-5 rounded-[var(--helix-radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{error}</div> : null}
+        {message ? <div className="lo-melding lo-melding--goed">{message}</div> : null}
+        {error ? <div className="lo-melding lo-melding--fout">{error}</div> : null}
 
-        <section className="mt-8 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white px-5 py-4 shadow-[var(--helix-shadow-card)]">
+        <section className="lo-kaart">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="font-black text-[var(--helix-navy)]">Standaardcatalogus</h2>
-              <p className="helix-muted mt-1 text-sm">Vul de shop met de complete standaardcatalogus: avatars, frames, pins, banners, titels en victory-effects. Avatar 1 is de vaste starteravatar.</p>
+              <h2 className="lo-kaart-titel">Standaardcatalogus</h2>
+              <p className="lo-kaart-uitleg">Vul de shop met de complete standaardcatalogus: avatars, frames, pins, banners, titels en victory-effects. Avatar 1 is de vaste starteravatar.</p>
             </div>
-            <button type="button" onClick={handleSeedCatalog} disabled={seedingCatalog} className="btn-primary min-h-11 text-sm disabled:opacity-45">
+            <button type="button" onClick={handleSeedCatalog} disabled={seedingCatalog} className="lo-knop">
               {seedingCatalog ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
               Standaardcatalogus aanvullen
             </button>
           </div>
         </section>
 
-        <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-          <div className="helix-surface">
-            <div className="border-b border-[var(--helix-border)] p-5">
-              <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2">
-                <Search size={18} className="text-slate-400" />
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+          <div className="lo-kaart gap-0 p-0">
+            <div className="border-b border-[var(--lo-lijn)] p-5">
+              <div className="flex items-center gap-3 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-papier)] px-3 py-2">
+                <Search size={18} className="text-[var(--lo-grijs)]" />
                 <input
                   value={queryText}
                   onChange={(event) => setQueryText(event.target.value)}
-                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--helix-navy)] outline-none placeholder:text-slate-400"
+                  className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--lo-inkt)] outline-none placeholder:text-[var(--lo-grijs)]"
                   placeholder="Zoek leerling, klas of e-mail..."
                 />
               </div>
             </div>
             {loading ? (
-              <div className="p-6 text-sm font-bold text-[var(--helix-muted)]">Tokengegevens laden...</div>
+              <HelixLaden tekst="Tokengegevens laden..." className="min-h-0 py-10" />
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[var(--lo-lijn)]">
                 {filteredStudents.length === 0 ? (
                   <div className="p-8 text-center">
-                    <Coins size={34} className="mx-auto text-[var(--helix-purple)]/35" />
-                    <p className="mt-3 font-black text-[var(--helix-navy)]">Geen leerlingen gevonden</p>
-                    <p className="helix-muted mt-1 text-sm">Pas de zoekterm aan of voeg eerst leerlingen toe.</p>
+                    <Coins size={34} className="mx-auto text-[var(--lo-grijs)]" />
+                    <p className="mt-3 font-extrabold text-[var(--lo-inkt)]">Geen leerlingen gevonden</p>
+                    <p className="mt-1 text-sm text-[var(--lo-grijs)]">Pas de zoekterm aan of voeg eerst leerlingen toe.</p>
                   </div>
                 ) : filteredStudents.map((student) => {
                   const account = accounts[student.uid] || {};
@@ -330,21 +330,21 @@ export default function AdminTokenManagementPage() {
                       key={student.uid}
                       type="button"
                       onClick={() => setSelectedStudent(student)}
-                      className={`grid w-full gap-3 px-5 py-4 text-left transition hover:bg-[var(--helix-surface-soft)] md:grid-cols-[1.4fr_0.8fr_0.7fr_auto] md:items-center ${selectedStudent?.uid === student.uid ? 'bg-amber-50' : ''}`}
+                      className={`grid w-full gap-3 px-5 py-4 text-left transition hover:bg-[var(--lo-papier)] md:grid-cols-[1.4fr_0.8fr_0.7fr_auto] md:items-center ${selectedStudent?.uid === student.uid ? 'bg-[var(--lo-geel-zacht)]' : ''}`}
                     >
                       <div>
-                        <p className="font-black text-[var(--helix-navy)]">{student.displayName || 'Naam ontbreekt'}</p>
-                        <p className="helix-muted text-sm">{student.email || 'Geen e-mail'} · {student.klasName}</p>
+                        <p className="font-extrabold text-[var(--lo-inkt)]">{student.displayName || 'Naam ontbreekt'}</p>
+                        <p className="text-sm text-[var(--lo-grijs)]">{student.email || 'Geen e-mail'} · {student.klasName}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">Saldo</p>
-                        <p className="mt-1 text-lg font-black text-amber-700">{Number(account.balance) || 0}</p>
+                        <p className="lo-onderregel font-bold">Saldo</p>
+                        <p className="mt-1 text-lg font-extrabold tabular-nums text-[var(--lo-oranje-inkt)]">{Number(account.balance) || 0}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-wide text-slate-400">Gekocht</p>
-                        <p className="mt-1 text-sm font-black text-[var(--helix-navy)]">{purchaseCountByStudent[student.uid] || 0}</p>
+                        <p className="lo-onderregel font-bold">Gekocht</p>
+                        <p className="mt-1 text-sm font-extrabold tabular-nums text-[var(--lo-inkt)]">{purchaseCountByStudent[student.uid] || 0}</p>
                       </div>
-                      <span className="helix-badge">Beheer</span>
+                      <Label kleur="blauw">Beheer</Label>
                     </button>
                   );
                 })}
@@ -353,15 +353,15 @@ export default function AdminTokenManagementPage() {
           </div>
 
           <div className="space-y-6">
-            <form onSubmit={handleAdjust} className="helix-surface p-5">
+            <form onSubmit={handleAdjust} className="lo-kaart">
               <div className="flex items-center gap-2">
-                <SlidersHorizontal size={18} className="text-[var(--helix-purple)]" />
-                <h2 className="font-black text-[var(--helix-navy)]">Saldo corrigeren</h2>
+                <SlidersHorizontal size={18} className="text-[var(--lo-blauw-inkt)]" />
+                <h2 className="lo-kaart-titel">Saldo corrigeren</h2>
               </div>
-              <p className="helix-muted mt-2 text-sm">
+              <p className="text-sm text-[var(--lo-grijs)]">
                 {selectedStudent ? selectedStudent.displayName || selectedStudent.email : 'Selecteer eerst een leerling.'}
               </p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
+              <div className="grid gap-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
                 <input
                   type="number"
                   value={adjustAmount}
@@ -377,23 +377,23 @@ export default function AdminTokenManagementPage() {
                   required
                 />
               </div>
-              <button type="submit" disabled={!selectedStudent || adjusting} className="btn-primary mt-4 min-h-11 w-full text-sm disabled:opacity-45">
+              <button type="submit" disabled={!selectedStudent || adjusting} className="lo-knop w-full justify-center">
                 {adjusting ? <Loader2 size={18} className="animate-spin" /> : <PlusCircle size={18} />}
                 Correctie opslaan
               </button>
             </form>
 
-            <form onSubmit={handleSaveItem} className="helix-surface p-5">
+            <form onSubmit={handleSaveItem} className="lo-kaart">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <ShoppingBag size={18} className="text-[var(--helix-purple)]" />
-                  <h2 className="font-black text-[var(--helix-navy)]">Shopitem</h2>
+                  <ShoppingBag size={18} className="text-[var(--lo-blauw-inkt)]" />
+                  <h2 className="lo-kaart-titel">Shopitem</h2>
                 </div>
-                <button type="button" onClick={() => { setItemDraft(emptyItem); setImageFile(null); }} className="text-xs font-black text-[var(--helix-purple)]">
+                <button type="button" onClick={() => { setItemDraft(emptyItem); setImageFile(null); }} className="lo-knop-tweede lo-knop--klein">
                   Nieuw item
                 </button>
               </div>
-              <div className="mt-4 grid gap-3">
+              <div className="grid gap-3">
                 <input value={itemDraft.title} onChange={(event) => setItemDraft({ ...itemDraft, title: event.target.value })} className="input-standard" placeholder="Titel" required />
                 <textarea value={itemDraft.description} onChange={(event) => setItemDraft({ ...itemDraft, description: event.target.value })} className="input-standard min-h-24" placeholder="Beschrijving" />
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -413,13 +413,13 @@ export default function AdminTokenManagementPage() {
                   <input type="number" value={itemDraft.sortOrder} onChange={(event) => setItemDraft({ ...itemDraft, sortOrder: event.target.value })} className="input-standard" placeholder="Sorteervolgorde" />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex items-center justify-between gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-bold text-[var(--helix-navy)]">
+                  <label className="flex items-center justify-between gap-3 rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] px-3 py-2 text-sm font-bold text-[var(--lo-inkt)]">
                     <span>Accentkleur</span>
                     <input
                       type="color"
                       value={itemDraft.accent}
                       onChange={(event) => setItemDraft({ ...itemDraft, accent: event.target.value })}
-                      className="h-9 w-14 cursor-pointer rounded border border-[var(--helix-border)] bg-white"
+                      className="h-9 w-14 cursor-pointer rounded border border-[var(--lo-lijn)] bg-[var(--lo-kaart)]"
                       title="Kleur van de rand, pin of gloed zoals de leerling die ziet"
                     />
                   </label>
@@ -431,11 +431,11 @@ export default function AdminTokenManagementPage() {
                 </div>
                 {itemDraft.itemType === 'privilege' ? (
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="text-xs font-bold text-[var(--helix-muted)]">
+                    <label className="lo-onderregel font-bold">
                       Voorraad per klas per week (0 = onbeperkt)
                       <input type="number" min="0" value={itemDraft.voorraadPerWeek} onChange={(event) => setItemDraft({ ...itemDraft, voorraadPerWeek: event.target.value })} className="input-standard mt-1" />
                     </label>
-                    <label className="text-xs font-bold text-[var(--helix-muted)]">
+                    <label className="lo-onderregel font-bold">
                       Hooguit per leerling per schooljaar (0 = onbeperkt)
                       <input type="number" min="0" value={itemDraft.maxPerSchooljaar} onChange={(event) => setItemDraft({ ...itemDraft, maxPerSchooljaar: event.target.value })} className="input-standard mt-1" />
                     </label>
@@ -458,41 +458,41 @@ export default function AdminTokenManagementPage() {
                   </select>
                 ) : null}
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-navy)]">
-                    <input type="checkbox" checked={itemDraft.enabled} onChange={(event) => setItemDraft({ ...itemDraft, enabled: event.target.checked })} className="h-4 w-4 accent-[var(--helix-purple)]" />
+                  <label className="flex items-center gap-3 rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] px-3 py-3 text-sm font-bold text-[var(--lo-inkt)]">
+                    <input type="checkbox" checked={itemDraft.enabled} onChange={(event) => setItemDraft({ ...itemDraft, enabled: event.target.checked })} className="h-4 w-4 accent-[var(--lo-blauw)]" />
                     Zichtbaar in tokenshop
                   </label>
-                  <label className="flex items-center gap-3 rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-navy)]">
-                    <input type="checkbox" checked={itemDraft.repeatable} onChange={(event) => setItemDraft({ ...itemDraft, repeatable: event.target.checked })} className="h-4 w-4 accent-[var(--helix-purple)]" />
+                  <label className="flex items-center gap-3 rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] px-3 py-3 text-sm font-bold text-[var(--lo-inkt)]">
+                    <input type="checkbox" checked={itemDraft.repeatable} onChange={(event) => setItemDraft({ ...itemDraft, repeatable: event.target.checked })} className="h-4 w-4 accent-[var(--lo-blauw)]" />
                     Herhaalbaar kopen
                   </label>
                 </div>
-                <label className="flex cursor-pointer items-center gap-3 rounded-[var(--helix-radius-md)] border border-dashed border-[var(--helix-border)] bg-white px-3 py-4 text-sm font-bold text-[var(--helix-muted)] hover:border-[var(--helix-purple)]">
+                <label className="flex cursor-pointer items-center gap-3 rounded-[var(--lo-hoek-m)] border border-dashed border-[var(--lo-lijn)] bg-[var(--lo-papier)] px-3 py-4 text-sm font-bold text-[var(--lo-grijs)] hover:border-[var(--lo-blauw)]">
                   <ImagePlus size={18} />
                   <span>{imageFile ? imageFile.name : itemDraft.imageUrl ? 'Afbeelding vervangen' : 'Afbeelding uploaden'}</span>
                   <input type="file" accept="image/*" className="hidden" onChange={(event) => setImageFile(event.target.files?.[0] || null)} />
                 </label>
               </div>
-              <button type="submit" disabled={savingItem} className="btn-primary mt-4 min-h-11 w-full text-sm disabled:opacity-45">
+              <button type="submit" disabled={savingItem} className="lo-knop w-full justify-center">
                 {savingItem ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                 Shopitem opslaan
               </button>
             </form>
 
-            <section className="helix-surface p-5">
+            <section className="lo-kaart">
               <div className="flex items-center gap-2">
-                <ShoppingBag size={18} className="text-[var(--helix-purple)]" />
-                <h2 className="font-black text-[var(--helix-navy)]">Aankopen leerling</h2>
+                <ShoppingBag size={18} className="text-[var(--lo-blauw-inkt)]" />
+                <h2 className="lo-kaart-titel">Aankopen leerling</h2>
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="space-y-3">
                 {!selectedStudent ? (
-                  <p className="helix-muted text-sm">Selecteer een leerling om aankopen te zien.</p>
+                  <p className="text-sm text-[var(--lo-grijs)]">Selecteer een leerling om aankopen te zien.</p>
                 ) : selectedPurchases.length === 0 ? (
-                  <p className="helix-muted text-sm">Nog niets gekocht.</p>
+                  <p className="text-sm text-[var(--lo-grijs)]">Nog niets gekocht.</p>
                 ) : selectedPurchases.map((purchase) => (
-                  <div key={purchase.id} className="rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] px-3 py-3">
-                    <p className="font-black text-[var(--helix-navy)]">{purchase.itemSnapshot?.title || purchase.item?.title || purchase.itemId || 'Shopitem'}</p>
-                    <p className="mt-1 text-sm font-bold text-amber-700">{Number(purchase.price) || 0} tokens</p>
+                  <div key={purchase.id} className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] px-3 py-3">
+                    <p className="font-extrabold text-[var(--lo-inkt)]">{purchase.itemSnapshot?.title || purchase.item?.title || purchase.itemId || 'Shopitem'}</p>
+                    <p className="mt-1 text-sm font-bold tabular-nums text-[var(--lo-oranje-inkt)]">{Number(purchase.price) || 0} tokens</p>
                   </div>
                 ))}
               </div>
@@ -500,24 +500,24 @@ export default function AdminTokenManagementPage() {
           </div>
         </section>
 
-        <section className="mt-8 helix-surface p-5">
-          <h2 className="font-black text-[var(--helix-navy)]">Catalogus</h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <section className="lo-kaart">
+          <h2 className="lo-kaart-titel">Catalogus</h2>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {items.map((item) => (
-              <button key={item.id} type="button" onClick={() => startEditItem(item)} className="rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white p-3 text-left hover:border-[var(--helix-purple)]">
+              <button key={item.id} type="button" onClick={() => startEditItem(item)} className="rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-3 text-left hover:border-[var(--lo-blauw)]">
                 <div className="flex gap-3">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--helix-radius-md)] bg-[var(--helix-surface-soft)] text-[var(--helix-purple)]/40">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] text-[var(--lo-grijs)]">
                     {item.imageUrl ? <img src={item.imageUrl} alt="" className="h-full w-full object-cover" /> : <ShoppingBag size={28} />}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate font-black text-[var(--helix-navy)]">{item.title || 'Shopitem'}</p>
-                    <p className="mt-1 text-sm font-black text-amber-700">{Number(item.price) || 0} tokens</p>
-                    <p className="mt-1 text-xs font-black text-[var(--helix-purple)]">
+                    <p className="truncate font-extrabold text-[var(--lo-inkt)]">{item.title || 'Shopitem'}</p>
+                    <p className="mt-1 text-sm font-extrabold tabular-nums text-[var(--lo-oranje-inkt)]">{Number(item.price) || 0} tokens</p>
+                    <p className="mt-1 text-xs font-extrabold text-[var(--lo-blauw-inkt)]">
                       {getRewardTypeLabel(item.itemType)} · {getRewardRarityLabel(item.rarity)}
                     </p>
-                    <p className={`mt-1 text-xs font-black ${item.enabled === false ? 'text-slate-400' : 'text-emerald-700'}`}>
+                    <Label kleur={item.enabled === false ? 'oranje' : 'groen'} className="mt-1">
                       {item.enabled === false ? 'Verborgen' : 'Actief'}
-                    </p>
+                    </Label>
                   </div>
                 </div>
               </button>
@@ -530,11 +530,11 @@ export default function AdminTokenManagementPage() {
 }
 
 const Stat = ({ label, value, icon: Icon }) => (
-  <div className="rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white/90 px-4 py-3 shadow-[var(--helix-shadow-card)]">
-    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[var(--helix-muted)]">
+  <div className="lo-kaart gap-1 px-4 py-3">
+    <div className="lo-onderregel flex items-center gap-2 font-bold">
       <Icon size={15} />
       {label}
     </div>
-    <p className="mt-1 text-2xl font-black text-[var(--helix-navy)]">{value}</p>
+    <p className="text-2xl font-extrabold tabular-nums text-[var(--lo-inkt)]">{value}</p>
   </div>
 );
