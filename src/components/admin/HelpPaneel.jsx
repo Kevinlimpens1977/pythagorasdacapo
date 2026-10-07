@@ -34,9 +34,10 @@ export default function HelpPaneel() {
         onClick={() => setOpen(true)}
         className="lo-knop-tweede lo-knop--klein"
         aria-haspopup="dialog"
+        aria-label="Help"
       >
-        <CircleHelp size={16} />
-        <span className="hidden lg:inline">Help</span>
+        <CircleHelp size={16} aria-hidden="true" />
+        <span className="sr-only">Help</span>
       </button>
 
       {open && (

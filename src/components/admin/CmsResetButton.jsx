@@ -58,9 +58,10 @@ export default function CmsResetButton() {
         onClick={handleOpen}
         className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar hidden xl:inline-flex"
         title="Maakt de lesstof leeg zodat je opnieuw kunt opbouwen"
+        aria-label="Reset CMS"
       >
-        <DatabaseZap size={16} />
-        Reset CMS
+        <DatabaseZap size={16} aria-hidden="true" />
+        <span className="sr-only">Reset CMS</span>
       </button>
 
       {isOpen && (

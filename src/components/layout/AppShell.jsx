@@ -11,7 +11,7 @@ import { StudentBugReportContext } from '../studentBugReports/StudentBugReportCo
 import TokenBalancePill from '../tokens/TokenBalancePill';
 import NiveauPill from '../tokens/NiveauPill';
 import WeekdoelPill from '../tokens/WeekdoelPill';
-import { BarChart3, BellRing, BookOpen, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
+import { BarChart3, BellRing, BookOpen, Gamepad2, LogOut, Presentation, RotateCcw, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import { isStudyRoutePath } from '../../lib/studyRouteState';
 import { neemTestsessieDoel } from '../../lib/leeromgeving';
@@ -148,7 +148,7 @@ export default function AppShell() {
                     aria-label={workspace.label}
                   >
                     <Icon size={18} />
-                    <span className="hidden lg:inline">{workspace.label}</span>
+                    <span className="hidden xl:inline">{workspace.label}</span>
                     {workspace.id === 'instellingen' && openBugReportCount > 0 && (
                       <span
                         className="admin-nav-alert"
@@ -195,8 +195,10 @@ export default function AppShell() {
               onClick={handleLogout}
               className="lo-knop-tweede lo-knop--klein hidden text-[var(--lo-oranje-inkt)] lg:inline-flex"
               title="Reset tijdelijke testmodus"
+              aria-label="Reset testmodus"
             >
-              Reset testmodus
+              <RotateCcw size={16} aria-hidden="true" />
+              <span className="sr-only">Reset testmodus</span>
             </button>
           )}
 
