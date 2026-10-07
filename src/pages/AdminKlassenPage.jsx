@@ -534,9 +534,10 @@ export default function AdminKlassenPage() {
                                                     onChange={() => handleToggleHoofdstuk(selectedKlas.id, hoofdstukId)}
                                                     className="h-4 w-4 rounded accent-[var(--lo-paars)]"
                                                   />
-                                                  <HBlok nummer={hoofdstuk?.number} />
+                                                  {/* Het nummer staat in het H-blokje; zonder nummer geen blokje. */}
+                                                  {hoofdstuk?.number ? <HBlok nummer={hoofdstuk.number} /> : null}
                                                   <span className="text-sm font-bold text-[var(--lo-inkt)]">
-                                                    {hoofdstuk?.number && `${hoofdstuk.number}. `}{hoofdstuk?.title}
+                                                    {hoofdstuk?.title}
                                                   </span>
                                                   {someEnabled && !allEnabled && (
                                                     <Label kleur="oranje">Deels</Label>
