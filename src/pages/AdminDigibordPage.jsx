@@ -9,6 +9,8 @@ import {
   Layers
 } from 'lucide-react';
 import DigibordViewer from '../components/digibord/DigibordViewer';
+import { HelixLaden } from '../components/merk/HelixLogo';
+import { Kaart, PaginaKop } from '../components/leeromgeving';
 import {
   getDigibordCardMeta,
   getDigibordContextTitle,
@@ -34,27 +36,27 @@ const DigibordCard = ({ type, item, childCount = 0, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="group helix-action-card relative overflow-hidden p-5 text-left"
+      className="group lo-kaart relative w-full cursor-pointer overflow-hidden border-0 text-left focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[color:var(--lo-blauw)]"
     >
       <div className="flex min-h-[9rem] flex-col justify-between">
         <div>
           <div className="flex items-start justify-between gap-4">
             <div
-              className="flex h-11 w-11 items-center justify-center rounded-lg"
+              className="flex h-11 w-11 items-center justify-center rounded-[var(--lo-hoek-m)]"
               style={{ backgroundColor: style.bg, color: style.text }}
             >
-              <Icon size={22} />
+              <Icon size={22} aria-hidden="true" />
             </div>
-            <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-slate-500">
+            <span className="lo-eyebrow">
               {meta.eyebrow}
             </span>
           </div>
-          <h3 className="mt-4 text-xl font-black leading-tight text-slate-950">{label}</h3>
-          <p className="mt-2 text-sm font-medium text-slate-500">{meta.subtitle}</p>
+          <h3 className="mt-4 text-xl font-extrabold leading-tight text-[var(--lo-inkt)]">{label}</h3>
+          <p className="mt-2 text-sm font-medium text-[var(--lo-grijs)]">{meta.subtitle}</p>
         </div>
         <div className="mt-5 flex items-center justify-between">
-          <span className="text-xs font-black uppercase tracking-[0.14em] text-blue-600">{meta.action}</span>
-          <ChevronRight size={18} className="text-slate-300 transition-transform group-hover:translate-x-1 group-hover:text-blue-500" />
+          <span className="text-[13px] font-extrabold text-[var(--lo-blauw-inkt)]">{meta.action}</span>
+          <ChevronRight size={18} aria-hidden="true" className="text-[var(--lo-lijn)] transition-transform group-hover:translate-x-1 group-hover:text-[var(--lo-blauw)]" />
         </div>
       </div>
     </button>
@@ -315,65 +317,53 @@ export default function AdminDigibordPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50">
-      <div className="sticky top-0 z-40 border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-8 py-6">
-          <h1 className="mb-2 flex items-center gap-3 text-4xl font-black text-slate-900">
-            <Clapperboard size={38} className="text-violet-600" />
-            Digibord
-          </h1>
-          <p className="text-slate-600">Kies een lesfase om fullscreen te presenteren</p>
+    <div className="beheer-stijl helix-page lo-tekst min-h-screen w-full">
+      <div className="helix-container flex flex-col gap-6 py-10 md:py-12">
+        <PaginaKop
+          titel="Digibord"
+          uitleg="Kies een lesfase om fullscreen te presenteren"
+        />
 
-          {breadcrumbs.length > 0 && (
-            <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-2">
-              <button
-                onClick={resetToHome}
-                className="whitespace-nowrap rounded px-3 py-1 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-              >
-                Home
-              </button>
-              {breadcrumbs.map((crumb, index) => (
-                <div key={`${crumb.type}-${crumb.id}`} className="flex items-center gap-2">
-                  <ChevronRight size={16} className="flex-shrink-0 text-slate-400" />
-                  <button
-                    onClick={() => handleBreadcrumbClick(index)}
-                    className="whitespace-nowrap rounded px-3 py-1 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-                  >
-                    {crumb.label}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+        {breadcrumbs.length > 0 && (
+          <div className="lo-knoppenbalk">
+            <button
+              onClick={resetToHome}
+              className="lo-knop-start"
+            >
+              Home
+            </button>
+            {breadcrumbs.map((crumb, index) => (
+              <div key={`${crumb.type}-${crumb.id}`} className="flex items-center gap-2">
+                <ChevronRight size={16} aria-hidden="true" className="flex-shrink-0 text-[var(--lo-grijs)]" />
+                <button
+                  onClick={() => handleBreadcrumbClick(index)}
+                  className="lo-knop-start"
+                >
+                  {crumb.label}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-      <div className="mx-auto max-w-7xl px-8 py-8">
         {!loading && (
-          <div className="mb-6">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Selectie</p>
-            <h2 className="mt-1 text-2xl font-black text-slate-950">{contextTitle}</h2>
+          <div>
+            <p className="lo-eyebrow">Selectie</p>
+            <h2 className="mt-1 text-2xl font-extrabold text-[var(--lo-inkt)]">{contextTitle}</h2>
           </div>
         )}
 
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="mb-4 inline-block rounded-full bg-slate-200 p-2 animate-pulse">
-                <ChevronRight size={32} className="text-slate-600" />
-              </div>
-              <p className="text-slate-600">Content laden...</p>
-            </div>
-          </div>
+          <HelixLaden tekst="Content laden..." className="min-h-0 py-10" />
         )}
 
         {!loading && !selectedVakId && (
           vakken.length === 0 ? (
-            <div className="rounded-lg border border-slate-200 bg-white p-12 text-center shadow-sm">
-              <AlertCircle size={48} className="mx-auto mb-3 text-slate-400" />
-              <p className="text-lg text-slate-600">Geen vakken beschikbaar in CMS</p>
-              <p className="mt-2 text-sm text-slate-500">Voeg vakken toe via Admin Hub, CMS Platform.</p>
-            </div>
+            <Kaart as="div" className="items-center p-12 text-center">
+              <AlertCircle size={48} aria-hidden="true" className="mx-auto text-[var(--lo-grijs)]" />
+              <p className="m-0 text-lg text-[var(--lo-grijs)]">Geen vakken beschikbaar in CMS</p>
+              <p className="m-0 text-sm text-[var(--lo-grijs)]">Voeg vakken toe via Admin Hub, CMS Platform.</p>
+            </Kaart>
           ) : (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
               {vakken.map((vak) => (
@@ -465,7 +455,7 @@ export default function AdminDigibordPage() {
 }
 
 const EmptyState = ({ message }) => (
-  <div className="rounded-lg border border-slate-200 bg-white p-12 text-center shadow-sm">
-    <p className="text-lg text-slate-600">{message}</p>
-  </div>
+  <Kaart as="div" className="items-center p-12 text-center">
+    <p className="m-0 text-lg text-[var(--lo-grijs)]">{message}</p>
+  </Kaart>
 );
