@@ -1227,7 +1227,10 @@ export default function StudentLessonPage() {
         {/* min-w-0: zonder dit krimpt de kolom niet onder de min-content van een
             brede tabel, en loopt de les op een telefoon buiten beeld. */}
         <section className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="flex shrink-0 items-center gap-3 border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-4 py-3 sm:px-6">
+          {/* backdrop-blur-xl blijft staan: het maakt deze balk het kader voor de
+              vaste niveau- en emote-momenten hieronder, zodat die binnen de balk
+              blijven en niet over de knoppen onderin vallen. */}
+          <div className="flex shrink-0 items-center gap-3 border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-4 py-3 backdrop-blur-xl sm:px-6">
             <button
               type="button"
               onClick={() => setShowStepDrawer(true)}
@@ -1237,7 +1240,7 @@ export default function StudentLessonPage() {
               Stappen
             </button>
 
-            <span className="lo-hblok hidden sm:inline-grid">
+            <span className="lo-hblok hidden sm:inline-grid" aria-hidden="true">
               {showParagraphEnd ? <ActiveStepIcon size={16} aria-hidden="true" /> : currentIndex + 1}
             </span>
 
@@ -1293,7 +1296,7 @@ export default function StudentLessonPage() {
               type="button"
               onClick={toggleFullscreen}
               title={isFullscreen ? 'Verlaat volledig scherm' : taalHulp.tekst('les.volledigScherm')}
-              className="lo-knop-tweede h-11 w-11 shrink-0 justify-center p-0"
+              className="lo-knop-tweede hidden h-11 w-11 shrink-0 justify-center p-0 sm:inline-flex"
             >
               {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
               <span className="sr-only">{isFullscreen ? 'Verlaat volledig scherm' : taalHulp.tekst('les.volledigScherm')}</span>
@@ -1305,7 +1308,7 @@ export default function StudentLessonPage() {
               leerling ziet waarom hij Nederlands leest en het opnieuw kan
               proberen. */}
           {vertalingMislukt && !showParagraphEnd && (
-            <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[var(--lo-lijn)] bg-[var(--lo-oranje-zacht)] px-4 py-2 text-xs font-bold text-[var(--lo-oranje-inkt)] sm:px-6">
+            <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[var(--lo-lijn)] bg-[var(--lo-oranje-zacht)] px-4 py-2 text-xs font-bold text-[var(--lo-inkt)] sm:px-6">
               <AlertTriangle size={14} aria-hidden="true" />
               <span>Het vertalen lukte even niet. Je ziet nu de Nederlandse tekst.</span>
               <button
@@ -1588,7 +1591,7 @@ function LessonBlockContent({
     <article className="study-block flex flex-col gap-6">
       <div className="min-w-0">
         {blokSlot?.vergrendeld ? (
-          // Een los onderdeel op slot: gestippeld, met de tekst van de docent.
+          // Een los onderdeel op slot: met een slotje en de tekst van de docent.
           <div className="lo-melding lo-melding--info gap-3 p-5">
             <Lock size={22} className="mt-0.5 shrink-0 text-[var(--lo-grijs)]" aria-hidden="true" />
             <div>
@@ -3888,7 +3891,7 @@ function AssessmentStepper({ block, items = [], origineelItems = [], records = {
           const kleur = status.current
             ? 'border-[var(--lo-inkt)] bg-[var(--lo-geel)] text-[var(--lo-inkt)]'
             : status.pendingReview
-              ? 'border-transparent bg-[var(--lo-oranje-zacht)] text-[var(--lo-oranje-inkt)]'
+              ? 'border-transparent bg-[var(--lo-oranje-zacht)] text-[var(--lo-inkt)]'
               : status.completed
                 ? (status.correct ? 'border-transparent bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]' : 'border-transparent bg-[var(--lo-rood-zacht)] text-[var(--lo-rood-inkt)]')
                 : 'border-[var(--lo-lijn)] bg-[var(--lo-papier-2)] text-[var(--lo-grijs)]';

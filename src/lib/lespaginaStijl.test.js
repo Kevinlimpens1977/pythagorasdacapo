@@ -63,7 +63,10 @@ test('de hoofdknoppen houden een focusring en springen niet omhoog', () => {
 });
 
 test('de scope-regels zetten geen binnenmarge, zodat de toetsstepper zijn maten houdt', () => {
-  const scope = css.slice(css.indexOf('\n.study-stijl .btn-primary,'));
+  // Van de eerste tot en met de laatste regel van het scope-blok.
+  const eind = css.indexOf('\n.study-stijl .lesson-prose {');
+  assert.notEqual(eind, -1);
+  const scope = css.slice(css.indexOf('\n.study-stijl .btn-primary,'), css.indexOf('}', eind) + 1);
   assert.doesNotMatch(scope, /padding/);
 });
 
