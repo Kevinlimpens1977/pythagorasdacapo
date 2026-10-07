@@ -114,7 +114,7 @@ export default function AppShell() {
       <TestleerlingBalk />
 
       {!isStudyRoute && (
-      <header className="sticky top-0 z-[100] flex min-h-20 items-center justify-between border-b border-[var(--helix-border)] bg-white/86 px-4 shadow-[0_14px_34px_-28px_rgba(11,19,43,0.45)] backdrop-blur-2xl md:px-10">
+      <header className="sticky top-0 z-[100] flex min-h-20 items-center justify-between border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-4 md:px-10">
         <div className="flex min-w-0 items-center gap-4 md:gap-8">
           <h1
             onClick={handleLogoClick}
@@ -126,7 +126,13 @@ export default function AppShell() {
             </span>
           </h1>
 
-          <nav className="nav-scroll-onzichtbaar flex max-w-[54vw] gap-1 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:max-w-none md:gap-2">
+          <nav
+            className={`nav-scroll-onzichtbaar max-w-[54vw] overflow-x-auto md:max-w-none ${
+              isAdmin
+                ? 'flex gap-1 rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:gap-2'
+                : 'lo-keuzes flex-nowrap'
+            }`}
+          >
             {isAdmin ? (
               ADMIN_WORKSPACES.map((workspace) => {
                 const Icon = workspaceIcons[workspace.id] || SettingsIcon;
@@ -155,11 +161,12 @@ export default function AppShell() {
             ) : (
               <button
                 onClick={() => navigate('/')}
-                className={`admin-nav-tab ${
-                  location.pathname === '/' || location.pathname.includes('/chapter/')
-                    ? 'admin-nav-tab-active'
-                    : ''
-                }`}
+                className="lo-keuze shrink-0"
+                aria-pressed={
+                  location.pathname === '/' ||
+                  location.pathname.includes('/chapter/') ||
+                  location.pathname.startsWith('/hoofdstuk/')
+                }
               >
                 <BookOpen size={18} />
                 <span className="hidden md:inline">Lesmateriaal</span>
@@ -191,11 +198,10 @@ export default function AppShell() {
               maar verdienen er nooit tokens mee. */}
           <button
             onClick={() => navigate('/spellen')}
-            className={`flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border px-3 text-sm font-black transition ${
-              location.pathname === '/spellen'
-                ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-                : 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
+            className={`lo-knop-tweede shrink-0 px-3 py-2 ${
+              location.pathname === '/spellen' ? 'border-[var(--lo-blauw)]' : ''
             }`}
+            aria-current={location.pathname === '/spellen' ? 'page' : undefined}
             title="Spellen"
           >
             <Gamepad2 size={18} />
@@ -208,11 +214,10 @@ export default function AppShell() {
           {!isAdmin && (
             <button
               onClick={() => navigate('/klas')}
-              className={`flex h-11 shrink-0 items-center justify-center gap-2 rounded-2xl border px-3 text-sm font-black transition ${
-                location.pathname === '/klas'
-                  ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-                  : 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
+              className={`lo-knop-tweede shrink-0 px-3 py-2 ${
+                location.pathname === '/klas' ? 'border-[var(--lo-blauw)]' : ''
               }`}
+              aria-current={location.pathname === '/klas' ? 'page' : undefined}
               title="Mijn klas"
             >
               <Users size={18} />
@@ -237,11 +242,10 @@ export default function AppShell() {
           {!isAdmin ? (
             <button
               onClick={() => navigate('/profiel')}
-              className={`flex items-center gap-3 rounded-2xl border p-2.5 text-left transition-all focus:outline-none lg:px-3 lg:py-2 ${
-                location.pathname === '/profiel'
-                  ? 'border-fuchsia-200 bg-fuchsia-50 text-[var(--helix-purple)]'
-                  : 'border-transparent text-[var(--helix-navy)] hover:border-[var(--helix-border)] hover:bg-white'
+              className={`lo-knop-tweede gap-3 p-2 text-left lg:px-3 lg:py-2 ${
+                location.pathname === '/profiel' ? 'border-[var(--lo-blauw)]' : ''
               }`}
+              aria-current={location.pathname === '/profiel' ? 'page' : undefined}
               title="Mijn profiel"
             >
               <span
@@ -254,8 +258,8 @@ export default function AppShell() {
                 <ProfielAvatar loadout={normalizedLoadout} plaatje={activeAvatar} leeg={<User size={20} />} />
               </span>
               <span className="hidden flex-col items-end lg:flex">
-                <span className="text-sm font-bold">{currentUser?.displayName || 'Gebruiker'}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-[var(--helix-purple)]">{activeTitle?.title || 'Leerling'}</span>
+                <span className="text-[15px] font-bold leading-snug text-[var(--lo-inkt)]">{currentUser?.displayName || 'Gebruiker'}</span>
+                <span className="lo-onderregel">{activeTitle?.title || 'Leerling'}</span>
                 {activePins.length > 0 && (
                   <span className="mt-1 flex max-w-48 justify-end gap-1 overflow-hidden">
                     {activePins.map((pin) => (
@@ -282,10 +286,10 @@ export default function AppShell() {
 
           <button
             onClick={handleLogout}
-            className="rounded-2xl border border-transparent p-2.5 text-[var(--helix-muted)] transition-all hover:border-red-100 hover:bg-red-50 hover:text-red-500"
+            className="lo-knop-tweede px-3 py-2"
             title="Uitloggen"
           >
-            <LogOut size={22} />
+            <LogOut size={20} />
           </button>
         </div>
       </header>
