@@ -30,6 +30,7 @@ import { EigenCertificaatPage, KlasCertificatenPage } from './pages/CertificaatP
 import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
 import AdminTestenPage from './pages/AdminTestenPage';
 import AdminVrijgevenPage from './pages/AdminVrijgevenPage';
+import AdminStijlgidsPage from './pages/AdminStijlgidsPage';
 import NieuweVersieMelding from './components/layout/NieuweVersieMelding';
 
 const PrivateRoute = ({ children, requireAdmin = false }) => {
@@ -86,6 +87,11 @@ function AppRoutes() {
         <Route path="admin/testen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminTestenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/stijlgids" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminStijlgidsPage />
           </PrivateRoute>
         } />
         <Route path="admin/tokenbeheer" element={

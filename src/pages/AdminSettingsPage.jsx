@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Bot, Bug, Coins, SettingsIcon } from 'lucide-react';
+import { ArrowRight, Bot, Bug, Coins, Palette, SettingsIcon } from 'lucide-react';
 
 const settingsSections = [
   {
@@ -24,6 +24,14 @@ const settingsSections = [
     actionLabel: 'Open tokenbeheer',
     path: '/admin/tokenbeheer',
     icon: Coins,
+    tone: 'text-amber-700 bg-amber-50'
+  },
+  {
+    title: 'Stijlgids leeromgeving',
+    description: 'Alle bouwstenen van de websitestijl naast elkaar: kaarten, rijen, H-blokjes, knoppen en kleuren.',
+    actionLabel: 'Open stijlgids',
+    path: '/admin/stijlgids',
+    icon: Palette,
     tone: 'text-amber-700 bg-amber-50'
   }
 ];
