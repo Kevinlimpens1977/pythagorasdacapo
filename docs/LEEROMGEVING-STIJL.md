@@ -40,7 +40,7 @@ Altijd via de tokens, nooit een losse hexwaarde in een component.
 | `--lo-blauw` / `-inkt` / `-zacht` | #087EB5 / #066A99 / #E1F0F8 | hoofdknop / tekst op lichtblauw / Start-knop en blauwe labels |
 | `--lo-paars` / `-inkt` / `-zacht` | #793AC7 / #5F2C9E / #ECE3F8 | kolf-icoon / label inclusie |
 | `--lo-groen` / `-inkt` / `-zacht` | #2E9D63 / #237A4D / #DFF2E7 | af en voortgang |
-| `--lo-oranje-inkt` / `-zacht` | #B4520E / #FDE7D6 | op slot |
+| `--lo-oranje-inkt` / `-zacht` | #A2490C / #FDE7D6 | op slot (7 okt 2026 donkerder, was #B4520E: haalt nu 5:1 op -zacht) |
 | `--lo-rood` / `-inkt` / `-zacht` | #D83A2E / #B42F25 / #FADDDA | fouten; tekst altijd in -inkt (4,5:1 op -zacht) |
 
 ## Letter en maten
@@ -107,6 +107,22 @@ zodat de vragen en de toetsstepper niet verspringen. Het blok staat onderaan
 - Nog in de oude vorm, bewust: de rekenbladen en de rekenmachine van wiskunde,
   `InleveringVak`, de donkere achtergrond achter lades en dialogen,
   `MediaRenderer` en de presenter. Die komen in fase 4.
+
+## Docentomgeving
+
+Elke beheerpagina zet `beheer-stijl` op haar wortel. Het blok onderaan
+`src/index.css` geeft daarbinnen de oude gedeelde klassen (`helix-card`,
+`helix-surface`, `btn-primary`, `btn-secondary`, `btn-tool`, `helix-btn-solid`,
+`input-standard`, `helix-eyebrow`, `helix-heading-xl`, `helix-badge*`,
+`helix-alert`, `helix-action-card`, `dashboard-lens-tab`, `studio-toolbar-control`)
+het uiterlijk van de leeromgeving: kleur, rand, hoek, letter en schaduw, geen
+binnenmarges. Nieuwe bouwstenen: `.lo-knoppenbalk` (knoppen breken af naar een
+volgende regel), `.lo-knop--klein`, `.lo-knop--gevaar`, `.lo-knop-tweede--gevaar`,
+`.lo-melding--goed`. Knoppen blijven op één regel (`white-space: nowrap`).
+
+De menubalk van beheer heeft alleen het menu, je naam en uitloggen. Wis leerlingen
+en Reset CMS staan op Instellingen onder Beheeracties; het helppaneel opent vanuit
+de Help-knoppen in de pagina's.
 
 ## Regels
 
