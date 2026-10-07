@@ -2245,3 +2245,9 @@ input[type=number] {
 .beheer-stijl .studio-toolbar-control:focus-visible {
   box-shadow: 0 0 0 3px var(--lo-papier), 0 0 0 6px var(--lo-blauw);
 }
+
+/* De waarschuwingskaart in Voortgang houdt zijn oranje tint; de scope hierboven
+   maakt elke helix-card anders wit. */
+.beheer-stijl .helix-card.border-orange-100 {
+  background: var(--lo-oranje-zacht);
+}
