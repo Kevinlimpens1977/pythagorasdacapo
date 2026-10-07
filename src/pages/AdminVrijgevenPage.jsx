@@ -1,10 +1,12 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Loader2, Lock, LockOpen, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Lock, LockOpen, RefreshCw } from 'lucide-react';
 
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import { getVergrendeldeParagrafen, isHoofdstukVergrendeld, wisselHoofdstukSlot, wisselParagraafSlot } from '../lib/hoofdstukSlot';
 import { paragraafLabel } from '../lib/chapterOutline';
+import { HBlok, Label, PaginaKop } from '../components/leeromgeving';
+import { HelixLaden } from '../components/merk/HelixLogo';
 
 /**
  * Hoofdstukken vrijgeven: één scherm, alle klassen naast elkaar.
@@ -52,6 +54,7 @@ export default function AdminVrijgevenPage() {
               paragrafen.forEach((paragraaf) => { info[paragraaf.id] = paragraaf; });
               rijen.push({
                 id: hoofdstuk.id,
+                nummer: hoofdstuk.number,
                 titel: hoofdstuk.title || 'Hoofdstuk',
                 vak: vak.naam || vak.title || vak.id,
                 niveau: niveau.naam || niveau.title || niveau.id,
@@ -171,40 +174,36 @@ export default function AdminVrijgevenPage() {
   };
 
   return (
-    <div className="helix-page">
+    <div className="helix-page beheer-stijl">
       <div className="helix-container py-10 md:py-12">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="helix-eyebrow">Lesstof</p>
-            <h1 className="helix-heading-xl mt-2">Hoofdstukken vrijgeven</h1>
-            <p className="helix-muted mt-3 max-w-2xl text-lg leading-8">
-              Een vinkje betekent: op slot. De klas ziet het hoofdstuk wel staan, grijs en met een
-              slotje, maar kan er nog niet in. Haal het vinkje weg en het hoofdstuk is meteen open.
-            </p>
-          </div>
-          <button type="button" onClick={laden} className="btn-secondary inline-flex items-center gap-2" disabled={loading}>
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-            Verversen
-          </button>
-        </div>
+        <PaginaKop
+          eyebrow="Lesstof"
+          titel="Hoofdstukken vrijgeven"
+          uitleg="Een slotje betekent: op slot. Klik op een vakje om het te wisselen. De klas ziet het hoofdstuk wel staan, grijs en met een slotje, maar kan er nog niet in."
+          acties={(
+            <div className="lo-knoppenbalk">
+              <button type="button" onClick={laden} className="lo-knop-tweede lo-knop--klein" disabled={loading}>
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                Verversen
+              </button>
+            </div>
+          )}
+        />
 
         {fout && (
-          <div className="mt-6 rounded-[var(--helix-radius-md)] border border-[var(--helix-danger)]/35 bg-[var(--helix-soft-pink)] p-4 text-sm font-semibold text-[var(--helix-danger)]">
+          <div className="lo-melding lo-melding--fout mt-6">
             {fout}
           </div>
         )}
         {melding && !fout && (
-          <div className="mt-6 inline-flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-success)]/35 bg-[var(--helix-success)]/10 px-4 py-3 text-sm font-bold text-[var(--helix-success)]">
-            <CheckCircle2 size={16} />
+          <div className="lo-melding lo-melding--goed mt-6 w-fit">
+            <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
             {melding}
           </div>
         )}
 
         {loading ? (
-          <div className="mt-10 flex items-center gap-3 text-[var(--helix-muted)]">
-            <Loader2 size={18} className="animate-spin" />
-            Bezig met laden...
-          </div>
+          <HelixLaden tekst="Bezig met laden..." className="min-h-0 py-10" />
         ) : zichtbareHoofdstukken.length === 0 ? (
           <p className="helix-muted mt-10">
             Er staat nog geen lesstof klaar voor een klas, dus er valt niets vrij te geven.
@@ -214,52 +213,61 @@ export default function AdminVrijgevenPage() {
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr>
-                  <th className="sticky left-0 z-10 bg-[var(--helix-surface)] p-3 text-left font-black text-[var(--helix-navy)]">
+                  <th className="sticky left-0 z-10 bg-[var(--lo-kaart)] p-3 text-left text-[13px] font-extrabold text-[var(--lo-grijs)]">
                     Hoofdstuk
                   </th>
                   {klassen.map((klas) => (
-                    <th key={klas.id} className="p-3 text-center font-black text-[var(--helix-navy)]">
+                    <th key={klas.id} className="p-3 text-center text-[13px] font-extrabold text-[var(--lo-grijs)]">
                       {klasNaam(klas)}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {zichtbareHoofdstukken.map((hoofdstuk) => (
+                {zichtbareHoofdstukken.map((hoofdstuk) => {
+                  const toegewezenKlassen = klassen.filter((klas) => heeftHoofdstuk(klas, hoofdstuk.id));
+                  const alleDicht = toegewezenKlassen.length > 0
+                    && toegewezenKlassen.every((klas) => isHoofdstukVergrendeld(klas, hoofdstuk.id));
+                  return (
                   <Fragment key={hoofdstuk.id}>
-                  <tr className="border-t border-[var(--helix-border)]">
-                    <td className="sticky left-0 z-10 bg-[var(--helix-surface)] p-3 align-top">
-                      <p className="font-bold text-[var(--helix-navy)]">{hoofdstuk.titel}</p>
-                      {/* Het niveau staat erbij omdat drie hoofdstukken dezelfde
-                          naam kunnen dragen (de bb-, kb- en tl-versie van H1).
-                          Zonder dat erbij kies je de verkeerde rij. */}
-                      <p className="text-xs font-semibold text-[var(--helix-muted)]">
-                        {hoofdstuk.vak} &middot; {hoofdstuk.niveau} &middot; {hoofdstuk.aantalParagrafen} paragrafen
-                      </p>
-                      <div className="mt-2 flex gap-2">
+                  <tr className="border-t border-[var(--lo-lijn)]">
+                    <td className="sticky left-0 z-10 bg-[var(--lo-kaart)] p-3 align-top">
+                      <div className="flex items-start gap-3">
+                        <HBlok nummer={hoofdstuk.nummer} dicht={alleDicht} />
+                        <div className="min-w-0">
+                          <p className="font-bold text-[var(--lo-inkt)]">{hoofdstuk.titel}</p>
+                          {/* Het niveau staat erbij omdat drie hoofdstukken dezelfde
+                              naam kunnen dragen (de bb-, kb- en tl-versie van H1).
+                              Zonder dat erbij kies je de verkeerde rij. */}
+                          <p className="lo-onderregel">
+                            {hoofdstuk.vak} &middot; {hoofdstuk.niveau} &middot; {hoofdstuk.aantalParagrafen} paragrafen
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={() => heleRij(hoofdstuk, false)}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--helix-border)] bg-white px-3 py-1 text-xs font-extrabold text-[var(--helix-navy)] transition hover:border-[var(--helix-success)] hover:text-[var(--helix-success)]"
+                          className="lo-knop-start"
                           disabled={bezig === `rij:${hoofdstuk.id}`}
                         >
-                          <LockOpen size={13} />
+                          <LockOpen size={15} aria-hidden="true" />
                           Alles vrijgeven
                         </button>
                         <button
                           type="button"
                           onClick={() => heleRij(hoofdstuk, true)}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--helix-border)] bg-white px-3 py-1 text-xs font-extrabold text-[var(--helix-navy)] transition hover:border-[var(--helix-warning)] hover:text-[var(--helix-warning)]"
+                          className="lo-knop-start"
                           disabled={bezig === `rij:${hoofdstuk.id}`}
                         >
-                          <Lock size={13} />
+                          <Lock size={15} aria-hidden="true" />
                           Alles op slot
                         </button>
                       </div>
                       <button
                         type="button"
                         onClick={() => setOpenHoofdstukken((huidig) => (huidig.includes(hoofdstuk.id) ? huidig.filter((id) => id !== hoofdstuk.id) : [...huidig, hoofdstuk.id]))}
-                        className="mt-2 text-xs font-bold text-[var(--helix-purple)] underline"
+                        className="lo-knop-tweede lo-knop--klein mt-2"
                         aria-expanded={openHoofdstukken.includes(hoofdstuk.id)}
                       >
                         {openHoofdstukken.includes(hoofdstuk.id) ? 'Paragrafen verbergen' : 'Per paragraaf op slot'}
@@ -273,7 +281,7 @@ export default function AdminVrijgevenPage() {
 
                       if (!heeft) {
                         return (
-                          <td key={klas.id} className="p-3 text-center text-[var(--helix-muted)]" title="Deze klas heeft dit hoofdstuk niet toegewezen gekregen">
+                          <td key={klas.id} className="p-3 text-center text-[var(--lo-grijs)]" title="Deze klas heeft dit hoofdstuk niet toegewezen gekregen">
                             &ndash;
                           </td>
                         );
@@ -281,52 +289,58 @@ export default function AdminVrijgevenPage() {
 
                       return (
                         <td key={klas.id} className="p-3 text-center">
-                          <label className="inline-flex cursor-pointer flex-col items-center gap-1">
-                            <input
-                              type="checkbox"
-                              checked={opSlot}
-                              onChange={() => wissel(klas, hoofdstuk.id)}
-                              disabled={bezig === sleutel}
-                              className="h-5 w-5 cursor-pointer accent-[var(--helix-warning)]"
-                              aria-label={`${hoofdstuk.titel} op slot voor ${klasNaam(klas)}`}
-                            />
-                            <span className={`text-[11px] font-black uppercase tracking-wide ${opSlot ? 'text-[var(--helix-warning)]' : 'text-[var(--helix-success)]'}`}>
-                              {bezig === sleutel ? '...' : opSlot ? 'Op slot' : 'Open'}
-                            </span>
-                          </label>
+                          <button
+                            type="button"
+                            onClick={() => wissel(klas, hoofdstuk.id)}
+                            disabled={bezig === sleutel}
+                            aria-pressed={opSlot}
+                            aria-label={`${hoofdstuk.titel} op slot voor ${klasNaam(klas)}`}
+                            className="lo-knop-tweede lo-knop--klein min-w-[6.5rem] justify-center"
+                          >
+                            {bezig === sleutel
+                              ? '...'
+                              : opSlot
+                                ? <Label kleur="oranje" icoon={Lock}>op slot</Label>
+                                : <Label kleur="groen" icoon={LockOpen}>open</Label>}
+                          </button>
                         </td>
                       );
                     })}
                   </tr>
                   {openHoofdstukken.includes(hoofdstuk.id) && (paragrafenPerHoofdstuk[hoofdstuk.id] || []).map((paragraafId) => (
-                    <tr key={paragraafId} className="bg-[var(--helix-surface-soft)]/60">
-                      <td className="sticky left-0 z-10 bg-[var(--helix-surface-soft)] p-2 pl-6 text-xs font-bold text-[var(--helix-navy)]">
+                    <tr key={paragraafId} className="bg-[var(--lo-papier-2)]/60">
+                      <td className="sticky left-0 z-10 bg-[var(--lo-papier-2)] p-2 pl-6 text-xs font-bold text-[var(--lo-inkt)]">
                         {paragraafLabel(paragraafInfo[paragraafId] || {})}
                       </td>
                       {klassen.map((klas) => {
                         const toegewezen = Array.isArray(klas.enabledParagrafen) && klas.enabledParagrafen.includes(paragraafId);
-                        if (!toegewezen) return <td key={klas.id} className="p-2 text-center text-[var(--helix-muted)]">&ndash;</td>;
+                        if (!toegewezen) return <td key={klas.id} className="p-2 text-center text-[var(--lo-grijs)]">&ndash;</td>;
                         const hoofdstukDicht = isHoofdstukVergrendeld(klas, hoofdstuk.id);
                         const opSlot = hoofdstukDicht || getVergrendeldeParagrafen(klas).includes(paragraafId);
                         const sleutel = `${klas.id}:${paragraafId}`;
                         return (
                           <td key={klas.id} className="p-2 text-center">
-                            <input
-                              type="checkbox"
-                              checked={opSlot}
+                            <button
+                              type="button"
                               disabled={hoofdstukDicht || bezig === sleutel}
-                              onChange={() => wisselParagraaf(klas, paragraafId)}
+                              onClick={() => wisselParagraaf(klas, paragraafId)}
+                              aria-pressed={opSlot}
                               title={hoofdstukDicht ? 'Het hele hoofdstuk staat op slot' : ''}
-                              className="h-4 w-4 cursor-pointer accent-[var(--helix-warning)]"
+                              className="lo-knop-start"
                               aria-label={`${paragraafLabel(paragraafInfo[paragraafId] || {})} op slot voor ${klasNaam(klas)}`}
-                            />
+                            >
+                              {opSlot
+                                ? <><Lock size={15} aria-hidden="true" />op slot</>
+                                : <><LockOpen size={15} aria-hidden="true" />open</>}
+                            </button>
                           </td>
                         );
                       })}
                     </tr>
                   ))}
                   </Fragment>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

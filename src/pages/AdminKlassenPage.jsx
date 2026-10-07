@@ -18,6 +18,8 @@ import * as klasService from '../services/klasService';
 import * as cmsService from '../services/cmsService';
 import { useAuth } from '../components/auth/AuthProvider';
 import { buildKlasRouteOpties, getKlasRouteLabel } from '../lib/klasRoute';
+import { HBlok, Label, PaginaKop } from '../components/leeromgeving';
+import { HelixLaden } from '../components/merk/HelixLogo';
 
 export default function AdminKlassenPage() {
   const { currentUser } = useAuth();
@@ -294,32 +296,31 @@ export default function AdminKlassenPage() {
   ];
 
   return (
-    <div className="helix-page min-h-screen">
+    <div className="helix-page beheer-stijl min-h-screen">
       <div className="helix-container max-w-7xl">
-        <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="helix-eyebrow">Leerlingen</p>
-            <h1 className="helix-heading-xl">Klassen beheren</h1>
-            <p className="mt-3 max-w-3xl text-lg leading-8 text-[var(--helix-muted)]">
-              Beheer klassen, leerlingkoppelingen, lesmateriaal en instellingen per klas.
-            </p>
-          </div>
-          <div className="hidden items-center gap-3 rounded-2xl border border-[var(--helix-border)] bg-white/80 px-4 py-3 shadow-sm lg:flex">
-            <UsersRound size={20} className="text-[var(--helix-purple)]" />
-            <span className="text-sm font-black text-[var(--helix-navy)]">{klassen.length} klassen</span>
-          </div>
-        </header>
+        <div className="mb-8">
+          <PaginaKop
+            eyebrow="Leerlingen"
+            titel="Klassen beheren"
+            uitleg="Beheer klassen, leerlingkoppelingen, lesmateriaal en instellingen per klas."
+            acties={(
+              <div className="hidden lg:block">
+                <Label kleur="paars" icoon={UsersRound}>{klassen.length} klassen</Label>
+              </div>
+            )}
+          />
+        </div>
 
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+          <div className="lo-melding lo-melding--fout mb-6">
             {error}
           </div>
         )}
 
         {/* Create Class Section */}
         <section className="helix-card mb-8 p-5">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-black text-[var(--helix-navy)]">
-            <Plus size={20} className="text-[var(--helix-purple)]" /> Nieuwe klas aanmaken
+          <h2 className="lo-kaart-titel mb-4">
+            <Plus size={18} className="lo-kolf" aria-hidden="true" /> Nieuwe klas aanmaken
           </h2>
           <form onSubmit={handleCreateClass} className="flex flex-col gap-3 sm:flex-row">
             <input
@@ -327,13 +328,13 @@ export default function AdminKlassenPage() {
               value={newClassName}
               onChange={(e) => setNewClassName(e.target.value)}
               placeholder="Bijv. VMBO 1A"
-              className="input-standard flex-1"
+              className="lo-invoer flex-1"
               disabled={creating}
             />
             <button
               type="submit"
               disabled={creating || !newClassName.trim()}
-              className="btn-secondary w-auto px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              className="lo-knop"
             >
               {creating ? 'Aanmaken...' : 'Aanmaken'}
             </button>
@@ -346,23 +347,16 @@ export default function AdminKlassenPage() {
           <aside>
             <div className="helix-card overflow-hidden p-4">
               <div className="mb-3 flex items-center justify-between px-1">
-                <h3 className="font-black text-[var(--helix-navy)]">
+                <h3 className="text-[15px] font-extrabold text-[var(--lo-inkt)]">
                   Klassen ({klassen.length})
                 </h3>
-                <Users size={18} className="text-[var(--helix-muted)]" />
+                <Users size={18} className="text-[var(--lo-grijs)]" />
               </div>
 
               {loading ? (
-                <div className="p-6 space-y-2">
-                  {[1, 2, 3].map(i => (
-                    <div
-                      key={i}
-                      className="h-12 bg-gray-200 rounded animate-pulse"
-                    />
-                  ))}
-                </div>
+                <HelixLaden tekst="Klassen laden" className="min-h-0 py-10" />
               ) : klassen.length === 0 ? (
-                <div className="p-6 text-center text-gray-500">
+                <div className="p-6 text-center text-[var(--lo-grijs)]">
                   Geen klassen aangemaakt
                 </div>
               ) : (
@@ -379,7 +373,7 @@ export default function AdminKlassenPage() {
                     >
                       <div>
                         <div>{klas.name}</div>
-                        <div className="mt-1 text-xs font-bold text-[var(--helix-muted)]">
+                        <div className="mt-1 text-xs font-bold text-[var(--lo-grijs)]">
                           {klassesWithStudents[klas.id]?.length || 0} leerlingen · {getKlasRouteLabel(klas, alleNiveaus)}
                         </div>
                       </div>
@@ -395,25 +389,25 @@ export default function AdminKlassenPage() {
             {selectedKlas ? (
               <div className="helix-card overflow-hidden">
                 {/* Header */}
-                <div className="border-b border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-6 py-5 flex items-center justify-between">
+                <div className="border-b border-[var(--lo-lijn)] bg-[var(--lo-papier-2)] px-6 py-5 flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-black text-[var(--helix-navy)]">
+                    <h3 className="text-xl font-extrabold text-[var(--lo-inkt)]">
                       {selectedKlas.name}
                     </h3>
-                    <p className="mt-1 text-sm font-medium text-[var(--helix-muted)]">Code: {selectedKlas.code}</p>
+                    <p className="mt-1 text-sm font-medium text-[var(--lo-grijs)]">Code: {selectedKlas.code}</p>
                   </div>
                   <button
                     onClick={() => handleDeleteClass(selectedKlas.id)}
-                    className="rounded-xl border border-red-200 bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100"
+                    className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar"
                     title="Klas verwijderen"
                   >
-                    <Trash2 size={20} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
 
                 {/* Settings */}
-                <div className="border-b border-[var(--helix-border)] p-6">
-                  <h4 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-[var(--helix-muted)]">
+                <div className="border-b border-[var(--lo-lijn)] p-6">
+                  <h4 className="lo-onderregel mb-4 flex items-center gap-2 font-bold">
                     <Settings size={16} /> Instellingen
                   </h4>
 
@@ -429,14 +423,14 @@ export default function AdminKlassenPage() {
                           type="checkbox"
                           checked={setting.defaultAan ? selectedKlas.settings?.[setting.key] !== false : Boolean(selectedKlas.settings?.[setting.key])}
                           onChange={() => handleToggleSetting(selectedKlas.id, setting.key)}
-                          className="mt-1 h-5 w-5 cursor-pointer rounded accent-[var(--helix-purple)]"
+                          className="mt-1 h-5 w-5 cursor-pointer rounded accent-[var(--lo-paars)]"
                         />
                         <div className="flex-1">
-                          <div className="mb-1 flex items-center gap-2 font-black text-[var(--helix-navy)]">
-                            <SettingIcon size={18} className="text-[var(--helix-purple)]" />
+                          <div className="mb-1 flex items-center gap-2 font-extrabold text-[var(--lo-inkt)]">
+                            <SettingIcon size={18} className="text-[var(--lo-paars)]" />
                             {setting.label}
                           </div>
-                          <div className="text-sm leading-5 text-[var(--helix-muted)]">
+                          <div className="text-sm leading-5 text-[var(--lo-grijs)]">
                             {setting.description}
                           </div>
                         </div>
@@ -449,16 +443,16 @@ export default function AdminKlassenPage() {
                   <div className="mt-4 max-w-md">
                     <label
                       htmlFor="klas-route-keuze"
-                      className="mb-1 flex items-center gap-2 font-black text-[var(--helix-navy)]"
+                      className="mb-1 flex items-center gap-2 font-extrabold text-[var(--lo-inkt)]"
                     >
-                      <Waypoints size={18} className="text-[var(--helix-purple)]" />
+                      <Waypoints size={18} className="text-[var(--lo-paars)]" />
                       Leerroute
                     </label>
                     <select
                       id="klas-route-keuze"
                       value={selectedKlas.niveauId || ''}
                       onChange={(e) => handleSelectRoute(selectedKlas.id, e.target.value)}
-                      className="input-standard w-full"
+                      className="lo-invoer"
                     >
                       {routeOpties.map(optie => (
                         <option key={optie.id || 'geen-route'} value={optie.id}>
@@ -466,7 +460,7 @@ export default function AdminKlassenPage() {
                         </option>
                       ))}
                     </select>
-                    <p className="mt-1 text-sm leading-5 text-[var(--helix-muted)]">
+                    <p className="mt-1 text-sm leading-5 text-[var(--lo-grijs)]">
                       Met een route ziet deze klas alleen de hoofdstukken en paragrafen van dat
                       niveau. Zonder route blijft alle toegewezen lesstof zichtbaar.
                     </p>
@@ -474,30 +468,30 @@ export default function AdminKlassenPage() {
                 </div>
 
                 {/* Beschikbare Content (CMS) */}
-                <div className="border-b border-[var(--helix-border)] p-6">
-                  <h4 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-[var(--helix-muted)]">
+                <div className="border-b border-[var(--lo-lijn)] p-6">
+                  <h4 className="lo-onderregel mb-4 flex items-center gap-2 font-bold">
                     <BookMarked size={16} /> Lesstof toewijzing
                   </h4>
 
                   {contentLoading ? (
-                    <div className="text-sm text-[var(--helix-muted)]">Content laden...</div>
+                    <HelixLaden tekst="Content laden..." className="min-h-0 py-10" />
                   ) : Object.keys(cmsContent).length === 0 ? (
-                    <div className="text-sm text-[var(--helix-muted)]">Geen content beschikbaar</div>
+                    <div className="text-sm text-[var(--lo-grijs)]">Geen content beschikbaar</div>
                   ) : (
                     <div className="space-y-4 max-h-96 overflow-y-auto">
                       {Object.entries(cmsContent).map(([vakId, vakData]) => (
                         <div key={vakId} className="helix-card-subtle overflow-hidden">
                           {/* Vak Header */}
-                          <div className="border-b border-[var(--helix-border)] bg-white/80 px-4 py-3 font-black text-[var(--helix-navy)]">
+                          <div className="border-b border-[var(--lo-lijn)] bg-white/80 px-4 py-3 font-extrabold text-[var(--lo-inkt)]">
                             {vakData.vak?.title || vakData.vak?.name || 'Vak'}
                           </div>
 
                           {/* Leerjaren */}
-                          <div className="divide-y divide-[var(--helix-border)]">
+                          <div className="divide-y divide-[var(--lo-lijn)]">
                             {Object.entries(vakData.leerjaren).map(([leerjaargId, leerjaargData]) => (
                               <div key={leerjaargId} className="px-4 py-3">
-                                <div className="mb-3 flex items-center gap-2 text-sm font-black text-[var(--helix-navy)]">
-                                  <BookOpenCheck size={16} className="text-[var(--helix-purple)]" />
+                                <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-[var(--lo-inkt)]">
+                                  <BookOpenCheck size={16} className="text-[var(--lo-paars)]" />
                                   {leerjaargData.leerjaar?.title || leerjaargData.leerjaar?.name || `Leerjaar ${leerjaargData.leerjaar?.year}`}
                                 </div>
 
@@ -505,7 +499,7 @@ export default function AdminKlassenPage() {
                                 <div className="space-y-3 ml-4">
                                   {Object.entries(leerjaargData.niveaus).map(([niveauId, niveauData]) => (
                                     <div key={niveauId}>
-                                      <div className="mb-2 text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
+                                      <div className="lo-onderregel mb-2 font-bold">
                                         {niveauData.niveau?.title || niveauData.niveau?.name || 'Niveau'}
                                       </div>
 
@@ -518,7 +512,7 @@ export default function AdminKlassenPage() {
                                           const someEnabled = paragraafIds.some(id => currentParagrafen.includes(id));
 
                                           return (
-                                            <div key={hoofdstukId} className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2">
+                                            <div key={hoofdstukId} className="rounded-xl border border-[var(--lo-lijn)] bg-white px-3 py-2">
                                               {/* Hoofdstuk Toggle */}
                                               <div className="flex items-center gap-2 mb-2">
                                                 <button
@@ -526,7 +520,7 @@ export default function AdminKlassenPage() {
                                                     ...prev,
                                                     [hoofdstukId]: !prev[hoofdstukId]
                                                   }))}
-                                                  className="rounded-lg p-1 text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)]"
+                                                  className="rounded-lg p-1 text-[var(--lo-grijs)] transition hover:bg-[var(--lo-papier-2)]"
                                                 >
                                                   <ChevronDown
                                                     size={16}
@@ -538,15 +532,14 @@ export default function AdminKlassenPage() {
                                                     type="checkbox"
                                                     checked={allEnabled}
                                                     onChange={() => handleToggleHoofdstuk(selectedKlas.id, hoofdstukId)}
-                                                    className="h-4 w-4 rounded accent-[var(--helix-purple)]"
+                                                    className="h-4 w-4 rounded accent-[var(--lo-paars)]"
                                                   />
-                                                  <span className="text-sm font-bold text-[var(--helix-navy)]">
+                                                  <HBlok nummer={hoofdstuk?.number} />
+                                                  <span className="text-sm font-bold text-[var(--lo-inkt)]">
                                                     {hoofdstuk?.number && `${hoofdstuk.number}. `}{hoofdstuk?.title}
                                                   </span>
                                                   {someEnabled && !allEnabled && (
-                                                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-black text-amber-700">
-                                                      Deels
-                                                    </span>
+                                                    <Label kleur="oranje">Deels</Label>
                                                   )}
                                                 </label>
                                               </div>
@@ -559,15 +552,15 @@ export default function AdminKlassenPage() {
                                                     return (
                                                       <label
                                                         key={paragraaf.id}
-                                                        className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded text-sm"
+                                                        className="flex items-center gap-2 cursor-pointer hover:bg-[var(--lo-papier-2)] px-2 py-1 rounded text-sm"
                                                       >
                                                         <input
                                                           type="checkbox"
                                                           checked={isEnabled}
                                                           onChange={() => handleToggleParagraaf(selectedKlas.id, paragraaf.id)}
-                                                          className="h-4 w-4 rounded accent-[var(--helix-purple)]"
+                                                          className="h-4 w-4 rounded accent-[var(--lo-paars)]"
                                                         />
-                                                        <span className="text-[var(--helix-muted)]">
+                                                        <span className="text-[var(--lo-grijs)]">
                                                           {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
                                                         </span>
                                                       </label>
@@ -593,12 +586,12 @@ export default function AdminKlassenPage() {
 
                 {/* Students */}
                 <div className="p-6">
-                  <h4 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-[var(--helix-muted)]">
+                  <h4 className="lo-onderregel mb-4 flex items-center gap-2 font-bold">
                     <Users size={16} /> Leerlingen ({selectedStudents.length})
                   </h4>
 
                   {selectedStudents.length === 0 ? (
-                    <p className="text-sm text-[var(--helix-muted)]">
+                    <p className="text-sm text-[var(--lo-grijs)]">
                       Nog geen leerlingen in deze klas
                     </p>
                   ) : (
@@ -614,16 +607,16 @@ export default function AdminKlassenPage() {
                           }`}
                         >
                           <div className="text-left">
-                            <div className="font-black text-[var(--helix-navy)]">
+                            <div className="font-extrabold text-[var(--lo-inkt)]">
                               {student.displayName || 'Geen naam'}
                             </div>
-                            <div className="text-xs font-medium text-[var(--helix-muted)]">
+                            <div className="text-xs font-medium text-[var(--lo-grijs)]">
                               {student.email}
                             </div>
                           </div>
                           <UserCheck
                             size={18}
-                            className={selectedStudent?.uid === student.uid ? 'text-emerald-600' : 'text-[var(--helix-muted)]'}
+                            className={selectedStudent?.uid === student.uid ? 'text-[var(--lo-groen-inkt)]' : 'text-[var(--lo-grijs)]'}
                           />
                         </button>
                       ))}
@@ -633,10 +626,10 @@ export default function AdminKlassenPage() {
                   {/* Student Override Panel */}
                   {selectedStudent && (
                     <div className="helix-card-subtle mt-6 p-4">
-                      <h5 className="mb-3 font-black text-[var(--helix-navy)]">
+                      <h5 className="mb-3 font-extrabold text-[var(--lo-inkt)]">
                         Extra taken voor {selectedStudent.displayName}
                       </h5>
-                      <p className="mb-3 text-xs font-medium text-[var(--helix-muted)]">
+                      <p className="mb-3 text-xs font-medium text-[var(--lo-grijs)]">
                         Selecteer aanvullende taken boven op de klasinstelling
                       </p>
 
@@ -652,7 +645,7 @@ export default function AdminKlassenPage() {
                                   return (
                                     <label
                                       key={paragraaf.id}
-                                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-transparent p-2 text-sm hover:border-[var(--helix-border)] hover:bg-white"
+                                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-transparent p-2 text-sm hover:border-[var(--lo-lijn)] hover:bg-white"
                                     >
                                       <input
                                         type="checkbox"
@@ -667,12 +660,12 @@ export default function AdminKlassenPage() {
                                           }
                                           handleSetStudentOverride(selectedKlas.id, selectedStudent.uid, updated);
                                         }}
-                                        className="h-4 w-4 rounded accent-[var(--helix-purple)]"
+                                        className="h-4 w-4 rounded accent-[var(--lo-paars)]"
                                       />
-                                      <span className={override ? 'font-black text-[var(--helix-navy)]' : 'text-[var(--helix-muted)]'}>
+                                      <span className={override ? 'font-extrabold text-[var(--lo-inkt)]' : 'text-[var(--lo-grijs)]'}>
                                         {paragraaf.number && `${paragraaf.number}. `}{paragraaf.title}
                                       </span>
-                                      {classDefault && <span className="text-xs bg-gray-300 px-2 py-0.5 rounded">Klas</span>}
+                                      {classDefault && <Label kleur="blauw">Klas</Label>}
                                     </label>
                                   );
                                 })
@@ -684,7 +677,7 @@ export default function AdminKlassenPage() {
 
                       <button
                         onClick={() => setSelectedStudent(null)}
-                        className="btn-secondary px-4 py-2 text-sm"
+                        className="lo-knop-tweede lo-knop--klein"
                       >
                         Gereed
                       </button>
@@ -693,7 +686,7 @@ export default function AdminKlassenPage() {
                 </div>
               </div>
             ) : (
-              <div className="helix-card p-12 text-center text-[var(--helix-muted)]">
+              <div className="helix-card p-12 text-center text-[var(--lo-grijs)]">
                 Selecteer een klas om details te zien
               </div>
             )}
