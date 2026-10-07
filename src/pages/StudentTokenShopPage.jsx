@@ -392,7 +392,7 @@ export default function StudentTokenShopPage() {
                             type="button"
                             onClick={() => zetAan(item, aan)}
                             disabled={bezigId === item.id}
-                            className={aan ? 'lo-knop-tweede shrink-0 px-3 py-1 text-[13px]' : 'lo-knop-start'}
+                            className={aan ? 'lo-knop-tweede shrink-0 px-3 py-1.5 text-[13px]' : 'lo-knop-start'}
                           >
                             {aan ? 'Uitzetten' : 'Aanzetten'}
                           </button>
@@ -574,7 +574,7 @@ export function ProfielVoorbeeld({ naam, items, loadout = null, pasAvatar = null
         style={banner?.imageUrl ? { backgroundImage: `url('${banner.imageUrl}')` } : undefined}
       >
         {pasItem && (
-          <Label kleur="oranje" className="absolute left-2 top-2 gap-1">
+          <Label kleur="oranje" className="absolute left-2 top-2 max-w-[calc(100%-1rem)] gap-1 whitespace-normal">
             <Eye size={12} aria-hidden="true" /> Passen: {pasItem.title}
             <button type="button" onClick={onStopPassen} aria-label="Stop met passen"><X size={12} /></button>
           </Label>
@@ -624,7 +624,7 @@ export function BevestigVenster({ item, saldo, onKoop, onAnnuleer }) {
           <div className="flex h-28 w-28 items-center justify-center rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] p-2"><ItemBeeld item={item} /></div>
           <p className="text-lg font-extrabold">{item.title}</p>
           <p className="text-sm">Voor <strong>{prijs} tokens</strong>. Daarna heb je nog {saldo - prijs}.</p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             <button type="button" onClick={onAnnuleer} className="lo-knop-tweede">Toch niet</button>
             <button type="button" onClick={onKoop} autoFocus className="lo-knop">
               <CheckCircle2 size={16} aria-hidden="true" />Kopen

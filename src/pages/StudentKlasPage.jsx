@@ -198,7 +198,7 @@ function KlasDoelKaart({ doel }) {
         <p className="text-lg font-extrabold">{doel.stand} / {doel.doel}</p>
       </div>
       <span className="lo-voortgang" aria-hidden="true">
-        <i style={{ width: `${klasdoelProcent(doel)}%` }} />
+        <i className="bg-[var(--lo-blauw)]" style={{ width: `${klasdoelProcent(doel)}%` }} />
       </span>
       <p className="text-sm text-[var(--lo-grijs)]">
         {gehaald
