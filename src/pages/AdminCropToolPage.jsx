@@ -84,7 +84,7 @@ export default function AdminCropToolPage() {
     setIsLoading(true);
     setNotification({
       type: 'loading',
-      message: 'Stap 1/3:Crops uitsnijden...'
+      message: 'Stap 1/3: Crops uitsnijden...'
     });
 
     try {
@@ -176,7 +176,7 @@ export default function AdminCropToolPage() {
       // Step 3: Save metadata to Firestore
       setNotification({
         type: 'loading',
-        message: 'Stap 3/3:Opslaan in database...'
+        message: 'Stap 3/3: Opslaan in database...'
       });
 
       const successfulUploads = uploadResults.filter(r => r.status === 'success');
@@ -304,6 +304,7 @@ export default function AdminCropToolPage() {
           <div className="flex-1 whitespace-pre-wrap text-sm">{notification.message}</div>
           <button
             onClick={dismissNotification}
+            aria-label="Melding sluiten"
             className="text-current opacity-50 hover:opacity-100 transition-opacity flex-shrink-0"
           >
             <X size={16} aria-hidden="true" />
