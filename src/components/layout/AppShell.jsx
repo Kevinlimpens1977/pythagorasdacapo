@@ -162,10 +162,12 @@ export default function AppShell() {
               <button
                 onClick={() => navigate('/')}
                 className="lo-keuze min-h-10 shrink-0"
-                aria-pressed={
+                aria-current={
                   location.pathname === '/' ||
                   location.pathname.includes('/chapter/') ||
                   location.pathname.startsWith('/hoofdstuk/')
+                    ? 'page'
+                    : undefined
                 }
               >
                 <BookOpen size={18} />

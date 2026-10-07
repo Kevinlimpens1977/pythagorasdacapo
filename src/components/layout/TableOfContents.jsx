@@ -174,7 +174,7 @@ function VerderKaart({ verder, taal, onStart }) {
           : tekst('onderdeel.af', { done: verder.progress.done, total: verder.progress.total })}
       </p>
       <div className="lo-kaart-voet">
-        <Label kleur="blauw" icoon={PlayCircle}>{verder.onderdeelTitle}</Label>
+        <Label kleur="blauw" icoon={PlayCircle} className="min-w-0 shrink whitespace-normal text-left">{verder.onderdeelTitle}</Label>
         <button
           type="button"
           className="lo-knop"

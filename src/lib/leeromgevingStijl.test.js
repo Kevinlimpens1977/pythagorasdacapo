@@ -53,7 +53,14 @@ test('de knoppen, labels en keuzeknoppen uit de bijlage', () => {
   assert.match(regel('.lo-label'), /padding:\s*2px 9px/);
   assert.match(regel('.lo-label'), /font-size:\s*12px/);
   assert.match(regel('.lo-keuze'), /padding:\s*5px 11px/);
-  assert.match(regel(".lo-keuze[aria-pressed='true']"), /background:\s*var\(--lo-inkt\)/);
+  assert.match(css, /\.lo-keuze\[aria-pressed='true'\],\s*\.lo-keuze\[aria-current='page'\]\s*\{[^}]*background:\s*var\(--lo-inkt\)/);
+});
+
+test('rijen passen op een telefoon: ze wrappen en de titel houdt ruimte', () => {
+  assert.match(regel('.lo-rij'), /flex-wrap:\s*wrap/);
+  assert.match(regel('.lo-rij-toggle'), /flex:\s*1 1 14rem/);
+  assert.match(regel('.lo-paragraafrij'), /flex-wrap:\s*wrap/);
+  assert.match(regel('.lo-rij-tekst'), /flex:\s*1 1 12rem/);
 });
 
 test('rode tekst is donker genoeg en er is een voortgangsbalk en een invoerveld', () => {

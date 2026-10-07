@@ -60,10 +60,10 @@
   /* Lijst met scheidingslijnen */
   .lo-lijst { display: flex; flex-direction: column; border: 1px solid var(--lo-lijn); border-radius: var(--lo-hoek-m); }
   .lo-lijst > * + * { border-top: 1px solid var(--lo-lijn); }
-  .lo-rij { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
-  .lo-rij-toggle { display: flex; flex: 1; align-items: center; gap: 10px; min-width: 0; padding: 0; border: none; background: none; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+  .lo-rij { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; }
+  .lo-rij-toggle { display: flex; flex: 1 1 14rem; align-items: center; gap: 10px; min-width: 0; padding: 0; border: none; background: none; text-align: left; color: inherit; font: inherit; cursor: pointer; }
   .lo-rij-toggle:disabled { cursor: default; }
-  .lo-rij-tekst { display: block; flex: 1; min-width: 0; }
+  .lo-rij-tekst { display: block; flex: 1 1 12rem; min-width: 0; }
   .lo-rij-titel { display: block; font-size: 15px; line-height: 22.5px; font-weight: 700; color: var(--lo-inkt); overflow-wrap: anywhere; }
   .lo-onderregel { display: block; font-size: 12.5px; line-height: 18.75px; font-weight: 400; color: var(--lo-grijs); font-variant-numeric: tabular-nums; }
 
@@ -74,7 +74,7 @@
   /* Paragrafen onder een hoofdstuk */
   .lo-paragrafen { display: flex; flex-direction: column; gap: 2px; padding: 0 12px 10px 52px; }
   .lo-paragrafen > * + * { border-top: 1px solid var(--lo-lijn); }
-  .lo-paragraafrij { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 0; }
+  .lo-paragraafrij { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 0; }
 
   /* Knoppen */
   .lo-knop { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border: none; border-radius: var(--lo-hoek-m); background: var(--lo-blauw); color: #FFFFFF; font-family: var(--lo-letter); font-size: 15px; line-height: 1.5; font-weight: 800; box-shadow: var(--lo-schaduw-knop); cursor: pointer; }
@@ -102,7 +102,7 @@
   .lo-keuzes { display: flex; flex-wrap: wrap; gap: 8px; }
   .lo-keuze { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 2px solid var(--lo-lijn); border-radius: 999px; background: var(--lo-kaart); color: var(--lo-inkt); font-family: var(--lo-letter); font-size: 13px; line-height: 19.5px; font-weight: 800; cursor: pointer; }
   .lo-keuze:hover { border-color: var(--lo-blauw); }
-  .lo-keuze[aria-pressed='true'] { border-color: var(--lo-inkt); background: var(--lo-inkt); color: var(--lo-papier); }
+  .lo-keuze[aria-pressed='true'], .lo-keuze[aria-current='page'] { border-color: var(--lo-inkt); background: var(--lo-inkt); color: var(--lo-papier); }
 
   /* Meldingen */
   .lo-melding { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px 14px; border-radius: var(--lo-hoek-m); font-size: 14px; line-height: 21px; font-weight: 600; }

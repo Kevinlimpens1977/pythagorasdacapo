@@ -45,7 +45,7 @@ export default function HoofdstukRij({
           {kanOpen && <Pijl size={15} aria-hidden="true" />}
         </button>
         {onStart && (
-          <StartKnop onClick={onStart} disabled={opSlot || startUit}>
+          <StartKnop onClick={onStart} disabled={opSlot || startUit} aria-label={`${startTekst}: ${titel}`}>
             {startTekst}
           </StartKnop>
         )}

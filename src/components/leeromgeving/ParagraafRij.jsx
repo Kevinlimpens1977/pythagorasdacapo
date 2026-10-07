@@ -10,7 +10,12 @@ export default function ParagraafRij({ code = '', naam, onderregel, labels = nul
       </span>
       {labels}
       {onStart && (
-        <StartKnop onClick={onStart} disabled={startUit} icoon={null}>
+        <StartKnop
+          onClick={onStart}
+          disabled={startUit}
+          icoon={null}
+          aria-label={`${startTekst}: ${code ? `${code} ${naam}` : naam}`}
+        >
           {startTekst}
         </StartKnop>
       )}
