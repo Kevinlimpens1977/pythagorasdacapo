@@ -1402,6 +1402,8 @@ input[type=number] {
   box-shadow: inset 0 0 0 3px var(--lo-blauw);
 }
 
+/* Twee losse regels in plaats van één met een komma: lespaginaStijl.test.js
+   zoekt de regel die precies met ".study-step-active {" begint. */
 .study-step-active {
   background: var(--lo-geel-zacht);
 }
@@ -1982,6 +1984,13 @@ input[type=number] {
   color: var(--lo-grijs);
   box-shadow: none;
   opacity: 1;
+}
+
+/* De knopschaduw hierboven wint van de algemene focusring; daarom de ring er
+   hier weer bij, zodat een leerling met het toetsenbord ziet waar hij staat. */
+.study-stijl .btn-primary:focus-visible,
+.study-stijl .helix-btn-solid:focus-visible {
+  box-shadow: var(--lo-schaduw-knop), 0 0 0 3px var(--lo-papier), 0 0 0 6px var(--lo-blauw);
 }
 
 .study-stijl .btn-secondary {

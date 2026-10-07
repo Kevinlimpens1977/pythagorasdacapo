@@ -57,6 +57,16 @@ test('binnen de lespagina zien de gedeelde knoppen eruit als de leeromgeving', (
   assert.match(regel('.study-stijl .lesson-prose'), /color:\s*var\(--lo-inkt\)/);
 });
 
+test('de hoofdknoppen houden een focusring en springen niet omhoog', () => {
+  assert.match(regel('.study-stijl .helix-btn-solid:focus-visible'), /0 0 0 6px var\(--lo-blauw\)/);
+  assert.match(regel('.study-stijl .helix-btn-solid:hover:not(:disabled)'), /translate:\s*none/);
+});
+
+test('de scope-regels zetten geen binnenmarge, zodat de toetsstepper zijn maten houdt', () => {
+  const scope = css.slice(css.indexOf('\n.study-stijl .btn-primary,'));
+  assert.doesNotMatch(scope, /padding/);
+});
+
 test('de scope-regels staan onder de basisregels van de knoppen', () => {
   const scope = css.indexOf('\n.study-stijl .btn-primary,');
   assert.notEqual(scope, -1);
