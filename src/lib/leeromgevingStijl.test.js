@@ -101,3 +101,14 @@ test('een uitgeschakelde hoofdknop blijft leesbaar', () => {
   assert.match(regel('.lo-knop:disabled'), /background:\s*var\(--lo-papier-2\)/);
   assert.match(regel('.lo-knop:disabled'), /color:\s*var\(--lo-grijs\)/);
 });
+
+test('knoppen blijven op één regel en er zijn kleine, gevaarlijke en succesvarianten', () => {
+  assert.match(regel('.lo-knop'), /white-space:\s*nowrap/);
+  assert.match(regel('.lo-knop-tweede'), /white-space:\s*nowrap/);
+  assert.match(regel('.lo-knop--klein'), /padding:\s*7px 12px/);
+  assert.match(regel('.lo-knop--gevaar'), /background:\s*var\(--lo-rood-inkt\)/);
+  assert.match(regel('.lo-knop-tweede--gevaar'), /color:\s*var\(--lo-rood-inkt\)/);
+  assert.match(regel('.lo-knoppenbalk'), /flex-wrap:\s*wrap/);
+  assert.match(regel('.lo-melding--goed'), /background:\s*var\(--lo-groen-zacht\)/);
+  assert.match(regel('.lo-paginakop > :first-child'), /flex:\s*1 1 24rem/);
+});

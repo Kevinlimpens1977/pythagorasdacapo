@@ -43,6 +43,7 @@
 
   /* Paginakop */
   .lo-paginakop { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between; }
+  .lo-paginakop > :first-child { flex: 1 1 24rem; min-width: 0; }
   .lo-eyebrow { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--lo-blauw-inkt); }
   .lo-paginatitel { margin: 6px 0 0; font-size: clamp(28px, 4vw, 38px); line-height: 1.15; font-weight: 800; letter-spacing: -0.01em; color: var(--lo-inkt); text-wrap: balance; }
   .lo-paginauitleg { margin: 8px 0 0; max-width: 70ch; font-size: 17px; line-height: 1.55; color: var(--lo-grijs); }
@@ -77,16 +78,23 @@
   .lo-paragraafrij { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 0; }
 
   /* Knoppen */
-  .lo-knop { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border: none; border-radius: var(--lo-hoek-m); background: var(--lo-blauw); color: #FFFFFF; font-family: var(--lo-letter); font-size: 15px; line-height: 1.5; font-weight: 800; box-shadow: var(--lo-schaduw-knop); cursor: pointer; }
+  .lo-knop { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border: none; border-radius: var(--lo-hoek-m); background: var(--lo-blauw); color: #FFFFFF; font-family: var(--lo-letter); font-size: 15px; line-height: 1.5; font-weight: 800; box-shadow: var(--lo-schaduw-knop); white-space: nowrap; flex: none; cursor: pointer; }
   .lo-knop:hover:not(:disabled) { background: var(--lo-blauw-inkt); }
   /* Uitgeschakeld: crème met grijze tekst (5:1), zodat "Nog 15" ook dan leesbaar blijft. */
   .lo-knop:disabled { background: var(--lo-papier-2); color: var(--lo-grijs); box-shadow: none; cursor: not-allowed; }
-  .lo-knop-tweede { display: inline-flex; align-items: center; gap: 8px; padding: 11px 17px; border: 1px solid var(--lo-lijn); border-radius: var(--lo-hoek-m); background: var(--lo-kaart); color: var(--lo-inkt); font-family: var(--lo-letter); font-size: 15px; line-height: 1.5; font-weight: 700; cursor: pointer; }
+  .lo-knop-tweede { display: inline-flex; align-items: center; gap: 8px; padding: 11px 17px; border: 1px solid var(--lo-lijn); border-radius: var(--lo-hoek-m); background: var(--lo-kaart); color: var(--lo-inkt); font-family: var(--lo-letter); font-size: 15px; line-height: 1.5; font-weight: 700; white-space: nowrap; flex: none; cursor: pointer; }
   .lo-knop-tweede:hover:not(:disabled) { border-color: var(--lo-blauw); }
   .lo-knop-tweede:disabled { color: var(--lo-grijs); cursor: not-allowed; }
   .lo-knop-start { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid transparent; border-radius: var(--lo-hoek-s); background: var(--lo-blauw-zacht); color: var(--lo-blauw-inkt); font-family: var(--lo-letter); font-size: 13px; line-height: 19.5px; font-weight: 800; white-space: nowrap; cursor: pointer; }
   .lo-knop-start:hover:not(:disabled) { border-color: var(--lo-blauw); }
   .lo-knop-start:disabled { background: var(--lo-papier-2); color: var(--lo-grijs); cursor: not-allowed; }
+  .lo-knop--klein { gap: 6px; padding: 7px 12px; font-size: 14px; line-height: 21px; }
+  .lo-knop--gevaar { background: var(--lo-rood-inkt); box-shadow: none; }
+  .lo-knop--gevaar:hover:not(:disabled) { background: var(--lo-rood-inkt); box-shadow: 0 0 0 3px var(--lo-rood-zacht); }
+  .lo-knop-tweede--gevaar { color: var(--lo-rood-inkt); }
+  .lo-knop-tweede--gevaar:hover:not(:disabled) { border-color: var(--lo-rood); background: var(--lo-rood-zacht); }
+  /* Een rij knoppen die afbreekt naar een volgende regel in plaats van de knoppen samen te drukken. */
+  .lo-knoppenbalk { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .lo-knop:focus-visible, .lo-knop-tweede:focus-visible, .lo-knop-start:focus-visible, .lo-keuze:focus-visible, .lo-rij-toggle:focus-visible { outline: 3px solid var(--lo-blauw); outline-offset: 2px; }
 
   /* Labels */
@@ -109,6 +117,7 @@
   .lo-melding { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px 14px; border-radius: var(--lo-hoek-m); font-size: 14px; line-height: 21px; font-weight: 600; }
   .lo-melding--fout { background: var(--lo-rood-zacht); color: var(--lo-rood-inkt); }
   .lo-melding--info { background: var(--lo-papier-2); color: var(--lo-grijs); }
+  .lo-melding--goed { background: var(--lo-groen-zacht); color: var(--lo-groen-inkt); }
 
   /* Voortgangsbalk */
   .lo-voortgang { display: block; height: 8px; overflow: hidden; border-radius: 999px; background: var(--lo-papier-2); }

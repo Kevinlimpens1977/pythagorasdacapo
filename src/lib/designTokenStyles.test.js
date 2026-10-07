@@ -152,7 +152,7 @@ test('class and assignment admin pages use Helix layout without emoji icon fallb
   }
 
   assert.match(adminKlassenPage, /UsersRound|Lightbulb|Bot|Calculator|BookOpenCheck/);
-  assert.match(adminKlassenPage, /dashboard-lens-tab/);
+  assert.match(adminKlassenPage, /dashboard-lens-tab|lo-keuze/);
   assert.match(takenToewijzenPage, /dashboard-lens-tab/);
   assert.match(takenToewijzenPage, /btn-secondary/);
 });
@@ -191,4 +191,14 @@ test('question route blocks avoid duplicate linked-question wording', () => {
   assert.doesNotMatch(contentBlockBuilder, /Gekoppeld aan vraag/);
   assert.doesNotMatch(contentBlockBuilder, /Open vraagstudio/);
   assert.doesNotMatch(contentBlockBuilder, /Vraag \\{vraag\.number\\}: \\{vraag\.title\\}/);
+});
+
+test('beheerpaginas krijgen de leeromgeving-stijl via .beheer-stijl, onder de basisregels', () => {
+  const scope = css.indexOf('\n.beheer-stijl .btn-primary,');
+  assert.notEqual(scope, -1);
+  for (const basis of ['\n.btn-primary {', '\n.btn-secondary {', '\n.btn-tool {', '\n.helix-card {', '\n.helix-action-card {', '\n.dashboard-lens-tab {', '\n.studio-toolbar-control {']) {
+    assert.ok(css.indexOf(basis) !== -1 && css.indexOf(basis) < scope, `${basis.trim()} moet boven de scope staan`);
+  }
+  assert.match(css, /\.beheer-stijl \.helix-card,\s*\n\.beheer-stijl \.helix-surface \{[^}]*box-shadow:\s*var\(--lo-schaduw-kaart\)/);
+  assert.match(css, /\.beheer-stijl \.btn-tool \{[^}]*white-space:\s*nowrap/);
 });

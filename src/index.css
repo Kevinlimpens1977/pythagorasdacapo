@@ -2041,3 +2041,199 @@ input[type=number] {
 .study-stijl .lesson-prose {
   color: var(--lo-inkt);
 }
+
+/* ==========================================================================
+   Leeromgeving-stijl in de docentomgeving (fase 3).
+   Elke beheerpagina zet `beheer-stijl` op haar wortel. Daarbinnen krijgen de
+   oude gedeelde klassen het uiterlijk van de leeromgeving: alleen kleur, rand,
+   hoek, letter en schaduw; binnenmarges en breedtes blijven. Moet onder de
+   basisregels staan: designTokenStyles.test.js leest per klasse de eerste regel.
+   ========================================================================== */
+.beheer-stijl .btn-primary,
+.beheer-stijl .helix-btn-solid {
+  border: 2px solid transparent;
+  border-radius: var(--lo-hoek-m);
+  background: var(--lo-blauw);
+  color: var(--lo-kaart);
+  box-shadow: var(--lo-schaduw-knop);
+  font-family: var(--lo-letter);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.beheer-stijl .btn-primary:hover:not(:disabled),
+.beheer-stijl .helix-btn-solid:hover:not(:disabled) {
+  background: var(--lo-blauw-inkt);
+  translate: none;
+}
+
+.beheer-stijl .btn-primary:disabled,
+.beheer-stijl .helix-btn-solid:disabled {
+  border-color: transparent;
+  background: var(--lo-papier-2);
+  color: var(--lo-grijs);
+  box-shadow: none;
+  opacity: 1;
+}
+
+.beheer-stijl .btn-primary:focus-visible,
+.beheer-stijl .helix-btn-solid:focus-visible {
+  box-shadow: var(--lo-schaduw-knop), 0 0 0 3px var(--lo-papier), 0 0 0 6px var(--lo-blauw);
+}
+
+.beheer-stijl .btn-secondary,
+.beheer-stijl .btn-tool {
+  border: 1px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-m);
+  background: var(--lo-kaart);
+  color: var(--lo-inkt);
+  font-family: var(--lo-letter);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.beheer-stijl .btn-tool {
+  flex: none;
+}
+
+.beheer-stijl .btn-tool svg {
+  color: var(--lo-grijs);
+}
+
+.beheer-stijl .btn-secondary:hover:not(:disabled),
+.beheer-stijl .btn-secondary:focus-visible,
+.beheer-stijl .btn-tool:hover:not(:disabled) {
+  border-color: var(--lo-blauw);
+  background: var(--lo-kaart);
+  color: var(--lo-inkt);
+}
+
+.beheer-stijl .btn-secondary:disabled,
+.beheer-stijl .btn-tool:disabled {
+  border-color: var(--lo-lijn);
+  background: var(--lo-papier-2);
+  color: var(--lo-grijs);
+  opacity: 1;
+}
+
+.beheer-stijl .helix-eyebrow {
+  color: var(--lo-blauw-inkt);
+  font-family: var(--lo-letter);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.beheer-stijl .helix-heading-xl {
+  color: var(--lo-inkt);
+  font-family: var(--lo-letter);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.beheer-stijl .input-standard {
+  border: 1px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-m);
+  background: var(--lo-kaart);
+  color: var(--lo-inkt);
+}
+
+.beheer-stijl .input-standard:focus {
+  border-color: var(--lo-blauw);
+  background: var(--lo-kaart);
+}
+
+.beheer-stijl .helix-card,
+.beheer-stijl .helix-surface {
+  border: none;
+  border-radius: var(--lo-hoek-xl);
+  background: var(--lo-kaart);
+  box-shadow: var(--lo-schaduw-kaart);
+}
+
+.beheer-stijl .helix-action-card {
+  border: 1px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-l);
+  background: var(--lo-kaart);
+  color: var(--lo-inkt);
+  box-shadow: none;
+}
+
+.beheer-stijl .helix-action-card:hover:not(:disabled),
+.beheer-stijl .helix-action-card:focus-visible {
+  border-color: var(--lo-blauw);
+  background: var(--lo-kaart);
+}
+
+.beheer-stijl .helix-action-card-active,
+.beheer-stijl .helix-action-card-active:hover:not(:disabled) {
+  border-color: var(--lo-inkt);
+  background: var(--lo-geel-zacht);
+}
+
+.beheer-stijl .dashboard-lens-tab,
+.beheer-stijl .studio-toolbar-control {
+  border: 2px solid var(--lo-lijn);
+  background: var(--lo-kaart);
+  color: var(--lo-inkt);
+  font-family: var(--lo-letter);
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.beheer-stijl .dashboard-lens-tab:hover:not(:disabled),
+.beheer-stijl .studio-toolbar-control:hover:not(:disabled) {
+  border-color: var(--lo-blauw);
+  background: var(--lo-kaart);
+}
+
+.beheer-stijl .dashboard-lens-tab-active,
+.beheer-stijl .dashboard-lens-tab-active:hover:not(:disabled) {
+  border-color: var(--lo-inkt);
+  background: var(--lo-inkt);
+  color: var(--lo-papier);
+}
+
+.beheer-stijl .studio-toolbar-control-active,
+.beheer-stijl .studio-toolbar-control-active:hover:not(:disabled) {
+  border-color: var(--lo-inkt);
+  background: var(--lo-geel-zacht);
+  color: var(--lo-inkt);
+}
+
+.beheer-stijl .helix-alert {
+  border: none;
+  border-radius: var(--lo-hoek-m);
+  background: var(--lo-oranje-zacht);
+  color: var(--lo-inkt);
+}
+
+.beheer-stijl .helix-badge {
+  border: none;
+  border-radius: 999px;
+  background: var(--lo-blauw-zacht);
+  color: var(--lo-blauw-inkt);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.beheer-stijl .helix-badge-success {
+  background: var(--lo-groen-zacht);
+  color: var(--lo-groen-inkt);
+}
+
+.beheer-stijl .helix-badge-warning {
+  background: var(--lo-oranje-zacht);
+  color: var(--lo-oranje-inkt);
+}
+
+.beheer-stijl .helix-badge-danger {
+  background: var(--lo-rood-zacht);
+  color: var(--lo-rood-inkt);
+}
+
+.beheer-stijl .helix-muted {
+  color: var(--lo-grijs);
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Coins, House, Lightbulb, ListChecks, Lock, Presentation, RefreshCw, Sparkles, Star, Target, Users } from 'lucide-react';
+import { Archive, BookOpen, Camera, Coins, FlaskConical, Hash, House, KeyRound, Lightbulb, ListChecks, Lock, Presentation, RefreshCw, School, Sparkles, Star, Target, Users } from 'lucide-react';
 
 import { HoofdstukRij, Kaart, KaartKop, Keuzeknoppen, Label, PaginaKop, ParagraafRij, StartKnop } from '../components/leeromgeving';
 import StudyStepRail from '../components/lesson/StudyStepRail';
@@ -225,6 +225,46 @@ export default function AdminStijlgidsPage() {
             </div>
             <button type="button" className="btn-secondary px-5 py-3 text-sm">Vorige</button>
           </article>
+        </div>
+
+        <div data-stijlgids="beheer" className="beheer-stijl lo-kaartenraster">
+          <Kaart>
+            <KaartKop titel="Knoppen in beheer" uitleg="Een rij knoppen breekt af naar een volgende regel; de knoppen zelf blijven op één regel." />
+            <div className="lo-knoppenbalk">
+              <button type="button" className="lo-knop-tweede lo-knop--klein"><School size={16} aria-hidden="true" />Klassen beheren</button>
+              <button type="button" className="lo-knop-tweede lo-knop--klein"><Coins size={16} aria-hidden="true" />Tokenbeheer</button>
+              <button type="button" className="lo-knop-tweede lo-knop--klein"><FlaskConical size={16} aria-hidden="true" />Testen als leerling</button>
+              <button type="button" className="lo-knop-tweede lo-knop--klein"><KeyRound size={16} aria-hidden="true" />Auth synchroniseren</button>
+              <button type="button" className="lo-knop-tweede lo-knop--klein"><Hash size={16} aria-hidden="true" />Leerlingnummers koppelen</button>
+              <button type="button" className="lo-knop-tweede lo-knop--klein"><Camera size={16} aria-hidden="true" />Foto's importeren</button>
+              <button type="button" className="lo-knop-tweede lo-knop--klein"><Archive size={16} aria-hidden="true" />Archief</button>
+            </div>
+            <button type="button" className="btn-tool min-h-12 px-5 text-sm">Oude knop in de scope</button>
+            <div className="lo-knoppenbalk">
+              <button type="button" className="lo-knop lo-knop--gevaar">Leerlingen wissen</button>
+              <button type="button" className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar">Reset CMS</button>
+            </div>
+            <p className="lo-melding lo-melding--goed">Opgeslagen.</p>
+            <div className="helix-card p-5">
+              <p className="helix-eyebrow">Werkplek</p>
+              <span className="helix-badge helix-badge-success">Actief</span>
+            </div>
+          </Kaart>
+          <Kaart>
+            <KaartKop titel="Paginakop met knoppen" uitleg="De kop geeft de tekst ruimte; de knoppen komen onder de tekst als het smal wordt." />
+            <PaginaKop
+              eyebrow="Werkplek"
+              titel="Leerlingen"
+              uitleg="Bekijk leerlingaccounts, gekoppelde klassen, accountstatus en wachtwoordbeheer."
+              acties={(
+                <div className="lo-knoppenbalk">
+                  <button type="button" className="lo-knop-tweede lo-knop--klein"><School size={16} aria-hidden="true" />Klassen beheren</button>
+                  <button type="button" className="lo-knop-tweede lo-knop--klein"><Hash size={16} aria-hidden="true" />Leerlingnummers koppelen</button>
+                  <button type="button" className="lo-knop-tweede lo-knop--klein"><Archive size={16} aria-hidden="true" />Archief</button>
+                </div>
+              )}
+            />
+          </Kaart>
         </div>
       </div>
     </div>

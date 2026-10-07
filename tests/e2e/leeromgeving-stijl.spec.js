@@ -114,3 +114,44 @@ test('de lespagina in de stijlgids heeft de vormen van de leeromgeving', async (
   expect(maten.invoer.border).toBe('1px solid rgb(232, 220, 195)');
   expect(maten.leestekst.color).toBe(inkt);
 });
+
+test('de beheer-stijl in de stijlgids: knoppen op één regel en de oude klassen in de nieuwe stijl', async ({ page }) => {
+  await page.goto('/login/beheer');
+  await page.getByRole('button', { name: /Als beheerder/i }).click();
+  await expect(page).toHaveURL(/\/admin\/instellingen$/);
+  await page.goto('/admin/stijlgids');
+
+  const sectie = page.locator('[data-stijlgids="beheer"]');
+  await expect(sectie).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+
+  const maten = await sectie.evaluate((el) => {
+    const stijl = (node) => {
+      const s = getComputedStyle(node);
+      return {
+        bg: s.backgroundColor, radius: s.borderTopLeftRadius, whiteSpace: s.whiteSpace, transform: s.textTransform,
+        border: `${s.borderTopWidth} ${s.borderTopStyle} ${s.borderTopColor}`,
+        borderTop: s.borderTopWidth,
+        height: Math.round(node.getBoundingClientRect().height)
+      };
+    };
+    const een = (selector) => stijl(el.querySelector(selector));
+    return {
+      balkknoppen: [...el.querySelectorAll('.lo-knoppenbalk .lo-knop-tweede')].map(stijl),
+      oudeKnop: een('.btn-tool'),
+      kaart: een('.helix-card'),
+      badge: een('.helix-badge'),
+      gevaar: een('.lo-knop--gevaar')
+    };
+  });
+
+  expect(maten.balkknoppen.length).toBeGreaterThanOrEqual(7);
+  for (const knop of maten.balkknoppen) {
+    expect(knop.height).toBeLessThanOrEqual(40);
+    expect(knop.whiteSpace).toBe('nowrap');
+  }
+  expect(maten.oudeKnop).toMatchObject({ border: '1px solid rgb(232, 220, 195)', whiteSpace: 'nowrap' });
+  expect(maten.kaart).toMatchObject({ borderTop: '0px', radius: '20px', bg: 'rgb(255, 255, 255)' });
+  expect(maten.badge.transform).toBe('none');
+  expect(maten.gevaar.bg).toBe('rgb(180, 47, 37)');
+});
