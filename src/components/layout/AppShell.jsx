@@ -14,6 +14,7 @@ import WeekdoelPill from '../tokens/WeekdoelPill';
 import { BarChart3, BellRing, BookOpen, Gamepad2, LogOut, Presentation, SettingsIcon, User, Users } from 'lucide-react';
 import { ADMIN_WORKSPACES, isAdminWorkspaceActive } from '../../lib/adminWorkspaceNav';
 import { isStudyRoutePath } from '../../lib/studyRouteState';
+import { neemTestsessieDoel } from '../../lib/leeromgeving';
 import { subscribeToNieuweMeldingenAantal } from '../../services/meldingenService';
 import { subscribeActiveTokenShopItems, subscribeStudentTokenLoadout } from '../../services/tokenService';
 import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewards';
@@ -49,6 +50,14 @@ export default function AppShell() {
       navigate('/admin/instellingen', { replace: true });
     }
   }, [isAdmin, location.pathname, navigate]);
+
+  // Een testsessie vanaf /admin/testen kan op een hoofdstuk of paragraaf
+  // beginnen; die plek is bewaard tot precies deze testleerling binnen is.
+  useEffect(() => {
+    if (isAdmin || !currentUser?.uid) return;
+    const doel = neemTestsessieDoel(window.sessionStorage, currentUser.uid);
+    if (doel && doel !== location.pathname) navigate(doel, { replace: true });
+  }, [isAdmin, currentUser?.uid, location.pathname, navigate]);
 
   useEffect(() => {
     if (!isAdmin) {

@@ -28,3 +28,37 @@ export const testsessieDoelRoute = (doel = null) => {
   if (doel?.soort === 'paragraaf' && doel.id) return `/chapter/${encodeURIComponent(doel.id)}`;
   return '/';
 };
+
+// Een testsessie wisselt de aanmelding van beheerder naar testleerling. Op dat
+// moment stuurt de beveiliging van de beheerpagina naar de startpagina, en die
+// wint het van een sprong direct na het inloggen. Daarom wordt de gekozen plek
+// eerst bewaard en pas gebruikt als precies die testleerling binnen is.
+const TESTSESSIE_DOEL_SLEUTEL = 'helix-testsessie-doel';
+
+/** Bewaart waar de testleerling moet beginnen; de startpagina hoeft niet bewaard. */
+export const bewaarTestsessieDoel = (opslag, uid, route) => {
+  try {
+    if (!opslag || !uid || !route || route === '/') {
+      opslag?.removeItem(TESTSESSIE_DOEL_SLEUTEL);
+      return;
+    }
+    opslag.setItem(TESTSESSIE_DOEL_SLEUTEL, JSON.stringify({ uid, route }));
+  } catch {
+    // Geen opslag: dan begint de testleerling op de startpagina.
+  }
+};
+
+/** Geeft de bewaarde plek één keer terug, alleen aan de testleerling voor wie hij bedoeld is. */
+export const neemTestsessieDoel = (opslag, uid) => {
+  try {
+    const ruw = opslag?.getItem(TESTSESSIE_DOEL_SLEUTEL);
+    if (!ruw || !uid) return null;
+    const doel = JSON.parse(ruw);
+    if (doel?.uid !== uid) return null;
+    opslag.removeItem(TESTSESSIE_DOEL_SLEUTEL);
+    return typeof doel.route === 'string' && doel.route.startsWith('/') && !doel.route.startsWith('//') ? doel.route : null;
+  } catch {
+    opslag?.removeItem?.(TESTSESSIE_DOEL_SLEUTEL);
+    return null;
+  }
+};

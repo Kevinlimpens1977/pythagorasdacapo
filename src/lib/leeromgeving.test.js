@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   aantalTekst,
+  bewaarTestsessieDoel,
+  neemTestsessieDoel,
   hoofdstukOnderregel,
   splitsParagraafLabel,
   testsessieDoelRoute,
@@ -39,4 +41,18 @@ test('een testsessie gaat naar de startpagina, een hoofdstuk of een paragraaf', 
   assert.equal(testsessieDoelRoute({ soort: 'hoofdstuk', id: 'hoofdstuk-dv-klas1-h2' }), '/hoofdstuk/hoofdstuk-dv-klas1-h2');
   assert.equal(testsessieDoelRoute({ soort: 'paragraaf', id: 'paragraaf-dv-klas1-incl-21' }), '/chapter/paragraaf-dv-klas1-incl-21');
   assert.equal(testsessieDoelRoute({ soort: 'hoofdstuk' }), '/');
+});
+
+test('de plek van een testsessie wordt onthouden tot precies die testleerling binnen is', () => {
+  const opslag = new Map();
+  const fake = { getItem: (k) => (opslag.has(k) ? opslag.get(k) : null), setItem: (k, v) => opslag.set(k, String(v)), removeItem: (k) => opslag.delete(k) };
+  bewaarTestsessieDoel(fake, 'testleerling-h1i1', '/hoofdstuk/hoofdstuk-dv-klas1-h2');
+  assert.equal(neemTestsessieDoel(fake, 'admin-uid'), null, 'de beheerder neemt hem niet mee');
+  assert.equal(neemTestsessieDoel(fake, 'testleerling-h1i1'), '/hoofdstuk/hoofdstuk-dv-klas1-h2');
+  assert.equal(neemTestsessieDoel(fake, 'testleerling-h1i1'), null, 'maar één keer');
+  bewaarTestsessieDoel(fake, 'testleerling-h1i1', '/');
+  assert.equal(neemTestsessieDoel(fake, 'testleerling-h1i1'), null, 'de startpagina hoeft niet bewaard');
+  fake.setItem('helix-testsessie-doel', '{kapot');
+  assert.equal(neemTestsessieDoel(fake, 'testleerling-h1i1'), null);
+  assert.equal(neemTestsessieDoel(null, 'x'), null, 'zonder opslag geen fout');
 });

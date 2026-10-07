@@ -10,7 +10,7 @@ import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { startTestleerlingSessieCall } from '../lib/api';
 import { bouwKlasTestbeeld, bouwTestdataOverzicht, groepeerOpLesstof, hoofdstukkenVanLessen, problemenVanGroep } from '../lib/testleerlingOverzicht';
-import { aantalTekst, hoofdstukOnderregel, splitsParagraafLabel, testsessieDoelRoute } from '../lib/leeromgeving';
+import { aantalTekst, bewaarTestsessieDoel, hoofdstukOnderregel, splitsParagraafLabel, testsessieDoelRoute } from '../lib/leeromgeving';
 import { HoofdstukRij, Kaart, KaartKop, Keuzeknoppen, Label, PaginaKop, ParagraafRij, StartKnop } from '../components/leeromgeving';
 import { getStudentEffectiveParagrafen } from '../lib/assignmentUtils';
 
@@ -136,9 +136,12 @@ export default function AdminTestenPage() {
         setFout(resultaat.error || 'De testsessie kon niet gestart worden.');
         return;
       }
+      // De gekozen plek eerst bewaren: na het wisselen van aanmelding stuurt de
+      // beveiliging van deze beheerpagina naar de startpagina. AppShell springt
+      // daarna naar de plek zodra de testleerling binnen is.
+      bewaarTestsessieDoel(window.sessionStorage, testaccount.uid, doelRoute);
       await signInWithCustomToken(auth, resultaat.token);
-      // Meteen naar de gekozen plek: de startpagina, een hoofdstuk of een paragraaf.
-      navigate(doelRoute);
+      navigate('/');
     } catch (error) {
       console.error('Inloggen als testleerling mislukt:', error);
       setFout('Inloggen als testleerling lukte niet. Start de testsessie opnieuw.');
