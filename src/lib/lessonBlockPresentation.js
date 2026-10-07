@@ -36,11 +36,11 @@ export const getLessonBlockAccent = (type) => LESSON_BLOCK_ACCENTS[type] || null
 const LESSON_READING_PRESENTATIONS = {
   example: {
     eyebrow: 'Voorbeeld',
-    chipClass: 'bg-sky-100 text-sky-800'
+    chipClass: 'lo-label--blauw'
   },
   summary: {
     eyebrow: 'Samenvatting',
-    chipClass: 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
+    chipClass: 'lo-label--groen'
   }
 };
 

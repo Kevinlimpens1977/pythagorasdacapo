@@ -1589,18 +1589,18 @@ function LessonBlockContent({
       <div className="min-w-0">
         {blokSlot?.vergrendeld ? (
           // Een los onderdeel op slot: gestippeld, met de tekst van de docent.
-          <div className="flex items-start gap-3 rounded-[20px] border-[2.5px] border-dashed border-[#BDB3A0] bg-[#FFFCF6] p-6">
-            <Lock size={22} className="mt-0.5 shrink-0 text-[var(--helix-muted)]" aria-hidden="true" />
+          <div className="lo-melding lo-melding--info gap-3 p-5">
+            <Lock size={22} className="mt-0.5 shrink-0 text-[var(--lo-grijs)]" aria-hidden="true" />
             <div>
-              <p className="font-black text-[var(--helix-navy)]">{block.title || 'Dit onderdeel'} staat nu dicht</p>
-              <p className="helix-muted mt-2 text-sm leading-6">{blokSlot.tekst}</p>
+              <p className="font-extrabold text-[var(--lo-inkt)]">{block.title || 'Dit onderdeel'} staat nu dicht</p>
+              <p className="mt-2 text-sm font-normal leading-6 text-[var(--lo-grijs)]">{blokSlot.tekst}</p>
             </div>
           </div>
         ) : block.type === 'game' ? (
           spelSlot?.vergrendeld ? (
-            <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-6">
-              <p className="font-black text-[var(--helix-navy)]">Dit spel gaat open na de stappen hiervoor</p>
-              <p className="helix-muted mt-2 text-sm leading-6">
+            <div className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier-2)] p-5">
+              <p className="font-extrabold text-[var(--lo-inkt)]">Dit spel gaat open na de stappen hiervoor</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--lo-grijs)]">
                 Maak eerst de stappen hiervoor af, dan gaat het spel open. Nog te doen:{' '}
                 {spelSlot.resterend.slice(0, 4).join(', ')}
                 {spelSlot.resterend.length > 4 ? ` en nog ${spelSlot.resterend.length - 4} stappen` : ''}.
@@ -1618,9 +1618,9 @@ function LessonBlockContent({
         ) : block.type === 'slidedeck' ? (
           <SlidedeckBlock block={block} onOpen={onOpenSlidedeck} />
         ) : (block.type === 'quiz' || block.type === 'toets') && nulmetingSlot?.vergrendeld ? (
-          <div className="rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-6">
-            <p className="font-black text-[var(--helix-navy)]">{block.title || 'Dit deel'} gaat nog niet open</p>
-            <p className="helix-muted mt-2 text-sm leading-6">
+          <div className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier-2)] p-5">
+            <p className="font-extrabold text-[var(--lo-inkt)]">{block.title || 'Dit deel'} gaat nog niet open</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--lo-grijs)]">
               Maak eerst {nulmetingSlot.vereist.map((stand) => `${stand.title} (${stand.itemsAf} van ${stand.itemCount} vragen ingeleverd)`).join(' en ')} helemaal af.
               Daarna gaat dit deel vanzelf open.
             </p>
@@ -1704,9 +1704,9 @@ function ReadingBlockCompletion({ isCompleted, actionLabel, hintLabel, onConfirm
   // één keer op het scherm: in de zwevende balk onderin.
   if (isCompleted) {
     return (
-      <div className="flex justify-end border-t border-[var(--helix-border)] pt-5">
-        <span className="inline-flex items-center gap-2 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-5 py-3 text-sm font-black text-[var(--helix-muted)]">
-          <Check size={18} strokeWidth={3.2} className="text-[#237A4D]" />
+      <div className="flex justify-end border-t border-[var(--lo-lijn)] pt-5">
+        <span className="inline-flex items-center gap-2 rounded-[var(--lo-hoek-m)] bg-[var(--lo-groen-zacht)] px-5 py-3 text-sm font-extrabold text-[var(--lo-groen-inkt)]">
+          <Check size={18} strokeWidth={3.2} />
           Afgevinkt
         </span>
       </div>
@@ -1714,8 +1714,8 @@ function ReadingBlockCompletion({ isCompleted, actionLabel, hintLabel, onConfirm
   }
 
   return (
-    <div className="flex flex-col gap-3 border-t border-[var(--helix-border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+    <div className="flex flex-col gap-3 border-t border-[var(--lo-lijn)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm leading-6 text-[var(--lo-grijs)]">
         {hintLabel}
       </p>
       <button
@@ -1803,9 +1803,9 @@ function ParagraphEndActivity({
   if (isTeacherReviewPending) {
     return (
       <article className="min-h-[32rem] p-5 sm:p-8">
-        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
+        <div className="rounded-[var(--lo-hoek-l)] bg-[var(--lo-oranje-zacht)] p-6 text-[var(--lo-inkt)]">
           <p className="helix-eyebrow text-amber-700">Docentbeoordeling</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold text-[var(--helix-navy)]">
+          <h2 className="mt-2 text-3xl font-extrabold text-[var(--lo-inkt)]">
             Je docent kijkt nog mee
           </h2>
           <p className="mt-3 max-w-2xl text-sm font-semibold leading-6">
@@ -1827,8 +1827,8 @@ function ParagraphEndActivity({
   if (!activity.required) {
     return (
       <article className="min-h-[32rem] p-5 sm:p-8">
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-          <h2 className="font-display text-3xl font-extrabold text-[var(--helix-navy)]">Paragraaf afgerond</h2>
+        <div className="rounded-[var(--lo-hoek-l)] bg-[var(--lo-papier-2)] p-6 text-[var(--lo-inkt)]">
+          <h2 className="text-3xl font-extrabold text-[var(--lo-inkt)]">Paragraaf afgerond</h2>
           <p className="mt-3 text-sm font-semibold text-[var(--helix-muted)]">
             Je voortgang is opgeslagen.
           </p>
@@ -1845,7 +1845,7 @@ function ParagraphEndActivity({
       <div className="space-y-6">
         <div>
           <p className="helix-eyebrow">{isChallenge ? 'Uitdaging' : 'Herstel'}</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold text-[var(--helix-navy)]">
+          <h2 className="mt-2 text-3xl font-extrabold text-[var(--lo-inkt)]">
             {activity.title}
           </h2>
           <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-[var(--helix-muted)]">
@@ -1855,8 +1855,8 @@ function ParagraphEndActivity({
 
         <div className="space-y-3">
           {(activity.tasks || []).map((task, index) => (
-            <div key={`${task.title}-${index}`} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-widest text-[var(--helix-purple)]">
+            <div key={`${task.title}-${index}`} className="rounded-[var(--lo-hoek-l)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-4">
+              <p className="lo-eyebrow">
                 Opdracht {index + 1}
               </p>
               <h3 className="mt-1 font-display text-lg font-extrabold text-[var(--helix-navy)]">{task.title}</h3>
@@ -1866,7 +1866,7 @@ function ParagraphEndActivity({
         </div>
 
         {feedback && (
-          <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-bold text-violet-950">
+          <div className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-paars-zacht)] px-4 py-3 text-sm font-bold text-[var(--lo-inkt)]">
             {feedback}
           </div>
         )}
@@ -3003,7 +3003,7 @@ function QuestionLearningBlock({
                 ? 'border-red-200 bg-red-50 text-red-950'
                 : submitted
               ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-              : 'border-violet-200 bg-violet-50 text-violet-950'
+              : 'border-[var(--lo-lijn)] bg-[var(--lo-paars-zacht)] text-[var(--lo-inkt)]'
           }`}>
             {assessmentFeedback && <p>{assessmentFeedback}</p>}
             {assessmentMissing.length > 0 && (
@@ -3028,7 +3028,7 @@ function QuestionLearningBlock({
         )}
 
         {preview.type === 'invullen' ? (
-        <div className="rounded-3xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)]/55 p-5 text-lg leading-10 text-[var(--helix-navy)]">
+        <div className="rounded-[var(--lo-hoek-l)] border border-[var(--lo-lijn)] bg-[var(--lo-papier)] p-5 text-lg leading-10 text-[var(--lo-inkt)]">
           {preview.segments.map((segment, index) => (
             segment.type === 'gap' ? (() => {
               const field = preview.fields.find((item) => item.id === segment.id);
@@ -3044,7 +3044,7 @@ function QuestionLearningBlock({
                     disabled={submitted}
                     className={inputClassForStatus(
                       status,
-                      'mx-1 inline-flex min-w-32 rounded-xl border-2 border-fuchsia-200 bg-white px-3 py-2 text-base font-bold text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-80'
+                      'mx-1 inline-flex min-w-32 rounded-xl border-2 border-[var(--lo-lijn)] bg-white px-3 py-2 text-base font-bold text-[var(--helix-navy)] outline-none transition focus:border-[var(--helix-purple)] focus:ring-2 focus:ring-[var(--lo-blauw-zacht)] disabled:cursor-not-allowed disabled:opacity-80'
                     )}
                     placeholder={`Invulveld ${preview.fields.findIndex((item) => item.id === segment.id) + 1}`}
                   />
@@ -3078,7 +3078,7 @@ function QuestionLearningBlock({
                     checked={checked}
                     onChange={(event) => setPreviewAnswer(fieldId, event.target.checked)}
                     disabled={submitted}
-                    className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-fuchsia-100 disabled:cursor-not-allowed"
+                    className="h-4 w-4 rounded border-[var(--helix-border)] text-[var(--helix-purple)] focus:ring-[var(--lo-blauw-zacht)] disabled:cursor-not-allowed"
                   />
                   {option.text || `Optie ${option.originalIndex + 1}`}
                 </label>
@@ -3227,7 +3227,7 @@ function QuestionLearningBlock({
         <button
           type="button"
           onClick={() => setShowAiTutor(true)}
-          className="fixed bottom-5 right-4 z-40 inline-flex items-center gap-2 rounded-full border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-3 text-sm font-black text-[var(--helix-purple)] shadow-xl transition hover:bg-white md:hidden"
+          className="fixed bottom-5 right-4 z-40 inline-flex items-center gap-2 rounded-full border border-[var(--lo-lijn)] bg-[var(--lo-blauw-zacht)] px-4 py-3 text-sm font-black text-[var(--helix-purple)] shadow-xl transition hover:bg-white md:hidden"
         >
           <MessageCircle size={18} />
           Digidocent
@@ -3258,7 +3258,7 @@ function QuestionLearningBlock({
           <button
             type="button"
             onClick={() => setShowAiTutor((current) => !current)}
-            className="hidden h-56 w-14 shrink-0 items-center justify-center rounded-l-2xl border border-r-0 border-fuchsia-100 bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)] shadow-lg transition hover:bg-white md:flex"
+            className="hidden h-56 w-14 shrink-0 items-center justify-center rounded-l-2xl border border-r-0 border-[var(--lo-lijn)] bg-[var(--lo-blauw-zacht)] text-sm font-black text-[var(--helix-purple)] shadow-lg transition hover:bg-white md:flex"
             title={showAiTutor ? 'Sluit Digidocent' : 'Open Digidocent'}
           >
             <span className="flex rotate-180 items-center gap-2 [writing-mode:vertical-rl]">
@@ -3267,9 +3267,9 @@ function QuestionLearningBlock({
             </span>
           </button>
 
-          <div className="min-w-0 flex-1 overflow-y-auto rounded-t-3xl border border-fuchsia-100 bg-white p-3 shadow-2xl md:overflow-visible md:rounded-bl-3xl md:rounded-tr-none">
+          <div className="min-w-0 flex-1 overflow-y-auto rounded-t-[var(--lo-hoek-xl)] border border-[var(--lo-lijn)] bg-white p-3 shadow-2xl md:overflow-visible md:rounded-bl-[var(--lo-hoek-xl)] md:rounded-tr-none">
             <div className="mb-3 flex items-start gap-3 px-1">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lo-blauw-zacht)] text-[var(--helix-purple)]">
                 <MessageCircle size={19} />
               </div>
               <div className="min-w-0 flex-1">
@@ -3328,7 +3328,7 @@ function DefaultLearningBlock({ block, bodyHtml, linkedVraag }) {
   // niet ook nog een chip boven de kaart te staan.
   const typeChip = presentation && !isExampleBlock ? (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] ${presentation.chipClass}`}
+      className={`lo-label ${presentation.chipClass}`}
     >
       {presentation.eyebrow}
     </span>
@@ -3356,7 +3356,7 @@ function DefaultLearningBlock({ block, bodyHtml, linkedVraag }) {
 
   if (!hasBodyContent && !hasExample && !imageUrl) {
     return (
-      <div className="rounded-[var(--helix-radius-lg)] border border-dashed border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-8 text-center sm:p-12">
+      <div className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier-2)] p-5 text-center text-sm text-[var(--lo-grijs)]">
         <BookOpen className="mx-auto text-[var(--helix-muted)]" size={34} />
         <p className="mt-3 font-black text-[var(--helix-navy)]">Nog geen inhoud</p>
         <p className="mt-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
@@ -3367,7 +3367,7 @@ function DefaultLearningBlock({ block, bodyHtml, linkedVraag }) {
   }
 
   const figure = imageUrl ? (
-    <figure className="overflow-hidden rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white/70 p-3">
+    <figure className="overflow-hidden rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-3">
       <img src={imageUrl} alt={caption || block.title || ''} className="w-full rounded-[var(--helix-radius-md)] object-contain" />
       {caption && (
         <figcaption className="mt-3 px-1 text-sm font-semibold leading-6 text-[var(--helix-muted)]">{caption}</figcaption>
@@ -3444,9 +3444,9 @@ function SlidedeckBlock({ block, onOpen }) {
   };
 
   return (
-    <div className="study-panel border-fuchsia-100 bg-[var(--helix-soft-lavender)]/70">
+    <div className="study-panel bg-[var(--lo-blauw-zacht)]">
       <p className="helix-eyebrow">Presentatie</p>
-      <h3 className="mt-2 font-display text-2xl font-extrabold text-[var(--helix-navy)]">{presenterSlide.title}</h3>
+      <h3 className="lo-kaart-titel mt-1">{presenterSlide.title}</h3>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--helix-muted)]">
         Bekijk deze presentatie als losse slides. Gebruik vorige/volgende of fullscreen voor digibordweergave.
       </p>
@@ -3454,7 +3454,7 @@ function SlidedeckBlock({ block, onOpen }) {
         <div className="lesson-prose mt-5" dangerouslySetInnerHTML={htmlValue(content.html)} />
       )}
       {!presenterSlide.imageUrl && !presenterSlide.pdfStoragePath && !presenterSlide.slidedeckPackageId && (
-        <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800">
+        <p className="lo-melding lo-melding--info mt-4">
           Er is nog geen presentatie aan dit blok gekoppeld. Je docent kiest er een in de lesbouwer.
         </p>
       )}
@@ -3594,7 +3594,7 @@ function AssessmentLearningBlock({
   );
   const [introKeuze, setIntroKeuze] = useState(null);
   const introIngeklapt = introKanInklappen && (introKeuze === null ? introStandaardIngeklapt : !introKeuze);
-  const panelKleur = isToets ? 'border-blue-100 bg-blue-50 text-blue-950' : 'border-emerald-100 bg-emerald-50 text-emerald-950';
+  const panelKleur = isToets ? 'bg-[var(--lo-blauw-zacht)] text-[var(--lo-inkt)]' : 'bg-[var(--lo-groen-zacht)] text-[var(--lo-inkt)]';
 
   return (
     <div className="space-y-6">
@@ -3602,7 +3602,7 @@ function AssessmentLearningBlock({
         <div className={`study-panel flex flex-wrap items-center justify-between gap-3 py-3 ${panelKleur}`}>
           <div className="min-w-0">
             <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
-            <h3 className="mt-1 truncate font-display text-xl font-extrabold">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
+            <h3 className="lo-kaart-titel mt-1 max-w-full truncate">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
           </div>
           <button
             type="button"
@@ -3617,7 +3617,7 @@ function AssessmentLearningBlock({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
-            <h3 className="mt-2 font-display text-2xl font-extrabold">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
+            <h3 className="lo-kaart-titel mt-2">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
           </div>
           {introKanInklappen && (
             <button
@@ -3726,9 +3726,9 @@ function AssessmentLearningBlock({
       )}
 
       {nulmetingDeel && progressSummary.completed && (
-        <div className="study-panel border-blue-100 bg-blue-50 text-blue-950">
+        <div className="study-panel bg-[var(--lo-blauw-zacht)] text-[var(--lo-inkt)]">
           <p className="helix-eyebrow">Nulmeting</p>
-          <h3 className="mt-2 font-display text-2xl font-extrabold">Deel {nulmetingDeel} is klaar</h3>
+          <h3 className="lo-kaart-titel mt-2">Deel {nulmetingDeel} is klaar</h3>
           <p className="mt-2 text-sm font-semibold leading-6">
             Dit was geen toets voor een cijfer. Je antwoorden zijn omgezet in je persoonlijke startprofiel: wat je al goed kunt en waar je mee verdergaat.
             {nulmetingDeel === 'A' ? ' Na deel B is je profiel compleet.' : ''}
@@ -3740,7 +3740,7 @@ function AssessmentLearningBlock({
       )}
 
       {retryPlan.ronde1Klaar && retryPolicy.enabled && retryPlan.aantalKandidaten === 0 && progressSummary.itemsPendingReview === 0 && (
-        <div className="study-panel border-emerald-100 bg-emerald-50 text-emerald-950">
+        <div className="study-panel bg-[var(--lo-groen-zacht)] text-[var(--lo-inkt)]">
           <p className="helix-eyebrow">Herkansing</p>
           <p className="mt-2 text-sm font-bold">Alles goed in de eerste ronde. Er is niets te herkansen.</p>
         </div>
@@ -3748,9 +3748,9 @@ function AssessmentLearningBlock({
 
       {retryPlan.beschikbaar && (
         <div className="space-y-4" id={`herkansing-${block.id}`}>
-          <div className="study-panel border-amber-200 bg-amber-50 text-amber-950">
+          <div className="study-panel bg-[var(--lo-oranje-zacht)] text-[var(--lo-inkt)]">
             <p className="helix-eyebrow">Herkansing</p>
-            <h3 className="mt-2 font-display text-2xl font-extrabold">
+            <h3 className="lo-kaart-titel mt-2">
               {retryPlan.herkansingKlaar ? 'Herkansing afgerond' : 'Herkans je fouten'}
             </h3>
             <p className="mt-2 text-sm font-semibold leading-6">
@@ -3877,7 +3877,7 @@ function AssessmentStepper({ block, items = [], origineelItems = [], records = {
         {/* De deelletter staat bij elke vraag, niet alleen boven het blok. Deel A
             en deel B meten dezelfde negen onderdelen met dezelfde vraagtypen, dus
             zonder dat label lijkt terugklikken naar deel A op hetzelfde deel. */}
-        <p className="text-sm font-black uppercase tracking-[0.14em] text-[var(--helix-purple)]">
+        <p className="lo-eyebrow">
           {deelLetter ? `Deel ${deelLetter} · ` : ''}Vraag {safeIndex + 1} van {items.length}
         </p>
         <p className="text-xs font-bold text-[var(--helix-muted)]">{gemaakt} van {items.length} beantwoord</p>
@@ -3886,12 +3886,12 @@ function AssessmentStepper({ block, items = [], origineelItems = [], records = {
         {statuses.map((status, index) => {
           const kanSpringen = canJumpTo({ block, statuses, targetIndex: index, currentIndex: safeIndex });
           const kleur = status.current
-            ? 'bg-[var(--helix-purple)] text-white ring-2 ring-[var(--helix-purple)] ring-offset-1'
+            ? 'border-[var(--lo-inkt)] bg-[var(--lo-geel)] text-[var(--lo-inkt)]'
             : status.pendingReview
-              ? 'bg-amber-100 text-amber-800'
+              ? 'border-transparent bg-[var(--lo-oranje-zacht)] text-[var(--lo-oranje-inkt)]'
               : status.completed
-                ? (status.correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800')
-                : 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]';
+                ? (status.correct ? 'border-transparent bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]' : 'border-transparent bg-[var(--lo-rood-zacht)] text-[var(--lo-rood-inkt)]')
+                : 'border-[var(--lo-lijn)] bg-[var(--lo-papier-2)] text-[var(--lo-grijs)]';
           return (
             <li key={status.itemId}>
               <button
@@ -3900,7 +3900,7 @@ function AssessmentStepper({ block, items = [], origineelItems = [], records = {
                 disabled={!kanSpringen}
                 aria-current={status.current ? 'step' : undefined}
                 title={`Vraag ${status.nummer}${status.completed ? (status.correct ? ': goed' : ': fout') : ''}`}
-                className={`h-7 min-w-7 rounded-md px-1 text-[11px] font-black transition ${kleur} ${kanSpringen ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}
+                className={`inline-grid h-7 min-w-7 place-items-center rounded-[var(--lo-hoek-s)] border-2 px-1 text-xs font-extrabold tabular-nums ${kleur} ${kanSpringen ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}
               >
                 {status.nummer}
               </button>
@@ -3935,7 +3935,7 @@ function AssessmentStepper({ block, items = [], origineelItems = [], records = {
           paragraafvoet onderaan het scherm, waar "Volgende stap" staat: twee
           knoppen met bijna dezelfde tekst vlak onder elkaar. Vandaar de eigen
           omlijsting, de eigen achtergrond en de naam "Volgende vraag". */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-papier)] px-4 py-3">
         <div>
           {terug && safeIndex > 0 && (
             <button type="button" onClick={() => gaNaar(safeIndex - 1, -1)} className="btn-secondary inline-flex items-center gap-2 px-4 py-2.5 text-sm">
@@ -4365,8 +4365,8 @@ function AssessmentItemLearningCard({
     : '';
 
   return (
-    <div className={`rounded-2xl border-2 bg-white p-4 ${hasResult ? `${tone.borderClass} ${tone.ringClass}` : retryMode ? 'border-amber-200' : 'border-[var(--helix-border)]'}`}>
-      <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[var(--helix-purple)]">
+    <div className={`rounded-[var(--lo-hoek-l)] border-2 bg-[var(--lo-kaart)] p-4 ${hasResult ? `${tone.borderClass} ${tone.ringClass}` : retryMode ? 'border-amber-200' : 'border-[var(--helix-border)]'}`}>
+      <div className="lo-eyebrow flex flex-wrap items-center gap-2">
         <span>{retryMode ? 'Herkansing - vraag' : 'Vraag'} {index + 1}</span>
         <span>- {item.type}</span>
         {!retryMode && Number(item.tokens) > 0 && <span>- {item.tokens} tokens</span>}
@@ -4413,7 +4413,7 @@ function AssessmentItemLearningCard({
           <button
             type="button"
             onClick={() => setShowRetryTutor((current) => !current)}
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-soft-lavender)] px-4 py-2 text-sm font-black text-[var(--helix-purple)] transition hover:bg-white"
+            className="lo-knop-start"
           >
             <MessageCircle size={16} />
             {showRetryTutor ? 'Sluit Digidocent' : 'Vraag Digidocent om een hint'}
@@ -4422,7 +4422,7 @@ function AssessmentItemLearningCard({
       </div>
 
       {(feedback || hasAnswerExplanation(answerExplanation)) && (
-        <div className="mt-3 rounded-xl bg-[var(--helix-surface-soft)] px-3 py-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+        <div className="mt-3 rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] p-3 text-sm font-semibold leading-6 text-[var(--lo-grijs)]">
           {feedback && <p>{feedback}</p>}
           <AnswerExplanationNotes explanation={answerExplanation} className={feedback ? '' : 'mt-0 border-t-0 pt-0'} />
         </div>
@@ -4474,14 +4474,14 @@ function AssessmentAnswerInput({
     return (
       <div className="grid gap-2 sm:grid-cols-2">
         {choiceOptions.map((option) => (
-          <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
+          <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
             <input
               type="radio"
               name={`${item.id}-answer`}
               checked={value === option.id}
               disabled={disabled}
               onChange={() => onChange(option.id)}
-              className="h-4 w-4 accent-[var(--helix-purple)]"
+              className="h-4 w-4 accent-[var(--lo-blauw)]"
             />
             {option.text}
           </label>
@@ -4497,7 +4497,7 @@ function AssessmentAnswerInput({
     return (
       <div className="grid gap-2 sm:grid-cols-2">
         {choiceOptions.map((option) => (
-          <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
+          <label key={option.id} className="flex cursor-pointer items-center gap-3 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-3 py-3 text-sm font-bold text-[var(--helix-muted)]">
             <input
               type={multipleCorrect ? 'checkbox' : 'radio'}
               name={`${item.id}-answer`}
@@ -4512,7 +4512,7 @@ function AssessmentAnswerInput({
                   ? value.filter((id) => id !== option.id)
                   : [...value, option.id]);
               }}
-              className="h-4 w-4 accent-[var(--helix-purple)]"
+              className="h-4 w-4 accent-[var(--lo-blauw)]"
             />
             {option.text}
           </label>
@@ -4741,9 +4741,9 @@ function ExerciseLearningBlock({ block, origineelBlok = null, bodyHtml, progress
             const record = savedRecords.find((entry) => entry?.fieldId === field.id) || null;
             const oordeel = record ? ZELFOORDELEN[record.zelfoordeel] || null : null;
             return (
-              <div key={field.id} className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+              <div key={field.id} className="rounded-[var(--lo-hoek-l)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)]">
+                  <span className="lo-hblok">
                     {index + 1}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -4793,18 +4793,18 @@ function ExerciseLearningBlock({ block, origineelBlok = null, bodyHtml, progress
                 : 'Beoordeeld'}
           </p>
         </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--helix-surface-soft)]">
-          <div
-            className="h-full rounded-full bg-[var(--helix-purple)] transition-all"
+        <div className="lo-voortgang mt-2">
+          <i
+            className="transition-all"
             style={{ width: `${Math.round((flow.records.length / Math.max(1, fields.length)) * 100)}%` }}
           />
         </div>
       </div>
 
       {veld && (
-        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-4">
+        <div className="rounded-[var(--lo-hoek-l)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-4">
           <label htmlFor={`${block.id}-${veld.id}`} className="flex items-start gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--helix-soft-lavender)] text-sm font-black text-[var(--helix-purple)]">
+            <span className="lo-hblok">
               {flow.index + 1}
             </span>
             <span className="pt-1 text-base font-bold leading-6 text-[var(--helix-navy)]">{veld.label}</span>
@@ -4876,9 +4876,9 @@ function ExerciseLearningBlock({ block, origineelBlok = null, bodyHtml, progress
                   )}
 
                   {assessment?.feedback && (
-                    <div className="rounded-xl border border-violet-200 bg-violet-50 p-3">
-                      <p className="text-[11px] font-black uppercase tracking-wider text-violet-700">Digidocent</p>
-                      <p className="mt-1 text-sm font-semibold leading-6 text-violet-950">{assessment.feedback}</p>
+                    <div className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-paars-zacht)] p-3">
+                      <p className="lo-eyebrow text-[var(--lo-paars-inkt)]">Digidocent</p>
+                      <p className="mt-1 text-sm leading-6 text-[var(--lo-inkt)]">{assessment.feedback}</p>
                     </div>
                   )}
                 </>
@@ -4907,7 +4907,7 @@ function ExerciseLearningBlock({ block, origineelBlok = null, bodyHtml, progress
 
               {flow.fase === OEFEN_FASEN.BEOORDEELD && !aiMislukt && huidigRecord && ZELFOORDELEN[huidigRecord.zelfoordeel] && (
                 <p className="inline-flex items-center gap-2 text-sm font-bold text-[var(--helix-navy)]">
-                  <Check size={16} strokeWidth={3.2} className="text-[#237A4D]" />
+                  <Check size={16} strokeWidth={3.2} className="text-[var(--lo-groen-inkt)]" />
                   Jouw oordeel:
                   <span
                     className="rounded-full px-2.5 py-0.5 text-[11px] font-black"
@@ -4955,7 +4955,7 @@ function GameBlock({ block, gameRewardRules = {}, playCount = 0, lastResult = nu
 
   if (!gameId) {
     return (
-        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6 text-orange-950">
+        <div className="lo-melding lo-melding--info flex-col p-6">
         <h3 className="text-xl font-black">Nog geen game gekozen</h3>
         <p className="mt-2 text-sm leading-6">Vraag je docent om een game aan dit lesblok te koppelen.</p>
       </div>
@@ -4976,7 +4976,7 @@ function GameBlock({ block, gameRewardRules = {}, playCount = 0, lastResult = nu
       )}
 
       {!access.unlimited && access.canPlay && (
-        <p className="rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-4 py-3 text-sm font-bold text-[var(--helix-muted)]">
+        <p className="rounded-2xl border border-[var(--lo-lijn)] bg-[var(--lo-papier)] px-4 py-3 text-sm font-bold text-[var(--helix-muted)]">
           Je mag dit spel nog {access.remaining} van de {access.limit} keer spelen.
         </p>
       )}
@@ -4993,8 +4993,8 @@ function GameBlock({ block, gameRewardRules = {}, playCount = 0, lastResult = nu
           onResult={onComplete}
         />
       ) : (
-        <div className="rounded-2xl border border-[var(--helix-border)] bg-white p-6 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"><Target size={26} aria-hidden="true" /></span>
+        <div className="rounded-[var(--lo-hoek-l)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-6 text-center">
+          <span className="lo-hblok mx-auto grid h-14 w-14"><Target size={26} aria-hidden="true" /></span>
           <h3 className="mt-4 text-xl font-black text-[var(--helix-navy)]">Je hebt dit spel uitgespeeld</h3>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--helix-muted)]">
             Je hebt {block.content?.gameTitle || 'dit spel'} {access.limit} keer gespeeld. Je tokens zijn al toegekend.
