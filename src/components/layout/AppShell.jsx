@@ -22,6 +22,7 @@ import ProfielAvatar from '../avatar/ProfielAvatar';
 import KlasDoelPill from '../klas/KlasDoelPill';
 import EventPill from '../klas/EventPill';
 import HelixLogo from '../merk/HelixLogo';
+import Label from '../leeromgeving/Label';
 
 const workspaceIcons = {
   lesstof: BookOpen,
@@ -129,7 +130,7 @@ export default function AppShell() {
           <nav
             className={
               isAdmin
-                ? 'nav-scroll-onzichtbaar flex max-w-[54vw] gap-1 overflow-x-auto rounded-2xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/82 p-1 md:max-w-none md:gap-2'
+                ? 'nav-scroll-onzichtbaar lo-keuzes min-w-0 flex-nowrap overflow-x-auto p-1'
                 : 'lo-keuzes flex-nowrap'
             }
           >
@@ -142,10 +143,12 @@ export default function AppShell() {
                   <button
                     key={workspace.id}
                     onClick={() => navigate(workspace.path)}
-                    className={`admin-nav-tab ${isActive ? 'admin-nav-tab-active' : ''}`}
+                    className="lo-keuze min-h-10 shrink-0"
+                    aria-current={isActive ? 'page' : undefined}
+                    aria-label={workspace.label}
                   >
                     <Icon size={18} />
-                    <span className="hidden md:inline">{workspace.label}</span>
+                    <span className="hidden lg:inline">{workspace.label}</span>
                     {workspace.id === 'instellingen' && openBugReportCount > 0 && (
                       <span
                         className="admin-nav-alert"
@@ -182,7 +185,7 @@ export default function AppShell() {
             document is er voor wie aan HELIX bouwt, niet voor de balk boven een
             les. De pagina blijft bestaan op /admin/projectkompas. */}
 
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className={isAdmin ? 'flex shrink-0 items-center gap-2' : 'flex items-center gap-3 md:gap-4'}>
           {isAdmin && <HelpPaneel />}
           {isAdmin && <DeleteStudentsButton />}
           {isAdmin && <CmsResetButton />}
@@ -190,7 +193,7 @@ export default function AppShell() {
           {isDevBypass && (
             <button
               onClick={handleLogout}
-              className="hidden rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black uppercase tracking-wide text-orange-700 transition-colors hover:bg-orange-100 lg:inline-flex"
+              className="lo-knop-tweede lo-knop--klein hidden text-[var(--lo-oranje-inkt)] lg:inline-flex"
               title="Reset tijdelijke testmodus"
             >
               Reset testmodus
@@ -280,10 +283,8 @@ export default function AppShell() {
             </button>
           ) : (
             <div className="mr-2 hidden flex-col items-end lg:flex">
-              <span className="text-sm font-bold text-[var(--helix-navy)]">{currentUser?.displayName || 'Gebruiker'}</span>
-              <span className="rounded-full bg-[var(--helix-soft-peach)] px-2 text-[10px] font-black uppercase tracking-widest text-orange-700">
-                Administrator
-              </span>
+              <span className="text-sm font-bold text-[var(--lo-inkt)]">{currentUser?.displayName || 'Gebruiker'}</span>
+              <Label kleur="oranje">Administrator</Label>
             </div>
           )}
 
@@ -291,6 +292,7 @@ export default function AppShell() {
             onClick={handleLogout}
             className="lo-knop-tweede px-3 py-2"
             title="Uitloggen"
+            aria-label="Uitloggen"
           >
             <LogOut size={20} />
           </button>

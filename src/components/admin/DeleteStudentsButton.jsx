@@ -46,30 +46,30 @@ export default function DeleteStudentsButton() {
     <>
       <button
         onClick={handleOpen}
-        className="hidden items-center gap-2 rounded-xl border border-transparent px-3 py-2 text-xs font-black uppercase tracking-wide text-[var(--helix-muted)] transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700 xl:inline-flex"
+        className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar hidden xl:inline-flex"
         title="Verwijder alle leerlingdocumenten uit Firestore"
       >
-        <Trash2 size={15} />
+        <Trash2 size={16} />
         Wis leerlingen
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
+          <div className="lo-kaart w-full max-w-lg gap-0 p-0">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--lo-lijn)] p-5">
               <div className="flex gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--lo-hoek-m)] bg-[var(--lo-rood-zacht)] text-[var(--lo-rood-inkt)]">
                   <AlertTriangle size={23} />
                 </div>
                 <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-red-600">Database-actie</p>
-                  <h2 className="mt-1 text-xl font-black text-slate-900">Alle leerlingen verwijderen</h2>
+                  <p className="lo-eyebrow text-[var(--lo-rood-inkt)]">Database-actie</p>
+                  <h2 className="mt-1 text-xl font-extrabold text-[var(--lo-inkt)]">Alle leerlingen verwijderen</h2>
                 </div>
               </div>
               <button
                 onClick={handleClose}
                 disabled={isDeleting}
-                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-[var(--lo-hoek-s)] p-2 text-[var(--lo-grijs)] transition hover:bg-[var(--lo-papier)] hover:text-[var(--lo-inkt)] disabled:cursor-not-allowed disabled:opacity-50"
                 title="Sluiten"
               >
                 <X size={19} />
@@ -77,8 +77,8 @@ export default function DeleteStudentsButton() {
             </div>
 
             <div className="space-y-4 p-5">
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-900">
-                <p className="font-black">Dit verwijdert leerlingdocumenten permanent uit Firestore.</p>
+              <div className="lo-melding lo-melding--fout block p-4 leading-6">
+                <p className="font-extrabold">Dit verwijdert leerlingdocumenten permanent uit Firestore.</p>
                   <p className="mt-2">
                     Alle gebruikers met rol leerling, hun voortgang en tijdelijke pending-leerlingen worden gewist.
                     Accounts met adminrol, kevlimpens@gmail.com en vragen@scheikundeles.nl blijven bewaard.
@@ -87,27 +87,27 @@ export default function DeleteStudentsButton() {
               </div>
 
               <div>
-                <label className="block text-sm font-black text-slate-800">
-                  Typ <span className="font-mono text-red-700">{DELETE_STUDENTS_CONFIRM_TEXT}</span> om te bevestigen
+                <label className="lo-veldlabel">
+                  Typ <span className="font-mono text-[var(--lo-rood-inkt)]">{DELETE_STUDENTS_CONFIRM_TEXT}</span> om te bevestigen
                 </label>
                 <input
                   value={confirmText}
                   onChange={(event) => setConfirmText(event.target.value)}
                   disabled={isDeleting || !!result}
-                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none transition focus:border-red-300 focus:ring-4 focus:ring-red-100 disabled:bg-slate-100"
+                  className="lo-invoer mt-2 font-mono text-sm disabled:bg-[var(--lo-papier-2)]"
                   placeholder={DELETE_STUDENTS_CONFIRM_TEXT}
                 />
               </div>
 
               {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+                <div className="lo-melding lo-melding--fout">
                   {error}
                 </div>
               )}
 
               {result && (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-                  <p className="font-black">Leerlingen verwijderd.</p>
+                <div className="lo-melding lo-melding--goed block">
+                  <p className="font-extrabold">Leerlingen verwijderd.</p>
                   <p className="mt-1">
                     {result.deletedStudents} leerlingen, {result.deletedProgress} voortgangsdocumenten en{' '}
                     {result.deletedPendingStudents} pending-leerlingen verwijderd. {result.cleanedClasses} klassen opgeschoond.
@@ -115,7 +115,7 @@ export default function DeleteStudentsButton() {
                   </p>
                   <button
                     onClick={() => window.location.assign('/admin/leerlingen')}
-                    className="mt-3 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-black uppercase tracking-wide text-white transition hover:bg-emerald-800"
+                    className="lo-knop lo-knop--klein mt-3"
                   >
                     Leerlingen verversen
                   </button>
@@ -124,20 +124,20 @@ export default function DeleteStudentsButton() {
             </div>
 
             {!result && (
-              <div className="flex items-center justify-end gap-3 border-t border-slate-200 p-5">
+              <div className="flex items-center justify-end gap-3 border-t border-[var(--lo-lijn)] p-5">
                 <button
                   onClick={handleClose}
                   disabled={isDeleting}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="lo-knop-tweede disabled:opacity-50"
                 >
                   Annuleren
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={!canConfirm}
-                  className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  className="lo-knop lo-knop--gevaar"
                 >
-                  {isDeleting ? <Loader2 size={17} className="animate-spin" /> : <Trash2 size={17} />}
+                  {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                   Wis alle leerlingen
                 </button>
               </div>
