@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { CheckSquare, Loader2, Square, Users2 } from 'lucide-react';
 import { GAME_STATUSES } from '../../lib/gameRegistry';
 import { getAlleKlassenMetSpellen, zetSpelVoorKlas } from '../../services/spelToewijzingService';
+import { HelixLaden } from '../merk/HelixLogo';
 
 /**
  * Een spel klaarzetten per klas, los van de lesstof. Leerlingen van een
@@ -53,29 +54,29 @@ export default function KlasSpelToewijzing({ game }) {
   };
 
   return (
-    <section className="helix-surface mt-6 p-6">
-      <div className="flex items-center gap-2">
-        <Users2 size={18} className="text-[var(--helix-purple)]" />
-        <h2 className="text-lg font-black text-[var(--helix-navy)]">Klaarzetten voor klassen</h2>
-      </div>
+    <section className="lo-kaart mt-6">
+      <h2 className="lo-kaart-titel">
+        <Users2 size={18} className="text-[var(--lo-blauw-inkt)]" />
+        Klaarzetten voor klassen
+      </h2>
 
       {!actief ? (
-        <p className="helix-muted mt-3 text-sm">
+        <p className="lo-kaart-uitleg !mt-0">
           Dit spel staat nog niet op actief. Zet de status op actief voordat je het aan een klas geeft; klaargezette
           prototypes blijven voor leerlingen onzichtbaar.
         </p>
       ) : (
-        <p className="helix-muted mt-3 text-sm">
+        <p className="lo-kaart-uitleg !mt-0">
           Aangevinkte klassen zien {game.title} op hun Spellen-pagina en kunnen meteen spelen.
         </p>
       )}
 
-      {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}
+      {error ? <p className="lo-melding lo-melding--fout">{error}</p> : null}
 
       {klassen === null ? (
-        <div className="helix-muted mt-4 flex items-center gap-2 text-sm"><Loader2 size={16} className="animate-spin" /> Klassen laden...</div>
+        <HelixLaden tekst="Klassen laden..." className="min-h-0 py-10" />
       ) : (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="lo-keuzes">
           {klassen.map((klas) => {
             const aan = (klas.enabledGames || []).includes(game.gameId);
             return (
@@ -84,11 +85,8 @@ export default function KlasSpelToewijzing({ game }) {
                 type="button"
                 onClick={() => toggle(klas)}
                 disabled={busyKlasId === klas.klasId}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-[var(--helix-radius-md)] border px-3 text-sm font-bold transition-colors disabled:opacity-50 ${
-                  aan
-                    ? 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple-dark)]'
-                    : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:border-[var(--helix-purple)]'
-                }`}
+                aria-pressed={aan}
+                className="lo-keuze disabled:opacity-50"
               >
                 {busyKlasId === klas.klasId
                   ? <Loader2 size={15} className="animate-spin" />

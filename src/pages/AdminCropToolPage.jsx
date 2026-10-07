@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader, X } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import ImageCanvasEditor from '../components/admin/ImageCanvasEditor';
 import FloatingCropPanel from '../components/admin/FloatingCropPanel';
@@ -84,7 +84,7 @@ export default function AdminCropToolPage() {
     setIsLoading(true);
     setNotification({
       type: 'loading',
-      message: '⏳ Stap 1/3: Crops uitsnijden...'
+      message: 'Stap 1/3:Crops uitsnijden...'
     });
 
     try {
@@ -128,7 +128,7 @@ export default function AdminCropToolPage() {
       // Step 2: Upload to Firebase Storage with progress
       setNotification({
         type: 'loading',
-        message: '⏳ Stap 2/3: Uploading naar Firebase (0%)'
+        message: 'Stap 2/3: Uploading naar Firebase (0%)'
       });
 
       const uploadPayload = cropResults
@@ -153,7 +153,7 @@ export default function AdminCropToolPage() {
           const percent = Math.round((uploadedCount / total) * 100);
           setNotification({
             type: 'loading',
-            message: `⏳ Stap 2/3: Uploading (${percent}%) - Crop ${current}/${total}`
+            message: `Stap 2/3: Uploading (${percent}%) - Crop ${current}/${total}`
           });
         } else if (status === 'error') {
           console.error(`Upload failed for crop ${cropId}:`, errorMsg);
@@ -168,7 +168,7 @@ export default function AdminCropToolPage() {
       if (failedUploads.length > 0) {
         setNotification({
           type: 'error',
-          message: `⚠️ ${failedUploads.length} crop(s) failed to upload, but continuing...`
+          message: `${failedUploads.length} crop(s) failed to upload, but continuing...`
         });
         // Continue with successful uploads
       }
@@ -176,7 +176,7 @@ export default function AdminCropToolPage() {
       // Step 3: Save metadata to Firestore
       setNotification({
         type: 'loading',
-        message: '⏳ Stap 3/3: Opslaan in database...'
+        message: 'Stap 3/3:Opslaan in database...'
       });
 
       const successfulUploads = uploadResults.filter(r => r.status === 'success');
@@ -207,7 +207,7 @@ export default function AdminCropToolPage() {
       const successCount = successfulUploads.length;
       setNotification({
         type: 'success',
-        message: `✅ ${successCount} crop(s) opgeslagen!`
+        message: `${successCount} crop(s) opgeslagen!`
       });
 
       // Reset after delay
@@ -252,7 +252,7 @@ export default function AdminCropToolPage() {
 
       setNotification({
         type: 'success',
-        message: `🗑️ Crop "${crop.label}" verwijderd`
+        message: `Crop "${crop.label}" verwijderd`
       });
     } catch (error) {
       console.error('Delete crop error:', error);
@@ -261,7 +261,7 @@ export default function AdminCropToolPage() {
   }, [selectedParagraphId, selectedQuestionId]);
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="beheer-stijl lo-tekst flex h-screen bg-[var(--lo-papier)]">
       {/* Main canvas area */}
       <div className="flex-1 overflow-hidden">
         <ImageCanvasEditor
@@ -289,12 +289,12 @@ export default function AdminCropToolPage() {
 
       {/* Notification toast */}
       {notification && (
-        <div className={`fixed bottom-6 left-6 p-4 rounded-lg shadow-lg flex gap-3 max-w-md animate-in fade-in slide-in-from-bottom-4 ${
+        <div className={`lo-melding fixed bottom-6 left-6 z-50 max-w-md gap-3 p-4 shadow-lg animate-in fade-in slide-in-from-bottom-4 ${
           notification.type === 'error'
-            ? 'bg-red-50 text-red-900'
+            ? 'lo-melding--fout'
             : notification.type === 'success'
-            ? 'bg-emerald-50 text-emerald-900'
-            : 'bg-blue-50 text-blue-900'
+            ? 'lo-melding--goed'
+            : 'lo-melding--info'
         }`}>
           <div className="flex-shrink-0 mt-1">
             {notification.type === 'error' && <AlertCircle size={20} />}
@@ -306,14 +306,14 @@ export default function AdminCropToolPage() {
             onClick={dismissNotification}
             className="text-current opacity-50 hover:opacity-100 transition-opacity flex-shrink-0"
           >
-            ✕
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
       )}
 
       {/* Debug info (remove in production) */}
       {import.meta.env.DEV && (
-        <div className="fixed top-4 right-4 bg-gray-100 p-2 rounded text-xs text-gray-600 max-w-xs">
+        <div className="fixed top-4 right-4 max-w-xs rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier-2)] p-2 text-xs text-[var(--lo-grijs)]">
           <p>User: {currentUser?.email}</p>
           <p>Para: {selectedParagraphId}</p>
           <p>Question: {selectedQuestionId || 'none'}</p>
