@@ -252,6 +252,12 @@ dat token aanpassen is een keuze voor fase 4.
 Stijlgids heeft een sectie Lespagina; `src/lib/lespaginaStijl.test.js` en de
 tweede test in `tests/e2e/leeromgeving-stijl.spec.js` bewaken hem.
 Markering `leeromgeving-fase-2b`, Vercel-deploy `dpl_ASBddrehU7Dskrpegj3XRvE4HQKk`.
+**7 oktober: nieuw logo live.** Kevins nieuwe logo (geel H-blok, ELIX, blauwe
+stip) staat als SVG in `src/components/merk/HelixLogo.jsx`: in de menubalk (op
+een telefoon alleen het H-blok), op de inlogpagina's, in de Voortgang-banner en
+als tabbladicoon. Bij het laden staat het logo met drie golvende blauwe stipjes
+in beeld (`HelixLaden`, ook in `index.html` tot de app er is). Beheerpagina's
+laden nog met hun eigen spinners; dat gaat mee in fase 3. Commit e564001.
 Volgende: fase 2c.
 
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
