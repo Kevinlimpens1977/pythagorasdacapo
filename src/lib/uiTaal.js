@@ -100,9 +100,7 @@ const NL = {
   'plus.hoeftNiet': 'Hoeft niet - mag wel',
   'plus.extraAf': 'Plus: {done} van {total} extra af',
   'plus.staatKlaar': 'Plusstof staat klaar als je meer wilt',
-  'plus.uitleg': 'Deze paragraaf is vrijwillig. Hij telt niet mee voor je hoofdstuk en je hoeft hem niet af te '
-    + 'hebben om verder te mogen. Een aanrader als je later naar de havo wilt - en je verdient er '
-    + 'gewoon tokens mee.',
+  'plus.uitleg': 'Deze paragraaf is vrijwillig. Hij telt niet mee voor je hoofdstuk en je hoeft hem niet af te hebben om verder te mogen. Je verdient er wel gewoon tokens mee.',
   'slot.label': 'Nog op slot',
   'slot.titel': 'Dit hoofdstuk staat nog op slot',
   'slot.uitleg': 'Je docent zet dit hoofdstuk open als de les begint.',
@@ -197,9 +195,7 @@ const EL = {
   'plus.hoeftNiet': 'Δεν είναι υποχρεωτικό - μπορείς όμως',
   'plus.extraAf': 'Πλας: {done} από {total} επιπλέον ολοκληρωμένα',
   'plus.staatKlaar': 'Η επιπλέον ύλη σε περιμένει αν θέλεις κι άλλο',
-  'plus.uitleg': 'Αυτή η παράγραφος είναι προαιρετική. Δεν μετράει για το κεφάλαιό σου και δεν χρειάζεται να '
-    + 'την τελειώσεις για να συνεχίσεις. Καλή ιδέα αν θέλεις αργότερα να πας στο havo - και '
-    + 'κερδίζεις κανονικά tokens.',
+  'plus.uitleg': 'Αυτή η παράγραφος είναι προαιρετική. Δεν μετράει για το κεφάλαιό σου και δεν χρειάζεται να την τελειώσεις για να συνεχίσεις. Κερδίζεις όμως κανονικά tokens.',
   'slot.label': 'Ακόμα κλειδωμένο',
   'slot.titel': 'Αυτό το κεφάλαιο είναι ακόμα κλειδωμένο',
   'slot.uitleg': 'Ο καθηγητής σου θα το ανοίξει όταν ξεκινήσει το μάθημα.',
@@ -294,8 +290,7 @@ const IT = {
   'plus.hoeftNiet': 'Non è obbligatorio - ma puoi farlo',
   'plus.extraAf': 'Plus: {done} di {total} extra completati',
   'plus.staatKlaar': 'Il materiale extra è pronto se vuoi fare di più',
-  'plus.uitleg': 'Questo paragrafo è facoltativo. Non conta per il tuo capitolo e non devi finirlo per '
-    + 'andare avanti. È consigliato se più avanti vuoi passare all’havo - e in più guadagni dei token.',
+  'plus.uitleg': 'Questo paragrafo è facoltativo. Non conta per il tuo capitolo e non devi finirlo per andare avanti. Guadagni comunque dei token.',
   'slot.label': 'Ancora bloccato',
   'slot.titel': 'Questo capitolo è ancora bloccato',
   'slot.uitleg': 'Il tuo insegnante lo aprirà quando inizia la lezione.',
@@ -390,9 +385,7 @@ const UK = {
   'plus.hoeftNiet': 'Не обов’язково - але можна',
   'plus.extraAf': 'Плюс: виконано {done} з {total} додаткових',
   'plus.staatKlaar': 'Додатковий матеріал чекає, якщо хочеш більше',
-  'plus.uitleg': 'Цей параграф необов’язковий. Він не зараховується до розділу, і тобі не треба його '
-    + 'закінчувати, щоб іти далі. Це гарна ідея, якщо пізніше хочеш перейти в havo - і ти все одно '
-    + 'заробляєш токени.',
+  'plus.uitleg': 'Цей параграф необов’язковий. Він не зараховується до розділу, і тобі не треба його закінчувати, щоб іти далі. Але ти все одно заробляєш токени.',
   'slot.label': 'Ще закрито',
   'slot.titel': 'Цей розділ ще закритий',
   'slot.uitleg': 'Учитель відкриє його, коли почнеться урок.',
@@ -487,8 +480,7 @@ const EN = {
   'plus.hoeftNiet': 'Not required - but you may',
   'plus.extraAf': 'Plus: {done} of {total} extra done',
   'plus.staatKlaar': 'Extra material is ready if you want more',
-  'plus.uitleg': 'This section is optional. It does not count towards your chapter and you do not have to '
-    + 'finish it to move on. Worth doing if you want to go to havo later - and you still earn tokens.',
+  'plus.uitleg': 'This section is optional. It does not count towards your chapter and you do not have to finish it to move on. You still earn tokens with it.',
   'slot.label': 'Still locked',
   'slot.titel': 'This chapter is still locked',
   'slot.uitleg': 'Your teacher will open it when the lesson starts.',
@@ -583,8 +575,7 @@ const TR = {
   'plus.hoeftNiet': 'Zorunlu değil - istersen yapabilirsin',
   'plus.extraAf': 'Plus: {total} ekstradan {done} tanesi bitti',
   'plus.staatKlaar': 'Daha fazlasını istersen ekstra materyal hazır',
-  'plus.uitleg': 'Bu paragraf isteğe bağlı. Bölümün için sayılmaz ve devam etmek için bitirmen gerekmez. '
-    + 'İleride havo’ya geçmek istersen iyi olur - ve yine de token kazanırsın.',
+  'plus.uitleg': 'Bu paragraf isteğe bağlı. Bölümün için sayılmaz ve devam etmek için bitirmen gerekmez. Yine de token kazanırsın.',
   'slot.label': 'Hâlâ kilitli',
   'slot.titel': 'Bu bölüm hâlâ kilitli',
   'slot.uitleg': 'Öğretmenin ders başlayınca açacak.',
@@ -679,8 +670,7 @@ const PL = {
   'plus.hoeftNiet': 'Nie musisz - ale możesz',
   'plus.extraAf': 'Plus: skończone {done} z {total} dodatkowych',
   'plus.staatKlaar': 'Materiał dodatkowy czeka, jeśli chcesz więcej',
-  'plus.uitleg': 'Ten paragraf jest nieobowiązkowy. Nie liczy się do rozdziału i nie musisz go kończyć, '
-    + 'żeby iść dalej. Warto, jeśli później chcesz przejść do havo - a i tak zdobywasz tokeny.',
+  'plus.uitleg': 'Ten paragraf jest nieobowiązkowy. Nie liczy się do rozdziału i nie musisz go kończyć, żeby iść dalej. I tak zdobywasz tokeny.',
   'slot.label': 'Jeszcze zamknięte',
   'slot.titel': 'Ten rozdział jest jeszcze zamknięty',
   'slot.uitleg': 'Nauczyciel otworzy go, gdy zacznie się lekcja.',
@@ -775,9 +765,7 @@ const RO = {
   'plus.hoeftNiet': 'Nu este obligatoriu - dar poți',
   'plus.extraAf': 'Plus: {done} din {total} suplimentare terminate',
   'plus.staatKlaar': 'Materialul suplimentar te așteaptă dacă vrei mai mult',
-  'plus.uitleg': 'Acest paragraf este opțional. Nu contează pentru capitolul tău și nu trebuie să îl '
-    + 'termini ca să mergi mai departe. Este bun dacă mai târziu vrei să treci la havo - și oricum '
-    + 'câștigi tokenuri.',
+  'plus.uitleg': 'Acest paragraf este opțional. Nu contează pentru capitolul tău și nu trebuie să îl termini ca să mergi mai departe. Oricum câștigi tokenuri.',
   'slot.label': 'Încă blocat',
   'slot.titel': 'Acest capitol este încă blocat',
   'slot.uitleg': 'Profesorul îl va deschide când începe lecția.',
@@ -872,8 +860,7 @@ const ES = {
   'plus.hoeftNiet': 'No es obligatorio - pero puedes',
   'plus.extraAf': 'Plus: {done} de {total} extras hechos',
   'plus.staatKlaar': 'El material extra está listo si quieres más',
-  'plus.uitleg': 'Este apartado es voluntario. No cuenta para tu capítulo y no tienes que terminarlo para '
-    + 'seguir. Es recomendable si más adelante quieres pasar al havo - y además ganas tokens.',
+  'plus.uitleg': 'Este apartado es voluntario. No cuenta para tu capítulo y no tienes que terminarlo para seguir. Aun así ganas tokens.',
   'slot.label': 'Aún bloqueado',
   'slot.titel': 'Este capítulo aún está bloqueado',
   'slot.uitleg': 'Tu profesor lo abrirá cuando empiece la clase.',
@@ -971,8 +958,7 @@ const AR = {
   'plus.hoeftNiet': 'ليس إلزاميًا - لكن يمكنك',
   'plus.extraAf': 'إضافي: أنجزت {done} من {total}',
   'plus.staatKlaar': 'المواد الإضافية جاهزة إن أردت المزيد',
-  'plus.uitleg': 'هذه الفقرة اختيارية. لا تُحسب ضمن فصلك ولا يلزم أن تنهيها لتتابع. '
-    + 'ينصح بها إن أردت لاحقًا الانتقال إلى havo - وتكسب بها رموزًا أيضًا.',
+  'plus.uitleg': 'هذه الفقرة اختيارية. لا تُحسب ضمن فصلك ولا يلزم أن تنهيها لتتابع. وتكسب بها رموزًا أيضًا.',
   'slot.label': 'ما زال مقفلًا',
   'slot.titel': 'هذا الفصل ما زال مقفلًا',
   'slot.uitleg': 'سيفتحه معلمك عندما يبدأ الدرس.',

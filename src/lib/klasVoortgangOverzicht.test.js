@@ -1007,3 +1007,22 @@ test('een quizstap telt de pogingen van de losse vragen en geeft elke vraag teks
   assert.equal(stap.items[0].maxScore, 3);
   assert.equal(stap.items[1].antwoordTekst, 'Biologie');
 });
+
+test('goed bezig: af, dan bijna klaar, dan actief; wie aandacht nodig heeft staat er niet in', async () => {
+  const { buildGoedBezigLijst, GOED_BEZIG_REDEN, STAP_STATUS: S } = await import('./klasVoortgangOverzicht.js');
+  const nu = Date.UTC(2026, 9, 7);
+  const dag = 24 * 60 * 60 * 1000;
+  const rij = (naam, extra) => ({ studentId: naam, studentNaam: naam, percentage: 0, status: S.BEZIG, aandacht: { nodig: false }, ...extra });
+  const lijst = buildGoedBezigLijst([
+    rij('Daan', { percentage: 40, laatsteActiviteitMs: nu - dag }),
+    rij('Bo', { percentage: 100, status: S.AFGEROND }),
+    rij('Cas', { percentage: 85 }),
+    rij('Eva', { percentage: 95, aandacht: { nodig: true } }),
+    rij('Fien', { percentage: 30, laatsteActiviteitMs: nu - 10 * dag })
+  ], { now: nu });
+  assert.deepEqual(lijst.map((x) => [x.studentNaam, x.reden]), [
+    ['Bo', GOED_BEZIG_REDEN.AF],
+    ['Cas', GOED_BEZIG_REDEN.BIJNA],
+    ['Daan', GOED_BEZIG_REDEN.ACTIEF]
+  ]);
+});

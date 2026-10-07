@@ -37,6 +37,7 @@ import {
   PLUS_PRESENTATIE,
   STAP_STATUS,
   buildAandachtsLijst,
+  buildGoedBezigLijst,
   buildKlasStatusTelling,
   buildKlasVoortgangRijen,
   buildMatrixRijen,
@@ -59,6 +60,7 @@ import { beoordeelOpenAntwoord } from '../../services/voortgangService';
 import { resetLeerlingBlokWerkCall } from '../../lib/api';
 import KlasVoortgangMatrix, { PlusChip, StatusLegenda, StatusChip } from './KlasVoortgangMatrix';
 import AandachtsLijst from './AandachtsLijst';
+import GoedBezigLijst from './GoedBezigLijst';
 import PlusOverzicht from './PlusOverzicht';
 import NakijkPaneel from './NakijkPaneel';
 import LeerlingStappen, { StappenSpoor } from './LeerlingStappen';
@@ -477,6 +479,7 @@ export default function ClassOverview() {
     [voortgangRijen]
   );
   const aandachtsLijst = useMemo(() => buildAandachtsLijst(voortgangRijen), [voortgangRijen]);
+  const goedBezigLijst = useMemo(() => buildGoedBezigLijst(voortgangRijen), [voortgangRijen]);
   // De werkvoorraad van de docent. Komt uit dezelfde rijen als de matrix, dus
   // het getal op het tabblad en de kaarten eronder kunnen niet uiteenlopen.
   const nakijkOpdrachten = useMemo(
@@ -1416,6 +1419,15 @@ export default function ClassOverview() {
               items={aandachtsLijst}
               totaalLeerlingen={klasStatusTelling.leerlingen}
               nakijkTelling={nakijkPerLeerling}
+              onSelectLeerling={(item) => {
+                setSelectedStudent(item.student);
+                setActiveLens('student');
+                setExpandedEvidence({});
+              }}
+            />
+
+            <GoedBezigLijst
+              items={goedBezigLijst}
               onSelectLeerling={(item) => {
                 setSelectedStudent(item.student);
                 setActiveLens('student');

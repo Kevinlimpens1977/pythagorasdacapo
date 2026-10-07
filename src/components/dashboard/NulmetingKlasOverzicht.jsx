@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 import NulmetingProfielKaart from '../nulmeting/NulmetingProfielKaart';
-import { labelKlasse } from '../../lib/nulmetingProfielWeergave';
+import { korteOnderdeelNaam, labelKlasse } from '../../lib/nulmetingProfielWeergave';
 import * as nulmetingService from '../../services/nulmetingService';
 import { HelixLaden } from '../merk/HelixLogo';
 
@@ -81,7 +81,7 @@ export default function NulmetingKlasOverzicht({ klasId = '', klasNaam = '', stu
               <tr className="text-left text-[13px] font-extrabold text-[var(--lo-grijs)]">
                 <th className="px-2 py-1">Leerling</th>
                 {deelvaardigheden.map((deel) => (
-                  <th key={deel.id} className="px-1 py-1" title={deel.onderdeel}>{deel.onderdeel.split(' ')[0]}</th>
+                  <th key={deel.id} className="px-1 py-1" title={deel.onderdeel}>{korteOnderdeelNaam(deel.onderdeel)}</th>
                 ))}
                 <th className="px-2 py-1">Status</th>
               </tr>

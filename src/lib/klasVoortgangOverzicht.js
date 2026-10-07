@@ -969,6 +969,41 @@ export const buildAandachtsLijst = (rijen = []) =>
       a.studentNaam.localeCompare(b.studentNaam, 'nl-NL', { numeric: true })
     );
 
+/**
+ * De positieve kant naast "Nu aandacht nodig": wie het hoofdstuk af heeft, wie
+ * bijna klaar is en wie de afgelopen dagen goed doorwerkt. Leerlingen die
+ * aandacht nodig hebben staan hier niet in. Volgorde: af, bijna klaar, actief.
+ */
+export const GOED_BEZIG_REDEN = { AF: 'af', BIJNA: 'bijna', ACTIEF: 'actief' };
+
+export const buildGoedBezigLijst = (rijen = [], { now = Date.now(), dagen = 3 } = {}) => {
+  const volgorde = { [GOED_BEZIG_REDEN.AF]: 0, [GOED_BEZIG_REDEN.BIJNA]: 1, [GOED_BEZIG_REDEN.ACTIEF]: 2 };
+  return rijen
+    .filter((rij) => !rij.aandacht?.nodig)
+    .map((rij) => {
+      let reden = '';
+      if (rij.status === STAP_STATUS.AFGEROND || rij.percentage >= 100) reden = GOED_BEZIG_REDEN.AF;
+      else if (rij.percentage >= 80) reden = GOED_BEZIG_REDEN.BIJNA;
+      else if (rij.laatsteActiviteitMs && now - rij.laatsteActiviteitMs <= dagen * DAG_IN_MS && rij.percentage > 0) {
+        reden = GOED_BEZIG_REDEN.ACTIEF;
+      }
+      return reden ? {
+        studentId: rij.studentId,
+        student: rij.student,
+        studentNaam: rij.studentNaam,
+        percentage: rij.percentage,
+        huidigeParagraaf: rij.huidigeParagraaf,
+        reden
+      } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) =>
+      volgorde[a.reden] - volgorde[b.reden] ||
+      b.percentage - a.percentage ||
+      a.studentNaam.localeCompare(b.studentNaam, 'nl-NL', { numeric: true })
+    );
+};
+
 /** Klasbrede telling voor de kopregels boven het overzicht. */
 export const buildKlasStatusTelling = (rijen = []) => {
   const telling = {

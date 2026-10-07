@@ -38,10 +38,9 @@ export const PLUS_LABEL = 'Plus - vrijwillig';
 export const PLUS_KORT = 'Plus';
 export const PLUS_UITLEG_LEERLING =
   'Deze paragraaf is vrijwillig. Hij telt niet mee voor je hoofdstuk en je hoeft hem niet af te '
-  + 'hebben om verder te mogen. Een aanrader als je later naar de havo wilt - en je verdient er '
-  + 'gewoon tokens mee.';
+  + 'hebben om verder te mogen. Je verdient er wel gewoon tokens mee.';
 export const PLUS_UITLEG_DOCENT =
-  'Vrijwillige plusparagraaf. Telt niet mee voor het hoofdstuk; een aanrader voor wie naar de havo wil.';
+  'Vrijwillige plusparagraaf. Telt niet mee voor het hoofdstuk.';
 
 export const isOptionalParagraph = (paragraaf = {}) => {
   if (paragraaf.optioneel !== undefined) return paragraaf.optioneel === true;
