@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { bouwKlasTestbeeld, bouwTestdataOverzicht } from './testleerlingOverzicht.js';
+import { bouwKlasTestbeeld, bouwTestdataOverzicht, groepeerOpLesstof, hoofdstukkenVanLessen } from './testleerlingOverzicht.js';
 
 const paragraaf = (id, extra = {}) => ({
   id,
@@ -143,4 +143,50 @@ test('testbeeld: geen dubbel nummer, volgorde per hoofdstuk en het slot telt mee
   assert.deepEqual(beeld.lessen.map((les) => les.opSlot), [false, false, true, true]);
   assert.equal(beeld.aantalZichtbaar, 2);
   assert.equal(beeld.aantalOpSlot, 2);
+});
+
+const les = (id, extra = {}) => ({
+  id,
+  label: '2.1 Massa',
+  hoofdstukId: 'h2',
+  hoofdstukTitel: 'H2: Massa',
+  hoofdstukNummer: 2,
+  opSlot: false,
+  aantalBlokken: 7,
+  ...extra
+});
+
+test('klassen met dezelfde lesstof komen in één groep, ook met eigen nulmeting-id', () => {
+  const kaarten = [
+    { klas: { id: 'a', naam: 'H1B1' }, beeld: { lessen: [les('nulmeting-bb', { label: '1.0 Nulmeting', hoofdstukNummer: 1, hoofdstukId: 'h1-bb' })] } },
+    { klas: { id: 'b', naam: 'H1K1' }, beeld: { lessen: [les('nulmeting-kb', { label: '1.0 Nulmeting', hoofdstukNummer: 1, hoofdstukId: 'h1-kb' })] } },
+    { klas: { id: 'c', naam: 'H1i1' }, beeld: { lessen: [les('nulmeting-kort', { label: '1.0 Nulmeting (kort)', hoofdstukNummer: 1 })] } }
+  ];
+  const groepen = groepeerOpLesstof(kaarten);
+  assert.equal(groepen.length, 2);
+  assert.deepEqual(groepen[0].kaarten.map((k) => k.klas.naam), ['H1B1', 'H1K1']);
+  assert.equal(groepen[0].sleutel, 'groep-1');
+  assert.deepEqual(groepen[1].kaarten.map((k) => k.klas.naam), ['H1i1']);
+});
+
+test('een hoofdstuk op slot of met andere blokken maakt een eigen groep', () => {
+  const open = { klas: { id: 'a' }, beeld: { lessen: [les('p')] } };
+  const dicht = { klas: { id: 'b' }, beeld: { lessen: [les('p', { opSlot: true })] } };
+  const meerBlokken = { klas: { id: 'c' }, beeld: { lessen: [les('p', { aantalBlokken: 9 })] } };
+  assert.equal(groepeerOpLesstof([open, dicht, meerBlokken]).length, 3);
+  assert.deepEqual(groepeerOpLesstof([]), []);
+});
+
+test('lessen worden hoofdstukken met telling, slot en inclusie', () => {
+  const hoofdstukken = hoofdstukkenVanLessen([
+    les('n', { hoofdstukId: 'h1', hoofdstukNummer: 1, hoofdstukTitel: 'H1: Startklaar', label: '1.0 Nulmeting', aantalBlokken: 2 }),
+    les('paragraaf-x-incl-21', { aantalBlokken: 18 }),
+    les('paragraaf-x-incl-22', { label: '2.2 Software', aantalBlokken: 10 }),
+    les('d', { hoofdstukId: 'h3', hoofdstukNummer: 3, hoofdstukTitel: 'Internet', label: '3.1 Reis', opSlot: true, aantalBlokken: 6 })
+  ]);
+  assert.deepEqual(hoofdstukken.map((h) => [h.id, h.nummer, h.titel, h.lessen.length, h.aantalBlokken, h.opSlot, h.inclusie]), [
+    ['h1', 1, 'Startklaar', 1, 2, false, false],
+    ['h2', 2, 'Massa', 2, 28, false, true],
+    ['h3', 3, 'Internet', 1, 0, true, false]
+  ]);
 });

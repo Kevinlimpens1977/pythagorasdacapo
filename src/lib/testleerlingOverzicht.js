@@ -18,6 +18,7 @@ import { getEffectiveContentBlocks, getStudentEffectiveParagrafen } from './assi
 import { filterLesstofOpKlasRoute, getKlasNiveauId } from './klasRoute.js';
 import { paragraafLabel } from './chapterOutline.js';
 import { isParagraafVergrendeld } from './hoofdstukSlot.js';
+import { zonderHoofdstukVoorvoegsel } from './leeromgeving.js';
 
 // Volgorde zoals de leerling hem ziet: eerst het hoofdstuk, dan de paragraaf.
 // `order` telt per hoofdstuk opnieuw vanaf 1; alleen daarop sorteren gaf
@@ -148,4 +149,51 @@ export const bouwTestdataOverzicht = ({ records = [], lessen = [] } = {}) => {
     totaalRecords: (Array.isArray(records) ? records : []).length,
     laatsteActiviteitMs: regels.reduce((hoogste, regel) => Math.max(hoogste, regel.laatsteActiviteitMs), 0)
   };
+};
+
+// Wat een leerling ziet, als vergelijkbare sleutel. Bewust niet op id: de
+// vmbo-klassen hebben elk een eigen nulmeting-id met hetzelfde label, en zien
+// dus precies hetzelfde.
+const lesstofHandtekening = (lessen = []) => JSON.stringify(
+  lessen.map((les) => [
+    les.hoofdstukNummer,
+    zonderHoofdstukVoorvoegsel(les.hoofdstukTitel),
+    les.label,
+    Boolean(les.opSlot),
+    les.aantalBlokken
+  ])
+);
+
+/** Klassen die precies dezelfde lesstof zien, in één groep (Testen, optie D). */
+export const groepeerOpLesstof = (kaarten = []) => {
+  const groepen = new Map();
+  (Array.isArray(kaarten) ? kaarten : []).forEach((kaart) => {
+    const handtekening = lesstofHandtekening(kaart?.beeld?.lessen || []);
+    if (!groepen.has(handtekening)) groepen.set(handtekening, []);
+    groepen.get(handtekening).push(kaart);
+  });
+  return [...groepen.values()].map((leden, index) => ({ sleutel: `groep-${index + 1}`, kaarten: leden }));
+};
+
+/** De lessen van een klas per hoofdstuk, in de volgorde waarin de leerling ze ziet. */
+export const hoofdstukkenVanLessen = (lessen = []) => {
+  const perHoofdstuk = new Map();
+  (Array.isArray(lessen) ? lessen : []).forEach((les) => {
+    const sleutel = les.hoofdstukId || `zonder-hoofdstuk-${les.hoofdstukNummer}`;
+    if (!perHoofdstuk.has(sleutel)) {
+      perHoofdstuk.set(sleutel, {
+        id: les.hoofdstukId || '',
+        nummer: les.hoofdstukNummer,
+        titel: zonderHoofdstukVoorvoegsel(les.hoofdstukTitel),
+        lessen: []
+      });
+    }
+    perHoofdstuk.get(sleutel).lessen.push(les);
+  });
+  return [...perHoofdstuk.values()].map((hoofdstuk) => ({
+    ...hoofdstuk,
+    opSlot: hoofdstuk.lessen.every((les) => les.opSlot),
+    aantalBlokken: hoofdstuk.lessen.filter((les) => !les.opSlot).reduce((som, les) => som + (les.aantalBlokken || 0), 0),
+    inclusie: hoofdstuk.lessen.some((les) => String(les.id || '').includes('-incl-'))
+  }));
 };
