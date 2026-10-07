@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Award, Crown, Flame, Home, Lock, RotateCcw, Sparkles, Star, Target, Trophy } from 'lucide-react';
 import { BADGES, niveauVoorXp } from '../../lib/beloning';
 import { subscribeLeerlingVoortgang } from '../../services/tokenService';
+import { Kaart } from '../leeromgeving';
 
 const ICONEN = {
   star: Star, stars: Star, sparkles: Sparkles, award: Award, target: Target,
@@ -27,26 +28,26 @@ export default function BadgesPaneel({ studentUid, disabled = false }) {
   const procent = xpNodig > 0 ? Math.round((xpInNiveau / xpNodig) * 100) : 100;
 
   return (
-    <section className="helix-card mb-5 p-6">
+    <Kaart>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="helix-eyebrow">Mijn voortgang</p>
-          <h2 className="mt-1 text-2xl font-black text-[var(--helix-navy)]">Niveau {niveau}</h2>
-          <div className="mt-2 flex items-center gap-2 text-sm font-bold text-[var(--helix-muted)]">
-            <span className="h-2 w-40 overflow-hidden rounded-full bg-[var(--helix-border)]" aria-hidden="true">
-              <span className="block h-full rounded-full bg-[#087EB5]" style={{ width: `${procent}%` }} />
+          <p className="lo-eyebrow">Mijn voortgang</p>
+          <h2 className="mt-1 text-2xl font-extrabold text-[var(--lo-inkt)]">Niveau {niveau}</h2>
+          <div className="mt-2 flex items-center gap-2 text-sm font-bold text-[var(--lo-grijs)]">
+            <span className="lo-voortgang w-40" aria-hidden="true">
+              <i className="bg-[var(--lo-blauw)]" style={{ width: `${procent}%` }} />
             </span>
             {xpNodig > 0 ? `nog ${xpNodig - xpInNiveau} XP tot niveau ${niveau + 1}` : 'hoogste niveau'}
           </div>
         </div>
         <dl className="flex gap-5 text-center">
-          <div><dt className="text-xs font-black uppercase text-[var(--helix-muted)]">XP</dt><dd className="text-xl font-black">{voortgang.xp || 0}</dd></div>
-          <div><dt className="text-xs font-black uppercase text-[var(--helix-muted)]">Sterren</dt><dd className="text-xl font-black">{voortgang.sterren || 0}</dd></div>
-          <div><dt className="text-xs font-black uppercase text-[var(--helix-muted)]">Weekreeks</dt><dd className="text-xl font-black">{voortgang.dvReeks?.aantal || 0}</dd></div>
+          <div><dt className="lo-onderregel">XP</dt><dd className="text-xl font-extrabold">{voortgang.xp || 0}</dd></div>
+          <div><dt className="lo-onderregel">Sterren</dt><dd className="text-xl font-extrabold">{voortgang.sterren || 0}</dd></div>
+          <div><dt className="lo-onderregel">Weekreeks</dt><dd className="text-xl font-extrabold">{voortgang.dvReeks?.aantal || 0}</dd></div>
         </dl>
       </div>
 
-      <h3 className="mt-6 text-lg font-black text-[var(--helix-navy)]">Badges ({behaald.size} van {BADGES.length})</h3>
+      <h3 className="lo-kaart-titel mt-2">Badges ({behaald.size} van {BADGES.length})</h3>
       <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {BADGES.map((badge) => {
           const heeft = behaald.has(badge.id);
@@ -54,18 +55,18 @@ export default function BadgesPaneel({ studentUid, disabled = false }) {
           return (
             <li
               key={badge.id}
-              className={`flex items-start gap-3 rounded-xl border-2 p-3 ${heeft ? 'border-[#0B0D0F] bg-[#FFF0B8]' : 'border-dashed border-[var(--helix-border)] bg-white text-[var(--helix-muted)]'}`}
+              className={`flex items-start gap-3 rounded-[var(--lo-hoek-m)] border p-3 ${heeft ? 'border-[var(--lo-geel)] bg-[var(--lo-geel-zacht)]' : 'border-dashed border-[var(--lo-lijn)] bg-[var(--lo-kaart)] text-[var(--lo-grijs)]'}`}
             >
-              <Icoon size={22} className={heeft ? 'text-[#B4520E]' : ''} aria-hidden="true" />
+              <Icoon size={22} className={heeft ? 'text-[var(--lo-oranje-inkt)]' : ''} aria-hidden="true" />
               <div>
-                <p className="font-black text-[var(--helix-navy)]">{badge.titel}</p>
-                <p className="text-xs leading-4">{badge.uitleg}</p>
+                <p className="font-extrabold text-[var(--lo-inkt)]">{badge.titel}</p>
+                <p className="lo-onderregel">{badge.uitleg}</p>
                 <span className="sr-only">{heeft ? 'behaald' : 'nog niet behaald'}</span>
               </div>
             </li>
           );
         })}
       </ul>
-    </section>
+    </Kaart>
   );
 }

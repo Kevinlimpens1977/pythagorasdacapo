@@ -6,6 +6,7 @@ import { db } from '../../services/firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { beschikbareTalen, getLesTaal } from '../../lib/lesTaal';
 import { uiTekst } from '../../lib/uiTaal';
+import { Kaart } from '../leeromgeving';
 
 /**
  * De leerling kiest zelf in welke taal hij de uitleg leest.
@@ -58,11 +59,7 @@ export default function TaalKeuzeKaart() {
         type="button"
         onClick={() => kies(code)}
         aria-pressed={actief}
-        className={`inline-flex items-center gap-2 rounded-2xl border-2 px-4 py-2.5 text-sm font-black transition-colors ${
-          actief
-            ? 'border-[var(--helix-purple)] bg-[var(--helix-purple)] text-white'
-            : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:border-[var(--helix-purple)]'
-        }`}
+        className="lo-keuze"
       >
         {bezigMet === code ? <Loader2 size={15} className="animate-spin" /> : actief ? <Check size={15} /> : null}
         {label}
@@ -71,26 +68,26 @@ export default function TaalKeuzeKaart() {
   };
 
   return (
-    <section className="helix-card p-6">
-      <p className="helix-eyebrow inline-flex items-center gap-2">
+    <Kaart>
+      <p className="lo-eyebrow inline-flex items-center gap-2">
         <Languages size={15} />
         {uiTekst('profiel.taal.kop', huidig)}
       </p>
-      <p className="mt-2 text-sm font-semibold leading-6 text-[var(--helix-muted)]">
+      <p className="text-sm font-semibold leading-6 text-[var(--lo-grijs)]">
         {uiTekst('profiel.taal.uitleg', huidig)}
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="lo-keuzes">
         {knop('', uiTekst('profiel.taal.nederlands', huidig))}
         {beschikbareTalen().map((taal) => knop(taal.code, taal.label))}
       </div>
 
       {melding && (
-        <p className="mt-3 text-sm font-bold text-[var(--helix-success)]">{melding}</p>
+        <p className="lo-melding bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]">{melding}</p>
       )}
       {fout && (
-        <p className="mt-3 text-sm font-bold text-[var(--helix-danger)]">{fout}</p>
+        <p className="lo-melding lo-melding--fout">{fout}</p>
       )}
-    </section>
+    </Kaart>
   );
 }
