@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, BarChart3, Loader, Users } from 'lucide-react';
 import * as klasService from '../../services/klasService';
 import { publishAllBlocksInParagraaf } from '../../services/cmsService';
+import { HelixLaden } from '../merk/HelixLogo';
 import {
   isParagraafKlaargezet,
   isParagraafZichtbaarVoorLeerlingen,
@@ -126,10 +127,7 @@ export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRe
           </p>
 
           {klassen === null ? (
-            <p className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[var(--helix-muted)]">
-              <Loader size={15} className="animate-spin" />
-              Klassen laden...
-            </p>
+            <HelixLaden tekst="Klassen laden..." className="min-h-0 py-10" />
           ) : klassen.length === 0 ? (
             <p className="mt-3 text-sm font-bold text-[var(--helix-muted)]">
               Er zijn nog geen klassen. Maak eerst een klas aan via Klassenbeheer.
@@ -144,10 +142,10 @@ export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRe
                   <label
                     key={klas.id}
                     className={[
-                      'inline-flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold transition-colors',
+                      'inline-flex cursor-pointer items-center gap-2 rounded-[var(--lo-hoek-m)] border px-3 py-2 text-sm font-bold transition-colors',
                       klaargezet
-                        ? 'border-fuchsia-200 bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-                        : 'border-[var(--helix-border)] bg-white text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]',
+                        ? 'border-[var(--lo-blauw)] bg-[var(--lo-blauw-zacht)] text-[var(--lo-blauw-inkt)]'
+                        : 'border-[var(--lo-lijn)] bg-[var(--lo-kaart)] text-[var(--lo-inkt)] hover:border-[var(--lo-blauw)]',
                       savingKlasId === klas.id ? 'opacity-60' : ''
                     ].join(' ')}
                   >
@@ -160,7 +158,7 @@ export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRe
                     />
                     <span className="max-w-[12rem] truncate">{klas.name || klas.id}</span>
                     {Number.isFinite(aantal) && (
-                      <span className="rounded-lg bg-white/80 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-muted)]">
+                      <span className="rounded-full bg-[var(--lo-papier-2)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--lo-grijs)]">
                         {aantal} {aantal === 1 ? 'leerling' : 'leerlingen'}
                       </span>
                     )}
@@ -171,7 +169,7 @@ export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRe
           )}
 
           {error && (
-            <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-700">
+            <p className="lo-melding lo-melding--fout mt-3 font-bold">
               {error}
             </p>
           )}
@@ -179,14 +177,14 @@ export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRe
 
         <div className="flex shrink-0 flex-col items-start gap-2 lg:items-end">
           {!paragraafZichtbaar && (
-            <p className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">
+            <p className="lo-melding lo-melding--info items-center text-xs font-bold">
               <AlertTriangle size={14} className="shrink-0" />
               Leerlingen zien deze paragraaf pas na publiceren.
             </p>
           )}
           {conceptAantal > 0 && (
-            <div className="flex flex-col items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 lg:items-end">
-              <p className="inline-flex items-center gap-2 text-xs font-bold text-amber-800">
+            <div className="flex flex-col items-start gap-2 rounded-[var(--lo-hoek-m)] bg-[var(--lo-oranje-zacht)] px-3 py-2 lg:items-end">
+              <p className="inline-flex items-center gap-2 text-xs font-bold text-[var(--lo-oranje-inkt)]">
                 <AlertTriangle size={14} className="shrink-0" />
                 {conceptAantal} {conceptAantal === 1 ? 'blok is' : 'blokken zijn'} nog concept en voor leerlingen onzichtbaar.
               </p>
@@ -194,7 +192,7 @@ export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRe
                 type="button"
                 onClick={publiceerAlles}
                 disabled={publishing}
-                className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-black text-white transition hover:bg-amber-700 disabled:opacity-50"
+                className="lo-knop lo-knop--klein"
               >
                 {publishing ? <Loader size={13} className="animate-spin" /> : null}
                 Alles publiceren
@@ -203,7 +201,7 @@ export default function ParagraafKlaarzettenPanel({ paragraaf, blocks = [], onRe
           )}
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-sm font-bold text-[var(--helix-muted)] transition-colors hover:bg-[var(--helix-surface-soft)] hover:text-[var(--helix-navy)]"
+            className="lo-knop-tweede lo-knop--klein"
           >
             <BarChart3 size={15} />
             Voortgang bekijken

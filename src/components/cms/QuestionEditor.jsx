@@ -662,7 +662,7 @@ const QuestionEditorInner = forwardRef(function QuestionEditor(
         </label>
 
         <div className="mb-4 rounded-2xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-4 py-3">
-          <p className="text-sm font-black text-[var(--helix-navy)]">
+          <p className="text-sm font-extrabold text-[var(--helix-navy)]">
             {getQuestionTypeDefinition(vraagtype).label}
           </p>
           <p className="mt-1 text-sm leading-6 text-[var(--helix-muted)]">

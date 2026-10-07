@@ -22,10 +22,10 @@ const ArchiveToggleButton = ({ showArchived, onToggleShowArchived }) => (
   <button
     onClick={() => onToggleShowArchived?.()}
     className={[
-      'rounded-full px-2.5 py-1 text-xs font-black transition',
+      'rounded-full px-2.5 py-1 text-xs font-extrabold transition',
       showArchived
-        ? 'bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]'
-        : 'bg-[var(--helix-surface-soft)] text-slate-500 hover:text-slate-900'
+        ? 'bg-[var(--lo-blauw-zacht)] text-[var(--lo-blauw-inkt)]'
+        : 'bg-[var(--lo-papier-2)] text-[var(--lo-grijs)] hover:text-[var(--lo-inkt)]'
     ].join(' ')}
   >
     Archief tonen
@@ -122,18 +122,18 @@ const TreeNode = ({
         className={[
           'group grid min-h-[42px] cursor-pointer grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border-y border-r border-l-4 px-2 py-2 text-sm transition-colors',
           isActiveParagraaf
-            ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[#F5EDDB] text-[var(--helix-navy)]'
+            ? 'border-y-fuchsia-100 border-r-fuchsia-100 border-l-[var(--helix-purple)] bg-[var(--lo-papier-2)] text-[var(--helix-navy)]'
             : isActivePath
               ? isChapterBand
-                ? 'border-y-[#E1F0F8] border-r-[#E1F0F8] border-l-[var(--helix-purple)] bg-[#FBF5E8] text-[var(--helix-navy)]'
+                ? 'border-y-[var(--lo-blauw-zacht)] border-r-[var(--lo-blauw-zacht)] border-l-[var(--helix-purple)] bg-[var(--lo-papier)] text-[var(--helix-navy)]'
                 : 'border-y-[var(--helix-border)] border-r-[var(--helix-border)] border-l-transparent bg-white text-[var(--helix-navy)]'
               : isChapterBand
                 ? [
-                    'border-y-[#E1F0F8] border-r-[#E1F0F8] bg-[#FBF5E8] text-[var(--helix-navy)] hover:bg-[#FBF5E8]',
+                    'border-y-[var(--lo-blauw-zacht)] border-r-[var(--lo-blauw-zacht)] bg-[var(--lo-papier)] text-[var(--helix-navy)] hover:bg-[var(--lo-papier)]',
                     hasActiveChapterRail ? 'border-l-[var(--helix-purple)]' : 'border-l-transparent'
                   ].join(' ')
                 : node.type === 'paragraaf'
-                  ? 'border-y-[#F5EDDB] border-r-[#F5EDDB] border-l-transparent bg-[#fbfaff] text-[var(--helix-muted)] hover:border-y-[#E1F0F8] hover:border-r-[#E1F0F8] hover:bg-[#FBF5E8] hover:text-[var(--helix-navy)]'
+                  ? 'border-y-[var(--lo-papier-2)] border-r-[var(--lo-papier-2)] border-l-transparent bg-[var(--lo-papier)] text-[var(--helix-muted)] hover:border-y-[var(--lo-blauw-zacht)] hover:border-r-[var(--lo-blauw-zacht)] hover:bg-[var(--lo-papier)] hover:text-[var(--helix-navy)]'
                   : 'border-y-transparent border-r-transparent border-l-transparent text-[var(--helix-muted)] hover:border-y-[var(--helix-border)] hover:border-r-[var(--helix-border)] hover:bg-white hover:text-[var(--helix-navy)]'
           ,
           isArchived ? 'opacity-55 grayscale' : ''
@@ -176,11 +176,11 @@ const TreeNode = ({
           ) : (
             <span className="block truncate font-semibold leading-5">
               {displayLabel}
-              {isArchived && <span className="ml-2 text-[10px] font-black uppercase tracking-wide text-slate-400">Archief</span>}
+              {isArchived && <span className="ml-2 text-[11px] font-bold text-[var(--lo-grijs)]">Archief</span>}
             </span>
           )}
           {pills.length > 0 && (
-            <span className={['mt-1 flex flex-wrap gap-1 text-[10px] font-black uppercase tracking-wide', isActiveParagraaf ? 'text-[var(--helix-purple)]' : 'text-slate-400'].join(' ')}>
+            <span className={['mt-1 flex flex-wrap gap-1 text-[11px] font-bold', isActiveParagraaf ? 'text-[var(--lo-blauw-inkt)]' : 'text-[var(--lo-grijs)]'].join(' ')}>
               {pills.map((pill) => (
                 <span key={pill}>{pill}</span>
               ))}
@@ -209,7 +209,7 @@ const TreeNode = ({
                 event.stopPropagation();
                 onCreateChild(createAction);
               }}
-              className="flex h-7 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-[var(--helix-border)] bg-white px-2 text-[11px] font-black text-[var(--helix-purple)] transition-colors hover:border-fuchsia-200 hover:bg-[var(--helix-soft-lavender)]"
+              className="flex h-7 shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-[var(--helix-border)] bg-white px-2 text-[11px] font-extrabold text-[var(--helix-purple)] transition-colors hover:border-fuchsia-200 hover:bg-[var(--helix-soft-lavender)]"
               title={`${createAction.label.slice(2)} toevoegen onder ${displayLabel}`}
             >
               <Plus size={13} />
@@ -396,7 +396,7 @@ export default function NavigationTree({
           </div>
           <button
             onClick={() => onCreateVak?.()}
-            className="flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 text-sm font-black text-[var(--helix-purple)] shadow-sm transition-colors hover:bg-white"
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-fuchsia-100 bg-[var(--helix-soft-lavender)] px-3 text-sm font-extrabold text-[var(--helix-purple)] shadow-sm transition-colors hover:bg-white"
             title="Nieuw vak aanmaken"
           >
             <Plus size={16} />
@@ -407,8 +407,8 @@ export default function NavigationTree({
         <div className="mt-4 grid grid-cols-4 gap-2">
           {Object.entries(totals).map(([label, value]) => (
             <div key={label} className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-2 py-2 text-center">
-              <p className="text-sm font-black text-[var(--helix-navy)]">{value}</p>
-              <p className="truncate text-[10px] font-bold uppercase tracking-wide text-[var(--helix-muted)]">{label}</p>
+              <p className="text-sm font-extrabold text-[var(--helix-navy)]">{value}</p>
+              <p className="lo-onderregel font-bold truncate">{label}</p>
             </div>
           ))}
         </div>
@@ -446,7 +446,7 @@ export default function NavigationTree({
         {tree.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-[var(--helix-border)] bg-white p-5 text-center">
             <Sparkles className="mx-auto text-[var(--helix-purple)]" size={24} />
-            <p className="mt-3 text-sm font-black text-[var(--helix-navy)]">
+            <p className="mt-3 text-sm font-extrabold text-[var(--helix-navy)]">
               {query ? 'Geen resultaten' : 'Nog geen lesmateriaal'}
             </p>
             <p className="mt-1 text-sm leading-6 text-[var(--helix-muted)]">
