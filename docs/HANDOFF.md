@@ -278,7 +278,7 @@ en de lesstofeditor. Via de scope `beheer-stijl` (zie `docs/LEEROMGEVING-STIJL.m
 Het laadlogo staat nu ook op beheerpagina's. `--lo-oranje-inkt` is #A2490C (5:1).
 Op /spellen staat de spelnaam niet meer dubbel. Gebouwd met negen uitvoerders
 tegelijk, elk in een eigen worktree (`.claude/worktrees/fase3-t*`, na afloop
-opgeruimd). Markering `leeromgeving-fase-3`, Vercel-deploy DEPLOY_3.
+opgeruimd). Markering `leeromgeving-fase-3`, Vercel-deploy `dpl_9yVoEhYzEXMF3nMEHDAniJzT3oJH`.
 Volgende: fase 4 (opruimen).
 
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
