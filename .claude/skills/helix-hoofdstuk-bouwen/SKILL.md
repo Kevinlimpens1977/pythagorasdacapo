@@ -1,6 +1,6 @@
 ---
 name: helix-hoofdstuk-bouwen
-description: Bouwt van aangeleverd lesmateriaal (PDF, Word, tekst, presentaties) een volledig hoofdstuk in de HELIX-lesbibliotheek: vraagt door om de lesstof didactisch sterker te maken, zet hem om in lesblokken, plaatst de presentaties en wijst het hoofdstuk toe aan de juiste klassen. Gebruik deze skill zodra Kevin lesmateriaal aanlevert voor Binask of Digitale vaardigheden, een nieuw hoofdstuk of nieuwe paragrafen wil klaarzetten, een slidedeck aan de bibliotheek wil toevoegen, of lesstof wil klaarzetten voor de EOA-klassen of de H1-klassen. Ook gebruiken als hij niet het woord "hoofdstuk" noemt maar alleen een PDF stuurt met "zet dit klaar voor mijn klas" of "kun je hier lesblokken van maken".
+description: Bouwt van aangeleverd lesmateriaal (PDF, Word, tekst, presentaties) een volledig hoofdstuk in de HELIX-lesbibliotheek: vraagt door om de lesstof didactisch sterker te maken, zet hem om in lesblokken, plaatst de presentaties en wijst het hoofdstuk toe aan de juiste klassen. Gebruik deze skill zodra Kevin lesmateriaal aanlevert voor Binask of Digitale vaardigheden, een nieuw hoofdstuk of nieuwe paragrafen wil klaarzetten, een slidedeck aan de bibliotheek wil toevoegen, of lesstof wil klaarzetten voor de EOA-klassen of de H1-klassen. Ook gebruiken als hij niet het woord "hoofdstuk" noemt maar alleen een PDF stuurt met "zet dit klaar voor mijn klas" of "kun je hier lesblokken van maken". Ook voor een inclusieversie van een bestaand hoofdstuk voor de inclusieklas H1i1: korte teksten, kleine stukjes, klikvragen.
 ---
 
 # Een hoofdstuk bouwen voor de HELIX-bibliotheek
@@ -38,6 +38,11 @@ verder gaat in plaats van er omheen te werken.
 Stap 3 tot 5 gaan over inhoud, stap 6 tot 8 over plaatsen. Sla de inhoudelijke
 stappen niet over omdat de bron "al af" lijkt: Kevin vraagt deze skill juist aan
 omdat hij wil dat de les rijker wordt dan de PDF die hij aanlevert.
+
+**Is het voor de inclusieklas (H1i1)?** Dan bouw je een inclusieversie van een
+bestaand hoofdstuk: dezelfde acht stappen, maar met **korte teksten en kleine
+stukjes**. Lees eerst [Een inclusieversie](#een-inclusieversie-voor-de-inclusieklas-h1i1)
+onderaan; daar staan de afspraken met Kevin en drie valkuilen.
 
 ---
 
@@ -289,6 +294,16 @@ toegewezen krijgen en hem tóch niet zien, omdat haar leerroute alleen lesstof
 van één niveau doorlaat. Handmatig een id aan `enabledParagrafen` plakken slaat
 die controle over.
 
+Bij Digitale vaardigheden wijst het script alleen de hoofdstukken uit de lijst
+`H2_EN_VERDER` toe. **Zet een nieuw hoofdstuk eerst in die lijst**: een
+hoofdstuk dat er niet in staat, haalt het script juist weg bij de klassen. Op 7
+oktober 2026 ontbrak hoofdstuk 3 daar, en een run zou 3.1 tot en met 3.3 bij vijf
+klassen hebben weggehaald. Draai altijd eerst de dry run en lees de regels
+"gaat eraf".
+
+Inclusieparagrafen slaat dit script over, en H1i1 raakt het niet aan. Die klas
+krijgt haar lesstof via `scripts/zet-inclusie-klaar.mjs`; zie hieronder.
+
 ## Stap 8. Controleren en rapporteren
 
 ```bash
@@ -310,6 +325,80 @@ klassen toegang hebben, de uitslag van de controle, en wat er nog handmatig moet
 gebeuren.
 
 **Commit en push niets** tenzij Kevin daar expliciet om vraagt.
+
+## Een inclusieversie voor de inclusieklas (H1i1)
+
+H1i1 is de enige inclusieklas. Zij krijgt geen eigen hoofdstuk, maar eigen
+paragrafen **in hetzelfde hoofdstuk**, naast de gewone. Ze hebben dezelfde codes
+en volgnummers (2.1, 2.2, 2.3) en hun id heeft `-incl-` erin:
+`paragraaf-dv-klas1-incl-21` naast `paragraaf-dv-klas1-21`. Voorbeelden om van
+uit te gaan: `docs/seeds/dv-h3-internet-inclusie.json` en
+`docs/seeds/dv-h2-device-inclusie.json`.
+
+### Inhoud: korte teksten en kleine stukjes
+
+Afspraken van Kevin (30 september en 7 oktober 2026):
+
+- **Eén idee per scherm, hooguit vijf zinnen** (ongeveer zestig woorden). Een
+  lang theorieblok wordt dus meerdere korte blokken; de leerling gaat met "Ga
+  verder" naar het volgende stukje. Een lijst van zes stappen wordt zes
+  schermen, of drie schermen van twee stappen.
+- Korte zinnen en gewone woorden. Dezelfde inhoud en leerdoelen als de gewone
+  versie: je maakt het kleiner, niet minder.
+- **Een tekening bij de kernstappen**: een reeks waarin steeds de stap oplicht
+  waar de leerling is (zoals `dv-h2-vier-stappen-1.svg` tot en met `-4`). De
+  generator staat in `.tmp-diag/` (`h3-tekeningen.py`, `h2-inclusie-tekeningen.py`),
+  de bestanden in `public/lesstof/`. Ze zijn pas zichtbaar na
+  `npx vercel --prod --yes`. Bekijk ze eerst zelf (render naar PNG).
+- **Na elk deel een korte check**: een quiz van drie of vier klikvragen, 10
+  tokens.
+- **Elke paragraafquiz heeft tien vragen**, in de stijl van de gewone quiz, 30
+  tokens. Alleen klikvragen: waar/niet waar en meerkeuze met drie opties.
+- Lange voorbeelden in twee stappen: het probleem, dan de oplossing.
+- Geen plusopdracht.
+
+Vraag per hoofdstuk aan Kevin, als meerkeuzevraag: tekeningen (bij de
+kernstappen, bij elke stap of geen), presentatie (dezelfde als de gewone
+klassen, een eigen eenvoudig deck of geen), en of er ook een invulvraag van
+één woord bij mag.
+
+### Bouwen en klaarzetten
+
+1. Bron-JSON met `blokPrefix` = het prefix van de gewone versie plus `-incl`
+   (bijvoorbeeld `dv-klas1-incl`), `deckPrefix` gelijk aan dat van de gewone
+   versie, en `hoofdstuk.id` expliciet het bestaande hoofdstuk.
+2. Seedbestand: de bouwer werkt een bestaand bestand bij. Maak eerst een leeg
+   seedbestand met `vakken`, `leerjaren` en `niveaus` uit de seed van de gewone
+   versie, en lege lijsten voor de rest.
+3. Vergelijk vóór de import vak, leerjaar, niveau en hoofdstuk uit de seed met
+   live. Ze moeten gelijk zijn; anders verander je het hoofdstuk van de gewone
+   klassen.
+4. Snapshots maken **vóór** het toewijzen, dan ziet niemand een lege les.
+5. Toewijzen, koppelen en open of op slot zetten:
+
+   ```bash
+   node scripts/zet-inclusie-klaar.mjs --hoofdstuk <id> --deel-presentatie --open
+   node scripts/zet-inclusie-klaar.mjs --hoofdstuk <id> --deel-presentatie --open --apply
+   node scripts/backfill-public-content-snapshots.mjs --hoofdstuk <id> --apply
+   ```
+
+   Het script zet `variantVan` en `variantProfiel: 'inclusie'` op de
+   inclusieparagrafen, wijst ze alleen aan de inclusieklas toe en rekent per
+   leerling na dat hij de inclusieversie ziet en niet de gewone.
+6. Controle: `node scripts/controleer-hoofdstuk.mjs --bron <inclusiebron> --klassen H1i1`.
+   Het script vergelijkt alleen de paragrafen van dezelfde versie.
+
+### Drie valkuilen
+
+- **De presentatie nooit opnieuw plaatsen** met `plaats-hoofdstuk-slidedecks.mjs`
+  als de inclusieversie dezelfde presentatie krijgt. Dat script zet een nieuw
+  downloadtoken op de PDF, waarna de presentatie van de gewone klassen niet meer
+  laadt. `--deel-presentatie` kopieert het deckblok met hetzelfde pakket en
+  dezelfde link.
+- **Niet toewijzen met `zet-klas-lesstof-klaar.mjs`.** Dat script slaat
+  inclusieparagrafen over, en H1i1 staat er bewust in zonder lesstofniveaus.
+- **Waar/niet waar is een stelling.** Begint de zin met een vraagwoord (ook "Wat
+  in de opslag staat ...") of eindigt hij op een vraagteken, dan stopt de bouwer.
 
 ## Een hoofdstuk opnieuw bouwen
 

@@ -68,7 +68,11 @@ De negen klassen, sinds 16 september 2026 **allemaal zonder leerroute**, zodat
 | H1TL1 | `klas_1787768387188_4` | 24 |
 | H1TL2 | `klas_1787768387289_5` | 21 |
 | H1TL3 | `klas_1787768387366_6` | 21 |
-| H1i1 | `klas_1787768387105_3` | 9 |
+| H1i1 | `klas_1787768387105_3` | 18 |
+
+H1i1 is de inclusieklas. Zij krijgt van elk hoofdstuk de inclusieversie, met
+`scripts/zet-inclusie-klaar.mjs` en niet met `zet-klas-lesstof-klaar.mjs`. Zie
+"Een inclusieversie" in `SKILL.md`.
 
 Geen schriftopdrachten bij dit vak; de opdrachten zijn digitaal. Quiz: meerdere
 pogingen en Digidocent aan. Toets: één poging, Digidocent uit.

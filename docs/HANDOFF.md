@@ -83,6 +83,7 @@ Werk je zonder de skill, dan is dit de volgorde, en die ligt vast:
 | `plaats-hoofdstuk-slidedecks.mjs` | presentaties naar Storage, pakket, deckblok, snapshot, dia's geteld |
 | `comprimeer-slidedeck.py` | PDF naar één JPEG per pagina (schaal 1,5, kwaliteit 82) |
 | `zet-klas-lesstof-klaar.mjs` | route en toewijzing per klas, met controle per leerling |
+| `zet-inclusie-klaar.mjs` | inclusieversie van een hoofdstuk aan de inclusieklas (H1i1): koppelen, presentatie delen, open of op slot, controle per leerling |
 | `verwijder-hoofdstuk.mjs` | hoofdstuk weghalen; weigert bij voortgang of toewijzing |
 | `controleer-hoofdstuk.mjs` | leest alles terug en vergelijkt met de bron |
 | `vul-slidedeck-paginatellingen.mjs` | diatelling bij decks van vóór 16 sep 2026 |
@@ -111,6 +112,13 @@ lopen. Daarom zijn de Binask-specifieke varianten opgegaan in de generieke.
   nakijken, geen antwoorden in de leerlingversie.
 - Voortgangsdocumenten hebben **geen `vakId`**. Tellen gaat per `paragraafId`.
   Een query op `where('vakId', ...)` geeft altijd leeg en dus een vals "0".
+- Een nieuw DV-hoofdstuk **eerst in `H2_EN_VERDER`** van
+  `zet-klas-lesstof-klaar.mjs` zetten. Wat er niet in staat, haalt dat script
+  bij de klassen weg. Lees in de dry run altijd de regels "gaat eraf".
+- **Een presentatie nooit opnieuw plaatsen** met `plaats-hoofdstuk-slidedecks.mjs`
+  om hem te hergebruiken. Het script zet een nieuw downloadtoken op de PDF,
+  waarna het bestaande deckblok niet meer laadt. Hergebruik voor een
+  inclusieversie gaat met `zet-inclusie-klaar.mjs --deel-presentatie`.
 
 ## 5. Stand per onderdeel
 
@@ -172,6 +180,34 @@ daarna `bouw-hoofdstuk-seed.mjs`, het nieuwe
 `scripts/werk-blok-bij-uit-seed.mjs` (werkt één blok bij zonder het hoofdstuk
 opnieuw te importeren) en `backfill-public-content-snapshots.mjs`. Back-up van
 het oude blok in `exports/reset-backups/blok-block-dv-klas1-23-quiz-4-2026-09-21.json`.
+
+**7 oktober: inclusieversie van hoofdstuk 2 voor H1i1, live en open.** Drie
+paragrafen `paragraaf-dv-klas1-incl-21` tot en met `-23` in hetzelfde
+hoofdstuk, 41 blokken: de gedeelde presentatie, 24 korte theorieblokken (één
+idee en hooguit vijf zinnen per scherm), 6 voorbeelden, 3 samenvattingen, 4
+korte checks (10 tokens) en 3 quizzen van tien klikvragen (30 tokens). Er zijn
+17 tekeningen in `public/lesstof/dv-h2-*.svg` (generator
+`.tmp-diag/h2-inclusie-tekeningen.py`), live gezet met `npx vercel --prod --yes`.
+Bron `docs/seeds/dv-h2-device-inclusie.json`, seed `dv-h2-device-inclusie.seed.json`.
+Klaargezet met het nieuwe `scripts/zet-inclusie-klaar.mjs`: `variantVan` en
+`variantProfiel` op de paragrafen, het deckblok van 2.1 gekopieerd met hetzelfde
+pakket, en alleen H1i1 toegewezen. Back-up van de klas:
+`exports/reset-backups/klassen-voor-inclusie-hoofdstuk-dv-klas1-h2-2026-10-07.json`.
+Alle 18 leerlingen van H1i1 zien 2.1 tot en met 2.3 in de inclusieversie (41
+blokken). Bij de andere klassen en in de bestaande lesstof is niets veranderd;
+de snapshots van de gewone versie kregen alleen een lege `ondertitels`-lijst.
+`controleer-hoofdstuk.mjs` slaat nu de paragrafen van de andere versie over;
+`zet-klas-lesstof-klaar.mjs` slaat inclusieparagrafen over en heeft hoofdstuk 3
+in `H2_EN_VERDER` gekregen (zonder dat zou een run 3.1 tot en met 3.3 bij vijf
+klassen weghalen). De skill heeft een paragraaf "Een inclusieversie" met de
+afspraken.
+
+**7 oktober: backuppunt vóór de Leeromgeving-stijl.** Git-markering
+`leeromgeving-voor` staat op de versie die nu live is. Vercel-deploy van die
+versie: `dpl_3koNoaSCECXY9JUm1ZXsaGP12CDT` (`helix-org6zbngj-kevlimpens-projects.vercel.app`). Terug naar deze versie kan direct
+in Vercel (die deploy weer naar productie zetten) of met `git revert` van de
+latere fasecommits en `npx vercel --prod --yes`. Ontwerp:
+`docs/superpowers/specs/2026-10-07-leeromgeving-stijl-design.md`.
 
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
 nulmeting kreeg `resultTier: failed` zodra niet alles goed was, en het
@@ -354,6 +390,13 @@ deck van 3 MB in tienden van seconden, als echte dia's met een kloppende teller.
 
 In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij.
 
+0. **Infographic storingsplan (7 oktober 2026).** Gemaakt via de Helix
+   Lesstudio (NotebookLM, Helix-opmaak), voor de gewone klassen en voor H1i1.
+   Versie 2 wacht op Kevins akkoord: `exports/infographics/dv-h2-storingsplan-v2-verbeterd.png`
+   ("bewaard" met de hand verbeterd; versie 1 had drie fouten). Daarna plaatsen
+   in 2.3 van beide versies, als lichte afbeelding (geen PNG van 6 MB). Kevin
+   wil hem eerst zien voordat er iets wordt vervangen.
+
 1. **Testen als leerling afmaken.** Alles is gebouwd en gedeployd behalve de
    laatste stap: `startTestleerlingSessie` opnieuw uitrollen zodat hij als het
    serviceaccount `firebase-adminsdk-fbsvc` draait. Zonder dat kan hij geen
@@ -426,6 +469,17 @@ Kevin bepaalt wanneer dat gebeurt. Het staat wel live: gedeployd met
 | `TableOfContents.jsx`, `StudentChapterPage.jsx`, `StudentLessonPage.jsx`, `useStudentOutline.js`, `klasService.js`, `App.jsx`, `AdminLesstofPage.jsx`, `adminWorkspaceNav.js` (gewijzigd) | de slotsticker, de gesloten ingangen en de route ernaartoe |
 | `PROJECTKOMPAS-HELIX.md` (gewijzigd) | bijgewerkt naar 22 september; verwijst voor de dagstand naar deze handoff |
 | `scripts/ruim-leeg-dubbelaccount-op.mjs`, `scripts/voeg-dubbelaccount-samen.mjs` (nieuw) | dubbele leerlingaccounts opruimen of samenvoegen (allebei al uitgevoerd) |
+
+**Stand 7 oktober 2026, nog niet gecommit** (de tekeningen staan wel live):
+
+| Pad | Wat het is |
+| --- | --- |
+| `docs/seeds/dv-h2-device-inclusie.json`, `dv-h2-device-inclusie.seed.json` (nieuw) | inclusieversie van DV H2 |
+| `public/lesstof/dv-h2-*.svg` (17, nieuw) | tekeningen bij de kernstappen |
+| `scripts/zet-inclusie-klaar.mjs` (nieuw) | inclusieversie klaarzetten voor H1i1 |
+| `scripts/zet-klas-lesstof-klaar.mjs`, `scripts/controleer-hoofdstuk.mjs` (gewijzigd) | inclusieparagrafen overslaan, H3 in `H2_EN_VERDER` |
+| `.claude/skills/helix-hoofdstuk-bouwen/SKILL.md`, `references/vakken.md` (gewijzigd) | paragraaf "Een inclusieversie"; ook gekopieerd naar `~/.claude/skills/` |
+| `docs/HANDOFF.md` (gewijzigd) | dit bestand |
 
 Buiten git (genegeerd, maar wel nodig): `sources/dv-jpeg/dv-h2-device.pdf` (het
 deck van H2), `sources/designsysteem/` (het design system en de uitgelezen

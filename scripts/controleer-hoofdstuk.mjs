@@ -77,8 +77,22 @@ meld(zelfdeNummer.length === 1, `precies één hoofdstuk ${bron.hoofdstuk.nummer
 /* 2. Paragrafen en blokken */
 
 const paragraafId = (paragraaf) => paragraaf.id || `paragraaf-${meta.blokPrefix}-${String(paragraaf.code).replace(/\./g, '')}`;
-const liveParagrafen = (await db.collection('paragraaf').where('hoofdstukId', '==', hoofdstukId).get()).docs
+// Een hoofdstuk kan een basisversie en een inclusieversie naast elkaar hebben,
+// met dezelfde volgnummers (docs/PLAN-INCLUSIEVARIANTEN.md). Vergelijk alleen de
+// paragrafen van de versie waar dit bronbestand bij hoort.
+const alleLiveParagrafen = (await db.collection('paragraaf').where('hoofdstukId', '==', hoofdstukId).get()).docs
   .sort((a, b) => (a.get('order') || 0) - (b.get('order') || 0));
+const bronIds = new Set(bron.paragrafen.map(paragraafId));
+const versieVan = (doc) => doc.get('variantProfiel') || (doc.id.includes('-incl-') ? 'inclusie' : '');
+const bronVersie = (() => {
+  const eerste = alleLiveParagrafen.find((doc) => bronIds.has(doc.id));
+  return eerste ? versieVan(eerste) : '';
+})();
+const liveParagrafen = alleLiveParagrafen.filter((doc) => versieVan(doc) === bronVersie);
+const andereVersie = alleLiveParagrafen.filter((doc) => versieVan(doc) !== bronVersie);
+if (andereVersie.length) {
+  console.log(`     ${andereVersie.length} paragraaf/paragrafen van een andere versie overgeslagen: ${andereVersie.map((doc) => `${doc.get('code')} (${versieVan(doc) || 'basis'})`).join(', ')}`);
+}
 
 meld(
   liveParagrafen.map((doc) => doc.get('code')).join(',') === bron.paragrafen.map((p) => p.code).join(','),

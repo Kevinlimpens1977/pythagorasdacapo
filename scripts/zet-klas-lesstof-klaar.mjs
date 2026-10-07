@@ -50,7 +50,12 @@ const SCRIPT_NAAM = 'scripts/zet-klas-lesstof-klaar.mjs';
 //                  toewijzen. Zonder dit veld krijgt de klas alles van het
 //                  niveau, dus bij DV ook de lessen 1.1 tot en met 1.5.
 // De nieuwe DV-hoofdstukken (curriculum klas 1) die aan de H1-klassen gaan.
-const H2_EN_VERDER = ['hoofdstuk-dv-klas1-h2'];
+// Een hoofdstuk dat hier ontbreekt, haalt dit script bij de klassen weg.
+const H2_EN_VERDER = ['hoofdstuk-dv-klas1-h2', 'hoofdstuk-dv-klas1-h3'];
+
+// Een inclusieparagraaf (docs/PLAN-INCLUSIEVARIANTEN.md) is alleen voor een
+// klas met datzelfde leerprofiel; die zet scripts/zet-inclusie-klaar.mjs klaar.
+const versieVan = (paragraaf) => paragraaf.variantProfiel || (paragraaf.id.includes('-incl-') ? 'inclusie' : '');
 
 const VAKKEN = {
   binask: {
@@ -88,8 +93,9 @@ const VAKKEN = {
     // Sinds 19 september 2026 (Kevin): hoofdstuk 2 van het nieuwe curriculum
     // (hoofdstuk-dv-klas1-h2) gaat naar acht klassen. Alleen dat hoofdstuk, dus
     // niet de lessen 1.1 tot en met 1.5 die ook onder niveau-dv-vmbo1-kb hangen.
-    // De nulmeting van elke klas blijft staan via eigenNiveau. H1i1 houdt
-    // voorlopig alleen haar korte nulmeting (lesstofNiveaus leeg).
+    // De nulmeting van elke klas blijft staan via eigenNiveau. H1i1 staat hier
+    // met een lege lesstofNiveaus, zodat dit script haar toewijzing niet
+    // aanraakt: zij krijgt de inclusieversies via scripts/zet-inclusie-klaar.mjs.
     // Een volgend hoofdstuk voeg je toe aan H2_EN_VERDER.
     klassen: [
       { id: 'klas_1787767044660', naam: 'H1B1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-bb', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
@@ -173,6 +179,7 @@ for (const klas of vak.klassen) {
     for (const paragraaf of await lesstofVanNiveau(niveauId)) {
       if (uitsluiten.has(paragraaf.id)) continue;
       if (klas.lesstofHoofdstukken && !klas.lesstofHoofdstukken.includes(paragraaf.hoofdstukId)) continue;
+      if (versieVan(paragraaf) !== (klas.leerprofiel || '')) continue;
       lesstof.push(paragraaf);
     }
   }
