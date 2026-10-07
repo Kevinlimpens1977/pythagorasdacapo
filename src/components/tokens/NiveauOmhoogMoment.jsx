@@ -21,9 +21,9 @@ export default function NiveauOmhoogMoment({ moment, onKlaar }) {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[400] flex items-center justify-center" role="status" aria-live="polite">
-      <div className="niveau-moment flex flex-col items-center gap-2 rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFD33D] px-10 py-6 text-center text-[#0B0D0F] shadow-[6px_6px_0_#0B0D0F]">
+      <div className="niveau-moment flex flex-col items-center gap-2 rounded-[var(--lo-hoek-xl)] border-2 border-[var(--lo-inkt)] bg-[var(--lo-geel)] px-10 py-6 text-center text-[var(--lo-inkt)] shadow-[var(--lo-schaduw-kaart)]">
         <Star size={44} className="fill-white" aria-hidden="true" />
-        <p className="ds-display text-[44px] leading-none">Niveau {moment.niveau}!</p>
+        <p className="text-[44px] font-extrabold leading-none text-[var(--lo-inkt)]">Niveau {moment.niveau}!</p>
         {moment.tokens > 0 && <p className="text-lg font-extrabold">+{moment.tokens} tokens</p>}
       </div>
       <style>{`

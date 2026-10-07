@@ -10,6 +10,7 @@ import { beloningMelding, isGoedResultaat } from '../lib/tokenAwardUtils';
 import NiveauOmhoogMoment from '../components/tokens/NiveauOmhoogMoment';
 import EmoteMoment from '../components/avatar/EmoteMoment';
 import { HelixLaden } from '../components/merk/HelixLogo';
+import { Kaart, KaartKop, PaginaKop } from '../components/leeromgeving';
 
 /**
  * De spellenpagina van de leerling: alles wat de docent voor zijn klas heeft
@@ -68,18 +69,18 @@ export default function StudentSpellenPage() {
   };
 
   return (
-    <div className="helix-page">
-      <div className="helix-container py-10 md:py-12">
-        <p className="helix-eyebrow">Spelen</p>
-        <h1 className="helix-heading-xl mt-2">Spellen</h1>
-        <p className="helix-muted mt-3 max-w-2xl text-lg leading-8">
-          Deze spellen heeft je docent voor jouw klas klaargezet. Spelen mag zo vaak je wilt; tokens verdien je vooral met je eerste goede beurten.
-        </p>
+    <div className="helix-page lo-tekst">
+      <div className="helix-container flex flex-col gap-8 py-10 md:py-12">
+        <PaginaKop
+          eyebrow="Spelen"
+          titel="Spellen"
+          uitleg="Deze spellen heeft je docent voor jouw klas klaargezet. Spelen mag zo vaak je wilt; tokens verdien je vooral met je eerste goede beurten."
+        />
 
         <NiveauOmhoogMoment moment={niveauMoment} onKlaar={() => setNiveauMoment(null)} />
         <EmoteMoment uid={currentUser?.uid} speel={emoteTeller} />
         {tokenNotice ? (
-          <p className="mt-5 rounded-[var(--helix-radius-md)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
+          <p className="lo-melding bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]">
             {tokenNotice}
           </p>
         ) : null}
@@ -87,20 +88,19 @@ export default function StudentSpellenPage() {
         {spellen === null ? (
           <HelixLaden tekst="Spellen laden" />
         ) : spellen.length === 0 ? (
-          <div className="helix-surface mt-8 p-10 text-center">
-            <Gamepad2 size={36} className="mx-auto text-[var(--helix-purple)]/40" />
-            <p className="mt-3 font-black text-[var(--helix-navy)]">Nog geen spellen klaargezet</p>
-            <p className="helix-muted mt-1 text-sm">
+          <Kaart as="div" className="items-center gap-1 p-10 text-center">
+            <Gamepad2 size={36} className="mx-auto text-[var(--lo-grijs)]" />
+            <p className="mt-2 font-extrabold text-[var(--lo-inkt)]">Nog geen spellen klaargezet</p>
+            <p className="text-sm text-[var(--lo-grijs)]">
               Zodra je docent een spel voor jouw klas aanzet, verschijnt het hier.
             </p>
-          </div>
+          </Kaart>
         ) : (
-          <div className="mt-8 grid gap-6">
+          <div className="grid gap-6">
             {spellen.map((game) => (
-              <section key={game.gameId} className="helix-surface p-6">
-                <h2 className="text-xl font-black text-[var(--helix-navy)]">{game.title}</h2>
-                <p className="helix-muted mt-1 text-sm">{game.description}</p>
-                <div className="mt-4">
+              <Kaart key={game.gameId}>
+                <KaartKop titel={game.title} uitleg={game.description} />
+                <div>
                   <GamePlayer
                     gameId={game.gameId}
                     variant="student"
@@ -112,7 +112,7 @@ export default function StudentSpellenPage() {
                     onResult={(result) => handleResult(game, result)}
                   />
                 </div>
-              </section>
+              </Kaart>
             ))}
           </div>
         )}
