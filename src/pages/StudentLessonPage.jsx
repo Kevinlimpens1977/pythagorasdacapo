@@ -3602,7 +3602,7 @@ function AssessmentLearningBlock({
         <div className={`study-panel flex flex-wrap items-center justify-between gap-3 py-3 ${panelKleur}`}>
           <div className="min-w-0">
             <p className="helix-eyebrow">{isToets ? 'Toetsmoment' : 'Quiz'}</p>
-            <h3 className="lo-kaart-titel mt-1 max-w-full truncate">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
+            <h3 className="lo-kaart-titel mt-1 block max-w-full truncate">{block.title || (isToets ? 'Toets' : 'Quiz')}</h3>
           </div>
           <button
             type="button"
@@ -3900,7 +3900,7 @@ function AssessmentStepper({ block, items = [], origineelItems = [], records = {
                 disabled={!kanSpringen}
                 aria-current={status.current ? 'step' : undefined}
                 title={`Vraag ${status.nummer}${status.completed ? (status.correct ? ': goed' : ': fout') : ''}`}
-                className={`inline-grid h-7 min-w-7 place-items-center rounded-[var(--lo-hoek-s)] border-2 px-1 text-xs font-extrabold tabular-nums ${kleur} ${kanSpringen ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}
+                className={`inline-grid h-7 min-w-7 place-items-center rounded-[var(--lo-hoek-s)] border-2 px-1 text-[13px] font-extrabold tabular-nums ${kleur} ${kanSpringen ? 'cursor-pointer hover:brightness-95' : 'cursor-default'}`}
               >
                 {status.nummer}
               </button>
