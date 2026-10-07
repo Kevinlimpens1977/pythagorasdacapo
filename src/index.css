@@ -2117,12 +2117,16 @@ input[type=number] {
 }
 
 .beheer-stijl .helix-eyebrow {
+  padding: 0;
+  border: none;
+  background: none;
   color: var(--lo-blauw-inkt);
   font-family: var(--lo-letter);
   font-size: 12px;
   line-height: 18px;
   font-weight: 800;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .beheer-stijl .helix-heading-xl {

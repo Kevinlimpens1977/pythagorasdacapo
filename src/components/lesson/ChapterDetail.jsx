@@ -606,7 +606,7 @@ function RowOptionsMenu({ items = [], label = 'Meer opties' }) {
                   setOpen(false);
                   item.onSelect();
                 }}
-                className="lo-knop-tweede w-full justify-start border-transparent px-3 py-2 text-left hover:bg-[var(--lo-papier-2)]"
+                className="lo-knop-tweede w-full justify-start whitespace-normal border-transparent px-3 py-2 text-left hover:bg-[var(--lo-papier-2)]"
               >
                 {ItemIcon && <ItemIcon size={15} aria-hidden="true" className="text-[var(--lo-blauw-inkt)]" />}
                 {item.label}

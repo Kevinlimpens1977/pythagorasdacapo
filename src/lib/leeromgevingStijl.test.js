@@ -21,7 +21,7 @@ test('alle kleuren van de leeromgeving staan er met hun vaste waarde', () => {
     '--lo-blauw': '#087EB5', '--lo-blauw-inkt': '#066A99', '--lo-blauw-zacht': '#E1F0F8',
     '--lo-paars': '#793AC7', '--lo-paars-inkt': '#5F2C9E', '--lo-paars-zacht': '#ECE3F8',
     '--lo-groen': '#2E9D63', '--lo-groen-inkt': '#237A4D', '--lo-groen-zacht': '#DFF2E7',
-    '--lo-oranje-inkt': '#B4520E', '--lo-oranje-zacht': '#FDE7D6', '--lo-rood': '#D83A2E', '--lo-rood-inkt': '#B42F25', '--lo-rood-zacht': '#FADDDA'
+    '--lo-oranje-inkt': '#A2490C', '--lo-oranje-zacht': '#FDE7D6', '--lo-rood': '#D83A2E', '--lo-rood-inkt': '#B42F25', '--lo-rood-zacht': '#FADDDA'
   };
   for (const [naam, waarde] of Object.entries(verwacht)) {
     assert.match(css, new RegExp(`${naam}:\\s*${waarde};`, 'i'), `${naam} moet ${waarde} zijn`);

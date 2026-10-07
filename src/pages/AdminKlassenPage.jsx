@@ -373,7 +373,7 @@ export default function AdminKlassenPage() {
                     >
                       <div>
                         <div>{klas.name}</div>
-                        <div className="mt-1 text-xs font-bold text-[var(--lo-grijs)]">
+                        <div className={`mt-1 text-xs font-bold ${selectedKlasId === klas.id ? 'text-[var(--lo-papier)]' : 'text-[var(--lo-grijs)]'}`}>
                           {klassesWithStudents[klas.id]?.length || 0} leerlingen · {getKlasRouteLabel(klas, alleNiveaus)}
                         </div>
                       </div>
