@@ -9,6 +9,7 @@ import {
   schrijfWoordenTekst
 } from '../../games/dvlingo/dvlingoWoordenlijst';
 import { fetchDvlingoInstellingen, saveDvlingoInstellingen } from '../../services/dvlingoService';
+import { Label } from '../leeromgeving';
 
 // Woordenbeheer van DVLingo, als paneel op /admin/spellen. Vervangt de losse
 // beheerpagina met browserslot uit de standalone versie: hier geldt de echte
@@ -76,28 +77,27 @@ export default function DvlingoWoordenPanel() {
   };
 
   return (
-    <section className="helix-surface p-6">
+    <section className="lo-kaart">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="helix-eyebrow">Spelinstellingen</p>
-          <h3 className="mt-2 text-xl font-black tracking-tight text-[var(--helix-navy)]">
+          <p className="lo-eyebrow">Spelinstellingen</p>
+          <h3 className="lo-kaart-titel mt-2">
             Woordenbeheer DVLingo
           </h3>
-          <p className="helix-muted mt-2 max-w-2xl text-sm leading-6">
+          <p className="lo-kaart-uitleg max-w-2xl">
             Zet hier je eigen woorden klaar voor de klas. Eén woord per regel, van {DVLINGO_MIN_LENGTE} tot{' '}
             {DVLINGO_MAX_LENGTE} letters. Wil je een uitleg tonen bij de uitslag, zet die dan achter een puntkomma:
             <span className="font-bold"> FIREWALL; Muur tegen ongewenst verkeer</span>. Zonder eigen lijst speelt de klas
             met de ingebouwde lijst digitale vaardigheden.
           </p>
         </div>
-        <span className="helix-badge bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-          <ListChecks size={13} />
+        <Label kleur="paars" icoon={ListChecks}>
           {keuring.woorden.length} woorden
-        </span>
+        </Label>
       </div>
 
-      <div className="mt-5 flex flex-wrap gap-5">
-        <label className="flex items-center gap-2 text-sm font-bold text-[var(--helix-navy)]">
+      <div className="flex flex-wrap gap-5">
+        <label className="flex items-center gap-2 text-sm font-bold text-[var(--lo-inkt)]">
           <input
             type="checkbox"
             checked={gebruikEigenLijst}
@@ -105,14 +105,14 @@ export default function DvlingoWoordenPanel() {
           />
           Eigen lijst gebruiken
         </label>
-        <label className="flex items-center gap-2 text-sm font-bold text-[var(--helix-navy)]">
+        <label className="flex items-center gap-2 text-sm font-bold text-[var(--lo-inkt)]">
           <input type="checkbox" checked={schud} onChange={(event) => setSchud(event.target.checked)} />
           Woorden in willekeurige volgorde
         </label>
       </div>
 
       <textarea
-        className="input-standard mt-4 h-56 w-full font-mono text-sm"
+        className="lo-invoer h-56 font-mono text-sm"
         value={tekst}
         disabled={laden}
         onChange={(event) => setTekst(event.target.value)}
@@ -121,10 +121,10 @@ export default function DvlingoWoordenPanel() {
       />
 
       {(keuring.afgekeurd.length > 0 || keuring.dubbel.length > 0) && (
-        <div className="helix-alert mt-4 p-4 text-sm leading-6">
+        <div className="lo-melding lo-melding--info flex-col gap-0">
           {keuring.afgekeurd.length > 0 && (
             <p>
-              <span className="font-black">{keuring.afgekeurd.length} regel(s) afgekeurd:</span>{' '}
+              <span className="font-extrabold">{keuring.afgekeurd.length} regel(s) afgekeurd:</span>{' '}
               {keuring.afgekeurd
                 .slice(0, 5)
                 .map((item) => `${item.invoer || 'lege regel'} (${beschrijfAfkeuring(item.reden)})`)
@@ -134,14 +134,14 @@ export default function DvlingoWoordenPanel() {
           )}
           {keuring.dubbel.length > 0 && (
             <p className="mt-1">
-              <span className="font-black">Dubbel, één keer bewaard:</span> {keuring.dubbel.join(', ')}
+              <span className="font-extrabold">Dubbel, één keer bewaard:</span> {keuring.dubbel.join(', ')}
             </p>
           )}
         </div>
       )}
 
       {teWeinig && (
-        <div className="helix-alert mt-4 border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+        <div className="lo-melding lo-melding--info">
           Je eigen lijst telt {keuring.woorden.length} woorden. Het spel heeft er minstens{' '}
           {DVLINGO_MIN_EIGEN_WOORDEN} nodig om drie levels te vullen; tot die tijd spelen leerlingen met de
           ingebouwde lijst.
@@ -150,16 +150,14 @@ export default function DvlingoWoordenPanel() {
 
       {melding && (
         <div
-          className={`helix-alert mt-4 p-4 text-sm leading-6 ${
-            melding.toon === 'error' ? 'border-red-200 bg-red-50 text-red-900' : 'border-green-200 bg-green-50 text-green-900'
-          }`}
+          className={`lo-melding ${melding.toon === 'error' ? 'lo-melding--fout' : 'lo-melding--goed'}`}
         >
           {melding.tekst}
         </div>
       )}
 
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button type="button" className="btn-primary" onClick={handleOpslaan} disabled={opslaan || laden}>
+      <div className="flex flex-wrap gap-3">
+        <button type="button" className="lo-knop" onClick={handleOpslaan} disabled={opslaan || laden}>
           <Save size={16} />
           {opslaan ? 'Opslaan…' : 'Woordenlijst opslaan'}
         </button>

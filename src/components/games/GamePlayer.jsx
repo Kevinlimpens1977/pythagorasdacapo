@@ -13,7 +13,8 @@ export default function GamePlayer({
   gameId,
   context = { mode: 'standalone', resultHandling: GAME_RESULT_HANDLING.LOCAL_ONLY },
   onResult,
-  variant = 'student'
+  variant = 'student',
+  toonKop = true
 }) {
   const game = getGameById(gameId);
   const isAdminVariant = variant === 'admin';
@@ -82,6 +83,7 @@ export default function GamePlayer({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+      {toonKop && (
       <div className="border-b border-slate-200 p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -110,6 +112,7 @@ export default function GamePlayer({
           </div>
         )}
       </div>
+      )}
 
       <div className="grid gap-4 p-6 md:grid-cols-3">
         <InfoTile label="Vak" value={game.subject} />

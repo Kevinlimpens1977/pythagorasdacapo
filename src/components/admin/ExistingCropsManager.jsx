@@ -3,9 +3,10 @@
  * View, preview, and delete crops already saved for a question
  */
 
-import React, { useState, useEffect } from 'react';
-import { Trash2, Loader, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Trash2, Loader, AlertCircle, FileText, Image } from 'lucide-react';
 import { fetchQuestionMetadata } from '../../services/firestoreService';
+import { HelixLaden } from '../merk/HelixLogo';
 
 export default function ExistingCropsManager({
   paragraphId,
@@ -66,25 +67,20 @@ export default function ExistingCropsManager({
   // Render states
   if (!questionId) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">
+      <div className="flex items-center justify-center h-64 text-[var(--lo-grijs)]">
         <p>Selecteer eerst een vraag</p>
       </div>
     );
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64 gap-3">
-        <Loader size={20} className="animate-spin text-blue-600" />
-        <p className="text-gray-600">Crops laden...</p>
-      </div>
-    );
+    return <HelixLaden tekst="Crops laden..." className="min-h-0 py-10" />;
   }
 
   if (error) {
     return (
       <div className="p-4 space-y-4">
-        <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="lo-melding lo-melding--fout gap-3 p-4">
           <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
           <p className="text-sm">{error}</p>
         </div>
@@ -94,7 +90,7 @@ export default function ExistingCropsManager({
 
   if (crops.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-500">
+      <div className="flex items-center justify-center h-64 text-[var(--lo-grijs)]">
         <p>Geen crops opgeslagen voor deze vraag</p>
       </div>
     );
@@ -102,19 +98,19 @@ export default function ExistingCropsManager({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-semibold text-gray-700 px-4 pt-4">
+      <p className="text-sm font-bold text-[var(--lo-inkt)] px-4 pt-4">
         {crops.length} crop{crops.length !== 1 ? 's' : ''} opgeslagen
       </p>
 
-      <div className="space-y-3 px-4 max-h-96 overflow-y-auto">
+      <div className="lo-lijst mx-4 max-h-96 overflow-y-auto">
         {crops.map(crop => (
           <div
             key={crop.cropId}
-            className="p-3 bg-gray-50 border border-gray-200 rounded-lg flex gap-3 items-start"
+            className="p-3 flex gap-3 items-start"
           >
             {/* Thumbnail */}
             {crop.downloadURL && (
-              <div className="flex-shrink-0 bg-gray-100 rounded border border-gray-200 overflow-hidden">
+              <div className="flex-shrink-0 bg-[var(--lo-papier-2)] rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] overflow-hidden">
                 <img
                   src={crop.downloadURL}
                   alt={`Crop ${crop.label}`}
@@ -129,24 +125,25 @@ export default function ExistingCropsManager({
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2">
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-bold text-[var(--lo-inkt)]">
                   Crop {crop.label || crop.order || '?'}
                 </p>
                 {crop.type && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                    {crop.type === 'text' ? '📝 Tekst' : '📷 Afbeelding'}
+                  <span className="lo-label lo-label--blauw">
+                    {crop.type === 'text' ? <FileText size={13} aria-hidden="true" /> : <Image size={13} aria-hidden="true" />}
+                    {crop.type === 'text' ? 'Tekst' : 'Afbeelding'}
                   </span>
                 )}
               </div>
 
               {crop.cropCoordinates && (
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="lo-onderregel mt-1">
                   {crop.cropCoordinates.width} × {crop.cropCoordinates.height}px
                 </p>
               )}
 
               {crop.uploadedAt && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="lo-onderregel mt-1">
                   {new Date(crop.uploadedAt).toLocaleDateString('nl-NL', {
                     month: 'short',
                     day: 'numeric',
@@ -161,7 +158,7 @@ export default function ExistingCropsManager({
             <button
               onClick={() => handleDelete(crop)}
               disabled={deletingId === crop.cropId}
-              className="flex-shrink-0 p-2 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-shrink-0 p-2 text-[var(--lo-rood-inkt)] hover:bg-[var(--lo-rood-zacht)] rounded-[var(--lo-hoek-m)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Verwijderen"
             >
               {deletingId === crop.cropId ? (

@@ -4,8 +4,8 @@
  * Includes tabs for creating new crops and managing existing crops
  */
 
-import React, { useState } from 'react';
-import { Save, Loader, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { Save, Loader, ChevronDown, FileText, Image, Lightbulb, TriangleAlert, X } from 'lucide-react';
 import ExistingCropsManager from './ExistingCropsManager';
 
 const PARAGRAPHS = ['7.1', '7.3'];
@@ -26,22 +26,19 @@ export default function FloatingCropPanel({
   const [activeTab, setActiveTab] = useState('nieuw');
   const [existingCount, setExistingCount] = useState(0);
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col shadow-lg">
+    <div className="lo-kaart w-80 gap-0 rounded-none p-0">
       {/* Header with tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-[var(--lo-lijn)]">
         <div className="p-4">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Crop Tool</h2>
+          <h2 className="lo-kaart-titel mb-3">Crop Tool</h2>
           {/* Tab buttons */}
-          <div className="flex rounded-lg bg-gray-100 p-1 gap-1">
+          <div className="lo-keuzes">
             {['nieuw', 'beheer'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-md capitalize transition-colors ${
-                  activeTab === tab
-                    ? 'bg-white shadow text-gray-900'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
+                aria-pressed={activeTab === tab}
+                className="lo-keuze flex-1 justify-center capitalize"
               >
                 {tab === 'nieuw' ? 'Nieuw' : `Beheer${existingCount > 0 ? ` (${existingCount})` : ''}`}
               </button>
@@ -57,30 +54,30 @@ export default function FloatingCropPanel({
           <div className="p-4 space-y-6">
             {/* Paragraph selector */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="lo-veldlabel">
                 Paragraaf
               </label>
               <div className="relative">
                 <select
                   value={paragraphId}
                   onChange={(e) => onParagraphChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8"
+                  className="lo-invoer appearance-none pr-8"
                 >
                   {PARAGRAPHS.map(para => (
                     <option key={para} value={para}>7.{para}</option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={18} />
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--lo-grijs)] pointer-events-none" size={18} />
               </div>
             </div>
 
             {/* Question selector */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="lo-veldlabel">
                 Vraag
               </label>
               {availableQuestions.length === 0 ? (
-                <p className="text-sm text-gray-500 p-3 bg-gray-50 rounded-lg">
+                <p className="lo-melding lo-melding--info">
                   Geen vragen in deze paragraaf
                 </p>
               ) : (
@@ -88,7 +85,7 @@ export default function FloatingCropPanel({
                   <select
                     value={selectedQuestionId || ''}
                     onChange={(e) => onQuestionChange(e.target.value || null)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8"
+                    className="lo-invoer appearance-none pr-8"
                   >
                     <option value="">-- Selecteer een vraag --</option>
                     {availableQuestions.map(question => (
@@ -97,24 +94,24 @@ export default function FloatingCropPanel({
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={18} />
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--lo-grijs)] pointer-events-none" size={18} />
                 </div>
               )}
             </div>
 
             {/* Crop type selector */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="lo-veldlabel">
                 Selectie type
               </label>
               <div className="space-y-2">
-                <label className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                <label className="flex items-center gap-2 p-2 hover:bg-[var(--lo-papier)] rounded-[var(--lo-hoek-m)] cursor-pointer">
                   <input type="radio" name="cropType" defaultChecked className="w-4 h-4" />
-                  <span className="text-sm text-gray-700">📷 Afbeelding</span>
+                  <span className="inline-flex items-center gap-1.5 text-sm text-[var(--lo-inkt)]"><Image size={15} aria-hidden="true" /> Afbeelding</span>
                 </label>
-                <label className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                <label className="flex items-center gap-2 p-2 hover:bg-[var(--lo-papier)] rounded-[var(--lo-hoek-m)] cursor-pointer">
                   <input type="radio" name="cropType" className="w-4 h-4" />
-                  <span className="text-sm text-gray-700">📝 Tekst (OCR-ready)</span>
+                  <span className="inline-flex items-center gap-1.5 text-sm text-[var(--lo-inkt)]"><FileText size={15} aria-hidden="true" /> Tekst (OCR-ready)</span>
                 </label>
               </div>
             </div>
@@ -122,27 +119,27 @@ export default function FloatingCropPanel({
             {/* Selections preview */}
             {selections.length > 0 && (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="lo-veldlabel">
                   Geselecteerde rechthoeken ({selections.length})
                 </label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <div className="lo-lijst max-h-48 overflow-y-auto">
                   {selections.map((sel, idx) => (
-                    <div key={sel.id} className="p-2 bg-gray-50 rounded-lg border border-gray-200 text-xs flex items-start justify-between gap-2">
+                    <div key={sel.id} className="p-2 text-xs flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900">Rechthoek {idx + 1}</p>
-                        <p className="text-gray-600">
+                        <p className="font-bold text-[var(--lo-inkt)]">Rechthoek {idx + 1}</p>
+                        <p className="text-[var(--lo-grijs)]">
                           {sel.cropCoordinates.width} × {sel.cropCoordinates.height}px
                         </p>
-                        <p className="text-gray-600">
-                          Type: {sel.type === 'text' ? '📝 Tekst' : '📷 Afbeelding'}
+                        <p className="inline-flex items-center gap-1 text-[var(--lo-grijs)]">
+                          Type: {sel.type === 'text' ? <FileText size={13} aria-hidden="true" /> : <Image size={13} aria-hidden="true" />} {sel.type === 'text' ? 'Tekst' : 'Afbeelding'}
                         </p>
                       </div>
                       <button
                         onClick={() => onSelectionsChanged(selections.filter((_, i) => i !== idx))}
-                        className="flex-shrink-0 text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors font-bold text-sm"
+                        className="flex-shrink-0 text-[var(--lo-rood-inkt)] hover:bg-[var(--lo-rood-zacht)] p-1 rounded-[var(--lo-hoek-m)] transition-colors"
                         title="Rechthoek verwijderen"
                       >
-                        ×
+                        <X size={16} aria-hidden="true" />
                       </button>
                     </div>
                   ))}
@@ -152,9 +149,9 @@ export default function FloatingCropPanel({
 
             {/* Image info */}
             {imageData && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
-                <p className="font-semibold">📊 Afbeelding geladen</p>
-                <p className="text-xs text-blue-800 mt-1">
+              <div className="lo-melding lo-melding--info flex-col gap-0">
+                <p className="font-bold text-[var(--lo-inkt)]">Afbeelding geladen</p>
+                <p className="text-xs mt-1">
                   {imageData.width} × {imageData.height}px
                 </p>
               </div>
@@ -173,11 +170,11 @@ export default function FloatingCropPanel({
 
       {/* Action buttons - only show on Nieuw tab */}
       {activeTab === 'nieuw' && (
-        <div className="border-t border-gray-200 p-4 space-y-2">
+        <div className="border-t border-[var(--lo-lijn)] p-4 space-y-2">
           <button
             onClick={onSave}
             disabled={isLoading || !selectedQuestionId || selections.length === 0}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition-colors"
+            className="lo-knop w-full justify-center"
           >
             {isLoading ? (
               <>
@@ -193,14 +190,14 @@ export default function FloatingCropPanel({
           </button>
 
           {selectedQuestionId && selections.length === 0 && (
-            <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
-              ⚠️ Teken minstens één rechthoek op de afbeelding
+            <p className="lo-melding lo-melding--info text-xs">
+              <TriangleAlert size={15} className="shrink-0" aria-hidden="true" /> Teken minstens één rechthoek op de afbeelding
             </p>
           )}
 
           {!selectedQuestionId && (
-            <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
-              ⚠️ Selecteer eerst een vraag
+            <p className="lo-melding lo-melding--info text-xs">
+              <TriangleAlert size={15} className="shrink-0" aria-hidden="true" /> Selecteer eerst een vraag
             </p>
           )}
         </div>
@@ -208,8 +205,8 @@ export default function FloatingCropPanel({
 
       {/* Info footer - only show on Nieuw tab */}
       {activeTab === 'nieuw' && (
-        <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 text-xs text-gray-600">
-          <p className="font-semibold mb-1">💡 Tips:</p>
+        <div className="bg-[var(--lo-papier)] border-t border-[var(--lo-lijn)] px-4 py-3 text-xs text-[var(--lo-grijs)]">
+          <p className="mb-1 inline-flex items-center gap-1.5 font-bold"><Lightbulb size={14} aria-hidden="true" /> Tips:</p>
           <ul className="space-y-1 list-disc list-inside">
             <li>Sleep om rechthoeken te tekenen</li>
             <li>Klik rechthoek om te selecteren</li>

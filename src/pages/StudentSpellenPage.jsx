@@ -104,6 +104,7 @@ export default function StudentSpellenPage() {
                   <GamePlayer
                     gameId={game.gameId}
                     variant="student"
+                    toonKop={false}
                     context={{
                       mode: 'standalone',
                       resultHandling: GAME_RESULT_HANDLING.LOCAL_ONLY,
