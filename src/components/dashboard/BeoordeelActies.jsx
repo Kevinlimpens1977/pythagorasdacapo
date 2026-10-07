@@ -12,8 +12,11 @@ const BESLUIT_ICOON = {
   [NAKIJK_BESLUIT.AFGEKEURD]: X
 };
 
-const GEBLOKKEERDE_KNOP_CLASS =
-  'border-[var(--helix-border)] bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]';
+const BESLUIT_KNOP = {
+  [NAKIJK_BESLUIT.GOEDGEKEURD]: 'lo-knop lo-knop--klein',
+  [NAKIJK_BESLUIT.OPNIEUW]: 'lo-knop-tweede lo-knop--klein',
+  [NAKIJK_BESLUIT.AFGEKEURD]: 'lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar'
+};
 
 const STANDAARD_BLOKKADE =
   'Deze stap komt uit een ouder voortgangrecord zonder lesblok. Beoordelen kan hier niet; ' +
@@ -47,11 +50,11 @@ export default function BeoordeelActies({
   if (blokkade) {
     return (
       <div className={compact ? 'mt-2' : 'mt-3'}>
-        <p className="flex items-start gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-xs font-semibold text-[var(--helix-muted)]">
+        <p className="lo-melding lo-melding--info">
           <TriangleAlert size={14} className="mt-0.5 shrink-0" />
           {blokkade}
         </p>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="lo-knoppenbalk mt-2">
           {NAKIJK_BESLUITEN.map((besluit) => {
             const presentatie = getBesluitPresentatie(besluit);
             const Icoon = BESLUIT_ICOON[besluit];
@@ -63,9 +66,9 @@ export default function BeoordeelActies({
                 disabled
                 aria-disabled="true"
                 title={blokkade}
-                className={`inline-flex cursor-not-allowed items-center gap-1.5 rounded-[var(--helix-radius-md)] border px-3 py-2 text-xs font-black opacity-60 ${GEBLOKKEERDE_KNOP_CLASS}`}
+                className="lo-knop-tweede lo-knop--klein"
               >
-                <Icoon size={14} />
+                <Icoon size={16} />
                 {presentatie.label}
               </button>
             );
@@ -93,10 +96,10 @@ export default function BeoordeelActies({
         disabled={bezig}
         onChange={(event) => setOpmerking(event.target.value)}
         placeholder="Toelichting voor de leerling (optioneel)"
-        className="input-standard w-full py-2 text-sm font-semibold text-[var(--helix-navy)]"
+        className="input-standard w-full py-2 text-sm text-[var(--lo-inkt)]"
       />
 
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="lo-knoppenbalk mt-2">
         {NAKIJK_BESLUITEN.map((besluit) => {
           const presentatie = getBesluitPresentatie(besluit);
           const Icoon = BESLUIT_ICOON[besluit];
@@ -108,9 +111,9 @@ export default function BeoordeelActies({
               disabled={bezig}
               onClick={() => verstuur(besluit)}
               title={presentatie.gevolg}
-              className={`inline-flex items-center gap-1.5 rounded-[var(--helix-radius-md)] border px-3 py-2 text-xs font-black transition disabled:cursor-not-allowed disabled:opacity-60 ${presentatie.knopClass}`}
+              className={BESLUIT_KNOP[besluit]}
             >
-              {bezig ? <Loader2 size={14} className="animate-spin" /> : <Icoon size={14} />}
+              {bezig ? <Loader2 size={16} className="animate-spin" /> : <Icoon size={16} />}
               {presentatie.label}
             </button>
           );

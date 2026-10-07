@@ -25,10 +25,10 @@ function ZelfbeoordelingBadges({ records = [] }) {
           <span
             key={record?.fieldId || index}
             title={`Opgave ${index + 1}: ${oordeel ? oordeel.label : 'geen zelfoordeel (Digidocent faalde)'} - denktijd ${denktijdSec}s`}
-            className="inline-flex items-center gap-1 rounded-full border border-transparent px-2 py-0.5 text-[10px] font-black"
+            className="lo-label"
             style={oordeel
               ? { color: oordeel.kleur, backgroundColor: oordeel.achtergrond }
-              : { color: 'var(--helix-muted)', backgroundColor: 'var(--helix-surface-soft)' }}
+              : { color: 'var(--lo-grijs)', backgroundColor: 'var(--lo-papier-2)' }}
           >
             {oordeel ? oordeel.label : 'Geen oordeel'}
             <span className="font-bold opacity-80">{denktijdSec}s</span>
@@ -38,7 +38,7 @@ function ZelfbeoordelingBadges({ records = [] }) {
       {!signalen.serieus && (
         <span
           title={`Signalen: ${signalen.vlaggen.map((vlag) => vlag.reden).join('; ')}`}
-          className="inline-flex items-center rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800"
+          className="lo-label lo-label--oranje"
         >
           Controleer
         </span>
@@ -61,8 +61,8 @@ function VragenPerItem({ items = [] }) {
   const pogingen = items.reduce((som, item) => som + (item.pogingen || 0), 0);
 
   return (
-    <details className="mt-2 rounded-[var(--helix-radius-sm)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2" open={items.length <= 10}>
-      <summary className="cursor-pointer text-xs font-black text-[var(--helix-navy)]">
+    <details className="mt-2 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-papier)] px-3 py-2" open={items.length <= 10}>
+      <summary className="cursor-pointer text-xs font-extrabold text-[var(--lo-inkt)]">
         Per vraag: {goed} van {items.length} goed
         {maxTotaal > 0 && ` - ${scoreTotaal}/${maxTotaal} punten`}
         {` - ${pogingen} poging${pogingen === 1 ? '' : 'en'}`}
@@ -82,24 +82,24 @@ function VragenPerItem({ items = [] }) {
                   ? 'Fout'
                   : 'Bezig';
           const oordeelKleur = oordeel === 'Goed'
-            ? 'text-emerald-700'
+            ? 'text-[var(--lo-groen-inkt)]'
             : oordeel === 'Fout'
-              ? 'text-rose-700'
-              : 'text-[var(--helix-muted)]';
+              ? 'text-[var(--lo-rood-inkt)]'
+              : 'text-[var(--lo-grijs)]';
 
           return (
-            <li key={item.itemId || item.nummer} className="rounded-lg bg-white px-2.5 py-1.5 text-[11px]">
+            <li key={item.itemId || item.nummer} className="rounded-[var(--lo-hoek-s)] bg-[var(--lo-kaart)] px-2.5 py-1.5 text-[11px]">
               <div className="flex flex-wrap items-start gap-2">
-                <span className={`inline-flex h-5 min-w-5 items-center justify-center rounded-md border px-1 text-[10px] font-black ${presentatie.chipClass}`}>
+                <span className={`h-5 min-w-5 justify-center rounded-[var(--lo-hoek-s)] px-1 py-0 text-[11px] leading-none ${presentatie.chipClass}`}>
                   {item.nummer}
                 </span>
-                <span className="min-w-0 flex-1 font-semibold text-[var(--helix-navy)]">{item.titel}</span>
-                <span className={`font-black ${oordeelKleur}`}>{oordeel}</span>
+                <span className="min-w-0 flex-1 font-semibold text-[var(--lo-inkt)]">{item.titel}</span>
+                <span className={`font-extrabold ${oordeelKleur}`}>{oordeel}</span>
               </div>
               {gemaaktItem && (
-                <div className="mt-1 flex flex-wrap gap-3 pl-7 font-semibold text-[var(--helix-muted)]">
+                <div className="mt-1 flex flex-wrap gap-3 pl-7 text-[var(--lo-grijs)]">
                   {item.record?.herkansing && (
-                    <span className="text-[var(--helix-navy)]">
+                    <span className="text-[var(--lo-inkt)]">
                       1e ronde: {item.record.ronde1?.isCorrect ? 'goed' : 'fout'}
                       {' - herkansing: '}
                       {item.record.herkansing.completed
@@ -142,8 +142,8 @@ export function StappenSpoor({ stappen = [], actieveStapId = '', onSelectStap })
             type="button"
             onClick={() => onSelectStap?.(stap)}
             title={`Stap ${stap.nummer} - ${stap.titel} (${presentatie.label}): ${stap.toelichting}`}
-            className={`h-8 w-8 rounded-lg border text-xs font-black transition hover:brightness-95 ${presentatie.chipClass} ${
-              actief ? 'ring-2 ring-[var(--helix-purple)] ring-offset-1' : ''
+            className={`h-8 w-8 cursor-pointer justify-center rounded-[var(--lo-hoek-s)] p-0 text-xs transition hover:brightness-95 ${presentatie.chipClass} ${
+              actief ? 'ring-2 ring-[var(--lo-inkt)] ring-offset-1' : ''
             }`}
           >
             {stap.nummer}
@@ -174,23 +174,23 @@ function ResetStapActie({ stap, leerlingNaam = '', onReset, bezig = false }) {
         type="button"
         onClick={() => setBevestigen(true)}
         disabled={bezig}
-        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-[var(--helix-border)] bg-white px-2.5 py-1.5 text-[11px] font-black text-[var(--helix-muted)] transition hover:border-rose-400 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar mt-2"
       >
-        <RotateCcw size={13} aria-hidden="true" />
+        <RotateCcw size={16} aria-hidden="true" />
         Opnieuw laten maken
       </button>
     );
   }
 
   return (
-    <div className="mt-2 rounded-[var(--helix-radius-sm)] border border-rose-200 bg-rose-50 px-3 py-2.5">
-      <p className="text-xs font-black text-rose-900">
+    <div className="mt-2 rounded-[var(--lo-hoek-m)] bg-[var(--lo-rood-zacht)] px-3 py-2.5">
+      <p className="text-xs font-extrabold text-[var(--lo-rood-inkt)]">
         Al het gemaakte werk van {leerlingNaam || 'deze leerling'} voor stap {stap.nummer} ({stap.titel}) wordt verwijderd.
       </p>
-      <p className="mt-1 text-[11px] font-semibold text-rose-800">
+      <p className="mt-1 text-xs text-[var(--lo-rood-inkt)]">
         Antwoorden, pogingen, score en herkansing gaan weg. De leerling maakt de stap opnieuw. Verdiende tokens blijven staan en komen niet opnieuw. Dit kan niet ongedaan worden gemaakt.
       </p>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="lo-knoppenbalk mt-2">
         <button
           type="button"
           onClick={async () => {
@@ -198,16 +198,16 @@ function ResetStapActie({ stap, leerlingNaam = '', onReset, bezig = false }) {
             if (gelukt) setBevestigen(false);
           }}
           disabled={bezig}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="lo-knop lo-knop--gevaar lo-knop--klein"
         >
-          <RotateCcw size={13} aria-hidden="true" />
+          <RotateCcw size={16} aria-hidden="true" />
           {bezig ? 'Bezig...' : 'Ja, werk verwijderen'}
         </button>
         <button
           type="button"
           onClick={() => setBevestigen(false)}
           disabled={bezig}
-          className="rounded-lg border border-[var(--helix-border)] bg-white px-3 py-1.5 text-[11px] font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-navy)]"
+          className="lo-knop-tweede lo-knop--klein"
         >
           Annuleren
         </button>
@@ -227,7 +227,7 @@ export default function LeerlingStappen({
 }) {
   if (!rapport || !rapport.stappen.length) {
     return (
-      <p className="mt-3 text-sm font-semibold text-[var(--helix-muted)]">
+      <p className="mt-3 text-sm text-[var(--lo-grijs)]">
         Deze paragraaf heeft nog geen lesblokken.
       </p>
     );
@@ -248,33 +248,33 @@ export default function LeerlingStappen({
         return (
           <li
             key={stap.blockId || stap.nummer}
-            className={`rounded-[var(--helix-radius-md)] border bg-white px-3 py-2.5 ${
-              stap.status === STAP_STATUS.NIET_GESTART ? 'border-dashed border-[var(--helix-border)]' : 'border-[var(--helix-border)]'
+            className={`rounded-[var(--lo-hoek-m)] border bg-[var(--lo-kaart)] px-3 py-2.5 ${
+              stap.status === STAP_STATUS.NIET_GESTART ? 'border-dashed border-[var(--lo-lijn)]' : 'border-[var(--lo-lijn)]'
             }`}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-black ${presentatie.chipClass}`}>
+              <span className={`h-7 w-7 justify-center rounded-[var(--lo-hoek-s)] p-0 text-xs ${presentatie.chipClass}`}>
                 {stap.nummer}
               </span>
-              <span className="font-bold text-[var(--helix-navy)]">{stap.titel}</span>
-              <span className="rounded-full bg-[var(--helix-surface-soft)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[var(--helix-muted)]">
+              <span className="font-bold text-[var(--lo-inkt)]">{stap.titel}</span>
+              <span className="lo-label bg-[var(--lo-papier-2)] text-[var(--lo-grijs)]">
                 {stap.typeLabel}
               </span>
-              <span className={`ml-auto inline-flex items-center gap-1.5 text-xs font-black ${
-                stap.status === STAP_STATUS.VASTGELOPEN ? 'text-rose-700' : 'text-[var(--helix-muted)]'
+              <span className={`ml-auto inline-flex items-center gap-1.5 text-xs font-extrabold ${
+                stap.status === STAP_STATUS.VASTGELOPEN ? 'text-[var(--lo-rood-inkt)]' : 'text-[var(--lo-grijs)]'
               }`}>
                 <span className={`h-2 w-2 rounded-full ${presentatie.dotClass}`} />
                 {presentatie.label}
               </span>
             </div>
 
-            <p className="mt-1 text-xs font-semibold text-[var(--helix-muted)]">
+            <p className="mt-1 text-xs text-[var(--lo-grijs)]">
               {stap.toelichting}
               {stap.laatsteActiviteitMs > 0 && ` - ${relatieveTijd(stap.laatsteActiviteitMs)}`}
             </p>
 
             {record && (
-              <div className="mt-1.5 flex flex-wrap gap-3 text-[11px] font-semibold text-[var(--helix-muted)]">
+              <div className="mt-1.5 flex flex-wrap gap-3 text-[11px] text-[var(--lo-grijs)]">
                 <span>Pogingen: {stap.pogingen}</span>
                 <span>Digidocent-hulp: {stap.aiHulp}</span>
                 {Number(record.itemCount || 0) > 0 && !record.herkansing && (
@@ -283,7 +283,7 @@ export default function LeerlingStappen({
                 {Number(record.itemCount || 0) > 0 && record.herkansing && (
                   <>
                     <span>Eerste ronde: {record.eersteScore?.itemsCorrect ?? '?'}/{record.itemCount} goed</span>
-                    <span className="text-[var(--helix-navy)]">
+                    <span className="text-[var(--lo-inkt)]">
                       Na herkansing: {record.itemsCorrect || 0}/{record.itemCount} goed
                       {record.herkansing.itemsHerkanst ? ` (${record.herkansing.itemsGoed || 0} van ${record.herkansing.itemsHerkanst} herkanst goed` : ''}
                       {record.herkansing.itemsHerkanst && record.herkansing.aiHelpCount > 0 ? `, ${record.herkansing.aiHelpCount}x Digidocent` : ''}
@@ -307,7 +307,7 @@ export default function LeerlingStappen({
             )}
 
             {record?.teacherReview?.besluit && (
-              <p className="mt-1.5 text-[11px] font-bold text-[var(--helix-muted)]">
+              <p className="mt-1.5 text-[11px] font-bold text-[var(--lo-grijs)]">
                 {record.teacherReview.besluitLabel || 'Beoordeeld'}
                 {record.teacherReview.docentNaam ? ` door ${record.teacherReview.docentNaam}` : ''}
                 {record.teacherReview.opmerking ? ` - "${record.teacherReview.opmerking}"` : ''}
@@ -326,12 +326,12 @@ export default function LeerlingStappen({
             {onBeoordeel && nakijkOpdrachten.map((nakijkOpdracht) => (
               <div key={nakijkOpdracht.id}>
                 {nakijkOpdracht.itemId && (
-                  <p className="mt-2 text-xs font-black text-[var(--helix-navy)]">
+                  <p className="mt-2 text-xs font-extrabold text-[var(--lo-inkt)]">
                     Vraag {nakijkOpdracht.vraagNummer}: {nakijkOpdracht.vraag}
                   </p>
                 )}
                 {nakijkOpdracht.itemId && (
-                  <p className="text-xs font-semibold text-[var(--helix-muted)]">
+                  <p className="text-xs text-[var(--lo-grijs)]">
                     Antwoord: {formatProgressAnswer(nakijkOpdracht.antwoord)}
                   </p>
                 )}

@@ -54,45 +54,45 @@ export const STAP_STATUS_PRESENTATIE = {
     label: 'Afgerond',
     kort: 'Af',
     rang: 1,
-    chipClass: 'border-emerald-600 bg-emerald-50 text-emerald-800',
-    dotClass: 'bg-emerald-600',
-    balkClass: 'bg-emerald-600'
+    chipClass: 'lo-label lo-label--groen',
+    dotClass: 'bg-[var(--lo-groen)]',
+    balkClass: 'bg-[var(--lo-groen)]'
   },
   [STAP_STATUS.NAKIJKEN]: {
     status: STAP_STATUS.NAKIJKEN,
     label: 'Wacht op nakijken',
     kort: 'Na',
     rang: 2,
-    chipClass: 'border-[var(--helix-warning)] bg-amber-50 text-amber-800',
-    dotClass: 'bg-[var(--helix-warning)]',
-    balkClass: 'bg-[var(--helix-warning)]'
+    chipClass: 'lo-label lo-label--oranje',
+    dotClass: 'bg-[var(--lo-oranje-inkt)]',
+    balkClass: 'bg-[var(--lo-oranje-inkt)]'
   },
   [STAP_STATUS.VASTGELOPEN]: {
     status: STAP_STATUS.VASTGELOPEN,
     label: 'Vastgelopen',
     kort: 'Vast',
     rang: 3,
-    chipClass: 'border-[var(--helix-danger)] bg-rose-50 text-rose-800',
-    dotClass: 'bg-[var(--helix-danger)]',
-    balkClass: 'bg-[var(--helix-danger)]'
+    chipClass: 'lo-label lo-label--rood',
+    dotClass: 'bg-[var(--lo-rood)]',
+    balkClass: 'bg-[var(--lo-rood)]'
   },
   [STAP_STATUS.BEZIG]: {
     status: STAP_STATUS.BEZIG,
     label: 'Bezig',
     kort: 'Bezig',
     rang: 4,
-    chipClass: 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-navy)]',
-    dotClass: 'bg-[var(--helix-purple)]',
-    balkClass: 'bg-[var(--helix-purple)]'
+    chipClass: 'lo-label lo-label--blauw',
+    dotClass: 'bg-[var(--lo-blauw)]',
+    balkClass: 'bg-[var(--lo-blauw)]'
   },
   [STAP_STATUS.NIET_GESTART]: {
     status: STAP_STATUS.NIET_GESTART,
     label: 'Niet gestart',
     kort: '–',
     rang: 5,
-    chipClass: 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)]',
-    dotClass: 'bg-slate-300',
-    balkClass: 'bg-slate-300'
+    chipClass: 'lo-label bg-[var(--lo-papier-2)] text-[var(--lo-grijs)]',
+    dotClass: 'bg-[var(--lo-lijn)]',
+    balkClass: 'bg-[var(--lo-lijn)]'
   }
 };
 
@@ -110,9 +110,9 @@ export const PLUS_PRESENTATIE = {
   label: PLUS_LABEL,
   kort: PLUS_KORT,
   uitleg: PLUS_UITLEG_DOCENT,
-  chipClass: 'border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]',
-  dotClass: 'bg-[var(--helix-purple)]',
-  leegClass: 'border-dashed border-[var(--helix-purple)]/40 bg-[var(--helix-soft-lavender)]/40 text-[var(--helix-purple)]/70'
+  chipClass: 'lo-label lo-label--paars',
+  dotClass: 'bg-[var(--lo-paars)]',
+  leegClass: 'lo-label border border-dashed border-[var(--lo-paars)]/40 bg-[var(--lo-paars-zacht)]/40 text-[var(--lo-paars-inkt)]/70'
 };
 
 /** Zin voor de docent: hoeveel plusparagrafen deed deze leerling vrijwillig. */
