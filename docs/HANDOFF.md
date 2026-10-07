@@ -222,6 +222,22 @@ leerlingomgeving (ontwerp paragraaf 3.2). De twee tests in
 ontwikkelaarsknoppen op /login) en falen; dat is geen regressie, ze worden in
 fase 2 bijgewerkt.
 
+**7 oktober: Leeromgeving-stijl fase 2a live.** Inlogpagina's (leerling en
+beheerder) staan in de leeromgeving-stijl, met velden die aan hun naam
+gekoppeld zijn en foutmeldingen die worden voorgelezen (`role="alert"`). De
+menubalk is nieuw; "Lesmateriaal" meldt `aria-current="page"`. De startpagina
+is een lijst: "Verder waar je was" (het lange lesstaplabel breekt af), daaronder
+hoofdstukrijen met voortgang (`.lo-voortgang`) die uitklappen naar paragrafen
+met "Start hier"; bij openen staat elke rij dicht, wat dicht is toont het
+slotje met uitleg. De hoofdstukpagina heeft paragraafrijen met stappen en een
+slot zonder stippellijn. Rijen breken af op een telefoon en elke Start-knop
+heeft een `aria-label` met de titel van de rij. Nieuw: `--lo-rood-inkt` (rode
+tekst die 4,5:1 haalt) en de sleutel `knop.startHier` in tien talen. De
+inlogtests in `tests/e2e/auth-admin-smoke.spec.js` zijn bijgewerkt en groen.
+Markering `leeromgeving-fase-2a`, Vercel-deploy (id volgt na de deploy). Kevin test nog
+als testleerling (H1i1, een vmbo-klas, ER3L1A), ook op telefoon of iPad.
+Volgende: fase 2b en 2c.
+
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
 nulmeting kreeg `resultTier: failed` zodra niet alles goed was, en het
 klasoverzicht las dat als "vastgelopen": een klas die de hele nulmeting had
@@ -403,41 +419,42 @@ deck van 3 MB in tienden van seconden, als echte dia's met een kloppende teller.
 
 In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij.
 
-0. **Leeromgeving-stijl fase 2**: inlogpagina's en leerlingomgeving, volgens
-   docs/superpowers/specs/2026-10-07-leeromgeving-stijl-design.md, paragraaf 3.2.
-   Eerst een plan. Vóór fase 2: `--lo-rood` op `--lo-rood-zacht` haalt geen
-   4,5:1; een donkerdere roodtint voor tekst toevoegen.
+1. **Leeromgeving-stijl fase 2b en 2c.** Fase 2a staat live (inloggen, menubalk,
+   startpagina, hoofdstukpagina). Nog te doen volgens
+   docs/superpowers/specs/2026-10-07-leeromgeving-stijl-design.md, paragraaf 3.2:
+   2b is de lespagina, 2c het profiel, de tokenshop, de spellen en Mijn klas.
+   Eerst een plan per fase. Rode tekst gebruikt `--lo-rood-inkt`.
 
-0. **Infographic storingsplan (7 oktober 2026).** Gemaakt via de Helix
+2. **Infographic storingsplan (7 oktober 2026).** Gemaakt via de Helix
    Lesstudio (NotebookLM, Helix-opmaak), voor de gewone klassen en voor H1i1.
    Versie 2 wacht op Kevins akkoord: `exports/infographics/dv-h2-storingsplan-v2-verbeterd.png`
    ("bewaard" met de hand verbeterd; versie 1 had drie fouten). Daarna plaatsen
    in 2.3 van beide versies, als lichte afbeelding (geen PNG van 6 MB). Kevin
    wil hem eerst zien voordat er iets wordt vervangen.
 
-1. **Testen als leerling afmaken.** Alles is gebouwd en gedeployd behalve de
+3. **Testen als leerling afmaken.** Alles is gebouwd en gedeployd behalve de
    laatste stap: `startTestleerlingSessie` opnieuw uitrollen zodat hij als het
    serviceaccount `firebase-adminsdk-fbsvc` draait. Zonder dat kan hij geen
    inlogtoken ondertekenen. Zie paragraaf 5, "Testen als leerling".
-2. **Het losse werk committen** (zie paragraaf 7, "Los in de werkmap"). Kevin
+4. **Het losse werk committen** (zie paragraaf 7, "Los in de werkmap"). Kevin
    beslist wanneer.
-3. **Curriculum DV, fase 6.** Fase 1 tot en met 5 liggen er (zie paragraaf 5).
+5. **Curriculum DV, fase 6.** Fase 1 tot en met 5 liggen er (zie paragraaf 5).
    Fase 6 is het technische plan: SLO-koppeling per les in HELIX, de
    startscore uit de nulmeting bij elke les, en het dashboardconcept. Pas
    bouwen na Kevins akkoord op dat plan.
-4. **Hoofdstuk 3 en verder van DV.** Les 2 van het curriculum is "Hoe reist
+6. **Hoofdstuk 3 en verder van DV.** Les 2 van het curriculum is "Hoe reist
    jouw bericht over internet?". Bouwen gaat met `/helix-hoofdstuk-bouwen`;
    het deck volgt verplicht het design system.
-5. **Vrijgeven van DV hoofdstuk 1**: de lesparagrafen 1.1 tot en met 1.5
+7. **Vrijgeven van DV hoofdstuk 1**: de lesparagrafen 1.1 tot en met 1.5
    bestaan wel maar zijn aan niemand toegewezen. Dat is een lesbesluit; vraag
    het voordat je toewijst.
-6. Uit de navigatie-audit: het dubbele voortgangsoverzicht op het profiel, een
+8. Uit de navigatie-audit: het dubbele voortgangsoverzicht op het profiel, een
    woord bij het tokenmuntje, onthouden welk hoofdstuk het laatst open stond,
    en toetsenbordbediening van de stappenbalk.
-7. Vertaalknop: een blok publiceren vóór "Vertaling nu maken", de
+9. Vertaalknop: een blok publiceren vóór "Vertaling nu maken", de
    `vertalingen`-regel kent geen publicatiestatus, en vertalingen worden niet
    verwijderd als een blok wordt teruggetrokken.
-8. Paragraaf 1.2 van Binask heeft een deck van 7,1 MB; dat kan naar ongeveer
+10. Paragraaf 1.2 van Binask heeft een deck van 7,1 MB; dat kan naar ongeveer
    5,9 MB. Niet dringend.
 
 ## 7. Bij het afsluiten van een sessie
