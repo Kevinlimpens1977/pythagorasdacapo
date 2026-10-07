@@ -2,8 +2,6 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import NameSetupModal from '../auth/NameSetupModal';
-import CmsResetButton from '../admin/CmsResetButton';
-import DeleteStudentsButton from '../admin/DeleteStudentsButton';
 import HelpPaneel from '../admin/HelpPaneel';
 import TestleerlingBalk from '../admin/TestleerlingBalk';
 import Meldbel from '../common/Meldbel';
@@ -116,7 +114,7 @@ export default function AppShell() {
 
       {!isStudyRoute && (
       <header className="sticky top-0 z-[100] flex min-h-20 items-center justify-between border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-4 md:px-10">
-        <div className="flex min-w-0 items-center gap-4 md:gap-8">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4 md:gap-8">
           <h1
             onClick={handleLogoClick}
             className="helix-brand group flex shrink-0 cursor-pointer items-center transition-opacity hover:opacity-90"
@@ -130,7 +128,7 @@ export default function AppShell() {
           <nav
             className={
               isAdmin
-                ? 'nav-scroll-onzichtbaar lo-keuzes min-w-0 flex-nowrap overflow-x-auto p-1.5'
+                ? 'nav-scroll-onzichtbaar lo-keuzes min-w-0 flex-nowrap gap-1 overflow-x-auto p-0.5 sm:gap-2 sm:p-1.5'
                 : 'lo-keuzes flex-nowrap'
             }
           >
@@ -143,7 +141,7 @@ export default function AppShell() {
                   <button
                     key={workspace.id}
                     onClick={() => navigate(workspace.path)}
-                    className="lo-keuze min-h-10 shrink-0"
+                    className="lo-keuze min-h-10 shrink-0 justify-center px-[7px] sm:px-[11px]"
                     aria-current={isActive ? 'page' : undefined}
                     title={workspace.label}
                   >
@@ -186,14 +184,15 @@ export default function AppShell() {
             les. De pagina blijft bestaan op /admin/projectkompas. */}
 
         <div className={isAdmin ? 'flex shrink-0 items-center gap-2' : 'flex items-center gap-3 md:gap-4'}>
-          {isAdmin && <HelpPaneel />}
-          {isAdmin && <DeleteStudentsButton />}
-          {isAdmin && <CmsResetButton />}
+          {/* Het helppaneel blijft geladen voor de Help-knoppen in de pagina's,
+              maar heeft geen eigen knop meer in de balk (Kevin, 7 okt 2026).
+              Wis leerlingen en Reset CMS staan op Instellingen. */}
+          {isAdmin && <HelpPaneel metKnop={false} />}
 
           {isDevBypass && (
             <button
               onClick={handleLogout}
-              className="lo-knop-tweede lo-knop--klein hidden text-[var(--lo-oranje-inkt)] lg:inline-flex"
+              className="lo-knop-tweede hidden h-10 w-10 justify-center p-0 text-[var(--lo-oranje-inkt)] lg:inline-flex"
               title="Reset tijdelijke testmodus"
               aria-label="Reset testmodus"
             >
@@ -202,8 +201,9 @@ export default function AppShell() {
             </button>
           )}
 
-          {/* Ook voor beheerders (1 okt 2026): zij kunnen KlimBit spelen,
-              maar verdienen er nooit tokens mee. */}
+          {/* Alleen voor leerlingen: beheerders hebben Spellen al in het menu
+              (Kevin, 7 okt 2026; stond er dubbel). */}
+          {!isAdmin && (
           <button
             onClick={() => navigate('/spellen')}
             className={`lo-knop-tweede shrink-0 px-3 py-2 ${
@@ -218,6 +218,7 @@ export default function AppShell() {
             <span className="hidden sm:inline">Spellen</span>
             <span className="sr-only sm:hidden">Spellen</span>
           </button>
+          )}
 
           {!isAdmin && (
             <button
@@ -292,7 +293,7 @@ export default function AppShell() {
 
           <button
             onClick={handleLogout}
-            className="lo-knop-tweede px-3 py-2"
+            className="lo-knop-tweede h-10 w-10 shrink-0 justify-center p-0"
             title="Uitloggen"
             aria-label="Uitloggen"
           >

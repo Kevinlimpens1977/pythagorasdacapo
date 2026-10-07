@@ -46,12 +46,12 @@ export default function DeleteStudentsButton() {
     <>
       <button
         onClick={handleOpen}
-        className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar hidden xl:inline-flex"
+        className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar"
         title="Verwijder alle leerlingdocumenten uit Firestore"
         aria-label="Wis leerlingen"
       >
         <Trash2 size={16} aria-hidden="true" />
-        <span className="sr-only">Wis leerlingen</span>
+        <span>Wis leerlingen</span>
       </button>
 
       {isOpen && (

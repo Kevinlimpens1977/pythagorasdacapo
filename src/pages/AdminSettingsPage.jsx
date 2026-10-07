@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Bot, Bug, Coins, Palette } from 'lucide-react';
 import { Kaart, KaartKop, PaginaKop } from '../components/leeromgeving';
+import CmsResetButton from '../components/admin/CmsResetButton';
+import DeleteStudentsButton from '../components/admin/DeleteStudentsButton';
 
 const settingsSections = [
   {
@@ -73,6 +75,15 @@ export default function AdminSettingsPage() {
             );
           })}
         </section>
+
+        {/* Stonden eerder in de menubalk; daar waren ze te makkelijk te raken. */}
+        <Kaart>
+          <KaartKop titel="Beheeracties" uitleg="Grote acties op de database. Elke knop vraagt eerst om een bevestiging." />
+          <div className="lo-knoppenbalk">
+            <DeleteStudentsButton />
+            <CmsResetButton />
+          </div>
+        </Kaart>
       </div>
     </div>
   );

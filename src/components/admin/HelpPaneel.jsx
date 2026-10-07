@@ -5,7 +5,7 @@ import { HELP_EVENT, HELP_ONDERWERPEN, HELP_STATUS, helpOnderwerp } from '../../
 
 // Helpknop in de beheerbalk met een zijpaneel. Geheugensteun voor Kevin:
 // hoe iets werkt en welke opties er zijn. Inhoud staat in src/lib/helpInhoud.js.
-export default function HelpPaneel() {
+export default function HelpPaneel({ metKnop = true }) {
   const [open, setOpen] = useState(false);
   const [onderwerpId, setOnderwerpId] = useState(HELP_ONDERWERPEN[0]?.id);
 
@@ -29,16 +29,18 @@ export default function HelpPaneel() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="lo-knop-tweede lo-knop--klein"
-        aria-haspopup="dialog"
-        title="Help"
-      >
-        <CircleHelp size={16} aria-hidden="true" />
-        <span className="sr-only">Help</span>
-      </button>
+      {metKnop && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="lo-knop-tweede lo-knop--klein"
+          aria-haspopup="dialog"
+          title="Help"
+        >
+          <CircleHelp size={16} aria-hidden="true" />
+          <span className="sr-only">Help</span>
+        </button>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-[300] flex justify-end bg-[var(--lo-inkt)]/30" onClick={() => setOpen(false)}>
