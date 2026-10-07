@@ -21,7 +21,7 @@ import { getActiveRewardItems, normalizeLoadout } from '../../lib/tokenShopRewar
 import ProfielAvatar from '../avatar/ProfielAvatar';
 import KlasDoelPill from '../klas/KlasDoelPill';
 import EventPill from '../klas/EventPill';
-import helixLogo from '../../afbeeldingen/logo.png';
+import HelixLogo from '../merk/HelixLogo';
 
 const workspaceIcons = {
   lesstof: BookOpen,
@@ -121,9 +121,9 @@ export default function AppShell() {
             className="helix-brand group flex shrink-0 cursor-pointer items-center transition-opacity hover:opacity-90"
             aria-label={isAdmin ? 'Ga naar Lesstof' : 'Ga naar HELIX start'}
           >
-            <span className="flex h-14 w-36 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm transition-transform group-hover:scale-[1.02] md:h-16 md:w-44">
-              <img src={helixLogo} alt="HELIX" className="h-20 w-20 max-w-none scale-[1.2] object-contain" />
-            </span>
+            {/* Op een telefoon alleen het H-blok, daarboven het hele woordmerk. */}
+            <HelixLogo variant="blok" titel="" className="h-10 sm:hidden" />
+            <HelixLogo titel="" className="hidden h-9 sm:block md:h-10" />
           </h1>
 
           <nav

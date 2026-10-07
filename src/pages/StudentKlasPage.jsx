@@ -8,6 +8,7 @@ import HelixCompanion from '../components/avatar/HelixCompanion';
 import { StemmingenSectie, WedstrijdSectie } from '../components/klas/StemEnWedstrijd';
 import { COMPLIMENTEN, COMPLIMENTEN_PER_WEEK, complimentTitel, KLASDOEL_MAX_PER_WEEK, klasdoelProcent } from '../lib/klasSamen';
 import { geefCompliment, getMijnKlas, updateVitrine } from '../services/klasSamenService';
+import { HelixLaden } from '../components/merk/HelixLogo';
 
 // Mijn klas (fase 3, SPELOPZET-FASE3-SAMEN.md): de kaarten van klasgenoten,
 // het klasdoel en complimenten. Geen ranglijst: de kaarten staan op naam.
@@ -105,7 +106,7 @@ export default function StudentKlasPage() {
             {fout && <p className="rounded-xl border-2 border-[#D83A2E] bg-[var(--color-red-soft)] px-4 py-3 font-bold text-[var(--color-red-ink)]">{fout}</p>}
 
             {!klas && !fout && (
-              <p className="flex items-center gap-2 font-bold text-[var(--helix-muted)]"><Loader2 size={18} className="animate-spin" /> Je klas wordt geladen.</p>
+              <HelixLaden tekst="Je klas wordt geladen" />
             )}
 
             {doel && <KlasDoelKaart doel={doel} />}

@@ -15,6 +15,7 @@ import {
   saveDevStudentUser,
   shouldClearDevUserForFirebaseUser
 } from './devAuth';
+import { HelixLaden } from '../merk/HelixLogo';
 import RequiredPasswordChange from './RequiredPasswordChange';
 
 const AuthContext = createContext();
@@ -231,13 +232,17 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && userRole === 'student' && !value.isDevUser && userData?.mustChangePassword ? (
+      {/* Tijdens het opstarten staat het logo met de golvende stipjes in beeld,
+          net als in index.html; zo is er geen leeg scherm tussen die twee. */}
+      {loading ? (
+        <HelixLaden schermvullend tekst="HELIX wordt geladen" />
+      ) : userRole === 'student' && !value.isDevUser && userData?.mustChangePassword ? (
         <RequiredPasswordChange
           currentUser={currentUser}
           displayName={userData?.displayName || currentUser?.displayName || 'Leerling'}
         />
       ) : (
-        !loading && children
+        children
       )}
     </AuthContext.Provider>
   );

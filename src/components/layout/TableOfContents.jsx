@@ -9,6 +9,7 @@ import { zonderVergrendeldeHoofdstukken } from '../../lib/hoofdstukSlot';
 import { hoofdstukKnopSleutel, paragraafKnopSleutel } from '../../lib/leeromgeving';
 import { HoofdstukRij, Kaart, KaartKop, Label, PaginaKop, ParagraafRij } from '../leeromgeving';
 import TaalSchakelaar from '../lesson/TaalSchakelaar';
+import { HelixLaden } from '../merk/HelixLogo';
 
 /**
  * De lesstofpagina van de leerling: waar je verder moet, en daaronder je
@@ -198,12 +199,7 @@ function VerderKaart({ verder, taal, onStart }) {
 function LesstofSkelet() {
   return (
     <PageShell>
-      <div className="flex flex-col gap-6" aria-busy="true" aria-live="polite">
-        <span className="sr-only">Lesstof laden</span>
-        <div className="lo-kaart animate-pulse" style={{ height: 120 }} aria-hidden="true" />
-        <div className="lo-kaart animate-pulse" style={{ height: 220 }} aria-hidden="true" />
-        <div className="lo-kaart animate-pulse" style={{ height: 220 }} aria-hidden="true" />
-      </div>
+      <HelixLaden tekst="Lesstof laden" />
     </PageShell>
   );
 }

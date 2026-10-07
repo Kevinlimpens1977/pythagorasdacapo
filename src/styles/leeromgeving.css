@@ -118,6 +118,39 @@
   .lo-invoer:focus-visible { outline: 3px solid var(--lo-blauw); outline-offset: 2px; border-color: var(--lo-blauw); }
   .lo-veldlabel { display: block; margin-bottom: 6px; font-size: 14px; line-height: 21px; font-weight: 700; color: var(--lo-inkt); }
 
+  /* Logo (src/components/merk/HelixLogo.jsx). De hoogte komt van de plek waar
+     het staat; de breedte volgt uit de verhouding van het logo. */
+  .lo-logo { display: block; flex: none; width: auto; }
+  .lo-logo-inkt { fill: var(--lo-inkt); }
+  .lo-logo-geel { fill: var(--lo-geel); }
+  .lo-logo-blauw { fill: var(--lo-blauw); }
+  .lo-logo-letters { stroke: var(--lo-inkt); stroke-width: 8px; stroke-linejoin: round; }
+
+  /* Laden: drie stipjes die om de beurt een klein beetje omhoog gaan. */
+  .lo-logo-stip { transform-box: fill-box; transform-origin: center; animation: lo-logo-golf 1.3s ease-in-out infinite; }
+  .lo-logo-stip:nth-child(2) { animation-delay: 0.15s; }
+  .lo-logo-stip:nth-child(3) { animation-delay: 0.3s; }
+  .lo-laden { display: flex; align-items: center; justify-content: center; min-height: 40vh; padding: 48px 16px; animation: lo-laden-in 0.25s ease 0.2s both; }
+  /* Schermvullend sluit aan op het laadscherm in index.html, dus zonder infaden. */
+  .lo-laden--scherm { min-height: 100vh; min-height: 100dvh; background: var(--lo-papier); animation: none; }
+  .lo-laden-logo { width: min(200px, 50vw); height: auto; }
+
+  @keyframes lo-logo-golf {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.55; }
+    30% { transform: translateY(-38%); opacity: 1; }
+  }
+
+  /* Pas na een kort moment in beeld: een pagina die meteen klaar is, flitst niet. */
+  @keyframes lo-laden-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lo-logo-stip { animation: none; opacity: 1; }
+    .lo-laden { animation: none; }
+  }
+
   /* Kleurstalen in de stijlgids */
   .lo-stalen { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .lo-staal { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; line-height: 18.75px; color: var(--lo-grijs); }

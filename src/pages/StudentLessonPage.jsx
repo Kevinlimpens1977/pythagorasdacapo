@@ -216,6 +216,7 @@ import { uploadInlevering } from '../services/inleveringService';
 import { beloningMelding, buildTokenAwardPayload, isGoedResultaat } from '../lib/tokenAwardUtils';
 import NiveauOmhoogMoment from '../components/tokens/NiveauOmhoogMoment';
 import EmoteMoment from '../components/avatar/EmoteMoment';
+import { HelixLaden } from '../components/merk/HelixLogo';
 
 const blockIcons = {
   theory: BookOpen,
@@ -1075,12 +1076,7 @@ export default function StudentLessonPage() {
 
   if (loading) {
     return (
-      <CenteredState
-        icon={Loader2}
-        title="Les laden..."
-        description="We zetten je lesroute klaar."
-        spinning
-      />
+      <HelixLaden schermvullend tekst="Les laden" />
     );
   }
 

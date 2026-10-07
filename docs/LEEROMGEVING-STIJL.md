@@ -67,6 +67,20 @@ inkt, hoek 8px. Start-knop: padding 6px 10px, hoek 8px.
 `ParagraafRij`, `StartKnop`, `Label`, `Keuzeknoppen`, `PaginaKop`. Gebruik die
 in plaats van eigen opmaak. Iconen alleen uit lucide-react.
 
+## Logo
+
+Het logo (Kevin, 7 oktober 2026): geel H-blok met zwarte rand, "ELIX" in zwart,
+een blauwe stip. Als SVG in `src/components/merk/HelixLogo.jsx`; niet als plaatje.
+
+- `<HelixLogo />` is het woordmerk: in de menubalk (36-40px hoog) en op de
+  inlogpagina's (48px). `variant="blok"` is alleen het H-blok: in de menubalk op
+  een telefoon en als tabbladicoon (`public/favicon.svg`).
+- `<HelixLaden tekst="..." />` toont het logo met drie blauwe stipjes die om de
+  beurt een klein beetje omhoog gaan, als een pagina of onderdeel laadt. Met
+  `schermvullend` voor het opstarten van de app; `index.html` toont hetzelfde
+  beeld tot de app er is. Bij "minder beweging" staan de stipjes stil.
+- Het oude `src/afbeeldingen/logo.png` wordt in de website niet meer gebruikt.
+
 ## Lespagina
 
 De lespagina (`StudentLessonPage.jsx`) deelt een paar oude klassen met andere

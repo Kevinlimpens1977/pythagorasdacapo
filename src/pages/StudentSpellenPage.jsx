@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Gamepad2, Loader2 } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthProvider';
 import GamePlayer from '../components/games/GamePlayer';
 import { GAME_REGISTRY, GAME_RESULT_HANDLING } from '../lib/gameRegistry';
@@ -9,6 +9,7 @@ import { awardTokensForActivity } from '../services/tokenService';
 import { beloningMelding, isGoedResultaat } from '../lib/tokenAwardUtils';
 import NiveauOmhoogMoment from '../components/tokens/NiveauOmhoogMoment';
 import EmoteMoment from '../components/avatar/EmoteMoment';
+import { HelixLaden } from '../components/merk/HelixLogo';
 
 /**
  * De spellenpagina van de leerling: alles wat de docent voor zijn klas heeft
@@ -84,9 +85,7 @@ export default function StudentSpellenPage() {
         ) : null}
 
         {spellen === null ? (
-          <div className="helix-muted mt-8 flex items-center gap-2 text-sm">
-            <Loader2 size={16} className="animate-spin" /> Spellen laden...
-          </div>
+          <HelixLaden tekst="Spellen laden" />
         ) : spellen.length === 0 ? (
           <div className="helix-surface mt-8 p-10 text-center">
             <Gamepad2 size={36} className="mx-auto text-[var(--helix-purple)]/40" />

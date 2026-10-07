@@ -3,6 +3,7 @@ import { BookOpen, Coins, House, Lightbulb, ListChecks, Lock, Presentation, Refr
 
 import { HoofdstukRij, Kaart, KaartKop, Keuzeknoppen, Label, PaginaKop, ParagraafRij, StartKnop } from '../components/leeromgeving';
 import StudyStepRail from '../components/lesson/StudyStepRail';
+import HelixLogo, { HelixLaden } from '../components/merk/HelixLogo';
 import { aantalTekst, hoofdstukOnderregel } from '../lib/leeromgeving';
 
 /**
@@ -53,6 +54,22 @@ export default function AdminStijlgidsPage() {
           titel="Stijlgids leeromgeving"
           uitleg="Alle bouwstenen van de HELIX Leeromgeving-stijl, met voorbeelddata. Dit is de stijl van de website, niet het Slide Design System van de decks."
         />
+
+        <div data-stijlgids="logo" className="lo-kaartenraster">
+          <Kaart>
+            <KaartKop titel="Logo" uitleg="Het woordmerk in de menubalk en op de inlogpagina; alleen het H-blok op een telefoon en als tabbladicoon." />
+            <div className="flex flex-wrap items-end gap-8">
+              <HelixLogo className="h-12" />
+              <HelixLogo className="h-9" />
+              <HelixLogo variant="blok" className="h-10" />
+              <HelixLogo variant="blok" className="h-6" />
+            </div>
+          </Kaart>
+          <Kaart>
+            <KaartKop titel="Laden" uitleg="Als een pagina of onderdeel laadt: drie stipjes die om de beurt een klein beetje omhoog gaan." />
+            <HelixLaden className="min-h-0 py-6" tekst="Voorbeeld van laden" />
+          </Kaart>
+        </div>
 
         <div className="lo-kaartenraster">
           <div data-stijlgids="optie-d">

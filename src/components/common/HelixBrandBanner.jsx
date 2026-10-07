@@ -1,4 +1,4 @@
-import helixLogo from '../../afbeeldingen/logo.png';
+import HelixLogo from '../merk/HelixLogo';
 
 const variantClasses = {
   default: 'min-h-[11rem] p-6 sm:min-h-[12.5rem] sm:p-8',
@@ -31,7 +31,7 @@ export default function HelixBrandBanner({
 
       <div className="helix-brand-banner-inner">
         <div className={cx('helix-brand-banner-logo-card', logoClasses[resolvedVariant], logoClassName)}>
-          <img src={helixLogo} alt="HELIX" className="h-28 w-28 max-w-none scale-[1.5] object-contain" />
+          <HelixLogo className="h-auto w-[82%]" />
         </div>
 
         {children && (

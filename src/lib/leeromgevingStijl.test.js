@@ -77,3 +77,13 @@ test('de leeromgeving staat los van het Slide Design System', () => {
   assert.match(css, /docs\/LEEROMGEVING-STIJL\.md/);
   assert.match(index, /@import "\.\/styles\/leeromgeving\.css";/);
 });
+
+test('het logo heeft de merkkleuren en drie golvende stipjes die stilstaan bij minder beweging', () => {
+  assert.match(regel('.lo-logo-geel'), /fill:\s*var\(--lo-geel\)/);
+  assert.match(regel('.lo-logo-inkt'), /fill:\s*var\(--lo-inkt\)/);
+  assert.match(regel('.lo-logo-blauw'), /fill:\s*var\(--lo-blauw\)/);
+  assert.match(regel('.lo-logo-stip'), /animation:\s*lo-logo-golf/);
+  assert.match(regel('.lo-logo-stip:nth-child(2)'), /animation-delay:\s*0\.15s/);
+  assert.match(regel('.lo-logo-stip:nth-child(3)'), /animation-delay:\s*0\.3s/);
+  assert.match(css, /prefers-reduced-motion: reduce\)\s*\{\s*\.lo-logo-stip\s*\{\s*animation:\s*none/);
+});

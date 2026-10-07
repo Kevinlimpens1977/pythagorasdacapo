@@ -4,10 +4,42 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FFF7E8" />
     <title>Helix</title>
+    <style>
+      /* Laadscherm tot de app er is: het logo met drie golvende stipjes.
+         React vervangt dit; daarna neemt HelixLaden (src/components/merk) het over. */
+      .start-laden { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; background: #FFF7E8; }
+      .start-laden svg { width: min(200px, 50vw); height: auto; }
+      .start-laden .stip { transform-box: fill-box; transform-origin: center; animation: start-golf 1.3s ease-in-out infinite; }
+      .start-laden .stip:nth-child(2) { animation-delay: 0.15s; }
+      .start-laden .stip:nth-child(3) { animation-delay: 0.3s; }
+      @keyframes start-golf { 0%, 60%, 100% { transform: translateY(0); opacity: 0.55; } 30% { transform: translateY(-38%); opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) { .start-laden .stip { animation: none; opacity: 1; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="start-laden" role="status" aria-live="polite">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="55 60 2080 562" aria-hidden="true">
+          <rect x="62" y="68" width="566" height="547" rx="86" fill="#0B0D0F" />
+          <rect x="103" y="110" width="484" height="465" rx="50" fill="#FFD33D" />
+          <path d="M180 188H296V288H392V188H510V506H392V408H296V506H180Z" fill="#0B0D0F" />
+          <g fill="#0B0D0F" stroke="#0B0D0F" stroke-width="8" stroke-linejoin="round">
+            <path d="M659 172H908V258H774V316H878V394H774V454H908V539H659Z" />
+            <path d="M944 172H1069V447H1192V539H944Z" />
+            <path d="M1231 172H1356V539H1231Z" />
+            <path d="M1392 172H1533L1580 262L1638 172H1774L1661 355L1771 539H1632L1580 451L1528 539H1384L1496 355Z" />
+          </g>
+          <g fill="#087EB5">
+            <circle class="stip" cx="1852" cy="495" r="46" />
+            <circle class="stip" cx="1966" cy="495" r="46" />
+            <circle class="stip" cx="2080" cy="495" r="46" />
+          </g>
+        </svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">HELIX wordt geladen</span>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

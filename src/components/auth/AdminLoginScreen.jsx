@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Code2, KeyRound, Lock, Mail, ShieldCheck } from 'lucide-react';
-import helixLogo from '../../afbeeldingen/logo.png';
+import HelixLogo from '../merk/HelixLogo';
 import { auth } from '../../services/firebase';
 import { Kaart, PaginaKop } from '../leeromgeving';
 import { useAuth } from './AuthProvider';
@@ -146,7 +146,7 @@ export default function AdminLoginScreen() {
   return (
     <div className="helix-page lo-tekst flex min-h-screen! items-center justify-center p-4 sm:p-8">
       <Kaart as="div" className="mx-auto w-full max-w-[480px] gap-5">
-        <img src={helixLogo} alt="HELIX" className="h-20 w-auto self-start object-contain" />
+        <HelixLogo className="h-12 self-start" />
 
         <div>
           <span className="lo-label lo-label--blauw">

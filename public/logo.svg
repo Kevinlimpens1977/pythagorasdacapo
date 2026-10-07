@@ -1,42 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title desc">
-  <title id="title">Helix logo</title>
-  <desc id="desc">A modern DNA helix mark for the Helix learning platform.</desc>
-  <defs>
-    <linearGradient id="tileGradient" x1="12" y1="6" x2="88" y2="94" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#2563eb"/>
-      <stop offset="0.58" stop-color="#1d4ed8"/>
-      <stop offset="1" stop-color="#0891b2"/>
-    </linearGradient>
-    <linearGradient id="strandA" x1="26" y1="12" x2="75" y2="88" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#e0f2fe"/>
-      <stop offset="0.5" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#bfdbfe"/>
-    </linearGradient>
-    <linearGradient id="strandB" x1="72" y1="12" x2="24" y2="88" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#bae6fd"/>
-      <stop offset="0.5" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#ccfbf1"/>
-    </linearGradient>
-    <filter id="softShadow" x="-18%" y="-18%" width="136%" height="136%">
-      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#1e40af" flood-opacity="0.28"/>
-    </filter>
-  </defs>
-
-  <rect x="10" y="8" width="80" height="84" rx="24" fill="url(#tileGradient)" filter="url(#softShadow)"/>
-  <path d="M36 18C70 28 70 72 36 82" fill="none" stroke="url(#strandA)" stroke-width="7" stroke-linecap="round"/>
-  <path d="M64 18C30 28 30 72 64 82" fill="none" stroke="url(#strandB)" stroke-width="7" stroke-linecap="round"/>
-
-  <g stroke="#dbeafe" stroke-width="4" stroke-linecap="round" opacity="0.95">
-    <path d="M39 28H61"/>
-    <path d="M34 40H66"/>
-    <path d="M34 60H66"/>
-    <path d="M39 72H61"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="55 60 1890 562" role="img" aria-label="HELIX">
+  <title>HELIX</title>
+  <rect x="62" y="68" width="566" height="547" rx="86" fill="#0B0D0F"/>
+  <rect x="103" y="110" width="484" height="465" rx="50" fill="#FFD33D"/>
+  <path d="M180 188H296V288H392V188H510V506H392V408H296V506H180Z" fill="#0B0D0F"/>
+  <g fill="#0B0D0F" stroke="#0B0D0F" stroke-width="8" stroke-linejoin="round">
+    <path d="M659 172H908V258H774V316H878V394H774V454H908V539H659Z"/>
+    <path d="M944 172H1069V447H1192V539H944Z"/>
+    <path d="M1231 172H1356V539H1231Z"/>
+    <path d="M1392 172H1533L1580 262L1638 172H1774L1661 355L1771 539H1632L1580 451L1528 539H1384L1496 355Z"/>
   </g>
-
-  <g fill="#ffffff">
-    <circle cx="36" cy="18" r="3.6"/>
-    <circle cx="64" cy="18" r="3.6"/>
-    <circle cx="35" cy="82" r="3.6"/>
-    <circle cx="65" cy="82" r="3.6"/>
-  </g>
+  <circle cx="1855" cy="470" r="83" fill="#087EB5"/>
 </svg>

@@ -8,6 +8,7 @@ import { ChapterDetailView } from '../components/lesson/ChapterDetail';
 import { Kaart, KaartKop } from '../components/leeromgeving';
 import TaalSchakelaar from '../components/lesson/TaalSchakelaar';
 import { buildLessonPath } from '../lib/chapterOutline';
+import { HelixLaden } from '../components/merk/HelixLogo';
 
 /**
  * Eén hoofdstuk: wat je gedaan hebt en wat er nog openstaat.
@@ -85,11 +86,7 @@ export default function StudentChapterPage() {
   if (loading) {
     return (
       <PageShell>
-        <div className="space-y-6" aria-busy="true" aria-live="polite">
-          <span className="sr-only">{tekst('hoofdstuk.laden')}</span>
-          <div className="lo-kaart animate-pulse" style={{ height: 112 }} aria-hidden="true" />
-          <div className="lo-kaart animate-pulse" style={{ height: 288 }} aria-hidden="true" />
-        </div>
+        <HelixLaden tekst={tekst('hoofdstuk.laden')} />
       </PageShell>
     );
   }

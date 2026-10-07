@@ -17,6 +17,7 @@ import CompanionKaart from '../components/avatar/CompanionKaart';
 import NulmetingProfielKaart from '../components/nulmeting/NulmetingProfielKaart';
 import TaalKeuzeKaart from '../components/profiel/TaalKeuzeKaart';
 import * as nulmetingService from '../services/nulmetingService';
+import { HelixLaden } from '../components/merk/HelixLogo';
 
 const ProgressBar = ({ value, tone = 'blue' }) => {
   const barColor = tone === 'green' ? 'bg-[var(--helix-success)]' : 'helix-progress-fill';
@@ -211,14 +212,7 @@ export default function StudentProfilePage() {
   if (loading) {
     return (
       <div className="helix-container pad-content">
-        <div className="helix-surface p-8">
-          <div className="h-8 w-48 animate-pulse rounded bg-slate-200" />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="h-32 animate-pulse rounded-lg bg-slate-100" />
-            ))}
-          </div>
-        </div>
+        <HelixLaden tekst="Profiel laden" />
       </div>
     );
   }
