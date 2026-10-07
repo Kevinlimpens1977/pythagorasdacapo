@@ -9,7 +9,7 @@ import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { startTestleerlingSessieCall } from '../lib/api';
-import { bouwKlasTestbeeld, bouwTestdataOverzicht, groepeerOpLesstof, hoofdstukkenVanLessen } from '../lib/testleerlingOverzicht';
+import { bouwKlasTestbeeld, bouwTestdataOverzicht, groepeerOpLesstof, hoofdstukkenVanLessen, problemenVanGroep } from '../lib/testleerlingOverzicht';
 import { aantalTekst, hoofdstukOnderregel, splitsParagraafLabel, testsessieDoelRoute } from '../lib/leeromgeving';
 import { HoofdstukRij, Kaart, KaartKop, Keuzeknoppen, Label, PaginaKop, ParagraafRij, StartKnop } from '../components/leeromgeving';
 import { getStudentEffectiveParagrafen } from '../lib/assignmentUtils';
@@ -166,12 +166,14 @@ export default function AdminTestenPage() {
           )}
         />
 
-        {fout && <p className="lo-melding lo-melding--fout">{fout}</p>}
+        {fout && <p className="lo-melding lo-melding--fout" role="alert">{fout}</p>}
 
         {zonderTestaccount > 0 && !loading && (
           <p className="lo-melding lo-melding--info">
-            {zonderTestaccount === 1 ? 'Eén klas heeft' : `${zonderTestaccount} klassen hebben`} nog geen testleerling.
-            Draai <code className="font-mono">node scripts/maak-testleerlingen.mjs --apply</code> om ze aan te maken.
+            <span>
+              {zonderTestaccount === 1 ? 'Eén klas heeft' : `${zonderTestaccount} klassen hebben`} nog geen testleerling.
+              Draai <code className="font-mono">node scripts/maak-testleerlingen.mjs --apply</code> om ze aan te maken.
+            </span>
           </p>
         )}
 
@@ -190,6 +192,7 @@ export default function AdminTestenPage() {
               const hoofdstukken = hoofdstukkenVanLessen(beeld.lessen);
               const meer = groep.kaarten.length > 1;
               const inclusie = hoofdstukken.some((hoofdstuk) => hoofdstuk.inclusie);
+              const groepProblemen = problemenVanGroep(groep, klasNaam);
               const startUit = !testaccount || bezig;
               const start = (doel) => startTestsessie(testaccount, testsessieDoelRoute(doel));
 
@@ -266,12 +269,12 @@ export default function AdminTestenPage() {
                     </div>
                   )}
 
-                  {beeld.problemen.length > 0 && (
+                  {groepProblemen.length > 0 && (
                     <ul className="flex flex-col gap-2">
-                      {beeld.problemen.map((probleem) => (
-                        <li key={`${probleem.soort}-${probleem.paragraafId}`} className="lo-melding lo-melding--fout">
+                      {groepProblemen.map((probleem) => (
+                        <li key={`${probleem.klas}-${probleem.soort}-${probleem.paragraafId}`} className="lo-melding lo-melding--fout">
                           <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-                          <span>{probleem.tekst}</span>
+                          <span>{meer ? `${probleem.klas}: ${probleem.tekst}` : probleem.tekst}</span>
                         </li>
                       ))}
                     </ul>
@@ -285,7 +288,7 @@ export default function AdminTestenPage() {
                       <span className="lo-tokens"><Coins size={15} aria-hidden="true" />{tokens ?? 0}</span>
                       {testdata?.laatsteActiviteitMs ? <span>Laatste activiteit: {datumLabel(testdata.laatsteActiviteitMs)}</span> : null}
                     </span>
-                    <StartKnop icoon={startBezigUid === testaccount?.uid ? Loader2 : House} onClick={() => start({ soort: 'start' })} disabled={startUit}>
+                    <StartKnop icoon={House} bezig={startBezigUid === testaccount?.uid} onClick={() => start({ soort: 'start' })} disabled={startUit}>
                       Start op de startpagina
                     </StartKnop>
                   </div>

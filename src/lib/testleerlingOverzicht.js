@@ -175,6 +175,14 @@ export const groepeerOpLesstof = (kaarten = []) => {
   return [...groepen.values()].map((leden, index) => ({ sleutel: `groep-${index + 1}`, kaarten: leden }));
 };
 
+/** De problemen van alle klassen in een groep, met de klasnaam erbij, in de volgorde van de kaarten. */
+export const problemenVanGroep = (groep, naamVan = () => '') => (
+  (groep?.kaarten || []).flatMap((kaart) => (kaart?.beeld?.problemen || []).map((probleem) => ({
+    ...probleem,
+    klas: naamVan(kaart.klas)
+  })))
+);
+
 /** De lessen van een klas per hoofdstuk, in de volgorde waarin de leerling ze ziet. */
 export const hoofdstukkenVanLessen = (lessen = []) => {
   const perHoofdstuk = new Map();

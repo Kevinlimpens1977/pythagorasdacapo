@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { bouwKlasTestbeeld, bouwTestdataOverzicht, groepeerOpLesstof, hoofdstukkenVanLessen } from './testleerlingOverzicht.js';
+import { bouwKlasTestbeeld, bouwTestdataOverzicht, groepeerOpLesstof, hoofdstukkenVanLessen, problemenVanGroep } from './testleerlingOverzicht.js';
 
 const paragraaf = (id, extra = {}) => ({
   id,
@@ -189,4 +189,28 @@ test('lessen worden hoofdstukken met telling, slot en inclusie', () => {
     ['h2', 2, 'Massa', 2, 28, false, true],
     ['h3', 3, 'Internet', 1, 0, true, false]
   ]);
+});
+
+test('een groep toont de problemen van alle klassen', () => {
+  const kaart = (klas, problemen) => ({ klas, beeld: { problemen } });
+  const groep = {
+    sleutel: 'groep-1',
+    kaarten: [
+      kaart({ id: 'a', naam: 'H1K1' }, []),
+      kaart({ id: 'b', naam: 'H1K2' }, [
+        { soort: 'paragraafWeg', paragraafId: 'p-9', tekst: 'Weg.' },
+        { soort: 'blokselectie', paragraafId: 'p-1', tekst: 'Selectie.' }
+      ]),
+      kaart({ id: 'c', naam: 'H1K3' }, [{ soort: 'routeBlokkeert', paragraafId: 'p-2', tekst: 'Route.' }])
+    ]
+  };
+  const problemen = problemenVanGroep(groep, (klas) => klas.naam);
+  assert.deepEqual(problemen.map((p) => [p.klas, p.soort, p.paragraafId]), [
+    ['H1K2', 'paragraafWeg', 'p-9'],
+    ['H1K2', 'blokselectie', 'p-1'],
+    ['H1K3', 'routeBlokkeert', 'p-2']
+  ]);
+  assert.equal(problemen[0].tekst, 'Weg.');
+  assert.deepEqual(problemenVanGroep({ kaarten: [] }, () => ''), []);
+  assert.deepEqual(problemenVanGroep(null, () => ''), []);
 });
