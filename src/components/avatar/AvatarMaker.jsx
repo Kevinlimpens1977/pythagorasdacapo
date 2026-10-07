@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Check, Coins, Gift, Leaf, Loader2, Lock, Play, RotateCcw, Save, ShoppingBag } from 'lucide-react';
 import HelixAvatar from './HelixAvatar';
+import { Kaart, KaartKop, Label } from '../leeromgeving';
 import {
   AVATAR_BONUSDELEN, AVATAR_DELEN, AVATAR_SETS, avatarDeel, HAARKLEUREN, HUIDSKLEUREN, magDeelDragen,
   normaliseerAvatar, shopItemIdVoorDeel, STOFKLEUREN
@@ -24,7 +25,7 @@ const SLOTS = ['kapsel', 'kleding', 'accessoire', 'achtergrond', 'emote'];
 function Kleurrij({ titel, lijst, waarde, onKies }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">{titel}</p>
+      <p className="mb-1.5 text-[13px] font-extrabold text-[var(--lo-grijs)]">{titel}</p>
       <div className="flex flex-wrap gap-2">
         {lijst.map((optie) => (
           <button
@@ -33,10 +34,10 @@ function Kleurrij({ titel, lijst, waarde, onKies }) {
             onClick={() => onKies(optie.id)}
             aria-label={`${titel} ${optie.id.split('-').slice(1).join(' ')}`}
             aria-pressed={waarde === optie.id}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#0B0D0F] ${waarde === optie.id ? 'ring-4 ring-[#087EB5]/50' : ''}`}
+            className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--lo-lijn)] ${waarde === optie.id ? 'ring-4 ring-[var(--lo-inkt)]' : ''}`}
             style={{ background: optie.kleur }}
           >
-            {waarde === optie.id && <Check size={16} strokeWidth={3} className="text-white drop-shadow-[0_0_2px_#0B0D0F]" aria-hidden="true" />}
+            {waarde === optie.id && <Check size={16} strokeWidth={3} className="text-white [filter:drop-shadow(0_0_2px_var(--lo-inkt))]" aria-hidden="true" />}
           </button>
         ))}
       </div>
@@ -70,18 +71,15 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
   const accessoireDeel = avatarDeel(huidig.accessoire);
 
   return (
-    <section className="overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-white shadow-[3px_3px_0_#0B0D0F]">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#0B0D0F] bg-[#FFF0B8] px-4 py-2">
-        <h2 className="ds-display text-[26px]">Mijn avatar</h2>
-        <p className="text-sm font-bold">Kleuren zijn gratis. Onderdelen kun je eerst passen.</p>
-      </div>
+    <Kaart>
+      <KaartKop titel="Mijn avatar" uitleg="Kleuren zijn gratis. Onderdelen kun je eerst passen." />
 
-      <div className="grid gap-4 p-4 md:grid-cols-[200px_minmax(0,1fr)]">
+      <div className="grid gap-4 md:grid-cols-[200px_minmax(0,1fr)]">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-44 w-44 overflow-hidden rounded-full border-4 border-[#0B0D0F]">
+          <div className="h-44 w-44 overflow-hidden rounded-full border-4 border-[var(--lo-lijn)]">
             <HelixAvatar key={speel} avatar={huidig} beweeg={speel > 0} className="h-full w-full" titel="Jouw avatar" />
           </div>
-          <button type="button" onClick={() => setSpeel((teller) => teller + 1)} className="flex items-center gap-1 text-sm font-bold text-[#066A99] underline">
+          <button type="button" onClick={() => setSpeel((teller) => teller + 1)} className="lo-knop-start">
             <Play size={14} aria-hidden="true" /> Emote afspelen
           </button>
           {nietVanJou.length > 0 ? (
@@ -90,7 +88,7 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
                 const item = itemsById.get(shopItemIdVoorDeel(deel.id));
                 if (deel.bonusVan || !item) {
                   const set = AVATAR_SETS.find((kandidaat) => kandidaat.id === deel.bonusVan);
-                  return <p key={deel.id} className="rounded-lg bg-[var(--helix-surface-soft)] px-2 py-1.5 text-center text-xs font-bold">{deel.titel}: maak de {set?.titel || 'set'} compleet.</p>;
+                  return <p key={deel.id} className="lo-melding lo-melding--info justify-center px-2 py-1.5 text-center text-xs">{deel.titel}: maak de {set?.titel || 'set'} compleet.</p>;
                 }
                 const prijs = Math.max(0, Number(item.price) || 0);
                 return (
@@ -99,7 +97,7 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
                     type="button"
                     onClick={() => onKoop(item)}
                     disabled={saldo < prijs || bezig}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border-2 border-[#0B0D0F] bg-[#087EB5] px-3 py-2 text-sm font-extrabold text-white disabled:bg-[var(--helix-surface-soft)] disabled:text-[var(--helix-muted)]"
+                    className="lo-knop w-full justify-center px-3 py-2 text-sm"
                   >
                     <ShoppingBag size={15} aria-hidden="true" />
                     {saldo >= prijs ? `${deel.titel} kopen (${prijs})` : `${deel.titel}: nog ${prijs - saldo}`}
@@ -112,27 +110,27 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
               type="button"
               onClick={async () => { await onOpslaan(huidig); setConcept(null); }}
               disabled={!kanOpslaan || bezig}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border-[2.5px] border-[#0B0D0F] bg-[#2E9D63] px-4 py-2 font-extrabold text-white shadow-[3px_3px_0_#0B0D0F] disabled:bg-[var(--helix-surface-soft)] disabled:text-[var(--helix-muted)] disabled:shadow-none"
+              className="lo-knop w-full justify-center"
             >
               {bezig ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} aria-hidden="true" />}
               {getekendActief || gewijzigd ? 'Opslaan' : 'Deze avatar gebruiken'}
             </button>
           )}
           {gewijzigd && (
-            <button type="button" onClick={() => setConcept(null)} className="flex items-center gap-1 text-sm font-bold text-[var(--helix-muted)] underline">
+            <button type="button" onClick={() => setConcept(null)} className="lo-knop-tweede w-full justify-center px-3 py-2 text-sm">
               <RotateCcw size={14} aria-hidden="true" /> Terug naar opgeslagen
             </button>
           )}
         </div>
 
         <div className="min-w-0">
-          <nav className="mb-3 flex gap-1.5 overflow-x-auto rounded-xl border-2 border-[#0B0D0F] bg-white p-1.5" aria-label="Avatar onderdelen">
+          <nav className="lo-keuzes mb-3" aria-label="Avatar onderdelen">
             {TABS.map((optie) => (
               <button
                 key={optie.id}
                 type="button"
                 onClick={() => setTab(optie.id)}
-                className={`min-h-9 shrink-0 rounded-lg px-3 text-sm font-extrabold ${tab === optie.id ? 'bg-[#0B0D0F] text-[#FFD33D]' : 'hover:bg-[var(--helix-surface-soft)]'}`}
+                className={`lo-keuze min-h-10 shrink-0 ${tab === optie.id ? 'border-[var(--lo-inkt)] bg-[var(--lo-inkt)] text-[var(--lo-papier)]' : ''}`}
               >
                 {optie.label}
               </button>
@@ -146,7 +144,7 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
               : huidig.kapsel !== 'kapsel-geen' && <Kleurrij titel="Haarkleur" lijst={HAARKLEUREN} waarde={huidig.haarkleur} onKies={(id) => zet('haarkleur', id)} />)}
             {tab === 'kleding' && kledingDeel?.stof && <Kleurrij titel="Kleur" lijst={STOFKLEUREN} waarde={huidig.kledingkleur} onKies={(id) => zet('kledingkleur', id)} />}
             {tab === 'accessoire' && accessoireDeel?.stof && <Kleurrij titel={`Kleur ${accessoireDeel.titel.toLowerCase()}`} lijst={STOFKLEUREN} waarde={huidig.stofkleur} onKies={(id) => zet('stofkleur', id)} />}
-            {tab === 'emote' && <p className="text-sm font-bold text-[var(--helix-muted)]">Je avatar doet dit na een goed resultaat: 90% of meer, een ster of een hoger niveau.</p>}
+            {tab === 'emote' && <p className="text-sm font-bold text-[var(--lo-grijs)]">Je avatar doet dit na een goed resultaat: 90% of meer, een ster of een hoger niveau.</p>}
             {tab === 'achtergrond' && achtergrondDeel?.stof && <Kleurrij titel="Kleur" lijst={STOFKLEUREN} waarde={huidig.achtergrondkleur} onKies={(id) => zet('achtergrondkleur', id)} />}
 
             {tab !== 'huid' && (
@@ -162,23 +160,23 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
                       type="button"
                       onClick={() => zet(tab, deel.id)}
                       aria-pressed={gekozen}
-                      className={`relative flex flex-col items-center gap-1 rounded-xl border-2 p-1.5 text-center ${gekozen ? 'border-[#087EB5] bg-[#DCEFFA]' : 'border-[#0B0D0F] bg-white hover:bg-[var(--helix-surface-soft)]'}`}
+                      className={`relative flex flex-col items-center gap-1 rounded-[var(--lo-hoek-m)] border-2 p-1.5 text-center ${gekozen ? 'border-[var(--lo-blauw)] bg-[var(--lo-blauw-zacht)]' : 'border-[var(--lo-lijn)] bg-[var(--lo-kaart)] hover:border-[var(--lo-blauw)]'}`}
                     >
-                      <span className={`block aspect-square w-full overflow-hidden rounded-lg border border-[#0B0D0F] ${van ? '' : 'opacity-80'}`}>
+                      <span className={`block aspect-square w-full overflow-hidden rounded-[var(--lo-hoek-s)] border border-[var(--lo-lijn)] ${van ? '' : 'opacity-80'}`}>
                         <HelixAvatar avatar={{ ...huidig, [tab]: deel.id }} beweeg={tab === 'emote'} herhaal className="h-full w-full" titel={deel.titel} />
                       </span>
                       <span className="line-clamp-2 text-[11px] font-extrabold leading-tight">{deel.titel.replace(' (setbonus)', '')}</span>
                       {deel.seizoen && (
-                        <span className="absolute left-1 top-1 rounded-full border border-[#0B0D0F] bg-[#F47A20] p-0.5 text-white" title="Seizoensitem">
+                        <span className="absolute left-1 top-1 rounded-full bg-[var(--lo-oranje-zacht)] p-0.5 text-[var(--lo-oranje-inkt)]" title="Seizoensitem">
                           <Leaf size={10} aria-hidden="true" />
                         </span>
                       )}
                       {!van && (
-                        <span className="absolute right-1 top-1 flex items-center gap-0.5 rounded-full border border-[#0B0D0F] bg-[#FFF0B8] px-1.5 text-[10px] font-black">
+                        <Label kleur="oranje" className="absolute right-1 top-1 gap-0.5 px-1.5 py-0 text-[10px] leading-4">
                           {deel.bonusVan
                             ? <><Gift size={10} aria-hidden="true" /> bonus</>
                             : <><Lock size={10} aria-hidden="true" /><Coins size={10} aria-hidden="true" />{prijs}</>}
-                        </span>
+                        </Label>
                       )}
                     </button>
                   );
@@ -188,6 +186,6 @@ export default function AvatarMaker({ opgeslagen, getekendActief, bezit, itemsBy
           </div>
         </div>
       </div>
-    </section>
+    </Kaart>
   );
 }

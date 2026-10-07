@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { BadgeCheck, CheckCircle2, Clock, Coins, Loader2, Ticket, X, XCircle } from 'lucide-react';
 import { getMijnPrivileges, vraagPrivilegeAan } from '../../services/privilegeService';
+import { Kaart, KaartKop, Label } from '../leeromgeving';
 
 // Privileges in de tokenshop (fase 4). Aanvragen schrijft de tokens meteen af;
 // de docent keurt goed of wijst af, en dan komen ze terug.
 
 const STATUS = {
-  aangevraagd: { label: 'Aangevraagd', Icoon: Clock, klasse: 'bg-[#FFF0B8] text-[#0B0D0F]' },
-  goedgekeurd: { label: 'Goedgekeurd', Icoon: CheckCircle2, klasse: 'bg-[var(--color-green-soft)] text-[var(--color-green-ink)]' },
-  ingewisseld: { label: 'Ingewisseld', Icoon: BadgeCheck, klasse: 'bg-[var(--helix-surface-soft)] text-[var(--helix-muted)]' },
-  afgewezen: { label: 'Afgewezen, tokens terug', Icoon: XCircle, klasse: 'bg-[var(--color-red-soft)] text-[var(--color-red-ink)]' }
+  aangevraagd: { label: 'Aangevraagd', Icoon: Clock, kleur: 'oranje' },
+  goedgekeurd: { label: 'Goedgekeurd', Icoon: CheckCircle2, kleur: 'groen' },
+  ingewisseld: { label: 'Ingewisseld', Icoon: BadgeCheck, kleur: 'blauw' },
+  afgewezen: { label: 'Afgewezen, tokens terug', Icoon: XCircle, kleur: 'rood' }
 };
 
 export default function PrivilegesSectie({ saldo, uit = false }) {
@@ -51,30 +52,27 @@ export default function PrivilegesSectie({ saldo, uit = false }) {
   };
 
   return (
-    <section>
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-        <h2 className="ds-display text-[26px]">Privileges</h2>
-        <p className="text-sm font-bold text-[var(--helix-muted)]">Echt iets mogen in de les. Eén per week; je docent keurt het goed.</p>
-      </div>
-      {melding && <p className="mb-3 rounded-xl border-2 border-[var(--color-green-ink)] bg-[var(--color-green-soft)] px-4 py-2 font-bold text-[var(--color-green-ink)]">{melding}</p>}
-      {fout && <p className="mb-3 rounded-xl border-2 border-[#D83A2E] bg-[var(--color-red-soft)] px-4 py-2 font-bold text-[var(--color-red-ink)]">{fout}</p>}
+    <Kaart>
+      <KaartKop titel="Privileges" uitleg="Echt iets mogen in de les. Eén per week; je docent keurt het goed." />
+      {melding && <p className="lo-melding bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]">{melding}</p>}
+      {fout && <p className="lo-melding lo-melding--fout">{fout}</p>}
 
       <div className="grid gap-3 sm:grid-cols-2">
         {stand.privileges.map((privilege) => {
           const genoeg = saldo >= privilege.prijs;
           return (
-            <article key={privilege.id} className="flex flex-col gap-2 rounded-2xl border-2 border-[#0B0D0F] bg-white p-4">
+            <article key={privilege.id} className="flex flex-col gap-2 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-4">
               <div className="flex items-start gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-[#0B0D0F] bg-[#FFD33D]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--lo-hoek-m)] bg-[var(--lo-geel-zacht)] text-[var(--lo-inkt)]">
                   <Ticket size={22} aria-hidden="true" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-black text-[var(--helix-navy)]">{privilege.titel}</h3>
-                  {privilege.beschrijving && <p className="text-sm text-[var(--helix-muted)]">{privilege.beschrijving}</p>}
+                  <h3 className="lo-rij-titel">{privilege.titel}</h3>
+                  {privilege.beschrijving && <p className="text-sm text-[var(--lo-grijs)]">{privilege.beschrijving}</p>}
                 </div>
-                <span className="flex shrink-0 items-center gap-1 rounded-full border border-[#0B0D0F] bg-[#FFF0B8] px-2 py-0.5 text-sm font-black"><Coins size={14} aria-hidden="true" />{privilege.prijs}</span>
+                <Label kleur="oranje" icoon={Coins}>{privilege.prijs}</Label>
               </div>
-              <p className="text-xs font-bold text-[var(--helix-muted)]">
+              <p className="lo-onderregel">
                 {privilege.overDezeWeek !== null && `Nog ${privilege.overDezeWeek} van ${privilege.voorraadPerWeek} deze week in je klas. `}
                 {privilege.maxPerSchooljaar > 0 && `Jij: ${privilege.gebruiktDitSchooljaar} van ${privilege.maxPerSchooljaar} dit schooljaar.`}
               </p>
@@ -82,29 +80,27 @@ export default function PrivilegesSectie({ saldo, uit = false }) {
                 type="button"
                 onClick={() => setBevestig(privilege)}
                 disabled={!privilege.mag || !genoeg || bezig}
-                className="mt-auto flex items-center justify-center gap-1.5 rounded-lg border-2 border-[#0B0D0F] bg-[#087EB5] px-3 py-2 text-sm font-extrabold text-white disabled:bg-[var(--helix-surface-soft)] disabled:text-[var(--helix-muted)]"
+                className="lo-knop mt-auto justify-center px-3 py-2 text-sm"
               >
                 {bezig ? <Loader2 size={16} className="animate-spin" /> : <Ticket size={16} aria-hidden="true" />}
                 {!privilege.mag ? 'Nu niet' : genoeg ? 'Aanvragen' : `Nog ${privilege.prijs - saldo}`}
               </button>
-              {!privilege.mag && <p className="text-xs text-[var(--helix-muted)]">{privilege.reden}</p>}
+              {!privilege.mag && <p className="lo-onderregel">{privilege.reden}</p>}
             </article>
           );
         })}
       </div>
 
       {stand.verzoeken.length > 0 && (
-        <ul className="mt-3 space-y-1.5">
+        <ul className="lo-lijst">
           {stand.verzoeken.map((verzoek) => {
             const status = STATUS[verzoek.status] || STATUS.aangevraagd;
             return (
-              <li key={verzoek.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm">
-                <span className="font-bold">{verzoek.titel}</span>
-                <span className="text-xs text-[var(--helix-muted)]">{verzoek.week}</span>
-                <span className={`ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-extrabold ${status.klasse}`}>
-                  <status.Icoon size={12} aria-hidden="true" /> {status.label}
-                </span>
-                {verzoek.reden && <span className="w-full text-xs text-[var(--helix-muted)]">Reden: {verzoek.reden}</span>}
+              <li key={verzoek.id} className="lo-rij text-sm">
+                <span className="lo-rij-titel">{verzoek.titel}</span>
+                <span className="lo-onderregel">{verzoek.week}</span>
+                <Label kleur={status.kleur} icoon={status.Icoon} className="ml-auto">{status.label}</Label>
+                {verzoek.reden && <span className="lo-onderregel w-full">Reden: {verzoek.reden}</span>}
               </li>
             );
           })}
@@ -112,23 +108,23 @@ export default function PrivilegesSectie({ saldo, uit = false }) {
       )}
 
       {bevestig && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#0B0D0F]/40 p-4" onClick={() => setBevestig(null)}>
-          <div role="dialog" aria-modal="true" aria-label={`${bevestig.titel} aanvragen`} onClick={(event) => event.stopPropagation()} className="w-full max-w-sm overflow-hidden rounded-2xl border-[3px] border-[#0B0D0F] bg-[#FFF7E8] shadow-[6px_6px_0_#0B0D0F]">
-            <div className="ds-anchor flex items-center justify-between px-4 py-2">
-              <p className="ds-display text-[24px]">Aanvragen?</p>
-              <button type="button" onClick={() => setBevestig(null)} aria-label="Sluiten"><X size={18} /></button>
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[var(--lo-inkt)]/40 p-4" onClick={() => setBevestig(null)}>
+          <div role="dialog" aria-modal="true" aria-label={`${bevestig.titel} aanvragen`} onClick={(event) => event.stopPropagation()} className="lo-kaart w-full max-w-sm">
+            <div className="flex items-center justify-between gap-3">
+              <p className="lo-kaart-titel">Aanvragen?</p>
+              <button type="button" onClick={() => setBevestig(null)} aria-label="Sluiten" className="rounded-[var(--lo-hoek-s)] p-1 text-[var(--lo-grijs)] hover:text-[var(--lo-inkt)]"><X size={18} /></button>
             </div>
-            <div className="space-y-3 p-5 text-center">
-              <p className="text-lg font-black">{bevestig.titel}</p>
+            <div className="flex flex-col gap-3 text-center">
+              <p className="text-lg font-extrabold">{bevestig.titel}</p>
               <p className="text-sm">Voor <strong>{bevestig.prijs} tokens</strong>. Die gaan er nu af. Wijst je docent het af, dan krijg je ze terug.</p>
-              <div className="flex justify-center gap-2">
-                <button type="button" onClick={() => setBevestig(null)} className="rounded-xl border-[2.5px] border-[#0B0D0F] bg-white px-4 py-2 font-extrabold">Toch niet</button>
-                <button type="button" onClick={() => vraag(bevestig)} autoFocus className="rounded-xl border-[2.5px] border-[#0B0D0F] bg-[#2E9D63] px-4 py-2 font-extrabold text-white shadow-[3px_3px_0_#0B0D0F]">Aanvragen</button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button type="button" onClick={() => setBevestig(null)} className="lo-knop-tweede">Toch niet</button>
+                <button type="button" onClick={() => vraag(bevestig)} autoFocus className="lo-knop">Aanvragen</button>
               </div>
             </div>
           </div>
         </div>
       )}
-    </section>
+    </Kaart>
   );
 }
