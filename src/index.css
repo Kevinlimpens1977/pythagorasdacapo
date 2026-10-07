@@ -2255,3 +2255,10 @@ input[type=number] {
 .beheer-stijl .helix-card.border-orange-100 {
   background: var(--lo-oranje-zacht);
 }
+
+/* De oude .btn-secondary is altijd 100% breed (ongelaagde w-full) en wint van de
+   utility w-auto. Binnen de leeromgeving-scopes telt w-auto weer, zoals bedoeld. */
+.study-stijl .btn-secondary.w-auto,
+.beheer-stijl .btn-secondary.w-auto {
+  width: auto;
+}

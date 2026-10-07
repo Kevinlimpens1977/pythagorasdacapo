@@ -903,9 +903,11 @@ export default function TakenToewijzenPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/admin/lesstof')}
-              className="btn-secondary w-auto px-3 py-2"
+              className="lo-knop-tweede h-10 w-10 shrink-0 justify-center p-0"
+              aria-label="Terug naar Lesstof"
+              title="Terug naar Lesstof"
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={20} aria-hidden="true" />
             </button>
             <div>
               <h1 className="text-2xl font-extrabold text-[var(--lo-inkt)]">Lesmateriaal klaarzetten</h1>
