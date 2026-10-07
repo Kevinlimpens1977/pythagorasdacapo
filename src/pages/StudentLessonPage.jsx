@@ -115,6 +115,7 @@ import {
 } from '../lib/studyRouteState';
 import LearningGoalsIntro from '../components/lesson/LearningGoalsIntro';
 import StudyConfirmBar from '../components/lesson/StudyConfirmBar';
+import Label from '../components/leeromgeving/Label';
 import StudyStepRail from '../components/lesson/StudyStepRail';
 import TaalSchakelaar from '../components/lesson/TaalSchakelaar';
 import { haalVertaling } from '../services/vertaalService';
@@ -1226,25 +1227,25 @@ export default function StudentLessonPage() {
         {/* min-w-0: zonder dit krimpt de kolom niet onder de min-content van een
             brede tabel, en loopt de les op een telefoon buiten beeld. */}
         <section className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="flex shrink-0 items-center gap-3 border-b border-[var(--helix-border)] bg-white/86 px-4 py-3 backdrop-blur-xl sm:px-6">
+          <div className="flex shrink-0 items-center gap-3 border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-4 py-3 sm:px-6">
             <button
               type="button"
               onClick={() => setShowStepDrawer(true)}
-              className="flex h-11 items-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-muted)] transition hover:text-[var(--helix-navy)] lg:hidden"
+              className="lo-knop-tweede h-11 px-3 text-sm lg:hidden"
             >
               <ListChecks size={17} />
               Stappen
             </button>
 
-            <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)] sm:flex">
-              <ActiveStepIcon size={19} />
+            <span className="lo-hblok hidden sm:inline-grid">
+              {showParagraphEnd ? <ActiveStepIcon size={16} aria-hidden="true" /> : currentIndex + 1}
             </span>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-black text-[var(--helix-navy)]">
+              <p className="lo-rij-titel truncate">
                 {showParagraphEnd ? taalHulp.tekst('les.paragraafAfronden') : currentStepTitle}
               </p>
-              <p className="truncate text-[11px] font-bold text-[var(--helix-muted)]">
+              <p className="lo-onderregel truncate">
                 {showParagraphEnd
                   ? taalHulp.paragraafInfo(paragraafId)?.titel || paragraaf?.title || taalHulp.tekst('les.kop')
                   : `${taalHulp.tekst('les.onderdeelVan', { nummer: currentIndex + 1, totaal: blocks.length })} · ${CONTENT_BLOCK_LABELS[currentBlock?.type] || currentBlock?.type || 'Lesblok'}${currentBlockCompleted ? ` · ${currentStepStatusLabel}` : ''}`}
@@ -1263,23 +1264,15 @@ export default function StudentLessonPage() {
             )}
 
             {paragraafIsPlus && (
-              <span
-                title={PLUS_UITLEG_LEERLING}
-                className="hidden shrink-0 items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)] sm:inline-flex"
-              >
-                <Star size={11} />
-                {PLUS_LABEL}
-              </span>
+              <Label kleur="paars" icoon={Star} className="hidden sm:inline-flex" title={PLUS_UITLEG_LEERLING}>{PLUS_LABEL}</Label>
             )}
 
             <NiveauOmhoogMoment moment={niveauMoment} onKlaar={() => setNiveauMoment(null)} />
             <EmoteMoment uid={isDevBypass ? '' : currentUser?.uid} speel={emoteTeller} />
             {tokenAwardNotice ? (
-              <span className="hidden items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black text-amber-800 sm:inline-flex">
-                {tokenAwardNotice}
-              </span>
+              <Label kleur="groen" className="hidden sm:inline-flex">{tokenAwardNotice}</Label>
             ) : (
-              <span className="hidden text-xs font-black text-[var(--helix-muted)] sm:inline">
+              <span className="hidden text-[13px] font-extrabold tabular-nums text-[var(--lo-grijs)] sm:inline">
                 {studySummary.percentage}%
               </span>
             )}
@@ -1289,7 +1282,7 @@ export default function StudentLessonPage() {
                 type="button"
                 onClick={openLearningGoals}
                 title="Bekijk de leerdoelen van deze paragraaf"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
+                className="lo-knop-tweede h-11 w-11 shrink-0 justify-center p-0"
               >
                 <Target size={18} />
                 <span className="sr-only">{taalHulp.tekst('les.leerdoelen')}</span>
@@ -1300,7 +1293,7 @@ export default function StudentLessonPage() {
               type="button"
               onClick={toggleFullscreen}
               title={isFullscreen ? 'Verlaat volledig scherm' : taalHulp.tekst('les.volledigScherm')}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
+              className="lo-knop-tweede h-11 w-11 shrink-0 justify-center p-0"
             >
               {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
               <span className="sr-only">{isFullscreen ? 'Verlaat volledig scherm' : taalHulp.tekst('les.volledigScherm')}</span>
@@ -1312,13 +1305,13 @@ export default function StudentLessonPage() {
               leerling ziet waarom hij Nederlands leest en het opnieuw kan
               proberen. */}
           {vertalingMislukt && !showParagraphEnd && (
-            <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 sm:px-6">
+            <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[var(--lo-lijn)] bg-[var(--lo-oranje-zacht)] px-4 py-2 text-xs font-bold text-[var(--lo-oranje-inkt)] sm:px-6">
               <AlertTriangle size={14} aria-hidden="true" />
               <span>Het vertalen lukte even niet. Je ziet nu de Nederlandse tekst.</span>
               <button
                 type="button"
                 onClick={probeerVertalingOpnieuw}
-                className="rounded-lg border border-amber-300 bg-white px-2 py-1 font-black text-amber-900 transition hover:bg-amber-100"
+                className="lo-knop-tweede px-2 py-1 text-xs"
               >
                 Opnieuw proberen
               </button>
@@ -1326,8 +1319,8 @@ export default function StudentLessonPage() {
           )}
 
           {isAdmin && (
-            <div className="shrink-0 border-b border-[var(--helix-border)] bg-white/70 px-4 py-2 text-xs font-bold text-[var(--helix-muted)] sm:px-6">
-              <span className="text-[var(--helix-navy)]">Adminpreview:</span>{' '}
+            <div className="shrink-0 border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-4 py-2 text-xs font-bold text-[var(--lo-grijs)] sm:px-6">
+              <span className="text-[var(--lo-inkt)]">Adminpreview:</span>{' '}
               {includeDraftPreview
                 ? 'conceptblokken zijn inbegrepen in deze weergave.'
                 : 'alleen gepubliceerde blokken worden getoond in deze weergave.'}
@@ -1340,7 +1333,7 @@ export default function StudentLessonPage() {
                 wit tussen de tekst en de afrondknop. */}
             <div className="mx-auto flex w-full max-w-5xl flex-col px-4 py-6 sm:px-8 sm:py-10">
               {showParagraphEnd ? (
-                <div className="helix-surface overflow-hidden">
+                <div className="study-einde">
                   <ParagraphEndActivity
                     plan={paragraphEndPlan}
                     activity={paragraphEndActivity}
@@ -1436,11 +1429,11 @@ export default function StudentLessonPage() {
                 onAction={vraagVerderBevestiging}
               />
 
-              <footer className="flex flex-col gap-3 border-t border-[var(--helix-border)] bg-white/86 px-4 py-3 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <footer className="flex flex-col gap-3 border-t border-[var(--lo-lijn)] bg-[var(--lo-kaart)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <button
                   onClick={goPrev}
                   disabled={currentIndex === 0}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-5 py-3 text-sm font-black text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="lo-knop-tweede justify-center text-sm disabled:opacity-40"
                 >
                   <ChevronLeft size={18} />
                   {taalHulp.tekst('knop.vorige')}
@@ -1449,9 +1442,7 @@ export default function StudentLessonPage() {
                 <p
                   role={studyNotice ? 'status' : undefined}
                   aria-live={studyNotice ? 'polite' : undefined}
-                  className={`text-center text-xs font-bold ${
-                    studyNotice ? 'text-[var(--helix-danger)]' : 'text-[var(--helix-muted)]'
-                  }`}
+                  className={`text-center text-[13px] font-bold ${studyNotice ? 'text-[var(--lo-rood-inkt)]' : 'text-[var(--lo-grijs)]'}`}
                 >
                   {/* De leesstap heeft zijn eigen hint in de kaartvoet, direct naast
                       de afrondknop. Die niet hier herhalen: dan staan er twee zinnen
@@ -1471,7 +1462,7 @@ export default function StudentLessonPage() {
                 ) : (
                   <button
                     onClick={vraagVerderBevestiging}
-                    className="btn-primary px-5 py-3 text-sm"
+                    className="lo-knop justify-center text-sm"
                   >
                     {isLastStep ? taalHulp.tekst('les.afronden') : taalHulp.tekst('knop.volgendeStap')}
                     <ChevronRight size={18} />
@@ -1487,12 +1478,12 @@ export default function StudentLessonPage() {
                   <div
                     role="alertdialog"
                     aria-labelledby="nulmeting-verlaten-titel"
-                    className="rounded-2xl border-2 border-[var(--helix-border)] bg-white p-4 shadow-xl"
+                    className="lo-kaart gap-0 border border-[var(--lo-lijn)] p-4"
                   >
-                    <p id="nulmeting-verlaten-titel" className="font-black text-[var(--helix-navy)]">
+                    <p id="nulmeting-verlaten-titel" className="font-extrabold text-[var(--lo-inkt)]">
                       Je bent nog bezig met deel {nulmetingOnaf.deel} van de nulmeting
                     </p>
-                    <p className="helix-muted mt-1 text-sm font-semibold">
+                    <p className="mt-1 text-sm text-[var(--lo-grijs)]">
                       Je hebt {nulmetingOnaf.itemsAf} van de {nulmetingOnaf.itemCount} vragen ingeleverd. Wil je naar de
                       volgende vraag, gebruik dan de knop <strong>Volgende vraag</strong> bij de vraag zelf. Deze knop
                       brengt je naar de volgende stap van de paragraaf.
@@ -1501,14 +1492,14 @@ export default function StudentLessonPage() {
                       <button
                         type="button"
                         onClick={() => setBevestigVerlatenBlokId('')}
-                        className="btn-primary px-5 py-3 text-sm"
+                        className="lo-knop text-sm"
                       >
                         Terug naar de vragen
                       </button>
                       <button
                         type="button"
                         onClick={() => { setBevestigVerlatenBlokId(''); goNext(); }}
-                        className="btn-secondary px-5 py-3 text-sm"
+                        className="lo-knop-tweede text-sm"
                       >
                         Toch naar de volgende stap
                       </button>
@@ -1528,12 +1519,12 @@ export default function StudentLessonPage() {
             onClick={() => setShowStepDrawer(false)}
             className="absolute inset-0 bg-[rgba(11,19,43,0.42)] backdrop-blur-sm"
           />
-          <div className="study-rail relative z-10 flex h-full w-[86%] max-w-[340px] flex-col bg-white">
+          <div className="study-rail relative z-10 flex h-full w-[86%] max-w-[340px] flex-col">
             <div className="flex justify-end p-2">
               <button
                 type="button"
                 onClick={() => setShowStepDrawer(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-xl text-[var(--helix-muted)] transition hover:bg-[var(--helix-surface-soft)]"
+                className="lo-knop-tweede h-10 w-10 justify-center p-0"
                 aria-label="Stappen sluiten"
               >
                 <X size={20} />
@@ -5023,16 +5014,16 @@ function GameBlock({ block, gameRewardRules = {}, playCount = 0, lastResult = nu
 function CenteredState({ icon: Icon, title, description, actionLabel, onAction, spinning = false }) {
   return (
     <div className="helix-page flex min-h-[70vh] items-center justify-center px-4">
-      <div className="helix-surface max-w-md p-8 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-          <Icon size={28} className={spinning ? 'animate-spin' : ''} />
-        </div>
-        <h1 className="mt-5 font-display text-2xl font-extrabold text-[var(--helix-navy)]">{title}</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--helix-muted)]">{description}</p>
+      <div className="lo-kaart max-w-md items-center p-8 text-center">
+        <span className="lo-hblok lo-hblok--dicht h-14 min-w-14">
+          <Icon size={26} className={spinning ? 'animate-spin' : ''} aria-hidden="true" />
+        </span>
+        <h1 className="lo-kaart-titel">{title}</h1>
+        <p className="lo-kaart-uitleg mt-0">{description}</p>
         {actionLabel && (
           <button
             onClick={onAction}
-            className="btn-primary mt-6 px-5 py-3 text-sm"
+            className="lo-knop mt-2 text-sm"
           >
             {actionLabel}
           </button>

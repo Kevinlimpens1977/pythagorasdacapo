@@ -62,22 +62,22 @@ export default function LearningGoalsIntro({
         role="dialog"
         aria-modal="true"
         aria-labelledby="leerdoelen-intro-titel"
-        className="helix-surface flex max-h-[86vh] w-full max-w-lg flex-col overflow-hidden p-5 sm:p-6"
+        className="lo-kaart max-h-[86vh] w-full max-w-lg gap-0 overflow-hidden p-5 sm:p-6"
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="helix-gradient flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white">
-              <Target size={18} />
+            <span className="lo-hblok">
+              <Target size={16} aria-hidden="true" />
             </span>
             <div className="min-w-0">
               <h2
                 id="leerdoelen-intro-titel"
-                className="font-display text-xl font-extrabold tracking-tight text-[var(--helix-navy)]"
+                className="lo-kaart-titel"
               >
                 {tekst('intro.watJeGaatLeren')}
               </h2>
               {context && (
-                <p className="truncate text-xs font-bold text-[var(--helix-muted)]">{context}</p>
+                <p className="lo-onderregel truncate">{context}</p>
               )}
             </div>
           </div>
@@ -93,25 +93,25 @@ export default function LearningGoalsIntro({
             een leerling van de paragraaf ziet, dus hier hoort de belofte te
             staan: je hoeft dit niet, je mag dit - en het levert tokens op. */}
         {optioneel && (
-          <div className="mt-4 rounded-[var(--helix-radius-lg)] border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] p-4">
-            <p className="flex items-center gap-2 font-display text-sm font-extrabold text-[var(--helix-purple)]">
+          <div className="mt-4 rounded-[var(--lo-hoek-l)] bg-[var(--lo-paars-zacht)] p-4">
+            <p className="flex items-center gap-2 text-sm font-extrabold text-[var(--lo-paars-inkt)]">
               <Star size={15} />
               {tekst('plus.label')}
             </p>
-            <p className="mt-1.5 text-sm font-semibold leading-6 text-[var(--helix-navy)]">
+            <p className="mt-1.5 text-sm leading-6 text-[var(--lo-inkt)]">
               {tekst('plus.uitleg')}
             </p>
           </div>
         )}
 
-        <ul className="custom-scrollbar mt-4 min-h-0 space-y-2 overflow-y-auto rounded-[var(--helix-radius-lg)] border border-[rgba(122,60,255,0.18)] bg-[var(--helix-soft-lavender)]/70 p-4 sm:p-5">
+        <ul className="custom-scrollbar lo-lijst mt-4 min-h-0 overflow-y-auto">
           {zichtbareItems.map((item, index) => (
-            <li key={`${index}-${item}`} className="flex items-start gap-2.5">
+            <li key={`${index}-${item}`} className="flex items-start gap-2.5 px-4 py-3">
               <span
                 aria-hidden="true"
-                className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--helix-purple)]"
+                className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--lo-blauw)]"
               />
-              <span className="text-[15px] font-semibold leading-6 text-[var(--helix-navy)]">
+              <span className="text-[15px] leading-6 text-[var(--lo-inkt)]">
                 {item}
               </span>
             </li>
@@ -120,7 +120,7 @@ export default function LearningGoalsIntro({
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           {caption ? (
-            <p className="text-xs font-bold text-[var(--helix-muted)]">{caption}</p>
+            <p className="lo-onderregel">{caption}</p>
           ) : (
             <span />
           )}
