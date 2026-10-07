@@ -1376,13 +1376,13 @@ export default function TakenToewijzenPage() {
                         <div
                           key={student.uid}
                           className={`border rounded-lg transition-colors ${
-                            isSelected ? 'border-[var(--lo-lijn)] bg-[var(--lo-oranje-zacht)]' : 'border-[var(--lo-lijn)]'
+                            isSelected ? 'border-[var(--lo-inkt)] bg-[var(--lo-geel-zacht)]' : 'border-[var(--lo-lijn)]'
                           }`}
                         >
                           {/* Header row - clickable */}
                           <div
                             onClick={() => setSelectedStudentId(isSelected ? null : student.uid)}
-                            className="lo-rij justify-between cursor-pointer hover:bg-[var(--lo-oranje-zacht)]"
+                            className="lo-rij justify-between cursor-pointer hover:bg-[var(--lo-papier)]"
                           >
                             <div>
                               <div className="lo-rij-titel">{student.displayName}</div>
