@@ -251,7 +251,7 @@ daar maar 4,2:1, dus het label "op slot" uit fase 1 (12px) zit net onder AA;
 dat token aanpassen is een keuze voor fase 4.
 Stijlgids heeft een sectie Lespagina; `src/lib/lespaginaStijl.test.js` en de
 tweede test in `tests/e2e/leeromgeving-stijl.spec.js` bewaken hem.
-Markering `leeromgeving-fase-2b`, Vercel-deploy DEPLOY_2B.
+Markering `leeromgeving-fase-2b`, Vercel-deploy `dpl_ASBddrehU7Dskrpegj3XRvE4HQKk`.
 Volgende: fase 2c.
 
 **21 september: twee dashboardfouten rond de nulmeting.** Een afgeronde
