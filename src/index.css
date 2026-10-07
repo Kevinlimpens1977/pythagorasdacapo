@@ -2237,3 +2237,11 @@ input[type=number] {
 .beheer-stijl .helix-muted {
   color: var(--lo-grijs);
 }
+
+/* De regels hierboven zetten box-shadow op none en winnen daarmee van de
+   algemene focusring; voor het toetsenbord komt hij hier terug. */
+.beheer-stijl .helix-action-card:focus-visible,
+.beheer-stijl .dashboard-lens-tab:focus-visible,
+.beheer-stijl .studio-toolbar-control:focus-visible {
+  box-shadow: 0 0 0 3px var(--lo-papier), 0 0 0 6px var(--lo-blauw);
+}

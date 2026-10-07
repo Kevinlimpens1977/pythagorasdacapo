@@ -210,7 +210,7 @@ export function ChapterDetailView({
               type="button"
               onClick={() => onToggleShowAll(chapter.id)}
               aria-expanded={showAll}
-              className="lo-knop-tweede w-full justify-center"
+              className="lo-knop-tweede w-full justify-center whitespace-normal text-center"
             >
               {toonAllesLabel(chapter.paragraphRows, showAll, tekst)}
               <ChevronDown
