@@ -161,7 +161,7 @@ export default function CropEditorPanel({
     <div className="h-full flex flex-col bg-gray-50 border-l border-gray-200 overflow-hidden">
       <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-3">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Broncanvas</p>
+          <p className="lo-onderregel font-bold">Broncanvas</p>
           <p className="text-sm font-bold text-slate-700">Gebruik groot beeld voor precieze A4-crops.</p>
         </div>
         <button
@@ -179,7 +179,7 @@ export default function CropEditorPanel({
 
       {selections.length > 0 && (
         <div className="max-h-48 overflow-y-auto border-t border-gray-200 bg-white p-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-700">
+          <p className="lo-onderregel font-bold mb-3">
             Crop type per selectie
           </p>
           {renderSelectionList()}
@@ -194,7 +194,7 @@ export default function CropEditorPanel({
           <div className="presenter-chrome-surface flex items-center justify-between gap-4 border-b border-[var(--helix-border)] px-5 py-3">
             <div>
               <p className="helix-eyebrow">Crop/OCR studio</p>
-              <h2 className="text-lg font-black text-[var(--helix-navy)]">Bronmateriaal groot bewerken</h2>
+              <h2 className="text-lg font-extrabold text-[var(--helix-navy)]">Bronmateriaal groot bewerken</h2>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -221,7 +221,7 @@ export default function CropEditorPanel({
             </div>
             <aside className="flex min-h-0 flex-col border-l border-slate-200 bg-white">
               <div className="border-b border-slate-200 p-4">
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Selecties</p>
+                <p className="lo-onderregel font-bold">Selecties</p>
                 <p className="mt-1 text-sm leading-5 text-slate-600">
                   Start in Hand-modus om te schuiven. Kies Selectie om crops te tekenen. Spatie ingedrukt is tijdelijk Hand.
                 </p>

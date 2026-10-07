@@ -8,7 +8,7 @@ import { X, Loader } from 'lucide-react';
 import * as cmsService from '../../services/cmsService';
 import { auth } from '../../services/firebase';
 import ColorEmojiPicker from './ColorEmojiPicker';
-import HelixBrandBanner from '../common/HelixBrandBanner';
+import { KaartKop } from '../leeromgeving';
 
 const showColorEmojiPicker = false;
 
@@ -128,18 +128,14 @@ export default function CreateContentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--helix-navy)]/45 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md overflow-hidden rounded-[2rem] border border-[var(--helix-border)] bg-white shadow-2xl animate-in zoom-in-95 duration-300">
+    <div className="beheer-stijl lo-tekst fixed inset-0 z-50 flex items-center justify-center bg-[var(--helix-navy)]/45 p-4 backdrop-blur-sm">
+      <div className="lo-kaart w-full max-w-md gap-0 overflow-hidden p-0 animate-in zoom-in-95 duration-300">
         {/* Header */}
         <div className="relative">
-          <HelixBrandBanner
-            variant="modal"
-            className="rounded-none border-x-0 border-t-0 shadow-none"
-            contentClassName="pr-12"
-          >
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">HELIX CMS</p>
-            <h2 className="mt-1 font-display text-xl font-extrabold leading-tight text-[var(--helix-navy)]">{getTitle()}</h2>
-          </HelixBrandBanner>
+          <div className="px-6 pb-2 pr-16 pt-6">
+            <p className="lo-eyebrow">HELIX CMS</p>
+            <KaartKop titel={getTitle()} />
+          </div>
           <button
             onClick={onClose}
             disabled={loading}
@@ -152,7 +148,7 @@ export default function CreateContentModal({
 
         {/* Error */}
         {error && (
-          <div className="border-b border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+          <div className="lo-melding lo-melding--fout rounded-none p-4 font-bold">
             {error}
           </div>
         )}
@@ -350,7 +346,7 @@ export default function CreateContentModal({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 font-extrabold text-[var(--helix-navy)] transition hover:bg-[var(--helix-bg)] disabled:opacity-50"
+              className="lo-knop-tweede flex-1 justify-center"
             >
               Annuleren
             </button>

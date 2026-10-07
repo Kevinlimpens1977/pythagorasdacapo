@@ -15,6 +15,8 @@ import InlineEdit from './InlineEdit';
 import ColorEmojiPicker from './ColorEmojiPicker';
 import ContentBlockBuilder from './ContentBlockBuilder';
 import ParagraafKlaarzettenPanel from './ParagraafKlaarzettenPanel';
+import { Label } from '../leeromgeving';
+import { HelixLaden } from '../merk/HelixLogo';
 import useCms from '../../hooks/useCms';
 import * as cmsService from '../../services/cmsService';
 import { buildBouwPad } from '../../lib/lesmateriaalStudio';
@@ -241,7 +243,7 @@ export default function CmsShell() {
 
   return (
     <>
-      <div ref={shellRef} className="relative flex h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)] overflow-hidden bg-[var(--helix-bg)]">
+      <div ref={shellRef} className="beheer-stijl lo-tekst relative flex h-[calc(100dvh-5rem)] min-h-[calc(100dvh-5rem)] overflow-hidden bg-[var(--helix-bg)]">
         {/* Toggle Button - Fixed Left Edge (when sidebar closed) */}
         {!sidebarOpen && (
           <button
@@ -314,7 +316,7 @@ export default function CmsShell() {
                   {bouwPad.length > 0 ? (
                     <>
                       {isParagraafView && (
-                        <span className="uppercase tracking-[0.18em] text-[var(--helix-purple)]">Je bouwt:</span>
+                        <span className="font-extrabold text-[var(--lo-blauw-inkt)]">Je bouwt:</span>
                       )}
                       {bouwPad.map((item, idx) => {
                         const isLast = idx === bouwPad.length - 1;
@@ -338,25 +340,25 @@ export default function CmsShell() {
                       })}
                     </>
                   ) : (
-                    <span className="uppercase tracking-[0.18em]">Werkvlak</span>
+                    <span className="font-extrabold">Werkvlak</span>
                   )}
                 </div>
                 <h2 className="mt-1 font-display text-xl font-extrabold text-[var(--helix-navy)]">{currentContextLabel}</h2>
                 {currentContextMeta.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {currentContextMeta.map((item) => (
-                      <span key={item} className="helix-badge normal-case tracking-normal">
+                      <Label key={item} kleur="blauw">
                         {item}
-                      </span>
+                      </Label>
                     ))}
                   </div>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="lo-knoppenbalk">
                 <button
                   onClick={() => cms.selectedParagraafId && navigate(`/chapter/${cms.selectedParagraafId}?preview=published`)}
                   disabled={!cms.selectedParagraafId}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-[var(--helix-border)] bg-white px-3 py-2 text-sm font-bold text-[var(--helix-muted)] transition-colors hover:bg-[var(--helix-surface-soft)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="lo-knop-tweede lo-knop--klein"
                   title="Preview met gepubliceerde lesblokken"
                 >
                   <Eye size={16} />
@@ -365,7 +367,7 @@ export default function CmsShell() {
                 <button
                   onClick={() => cms.selectedParagraafId && navigate(`/chapter/${cms.selectedParagraafId}?preview=draft`)}
                   disabled={!cms.selectedParagraafId}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 text-sm font-bold text-fuchsia-700 transition-colors hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="lo-knop-tweede lo-knop--klein"
                   title="Preview inclusief conceptblokken"
                 >
                   <Eye size={16} />
@@ -385,14 +387,12 @@ export default function CmsShell() {
             </div>
           </div>
           {cms.loading && (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-sm font-bold text-[var(--helix-muted)]">Lesstof laden...</p>
-            </div>
+            <HelixLaden tekst="Lesstof laden..." className="min-h-0 py-10" />
           )}
 
           {cms.error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-              <p className="font-semibold">Error</p>
+            <div className="lo-melding lo-melding--fout flex-col gap-0">
+              <p className="font-extrabold">Error</p>
               <p className="text-sm">{cms.error}</p>
             </div>
           )}
@@ -437,7 +437,7 @@ export default function CmsShell() {
                   <button
                     onClick={() => handleArchive('vak', cms.selectedVakId)}
                     disabled={archiveLoading}
-                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar">
                     <Trash2 size={16} />
                     Archiveren
                   </button>
@@ -486,7 +486,7 @@ export default function CmsShell() {
                   <button
                     onClick={() => handleArchive('leerjaar', cms.selectedLeerjaarId)}
                     disabled={archiveLoading}
-                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar">
                     <Trash2 size={16} />
                     Archiveren
                   </button>
@@ -535,7 +535,7 @@ export default function CmsShell() {
                   <button
                     onClick={() => handleArchive('niveau', cms.selectedNiveauId)}
                     disabled={archiveLoading}
-                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar">
                     <Trash2 size={16} />
                     Archiveren
                   </button>
@@ -595,7 +595,7 @@ export default function CmsShell() {
                   <button
                     onClick={() => handleArchive('hoofdstuk', cms.selectedHoofdstukId)}
                     disabled={archiveLoading}
-                    className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50">
+                    className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar">
                     <Trash2 size={16} />
                     Archiveren
                   </button>
@@ -734,7 +734,7 @@ export default function CmsShell() {
                   </div>
 
                   <div className="mb-8 pb-8 border-b border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Question Content</h3>
+                    <h3 className="lo-onderregel font-bold text-sm mb-3">Question Content</h3>
                     <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
                       {cms.currentVraag.content?.text ? (
                         <div dangerouslySetInnerHTML={{ __html: cms.currentVraag.content.text }} />
@@ -746,21 +746,21 @@ export default function CmsShell() {
 
                   {cms.currentVraag.vraagMetadata && (
                     <div className="mb-8 pb-8 border-b border-gray-200">
-                      <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-4">Settings</h3>
+                      <h3 className="lo-onderregel font-bold text-sm mb-4">Settings</h3>
                       <div className="grid grid-cols-3 gap-6">
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Difficulty</p>
+                          <p className="lo-onderregel font-bold mb-2">Difficulty</p>
                           <p className="text-lg">{'⭐'.repeat(cms.currentVraag.vraagMetadata.difficulty || 3)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Calculator</p>
+                          <p className="lo-onderregel font-bold mb-2">Calculator</p>
                           <p className="text-sm font-medium text-gray-900">
                             {cms.currentVraag.vraagMetadata.showCalculator ? 'Aan' : 'Uit'}
                           </p>
                         </div>
                         {cms.currentVraag.vraagMetadata.hints?.length > 0 && (
                           <div>
-                            <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Hints</p>
+                            <p className="lo-onderregel font-bold mb-2">Hints</p>
                             <p className="text-sm font-medium text-gray-900">{cms.currentVraag.vraagMetadata.hints.length} hint{cms.currentVraag.vraagMetadata.hints.length !== 1 ? 's' : ''}</p>
                           </div>
                         )}

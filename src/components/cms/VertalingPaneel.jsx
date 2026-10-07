@@ -129,7 +129,7 @@ export default function VertalingPaneel({ blok }) {
   return (
     <section className="helix-surface mt-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-black text-[var(--helix-navy)]">Vertaling nakijken</h2>
+        <h2 className="text-lg font-extrabold text-[var(--helix-navy)]">Vertaling nakijken</h2>
         <select
           value={taal}
           onChange={(event) => setTaal(event.target.value)}
@@ -150,7 +150,7 @@ export default function VertalingPaneel({ blok }) {
       )}
 
       {verouderd && (
-        <p className="mt-3 inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800">
+        <p className="lo-melding lo-melding--info mt-3 w-fit items-center font-bold">
           <AlertTriangle size={16} aria-hidden="true" />
           De Nederlandse tekst is gewijzigd sinds deze vertaling is nagekeken.
         </p>
@@ -160,7 +160,7 @@ export default function VertalingPaneel({ blok }) {
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <div>
             <p className="helix-eyebrow">Nederlands</p>
-            <p className="mt-2 font-black">{blok.title}</p>
+            <p className="mt-2 font-extrabold">{blok.title}</p>
             <div className="lesson-prose mt-2 text-sm" dangerouslySetInnerHTML={{ __html: blok.content?.html || '' }} />
           </div>
           <div>
@@ -169,7 +169,7 @@ export default function VertalingPaneel({ blok }) {
               value={weergave.titel || ''}
               onChange={(event) => setVertaling({ ...weergave, titel: event.target.value })}
               aria-label="Vertaalde bloktitel"
-              className="mt-2 w-full rounded-xl border border-[var(--helix-border)] px-3 py-2 font-black"
+              className="mt-2 w-full rounded-xl border border-[var(--helix-border)] px-3 py-2 font-extrabold"
             />
             <textarea
               value={weergave.html || ''}
@@ -292,10 +292,10 @@ export default function VertalingPaneel({ blok }) {
         </p>
       )}
 
-      {opgeslagen && <p className="mt-2 text-sm font-bold text-emerald-700">Opgeslagen.</p>}
+      {opgeslagen && <p className="lo-melding lo-melding--goed mt-2 w-fit font-bold">Opgeslagen.</p>}
 
       {foutmelding && (
-        <p className="mt-2 inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700">
+        <p className="lo-melding lo-melding--fout mt-2 w-fit items-center font-bold">
           <AlertTriangle size={16} aria-hidden="true" />
           {foutmelding}
         </p>

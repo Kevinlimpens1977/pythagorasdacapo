@@ -142,6 +142,8 @@ import MediaRenderer from '../media/MediaRenderer';
 import CropEditorPanel from './CropEditorPanel';
 import VertalingPaneel from './VertalingPaneel';
 import { isVertaalbaarBlok } from '../../lib/lesTaal';
+import { Label } from '../leeromgeving';
+import { HelixLaden } from '../merk/HelixLogo';
 
 const blockIcons = {
   theory: BookOpen,
@@ -273,8 +275,8 @@ const getCmsWriteErrorContext = () => ({
 const getStatusBadgeClass = (status) => {
   const normalized = normalizeContentBlockStatus(status);
   if (normalized === 'published') return 'helix-badge-success';
-  if (normalized === 'ready') return 'bg-blue-50 text-blue-700';
-  if (normalized === 'needs_review') return 'bg-amber-50 text-amber-700';
+  if (normalized === 'ready') return 'bg-[var(--lo-blauw-zacht)] text-[var(--lo-blauw-inkt)]';
+  if (normalized === 'needs_review') return 'bg-[var(--lo-oranje-zacht)] text-[var(--lo-oranje-inkt)]';
   return 'helix-badge-warning';
 };
 
@@ -303,10 +305,10 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
 
   return (
     <div className="rounded-2xl border border-fuchsia-100 bg-white p-4">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Leerlingtools en differentiatie</p>
+      <p className="lo-onderregel font-bold">Leerlingtools en differentiatie</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <label className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
-          <span className="block text-sm font-black text-[var(--helix-navy)]">Routevariant</span>
+          <span className="block text-sm font-extrabold text-[var(--helix-navy)]">Routevariant</span>
           <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Markeer dit blok als steun, basis of plus.</span>
           <select
             value={settings.differentiationLevel || 'basis'}
@@ -320,7 +322,7 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
         </label>
 
         <label className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-3">
-          <span className="block text-sm font-black text-[var(--helix-navy)]">Rol in de lesroute</span>
+          <span className="block text-sm font-extrabold text-[var(--helix-navy)]">Rol in de lesroute</span>
           <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Kies of dit blok voordoet, samen oefent of bewijs vraagt.</span>
           <select
             value={settings.scaffoldingRole || 'zelf_proberen'}
@@ -341,7 +343,7 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
             className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
           />
           <span>
-            <span className="block text-sm font-black text-[var(--helix-navy)]">Wiskunde toolbox toestaan</span>
+            <span className="block text-sm font-extrabold text-[var(--helix-navy)]">Wiskunde toolbox toestaan</span>
             <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">Leerling kan uitwerkschema's en dezelfde rekenmachine als losse tool gebruiken.</span>
           </span>
         </label>
@@ -354,7 +356,7 @@ const BlockSettingsPanel = ({ settings, onChange }) => {
             className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--helix-purple)] focus:ring-fuchsia-100"
           />
           <span>
-            <span className="block text-sm font-black text-[var(--helix-navy)]">Digidocent hulp toestaan</span>
+            <span className="block text-sm font-extrabold text-[var(--helix-navy)]">Digidocent hulp toestaan</span>
             <span className="mt-1 block text-xs font-semibold text-[var(--helix-muted)]">AI-hulp telt mee in de resultaatkleur.</span>
           </span>
         </label>
@@ -372,12 +374,12 @@ const PublicationOverridePanel = ({
   if (!visible) return null;
 
   return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-      <p className="text-sm font-black text-amber-900">Admin-override voor publicatie</p>
-      <p className="mt-1 text-xs font-bold leading-5 text-amber-800">
+    <div className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-oranje-zacht)] p-4">
+      <p className="text-sm font-extrabold text-[var(--lo-oranje-inkt)]">Admin-override voor publicatie</p>
+      <p className="mt-1 text-xs font-bold leading-5 text-[var(--lo-oranje-inkt)]">
         Dit blok mist nog basiseisen. Alleen bewust publiceren als je hieronder vastlegt waarom dit toch live mag.
       </p>
-      <ul className="mt-3 space-y-1 text-xs font-bold text-amber-900">
+      <ul className="mt-3 space-y-1 text-xs font-bold text-[var(--lo-oranje-inkt)]">
         {readiness.errors.map((issue, index) => (
           <li key={getReadinessIssueRenderKey(issue, index)}>{issue.message}</li>
         ))}
@@ -626,7 +628,7 @@ const StudioRichEditor = ({ label, value, onChange, onEditorReady, placeholder, 
   }, [editor, onEditorReady]);
 
   if (!editor) {
-    return <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Editor laden...</div>;
+    return <HelixLaden tekst="Editor laden..." className="min-h-0 py-10" />;
   }
 
   return (
@@ -812,7 +814,7 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-black text-slate-900">{MEDIA_KIND_LABELS[mediaKind]} toevoegen</p>
+                <p className="font-extrabold text-slate-900">{MEDIA_KIND_LABELS[mediaKind]} toevoegen</p>
                 <p className="mt-1 text-sm text-slate-500">
                   {mediaKind === MEDIA_KINDS.IMAGE
                     ? 'Upload een afbeelding of plak direct met Ctrl+V.'
@@ -860,12 +862,12 @@ const MediaStudioFields = ({ blockId, content, updateContent, setError }) => {
 
 const MatrixSummaryList = ({ title, rows = [] }) => (
   <div className="rounded-xl border border-indigo-100 bg-white p-3">
-    <p className="mb-2 text-xs font-black uppercase tracking-wide text-indigo-700">{title}</p>
+    <p className="lo-onderregel font-bold mb-2">{title}</p>
     <div className="space-y-2">
       {rows.map((row) => (
         <div key={row.key} className="flex items-center justify-between gap-3 rounded-lg bg-indigo-50 px-3 py-2">
           <span className="min-w-0 truncate text-sm font-bold text-indigo-950">{row.label}</span>
-          <span className="shrink-0 text-xs font-black text-indigo-700">
+          <span className="shrink-0 text-xs font-extrabold text-indigo-700">
             {row.items}x / {row.tokens}t
           </span>
         </div>
@@ -1061,7 +1063,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
       <div className="rounded-2xl border border-slate-200 bg-white p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">
+            <p className="lo-onderregel font-bold">
               {assessmentLabel}vragen
             </p>
             <p className="mt-1 text-sm font-bold leading-6 text-slate-600">
@@ -1069,8 +1071,8 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             </p>
           </div>
           <div className={[
-            'rounded-xl px-3 py-2 text-sm font-black',
-            tokenDelta === 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+            'rounded-xl px-3 py-2 text-sm font-extrabold',
+            tokenDelta === 0 ? 'bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]' : 'bg-[var(--lo-oranje-zacht)] text-[var(--lo-oranje-inkt)]'
           ].join(' ')}>
             {itemTokenTotal}/{tokenTotal} tokens
             {tokenDelta !== 0 && ` (${tokenDelta > 0 ? '+' : ''}${tokenDelta})`}
@@ -1090,12 +1092,12 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
         <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-indigo-700">Toetsmatrijs</p>
+              <p className="lo-onderregel font-bold">Toetsmatrijs</p>
               <p className="mt-1 text-sm font-bold text-indigo-950">
                 {matrixSummary.totalItems} vragen - {matrixSummary.totalTokens} tokens
               </p>
             </div>
-            <div className="text-xs font-black uppercase tracking-[0.14em] text-indigo-700">
+            <div className="lo-onderregel font-bold">
               Dekking per leerdoel, vaardigheid en niveau
             </div>
           </div>
@@ -1117,7 +1119,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
               <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[9rem_minmax(0,1fr)_7rem]">
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Type</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Type</label>
                   <select
                     value={item.type}
                     onChange={(event) => updateItemAt(index, updateAssessmentItemType(item, event.target.value))}
@@ -1129,7 +1131,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">
+                  <label className="lo-onderregel font-bold mb-2 block">
                     Vraag {index + 1}
                   </label>
                   <textarea
@@ -1140,7 +1142,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Tokens</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Tokens</label>
                   <input
                     type="number"
                     min="0"
@@ -1190,10 +1192,10 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             </div>
 
             <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 p-3">
-              <p className="mb-3 text-xs font-black uppercase tracking-wide text-violet-700">Didactische dekking</p>
+              <p className="lo-onderregel font-bold mb-3">Didactische dekking</p>
               <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Leerdoel</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Leerdoel</label>
                   <input
                     value={item.taxonomy?.learningGoal || ''}
                     onChange={(event) => updateTaxonomy(index, { learningGoal: event.target.value })}
@@ -1202,7 +1204,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Vaardigheid</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Vaardigheid</label>
                   <select
                     value={item.taxonomy?.cognitiveSkill || 'begrijpen'}
                     onChange={(event) => updateTaxonomy(index, { cognitiveSkill: event.target.value })}
@@ -1214,7 +1216,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Niveau</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Niveau</label>
                   <select
                     value={item.taxonomy?.masteryLevel || 'basis'}
                     onChange={(event) => updateTaxonomy(index, { masteryLevel: event.target.value })}
@@ -1226,7 +1228,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Rol</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Rol</label>
                   <select
                     value={item.taxonomy?.scaffoldingRole || 'zelf_proberen'}
                     onChange={(event) => updateTaxonomy(index, { scaffoldingRole: event.target.value })}
@@ -1243,7 +1245,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             {(item.type === 'waar-niet-waar' || item.type === 'meerkeuze') && (
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                  <p className="lo-onderregel font-bold">
                     Antwoordopties {item.type === 'meerkeuze' ? '(meerdere correct mogelijk)' : ''}
                   </p>
                   {item.type === 'meerkeuze' && (
@@ -1303,7 +1305,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             {item.type === 'numeriek' && (
               <div className="mt-4 grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 md:grid-cols-[1fr_1fr_1fr]">
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Correct getal</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Correct getal</label>
                   <input
                     type="number"
                     step="0.01"
@@ -1313,7 +1315,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Tolerantie</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Tolerantie</label>
                   <input
                     type="number"
                     min="0"
@@ -1324,7 +1326,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Eenheid</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Eenheid</label>
                   <input
                     value={item.answer.unit || ''}
                     onChange={(event) => updateAnswer(index, { unit: event.target.value })}
@@ -1333,7 +1335,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   />
                 </div>
                 <div className="md:col-span-3">
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Hint bij fout</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Hint bij fout</label>
                   <input
                     value={item.answer.hintBijFout || ''}
                     onChange={(event) => updateAnswer(index, { hintBijFout: event.target.value })}
@@ -1347,7 +1349,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             {item.type === 'koppelen' && (
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Koppelparen</p>
+                  <p className="lo-onderregel font-bold">Koppelparen</p>
                   <button type="button" onClick={() => addPair(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
                     Paar toevoegen
                   </button>
@@ -1380,7 +1382,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
 
             {item.type === 'invullen' && (
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
-                <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Zin of korte tekst</label>
+                <label className="lo-onderregel font-bold mb-2 block">Zin of korte tekst</label>
                 <textarea
                   value={item.answer.text || ''}
                   onChange={(event) => updateAnswer(index, { text: event.target.value })}
@@ -1388,7 +1390,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   placeholder="Schrijf de zin. De invulwoorden leg je hieronder vast."
                 />
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Invulantwoorden</p>
+                  <p className="lo-onderregel font-bold">Invulantwoorden</p>
                   <button type="button" onClick={() => addGap(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
                     Invulveld toevoegen
                   </button>
@@ -1424,7 +1426,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             {item.type === 'volgorde' && (
               <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">Correcte volgorde</p>
+                  <p className="lo-onderregel font-bold">Correcte volgorde</p>
                   <button type="button" onClick={() => addOrderItem(index)} className="btn-secondary w-auto px-3 py-2 text-xs">
                     Stap toevoegen
                   </button>
@@ -1432,7 +1434,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                 <div className="space-y-2">
                   {item.answer.items.map((orderItem, orderIndex) => (
                     <div key={orderItem.id} className="grid gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-[2.5rem_minmax(0,1fr)_8rem_2.5rem]">
-                      <span className="flex h-11 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-500">{orderIndex + 1}</span>
+                      <span className="flex h-11 items-center justify-center rounded-xl bg-slate-100 text-sm font-extrabold text-slate-500">{orderIndex + 1}</span>
                       <input
                         value={orderItem.text}
                         onChange={(event) => updateOrderItem(index, orderIndex, { text: event.target.value })}
@@ -1461,7 +1463,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             {item.type === 'open' && (
               <div className="mt-4 grid gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 md:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Modelantwoord</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Modelantwoord</label>
                   <textarea
                     value={item.answer.modelAnswer || ''}
                     onChange={(event) => updateAnswer(index, { modelAnswer: event.target.value })}
@@ -1470,7 +1472,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Rubric / nakijkhint</label>
+                  <label className="lo-onderregel font-bold mb-2 block">Rubric / nakijkhint</label>
                   <textarea
                     value={item.answer.rubric || ''}
                     onChange={(event) => updateAnswer(index, { rubric: event.target.value })}
@@ -1482,7 +1484,7 @@ const AssessmentStudioFields = ({ blockType, content, updateContent, blockTokenT
             )}
 
             <div className="mt-4">
-              <label className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Feedback na beantwoorden</label>
+              <label className="lo-onderregel font-bold mb-2 block">Feedback na beantwoorden</label>
               <textarea
                 value={item.feedback}
                 onChange={(event) => updateItem(index, { feedback: event.target.value })}
@@ -1603,7 +1605,7 @@ const LessonBlockStudio = ({
       ? 'Niet opgeslagen'
       : '';
   const localDraftNotice = localDraftStatusLabel ? (
-    <div className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-xs font-black uppercase tracking-[0.14em] text-amber-700">
+    <div className="bg-[var(--lo-oranje-zacht)] px-5 py-3 text-xs font-extrabold text-[var(--lo-oranje-inkt)]">
       {localDraftStatusLabel}
     </div>
   ) : null;
@@ -1967,7 +1969,7 @@ const LessonBlockStudio = ({
                   className="mt-1 h-4 w-4 accent-[var(--helix-purple)]"
                 />
                 <span>
-                  <span className="block text-sm font-black text-slate-900">Docent mag resetten</span>
+                  <span className="block text-sm font-extrabold text-slate-900">Docent mag resetten</span>
                   <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">Handig als een leerling opnieuw mag proberen.</span>
                 </span>
               </label>
@@ -1985,14 +1987,14 @@ const LessonBlockStudio = ({
                   className="mt-1 h-4 w-4 accent-[var(--helix-purple)]"
                 />
                 <span>
-                  <span className="block text-sm font-black text-slate-900">Herkansing met Digidocent</span>
+                  <span className="block text-sm font-extrabold text-slate-900">Herkansing met Digidocent</span>
                   <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">
                     Na de eerste ronde krijgt de leerling de foute vragen nog een keer, met hints op de fout. De eerste score en de score na herkansing worden apart bewaard; tokens alleen in de eerste ronde.
                   </span>
                 </span>
               </label>
               <div className="rounded-xl border border-slate-200 bg-white p-3">
-                <label className="mb-2 block text-sm font-black text-slate-900">Weergave voor de leerling</label>
+                <label className="mb-2 block text-sm font-extrabold text-slate-900">Weergave voor de leerling</label>
                 <select
                   value={content.presentatie?.mode === 'lijst' ? 'lijst' : 'een-voor-een'}
                   onChange={(event) => updateContent({
@@ -2014,7 +2016,7 @@ const LessonBlockStudio = ({
                     className="mt-1 h-4 w-4 accent-[var(--helix-purple)]"
                   />
                   <span>
-                    <span className="block text-sm font-black text-slate-900">Teruglezen toegestaan</span>
+                    <span className="block text-sm font-extrabold text-slate-900">Teruglezen toegestaan</span>
                     <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">
                       De leerling mag terug naar al beantwoorde vragen. {content.nulmeting?.deel ? 'Bij een nulmeting staat dit altijd uit.' : ''}
                     </span>
@@ -2076,7 +2078,7 @@ const LessonBlockStudio = ({
 
           <div className="mt-4 flex flex-col gap-3 rounded-lg bg-slate-50 p-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="font-black text-slate-900">
+              <p className="font-extrabold text-slate-900">
                 {selectedVraagLabel}
               </p>
               <p className="mt-1 text-sm leading-5 text-slate-500">
@@ -2155,9 +2157,9 @@ const LessonBlockStudio = ({
           {selectedGame && (
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-md bg-[var(--helix-soft-lavender)] px-2 py-1 text-xs font-black uppercase tracking-wide text-[var(--helix-purple)]">
+                <Label kleur="paars">
                   {selectedGame.status}
-                </span>
+                </Label>
                 <span className="rounded-md bg-white px-2 py-1 text-xs font-bold text-slate-600">
                   {selectedGame.estimatedMinutes} min
                 </span>
@@ -2250,7 +2252,7 @@ const LessonBlockStudio = ({
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="font-black text-slate-900">{selectedSlidedeck.title}</p>
+                  <p className="font-extrabold text-slate-900">{selectedSlidedeck.title}</p>
                   <p className="mt-1 text-sm text-slate-500">
                     Deze presentatie-PDF wordt in de leerlingroute en op het digibord getoond.
                   </p>
@@ -2329,8 +2331,8 @@ const LessonBlockStudio = ({
               <Icon size={22} />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--helix-purple)]">Lesblok studio</p>
-              <h4 className="text-lg font-black text-slate-950">{CONTENT_BLOCK_LABELS[block.type]}</h4>
+              <p className="lo-onderregel font-bold">Lesblok studio</p>
+              <h4 className="text-lg font-extrabold text-slate-950">{CONTENT_BLOCK_LABELS[block.type]}</h4>
             </div>
           </div>
           <div className="grid gap-3 md:grid-cols-[minmax(16rem,1fr)_12rem] xl:w-[34rem]">
@@ -2403,7 +2405,7 @@ const LessonBlockStudio = ({
         <div className="flex min-h-[34rem] flex-col border-l border-slate-200 bg-slate-50">
           <div className="flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Bronmateriaal</p>
+              <p className="lo-onderregel font-bold">Bronmateriaal</p>
               <p className="mt-1 text-sm font-bold text-slate-700">Upload, crop afbeelding of OCR tekst naar dit blok.</p>
             </div>
             <button
@@ -2568,9 +2570,9 @@ const ParagraphMetadataPanel = ({ paragraaf, blocks, onSave }) => {
             Maak expliciet wat leerlingen leren, wat ze opleveren en wanneer deze paragraaf inhoudelijk klaar is.
           </p>
         </div>
-        <div className={`rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-wide ${readiness.canPublish ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+        <Label kleur={readiness.canPublish ? 'groen' : 'oranje'}>
           {readiness.canPublish ? 'Basiseisen compleet' : 'Basiseisen missen'}
-        </div>
+        </Label>
       </div>
 
       {saveError && (
@@ -2580,7 +2582,7 @@ const ParagraphMetadataPanel = ({ paragraaf, blocks, onSave }) => {
       )}
 
       {readiness.errors.length > 0 && (
-        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+        <div className="mt-4 rounded-[var(--lo-hoek-m)] bg-[var(--lo-oranje-zacht)] px-4 py-3 text-sm font-semibold text-[var(--lo-oranje-inkt)]">
           {readiness.errors.slice(0, 4).map((issue, issueIndex) => (
             <p key={getReadinessIssueRenderKey(issue, issueIndex)}>{issue.message}</p>
           ))}
@@ -2732,7 +2734,7 @@ const SortableLessonBlockCard = ({
               <button
                 type="button"
                 onClick={() => onToggleStatus(block)}
-                className={`rounded-full px-2.5 py-1 text-xs font-black uppercase tracking-wide transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 ${getStatusBadgeClass(status)}`}>
+                className={`rounded-full px-2.5 py-1 text-xs font-extrabold transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--helix-purple)]/25 ${getStatusBadgeClass(status)}`}>
                 {getContentBlockStatusLabel(status)}
               </button>
             </div>
@@ -2783,7 +2785,7 @@ const SortableLessonBlockCard = ({
 
             {confirmArchiveBlockId === block.id && (
               <div className="absolute right-0 top-11 z-30 w-64 rounded-lg border border-red-100 bg-white p-3 text-left shadow-xl">
-                <p className="text-sm font-black text-slate-900">Lesblok archiveren?</p>
+                <p className="text-sm font-extrabold text-slate-900">Lesblok archiveren?</p>
                 <p className="mt-1 text-xs leading-5 text-slate-500">
                   Dit haalt het blok uit de lesroute. Na archiveren kun je het direct vanuit deze melding herstellen.
                 </p>
@@ -3320,9 +3322,9 @@ export default function ContentBlockBuilder({
             <div className="flex items-end justify-between gap-4">
               <div>
                 <p className="font-display text-2xl font-extrabold text-[var(--helix-navy)]">{publicationOverview.total}</p>
-                <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">lesblokken</p>
+                <p className="lo-onderregel font-bold">lesblokken</p>
               </div>
-              <p className="text-right text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
+              <p className="lo-onderregel font-bold text-right">
                 Publicatie
               </p>
             </div>
@@ -3333,8 +3335,8 @@ export default function ContentBlockBuilder({
                   className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2"
                   title={`${item.label}: ${item.count} lesblokken`}
                 >
-                  <p className="text-sm font-black text-[var(--helix-navy)]">{item.count}</p>
-                  <p className="truncate text-[0.68rem] font-bold uppercase tracking-wide text-[var(--helix-muted)]">
+                  <p className="text-sm font-extrabold text-[var(--helix-navy)]">{item.count}</p>
+                  <p className="lo-onderregel font-bold truncate">
                     {item.label}
                   </p>
                 </div>
@@ -3357,12 +3359,12 @@ export default function ContentBlockBuilder({
         )}
 
         {shouldShowContentBlockArchiveUndo(archiveUndo) && (
-          <div className="mt-5 flex flex-col gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 sm:flex-row sm:items-center sm:justify-between">
+          <div className="lo-melding lo-melding--goed mt-5 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <span>{archiveUndo.message}</span>
             <button
               type="button"
               onClick={handleUndoArchiveBlock}
-              className="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wide text-emerald-700 hover:bg-emerald-100"
+              className="lo-knop-tweede lo-knop--klein"
             >
               Herstel
             </button>
@@ -3370,7 +3372,7 @@ export default function ContentBlockBuilder({
         )}
 
         <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-[var(--helix-border)] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-black text-[var(--helix-navy)]">
+          <label className="inline-flex cursor-pointer items-center gap-3 text-sm font-extrabold text-[var(--helix-navy)]">
             <input
               type="checkbox"
               checked={allVisibleSelected}
@@ -3451,7 +3453,7 @@ export default function ContentBlockBuilder({
               type="button"
               onClick={handleBulkArchive}
               disabled={selectedBlocks.length === 0 || bulkAction !== null}
-              className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs font-black text-red-600 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar"
             >
               Archiveer
             </button>
@@ -3460,7 +3462,7 @@ export default function ContentBlockBuilder({
                 type="button"
                 onClick={clearBulkSelection}
                 disabled={bulkAction !== null}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="lo-knop-tweede lo-knop--klein"
               >
                 Wis selectie
               </button>
@@ -3475,7 +3477,7 @@ export default function ContentBlockBuilder({
                 <p className="helix-eyebrow">Routepatroon</p>
                 <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Start vanuit template</h3>
               </div>
-              <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">
+              <p className="lo-onderregel font-bold">
                 {LESSON_ROUTE_TEMPLATES.length} templates
               </p>
             </div>
@@ -3488,9 +3490,9 @@ export default function ContentBlockBuilder({
                   disabled={applyingTemplateId !== null || creatingType !== null}
                   className="rounded-2xl border border-[var(--helix-border)] bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-fuchsia-200 hover:shadow-sm disabled:cursor-wait disabled:opacity-60"
                 >
-                  <span className="block text-sm font-black text-[var(--helix-navy)]">{template.label}</span>
+                  <span className="block text-sm font-extrabold text-[var(--helix-navy)]">{template.label}</span>
                   <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--helix-muted)]">{template.description}</span>
-                  <span className="mt-3 block text-xs font-black uppercase tracking-wide text-[var(--helix-purple)]">
+                  <span className="lo-onderregel font-bold mt-3">
                     {applyingTemplateId === template.id ? 'Maken...' : `${template.blocks.length} blokken`}
                   </span>
                 </button>
@@ -3503,7 +3505,7 @@ export default function ContentBlockBuilder({
               <p className="helix-eyebrow">Toevoegen</p>
               <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Lesblok toevoegen</h3>
             </div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[var(--helix-muted)]">
+            <p className="lo-onderregel font-bold">
               {CONTENT_BLOCK_TYPES.length} types
             </p>
           </div>
@@ -3573,7 +3575,7 @@ export default function ContentBlockBuilder({
                           type="button"
                           onClick={() => setBlockPicker({ index: index + 1 })}
                           disabled={creatingType !== null || applyingTemplateId !== null}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-[var(--helix-border)] bg-white/80 px-4 py-1.5 text-xs font-black text-[var(--helix-muted)] transition-colors hover:border-fuchsia-200 hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)] disabled:cursor-wait disabled:opacity-60"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-[var(--helix-border)] bg-white/80 px-4 py-1.5 text-xs font-extrabold text-[var(--helix-muted)] transition-colors hover:border-fuchsia-200 hover:bg-[var(--helix-soft-lavender)] hover:text-[var(--helix-purple)] disabled:cursor-wait disabled:opacity-60"
                           title="Blok tussenvoegen op deze plek"
                         >
                           <Plus size={13} />
