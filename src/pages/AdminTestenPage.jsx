@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithCustomToken } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { AlertTriangle, Coins, House, Loader2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Coins, House, RefreshCw } from 'lucide-react';
 
 import { auth, db } from '../services/firebase';
+import { HelixLaden } from '../components/merk/HelixLogo';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
@@ -181,10 +182,7 @@ export default function AdminTestenPage() {
         )}
 
         {loading ? (
-          <p className="lo-melding lo-melding--info">
-            <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-            Bezig met laden...
-          </p>
+          <HelixLaden tekst="Bezig met laden..." />
         ) : (
           <div className="lo-kaartenraster">
             {groepen.map((groep) => {
