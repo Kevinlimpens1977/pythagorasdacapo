@@ -16,7 +16,7 @@ const regel = (selector) => {
 
 test('alle kleuren van de leeromgeving staan er met hun vaste waarde', () => {
   const verwacht = {
-    '--lo-papier': '#FFF7E8', '--lo-papier-2': '#FBEBD0', '--lo-kaart': '#FFFFFF', '--lo-lijn': '#E8DCC3',
+    '--lo-papier': '#FFFBF4', '--lo-papier-2': '#FBEBD0', '--lo-kaart': '#FFFFFF', '--lo-lijn': '#E8DCC3',
     '--lo-inkt': '#0B0D0F', '--lo-grijs': '#5B5648', '--lo-geel': '#FFD33D', '--lo-geel-zacht': '#FFF0B8',
     '--lo-blauw': '#087EB5', '--lo-blauw-inkt': '#066A99', '--lo-blauw-zacht': '#E1F0F8',
     '--lo-paars': '#793AC7', '--lo-paars-inkt': '#5F2C9E', '--lo-paars-zacht': '#ECE3F8',

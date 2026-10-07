@@ -15,7 +15,7 @@
 @theme {
   /* Primitieven, exact p.6 */
   --color-ink: #0B0D0F;
-  --color-paper: #FFF7E8;
+  --color-paper: #FFFBF4;
   --color-helix-yellow: #FFD33D;
   --color-helix-blue: #087EB5;
   --color-helix-teal: #0D8F93;
@@ -344,7 +344,7 @@
     --helix-purple-dark: #066A99;
     --helix-brand: #793AC7;
     --helix-navy: #0B0D0F;
-    --helix-bg: #FFF7E8;
+    --helix-bg: #FFFBF4;
     --helix-surface: #ffffff;
     --helix-surface-soft: #FBF3E1;
     --helix-border: #E8DCC3;
@@ -369,7 +369,7 @@
     --helix-shadow-soft: 0 10px 30px rgba(11, 13, 15, 0.08);
     --helix-shadow-card: 0 8px 24px rgba(11, 13, 15, 0.07);
     --helix-shadow-glow: 0 10px 22px rgba(8, 126, 181, 0.28);
-    --helix-focus: 0 0 0 3px #FFF7E8, 0 0 0 6px #087EB5;
+    --helix-focus: 0 0 0 3px #FFFBF4, 0 0 0 6px #087EB5;
   }
 }
 

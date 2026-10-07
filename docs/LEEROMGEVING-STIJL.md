@@ -29,7 +29,7 @@ Altijd via de tokens, nooit een losse hexwaarde in een component.
 
 | Token | Waarde | Gebruik |
 | --- | --- | --- |
-| `--lo-papier` | #FFF7E8 | achtergrond van de pagina |
+| `--lo-papier` | #FFFBF4 | achtergrond van de pagina (7 okt 2026 lichter gemaakt; was #FFF7E8) |
 | `--lo-papier-2` | #FBEBD0 | dichte H-blokjes, uitgeschakelde knoppen |
 | `--lo-kaart` | #FFFFFF | kaarten en lijsten |
 | `--lo-lijn` | #E8DCC3 | randen en scheidingslijnen |

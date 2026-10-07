@@ -22,7 +22,7 @@ const VOORBEELD_H2 = [
 const VMBO_KLASSEN = ['H1B1', 'H1B2', 'H1K1', 'H1K2', 'H1K3', 'H1TL1', 'H1TL2', 'H1TL3'].map((naam) => ({ id: naam, naam }));
 
 const KLEUREN = [
-  ['--lo-papier', '#FFF7E8'], ['--lo-papier-2', '#FBEBD0'], ['--lo-kaart', '#FFFFFF'], ['--lo-lijn', '#E8DCC3'],
+  ['--lo-papier', '#FFFBF4'], ['--lo-papier-2', '#FBEBD0'], ['--lo-kaart', '#FFFFFF'], ['--lo-lijn', '#E8DCC3'],
   ['--lo-inkt', '#0B0D0F'], ['--lo-grijs', '#5B5648'], ['--lo-geel', '#FFD33D'], ['--lo-geel-zacht', '#FFF0B8'],
   ['--lo-blauw', '#087EB5'], ['--lo-blauw-inkt', '#066A99'], ['--lo-blauw-zacht', '#E1F0F8'], ['--lo-paars', '#793AC7'],
   ['--lo-paars-zacht', '#ECE3F8'], ['--lo-groen', '#2E9D63'], ['--lo-groen-zacht', '#DFF2E7'], ['--lo-oranje-zacht', '#FDE7D6'],

@@ -73,8 +73,9 @@ test('Helix page background is drawn once on the document canvas', () => {
   const pageRule = getCssRule('.helix-page');
 
   assert.match(css, /--helix-page-background:\s*var\(--helix-bg\)/);
-  // Design system v2 (3 sep 2026): effen paper-canvas #FFF7E8, geen merkgloed of vlekken meer.
-  assert.match(css, /--helix-bg:\s*#FFF7E8/i);
+  // Design system v2 (3 sep 2026): effen paper-canvas, geen merkgloed of vlekken meer.
+  // Op 7 okt 2026 lichter gemaakt (Kevin): halverwege #FFF7E8 en wit.
+  assert.match(css, /--helix-bg:\s*#FFFBF4/i);
   assert.doesNotMatch(css, /radial-gradient\(circle at 78% -6%/);
   assert.doesNotMatch(css, /rgba\(255,\s*233,\s*220,\s*0\.72\)/);
   assert.match(htmlRule, /background:\s*var\(--helix-page-background\)/);

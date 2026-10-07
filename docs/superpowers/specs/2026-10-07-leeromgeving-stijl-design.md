@@ -48,7 +48,7 @@ hij is; de oude namen als `--helix-purple` (blauw) en `--helix-pink` (teal) verd
 
 | Token | Waarde | Gebruik |
 | --- | --- | --- |
-| `--lo-papier` | #FFF7E8 | achtergrond van de pagina |
+| `--lo-papier` | #FFFBF4 | achtergrond van de pagina (7 okt 2026 lichter gemaakt; was #FFF7E8) |
 | `--lo-papier-2` | #FBEBD0 | dichte H-blokjes, uitgeschakelde knoppen, rustige vlakken |
 | `--lo-kaart` | #FFFFFF | kaarten en lijsten |
 | `--lo-lijn` | #E8DCC3 | randen en scheidingslijnen |
