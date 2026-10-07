@@ -216,7 +216,7 @@ in `src/components/leeromgeving/`. Stijlgids op `/admin/stijlgids` (ingang op
 Instellingen), opgemeten door `tests/e2e/leeromgeving-stijl.spec.js`. Testen als
 leerling staat in optie D: klassen met dezelfde lesstof in één kaart, en starten
 kan op de startpagina, bij een hoofdstuk of in een paragraaf. Markering
-`leeromgeving-fase-1`, Vercel-deploy `<id uit stap 5>`. Volgende fase: de
+`leeromgeving-fase-1`, Vercel-deploy `dpl_Ck4o2hdZU8dayDF6ByNUhFwddu6d`. Volgende fase: de
 leerlingomgeving (ontwerp paragraaf 3.2). De twee tests in
 `tests/e2e/auth-admin-smoke.spec.js` zijn verouderd (ze zoeken de oude
 ontwikkelaarsknoppen op /login) en falen; dat is geen regressie, ze worden in
