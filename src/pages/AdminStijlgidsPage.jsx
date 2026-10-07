@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Coins, House, Lock, RefreshCw } from 'lucide-react';
+import { BookOpen, Coins, House, Lightbulb, ListChecks, Lock, Presentation, RefreshCw } from 'lucide-react';
 
 import { HoofdstukRij, Kaart, KaartKop, Keuzeknoppen, Label, PaginaKop, ParagraafRij, StartKnop } from '../components/leeromgeving';
+import StudyStepRail from '../components/lesson/StudyStepRail';
 import { aantalTekst, hoofdstukOnderregel } from '../lib/leeromgeving';
 
 /**
@@ -28,6 +29,16 @@ const KLEUREN = [
 ];
 
 const geenActie = () => {};
+
+const VOORBEELD_STAPPEN = [
+  { id: 's1', title: 'Presentatie', type: 'slidedeck', isDone: true, statusLabel: 'Bekeken' },
+  { id: 's2', title: 'Theorie: wat is dichtheid?', type: 'theory', isDone: true },
+  { id: 's3', title: 'Voorbeeld: een blokje hout', type: 'example', isActive: true },
+  { id: 's4', title: 'Schriftopdracht', type: 'theory' },
+  { id: 's5', title: 'Korte check', type: 'quiz' }
+];
+
+const STAP_ICONEN = { slidedeck: Presentation, theory: BookOpen, example: Lightbulb, quiz: ListChecks };
 
 export default function AdminStijlgidsPage() {
   const [open, setOpen] = useState({ h1: false, h2: true });
@@ -145,6 +156,48 @@ export default function AdminStijlgidsPage() {
               ))}
             </div>
           </Kaart>
+        </div>
+
+        <div data-stijlgids="lespagina" className="study-stijl lo-kaartenraster">
+          <Kaart>
+            <KaartKop titel="Stappenbalk" uitleg="Een lijst met scheidingslijnen. De huidige stap heeft een geel nummerblokje." />
+            <div className="study-rail h-[600px] overflow-hidden rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)]">
+              <StudyStepRail
+                paragraafTitle="2.3 Dichtheid"
+                hoofdstukTitle="H2 Stoffen"
+                steps={VOORBEELD_STAPPEN}
+                summary={{ total: 5, done: 2, percentage: 40 }}
+                iconForType={(type) => STAP_ICONEN[type] || BookOpen}
+                hasIntro
+                isIntroDone
+                onOpenIntro={geenActie}
+                onSelectStep={geenActie}
+                onExit={geenActie}
+              />
+            </div>
+          </Kaart>
+
+          <article className="study-block flex flex-col gap-6">
+            <div className="lesson-prose">
+              <h2>Dichtheid</h2>
+              <p>Dichtheid zegt hoeveel massa er in één kubieke centimeter van een stof zit.</p>
+              <ul>
+                <li>Massa meet je in gram.</li>
+                <li>Volume meet je in kubieke centimeter.</li>
+              </ul>
+            </div>
+            <div className="study-example">
+              <span className="study-example-label">Voorbeeld</span>
+              <p className="mt-3">Een blokje hout van 10 cm³ weegt 6 g.</p>
+            </div>
+            <p className="helix-eyebrow">Presentatie</p>
+            <input className="input-standard" aria-label="Voorbeeldantwoord" placeholder="Jouw antwoord" />
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className="btn-primary px-5 py-3 text-sm">Volgende stap</button>
+              <button type="button" className="helix-btn-solid px-5 py-3 text-sm">Ik heb het gelezen</button>
+            </div>
+            <button type="button" className="btn-secondary px-5 py-3 text-sm">Vorige</button>
+          </article>
         </div>
       </div>
     </div>

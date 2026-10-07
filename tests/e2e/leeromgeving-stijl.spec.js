@@ -62,3 +62,55 @@ test('de stijlgids heeft de maten van de bijlage', async ({ page }) => {
   expect(maten.startHier).toMatchObject({ size: '13px', weight: '800', padding: '6px 10px', height: 34 });
   expect(maten.label).toMatchObject({ size: '12px', weight: '800', padding: '2px 9px' });
 });
+
+test('de lespagina in de stijlgids heeft de vormen van de leeromgeving', async ({ page }) => {
+  await page.goto('/login/beheer');
+  await page.getByRole('button', { name: /Als beheerder/i }).click();
+  await expect(page).toHaveURL(/\/admin\/instellingen$/);
+  await page.goto('/admin/stijlgids');
+
+  const sectie = page.locator('[data-stijlgids="lespagina"]');
+  await expect(sectie).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+
+  const maten = await sectie.evaluate((el) => {
+    const stijl = (selector) => {
+      const node = el.querySelector(selector);
+      const s = getComputedStyle(node);
+      return {
+        size: s.fontSize, weight: s.fontWeight, color: s.color, bg: s.backgroundColor, image: s.backgroundImage,
+        radius: s.borderTopLeftRadius, padding: s.padding,
+        border: `${s.borderTopWidth} ${s.borderTopStyle} ${s.borderTopColor}`,
+        height: Math.round(node.getBoundingClientRect().height)
+      };
+    };
+    return {
+      actiefNummer: stijl('.study-step-active .study-step-nummer'),
+      gewoonNummer: stijl('li:last-child .study-step-nummer'),
+      actieveStap: stijl('.study-step-active'),
+      staptitel: stijl('.study-step-title'),
+      blok: stijl('.study-block'),
+      hoofdknop: stijl('.btn-primary'),
+      leesknop: stijl('.helix-btn-solid'),
+      tweede: stijl('.btn-secondary'),
+      eyebrow: stijl('.helix-eyebrow'),
+      invoer: stijl('.input-standard'),
+      leestekst: stijl('.lesson-prose p')
+    };
+  });
+
+  const inkt = 'rgb(11, 13, 15)';
+  const blauw = 'rgb(8, 126, 181)';
+  expect(maten.actiefNummer).toMatchObject({ bg: 'rgb(255, 211, 61)', border: `2px solid ${inkt}`, radius: '8px', height: 30, size: '13px', weight: '800' });
+  expect(maten.gewoonNummer).toMatchObject({ bg: 'rgb(251, 235, 208)', border: '2px solid rgb(232, 220, 195)' });
+  expect(maten.actieveStap.bg).toBe('rgb(255, 240, 184)');
+  expect(maten.staptitel).toMatchObject({ size: '15px', weight: '700', color: inkt });
+  expect(maten.blok).toMatchObject({ bg: 'rgb(255, 255, 255)', radius: '20px', padding: '22px' });
+  expect(maten.blok.border.startsWith('0px')).toBe(true);
+  expect(maten.hoofdknop).toMatchObject({ bg: blauw, radius: '12px', weight: '800' });
+  expect(maten.leesknop).toMatchObject({ bg: blauw, image: 'none', radius: '12px', weight: '800' });
+  expect(maten.tweede).toMatchObject({ bg: 'rgb(255, 255, 255)', border: '1px solid rgb(232, 220, 195)', color: inkt });
+  expect(maten.eyebrow).toMatchObject({ size: '12px', weight: '800', color: 'rgb(6, 106, 153)' });
+  expect(maten.invoer.border).toBe('1px solid rgb(232, 220, 195)');
+  expect(maten.leestekst.color).toBe(inkt);
+});
