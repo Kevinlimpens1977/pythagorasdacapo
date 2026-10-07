@@ -15,6 +15,8 @@ import {
   Star,
   UsersRound
 } from 'lucide-react';
+import { Label, PaginaKop } from '../components/leeromgeving';
+import { HelixLaden } from '../components/merk/HelixLogo';
 import klasService from '../services/klasService';
 import { openHelp } from '../lib/helpInhoud';
 import cmsService from '../services/cmsService';
@@ -66,16 +68,12 @@ const FlowSteps = ({ currentStep }) => (
           className={`helix-action-card p-4 ${isActive || isDone ? 'helix-action-card-active' : ''}`}
         >
           <div className="flex items-center gap-3">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black ${
-                isDone ? 'bg-emerald-50 text-emerald-700' : 'bg-[var(--helix-surface-soft)] text-[var(--helix-purple)]'
-              }`}
-            >
+            <div className={`lo-hblok ${stepNumber > currentStep ? 'lo-hblok--dicht' : ''}`}>
               <StepIcon size={17} />
             </div>
-            <h2 className="font-black text-[var(--helix-navy)]">{step.title}</h2>
+            <h2 className="font-extrabold text-[var(--lo-inkt)]">{step.title}</h2>
           </div>
-          <p className="mt-2 text-sm leading-5 text-[var(--helix-muted)]">{step.description}</p>
+          <p className="mt-2 text-sm leading-5 text-[var(--lo-grijs)]">{step.description}</p>
         </div>
       );
     })}
@@ -130,10 +128,10 @@ const AssignmentTreeNode = ({
         className={[
           'group grid min-h-[44px] grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg border px-3 py-2 text-sm transition',
           isSelected
-            ? 'border-[var(--helix-purple)] bg-white text-[var(--helix-navy)] shadow-sm'
+            ? 'border-[var(--lo-blauw)] bg-white text-[var(--lo-inkt)] shadow-sm'
             : isParagraaf
-              ? 'border-[var(--helix-border)] bg-white text-[var(--helix-muted)] hover:border-[var(--helix-purple)] hover:bg-white'
-              : 'border-transparent bg-white text-[var(--helix-navy)] hover:border-[var(--helix-border)] hover:bg-[var(--helix-surface-soft)]'
+              ? 'border-[var(--lo-lijn)] bg-white text-[var(--lo-grijs)] hover:border-[var(--lo-blauw)] hover:bg-white'
+              : 'border-transparent bg-white text-[var(--lo-inkt)] hover:border-[var(--lo-lijn)] hover:bg-[var(--lo-papier-2)]'
         ].join(' ')}
         style={{ paddingLeft: `${12 + level * 18}px` }}
         onClick={handleRowClick}
@@ -146,7 +144,7 @@ const AssignmentTreeNode = ({
           }}
           disabled={!hasChildren}
           className={[
-            'flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100',
+            'flex h-6 w-6 items-center justify-center rounded-md text-[var(--lo-grijs)] transition hover:bg-[var(--lo-papier-2)]',
             hasChildren ? '' : 'opacity-25'
           ].join(' ')}
           title={isExpanded ? 'Inklappen' : 'Uitklappen'}
@@ -165,23 +163,19 @@ const AssignmentTreeNode = ({
             {/* Een plusparagraaf is vrijwillig. Dat moet de docent zien vóór hij
                 hem aanvinkt, anders zet hij ongemerkt bonusstof klaar als eis. */}
             {isPlus && (
-              <span
-                title={PLUS_UITLEG_DOCENT}
-                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
-              >
-                <Star size={11} />
+              <Label kleur="paars" icoon={Star} title={PLUS_UITLEG_DOCENT} className="shrink-0">
                 {PLUS_LABEL}
-              </span>
+              </Label>
             )}
           </div>
           {isParagraaf && (
-            <div className="text-xs text-[var(--helix-muted)]">
+            <div className="text-xs text-[var(--lo-grijs)]">
               {blocks.length} lesblokken
-              {isPlus && <span className="ml-2 font-bold text-[var(--helix-purple)]">vrijwillig - telt niet mee</span>}
+              {isPlus && <span className="ml-2 font-bold text-[var(--lo-paars-inkt)]">vrijwillig - telt niet mee</span>}
               {Array.isArray(assignedContentBlocks[node.id]) && (
-                <span className="ml-2 rounded-full bg-violet-50 px-2 py-0.5 font-bold text-[var(--helix-purple)]">
+                <Label kleur="blauw" className="ml-2">
                   {assignedContentBlocks[node.id].length} geselecteerd
-                </span>
+                </Label>
               )}
             </div>
           )}
@@ -189,19 +183,19 @@ const AssignmentTreeNode = ({
 
         {isParagraaf ? (
           <div className="flex items-center gap-2">
-            {isChecked && <CheckSquare size={17} className="text-green-600" />}
+            {isChecked && <CheckSquare size={17} className="text-[var(--lo-groen-inkt)]" />}
             <input
               type="checkbox"
               checked={isChecked}
               disabled={saving || isDisabled}
               onClick={(event) => event.stopPropagation()}
               onChange={() => selectedStudentId ? onToggleStudentParagraaf(node.id) : onToggleParagraaf(node.id)}
-              className="h-5 w-5 cursor-pointer rounded accent-[var(--helix-purple)]"
+              className="h-5 w-5 cursor-pointer rounded accent-[var(--lo-blauw)]"
               title={isDisabled ? 'Al in klassestandaard' : ''}
             />
           </div>
         ) : (
-          <span className="text-xs font-semibold text-slate-400">
+          <span className="text-xs font-semibold text-[var(--lo-grijs)]">
             {node.type === 'hoofdstuk' ? `${chapterParagrafen.length} paragrafen` : ''}
           </span>
         )}
@@ -209,13 +203,13 @@ const AssignmentTreeNode = ({
 
       {node.type === 'hoofdstuk' && isSelected && (
         <div
-          className="my-2 rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4"
+          className="my-2 rounded-xl border border-[var(--lo-lijn)] bg-[var(--lo-papier-2)] p-4"
           style={{ marginLeft: `${level * 18 + 34}px` }}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-sm font-black text-slate-900">Hoofdstuk klaarzetten</h3>
-              <p className="text-xs text-slate-600">
+              <h3 className="text-sm font-extrabold text-[var(--lo-inkt)]">Hoofdstuk klaarzetten</h3>
+              <p className="text-xs text-[var(--lo-grijs)]">
                 Zet alle paragrafen uit dit hoofdstuk in een keer klaar.
               </p>
             </div>
@@ -233,16 +227,16 @@ const AssignmentTreeNode = ({
       )}
 
       {isParagraaf && isChecked && blocks.length > 0 && (
-        <div className="mb-2 mt-1 space-y-2 border-l border-slate-100 pl-4" style={{ marginLeft: `${level * 18 + 34}px` }}>
+        <div className="mb-2 mt-1 space-y-2 border-l border-[var(--lo-lijn)] pl-4" style={{ marginLeft: `${level * 18 + 34}px` }}>
           <div className="flex items-center justify-between gap-3 pt-2">
-            <span className="text-xs font-black uppercase tracking-wide text-slate-500">
+            <span className="lo-onderregel font-bold">
               Onderdelen van deze paragraaf
             </span>
             {!selectedStudentId && Array.isArray(assignedContentBlocks[node.id]) && (
               <button
                 type="button"
                 onClick={() => onClearContentBlocks(node.id)}
-                className="text-xs font-bold text-[var(--helix-purple)] hover:text-[var(--helix-navy)]"
+                className="text-xs font-bold text-[var(--lo-blauw-inkt)] hover:text-[var(--lo-inkt)]"
               >
                 Alle blokken tonen
               </button>
@@ -265,8 +259,8 @@ const AssignmentTreeNode = ({
                 className={[
                   'flex items-start gap-3 rounded-lg border px-3 py-2 text-sm',
                   blockDisabled
-                    ? 'border-slate-100 bg-slate-50 opacity-60'
-                    : 'border-slate-200 bg-white hover:border-[var(--helix-purple)]'
+                    ? 'border-[var(--lo-lijn)] bg-[var(--lo-papier-2)] opacity-60'
+                    : 'border-[var(--lo-lijn)] bg-white hover:border-[var(--lo-blauw)]'
                 ].join(' ')}
               >
                 <input
@@ -274,13 +268,13 @@ const AssignmentTreeNode = ({
                   checked={blockChecked}
                   disabled={saving || blockDisabled}
                   onChange={() => onToggleContentBlock(node.id, block.id)}
-                  className="mt-1 h-4 w-4 cursor-pointer rounded accent-[var(--helix-purple)]"
+                  className="mt-1 h-4 w-4 cursor-pointer rounded accent-[var(--lo-blauw)]"
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold text-slate-900">
+                  <span className="block truncate font-bold text-[var(--lo-inkt)]">
                     Stap {block.order || '-'} - {CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'} - {block.title || 'Naamloos'}
                   </span>
-                  <span className="line-clamp-1 text-xs text-slate-500">
+                  <span className="line-clamp-1 text-xs text-[var(--lo-grijs)]">
                     {buildContentBlockPreview(block)}
                   </span>
                 </span>
@@ -849,23 +843,25 @@ export default function TakenToewijzenPage() {
   // Check if no klas is selected
   if (!selectedKlasId) {
     return (
-      <div className="helix-page min-h-screen">
+      <div className="beheer-stijl lo-tekst helix-page min-h-screen">
         <div className="helix-container max-w-7xl">
           {/* Header */}
-          <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="helix-eyebrow">Lesstof</p>
-              <h1 className="helix-heading-xl">Lesmateriaal klaarzetten</h1>
-              <p className="mt-3 max-w-3xl text-lg leading-8 text-[var(--helix-muted)]">
-                Koppel gemaakte hoofdstukken, paragrafen of lesblokken aan een klas of individuele leerling.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate('/admin/lesstof')}
-              className="btn-secondary w-auto px-4 py-2 text-sm"
-            >
-              Terug naar Lesstof
-            </button>
+          <div className="mb-8">
+            <PaginaKop
+              eyebrow="Lesstof"
+              titel="Lesmateriaal klaarzetten"
+              uitleg="Koppel gemaakte hoofdstukken, paragrafen of lesblokken aan een klas of individuele leerling."
+              acties={(
+                <div className="lo-knoppenbalk">
+                  <button
+                    onClick={() => navigate('/admin/lesstof')}
+                    className="lo-knop-tweede lo-knop--klein"
+                  >
+                    Terug naar Lesstof
+                  </button>
+                </div>
+              )}
+            />
           </div>
 
           <div className="mb-6">
@@ -875,16 +871,16 @@ export default function TakenToewijzenPage() {
           {/* Klas Selector */}
           <div className="helix-card p-8">
             <div className="mb-5">
-              <h2 className="text-xl font-black text-[var(--helix-navy)]">Start met een klas</h2>
-              <p className="mt-1 text-sm text-[var(--helix-muted)]">
+              <h2 className="text-xl font-extrabold text-[var(--lo-inkt)]">Start met een klas</h2>
+              <p className="mt-1 text-sm text-[var(--lo-grijs)]">
                 Daarna kies je welk lesmateriaal je klaarzet.
               </p>
             </div>
-            <label className="mb-3 block text-sm font-black text-[var(--helix-navy)]">Klas selecteren</label>
+            <label className="mb-3 block text-sm font-extrabold text-[var(--lo-inkt)]">Klas selecteren</label>
             <select
               value={selectedKlasId || ''}
               onChange={(e) => setSelectedKlasId(e.target.value)}
-              className="input-standard w-full text-base"
+              className="lo-invoer"
             >
               <option value="">Kies een klas...</option>
               {klassen.map(klas => (
@@ -900,9 +896,9 @@ export default function TakenToewijzenPage() {
   }
 
   return (
-    <div className="helix-page min-h-screen">
+    <div className="beheer-stijl lo-tekst helix-page min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-40 border-b border-[var(--helix-border)] bg-white/88 backdrop-blur">
+      <div className="sticky top-0 z-40 border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)]">
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -912,15 +908,15 @@ export default function TakenToewijzenPage() {
               <ChevronLeft size={24} />
             </button>
             <div>
-              <h1 className="text-2xl font-black text-[var(--helix-navy)]">Lesmateriaal klaarzetten</h1>
-              <p className="text-sm font-medium text-[var(--helix-muted)]">
+              <h1 className="text-2xl font-extrabold text-[var(--lo-inkt)]">Lesmateriaal klaarzetten</h1>
+              <p className="text-sm font-medium text-[var(--lo-grijs)]">
                 {selectedKlas?.name} ({selectedKlas?.code})
               </p>
             </div>
             <button
               type="button"
               onClick={() => openHelp('inclusie')}
-              className="text-sm font-bold text-[var(--helix-purple)] underline-offset-2 hover:underline"
+              className="text-sm font-bold text-[var(--lo-blauw-inkt)] underline-offset-2 hover:underline"
             >
               Hoe zet ik inclusie klaar?
             </button>
@@ -951,18 +947,20 @@ export default function TakenToewijzenPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="helix-eyebrow">Klaarzetstudio</p>
-              <h2 className="mt-1 text-xl font-black text-[var(--helix-navy)]">Kies links het lesmateriaal, zet rechts de bestemming klaar</h2>
-              <p className="mt-1 text-sm text-[var(--helix-muted)]">
+              <h2 className="mt-1 text-xl font-extrabold text-[var(--lo-inkt)]">Kies links het lesmateriaal, zet rechts de bestemming klaar</h2>
+              <p className="mt-1 text-sm text-[var(--lo-grijs)]">
                 Je kunt een heel hoofdstuk klaarzetten, losse paragrafen kiezen of binnen een paragraaf specifieke lesblokken selecteren.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="btn-secondary w-auto px-4 py-2 text-sm"
-            >
-              Bekijk voortgang
-            </button>
+            <div className="lo-knoppenbalk">
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                Bekijk voortgang
+              </button>
+            </div>
           </div>
         </div>
 
@@ -971,7 +969,7 @@ export default function TakenToewijzenPage() {
           <div className="helix-card col-span-2 flex flex-col overflow-hidden">
             {/* Breadcrumb */}
             {breadcrumbs.length > 0 && (
-              <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2 overflow-x-auto">
+              <div className="px-6 py-4 border-b border-[var(--lo-lijn)] flex items-center gap-2 overflow-x-auto">
                 <button
                   onClick={() => {
                     setSelectedVakId(null);
@@ -979,16 +977,16 @@ export default function TakenToewijzenPage() {
                     setSelectedNiveauId(null);
                     setSelectedHoofdstukId(null);
                   }}
-                  className="text-sm text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap"
+                  className="text-sm text-[var(--lo-grijs)] hover:text-[var(--lo-inkt)] font-medium whitespace-nowrap"
                 >
                   Home
                 </button>
                 {breadcrumbs.map((crumb, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <ChevronRight size={16} className="text-slate-400" />
+                    <ChevronRight size={16} className="text-[var(--lo-grijs)]" />
                     <button
                       onClick={() => handleBreadcrumbClick(i)}
-                      className="text-sm text-slate-600 hover:text-slate-900 font-medium whitespace-nowrap"
+                      className="text-sm text-[var(--lo-grijs)] hover:text-[var(--lo-inkt)] font-medium whitespace-nowrap"
                     >
                       {crumb.label}
                     </button>
@@ -999,27 +997,27 @@ export default function TakenToewijzenPage() {
 
             {/* Student override mode banner */}
             {selectedStudentId && (
-              <div className="px-6 py-3 bg-amber-50 border-b border-amber-200 flex items-center justify-between">
-                <span className="text-sm font-medium text-amber-800">
+              <div className="lo-melding lo-melding--info items-center justify-between rounded-none px-6">
+                <span className="font-bold text-[var(--lo-inkt)]">
                   Extra lesmateriaal voor: {klasStudents.find(s => s.uid === selectedStudentId)?.displayName}
                 </span>
-                <button
-                  onClick={() => setSelectedStudentId(null)}
-                  className="text-amber-600 hover:text-amber-800 text-sm font-medium"
-                >
-                  Terug naar klas
-                </button>
+                <div className="lo-knoppenbalk">
+                  <button
+                    onClick={() => setSelectedStudentId(null)}
+                    className="lo-knop-tweede lo-knop--klein"
+                  >
+                    Terug naar klas
+                  </button>
+                </div>
               </div>
             )}
 
             {/* Content area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-3">
               {contentTreeLoading ? (
-                <div className="text-center text-slate-500 py-12">
-                  <p>Lesmateriaal laden...</p>
-                </div>
+                <HelixLaden tekst="Lesmateriaal laden..." className="min-h-0 py-12" />
               ) : assignmentTree.length === 0 ? (
-                <div className="text-center text-slate-500 py-12">
+                <div className="text-center text-[var(--lo-grijs)] py-12">
                   <AlertCircle size={48} className="mx-auto mb-3 opacity-50" />
                   <p>Geen lesmateriaal beschikbaar</p>
                 </div>
@@ -1055,7 +1053,7 @@ export default function TakenToewijzenPage() {
               {showLegacyCardBrowser && !selectedVakId && (
                 <>
                   {vakken.length === 0 ? (
-                    <div className="text-center text-slate-500 py-12">
+                    <div className="text-center text-[var(--lo-grijs)] py-12">
                       <AlertCircle size={48} className="mx-auto mb-3 opacity-50" />
                       <p>Geen vakken beschikbaar</p>
                     </div>
@@ -1083,7 +1081,7 @@ export default function TakenToewijzenPage() {
               {showLegacyCardBrowser && selectedVakId && !selectedLeerjaarId && (
                 <>
                   {leerjaren.length === 0 ? (
-                    <div className="text-center text-slate-500 py-12">
+                    <div className="text-center text-[var(--lo-grijs)] py-12">
                       <p>Geen leerjaren beschikbaar</p>
                     </div>
                   ) : (
@@ -1110,7 +1108,7 @@ export default function TakenToewijzenPage() {
               {showLegacyCardBrowser && selectedLeerjaarId && !selectedNiveauId && (
                 <>
                   {niveaus.length === 0 ? (
-                    <div className="text-center text-slate-500 py-12">
+                    <div className="text-center text-[var(--lo-grijs)] py-12">
                       <p>Geen niveaus beschikbaar</p>
                     </div>
                   ) : (
@@ -1140,7 +1138,7 @@ export default function TakenToewijzenPage() {
               {showLegacyCardBrowser && selectedNiveauId && !selectedHoofdstukId && (
                 <>
                   {hoofdstukken.length === 0 ? (
-                    <div className="text-center text-slate-500 py-12">
+                    <div className="text-center text-[var(--lo-grijs)] py-12">
                       <p>Geen hoofdstukken beschikbaar</p>
                     </div>
                   ) : (
@@ -1166,11 +1164,11 @@ export default function TakenToewijzenPage() {
               {/* Paragrafen */}
               {showLegacyCardBrowser && selectedHoofdstukId && (
                 <>
-                  <div className="rounded-xl border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4">
+                  <div className="rounded-xl border border-[var(--lo-lijn)] bg-[var(--lo-papier-2)] p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <h3 className="text-sm font-black text-slate-900">Hoofdstuk klaarzetten</h3>
-                        <p className="text-xs text-slate-600">
+                        <h3 className="text-sm font-extrabold text-[var(--lo-inkt)]">Hoofdstuk klaarzetten</h3>
+                        <p className="text-xs text-[var(--lo-grijs)]">
                           Zet alle paragrafen uit dit hoofdstuk in een keer klaar.
                         </p>
                       </div>
@@ -1187,7 +1185,7 @@ export default function TakenToewijzenPage() {
                   </div>
 
                   {paragrafen.length === 0 ? (
-                    <div className="text-center text-slate-500 py-12">
+                    <div className="text-center text-[var(--lo-grijs)] py-12">
                       <p>Geen paragrafen beschikbaar</p>
                     </div>
                   ) : (
@@ -1201,8 +1199,8 @@ export default function TakenToewijzenPage() {
                       return (
                         <div
                           key={para.id}
-                          className={`p-4 border border-slate-200 rounded-lg transition-colors group ${
-                            isDisabled ? 'opacity-50' : 'hover:bg-slate-50'
+                          className={`p-4 border border-[var(--lo-lijn)] rounded-lg transition-colors group ${
+                            isDisabled ? 'opacity-50' : 'hover:bg-[var(--lo-papier-2)]'
                           }`}
                         >
                           <div className="flex items-start gap-3">
@@ -1211,39 +1209,39 @@ export default function TakenToewijzenPage() {
                               checked={isChecked}
                               onChange={() => selectedStudentId ? toggleStudentOverride(para.id) : toggleParagraafAssignment(para.id)}
                               disabled={saving || isDisabled}
-                              className="mt-1 h-5 w-5 cursor-pointer rounded accent-[var(--helix-purple)]"
+                              className="mt-1 h-5 w-5 cursor-pointer rounded accent-[var(--lo-blauw)]"
                               title={isDisabled ? "Al in klassestandaard" : ""}
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-slate-900">{para.title || 'Paragraaf zonder naam'}</div>
+                              <div className="font-medium text-[var(--lo-inkt)]">{para.title || 'Paragraaf zonder naam'}</div>
                               {para.beschrijving && (
-                                <div className="text-xs text-slate-500 line-clamp-1">{para.beschrijving}</div>
+                                <div className="text-xs text-[var(--lo-grijs)] line-clamp-1">{para.beschrijving}</div>
                               )}
-                              <div className="mt-1 text-xs text-slate-500">
+                              <div className="mt-1 text-xs text-[var(--lo-grijs)]">
                                 {(contentBlocksByParagraaf[para.id] || []).length} lesblokken
                                 {Array.isArray(assignedContentBlocks[para.id]) && (
-                                  <span className="ml-2 rounded-full bg-violet-50 px-2 py-0.5 font-bold text-[var(--helix-purple)]">
+                                  <Label kleur="blauw" className="ml-2">
                                     {assignedContentBlocks[para.id].length} geselecteerd
-                                  </span>
+                                  </Label>
                                 )}
                               </div>
                             </div>
                             {isChecked && (
-                              <CheckSquare size={18} className="mt-1 flex-shrink-0 text-green-600" />
+                              <CheckSquare size={18} className="mt-1 flex-shrink-0 text-[var(--lo-groen-inkt)]" />
                             )}
                           </div>
 
                           {isChecked && (contentBlocksByParagraaf[para.id] || []).length > 0 && (
-                            <div className="mt-4 border-t border-slate-100 pt-3">
+                            <div className="mt-4 border-t border-[var(--lo-lijn)] pt-3">
                               <div className="mb-2 flex items-center justify-between gap-3">
-                                <span className="text-xs font-black uppercase tracking-wide text-slate-500">
+                                <span className="lo-onderregel font-bold">
                                   Onderdelen van deze paragraaf
                                 </span>
                                 {!selectedStudentId && Array.isArray(assignedContentBlocks[para.id]) && (
                                   <button
                                     type="button"
                                     onClick={() => clearContentBlockSelection(para.id)}
-                                    className="text-xs font-bold text-[var(--helix-purple)] hover:text-[var(--helix-navy)]"
+                                    className="text-xs font-bold text-[var(--lo-blauw-inkt)] hover:text-[var(--lo-inkt)]"
                                   >
                                     Alle blokken tonen
                                   </button>
@@ -1266,8 +1264,8 @@ export default function TakenToewijzenPage() {
                                       key={block.id}
                                       className={`flex items-start gap-3 rounded-lg border px-3 py-2 text-sm ${
                                         blockDisabled
-                                          ? 'border-slate-100 bg-slate-50 opacity-60'
-                                          : 'border-slate-200 bg-white hover:border-[var(--helix-purple)]'
+                                          ? 'border-[var(--lo-lijn)] bg-[var(--lo-papier-2)] opacity-60'
+                                          : 'border-[var(--lo-lijn)] bg-white hover:border-[var(--lo-blauw)]'
                                       }`}
                                     >
                                       <input
@@ -1275,13 +1273,13 @@ export default function TakenToewijzenPage() {
                                         checked={blockChecked}
                                         disabled={saving || blockDisabled}
                                         onChange={() => toggleContentBlockAssignment(para.id, block.id)}
-                                        className="mt-1 h-4 w-4 cursor-pointer rounded accent-[var(--helix-purple)]"
+                                        className="mt-1 h-4 w-4 cursor-pointer rounded accent-[var(--lo-blauw)]"
                                       />
                                       <span className="flex-1">
-                                        <span className="block font-bold text-slate-900">
+                                        <span className="block font-bold text-[var(--lo-inkt)]">
                                           Stap {block.order || '-'} - {CONTENT_BLOCK_LABELS[block.type] || 'Lesblok'} - {block.title || 'Naamloos'}
                                         </span>
-                                        <span className="line-clamp-1 text-xs text-slate-500">
+                                        <span className="line-clamp-1 text-xs text-[var(--lo-grijs)]">
                                           {buildContentBlockPreview(block)}
                                         </span>
                                       </span>
@@ -1303,7 +1301,7 @@ export default function TakenToewijzenPage() {
           {/* Right panel: Assignment Overview */}
           <div className="helix-card flex flex-col overflow-hidden">
             {/* Tabs */}
-            <div className="flex gap-2 border-b border-[var(--helix-border)] p-3">
+            <div className="flex gap-2 border-b border-[var(--lo-lijn)] p-3">
               <button
                 onClick={() => setActiveTab('klas')}
                 className={`dashboard-lens-tab flex-1 ${activeTab === 'klas' ? 'dashboard-lens-tab-active' : ''}`}
@@ -1323,17 +1321,17 @@ export default function TakenToewijzenPage() {
               {activeTab === 'klas' && (
                 <div className="space-y-2">
                   <div className="mb-4 grid grid-cols-2 gap-2">
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <div className="text-2xl font-black text-slate-900">{assignedParagrafen.length}</div>
-                      <div className="text-xs font-bold uppercase text-slate-500">Paragrafen</div>
+                    <div className="lo-kaart gap-0 p-3">
+                      <div className="text-2xl font-extrabold tabular-nums text-[var(--lo-inkt)]">{assignedParagrafen.length}</div>
+                      <div className="lo-onderregel font-bold">Paragrafen</div>
                     </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <div className="text-2xl font-black text-slate-900">{getAssignedBlockCount()}</div>
-                      <div className="text-xs font-bold uppercase text-slate-500">Gekozen blokken</div>
+                    <div className="lo-kaart gap-0 p-3">
+                      <div className="text-2xl font-extrabold tabular-nums text-[var(--lo-inkt)]">{getAssignedBlockCount()}</div>
+                      <div className="lo-onderregel font-bold">Gekozen blokken</div>
                     </div>
                   </div>
                   {assignedParagrafen.length === 0 ? (
-                    <p className="text-slate-500 text-sm text-center py-8">
+                    <p className="text-[var(--lo-grijs)] text-sm text-center py-8">
                       Nog geen lesmateriaal klaargezet
                     </p>
                   ) : (
@@ -1346,13 +1344,13 @@ export default function TakenToewijzenPage() {
                       return (
                         <div
                           key={paragraafId}
-                          className="p-2 bg-slate-50 rounded border border-slate-200 flex items-center justify-between text-sm"
+                          className="p-2 bg-[var(--lo-papier-2)] rounded border border-[var(--lo-lijn)] flex items-center justify-between text-sm"
                         >
-                          <span className="font-medium text-slate-900">{displayName}</span>
+                          <span className="font-medium text-[var(--lo-inkt)]">{displayName}</span>
                           <button
                             onClick={() => removeAssignment(paragraafId)}
                             aria-label="Klaargezet lesmateriaal verwijderen"
-                            className="text-red-600 hover:text-red-700 font-bold"
+                            className="text-[var(--lo-rood-inkt)] hover:text-[var(--lo-rood)] font-bold"
                           >
                             x
                           </button>
@@ -1366,7 +1364,7 @@ export default function TakenToewijzenPage() {
               {activeTab === 'leerlingen' && (
                 <div className="space-y-2">
                   {klasStudents.length === 0 ? (
-                    <p className="text-slate-500 text-sm text-center py-8">
+                    <p className="text-[var(--lo-grijs)] text-sm text-center py-8">
                       Geen leerlingen in klas
                     </p>
                   ) : (
@@ -1378,40 +1376,40 @@ export default function TakenToewijzenPage() {
                         <div
                           key={student.uid}
                           className={`border rounded-lg transition-colors ${
-                            isSelected ? 'border-amber-300 bg-amber-50' : 'border-slate-200'
+                            isSelected ? 'border-[var(--lo-lijn)] bg-[var(--lo-oranje-zacht)]' : 'border-[var(--lo-lijn)]'
                           }`}
                         >
                           {/* Header row - clickable */}
                           <div
                             onClick={() => setSelectedStudentId(isSelected ? null : student.uid)}
-                            className="p-3 flex items-center justify-between cursor-pointer hover:bg-amber-50"
+                            className="lo-rij justify-between cursor-pointer hover:bg-[var(--lo-oranje-zacht)]"
                           >
                             <div>
-                              <div className="font-medium text-slate-900">{student.displayName}</div>
-                              <div className="text-xs text-slate-500">{student.email}</div>
+                              <div className="lo-rij-titel">{student.displayName}</div>
+                              <div className="lo-onderregel">{student.email}</div>
                             </div>
                             {extras.length > 0 && (
-                              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium whitespace-nowrap ml-2">
+                              <Label kleur="oranje" className="ml-2">
                                 +{extras.length}
-                              </span>
+                              </Label>
                             )}
                           </div>
 
                           {/* Expanded: list of overrides */}
                           {isSelected && (
-                            <div className="border-t border-amber-200 px-3 pb-3 pt-2 space-y-1 bg-amber-25">
+                            <div className="border-t border-[var(--lo-lijn)] px-3 pb-3 pt-2 space-y-1">
                               {extras.length === 0 ? (
-                                <p className="text-xs text-slate-500 py-2">Geen extra lesmateriaal. Selecteer links een paragraaf of lesblok.</p>
+                                <p className="text-xs text-[var(--lo-grijs)] py-2">Geen extra lesmateriaal. Selecteer links een paragraaf of lesblok.</p>
                               ) : (
                                 extras.map(paraId => {
                                   const para = contentParagrafen.find(p => p.id === paraId) || paragrafen.find(p => p.id === paraId);
                                   return (
-                                    <div key={paraId} className="flex items-center justify-between text-xs bg-white border border-slate-200 rounded px-2 py-1">
-                                      <span className="font-medium text-slate-900">{para ? getCmsItemLabel('paragraaf', para) : paraId}</span>
+                                    <div key={paraId} className="flex items-center justify-between text-xs bg-white border border-[var(--lo-lijn)] rounded px-2 py-1">
+                                      <span className="font-medium text-[var(--lo-inkt)]">{para ? getCmsItemLabel('paragraaf', para) : paraId}</span>
                                       <button
                                         onClick={() => toggleStudentOverride(paraId)}
                                         aria-label="Extra lesmateriaal verwijderen"
-                                        className="text-red-500 hover:text-red-700 font-bold ml-2"
+                                        className="text-[var(--lo-rood-inkt)] hover:text-[var(--lo-rood)] font-bold ml-2"
                                       >
                                         x
                                       </button>
