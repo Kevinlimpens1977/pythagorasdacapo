@@ -89,7 +89,7 @@ export default function KlasVoortgangMatrix({
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-[var(--lo-lijn)] bg-[var(--lo-papier)]">
-              <th className="sticky left-0 z-10 min-w-56 bg-[var(--lo-papier)] px-4 py-3 text-[13px] font-extrabold text-[var(--lo-grijs)]">
+              <th className="sticky left-0 z-10 w-56 min-w-56 bg-[var(--lo-papier)] px-4 py-3 text-[13px] font-extrabold text-[var(--lo-grijs)]">
                 Leerling
               </th>
               <th className="px-3 py-3 text-[13px] font-extrabold text-[var(--lo-grijs)]">
@@ -99,7 +99,7 @@ export default function KlasVoortgangMatrix({
                 <th
                   key={kolom.id}
                   title={kolom.titel}
-                  className={`px-2 py-3 text-center text-xs font-extrabold ${
+                  className={`px-1 py-3 text-center text-xs font-extrabold ${
                     kolom.optioneel ? 'text-[var(--lo-paars-inkt)]' : 'text-[var(--lo-inkt)]'
                   }`}
                 >
@@ -118,11 +118,11 @@ export default function KlasVoortgangMatrix({
           <tbody className="divide-y divide-[var(--lo-lijn)]">
             {rijen.map((rij) => (
               <tr key={rij.studentId} className="group transition-colors hover:bg-[var(--lo-papier)]">
-                <td className="sticky left-0 z-10 bg-[var(--lo-kaart)] px-4 py-3 group-hover:bg-[var(--lo-papier)]">
+                <td className="sticky left-0 z-10 w-56 min-w-56 max-w-56 bg-[var(--lo-kaart)] px-4 py-3 group-hover:bg-[var(--lo-papier)]">
                   <button
                     type="button"
                     onClick={() => onSelectLeerling?.(rij)}
-                    className="flex w-full items-center gap-3 text-left"
+                    className="flex w-full max-w-48 items-center gap-3 text-left"
                   >
                     <StudentAvatar
                       student={rij.student}
@@ -147,9 +147,9 @@ export default function KlasVoortgangMatrix({
                     )}
                   </button>
                 </td>
-                <td className="px-3 py-3">
+                <td className="px-2 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-16 overflow-hidden rounded-full bg-[var(--lo-papier-2)]">
+                    <div className="h-2 w-12 overflow-hidden rounded-full bg-[var(--lo-papier-2)]">
                       <div
                         className={`h-full rounded-full ${getStatusPresentatie(rij.status).balkClass}`}
                         style={{ width: `${rij.percentage}%` }}
@@ -179,10 +179,10 @@ export default function KlasVoortgangMatrix({
 
                   if (!cel.toegewezen) {
                     return (
-                      <td key={cel.paragraafId} className="px-2 py-3 text-center">
+                      <td key={cel.paragraafId} className="px-1 py-3 text-center">
                         <span
                           title={cel.label}
-                          className="inline-flex h-9 w-14 items-center justify-center rounded-[var(--lo-hoek-s)] border border-dashed border-[var(--lo-lijn)] text-[11px] font-bold text-[var(--lo-grijs)]"
+                          className="inline-flex h-9 w-12 items-center justify-center rounded-[var(--lo-hoek-s)] border border-dashed border-[var(--lo-lijn)] text-[11px] font-bold text-[var(--lo-grijs)]"
                         >
                           n.v.t.
                         </span>
@@ -191,12 +191,12 @@ export default function KlasVoortgangMatrix({
                   }
 
                   return (
-                    <td key={cel.paragraafId} className="px-2 py-3 text-center">
+                    <td key={cel.paragraafId} className="px-1 py-3 text-center">
                       <button
                         type="button"
                         onClick={() => onSelectLeerling?.(rij, cel)}
                         title={`${rij.studentNaam} - ${cel.label}. ${cel.detail}`}
-                        className={`h-9 w-14 cursor-pointer justify-center gap-1 rounded-[var(--lo-hoek-s)] transition hover:brightness-95 ${
+                        className={`h-9 w-12 cursor-pointer justify-center gap-1 rounded-[var(--lo-hoek-s)] transition hover:brightness-95 ${
                           plusNogNiet ? PLUS_PRESENTATIE.leegClass : presentatie.chipClass
                         }`}
                       >
