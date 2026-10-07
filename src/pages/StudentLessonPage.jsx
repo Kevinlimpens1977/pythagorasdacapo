@@ -1204,7 +1204,7 @@ export default function StudentLessonPage() {
     : currentBlock;
 
   return (
-    <div className="study-surface study-shell flex flex-col">
+    <div className="study-surface study-shell study-stijl flex flex-col">
       <VictoryEffectOverlay playback={victoryPlayback} onDone={finishVictoryPlayback} />
       {/* Een link "Binas" in de lesstof (href="#binas") opent het boekje met dichtheden. */}
       <BinasLink />

@@ -1306,132 +1306,192 @@ input[type=number] {
   height: 100dvh;
 }
 
-/* Elke stap staat in hetzelfde kader: één radius, één achtergrond, één padding.
-   Tussen theorie, vraag, quiz, game en slides mag geen sprong zitten in
-   kaartvorm. De hoogte volgt de inhoud: een leesstap van vier regels hoort een
-   kaart van vier regels te zijn, met de afrondknop er direct onder. */
+/* Elke stap staat in dezelfde witte kaart van de leeromgeving: geen rand,
+   kaartschaduw, hoek 20px, binnenmarge 22px (16px op een telefoon). Tussen
+   theorie, vraag, quiz, game en slides zit geen sprong in kaartvorm. De hoogte
+   volgt de inhoud: een leesstap van vier regels is een kaart van vier regels,
+   met de afrondknop er direct onder. */
 .study-block {
-  background: var(--helix-surface);
-  border: 1px solid var(--helix-border);
-  border-radius: var(--helix-radius-xl);
-  box-shadow: var(--helix-shadow-card);
-  @apply p-5 sm:p-8;
+  background: var(--lo-kaart);
+  border-radius: var(--lo-hoek-xl);
+  box-shadow: var(--lo-schaduw-kaart);
+  color: var(--lo-inkt);
+  padding: 22px;
 }
 
-/* Een getint deelvlak binnen die kaart (voorbeeld, quiz-intro, slides). Zelfde
-   radius-familie, zodat het een onderdeel blijft en geen tweede kaart wordt. */
+/* Een deelvlak binnen die kaart (quiz-intro, slides). Zelfde vormfamilie, zodat
+   het een onderdeel blijft en geen tweede kaart wordt. De achtergrond komt uit
+   de JSX. */
 .study-panel {
-  border: 1px solid var(--helix-border);
-  border-radius: var(--helix-radius-lg);
-  @apply p-5 sm:p-6;
+  border: 1px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-l);
+  padding: 18px;
 }
 
-/* Uitgewerkt voorbeeld binnen de leeskaart: een eigen, rustig getint vak met een
-   duidelijk labeltje. Links de uitwerking, rechts de figuur. */
+/* Uitgewerkt voorbeeld binnen de leeskaart: wit vak met een lijn en een blauw
+   label. Links de uitwerking, rechts de figuur. */
 .study-example {
-  background: #FFFFFF;
-  border: 1px solid #E1F0F8;
-  border-radius: var(--helix-radius-lg);
-  @apply p-5 sm:p-6;
+  background: var(--lo-kaart);
+  border: 1px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-l);
+  padding: 18px;
 }
 
 .study-example-label {
-  background: #E1F0F8;
-  color: #066A99;
-  @apply inline-flex items-center rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em];
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--lo-blauw-zacht);
+  color: var(--lo-blauw-inkt);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 800;
 }
 
 .study-example .lesson-prose :where(p, ul, ol, blockquote, h1, h2, h3, h4, h5, h6, dl) {
   max-width: 60ch;
 }
 
+/* Kaart rond het afronden van een paragraaf; de activiteit binnenin heeft zijn
+   eigen binnenmarge. */
+.study-einde {
+  overflow: hidden;
+  background: var(--lo-kaart);
+  border-radius: var(--lo-hoek-xl);
+  box-shadow: var(--lo-schaduw-kaart);
+}
+
 .study-surface {
-  background:
-    radial-gradient(circle at 16% -6%, rgba(225, 240, 248, 0.6), transparent 26rem),
-    var(--helix-bg);
+  background: var(--lo-papier);
 }
 
 .study-rail {
-  background: rgba(255, 255, 255, 0.94);
-  border-right: 1px solid var(--helix-border);
+  background: var(--lo-kaart);
+  border-right: 1px solid var(--lo-lijn);
+}
+
+/* De stappenbalk is een lijst met scheidingslijnen (.lo-lijst in de JSX).
+   Per stap: nummerblokje, titel, type-icoon en vinkje. De huidige stap heeft
+   een geel nummerblokje op een lichtgele regel. Elke stap blijft bereikbaar. */
+.study-stappen {
+  overflow: hidden;
 }
 
 .study-step {
-  color: var(--helix-muted);
-  @apply flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--lo-inkt);
+  text-align: left;
+  cursor: pointer;
 }
 
-.study-step-idle:hover {
-  background: var(--helix-surface-soft);
+.study-step:hover {
+  background: var(--lo-papier);
 }
 
-.study-step-idle:focus-visible,
-.study-step-active:focus-visible {
+/* Binnen de lijst valt een ring buiten de rij weg; daarom een ring aan de binnenkant. */
+.study-step:focus-visible {
   outline: none;
-  box-shadow: var(--helix-focus);
+  box-shadow: inset 0 0 0 3px var(--lo-blauw);
 }
 
-/* Eén vlakke merkkleur, geen gradient en geen glow: de actieve stap moet rustig
-   opvallen, niet oplichten. */
 .study-step-active {
-  background: var(--helix-purple);
-  color: #ffffff;
+  background: var(--lo-geel-zacht);
 }
 
-/* Geen sloten meer: elke stap is bereikbaar. Een open rondje laat wel zien dat
-   de stap nog niet af is, zonder de regel te dempen. */
-.study-step-todo {
-  @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full;
+.study-step-active:hover {
+  background: var(--lo-geel-zacht);
 }
 
-.study-step-todo::before {
-  content: '';
-  border: 2px solid var(--helix-border);
-  @apply block h-3.5 w-3.5 rounded-full;
+.study-step-nummer {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 2px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-s);
+  background: var(--lo-papier-2);
+  color: var(--lo-grijs);
+  font-size: 13px;
+  line-height: 19.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
-.study-step-active .study-step-todo::before {
-  border-color: rgba(255, 255, 255, 0.55);
-}
-
-.study-step-icon {
-  background: var(--helix-soft-lavender);
-  color: var(--helix-purple);
-  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
-}
-
-.study-step-active .study-step-icon {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+.study-step-active .study-step-nummer {
+  border-color: var(--lo-inkt);
+  background: var(--lo-geel);
+  color: var(--lo-inkt);
 }
 
 .study-step-title {
-  color: var(--helix-navy);
-  @apply block truncate text-sm font-black;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lo-inkt);
+  font-size: 15px;
+  line-height: 22.5px;
+  font-weight: 700;
 }
 
 .study-step-meta {
-  color: var(--helix-muted);
-  @apply block truncate text-[11px] font-bold;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--lo-grijs);
+  font-size: 12.5px;
+  line-height: 18.75px;
+  font-weight: 400;
 }
 
-.study-step-active .study-step-title {
-  color: #ffffff;
+.study-step-type {
+  flex: none;
+  color: var(--lo-grijs);
 }
 
-.study-step-active .study-step-meta {
-  color: rgba(255, 255, 255, 0.78);
+/* Een open rondje: de stap is nog niet af. */
+.study-step-todo {
+  flex: none;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--lo-lijn);
+  border-radius: 999px;
 }
 
 .study-step-check {
-  background: rgba(46, 157, 99, 0.16);
-  color: #237A4D;
-  @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--lo-groen-zacht);
+  color: var(--lo-groen-inkt);
 }
 
-.study-step-active .study-step-check {
-  background: rgba(255, 255, 255, 0.92);
-  color: #237A4D;
+@media (max-width: 760px) {
+  .study-block {
+    padding: 16px;
+  }
+
+  .study-panel,
+  .study-example {
+    padding: 14px;
+  }
 }
 
 @keyframes study-confirm-rise {
@@ -1886,4 +1946,89 @@ input[type=number] {
 .assessment-stepper-stage { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .assessment-stepper-stage > * { transform: none !important; opacity: 1 !important; }
+}
+
+/* ==========================================================================
+   Leeromgeving-stijl op de lespagina (fase 2b).
+   De lespagina deelt btn-primary, btn-secondary, helix-btn-solid, helix-eyebrow,
+   input-standard en lesson-prose met andere pagina's. Binnen .study-stijl
+   krijgen ze het uiterlijk van .lo-knop, .lo-knop-tweede, .lo-eyebrow en
+   .lo-invoer. Alleen kleur, rand, hoek, letter en schaduw: de binnenmarges
+   blijven, zodat er in de vragen en de toetsstepper niets verspringt.
+   Dit blok moet onder de basisregels staan: designTokenStyles.test.js leest per
+   klasse de eerste regel in dit bestand.
+   ========================================================================== */
+.study-stijl .btn-primary,
+.study-stijl .helix-btn-solid {
+  border: 2px solid transparent;
+  border-radius: var(--lo-hoek-m);
+  background: var(--lo-blauw);
+  color: var(--lo-kaart);
+  box-shadow: var(--lo-schaduw-knop);
+  font-family: var(--lo-letter);
+  font-weight: 800;
+}
+
+.study-stijl .btn-primary:hover:not(:disabled),
+.study-stijl .helix-btn-solid:hover:not(:disabled) {
+  background: var(--lo-blauw-inkt);
+  translate: none;
+}
+
+.study-stijl .btn-primary:disabled,
+.study-stijl .helix-btn-solid:disabled {
+  border-color: transparent;
+  background: var(--lo-papier-2);
+  color: var(--lo-grijs);
+  box-shadow: none;
+  opacity: 1;
+}
+
+.study-stijl .btn-secondary {
+  border: 1px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-m);
+  background: var(--lo-kaart);
+  color: var(--lo-inkt);
+  font-family: var(--lo-letter);
+  font-weight: 700;
+}
+
+.study-stijl .btn-secondary:hover:not(:disabled),
+.study-stijl .btn-secondary:focus-visible {
+  border-color: var(--lo-blauw);
+  background: var(--lo-kaart);
+}
+
+.study-stijl .btn-secondary:disabled {
+  border-color: var(--lo-lijn);
+  background: var(--lo-papier-2);
+  color: var(--lo-grijs);
+  opacity: 1;
+}
+
+.study-stijl .helix-eyebrow {
+  color: var(--lo-blauw-inkt);
+  font-family: var(--lo-letter);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.study-stijl .input-standard {
+  border: 1px solid var(--lo-lijn);
+  border-radius: var(--lo-hoek-m);
+  background: var(--lo-kaart);
+  color: var(--lo-inkt);
+}
+
+.study-stijl .input-standard:focus {
+  border-color: var(--lo-blauw);
+  background: var(--lo-kaart);
+}
+
+/* Leestekst in inkt in plaats van grijs: beter leesbaar voor leerlingen die nog
+   Nederlands leren. Grootte en regelafstand blijven. */
+.study-stijl .lesson-prose {
+  color: var(--lo-inkt);
 }
