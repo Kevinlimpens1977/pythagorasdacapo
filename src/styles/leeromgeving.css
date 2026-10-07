@@ -84,7 +84,7 @@
   .lo-knop:disabled { background: var(--lo-papier-2); color: var(--lo-grijs); box-shadow: none; cursor: not-allowed; }
   .lo-knop-tweede { display: inline-flex; align-items: center; gap: 8px; padding: 11px 17px; border: 1px solid var(--lo-lijn); border-radius: var(--lo-hoek-m); background: var(--lo-kaart); color: var(--lo-inkt); font-family: var(--lo-letter); font-size: 15px; line-height: 1.5; font-weight: 700; white-space: nowrap; flex: none; cursor: pointer; }
   .lo-knop-tweede:hover:not(:disabled) { border-color: var(--lo-blauw); }
-  .lo-knop-tweede:disabled { color: var(--lo-grijs); cursor: not-allowed; }
+  .lo-knop-tweede:disabled { background: var(--lo-papier-2); color: var(--lo-grijs); cursor: not-allowed; }
   .lo-knop-start { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid transparent; border-radius: var(--lo-hoek-s); background: var(--lo-blauw-zacht); color: var(--lo-blauw-inkt); font-family: var(--lo-letter); font-size: 13px; line-height: 19.5px; font-weight: 800; white-space: nowrap; cursor: pointer; }
   .lo-knop-start:hover:not(:disabled) { border-color: var(--lo-blauw); }
   .lo-knop-start:disabled { background: var(--lo-papier-2); color: var(--lo-grijs); cursor: not-allowed; }
