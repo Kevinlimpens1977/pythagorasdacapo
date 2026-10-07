@@ -96,3 +96,8 @@ test('de pillen in de menubalk zijn groot genoeg om met een vinger te raken', ()
   assert.match(regel('.lo-pil--geel'), /background:\s*var\(--lo-geel\)/);
   assert.match(regel('.lo-pil-balk'), /height:\s*6px/);
 });
+
+test('een uitgeschakelde hoofdknop blijft leesbaar', () => {
+  assert.match(regel('.lo-knop:disabled'), /background:\s*var\(--lo-papier-2\)/);
+  assert.match(regel('.lo-knop:disabled'), /color:\s*var\(--lo-grijs\)/);
+});
