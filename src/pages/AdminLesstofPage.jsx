@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, BarChart3, BookOpen, CheckSquare, Clapperboard, FileStack, LockOpen, Scissors } from 'lucide-react';
+import { Kaart, KaartKop, PaginaKop } from '../components/leeromgeving';
 
 // De drie stappen van de docentflow, in volgorde: bouwen → klaarzetten → volgen.
 const hoofdacties = [
@@ -58,63 +59,55 @@ export default function AdminLesstofPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="helix-page min-h-screen">
-      <div className="helix-container">
-        <div>
-          <p className="helix-eyebrow">Werkplek</p>
-          <h1 className="mt-2 helix-heading-xl">Lesstof</h1>
-          <p className="mt-3 max-w-2xl text-lg leading-8 text-[var(--helix-muted)]">
-            Bouw je lesmateriaal, zet het klaar voor je klassen en volg de voortgang.
-          </p>
-        </div>
+    <div className="helix-page lo-tekst beheer-stijl min-h-screen">
+      <div className="helix-container flex flex-col gap-8 py-10 md:py-12">
+        <PaginaKop
+          eyebrow="Werkplek"
+          titel="Lesstof"
+          uitleg="Bouw je lesmateriaal, zet het klaar voor je klassen en volg de voortgang."
+        />
 
-        <section className="mt-8 grid gap-4 lg:grid-cols-3">
+        <section className="lo-kaartenraster items-stretch">
           {hoofdacties.map((action) => {
             const Icon = action.icon;
 
             return (
-              <button
+              <Kaart
+                as="button"
                 key={action.title}
                 onClick={() => navigate(action.path)}
-                className="group helix-action-card flex h-full flex-col p-6 text-left"
+                className="group h-full cursor-pointer text-left transition-shadow hover:ring-2 hover:ring-[var(--lo-blauw)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--lo-blauw)]"
               >
-                <div className="flex flex-1 items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-                      <Icon size={24} />
-                    </div>
-                    <div>
-                      <h2 className="font-display text-xl font-extrabold">{action.title}</h2>
-                      <p className="mt-2 max-w-xl text-sm leading-6 opacity-80">{action.description}</p>
-                    </div>
+                <div className="flex flex-1 items-start gap-3">
+                  <span className="lo-hblok lo-hblok--dicht"><Icon size={18} aria-hidden="true" /></span>
+                  <div className="min-w-0 flex-1">
+                    <KaartKop titel={action.title} uitleg={action.description} />
                   </div>
-                  <ArrowRight size={20} className="mt-2 shrink-0 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight size={20} aria-hidden="true" className="mt-1 shrink-0 text-[var(--lo-grijs)] transition-transform group-hover:translate-x-1" />
                 </div>
-                <p className="mt-auto pt-6 text-center text-sm font-black">{action.actionLabel}</p>
-              </button>
+                <p className="lo-onderregel mt-auto font-bold text-[var(--lo-blauw-inkt)]">{action.actionLabel}</p>
+              </Kaart>
             );
           })}
         </section>
 
-        <section className="mt-6 grid gap-4 sm:grid-cols-2">
+        <section className="lo-kaartenraster items-stretch">
           {overigeActies.map((action) => {
             const Icon = action.icon;
 
             return (
-              <button
+              <Kaart
+                as="button"
                 key={action.title}
                 onClick={() => navigate(action.path)}
-                className="group helix-action-card flex items-center gap-4 p-4 text-left"
+                className="group h-full cursor-pointer flex-row items-center gap-3 p-4 text-left transition-shadow hover:ring-2 hover:ring-[var(--lo-blauw)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--lo-blauw)]"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]">
-                  <Icon size={20} />
-                </div>
+                <span className="lo-hblok lo-hblok--dicht"><Icon size={18} aria-hidden="true" /></span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-display text-base font-extrabold">{action.title}</h2>
-                  <p className="mt-1 text-sm leading-5 opacity-80">{action.description}</p>
+                  <KaartKop titel={action.title} uitleg={action.description} />
                 </div>
-                <ArrowRight size={18} className="shrink-0 transition-transform group-hover:translate-x-1" />
-              </button>
+                <ArrowRight size={18} aria-hidden="true" className="shrink-0 text-[var(--lo-grijs)] transition-transform group-hover:translate-x-1" />
+              </Kaart>
             );
           })}
         </section>

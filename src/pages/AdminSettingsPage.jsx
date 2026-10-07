@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Bot, Bug, Coins, Palette, SettingsIcon } from 'lucide-react';
+import { ArrowRight, Bot, Bug, Coins, Palette } from 'lucide-react';
+import { Kaart, KaartKop, PaginaKop } from '../components/leeromgeving';
 
 const settingsSections = [
   {
@@ -8,7 +9,7 @@ const settingsSections = [
     actionLabel: 'Open Digidocent',
     path: '/admin/ai-instellingen',
     icon: Bot,
-    tone: 'text-violet-600 bg-violet-50'
+    tone: 'text-[var(--lo-paars-inkt)]'
   },
   {
     title: 'Leerlingmeldingen',
@@ -16,7 +17,7 @@ const settingsSections = [
     actionLabel: 'Open meldingen',
     path: '/admin/meldingen',
     icon: Bug,
-    tone: 'text-red-600 bg-red-50'
+    tone: 'text-[var(--lo-rood-inkt)]'
   },
   {
     title: 'Tokenbeheer',
@@ -24,7 +25,7 @@ const settingsSections = [
     actionLabel: 'Open tokenbeheer',
     path: '/admin/tokenbeheer',
     icon: Coins,
-    tone: 'text-amber-700 bg-amber-50'
+    tone: 'text-[var(--lo-oranje-inkt)]'
   },
   {
     title: 'Stijlgids leeromgeving',
@@ -32,7 +33,7 @@ const settingsSections = [
     actionLabel: 'Open stijlgids',
     path: '/admin/stijlgids',
     icon: Palette,
-    tone: 'text-amber-700 bg-amber-50'
+    tone: 'text-[var(--lo-oranje-inkt)]'
   }
 ];
 
@@ -40,47 +41,35 @@ export default function AdminSettingsPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="helix-page min-h-screen">
-      <div className="helix-container max-w-5xl">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="helix-eyebrow">Werkplek</p>
-            <h1 className="mt-2 helix-heading-xl">Instellingen</h1>
-            <p className="mt-3 max-w-2xl text-lg leading-8 text-[var(--helix-muted)]">
-              Beheer platformbrede instellingen die niet bij lesstof, leerlingen of voortgang horen.
-            </p>
-          </div>
+    <div className="helix-page lo-tekst beheer-stijl min-h-screen">
+      <div className="helix-container flex max-w-5xl flex-col gap-8 py-10 md:py-12">
+        <PaginaKop
+          eyebrow="Werkplek"
+          titel="Instellingen"
+          uitleg="Beheer platformbrede instellingen die niet bij lesstof, leerlingen of voortgang horen."
+        />
 
-          <div className="hidden h-14 w-14 items-center justify-center rounded-2xl border border-[var(--helix-border)] bg-white/90 text-[var(--helix-purple)] shadow-[var(--helix-shadow-card)] sm:flex">
-            <SettingsIcon size={26} />
-          </div>
-        </div>
-
-        <section className="mt-8 grid gap-4 md:grid-cols-2">
+        <section className="lo-kaartenraster items-stretch">
           {settingsSections.map((section) => {
             const Icon = section.icon;
 
             return (
-              <button
+              <Kaart
+                as="button"
                 key={section.title}
                 type="button"
                 onClick={() => navigate(section.path)}
-                className="group helix-action-card p-5 text-left"
+                className="group h-full cursor-pointer text-left transition-shadow hover:ring-2 hover:ring-[var(--lo-blauw)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--lo-blauw)]"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${section.tone}`}>
-                      <Icon size={24} />
-                    </div>
-                    <div>
-                      <h2 className="font-display text-xl font-extrabold text-[var(--helix-navy)]">{section.title}</h2>
-                      <p className="mt-2 text-sm leading-6 text-[var(--helix-muted)]">{section.description}</p>
-                    </div>
+                <div className="flex flex-1 items-start gap-3">
+                  <span className={`lo-hblok lo-hblok--dicht ${section.tone}`}><Icon size={18} aria-hidden="true" /></span>
+                  <div className="min-w-0 flex-1">
+                    <KaartKop titel={section.title} uitleg={section.description} />
                   </div>
-                  <ArrowRight size={20} className="mt-2 shrink-0 text-slate-300 transition-transform group-hover:translate-x-1 group-hover:text-[var(--helix-pink)]" />
+                  <ArrowRight size={20} aria-hidden="true" className="mt-1 shrink-0 text-[var(--lo-grijs)] transition-transform group-hover:translate-x-1" />
                 </div>
-                <p className="mt-6 text-sm font-black text-[var(--helix-purple)]">{section.actionLabel}</p>
-              </button>
+                <p className="lo-onderregel mt-auto font-bold text-[var(--lo-blauw-inkt)]">{section.actionLabel}</p>
+              </Kaart>
             );
           })}
         </section>
