@@ -20,10 +20,11 @@ export default function StudentChapterPage() {
   const { chapterId } = useParams();
   const navigate = useNavigate();
   const { chapters, loading } = useStudentOutline();
-  // Omgekeerd aan de lesstofpagina: hier staat alles open en onthouden we
-  // alleen wat de leerling zelf dichtklapt. Deze pagina gaat over één
-  // hoofdstuk, dus de onderdelen verstoppen achter een klapje heeft geen zin.
-  const [ingeklapteRowIds, setIngeklapteRowIds] = useState([]);
+  // Bij openen staat alles dicht, ook de introductie; een rij klapt pas open
+  // als de leerling erop klikt (Kevin, 7 okt 2026). Per hoofdstuk bewaard, zodat
+  // een ander hoofdstuk weer dicht begint.
+  const [openPerHoofdstuk, setOpenPerHoofdstuk] = useState({});
+  const openRowIds = openPerHoofdstuk[chapterId] || [];
   const [showAll, setShowAll] = useState(false);
   const [notice, setNotice] = useState('');
   const noticeTimerRef = useRef(0);
@@ -53,10 +54,12 @@ export default function StudentChapterPage() {
   }, []);
 
   const toggleRow = useCallback((rowId) => {
-    setIngeklapteRowIds((huidig) => (
-      huidig.includes(rowId) ? huidig.filter((id) => id !== rowId) : [...huidig, rowId]
-    ));
-  }, []);
+    setOpenPerHoofdstuk((stand) => {
+      const huidig = stand[chapterId] || [];
+      const nieuw = huidig.includes(rowId) ? huidig.filter((id) => id !== rowId) : [...huidig, rowId];
+      return { ...stand, [chapterId]: nieuw };
+    });
+  }, [chapterId]);
 
   const startLesson = useCallback(
     (paragraafId, onderdeelId = '') => navigate(buildLessonPath(paragraafId, onderdeelId)),
@@ -142,7 +145,7 @@ export default function StudentChapterPage() {
     ...chapter.voorkennisRows.map((row) => row.id),
     ...chapter.paragraphRows.map((row) => row.id)
   ];
-  const expandedRowIds = alleRowIds.filter((id) => !ingeklapteRowIds.includes(id));
+  const expandedRowIds = alleRowIds.filter((id) => openRowIds.includes(id));
 
   const openOnderdelen = [
     ...(chapter.introRow && chapter.introRow.kind !== 'chapterIntro' ? [chapter.introRow] : []),
