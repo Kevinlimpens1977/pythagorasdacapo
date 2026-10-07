@@ -27,11 +27,11 @@ export default function PlusOverzicht({
     <section className="helix-card p-5">
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="flex items-center gap-2 font-display text-lg font-extrabold text-[var(--helix-purple)]">
+          <h3 className="lo-kaart-titel text-[var(--lo-paars-inkt)]">
             <Star size={18} />
             Vrijwillig extra gedaan
           </h3>
-          <p className="text-sm font-semibold text-[var(--helix-muted)]">
+          <p className="lo-kaart-uitleg">
             {aantalParagrafen} plusparagra{aantalParagrafen === 1 ? 'af' : 'fen'}
             {hoofdstukTitel ? ` in ${hoofdstukTitel}` : ''} · {metPlus.length} van {aantalLeerlingen} leerlingen
             begon eraan
@@ -39,13 +39,13 @@ export default function PlusOverzicht({
         </div>
       </div>
 
-      <p className="mb-4 rounded-[var(--helix-radius-md)] border border-[rgba(122,60,255,0.3)] bg-[var(--helix-soft-lavender)]/60 px-3 py-2 text-xs font-bold text-[var(--helix-navy)]">
+      <p className="lo-melding mb-4 bg-[var(--lo-paars-zacht)] text-[var(--lo-paars-inkt)]">
         {PLUS_PRESENTATIE.uitleg} Deze lijst staat los van de voortgang hierboven: hij telt alleen
         wat er bovenop de verplichte stof gedaan is.
       </p>
 
       {zichtbaar.length === 0 ? (
-        <p className="rounded-[var(--helix-radius-md)] border border-dashed border-[var(--helix-border)] bg-white/70 px-3 py-3 text-sm font-semibold text-[var(--helix-muted)]">
+        <p className="lo-melding lo-melding--info">
           Nog niemand is aan de plusstof begonnen. Dat is geen achterstand — het is vrijwillig werk.
         </p>
       ) : (
@@ -55,24 +55,24 @@ export default function PlusOverzicht({
               <button
                 type="button"
                 onClick={() => onSelectLeerling?.(leerling)}
-                className="flex w-full items-center gap-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] border-l-4 border-l-[var(--helix-purple)] bg-white px-4 py-3 text-left transition hover:border-[var(--helix-purple)]"
+                className="flex w-full items-center gap-3 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] border-l-4 border-l-[var(--lo-paars)] bg-[var(--lo-kaart)] px-4 py-3 text-left transition hover:border-[var(--lo-paars)]"
               >
                 <StudentAvatar
                   student={leerling.student}
                   size="sm"
                   shape="circle"
                   fallback="initial"
-                  fallbackClassName="bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"
+                  fallbackClassName="bg-[var(--lo-paars-zacht)] text-[var(--lo-paars-inkt)]"
                 />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-black text-[var(--helix-navy)]">{leerling.studentNaam}</span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--helix-purple)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]">
+                    <span className="font-extrabold text-[var(--lo-inkt)]">{leerling.studentNaam}</span>
+                    <span className="lo-label lo-label--paars">
                       <Star size={11} />
                       {leerling.aantalAf} van {leerling.totaalParagrafen} af
                     </span>
                     {leerling.aantalBezig > 0 && (
-                      <span className="text-[11px] font-bold text-[var(--helix-muted)]">
+                      <span className="lo-onderregel font-bold">
                         {leerling.aantalBezig} mee bezig
                       </span>
                     )}
@@ -84,7 +84,7 @@ export default function PlusOverzicht({
                       <span
                         key={paragraaf.paragraafId}
                         title={paragraaf.paragraafLabel}
-                        className="max-w-64 truncate rounded-full bg-[var(--helix-surface-soft)] px-2 py-0.5 text-[11px] font-bold text-[var(--helix-navy)]"
+                        className="max-w-64 truncate rounded-full bg-[var(--lo-papier-2)] px-2 py-0.5 text-[11px] font-bold text-[var(--lo-inkt)]"
                       >
                         {paragraaf.paragraafLabel}
                       </span>
@@ -93,7 +93,7 @@ export default function PlusOverzicht({
                       <span
                         key={paragraaf.paragraafId}
                         title={`${paragraaf.paragraafLabel} - ${paragraaf.afgerondeStappen} van ${paragraaf.totaalStappen} stappen`}
-                        className="max-w-64 truncate rounded-full border border-dashed border-[var(--helix-border)] px-2 py-0.5 text-[11px] font-semibold text-[var(--helix-muted)]"
+                        className="max-w-64 truncate rounded-full border border-dashed border-[var(--lo-lijn)] px-2 py-0.5 text-[11px] font-semibold text-[var(--lo-grijs)]"
                       >
                         {paragraaf.paragraafLabel} ({paragraaf.afgerondeStappen}/{paragraaf.totaalStappen})
                       </span>
@@ -101,12 +101,12 @@ export default function PlusOverzicht({
                   </span>
                 </span>
                 <span className="hidden shrink-0 flex-col items-end sm:flex">
-                  <span className="text-sm font-black text-[var(--helix-navy)]">{leerling.verplichtPercentage}%</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--helix-muted)]">
+                  <span className="text-sm font-extrabold text-[var(--lo-inkt)]">{leerling.verplichtPercentage}%</span>
+                  <span className="lo-onderregel">
                     verplichte stof
                   </span>
                 </span>
-                <ArrowRight size={18} className="shrink-0 text-[var(--helix-muted)]" />
+                <ArrowRight size={18} className="shrink-0 text-[var(--lo-grijs)]" />
               </button>
             </li>
           ))}
@@ -114,14 +114,14 @@ export default function PlusOverzicht({
       )}
 
       {metPlus.length > zichtbaar.length && (
-        <p className="mt-3 text-xs font-bold text-[var(--helix-muted)]">
+        <p className="lo-onderregel mt-3 font-bold">
           Nog {metPlus.length - zichtbaar.length} leerling{metPlus.length - zichtbaar.length === 1 ? '' : 'en'} deed
           ook plusstof.
         </p>
       )}
 
       {zonderPlus.length > 0 && (
-        <p className="mt-3 text-xs font-semibold text-[var(--helix-muted)]">
+        <p className="lo-onderregel mt-3">
           {zonderPlus.length} leerling{zonderPlus.length === 1 ? '' : 'en'} deed nog geen plusstof. Dat is
           geen achterstand: {zonderPlus.map((leerling) => leerling.studentNaam).join(', ')}.
         </p>

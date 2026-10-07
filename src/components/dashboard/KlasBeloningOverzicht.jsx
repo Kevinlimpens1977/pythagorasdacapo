@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Loader2, Star } from 'lucide-react';
+import { CheckCircle2, Star } from 'lucide-react';
 import { BADGES, isoWeekSleutel, niveauVoorXp } from '../../lib/beloning';
 import { getKlasBeloning } from '../../services/tokenService';
+import { HelixLaden } from '../merk/HelixLogo';
 
 /**
  * Per leerling: niveau, XP, sterren, weekreeks, badges, het DV-weekdoel en de
@@ -54,9 +55,9 @@ export default function KlasBeloningOverzicht({ klasId = '', students = [] }) {
     <section className="helix-card p-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="helix-eyebrow">Tokens en XP</p>
-          <h2 className="mt-1 text-xl font-black text-[var(--helix-navy)]">Niveau en weekdoel ({week})</h2>
-          <p className="helix-muted mt-1 text-sm">
+          <p className="lo-eyebrow">Tokens en XP</p>
+          <h2 className="lo-kaart-titel mt-1">Niveau en weekdoel ({week})</h2>
+          <p className="lo-kaart-uitleg">
             {metDoel > 0
               ? `${gehaald} van ${metDoel} leerlingen met een weekdoel hebben het gehaald.`
               : 'Nog geen DV-weekdoel deze week. Dat ontstaat zodra je een hoofdstuk vrijgeeft en een leerling eraan begint.'}
@@ -64,15 +65,15 @@ export default function KlasBeloningOverzicht({ klasId = '', students = [] }) {
         </div>
       </div>
 
-      {fout && <p className="mt-3 text-sm font-bold text-[var(--color-red-ink)]">{fout}</p>}
+      {fout && <p className="lo-melding lo-melding--fout mt-3">{fout}</p>}
       {!data && !fout && (
-        <p className="helix-muted mt-3 flex items-center gap-2 text-sm"><Loader2 size={16} className="animate-spin" /> Laden...</p>
+        <HelixLaden tekst="Laden..." className="min-h-0 py-10" />
       )}
 
       {data && (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-            <thead className="text-xs font-black uppercase tracking-wide text-[var(--helix-muted)]">
+            <thead className="text-[13px] font-extrabold text-[var(--lo-grijs)]">
               <tr>
                 <th className="px-2 py-2">Leerling</th>
                 <th className="px-2 py-2">Niveau</th>
@@ -86,16 +87,16 @@ export default function KlasBeloningOverzicht({ klasId = '', students = [] }) {
             </thead>
             <tbody>
               {rijen.map((rij) => (
-                <tr key={rij.student.id} className="border-t border-[var(--helix-border)]">
-                  <td className="px-2 py-2 font-bold text-[var(--helix-navy)]">{rij.student.displayName || rij.student.email}</td>
-                  <td className="px-2 py-2 font-black">{rij.niveau}</td>
+                <tr key={rij.student.id} className="border-t border-[var(--lo-lijn)]">
+                  <td className="px-2 py-2 font-bold text-[var(--lo-inkt)]">{rij.student.displayName || rij.student.email}</td>
+                  <td className="px-2 py-2 font-extrabold">{rij.niveau}</td>
                   <td className="px-2 py-2">{rij.xp}</td>
-                  <td className="px-2 py-2"><span className="inline-flex items-center gap-1"><Star size={14} className="text-[#B4520E]" />{rij.sterren}</span></td>
+                  <td className="px-2 py-2"><span className="inline-flex items-center gap-1"><Star size={14} className="text-[var(--lo-oranje-inkt)]" />{rij.sterren}</span></td>
                   <td className="px-2 py-2">{rij.badges}/{BADGES.length}</td>
                   <td className="px-2 py-2">
-                    {!rij.weekdoel && <span className="text-[var(--helix-muted)]">-</span>}
+                    {!rij.weekdoel && <span className="text-[var(--lo-grijs)]">-</span>}
                     {rij.weekdoel?.gehaald && (
-                      <span className="inline-flex items-center gap-1 font-bold text-[var(--color-green-ink)]"><CheckCircle2 size={15} /> gehaald</span>
+                      <span className="inline-flex items-center gap-1 font-bold text-[var(--lo-groen-inkt)]"><CheckCircle2 size={15} /> gehaald</span>
                     )}
                     {rij.weekdoel && !rij.weekdoel.gehaald && `${rij.weekdoel.gedaan} van ${rij.weekdoel.totaal}`}
                   </td>
@@ -103,7 +104,7 @@ export default function KlasBeloningOverzicht({ klasId = '', students = [] }) {
                   <td className="px-2 py-2">
                     {rij.tokensDv > 0 && <span className="mr-2">DV {rij.tokensDv}</span>}
                     {rij.tokensBinask > 0 && <span>Binask {rij.tokensBinask}</span>}
-                    {!rij.tokensDv && !rij.tokensBinask && <span className="text-[var(--helix-muted)]">0</span>}
+                    {!rij.tokensDv && !rij.tokensBinask && <span className="text-[var(--lo-grijs)]">0</span>}
                   </td>
                 </tr>
               ))}

@@ -12,11 +12,11 @@ const REDEN_ICOON = {
 };
 
 const REDEN_RAND = {
-  [STAP_STATUS.VASTGELOPEN]: 'border-l-[var(--helix-danger)]',
-  [STAP_STATUS.NAKIJKEN]: 'border-l-[var(--helix-warning)]',
-  nietGestart: 'border-l-slate-300',
-  stil: 'border-l-[var(--helix-purple)]',
-  achterstand: 'border-l-[var(--helix-purple)]'
+  [STAP_STATUS.VASTGELOPEN]: 'border-l-[var(--lo-rood)]',
+  [STAP_STATUS.NAKIJKEN]: 'border-l-[var(--lo-oranje-inkt)]',
+  nietGestart: 'border-l-[var(--lo-lijn)]',
+  stil: 'border-l-[var(--lo-blauw)]',
+  achterstand: 'border-l-[var(--lo-blauw)]'
 };
 
 /**
@@ -34,12 +34,12 @@ export default function AandachtsLijst({
   if (!items.length) {
     return (
       <div className="helix-card flex items-center gap-3 p-5">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]">
           <ClipboardCheck size={20} />
         </span>
         <div>
-          <p className="font-black text-[var(--helix-navy)]">Niemand vraagt nu aandacht</p>
-          <p className="text-sm font-semibold text-[var(--helix-muted)]">
+          <p className="font-extrabold text-[var(--lo-inkt)]">Niemand vraagt nu aandacht</p>
+          <p className="text-sm text-[var(--lo-grijs)]">
             {totaalLeerlingen > 0
               ? `Alle ${totaalLeerlingen} leerlingen werken door zonder blokkade.`
               : 'Er zijn nog geen leerlingen in beeld.'}
@@ -55,8 +55,8 @@ export default function AandachtsLijst({
     <div className="helix-card p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">Nu aandacht nodig</h3>
-          <p className="text-sm font-semibold text-[var(--helix-muted)]">
+          <h3 className="lo-kaart-titel">Nu aandacht nodig</h3>
+          <p className="lo-kaart-uitleg">
             {items.length} van {totaalLeerlingen || items.length} leerlingen, dringendste eerst
           </p>
         </div>
@@ -71,8 +71,8 @@ export default function AandachtsLijst({
           const isPlusReden = hoofdreden.optioneel === true;
           const Icoon = isPlusReden ? Star : (REDEN_ICOON[hoofdreden.type] || TriangleAlert);
           const randClass = isPlusReden
-            ? 'border-l-[var(--helix-purple)]'
-            : (REDEN_RAND[hoofdreden.type] || 'border-l-[var(--helix-danger)]');
+            ? 'border-l-[var(--lo-paars)]'
+            : (REDEN_RAND[hoofdreden.type] || 'border-l-[var(--lo-rood)]');
           const presentatie = getStatusPresentatie(item.status);
           const openNakijk = nakijkTelling[item.studentId] || 0;
 
@@ -81,21 +81,21 @@ export default function AandachtsLijst({
               <button
                 type="button"
                 onClick={() => onSelectLeerling?.(item)}
-                className={`flex w-full items-center gap-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] border-l-4 bg-white px-4 py-3 text-left transition hover:border-[var(--helix-purple)] ${randClass}`}
+                className={`flex w-full items-center gap-3 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] border-l-4 bg-[var(--lo-kaart)] px-4 py-3 text-left transition hover:border-[var(--lo-blauw)] ${randClass}`}
               >
                 <StudentAvatar
                   student={item.student}
                   size="sm"
                   shape="circle"
                   fallback="initial"
-                  fallbackClassName="bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"
+                  fallbackClassName="bg-[var(--lo-blauw-zacht)] text-[var(--lo-blauw-inkt)]"
                 />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-black text-[var(--helix-navy)]">{item.studentNaam}</span>
+                    <span className="font-extrabold text-[var(--lo-inkt)]">{item.studentNaam}</span>
                     <span
-                      className={`inline-flex items-center gap-1 text-xs font-black ${
-                        isPlusReden ? 'text-[var(--helix-purple)]' : 'text-[var(--helix-muted)]'
+                      className={`inline-flex items-center gap-1 text-xs font-extrabold ${
+                        isPlusReden ? 'text-[var(--lo-paars-inkt)]' : 'text-[var(--lo-grijs)]'
                       }`}
                     >
                       <Icoon size={14} />
@@ -104,37 +104,37 @@ export default function AandachtsLijst({
                     {isPlusReden && (
                       <span
                         title={PLUS_UITLEG_DOCENT}
-                        className="inline-flex items-center gap-1 rounded-full border border-[rgba(122,60,255,0.35)] bg-[var(--helix-soft-lavender)] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--helix-purple)]"
+                        className="lo-label lo-label--paars"
                       >
                         <Star size={11} />
                         {PLUS_KORT}
                       </span>
                     )}
                     {openNakijk > 0 && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[var(--helix-warning)] bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-800">
+                      <span className="lo-label lo-label--oranje">
                         <ClipboardCheck size={12} />
                         {openNakijk} na te kijken
                       </span>
                     )}
                   </span>
-                  <span className="truncate text-sm font-semibold text-[var(--helix-muted)]">
+                  <span className="truncate text-sm text-[var(--lo-grijs)]">
                     {hoofdreden.detail}
                   </span>
                   {item.redenen?.length > 1 && (
-                    <span className="mt-0.5 text-[11px] font-semibold text-[var(--helix-muted)]">
+                    <span className="lo-onderregel mt-0.5">
                       Ook: {item.redenen.slice(1).map((reden) => reden.label).join(', ')}
                     </span>
                   )}
                 </span>
                 <span className="hidden shrink-0 flex-col items-end sm:flex">
-                  <span className={`text-sm font-black ${presentatie.status === STAP_STATUS.AFGEROND ? 'text-emerald-700' : 'text-[var(--helix-navy)]'}`}>
+                  <span className={`text-sm font-extrabold ${presentatie.status === STAP_STATUS.AFGEROND ? 'text-[var(--lo-groen-inkt)]' : 'text-[var(--lo-inkt)]'}`}>
                     {item.percentage}%
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--helix-muted)]">
+                  <span className="lo-onderregel">
                     voortgang
                   </span>
                 </span>
-                <ArrowRight size={18} className="shrink-0 text-[var(--helix-muted)]" />
+                <ArrowRight size={18} className="shrink-0 text-[var(--lo-grijs)]" />
               </button>
             </li>
           );
@@ -142,7 +142,7 @@ export default function AandachtsLijst({
       </ul>
 
       {items.length > zichtbaar.length && (
-        <p className="mt-3 text-xs font-bold text-[var(--helix-muted)]">
+        <p className="lo-onderregel mt-3 font-bold">
           Nog {items.length - zichtbaar.length} leerling{items.length - zichtbaar.length === 1 ? '' : 'en'} in de lijst.
           Open de weergave Signalen voor de volledige stand.
         </p>

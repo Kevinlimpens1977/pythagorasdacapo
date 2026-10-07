@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Loader2, RefreshCw } from 'lucide-react';
 import NulmetingProfielKaart from '../nulmeting/NulmetingProfielKaart';
 import * as nulmetingService from '../../services/nulmetingService';
+import { HelixLaden } from '../merk/HelixLogo';
 
 /** Het startprofiel van één leerling in het docentdetail, met bijwerkknop. */
 export default function NulmetingLeerlingPaneel({ leerlingUid = '', leerlingNaam = '' }) {
@@ -36,21 +37,21 @@ export default function NulmetingLeerlingPaneel({ leerlingUid = '', leerlingNaam
     <div className="helix-card mb-6 p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="helix-eyebrow">Nulmeting digitale vaardigheden</p>
-          <h3 className="mt-1 text-lg font-black text-[var(--helix-navy)]">Startprofiel {leerlingNaam}</h3>
+          <p className="lo-eyebrow">Nulmeting digitale vaardigheden</p>
+          <h3 className="lo-kaart-titel mt-1">Startprofiel {leerlingNaam}</h3>
         </div>
-        <button type="button" onClick={bijwerken} disabled={busy} className="btn-secondary inline-flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-50">
+        <button type="button" onClick={bijwerken} disabled={busy} className="lo-knop-tweede lo-knop--klein">
           {busy ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
           {profiel ? 'Bijwerken' : 'Berekenen'}
         </button>
       </div>
-      {error && <p className="mb-3 text-sm font-semibold text-rose-700">{error}</p>}
+      {error && <p className="lo-melding lo-melding--fout mb-3">{error}</p>}
       {loading ? (
-        <p className="text-sm font-semibold text-[var(--helix-muted)]">Laden...</p>
+        <HelixLaden tekst="Laden..." className="min-h-0 py-10" />
       ) : profiel ? (
         <NulmetingProfielKaart profiel={profiel} voorDocent />
       ) : (
-        <p className="text-sm font-semibold text-[var(--helix-muted)]">
+        <p className="text-sm text-[var(--lo-grijs)]">
           Nog geen profiel. Klik op Berekenen zodra de leerling (een deel van) de nulmeting heeft gemaakt.
         </p>
       )}

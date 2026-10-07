@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
-import { Users, AlertTriangle, Search, CheckCircle, ClipboardCheck, Clock, ArrowUpDown, CheckSquare, Square, Star } from 'lucide-react';
+import { AlertTriangle, Search, CheckCircle, ClipboardCheck, Clock, ArrowUpDown, CheckSquare, Square, Star } from 'lucide-react';
 import { db } from '../../services/firebase';
 import { collection, collectionGroup, query, where, onSnapshot } from 'firebase/firestore';
 
@@ -70,7 +70,8 @@ import KlasFase5Beheer from './KlasFase5Beheer';
 import KlasCijfers from './KlasCijfers';
 import NulmetingLeerlingPaneel from './NulmetingLeerlingPaneel';
 import StudentAvatar from '../common/StudentAvatar';
-import HelixBrandBanner from '../common/HelixBrandBanner';
+import { Label, PaginaKop } from '../leeromgeving';
+import { HelixLaden } from '../merk/HelixLogo';
 
 // Helper functie voor relatieve tijd
 function getRelativeTime(timestamp) {
@@ -90,9 +91,9 @@ function getRelativeTime(timestamp) {
 
 // Helper functie voor voortgangskleur
 function getProgressColor(percentage) {
-  if (percentage < 40) return 'bg-emerald-200';
-  if (percentage < 75) return 'bg-emerald-500';
-  return 'bg-emerald-700';
+  if (percentage < 40) return 'bg-[var(--lo-groen)]/40';
+  if (percentage < 75) return 'bg-[var(--lo-groen)]/75';
+  return 'bg-[var(--lo-groen)]';
 }
 
 function SupportMiniBar({ records = [], paragraafId = null }) {
@@ -122,7 +123,7 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
         );
       })}
       {completedRecords.length > 12 && (
-        <span className="text-[10px] font-black text-slate-400">+{completedRecords.length - 12}</span>
+        <span className="text-[11px] font-extrabold text-[var(--lo-grijs)]">+{completedRecords.length - 12}</span>
       )}
     </div>
   );
@@ -131,8 +132,8 @@ function SupportMiniBar({ records = [], paragraafId = null }) {
 function DashboardLensSwitch({ activeLens = 'class', onSelect, signalCount = 0, nakijkCount = 0 }) {
   const badgeCount = { signals: signalCount, nakijken: nakijkCount };
   const badgeClass = {
-    signals: 'bg-red-100 text-red-700',
-    nakijken: 'bg-amber-100 text-amber-800'
+    signals: 'bg-[var(--lo-rood-zacht)] text-[var(--lo-rood-inkt)]',
+    nakijken: 'bg-[var(--lo-oranje-zacht)] text-[var(--lo-oranje-inkt)]'
   };
 
   return (
@@ -148,7 +149,7 @@ function DashboardLensSwitch({ activeLens = 'class', onSelect, signalCount = 0, 
         >
           {tab.label}
           {badgeCount[tab.key] > 0 && (
-            <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-black leading-none ${badgeClass[tab.key]}`}>
+            <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[11px] font-extrabold leading-none ${badgeClass[tab.key]}`}>
               {badgeCount[tab.key]}
             </span>
           )}
@@ -178,23 +179,23 @@ function StudentProgressRecordList({ records = [], paragraafId }) {
         return (
           <div
             key={record.id || record.blockId || record.vraagId || index}
-            className={`rounded-xl border ${tone.borderClass} ${tone.fillClass} ${tone.ringClass} px-3 py-2 text-xs`}
+            className={`rounded-[var(--lo-hoek-m)] border ${tone.borderClass} ${tone.fillClass} ${tone.ringClass} px-3 py-2 text-xs`}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-black text-slate-800">
+              <span className="font-extrabold text-[var(--lo-inkt)]">
                 {record.blockTitle || record.vraagTitle || `Onderdeel ${index + 1}`}
               </span>
-              <span className="font-black text-slate-700">
+              <span className="font-extrabold text-[var(--lo-inkt)]">
                 {record.completed ? tone.label : 'Nog bezig'}
               </span>
             </div>
-            <div className="mt-1 flex flex-wrap gap-3 font-semibold text-slate-600">
+            <div className="mt-1 flex flex-wrap gap-3 font-semibold text-[var(--lo-grijs)]">
               <span>Pogingen: {record.attempts || 0}</span>
               <span>AI-vragen: {record.aiHelpCount || 0}</span>
               <span>Status: {record.resultTier || tone.tier}</span>
               <span>Scorefactor: {record.scoreWeight ?? 0}</span>
             </div>
-            <p className="mt-1 line-clamp-2 break-all font-medium text-slate-500">
+            <p className="mt-1 line-clamp-2 break-all font-medium text-[var(--lo-grijs)]">
               Antwoord: {formatProgressAnswer(record.lastAnswer)}
             </p>
           </div>
@@ -719,9 +720,8 @@ export default function ClassOverview() {
   }).length;
   if (loading) {
     return (
-      <div className="mx-auto flex h-64 w-full max-w-7xl flex-col items-center justify-center gap-4 px-6 text-[var(--helix-muted)] md:px-8">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-fuchsia-100 border-t-[var(--helix-purple)]"></div>
-        <p className="font-medium">Leerlinggegevens laden...</p>
+      <div className="beheer-stijl lo-tekst">
+        <HelixLaden tekst="Leerlinggegevens laden..." />
       </div>
     );
   }
@@ -783,7 +783,7 @@ export default function ClassOverview() {
     const openNakijkVoorLeerling = leerlingOpdrachten.length;
 
     return (
-      <div className="helix-container animate-in fade-in slide-in-from-right-8 duration-500">
+      <div className="beheer-stijl lo-tekst helix-container animate-in fade-in slide-in-from-right-8 duration-500">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <DashboardLensSwitch
             activeLens="student"
@@ -807,17 +807,13 @@ export default function ClassOverview() {
             setActiveLens('class');
             setExpandedEvidence({});
           }}
-          className="mb-8 flex items-center gap-2 font-bold text-[var(--helix-muted)] transition-colors hover:text-[var(--helix-navy)]"
+          className="lo-knop-tweede lo-knop--klein mb-8"
         >
-          <Search className="rotate-180" size={20} /> Terug naar overzicht
+          <Search className="rotate-180" size={16} /> Terug naar overzicht
         </button>
 
         <div className="helix-surface mb-8 overflow-hidden">
-          <HelixBrandBanner
-            variant="compact"
-            className="border-0 border-b border-[var(--helix-border)] shadow-none"
-            logoClassName="hidden"
-          >
+          <div className="border-b border-[var(--lo-lijn)] p-6">
             <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
               <div className="flex items-center gap-5">
                 <StudentAvatar
@@ -825,14 +821,14 @@ export default function ClassOverview() {
                   size="xl"
                   shape="square"
                   fallback="initial"
-                  fallbackClassName="bg-blue-500 text-white"
+                  fallbackClassName="bg-[var(--lo-blauw)] text-white"
                 />
                 <div>
-                  <h2 className="font-display text-3xl font-extrabold text-[var(--helix-navy)] md:text-4xl">
+                  <h2 className="lo-paginatitel">
                     {selectedStudent.displayName || "Naamloos"}
                   </h2>
-                  <p className="mt-1 text-lg font-semibold text-[var(--helix-muted)]">{selectedStudent.email}</p>
-                  <p className="mt-2 text-sm font-bold text-[var(--helix-purple)]">
+                  <p className="mt-1 text-[17px] text-[var(--lo-grijs)]">{selectedStudent.email}</p>
+                  <p className="mt-2 text-sm font-bold text-[var(--lo-blauw-inkt)]">
                     Laatst actief: {getRelativeTime(selectedStudent.lastActive)}
                   </p>
                   {selectedStudentRij && (
@@ -842,7 +838,7 @@ export default function ClassOverview() {
                         {' '}{selectedStudentRij.statusLabel}
                       </StatusChip>
                       {selectedStudentRij.huidigeParagraaf?.stap && (
-                        <span className="text-xs font-bold text-[var(--helix-muted)]">
+                        <span className="lo-onderregel font-bold">
                           Nu bij {selectedStudentRij.huidigeParagraaf.paragraafLabel}, stap{' '}
                           {selectedStudentRij.huidigeParagraaf.stap.nummer}
                         </span>
@@ -860,17 +856,17 @@ export default function ClassOverview() {
               </div>
               <div className="grid w-full gap-3 md:w-auto md:grid-cols-3">
                 {selectedStudentMetricCards.map((card) => (
-                  <div key={card.key} className="min-w-40 rounded-2xl border border-[var(--helix-border)] bg-white/90 px-5 py-3 shadow-[0_10px_24px_rgba(11,19,43,0.05)]">
-                    <div className="mb-1 text-xs font-bold uppercase tracking-wider text-[var(--helix-muted)]">{card.label}</div>
-                    <div className={`text-xl font-black ${card.tone === 'warning' ? 'text-orange-600' : card.tone === 'quality' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                  <div key={card.key} className="min-w-40 rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] px-5 py-3">
+                    <div className="lo-onderregel mb-1 font-bold">{card.label}</div>
+                    <div className={`text-xl font-extrabold ${card.tone === 'warning' ? 'text-[var(--lo-oranje-inkt)]' : card.tone === 'quality' ? 'text-[var(--lo-groen-inkt)]' : 'text-[var(--lo-blauw-inkt)]'}`}>
                       {card.value}
                     </div>
-                    <div className="mt-1 text-xs font-semibold text-[var(--helix-muted)]">{card.detail}</div>
+                    <div className="lo-onderregel mt-1">{card.detail}</div>
                   </div>
                 ))}
               </div>
             </div>
-          </HelixBrandBanner>
+          </div>
 
           <div className="pad-content">
             <NulmetingLeerlingPaneel
@@ -880,20 +876,20 @@ export default function ClassOverview() {
             {(nakijkMelding || nakijkFout || openNakijkVoorLeerling > 0) && (
               <div className="mb-6 space-y-2">
                 {openNakijkVoorLeerling > 0 && (
-                  <p className="flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-warning)] bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800">
-                    <ClipboardCheck size={16} />
+                  <p className="lo-melding lo-melding--info">
+                    <ClipboardCheck size={16} className="mt-0.5 shrink-0" />
                     {openNakijkVoorLeerling} antwoord{openNakijkVoorLeerling === 1 ? '' : 'en'} wacht op je oordeel.
                     Open de stappen van de paragraaf om goed te keuren of af te keuren.
                   </p>
                 )}
                 {nakijkMelding && (
-                  <p className="flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-emerald-600 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800">
-                    <CheckCircle size={16} />
+                  <p className="lo-melding lo-melding--goed">
+                    <CheckCircle size={16} className="mt-0.5 shrink-0" />
                     {nakijkMelding}
                   </p>
                 )}
                 {nakijkFout && (
-                  <p className="flex items-start gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-danger)] bg-rose-50 px-3 py-2 text-sm font-bold text-rose-800">
+                  <p className="lo-melding lo-melding--fout">
                     <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                     {nakijkFout}
                   </p>
@@ -902,15 +898,15 @@ export default function ClassOverview() {
             )}
 
             {selectedStudentAandacht.length > 0 && (
-              <div className="mb-6 rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] border-l-4 border-l-[var(--helix-danger)] bg-white p-4">
-                <p className="flex items-center gap-2 font-black text-[var(--helix-navy)]">
-                  <AlertTriangle size={18} className="text-[var(--helix-danger)]" />
+              <div className="mb-6 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] border-l-4 border-l-[var(--lo-rood)] bg-[var(--lo-kaart)] p-4">
+                <p className="flex items-center gap-2 font-extrabold text-[var(--lo-inkt)]">
+                  <AlertTriangle size={18} className="text-[var(--lo-rood)]" />
                   Deze leerling vraagt aandacht
                 </p>
                 <ul className="mt-2 space-y-1">
                   {selectedStudentAandacht.map((reden) => (
-                    <li key={reden.type} className="text-sm font-semibold text-[var(--helix-muted)]">
-                      <span className="font-black text-[var(--helix-navy)]">{reden.label}:</span> {reden.detail}
+                    <li key={reden.type} className="text-sm text-[var(--lo-grijs)]">
+                      <span className="font-extrabold text-[var(--lo-inkt)]">{reden.label}:</span> {reden.detail}
                     </li>
                   ))}
                 </ul>
@@ -920,15 +916,15 @@ export default function ClassOverview() {
             {/* Vrijwillig werk apart, en bewust in de accentkleur en niet in
                 rood of oranje: hier valt niets te repareren. */}
             {selectedStudentRij?.plus?.totaalParagrafen > 0 && (
-              <div className="mb-6 rounded-[var(--helix-radius-lg)] border border-[rgba(122,60,255,0.3)] border-l-4 border-l-[var(--helix-purple)] bg-[var(--helix-soft-lavender)]/40 p-4">
-                <p className="flex items-center gap-2 font-black text-[var(--helix-purple)]">
+              <div className="mb-6 rounded-[var(--lo-hoek-m)] border border-[var(--lo-paars-zacht)] border-l-4 border-l-[var(--lo-paars)] bg-[var(--lo-paars-zacht)]/40 p-4">
+                <p className="flex items-center gap-2 font-extrabold text-[var(--lo-paars-inkt)]">
                   <Star size={18} />
                   Vrijwillig extra: {getPlusSamenvattingLabel(selectedStudentRij.plus)}
                 </p>
                 <ul className="mt-2 space-y-1">
                   {selectedStudentRij.plus.paragrafen.map((paragraaf) => (
-                    <li key={paragraaf.paragraafId} className="text-sm font-semibold text-[var(--helix-navy)]">
-                      <span className="font-black">{paragraaf.paragraafLabel}:</span>{' '}
+                    <li key={paragraaf.paragraafId} className="text-sm text-[var(--lo-inkt)]">
+                      <span className="font-extrabold">{paragraaf.paragraafLabel}:</span>{' '}
                       {paragraaf.afgerond
                         ? 'af'
                         : paragraaf.gestart
@@ -937,17 +933,17 @@ export default function ClassOverview() {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-2 text-xs font-bold text-[var(--helix-muted)]">
+                <p className="lo-onderregel mt-2 font-bold">
                   {PLUS_PRESENTATIE.uitleg} Wat hier niet af is, is geen achterstand.
                 </p>
               </div>
             )}
 
             <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-              <h3 className="heading-lg">Voortgang per Paragraaf</h3>
+              <h3 className="lo-kaart-titel">Voortgang per Paragraaf</h3>
 
               <div className="w-full md:w-64">
-                <label className="block text-sm font-bold text-slate-600 mb-2">Filteren op Hoofdstuk</label>
+                <label className="lo-veldlabel">Filteren op Hoofdstuk</label>
                 <select
                   value={effectiveSelectedChapter || ""}
                   onChange={(e) => setSelectedChapter(e.target.value || null)}
@@ -968,7 +964,7 @@ export default function ClassOverview() {
 
             <div className="space-y-8">
               {Object.keys(filteredHoofdstukken).length === 0 && (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm font-semibold text-slate-500">
+                <div className="lo-melding lo-melding--info">
                   Er staan nog geen onderdelen open voor deze leerling.
                 </div>
               )}
@@ -978,8 +974,8 @@ export default function ClassOverview() {
 
                 return (
                   <div key={hoofdstukId}>
-                    <h4 className="text-xl font-black text-slate-600 mb-4 flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <h4 className="lo-kaart-titel mb-4">
+                      <div className="h-3 w-3 shrink-0 rounded-full bg-[var(--lo-blauw)]"></div>
                       {hoofdstukTitle}
                     </h4>
 
@@ -1011,16 +1007,16 @@ export default function ClassOverview() {
                         return (
                           <div
                             key={paragraaf.id}
-                            className={`rounded-2xl border p-4 ${
+                            className={`rounded-[var(--lo-hoek-m)] border p-4 ${
                               isPlus
-                                ? 'border-[rgba(122,60,255,0.3)] bg-[var(--helix-soft-lavender)]/35'
-                                : 'border-[var(--helix-border)] bg-[var(--helix-surface-soft)]'
+                                ? 'border-[var(--lo-paars-zacht)] bg-[var(--lo-paars-zacht)]/35'
+                                : 'border-[var(--lo-lijn)] bg-[var(--lo-papier)]'
                             }`}
                           >
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                               <div className="flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <h5 className="font-bold text-[var(--helix-navy)]">
+                                  <h5 className="font-bold text-[var(--lo-inkt)]">
                                     {paragraafLabel(paragraaf)}
                                   </h5>
                                   {isPlus && <PlusChip />}
@@ -1028,12 +1024,12 @@ export default function ClassOverview() {
                                     <StatusChip status={stapStatus}>{stapPresentatie.label}</StatusChip>
                                   )}
                                   {paragraphProgress.signalCount > 0 && (
-                                    <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-black text-orange-700">
+                                    <Label kleur="oranje">
                                       {paragraphProgress.signalCount} signalen
-                                    </span>
+                                    </Label>
                                   )}
                                 </div>
-                                <div className="mt-2 flex flex-wrap gap-3 text-sm font-semibold text-[var(--helix-muted)]">
+                                <div className="mt-2 flex flex-wrap gap-3 text-sm text-[var(--lo-grijs)]">
                                   <span>
                                     {stapRapport
                                       ? `${stapRapport.afgerondeStappen} / ${stapRapport.totaalStappen} stappen afgerond`
@@ -1062,7 +1058,7 @@ export default function ClassOverview() {
 
                               <div className="flex flex-wrap items-center gap-4 lg:ml-4">
                                 <div className="w-32">
-                                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                                  <div className="h-2 overflow-hidden rounded-full bg-[var(--lo-papier-2)]">
                                     <div
                                       className={`h-full rounded-full transition-all ${stapPresentatie.balkClass}`}
                                       style={{ width: `${stapRapport ? stapRapport.percentage : progressPercent}%` }}
@@ -1070,7 +1066,7 @@ export default function ClassOverview() {
                                   </div>
                                 </div>
                                 <div className="min-w-[60px] text-right">
-                                  <div className="font-bold text-[var(--helix-navy)]">
+                                  <div className="font-bold text-[var(--lo-inkt)]">
                                     {stapRapport ? stapRapport.percentage : progressPercent}%
                                   </div>
                                 </div>
@@ -1082,7 +1078,7 @@ export default function ClassOverview() {
                                       [paragraaf.id]: !current[paragraaf.id]
                                     }));
                                   }}
-                                  className="rounded-xl border border-[var(--helix-border)] bg-white px-3 py-2 text-xs font-black text-[var(--helix-muted)] transition hover:border-[var(--helix-purple)] hover:text-[var(--helix-navy)]"
+                                  className="lo-knop-start"
                                 >
                                   {evidenceOpen
                                     ? 'Verberg stappen'
@@ -1119,15 +1115,15 @@ export default function ClassOverview() {
         {/* Detail Modal */}
         {viewingExercise && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="pad-compact border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <div className="lo-kaart w-full max-w-2xl gap-0 overflow-hidden p-0 animate-in zoom-in-95 duration-300">
+              <div className="pad-compact flex items-center justify-between border-b border-[var(--lo-lijn)] bg-[var(--lo-papier)]">
                 <div>
-                  <h4 className="text-2xl font-black text-slate-800">{viewingExercise.ex.heading}</h4>
-                  <p className="text-slate-500 font-medium">Gedetailleerde antwoorden</p>
+                  <h4 className="lo-kaart-titel">{viewingExercise.ex.heading}</h4>
+                  <p className="lo-onderregel">Gedetailleerde antwoorden</p>
                 </div>
                 <button 
                   onClick={() => setViewingExercise(null)}
-                  className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-800 hover:border-slate-400 transition-all shadow-sm"
+                  className="lo-knop-tweede h-11 w-11 justify-center p-0"
                 >
                   <Search size={24} className="rotate-45" />
                 </button>
@@ -1136,14 +1132,14 @@ export default function ClassOverview() {
               <div className="pad-compact max-h-[60vh] overflow-y-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
+                    <tr className="border-b border-[var(--lo-lijn)] text-[13px] font-extrabold text-[var(--lo-grijs)]">
                       <th className="pb-4">Vraag / Onderdeel</th>
                       <th className="pb-4">Antwoord Leerling</th>
                       <th className="pb-4">Correct Antwoord</th>
                       <th className="pb-4 text-center">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-[var(--lo-lijn)]">
                     {(() => {
                       const { ex, result } = viewingExercise;
                       const rows = [];
@@ -1172,16 +1168,16 @@ export default function ClassOverview() {
                       
                       return rows.map((row, idx) => (
                         <tr key={idx} className="group">
-                          <td className="py-4 font-bold text-slate-700">{row.label}</td>
-                          <td className={`py-4 font-black ${row.isCorrect ? 'text-green-600' : 'text-rose-500'}`}>
+                          <td className="py-4 font-bold text-[var(--lo-inkt)]">{row.label}</td>
+                          <td className={`py-4 font-extrabold ${row.isCorrect ? 'text-[var(--lo-groen-inkt)]' : 'text-[var(--lo-rood-inkt)]'}`}>
                             {row.student}
                           </td>
-                          <td className="py-4 font-medium text-slate-400 italic">{row.correct}</td>
+                          <td className="py-4 italic text-[var(--lo-grijs)]">{row.correct}</td>
                           <td className="py-4 text-center">
                             {row.isCorrect ? (
-                              <CheckCircle className="text-green-500 mx-auto" size={20} />
+                              <CheckCircle className="mx-auto text-[var(--lo-groen)]" size={20} />
                             ) : (
-                              <AlertTriangle className="text-rose-500 mx-auto" size={20} />
+                              <AlertTriangle className="mx-auto text-[var(--lo-rood)]" size={20} />
                             )}
                           </td>
                         </tr>
@@ -1191,22 +1187,22 @@ export default function ClassOverview() {
                 </table>
               </div>
               
-              <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+              <div className="flex items-center justify-between border-t border-[var(--lo-lijn)] bg-[var(--lo-papier)] p-8">
                 <div className="flex gap-6">
                   <div className="text-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase">Totaal Pogingen</div>
-                    <div className="text-xl font-black text-slate-700">{viewingExercise.result.attempts}</div>
+                    <div className="lo-onderregel font-bold">Totaal Pogingen</div>
+                    <div className="text-xl font-extrabold text-[var(--lo-inkt)]">{viewingExercise.result.attempts}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[10px] font-bold text-slate-400 uppercase">Resultaat</div>
-                    <div className={`text-xl font-black ${viewingExercise.result.isCorrect ? 'text-green-600' : 'text-amber-500'}`}>
+                    <div className="lo-onderregel font-bold">Resultaat</div>
+                    <div className={`text-xl font-extrabold ${viewingExercise.result.isCorrect ? 'text-[var(--lo-groen-inkt)]' : 'text-[var(--lo-oranje-inkt)]'}`}>
                       {viewingExercise.result.isCorrect ? 'Correct' : 'Incompleet'}
                     </div>
                   </div>
                 </div>
                 <button 
                   onClick={() => setViewingExercise(null)}
-                  className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-black hover:bg-slate-800 transition-colors"
+                  className="lo-knop-tweede"
                 >
                   Sluiten
                 </button>
@@ -1219,21 +1215,19 @@ export default function ClassOverview() {
   }
 
   return (
-    <div className="helix-page min-h-screen">
+    <div className="beheer-stijl lo-tekst helix-page min-h-screen">
       <div className="helix-container">
-      <HelixBrandBanner variant="compact" className="mb-8 rounded-[var(--helix-radius-xl)]">
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold text-[var(--helix-navy)]">
-              <Users className="text-[var(--helix-purple)]" /> Klas Dashboard
-            </h1>
-            <p className="mt-1 text-[var(--helix-muted)]">Real-time overzicht van je leerlingen</p>
-          </div>
-          <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-black text-emerald-700">
-            Nu actief: {activeCount}/{scopedStudents.length}
-          </div>
-        </div>
-      </HelixBrandBanner>
+      <div className="mb-8">
+        <PaginaKop
+          titel="Klas Dashboard"
+          uitleg="Real-time overzicht van je leerlingen"
+          acties={(
+            <Label kleur="groen">
+              Nu actief: {activeCount}/{scopedStudents.length}
+            </Label>
+          )}
+        />
+      </div>
 
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
@@ -1244,11 +1238,11 @@ export default function ClassOverview() {
             nakijkCount={nakijkOpdrachten.length}
           />
           <div className="min-w-56">
-            <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">Klas</label>
+            <label className="lo-onderregel mb-1 font-bold">Klas</label>
             <select
               value={selectedKlasId}
               onChange={(event) => setSelectedKlasId(event.target.value)}
-              className="input-standard w-full py-2 text-sm font-black text-[var(--helix-navy)]"
+              className="input-standard w-full py-2 text-sm font-bold text-[var(--lo-inkt)]"
             >
               {klasFilterOptions.map((option) => (
                 <option key={option.value || 'all'} value={option.value}>
@@ -1258,17 +1252,17 @@ export default function ClassOverview() {
             </select>
           </div>
         </div>
-        <div className="text-sm font-bold text-[var(--helix-muted)]">
+        <div className="text-sm font-bold text-[var(--lo-grijs)]">
           {activeLens === 'signals' && (
             <p>Toont open signalen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
           )}
           {activeLens === 'nakijken' && (
-            <p className="text-amber-700">
+            <p className="text-[var(--lo-oranje-inkt)]">
               Handelt open beoordelingen af binnen {selectedKlasOption?.label || 'alle klassen'}.
             </p>
           )}
           {activeLens === 'paragraph' && (
-            <p className="text-blue-700">Vergelijkt paragrafen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
+            <p className="text-[var(--lo-blauw-inkt)]">Vergelijkt paragrafen binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
           )}
           {activeLens === 'student' && (
             <p>Klik op een leerling binnen {selectedKlasOption?.label || 'alle klassen'}.</p>
@@ -1286,14 +1280,14 @@ export default function ClassOverview() {
             key={card.key}
             className={`${card.tone === 'warning' ? 'helix-card border-orange-100 bg-orange-50/45' : 'helix-card'} flex flex-col p-6`}
           >
-            <div className={`mb-2 flex items-center gap-2 text-sm font-medium ${card.tone === 'warning' ? 'text-orange-700' : 'text-[var(--helix-muted)]'}`}>
+            <div className={`mb-2 flex items-center gap-2 text-sm font-medium ${card.tone === 'warning' ? 'text-[var(--lo-oranje-inkt)]' : 'text-[var(--lo-grijs)]'}`}>
               {card.tone === 'warning' && <AlertTriangle size={16} />}
               {card.label}
             </div>
-            <div className={`font-display text-3xl font-extrabold ${card.tone === 'warning' ? 'text-orange-700' : card.tone === 'quality' ? 'text-emerald-700' : 'text-[var(--helix-purple)]'}`}>
+            <div className={`text-3xl font-extrabold ${card.tone === 'warning' ? 'text-[var(--lo-oranje-inkt)]' : card.tone === 'quality' ? 'text-[var(--lo-groen-inkt)]' : 'text-[var(--lo-blauw-inkt)]'}`}>
               {card.value}
             </div>
-            <div className="mt-2 text-xs font-bold text-[var(--helix-muted)]">{card.detail}</div>
+            <div className="lo-onderregel mt-2 font-bold">{card.detail}</div>
           </div>
         ))}
       </div>
@@ -1346,22 +1340,22 @@ export default function ClassOverview() {
           <section className="helix-surface order-2 p-5 xl:order-1">
             <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h2 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">
+                <h2 className="lo-kaart-titel">
                   Klasoverzicht per paragraaf
                 </h2>
-                <p className="text-sm font-semibold text-[var(--helix-muted)]">
+                <p className="lo-kaart-uitleg">
                   Elk vakje toont afgeronde stappen van die paragraaf. Klik door naar de leerling.
                 </p>
               </div>
               {hoofdstukGroepen.length > 0 && (
                 <div className="w-full lg:w-72">
-                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">
+                  <label className="lo-onderregel mb-1 font-bold">
                     Hoofdstuk
                   </label>
                   <select
                     value={actiefHoofdstuk?.hoofdstukId || ''}
                     onChange={(event) => setSelectedHoofdstukId(event.target.value)}
-                    className="input-standard w-full py-2 text-sm font-bold text-[var(--helix-navy)]"
+                    className="input-standard w-full py-2 text-sm font-bold text-[var(--lo-inkt)]"
                   >
                     {hoofdstukGroepen.map((groep) => (
                       <option key={groep.hoofdstukId} value={groep.hoofdstukId}>
@@ -1389,13 +1383,13 @@ export default function ClassOverview() {
               <StatusChip status={STAP_STATUS.NIET_GESTART}>
                 {hoofdstukTelling[STAP_STATUS.NIET_GESTART]} niet gestart
               </StatusChip>
-              <span className="ml-auto text-xs font-bold text-[var(--helix-muted)]">
+              <span className="lo-onderregel ml-auto font-bold">
                 Mediaan {hoofdstukTelling.mediaanPercentage}% van dit hoofdstuk
               </span>
             </div>
 
             {zonderKlasselectie && (
-              <p className="mb-4 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 text-xs font-bold text-[var(--helix-muted)]">
+              <p className="lo-melding lo-melding--info mb-4">
                 Voor leerlingen zonder klasselectie telt de volledige gepubliceerde lesstof mee.
                 Zet lesstof klaar bij Klassen om de omvang te beperken.
               </p>
@@ -1448,29 +1442,29 @@ export default function ClassOverview() {
         <section className="helix-surface mb-8 p-5">
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h2 className="font-display text-lg font-extrabold text-[var(--helix-navy)]">
+              <h2 className="lo-kaart-titel">
                 Paragraaffocus per stap
               </h2>
-              <p className="text-sm font-semibold text-[var(--helix-muted)]">
+              <p className="lo-kaart-uitleg">
                 {stapParagraaf
                   ? `${stapKolommen.length} stappen in ${stapParagraaf.code || stapParagraaf.number || ''} ${stapParagraaf.title}`
                   : 'Kies een paragraaf om de stappen naast elkaar te zetten.'}
               </p>
               {stapParagraafIsPlus && (
-                <p className="mt-2 inline-flex items-center gap-2 rounded-[var(--helix-radius-md)] border border-[rgba(122,60,255,0.3)] bg-[var(--helix-soft-lavender)]/60 px-3 py-1.5 text-xs font-bold text-[var(--helix-navy)]">
-                  <Star size={13} className="text-[var(--helix-purple)]" />
+                <p className="mt-2 inline-flex items-center gap-2 rounded-[var(--lo-hoek-m)] bg-[var(--lo-paars-zacht)] px-3 py-1.5 text-xs font-bold text-[var(--lo-paars-inkt)]">
+                  <Star size={13} className="text-[var(--lo-paars)]" />
                   {PLUS_PRESENTATIE.uitleg} Een leeg vakje is hier dus geen achterstand.
                 </p>
               )}
             </div>
             <div className="w-full lg:w-80">
-              <label className="mb-1 block text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">
+              <label className="lo-onderregel mb-1 font-bold">
                 Paragraaf
               </label>
               <select
                 value={selectedChapterForClass || ''}
                 onChange={(event) => setSelectedChapterForClass(event.target.value || null)}
-                className="input-standard w-full py-2 text-sm font-bold text-[var(--helix-navy)]"
+                className="input-standard w-full py-2 text-sm font-bold text-[var(--lo-inkt)]"
               >
                 <option value="">Kies een paragraaf</option>
                 {paragraphen.map((paragraaf) => (
@@ -1501,7 +1495,7 @@ export default function ClassOverview() {
               <StatusLegenda className="mt-4" toonPlus={stapParagraafIsPlus} />
             </>
           ) : (
-            <p className="rounded-[var(--helix-radius-lg)] border border-dashed border-[var(--helix-border)] bg-white/70 p-6 text-sm font-semibold text-[var(--helix-muted)]">
+            <p className="lo-melding lo-melding--info">
               Kies hierboven een paragraaf. Je ziet dan per leerling welke stap af is, welke loopt en waar het vastloopt.
             </p>
           )}
@@ -1527,18 +1521,18 @@ export default function ClassOverview() {
           });
 
         return bcMeasurements.length > 0 ? (
-          <div className="mb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-6 overflow-hidden">
-            <div className="flex items-center justify-between mb-6">
+          <div className="lo-kaart mb-8 overflow-hidden">
+            <div className="mb-2 flex items-center justify-between">
               <div>
-                <h2 className="font-bold text-slate-700 text-lg flex items-center gap-2">
+                <h2 className="lo-kaart-titel">
                   <ClipboardCheck size={18} aria-hidden="true" />
                   Pythagoras Metingen (BC-lengte)
                 </h2>
-                <p className="text-slate-500 text-sm mt-1">Live updates van leerlingen</p>
+                <p className="lo-kaart-uitleg">Live updates van leerlingen</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-black text-blue-600">{bcMeasurements.length}</div>
-                <div className="text-xs text-slate-500 uppercase tracking-wider">Gemeten</div>
+                <div className="text-3xl font-extrabold text-[var(--lo-blauw-inkt)]">{bcMeasurements.length}</div>
+                <div className="lo-onderregel">Gemeten</div>
               </div>
             </div>
 
@@ -1546,13 +1540,13 @@ export default function ClassOverview() {
               {bcMeasurements.map((measurement, idx) => (
                 <div
                   key={idx}
-                  className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm animate-in fade-in zoom-in-95"
+                  className="rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] p-4 animate-in fade-in zoom-in-95"
                   style={{ animationDelay: `${idx * 50}ms` }}
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-bold text-slate-800">{measurement.name}</div>
-                      <div className="text-xs text-slate-400 mt-1">
+                      <div className="font-bold text-[var(--lo-inkt)]">{measurement.name}</div>
+                      <div className="lo-onderregel mt-1">
                         {measurement.timestamp
                           ? new Date(
                               measurement.timestamp.toDate ? measurement.timestamp.toDate() : measurement.timestamp
@@ -1561,15 +1555,15 @@ export default function ClassOverview() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-black text-indigo-600">{measurement.bc.toFixed(2)}</div>
-                      <div className="text-xs text-slate-400">cm</div>
+                      <div className="text-2xl font-extrabold text-[var(--lo-blauw-inkt)]">{measurement.bc.toFixed(2)}</div>
+                      <div className="lo-onderregel">cm</div>
                     </div>
                   </div>
                   {/* Visual indicator: expected value is ~4.24 cm */}
-                  <div className="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--lo-papier-2)]">
                     <div
                       className={`h-full transition-all ${
-                        Math.abs(measurement.bc - 5) < 0.2 ? 'bg-green-500' : 'bg-amber-500'
+                        Math.abs(measurement.bc - 5) < 0.2 ? 'bg-[var(--lo-groen)]' : 'bg-[var(--lo-oranje-inkt)]'
                       }`}
                       style={{ width: `${Math.min((measurement.bc / 6) * 100, 100)}%` }}
                     />
@@ -1583,9 +1577,9 @@ export default function ClassOverview() {
 
       {/* Students Table */}
       <div className="helix-surface overflow-hidden">
-        <div className="space-y-4 border-b border-[var(--helix-border)] bg-[var(--helix-surface-soft)]/72 p-4">
+        <div className="space-y-4 border-b border-[var(--lo-lijn)] bg-[var(--lo-papier)] p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <h2 className="font-display font-extrabold text-[var(--helix-navy)]">
+            <h2 className="lo-kaart-titel">
               {activeLens === 'signals'
                 ? `Signalen (${filteredProgressSignals.length})`
                 : activeLens === 'paragraph'
@@ -1600,24 +1594,24 @@ export default function ClassOverview() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="input-standard w-full py-2 pl-9 pr-4 text-sm"
               />
-              <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+              <Search className="absolute left-3 top-2.5 text-[var(--lo-grijs)]" size={16} />
             </div>
           </div>
 
           {activeLens === 'signals' ? (
-            <div className="flex flex-col gap-3 rounded-2xl border border-[var(--helix-border)] bg-white/78 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)] p-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-black text-[var(--helix-navy)]">
+                <p className="text-sm font-extrabold text-[var(--lo-inkt)]">
                   {selectedSignals.length} van {filteredProgressSignals.length} signaal{filteredProgressSignals.length === 1 ? '' : 'en'} geselecteerd
                 </p>
-                <p className="text-xs font-semibold text-[var(--helix-muted)]">Afvinken betekent: gezien door docent.</p>
+                <p className="lo-onderregel">Afvinken betekent: gezien door docent.</p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="lo-knoppenbalk">
                 <button
                   type="button"
                   onClick={toggleAllFilteredSignals}
                   disabled={!filteredProgressSignals.length}
-                  className="btn-secondary w-auto px-4 py-2 text-sm disabled:opacity-50"
+                  className="lo-knop-tweede lo-knop--klein"
                 >
                   {allFilteredSignalsSelected ? 'Selectie wissen' : 'Alle signalen selecteren'}
                 </button>
@@ -1625,7 +1619,7 @@ export default function ClassOverview() {
                   type="button"
                   onClick={acknowledgeSelectedSignals}
                   disabled={!selectedSignals.length || acknowledgingSignals}
-                  className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
+                  className="lo-knop lo-knop--klein"
                 >
                   <CheckCircle size={16} />
                   {acknowledgingSignals ? 'Afvinken...' : 'Geselecteerde afvinken'}
@@ -1635,7 +1629,7 @@ export default function ClassOverview() {
           ) : (
             <div className="flex flex-col sm:flex-row gap-4">
               <div className={`flex-1 ${activeLens === 'paragraph' ? 'hidden' : ''}`}>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--helix-muted)]">Paragraaf selecteren</label>
+                <label className="lo-onderregel mb-2 font-bold">Paragraaf selecteren</label>
                 <select
                   value={selectedChapterForClass || ""}
                   onChange={(e) => setSelectedChapterForClass(e.target.value || null)}
@@ -1650,14 +1644,14 @@ export default function ClassOverview() {
                 </select>
               </div>
 
-              <div className="flex gap-2 items-end">
+              <div className="lo-keuzes items-end">
                 <button
                   onClick={() => {
                     setSortBy("name");
                     setSortDirection(sortBy === "name" && sortDirection === "asc" ? "desc" : "asc");
                   }}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    sortBy === "name" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                  className={`lo-keuze ${
+                    sortBy === "name" ? "border-[var(--lo-inkt)] bg-[var(--lo-inkt)] text-[var(--lo-papier)]" : ""
                   }`}
                 >
                   Naam <ArrowUpDown size={14} />
@@ -1667,8 +1661,8 @@ export default function ClassOverview() {
                     setSortBy("total");
                     setSortDirection(sortBy === "total" && sortDirection === "asc" ? "desc" : "asc");
                   }}
-                  className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    sortBy === "total" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                  className={`lo-keuze ${
+                    sortBy === "total" ? "border-[var(--lo-inkt)] bg-[var(--lo-inkt)] text-[var(--lo-papier)]" : ""
                   }`}
                 >
                   Totaal <ArrowUpDown size={14} />
@@ -1679,8 +1673,8 @@ export default function ClassOverview() {
                       setSortBy("chapter");
                       setSortDirection(sortBy === "chapter" && sortDirection === "asc" ? "desc" : "asc");
                     }}
-                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                      sortBy === "chapter" ? "bg-blue-100 text-blue-700 border border-blue-300" : "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200"
+                    className={`lo-keuze ${
+                      sortBy === "chapter" ? "border-[var(--lo-inkt)] bg-[var(--lo-inkt)] text-[var(--lo-papier)]" : ""
                     }`}
                   >
                     Paragraaf <ArrowUpDown size={14} />
@@ -1695,21 +1689,21 @@ export default function ClassOverview() {
           {activeLens === 'signals' ? (
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-slate-200 bg-white">
-                  <th className="px-6 py-4 text-sm font-medium text-slate-500">Leerling</th>
-                  <th className="px-6 py-4 text-sm font-medium text-slate-500">Signaal</th>
-                  <th className="px-6 py-4 text-sm font-medium text-slate-500">Paragraaf</th>
-                  <th className="px-6 py-4 text-right text-sm font-medium text-slate-500">Selecteer</th>
+                <tr className="border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)]">
+                  <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">Leerling</th>
+                  <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">Signaal</th>
+                  <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">Paragraaf</th>
+                  <th className="px-6 py-4 text-right text-[13px] font-extrabold text-[var(--lo-grijs)]">Selecteer</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[var(--lo-lijn)]">
                 {filteredProgressSignals.length > 0 ? (
                   filteredProgressSignals.map((signal) => {
                     const selected = selectedSignalIds.includes(signal.id);
                     const student = students.find((item) => item.id === signal.studentId);
 
                     return (
-                      <tr key={signal.id} className="group transition-colors hover:bg-slate-50">
+                      <tr key={signal.id} className="group transition-colors hover:bg-[var(--lo-papier)]">
                         <td className="px-6 py-4">
                           <button
                             type="button"
@@ -1727,21 +1721,21 @@ export default function ClassOverview() {
                               size="sm"
                               shape="circle"
                               fallback="initial"
-                              fallbackClassName="bg-blue-100 text-blue-600"
+                              fallbackClassName="bg-[var(--lo-blauw-zacht)] text-[var(--lo-blauw-inkt)]"
                             />
                             <span className="flex flex-col">
-                              <span className="font-bold text-slate-800">{signal.studentName}</span>
-                              <span className="text-[10px] font-semibold text-slate-400">{signal.klasId || 'Geen klas'}</span>
+                              <span className="font-bold text-[var(--lo-inkt)]">{signal.studentName}</span>
+                              <span className="lo-onderregel">{signal.klasId || 'Geen klas'}</span>
                             </span>
                           </button>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
-                            <span className="font-black text-[var(--helix-navy)]">{signal.label}</span>
-                            <span className="text-sm font-medium text-[var(--helix-muted)]">{signal.detail}</span>
+                            <span className="font-extrabold text-[var(--lo-inkt)]">{signal.label}</span>
+                            <span className="text-sm text-[var(--lo-grijs)]">{signal.detail}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm font-semibold text-slate-600">
+                        <td className="px-6 py-4 text-sm text-[var(--lo-grijs)]">
                           {signal.paragraafTitle || 'Paragraaf'}
                         </td>
                         <td className="px-6 py-4">
@@ -1751,8 +1745,8 @@ export default function ClassOverview() {
                               onClick={() => toggleSignalSelection(signal.id)}
                               className={`inline-flex h-10 w-10 items-center justify-center rounded-full border text-sm transition-all ${
                                 selected
-                                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                  : 'border-[var(--helix-border)] bg-white text-slate-400 hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]'
+                                  ? 'border-[var(--lo-groen-zacht)] bg-[var(--lo-groen-zacht)] text-[var(--lo-groen-inkt)]'
+                                  : 'border-[var(--lo-lijn)] bg-[var(--lo-kaart)] text-[var(--lo-grijs)] hover:border-[var(--lo-blauw)] hover:text-[var(--lo-blauw-inkt)]'
                               }`}
                               aria-label={selected ? 'Signaal deselecteren' : 'Signaal selecteren'}
                               title={selected ? 'Signaal deselecteren' : 'Signaal selecteren'}
@@ -1766,9 +1760,9 @@ export default function ClassOverview() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="4" className="py-12 text-center text-slate-500">
+                    <td colSpan="4" className="py-12 text-center text-[var(--lo-grijs)]">
                       <div className="flex flex-col items-center gap-2">
-                        <CheckCircle size={32} className="mb-2 text-emerald-400" />
+                        <CheckCircle size={32} className="mb-2 text-[var(--lo-groen)]" />
                         <p className="font-medium">Geen open signalen.</p>
                         <p className="text-xs">Alles wat zichtbaar was, is afgehandeld of er zijn geen directe signalen.</p>
                       </div>
@@ -1778,28 +1772,28 @@ export default function ClassOverview() {
               </tbody>
             </table>
           ) : (
-          <table className="w-full text-left border-collapse">
+          <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-slate-200 bg-white">
-                <th className="py-4 px-6 font-medium text-slate-500 text-sm">Naam</th>
-                <th className="py-4 px-6 font-medium text-slate-500 text-sm">Totale Voortgang</th>
+              <tr className="border-b border-[var(--lo-lijn)] bg-[var(--lo-kaart)]">
+                <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">Naam</th>
+                <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">Totale Voortgang</th>
                 {selectedChapterForClass && (
                   <>
-                    <th className="py-4 px-6 font-medium text-slate-500 text-sm">
+                    <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">
                       {paragraphen.find(para => para.id === selectedChapterForClass)?.title || 'Paragraaf'}
                     </th>
-                    <th className="py-4 px-6 font-medium text-slate-500 text-sm">
+                    <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">
                       Presentatie
                     </th>
-                    <th className="py-4 px-6 font-medium text-slate-500 text-sm">
+                    <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">
                       Evaluatie
                     </th>
                   </>
                 )}
-                <th className="py-4 px-6 font-medium text-slate-500 text-sm">Laatst Actief</th>
+                <th className="px-6 py-4 text-[13px] font-extrabold text-[var(--lo-grijs)]">Laatst Actief</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[var(--lo-lijn)]">
               {filteredStudents.length > 0 ? (
                 filteredStudents.map(student => {
                   const totalSummary = getStudentAssignmentSummary(student);
@@ -1818,7 +1812,7 @@ export default function ClassOverview() {
                         setActiveLens('student');
                         setExpandedEvidence({});
                       }}
-                      className="hover:bg-slate-50 transition-colors group cursor-pointer"
+                      className="group cursor-pointer transition-colors hover:bg-[var(--lo-papier)]"
                     >
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
@@ -1827,39 +1821,39 @@ export default function ClassOverview() {
                             size="sm"
                             shape="circle"
                             fallback="initial"
-                            fallbackClassName="bg-blue-100 text-blue-600"
+                            fallbackClassName="bg-[var(--lo-blauw-zacht)] text-[var(--lo-blauw-inkt)]"
                           />
                           <div className="flex flex-col">
-                            <span className={`font-medium ${!student.displayName ? 'text-amber-600 italic' : 'text-slate-800'}`}>
+                            <span className={`font-medium ${!student.displayName ? 'italic text-[var(--lo-oranje-inkt)]' : 'text-[var(--lo-inkt)]'}`}>
                               {student.displayName && student.displayName.trim() ? student.displayName : (
                                 <span className="inline-flex items-center gap-1"><AlertTriangle size={14} aria-hidden="true" /> Naam ontbreekt</span>
                               )}
                             </span>
-                            <span className="text-[10px] text-slate-400 truncate max-w-[150px]">{student.email}</span>
+                            <span className="lo-onderregel max-w-[150px] truncate">{student.email}</span>
                           </div>
                           {paragraphen.length > 0 && student.warning && (
                             <div className="relative group/tooltip cursor-help">
-                              <AlertTriangle size={18} className="text-amber-500" />
-                              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tooltip:block w-48 bg-slate-800 text-white text-xs rounded py-2 px-3 text-center z-10 shadow-xl border border-slate-700">
+                              <AlertTriangle size={18} className="text-[var(--lo-oranje-inkt)]" />
+                              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/tooltip:block w-48 bg-[var(--lo-inkt)] text-white text-xs rounded py-2 px-3 text-center z-10 shadow-xl">
                                 {student.warning}
-                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[var(--lo-inkt)]"></div>
                               </div>
                             </div>
                           )}
                           {totalProgress === 100 && (
-                            <CheckCircle size={18} className="text-green-500" />
+                            <CheckCircle size={18} className="text-[var(--lo-groen)]" />
                           )}
                         </div>
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-full max-w-[120px] h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-2.5 w-full max-w-[120px] overflow-hidden rounded-full bg-[var(--lo-papier-2)]">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${getProgressColor(totalProgress)}`}
                               style={{ width: `${totalProgress}%` }}
                             />
                           </div>
-                          <span className="text-sm font-semibold text-slate-600">{totalProgress}%</span>
+                          <span className="text-sm font-semibold text-[var(--lo-grijs)]">{totalProgress}%</span>
                         </div>
                         <SupportMiniBar records={studentVoortgang[student.id] || []} />
                       </td>
@@ -1867,28 +1861,28 @@ export default function ClassOverview() {
                         <>
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-full max-w-[120px] h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className="h-2.5 w-full max-w-[120px] overflow-hidden rounded-full bg-[var(--lo-papier-2)]">
                                 <div
                                   className={`h-full rounded-full transition-all duration-500 ${getProgressColor(paraProgress)}`}
                                   style={{ width: `${paraProgress}%` }}
                                 />
                               </div>
-                              <span className="text-sm font-semibold text-slate-600">{paraProgress}%</span>
+                              <span className="text-sm font-semibold text-[var(--lo-grijs)]">{paraProgress}%</span>
                             </div>
                             <SupportMiniBar records={studentVoortgang[student.id] || []} paragraafId={selectedChapterForClass} />
                           </td>
                           <td className="py-4 px-6 text-sm">
                             {hasPresentationViewed(student, selectedChapterForClass) ? (
                               <div className="flex items-center gap-2">
-                                <CheckCircle size={18} className="text-green-500" />
-                                <span className="text-green-600 font-medium text-xs">
+                                <CheckCircle size={18} className="text-[var(--lo-groen)]" />
+                                <span className="text-xs font-medium text-[var(--lo-groen-inkt)]">
                                   {getRelativeTime(getPresentationViewedTime(student, selectedChapterForClass))}
                                 </span>
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded border-2 border-slate-300" />
-                                <span className="text-slate-400 text-xs">Nog niet</span>
+                                <div className="h-4 w-4 rounded border-2 border-[var(--lo-lijn)]" />
+                                <span className="lo-onderregel">Nog niet</span>
                               </div>
                             )}
                           </td>
@@ -1898,15 +1892,15 @@ export default function ClassOverview() {
                               if (!evalScore) {
                                 return (
                                   <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded border-2 border-slate-300" />
-                                    <span className="text-slate-400 text-xs">—</span>
+                                    <div className="h-4 w-4 rounded border-2 border-[var(--lo-lijn)]" />
+                                    <span className="lo-onderregel">—</span>
                                   </div>
                                 );
                               }
                               return (
                                 <div className="flex items-center gap-2">
-                                  <span className="font-bold text-slate-700">{evalScore.correct}/{evalScore.total}</span>
-                                  <span className={`text-xs font-medium ${evalScore.correct === evalScore.total ? 'text-green-600' : 'text-amber-600'}`}>
+                                  <span className="font-bold text-[var(--lo-inkt)]">{evalScore.correct}/{evalScore.total}</span>
+                                  <span className={`text-xs font-medium ${evalScore.correct === evalScore.total ? 'text-[var(--lo-groen-inkt)]' : 'text-[var(--lo-oranje-inkt)]'}`}>
                                     {Math.round((evalScore.correct / evalScore.total) * 100)}%
                                   </span>
                                 </div>
@@ -1915,16 +1909,16 @@ export default function ClassOverview() {
                           </td>
                         </>
                       )}
-                      <td className="py-4 px-6 text-sm text-slate-500">
+                      <td className="px-6 py-4 text-sm text-[var(--lo-grijs)]">
                         <div className="flex items-center gap-2">
                           {getRelativeTime(student.lastActive) === 'Nu' ? (
-                            <span className="flex items-center gap-1.5 text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full text-[11px] uppercase tracking-wider">
-                              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span className="lo-label lo-label--groen">
+                              <span className="h-2 w-2 rounded-full bg-[var(--lo-groen)] animate-pulse"></span>
                               Live
                             </span>
                           ) : (
                             <span className="flex items-center gap-1.5">
-                              <Clock size={14} className="text-slate-400" />
+                              <Clock size={14} className="text-[var(--lo-grijs)]" />
                               {getRelativeTime(student.lastActive)}
                             </span>
                           )}
@@ -1935,9 +1929,9 @@ export default function ClassOverview() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={selectedChapterForClass ? "4" : "3"} className="py-12 text-center text-slate-500">
+                  <td colSpan={selectedChapterForClass ? "4" : "3"} className="py-12 text-center text-[var(--lo-grijs)]">
                     <div className="flex flex-col items-center gap-2">
-                      <Search size={32} className="text-slate-300 mb-2" />
+                      <Search size={32} className="mb-2 text-[var(--lo-lijn)]" />
                       <p className="font-medium">Geen leerlingen gevonden.</p>
                       <p className="text-xs">Zorg dat leerlingen een account hebben aangemaakt.</p>
                     </div>

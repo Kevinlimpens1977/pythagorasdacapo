@@ -5,6 +5,7 @@ import {
   subscribeKlasInzendingen, subscribeKlasStemmingen, subscribeKlasWedstrijden, wijzigStemming, wijzigWedstrijd
 } from '../../services/fase5Service';
 import { createOrUpdateTokenShopItem } from '../../services/tokenService';
+import { HelixLaden } from '../merk/HelixLogo';
 
 // Fase 5 (SPELOPZET-FASE5-EXTRAS.md): meten, stemmingen en de ontwerpwedstrijd.
 
@@ -31,14 +32,14 @@ function Meting({ klasId }) {
     return () => { actief = false; };
   }, [klasId]);
 
-  if (fout) return <p className="text-sm font-bold text-[var(--color-red-ink)]">{fout}</p>;
-  if (!meting) return <p className="flex items-center gap-2 text-sm text-[var(--helix-muted)]"><Loader2 size={15} className="animate-spin" /> Meting laden.</p>;
+  if (fout) return <p className="lo-melding lo-melding--fout">{fout}</p>;
+  if (!meting) return <HelixLaden tekst="Meting laden." className="min-h-0 py-10" />;
   const advies = meting.weken[0]?.advies || [];
   return (
     <div className="space-y-3">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="text-xs uppercase tracking-wide text-[var(--helix-muted)]">
+          <thead className="text-[13px] font-extrabold text-[var(--lo-grijs)]">
             <tr>
               <th className="py-1 pr-3">Week</th>
               <th className="py-1 pr-3">Actief</th>
@@ -52,7 +53,7 @@ function Meting({ klasId }) {
           </thead>
           <tbody>
             {meting.weken.map((week) => (
-              <tr key={week.week} className="border-t border-[var(--helix-border)]">
+              <tr key={week.week} className="border-t border-[var(--lo-lijn)]">
                 <td className="py-1.5 pr-3 font-bold">{week.week}</td>
                 <td className="py-1.5 pr-3">{week.actief} / {week.leerlingen}</td>
                 <td className="py-1.5 pr-3">{week.weekdoelTotaal ? `${week.weekdoelGehaald} / ${week.weekdoelTotaal}` : '-'}</td>
@@ -66,11 +67,11 @@ function Meting({ klasId }) {
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-[var(--helix-muted)]">Gemiddeld saldo nu: {meting.gemiddeldSaldo} tokens. Testaccounts tellen niet mee.</p>
+      <p className="lo-onderregel">Gemiddeld saldo nu: {meting.gemiddeldSaldo} tokens. Testaccounts tellen niet mee.</p>
       {advies.length > 0 && (
         <ul className="space-y-1">
           {advies.map((regel) => (
-            <li key={regel} className="flex items-start gap-2 rounded-lg bg-[#FFF0B8] px-3 py-2 text-sm font-bold"><Lightbulb size={16} className="mt-0.5 shrink-0" aria-hidden="true" />{regel}</li>
+            <li key={regel} className="lo-melding bg-[var(--lo-geel-zacht)] text-[var(--lo-inkt)]"><Lightbulb size={16} className="mt-0.5 shrink-0" aria-hidden="true" />{regel}</li>
           ))}
         </ul>
       )}
@@ -88,37 +89,37 @@ function Stemmingen({ klasId, doe }) {
   return (
     <div className="space-y-3">
       <form
-        className="space-y-2 rounded-xl border border-dashed border-[var(--helix-border)] p-3"
+        className="space-y-2 rounded-[var(--lo-hoek-m)] border border-dashed border-[var(--lo-lijn)] p-3"
         onSubmit={(event) => {
           event.preventDefault();
           doe(() => maakStemming(klasId, vraag, geldigeOpties), 'Stemming staat open.').then(() => { setVraag(''); setOpties(['', '']); });
         }}
       >
-        <input value={vraag} onChange={(e) => setVraag(e.target.value)} maxLength={120} placeholder="Vraag, bijvoorbeeld: welk klasdoel willen we?" className="w-full rounded-lg border border-[var(--helix-border)] px-3 py-2 text-sm" />
+        <input value={vraag} onChange={(e) => setVraag(e.target.value)} maxLength={120} placeholder="Vraag, bijvoorbeeld: welk klasdoel willen we?" className="lo-invoer" />
         <div className="grid gap-2 sm:grid-cols-2">
           {opties.map((optie, index) => (
-            <input key={index} value={optie} maxLength={60} onChange={(e) => setOpties(opties.map((oud, i) => (i === index ? e.target.value : oud)))} placeholder={`Optie ${index + 1}`} className="rounded-lg border border-[var(--helix-border)] px-3 py-2 text-sm" />
+            <input key={index} value={optie} maxLength={60} onChange={(e) => setOpties(opties.map((oud, i) => (i === index ? e.target.value : oud)))} placeholder={`Optie ${index + 1}`} className="lo-invoer" />
           ))}
         </div>
-        <div className="flex gap-2">
-          {opties.length < 4 && <button type="button" onClick={() => setOpties([...opties, ''])} className="flex items-center gap-1 rounded-lg border border-[var(--helix-border)] px-3 py-1.5 text-sm font-bold"><Plus size={14} /> Optie</button>}
+        <div className="lo-knoppenbalk">
+          {opties.length < 4 && <button type="button" onClick={() => setOpties([...opties, ''])} className="lo-knop-tweede lo-knop--klein"><Plus size={16} /> Optie</button>}
           <button type="submit" disabled={!vraag.trim() || geldigeOpties.length < 2} className="helix-btn-solid">Stemming openen</button>
         </div>
       </form>
       {stemmingen.map((stemming) => {
         const totaal = (stemming.telling || []).reduce((som, aantal) => som + aantal, 0);
         return (
-          <div key={stemming.id} className="rounded-xl border border-[var(--helix-border)] p-3 text-sm">
-            <p className="font-black">{stemming.vraag} <span className="font-normal text-[var(--helix-muted)]">({stemming.status}, {totaal} stemmen)</span></p>
+          <div key={stemming.id} className="rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] p-3 text-sm">
+            <p className="font-extrabold">{stemming.vraag} <span className="font-normal text-[var(--lo-grijs)]">({stemming.status}, {totaal} stemmen)</span></p>
             <ul className="mt-1 space-y-0.5">
               {(stemming.opties || []).map((optie, index) => <li key={index}>{optie}: <strong>{stemming.telling?.[index] || 0}</strong></li>)}
             </ul>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {stemming.status === 'open' && <button type="button" onClick={() => doe(() => wijzigStemming(stemming.id, { status: 'gesloten' }), 'Stemming gesloten.')} className="rounded-lg border border-[var(--helix-border)] px-2 py-1 text-xs font-bold">Sluiten</button>}
-              <button type="button" onClick={() => doe(() => wijzigStemming(stemming.id, { uitslagZichtbaar: !stemming.uitslagZichtbaar }), stemming.uitslagZichtbaar ? 'Uitslag verborgen.' : 'De klas ziet de uitslag.')} className="flex items-center gap-1 rounded-lg border border-[var(--helix-border)] px-2 py-1 text-xs font-bold">
-                <Eye size={13} /> {stemming.uitslagZichtbaar ? 'Uitslag verbergen' : 'Uitslag tonen aan de klas'}
+            <div className="lo-knoppenbalk mt-2">
+              {stemming.status === 'open' && <button type="button" onClick={() => doe(() => wijzigStemming(stemming.id, { status: 'gesloten' }), 'Stemming gesloten.')} className="lo-knop-start">Sluiten</button>}
+              <button type="button" onClick={() => doe(() => wijzigStemming(stemming.id, { uitslagZichtbaar: !stemming.uitslagZichtbaar }), stemming.uitslagZichtbaar ? 'Uitslag verborgen.' : 'De klas ziet de uitslag.')} className="lo-knop-start">
+                <Eye size={16} /> {stemming.uitslagZichtbaar ? 'Uitslag verbergen' : 'Uitslag tonen aan de klas'}
               </button>
-              {stemming.status === 'gesloten' && <button type="button" onClick={() => doe(() => wijzigStemming(stemming.id, { status: 'archief' }), 'Weggezet.')} className="rounded-lg border border-[var(--helix-border)] px-2 py-1 text-xs font-bold">Wegzetten</button>}
+              {stemming.status === 'gesloten' && <button type="button" onClick={() => doe(() => wijzigStemming(stemming.id, { status: 'archief' }), 'Weggezet.')} className="lo-knop-start">Wegzetten</button>}
             </div>
           </div>
         );
@@ -164,36 +165,36 @@ function Wedstrijden({ klasId, klasNaam, doe }) {
   return (
     <div className="space-y-3">
       <form
-        className="space-y-2 rounded-xl border border-dashed border-[var(--helix-border)] p-3"
+        className="space-y-2 rounded-[var(--lo-hoek-m)] border border-dashed border-[var(--lo-lijn)] p-3"
         onSubmit={(event) => {
           event.preventDefault();
           doe(() => maakWedstrijd(klasId, thema, uitleg), 'Wedstrijd staat open.').then(() => { setThema(''); setUitleg(''); });
         }}
       >
-        <input value={thema} onChange={(e) => setThema(e.target.value)} maxLength={60} placeholder="Thema, bijvoorbeeld: een pin voor Binask" className="w-full rounded-lg border border-[var(--helix-border)] px-3 py-2 text-sm" />
-        <input value={uitleg} onChange={(e) => setUitleg(e.target.value)} maxLength={200} placeholder="Korte uitleg voor de klas (mag leeg)" className="w-full rounded-lg border border-[var(--helix-border)] px-3 py-2 text-sm" />
+        <input value={thema} onChange={(e) => setThema(e.target.value)} maxLength={60} placeholder="Thema, bijvoorbeeld: een pin voor Binask" className="lo-invoer" />
+        <input value={uitleg} onChange={(e) => setUitleg(e.target.value)} maxLength={200} placeholder="Korte uitleg voor de klas (mag leeg)" className="lo-invoer" />
         <button type="submit" disabled={!thema.trim()} className="helix-btn-solid">Wedstrijd openen</button>
       </form>
 
       {wedstrijden.map((wedstrijd) => {
         const eigen = inzendingen.filter((inzending) => inzending.wedstrijdId === wedstrijd.id);
         return (
-          <div key={wedstrijd.id} className="rounded-xl border border-[var(--helix-border)] p-3 text-sm">
+          <div key={wedstrijd.id} className="rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] p-3 text-sm">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="flex-1 font-black">{wedstrijd.thema} <span className="font-normal text-[var(--helix-muted)]">({wedstrijd.status}, {eigen.length} inzendingen)</span></p>
-              {wedstrijd.status === 'open' && <button type="button" onClick={() => doe(() => wijzigWedstrijd(wedstrijd.id, { status: 'gesloten' }), 'Wedstrijd gesloten.')} className="rounded-lg border border-[var(--helix-border)] px-2 py-1 text-xs font-bold">Sluiten</button>}
+              <p className="flex-1 font-extrabold">{wedstrijd.thema} <span className="font-normal text-[var(--lo-grijs)]">({wedstrijd.status}, {eigen.length} inzendingen)</span></p>
+              {wedstrijd.status === 'open' && <button type="button" onClick={() => doe(() => wijzigWedstrijd(wedstrijd.id, { status: 'gesloten' }), 'Wedstrijd gesloten.')} className="lo-knop-start">Sluiten</button>}
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {eigen.map((inzending) => (
-                <figure key={inzending.id} className={`overflow-hidden rounded-lg border ${wedstrijd.winnaarInzendingId === inzending.id ? 'border-[#FFB400] ring-2 ring-[#FFD33D]' : 'border-[var(--helix-border)]'}`}>
-                  <div className="aspect-square bg-[var(--helix-surface-soft)]"><Afbeelding pad={inzending.status === 'goedgekeurd' && inzending.publiekPad ? inzending.publiekPad : inzending.storagePath} /></div>
+                <figure key={inzending.id} className={`overflow-hidden rounded-[var(--lo-hoek-m)] border ${wedstrijd.winnaarInzendingId === inzending.id ? 'border-[var(--lo-geel)] ring-2 ring-[var(--lo-geel)]' : 'border-[var(--lo-lijn)]'}`}>
+                  <div className="aspect-square bg-[var(--lo-papier)]"><Afbeelding pad={inzending.status === 'goedgekeurd' && inzending.publiekPad ? inzending.publiekPad : inzending.storagePath} /></div>
                   <figcaption className="space-y-1 p-1.5 text-xs">
-                    <p className="font-bold">{inzending.naam} <span className="font-normal text-[var(--helix-muted)]">{inzending.status}</span></p>
+                    <p className="font-bold">{inzending.naam} <span className="font-normal text-[var(--lo-grijs)]">{inzending.status}</span></p>
                     <div className="flex flex-wrap gap-1">
-                      {inzending.status !== 'goedgekeurd' && <button type="button" onClick={() => doe(() => beoordeelInzending(inzending.id, 'goedgekeurd'), 'Goedgekeurd; de klas ziet het ontwerp.')} className="flex items-center gap-0.5 rounded bg-[var(--color-green-soft)] px-1.5 py-0.5 font-bold text-[var(--color-green-ink)]"><Check size={12} /> Goed</button>}
-                      {inzending.status !== 'afgewezen' && <button type="button" onClick={() => doe(() => beoordeelInzending(inzending.id, 'afgewezen'), 'Afgewezen.')} className="flex items-center gap-0.5 rounded bg-[var(--color-red-soft)] px-1.5 py-0.5 font-bold text-[var(--color-red-ink)]"><X size={12} /> Af</button>}
+                      {inzending.status !== 'goedgekeurd' && <button type="button" onClick={() => doe(() => beoordeelInzending(inzending.id, 'goedgekeurd'), 'Goedgekeurd; de klas ziet het ontwerp.')} className="lo-label lo-label--groen cursor-pointer"><Check size={12} /> Goed</button>}
+                      {inzending.status !== 'afgewezen' && <button type="button" onClick={() => doe(() => beoordeelInzending(inzending.id, 'afgewezen'), 'Afgewezen.')} className="lo-label lo-label--rood cursor-pointer"><X size={12} /> Af</button>}
                       {inzending.status === 'goedgekeurd' && !wedstrijd.winnaarInzendingId && (
-                        <button type="button" onClick={() => setWinnaar({ wedstrijd, inzending, itemType: 'shopBadge', prijs: 150 })} className="flex items-center gap-0.5 rounded bg-[#FFF0B8] px-1.5 py-0.5 font-bold"><Trophy size={12} /> Winnaar</button>
+                        <button type="button" onClick={() => setWinnaar({ wedstrijd, inzending, itemType: 'shopBadge', prijs: 150 })} className="lo-label cursor-pointer bg-[var(--lo-geel-zacht)] text-[var(--lo-inkt)]"><Trophy size={12} /> Winnaar</button>
                       )}
                     </div>
                   </figcaption>
@@ -205,24 +206,24 @@ function Wedstrijden({ klasId, klasNaam, doe }) {
       })}
 
       {winnaar && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[#0B0D0F]/40 p-4" onClick={() => setWinnaar(null)}>
-          <div role="dialog" aria-modal="true" aria-label="Winnaar in de shop zetten" onClick={(event) => event.stopPropagation()} className="w-full max-w-sm space-y-3 rounded-2xl bg-white p-5">
-            <p className="font-black">Het ontwerp van {winnaar.inzending.naam} in de shop</p>
-            <label className="block text-sm font-bold">Soort
-              <select value={winnaar.itemType} onChange={(e) => setWinnaar({ ...winnaar, itemType: e.target.value })} className="mt-1 w-full rounded-lg border border-[var(--helix-border)] px-2 py-1.5">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[var(--lo-inkt)]/40 p-4" onClick={() => setWinnaar(null)}>
+          <div role="dialog" aria-modal="true" aria-label="Winnaar in de shop zetten" onClick={(event) => event.stopPropagation()} className="lo-kaart w-full max-w-sm">
+            <p className="lo-kaart-titel">Het ontwerp van {winnaar.inzending.naam} in de shop</p>
+            <label className="lo-veldlabel">Soort
+              <select value={winnaar.itemType} onChange={(e) => setWinnaar({ ...winnaar, itemType: e.target.value })} className="lo-invoer mt-1">
                 <option value="shopBadge">Pin</option>
                 <option value="profileBanner">Banner</option>
                 <option value="titleBadge">Titel</option>
                 <option value="avatarFrame">Frame</option>
               </select>
             </label>
-            <label className="block text-sm font-bold">Prijs
-              <input type="number" min="0" value={winnaar.prijs} onChange={(e) => setWinnaar({ ...winnaar, prijs: e.target.value })} className="mt-1 w-full rounded-lg border border-[var(--helix-border)] px-2 py-1.5" />
+            <label className="lo-veldlabel">Prijs
+              <input type="number" min="0" value={winnaar.prijs} onChange={(e) => setWinnaar({ ...winnaar, prijs: e.target.value })} className="lo-invoer mt-1" />
             </label>
-            <p className="text-xs text-[var(--helix-muted)]">In de shop staat: "Ontworpen door {String(winnaar.inzending.naam).split(' ')[0]} ({klasNaam})". De wedstrijd gaat dicht.</p>
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setWinnaar(null)} className="rounded-lg border border-[var(--helix-border)] px-3 py-1.5 text-sm font-bold">Annuleren</button>
-              <button type="button" onClick={() => { const keuze = winnaar; setWinnaar(null); doe(() => maakItem(keuze), 'Het winnende ontwerp staat in de shop.'); }} className="helix-btn-solid">In de shop zetten</button>
+            <p className="lo-onderregel">In de shop staat: "Ontworpen door {String(winnaar.inzending.naam).split(' ')[0]} ({klasNaam})". De wedstrijd gaat dicht.</p>
+            <div className="lo-knoppenbalk justify-end">
+              <button type="button" onClick={() => setWinnaar(null)} className="lo-knop-tweede">Annuleren</button>
+              <button type="button" onClick={() => { const keuze = winnaar; setWinnaar(null); doe(() => maakItem(keuze), 'Het winnende ontwerp staat in de shop.'); }} className="lo-knop">In de shop zetten</button>
             </div>
           </div>
         </div>
@@ -247,18 +248,18 @@ export default function KlasFase5Beheer({ klasId = '', klasNaam = '' }) {
   if (!klasId) return null;
   return (
     <section className="helix-card space-y-5 p-5">
-      {melding && <p className="rounded-lg bg-[var(--color-green-soft)] px-3 py-2 text-sm font-bold text-[var(--color-green-ink)]">{melding}</p>}
-      {fout && <p className="rounded-lg bg-[var(--color-red-soft)] px-3 py-2 text-sm font-bold text-[var(--color-red-ink)]">{fout}</p>}
+      {melding && <p className="lo-melding lo-melding--goed">{melding}</p>}
+      {fout && <p className="lo-melding lo-melding--fout">{fout}</p>}
       <div>
-        <h2 className="mb-2 flex items-center gap-2 text-lg font-black text-[var(--helix-navy)]"><BarChart3 size={20} aria-hidden="true" /> Meten: de laatste zes weken</h2>
+        <h2 className="lo-kaart-titel mb-2"><BarChart3 size={20} aria-hidden="true" /> Meten: de laatste zes weken</h2>
         <Meting klasId={klasId} />
       </div>
       <div>
-        <h2 className="mb-2 flex items-center gap-2 text-lg font-black text-[var(--helix-navy)]"><Vote size={20} aria-hidden="true" /> Stemmingen</h2>
+        <h2 className="lo-kaart-titel mb-2"><Vote size={20} aria-hidden="true" /> Stemmingen</h2>
         <Stemmingen klasId={klasId} doe={doe} />
       </div>
       <div>
-        <h2 className="mb-2 flex items-center gap-2 text-lg font-black text-[var(--helix-navy)]"><Brush size={20} aria-hidden="true" /> Ontwerpwedstrijd</h2>
+        <h2 className="lo-kaart-titel mb-2"><Brush size={20} aria-hidden="true" /> Ontwerpwedstrijd</h2>
         <Wedstrijden klasId={klasId} klasNaam={klasNaam || klasId} doe={doe} />
       </div>
     </section>

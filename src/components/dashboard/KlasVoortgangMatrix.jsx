@@ -16,7 +16,7 @@ export function StatusLegenda({ className = '', toonPlus = false }) {
       {LEGENDA.map((status) => {
         const presentatie = getStatusPresentatie(status);
         return (
-          <span key={status} className="flex items-center gap-1.5 text-xs font-bold text-[var(--helix-muted)]">
+          <span key={status} className="flex items-center gap-1.5 text-xs font-bold text-[var(--lo-grijs)]">
             <span className={`h-2.5 w-2.5 rounded-full ${presentatie.dotClass}`} />
             {presentatie.label}
           </span>
@@ -25,7 +25,7 @@ export function StatusLegenda({ className = '', toonPlus = false }) {
       {toonPlus && (
         <span
           title={PLUS_PRESENTATIE.uitleg}
-          className="flex items-center gap-1.5 text-xs font-bold text-[var(--helix-purple)]"
+          className="flex items-center gap-1.5 text-xs font-bold text-[var(--lo-paars-inkt)]"
         >
           <Star size={12} />
           {PLUS_PRESENTATIE.label} - telt niet mee
@@ -40,7 +40,7 @@ export function PlusChip({ children, className = '', titel = '' }) {
   return (
     <span
       title={titel || PLUS_PRESENTATIE.uitleg}
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${PLUS_PRESENTATIE.chipClass} ${className}`}
+      className={`${PLUS_PRESENTATIE.chipClass} ${className}`}
     >
       <Star size={11} />
       {children || PLUS_PRESENTATIE.kort}
@@ -54,7 +54,7 @@ export function StatusChip({ status, children, className = '', titel = '' }) {
   return (
     <span
       title={titel || presentatie.label}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-black ${presentatie.chipClass} ${className}`}
+      className={`${presentatie.chipClass} ${className}`}
     >
       <span className={`h-2 w-2 rounded-full ${presentatie.dotClass}`} />
       {children || presentatie.label}
@@ -77,37 +77,37 @@ export default function KlasVoortgangMatrix({
 }) {
   if (!rijen.length) {
     return (
-      <div className="rounded-[var(--helix-radius-lg)] border border-dashed border-[var(--helix-border)] bg-white/70 p-6 text-sm font-semibold text-[var(--helix-muted)]">
+      <div className="lo-melding lo-melding--info">
         {leegTekst}
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-[var(--helix-radius-lg)] border border-[var(--helix-border)] bg-white">
+    <div className="overflow-hidden rounded-[var(--lo-hoek-m)] border border-[var(--lo-lijn)] bg-[var(--lo-kaart)]">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-[var(--helix-border)] bg-[var(--helix-surface-soft)]">
-              <th className="sticky left-0 z-10 min-w-56 bg-[var(--helix-surface-soft)] px-4 py-3 text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">
+            <tr className="border-b border-[var(--lo-lijn)] bg-[var(--lo-papier)]">
+              <th className="sticky left-0 z-10 min-w-56 bg-[var(--lo-papier)] px-4 py-3 text-[13px] font-extrabold text-[var(--lo-grijs)]">
                 Leerling
               </th>
-              <th className="px-3 py-3 text-xs font-black uppercase tracking-wider text-[var(--helix-muted)]">
+              <th className="px-3 py-3 text-[13px] font-extrabold text-[var(--lo-grijs)]">
                 {totaalKopLabel}
               </th>
               {kolommen.map((kolom) => (
                 <th
                   key={kolom.id}
                   title={kolom.titel}
-                  className={`px-2 py-3 text-center text-xs font-black ${
-                    kolom.optioneel ? 'text-[var(--helix-purple)]' : 'text-[var(--helix-navy)]'
+                  className={`px-2 py-3 text-center text-xs font-extrabold ${
+                    kolom.optioneel ? 'text-[var(--lo-paars-inkt)]' : 'text-[var(--lo-inkt)]'
                   }`}
                 >
                   <span className="block max-w-24 truncate">{kolom.kort}</span>
                   {/* De kop zegt meteen dat deze kolom vrijwillig is, zodat een
                       lege kolom niet als klassikale achterstand leest. */}
-                  <span className={`mt-0.5 block text-[10px] font-semibold uppercase tracking-wider ${
-                    kolom.optioneel ? 'text-[var(--helix-purple)]' : 'text-[var(--helix-muted)]'
+                  <span className={`mt-0.5 block text-[11px] font-semibold ${
+                    kolom.optioneel ? 'text-[var(--lo-paars-inkt)]' : 'text-[var(--lo-grijs)]'
                   }`}>
                     {kolom.optioneel ? PLUS_PRESENTATIE.kort : kolomKopLabel}
                   </span>
@@ -115,10 +115,10 @@ export default function KlasVoortgangMatrix({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--helix-border)]">
+          <tbody className="divide-y divide-[var(--lo-lijn)]">
             {rijen.map((rij) => (
-              <tr key={rij.studentId} className="group transition-colors hover:bg-[var(--helix-surface-soft)]/70">
-                <td className="sticky left-0 z-10 bg-white px-4 py-3 group-hover:bg-[var(--helix-surface-soft)]">
+              <tr key={rij.studentId} className="group transition-colors hover:bg-[var(--lo-papier)]">
+                <td className="sticky left-0 z-10 bg-[var(--lo-kaart)] px-4 py-3 group-hover:bg-[var(--lo-papier)]">
                   <button
                     type="button"
                     onClick={() => onSelectLeerling?.(rij)}
@@ -129,11 +129,11 @@ export default function KlasVoortgangMatrix({
                       size="sm"
                       shape="circle"
                       fallback="initial"
-                      fallbackClassName="bg-[var(--helix-soft-lavender)] text-[var(--helix-purple)]"
+                      fallbackClassName="bg-[var(--lo-blauw-zacht)] text-[var(--lo-blauw-inkt)]"
                     />
                     <span className="flex min-w-0 flex-col">
-                      <span className="truncate font-bold text-[var(--helix-navy)]">{rij.studentNaam}</span>
-                      <span className="truncate text-[11px] font-semibold text-[var(--helix-muted)]">
+                      <span className="truncate font-bold text-[var(--lo-inkt)]">{rij.studentNaam}</span>
+                      <span className="lo-onderregel truncate">
                         {rij.huidigeParagraaf?.stap
                           ? `Stap ${rij.huidigeParagraaf.stap.nummer}: ${rij.huidigeParagraaf.stap.titel}`
                           : rij.statusLabel}
@@ -142,22 +142,22 @@ export default function KlasVoortgangMatrix({
                     {rij.aandacht?.nodig && (
                       <span
                         title={rij.aandacht.redenen[0]?.detail || 'Aandacht nodig'}
-                        className="ml-auto h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--helix-danger)]"
+                        className="ml-auto h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--lo-rood)]"
                       />
                     )}
                   </button>
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-16 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 w-16 overflow-hidden rounded-full bg-[var(--lo-papier-2)]">
                       <div
                         className={`h-full rounded-full ${getStatusPresentatie(rij.status).balkClass}`}
                         style={{ width: `${rij.percentage}%` }}
                       />
                     </div>
-                    <span className="text-xs font-black text-[var(--helix-navy)]">{rij.percentage}%</span>
+                    <span className="text-xs font-extrabold text-[var(--lo-inkt)]">{rij.percentage}%</span>
                   </div>
-                  <span className="mt-1 block text-[10px] font-semibold text-[var(--helix-muted)]">
+                  <span className="lo-onderregel mt-1">
                     {rij.afgerondeStappen}/{rij.totaalStappen} stappen
                   </span>
                   {/* Vrijwillig extra werk staat NAAST de balk, niet erin: het
@@ -182,7 +182,7 @@ export default function KlasVoortgangMatrix({
                       <td key={cel.paragraafId} className="px-2 py-3 text-center">
                         <span
                           title={cel.label}
-                          className="inline-flex h-9 w-14 items-center justify-center rounded-lg border border-dashed border-[var(--helix-border)] text-[10px] font-bold text-slate-300"
+                          className="inline-flex h-9 w-14 items-center justify-center rounded-[var(--lo-hoek-s)] border border-dashed border-[var(--lo-lijn)] text-[11px] font-bold text-[var(--lo-grijs)]"
                         >
                           n.v.t.
                         </span>
@@ -196,7 +196,7 @@ export default function KlasVoortgangMatrix({
                         type="button"
                         onClick={() => onSelectLeerling?.(rij, cel)}
                         title={`${rij.studentNaam} - ${cel.label}. ${cel.detail}`}
-                        className={`inline-flex h-9 w-14 items-center justify-center gap-1 rounded-lg border text-xs font-black transition hover:brightness-95 ${
+                        className={`h-9 w-14 cursor-pointer justify-center gap-1 rounded-[var(--lo-hoek-s)] transition hover:brightness-95 ${
                           plusNogNiet ? PLUS_PRESENTATIE.leegClass : presentatie.chipClass
                         }`}
                       >
