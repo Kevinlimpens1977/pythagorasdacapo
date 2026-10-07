@@ -2,14 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithCustomToken } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
-import { AlertTriangle, ChevronDown, ChevronRight, Coins, FlaskConical, Loader2, LogIn, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Coins, House, Loader2, RefreshCw } from 'lucide-react';
 
 import { auth, db } from '../services/firebase';
 import * as cmsService from '../services/cmsService';
 import * as klasService from '../services/klasService';
 import * as voortgangService from '../services/voortgangService';
 import { startTestleerlingSessieCall } from '../lib/api';
-import { bouwKlasTestbeeld, bouwTestdataOverzicht } from '../lib/testleerlingOverzicht';
+import { bouwKlasTestbeeld, bouwTestdataOverzicht, groepeerOpLesstof, hoofdstukkenVanLessen } from '../lib/testleerlingOverzicht';
+import { aantalTekst, hoofdstukOnderregel, splitsParagraafLabel, testsessieDoelRoute } from '../lib/leeromgeving';
+import { HoofdstukRij, Kaart, KaartKop, Keuzeknoppen, Label, PaginaKop, ParagraafRij, StartKnop } from '../components/leeromgeving';
 import { getStudentEffectiveParagrafen } from '../lib/assignmentUtils';
 
 /**
@@ -35,7 +37,8 @@ export default function AdminTestenPage() {
   const [loading, setLoading] = useState(true);
   const [fout, setFout] = useState('');
   const [startBezigUid, setStartBezigUid] = useState('');
-  const [openTestdata, setOpenTestdata] = useState({});
+  const [gekozenPerGroep, setGekozenPerGroep] = useState({});
+  const [openHoofdstuk, setOpenHoofdstuk] = useState({});
   const navigate = useNavigate();
 
   const laden = useCallback(async () => {
@@ -69,6 +72,13 @@ export default function AdminTestenPage() {
       const hoofdstukDocs = await Promise.all(hoofdstukIds.map((id) => cmsService.getHoofdstuk(id).catch(() => null)));
       const hoofdstukkenById = Object.fromEntries(hoofdstukDocs.filter(Boolean).map((hoofdstuk) => [hoofdstuk.id, hoofdstuk]));
 
+      // De naam van het vak boven een groepskaart ("Digitale vaardigheden · 8 klassen").
+      const vakIds = [...new Set(Object.values(hoofdstukkenById).map((hoofdstuk) => hoofdstuk.vakId).filter(Boolean))];
+      const vakDocs = await Promise.all(vakIds.map((id) => getDoc(doc(db, 'vak', id)).catch(() => null)));
+      const vakNaamById = Object.fromEntries(
+        vakDocs.filter((vakDoc) => vakDoc?.exists?.()).map((vakDoc) => [vakDoc.id, vakDoc.data().name || vakDoc.data().naam || vakDoc.id])
+      );
+
       const blokkenParen = await Promise.all(
         Object.keys(paragrafenById).map(async (id) => [id, await cmsService.getPublicContentBlocks(id).catch(() => [])])
       );
@@ -95,7 +105,8 @@ export default function AdminTestenPage() {
           tokens = tokenDoc?.exists?.() ? (tokenDoc.data()?.balance ?? tokenDoc.data()?.saldo ?? 0) : 0;
         }
 
-        return { klas, testaccount, beeld, testdata, tokens };
+        const vakNaam = vakNaamById[hoofdstukkenById[beeld.lessen[0]?.hoofdstukId]?.vakId] || '';
+        return { klas, testaccount, beeld, testdata, tokens, vakNaam };
       }));
 
       rijen.sort((a, b) => klasNaam(a.klas).localeCompare(klasNaam(b.klas), 'nl-NL', { numeric: true }));
@@ -114,7 +125,8 @@ export default function AdminTestenPage() {
     laden();
   }, [laden]);
 
-  const startTestsessie = async (testaccount) => {
+  const startTestsessie = async (testaccount, doelRoute = '/') => {
+    if (!testaccount) return;
     setFout('');
     setStartBezigUid(testaccount.uid);
 
@@ -125,7 +137,8 @@ export default function AdminTestenPage() {
         return;
       }
       await signInWithCustomToken(auth, resultaat.token);
-      navigate('/');
+      // Meteen naar de gekozen plek: de startpagina, een hoofdstuk of een paragraaf.
+      navigate(doelRoute);
     } catch (error) {
       console.error('Inloggen als testleerling mislukt:', error);
       setFout('Inloggen als testleerling lukte niet. Start de testsessie opnieuw.');
@@ -135,155 +148,148 @@ export default function AdminTestenPage() {
   };
 
   const zonderTestaccount = useMemo(() => kaarten.filter((kaart) => !kaart.testaccount).length, [kaarten]);
+  const groepen = useMemo(() => groepeerOpLesstof(kaarten), [kaarten]);
+  const bezig = startBezigUid !== '';
 
   return (
-    <div className="helix-page">
-      <div className="helix-container py-10 md:py-12">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="helix-eyebrow">Testen</p>
-            <h1 className="helix-heading-xl mt-2">Testen als leerling</h1>
-            <p className="helix-muted mt-3 max-w-2xl text-lg leading-8">
-              Per klas zie je wat een leerling werkelijk ziet, en je kunt als testleerling van die
-              klas inloggen. Wat je dan maakt, wordt opgeslagen bij dat testaccount en telt nergens mee.
-            </p>
-          </div>
-          <button type="button" onClick={laden} className="btn-secondary inline-flex items-center gap-2" disabled={loading}>
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-            Verversen
-          </button>
-        </div>
+    <div className="helix-page lo-tekst">
+      <div className="helix-container flex flex-col gap-6 py-10 md:py-12">
+        <PaginaKop
+          eyebrow="Testen"
+          titel="Testen als leerling"
+          uitleg="Klassen die precies dezelfde lesstof zien, staan samen in één kaart. Kies een klas en start als testleerling op de startpagina, bij een hoofdstuk of meteen in een paragraaf. Wat je maakt, telt nergens mee."
+          acties={(
+            <button type="button" onClick={laden} className="lo-knop-tweede" disabled={loading}>
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} aria-hidden="true" />
+              Verversen
+            </button>
+          )}
+        />
 
-        {fout && (
-          <div className="mt-6 rounded-[var(--helix-radius-md)] border border-[var(--helix-danger)]/35 bg-[var(--helix-soft-pink)] p-4 text-sm font-semibold text-[var(--helix-danger)]">
-            {fout}
-          </div>
-        )}
+        {fout && <p className="lo-melding lo-melding--fout">{fout}</p>}
 
         {zonderTestaccount > 0 && !loading && (
-          <div className="mt-6 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] p-4 text-sm text-[var(--helix-muted)]">
+          <p className="lo-melding lo-melding--info">
             {zonderTestaccount === 1 ? 'Eén klas heeft' : `${zonderTestaccount} klassen hebben`} nog geen testleerling.
             Draai <code className="font-mono">node scripts/maak-testleerlingen.mjs --apply</code> om ze aan te maken.
-          </div>
+          </p>
         )}
 
         {loading ? (
-          <div className="mt-10 flex items-center gap-3 text-[var(--helix-muted)]">
-            <Loader2 size={18} className="animate-spin" />
+          <p className="lo-melding lo-melding--info">
+            <Loader2 size={16} className="animate-spin" aria-hidden="true" />
             Bezig met laden...
-          </div>
+          </p>
         ) : (
-          <div className="mt-8 grid gap-5 lg:grid-cols-2">
-            {kaarten.map(({ klas, testaccount, beeld, testdata, tokens }) => {
-              const open = openTestdata[klas.id] === true;
+          <div className="lo-kaartenraster">
+            {groepen.map((groep) => {
+              const kaart = groep.kaarten.find((item) => item.klas.id === gekozenPerGroep[groep.sleutel])
+                || groep.kaarten.find((item) => item.testaccount)
+                || groep.kaarten[0];
+              const { klas, testaccount, beeld, testdata, tokens, vakNaam } = kaart;
+              const hoofdstukken = hoofdstukkenVanLessen(beeld.lessen);
+              const meer = groep.kaarten.length > 1;
+              const inclusie = hoofdstukken.some((hoofdstuk) => hoofdstuk.inclusie);
+              const startUit = !testaccount || bezig;
+              const start = (doel) => startTestsessie(testaccount, testsessieDoelRoute(doel));
 
               return (
-                <section key={klas.id} className="helix-surface p-6">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h2 className="helix-heading-md flex items-center gap-2">
-                        <FlaskConical size={18} className="text-[var(--helix-purple)]" />
-                        {klasNaam(klas)}
-                      </h2>
-                      <p className="helix-muted mt-1 text-sm">
-                        Leerroute: {beeld.route || 'geen route'} &middot; {beeld.aantalZichtbaar} paragrafen open, {beeld.aantalBlokken} lesblokken{beeld.aantalOpSlot > 0 ? ` · ${beeld.aantalOpSlot} op slot` : ''}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => testaccount && startTestsessie(testaccount)}
-                      className="btn-primary inline-flex items-center gap-2"
-                      disabled={!testaccount || startBezigUid === testaccount?.uid}
-                    >
-                      {startBezigUid === testaccount?.uid ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
-                      Start testsessie
-                    </button>
-                  </div>
-
-                  {!testaccount && (
-                    <p className="mt-4 text-sm font-semibold text-[var(--helix-danger)]">
-                      Nog geen testleerling voor deze klas.
-                    </p>
+                <Kaart key={groep.sleutel} inclusie={inclusie}>
+                  {meer ? (
+                    <KaartKop
+                      titel={`${vakNaam ? `${vakNaam} · ` : ''}${groep.kaarten.length} klassen`}
+                      uitleg="Deze klassen zien precies dezelfde lesstof. Elke klas heeft wel een eigen testleerling."
+                    />
+                  ) : (
+                    <KaartKop
+                      kolf
+                      titel={klasNaam(klas)}
+                      uitleg={inclusie
+                        ? 'Inclusieklas: krijgt de inclusieversie van elk hoofdstuk.'
+                        : `${vakNaam ? `${vakNaam} · ` : ''}leerroute ${beeld.route || 'geen'}`}
+                    />
                   )}
 
-                  {beeld.lessen.length === 0 ? (
-                    <p className="mt-4 text-sm text-[var(--helix-muted)]">
-                      Voor deze klas staat geen lesstof klaar.
-                    </p>
+                  {meer && (
+                    <Keuzeknoppen
+                      label="Log in als testleerling van"
+                      opties={groep.kaarten.map((item) => ({ id: item.klas.id, naam: klasNaam(item.klas) }))}
+                      gekozen={klas.id}
+                      onKies={(id) => setGekozenPerGroep((stand) => ({ ...stand, [groep.sleutel]: id }))}
+                    />
+                  )}
+
+                  {!testaccount && (
+                    <p className="lo-melding lo-melding--fout">Nog geen testleerling voor {klasNaam(klas)}.</p>
+                  )}
+
+                  {hoofdstukken.length === 0 ? (
+                    <p className="lo-melding lo-melding--info">Voor deze klas staat geen lesstof klaar.</p>
                   ) : (
-                    <ul className="mt-4 flex flex-col gap-1.5">
-                      {beeld.lessen.map((les, index) => (
-                        <li key={les.id} className="flex flex-col gap-1.5">
-                          {/* Een kopje per hoofdstuk, zoals de leerling het ziet. */}
-                          {les.hoofdstukId !== beeld.lessen[index - 1]?.hoofdstukId && (
-                            <p className={`text-xs font-black uppercase tracking-wide text-[var(--helix-muted)] ${index > 0 ? 'mt-2' : ''}`}>
-                              Hoofdstuk {les.hoofdstukNummer < 999 ? les.hoofdstukNummer : '?'}{les.hoofdstukTitel ? ` · ${les.hoofdstukTitel}` : ''}
-                              {les.opSlot && ' · op slot'}
-                            </p>
-                          )}
-                          <span className={`flex items-baseline justify-between gap-3 text-sm ${les.opSlot ? 'opacity-60' : ''}`}>
-                            <span className="font-semibold text-[var(--helix-navy)]">{les.label}</span>
-                            <span className="shrink-0 text-[var(--helix-muted)]">
-                              {les.opSlot ? 'op slot' : `${les.aantalBlokken} ${les.aantalBlokken === 1 ? 'lesblok' : 'lesblokken'}`}
-                            </span>
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="lo-lijst">
+                      {hoofdstukken.map((hoofdstuk) => {
+                        const sleutel = `${groep.sleutel}|${hoofdstuk.id}`;
+                        return (
+                          <HoofdstukRij
+                            key={hoofdstuk.id || sleutel}
+                            nummer={hoofdstuk.nummer}
+                            titel={hoofdstuk.titel}
+                            onderregel={hoofdstukOnderregel({ paragrafen: hoofdstuk.lessen.length, lesblokken: hoofdstuk.aantalBlokken })}
+                            labels={hoofdstuk.inclusie ? <Label kleur="paars">inclusie</Label> : null}
+                            opSlot={hoofdstuk.opSlot}
+                            open={openHoofdstuk[sleutel] === true}
+                            onWissel={() => setOpenHoofdstuk((stand) => ({ ...stand, [sleutel]: !stand[sleutel] }))}
+                            onStart={() => start({ soort: 'hoofdstuk', id: hoofdstuk.id })}
+                            startUit={startUit}
+                          >
+                            {hoofdstuk.lessen.map((les) => {
+                              const { code, naam } = splitsParagraafLabel(les.label);
+                              const regel = testdata?.regels.find((item) => item.paragraafId === les.id);
+                              const onderregel = [
+                                aantalTekst(les.aantalBlokken, 'lesblok', 'lesblokken'),
+                                regel?.afgerond ? `testleerling ${regel.afgerond} van ${regel.totaal} af` : ''
+                              ].filter(Boolean).join(' · ');
+                              return (
+                                <ParagraafRij
+                                  key={les.id}
+                                  code={code}
+                                  naam={naam}
+                                  onderregel={onderregel}
+                                  onStart={() => start({ soort: 'paragraaf', id: les.id })}
+                                  startUit={startUit || les.opSlot}
+                                />
+                              );
+                            })}
+                          </HoofdstukRij>
+                        );
+                      })}
+                    </div>
                   )}
 
                   {beeld.problemen.length > 0 && (
-                    <ul className="mt-4 flex flex-col gap-2">
+                    <ul className="flex flex-col gap-2">
                       {beeld.problemen.map((probleem) => (
-                        <li key={`${probleem.soort}-${probleem.paragraafId}`} className="flex items-start gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-soft-pink)] p-3 text-sm text-[var(--helix-danger)]">
-                          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                        <li key={`${probleem.soort}-${probleem.paragraafId}`} className="lo-melding lo-melding--fout">
+                          <AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
                           <span>{probleem.tekst}</span>
                         </li>
                       ))}
                     </ul>
                   )}
 
-                  {testaccount && testdata && (
-                    <div className="mt-5 border-t border-[var(--helix-border)] pt-4">
-                      <button
-                        type="button"
-                        onClick={() => setOpenTestdata((stand) => ({ ...stand, [klas.id]: !open }))}
-                        className="flex w-full items-center justify-between gap-3 text-sm font-bold text-[var(--helix-navy)]"
-                        aria-expanded={open}
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                          Testdata ({testdata.totaalRecords} {testdata.totaalRecords === 1 ? 'record' : 'records'})
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 font-semibold text-[var(--helix-muted)]">
-                          <Coins size={15} />
-                          {tokens ?? 0}
-                        </span>
-                      </button>
-
-                      {open && (
-                        <div className="mt-3 flex flex-col gap-2 text-sm">
-                          <p className="text-[var(--helix-muted)]">
-                            Laatste activiteit: {datumLabel(testdata.laatsteActiviteitMs)}
-                          </p>
-                          {testdata.regels.map((regel) => (
-                            <div key={regel.paragraafId} className="flex items-baseline justify-between gap-3">
-                              <span className="text-[var(--helix-navy)]">{regel.label}</span>
-                              <span className="shrink-0 text-[var(--helix-muted)]">
-                                {regel.afgerond} van {regel.totaal} af
-                              </span>
-                            </div>
-                          ))}
-                          {testdata.losseParagrafen.length > 0 && (
-                            <p className="text-[var(--helix-muted)]">
-                              Ook werk in lesstof die deze klas niet meer heeft: {testdata.losseParagrafen.join(', ')}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </section>
+                  <div className="lo-kaart-voet">
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      {testdata?.totaalRecords
+                        ? <Label kleur="blauw">{aantalTekst(testdata.totaalRecords, 'testrecord', 'testrecords')}</Label>
+                        : <span>Nog geen testdata</span>}
+                      <span className="lo-tokens"><Coins size={15} aria-hidden="true" />{tokens ?? 0}</span>
+                      {testdata?.laatsteActiviteitMs ? <span>Laatste activiteit: {datumLabel(testdata.laatsteActiviteitMs)}</span> : null}
+                    </span>
+                    <StartKnop icoon={startBezigUid === testaccount?.uid ? Loader2 : House} onClick={() => start({ soort: 'start' })} disabled={startUit}>
+                      Start op de startpagina
+                    </StartKnop>
+                  </div>
+                </Kaart>
               );
             })}
           </div>
