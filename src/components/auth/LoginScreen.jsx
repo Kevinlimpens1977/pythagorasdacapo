@@ -7,12 +7,14 @@ import {
 } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, GraduationCap, LogIn, UserPlus } from 'lucide-react';
+import helixLogo from '../../afbeeldingen/logo.png';
 import { auth } from '../../services/firebase';
 import { DOMEIN_FOUTMELDING, isToegestaanSchoolEmail } from '../../lib/allowedEmailDomains';
 import { naarInlogEmail, toonInlogEmail } from '../../lib/loginIdentifier';
+import { Kaart, PaginaKop } from '../leeromgeving';
 import { useFinishGoogleRedirect, useRedirectWhenAuthenticated } from './loginFlow';
 
-const MERKPUNTEN = ['Stap voor stap', 'Directe hulp', 'Tokens'];
+const LINKKNOP = 'text-[14px] font-bold text-[var(--lo-blauw-inkt)] hover:underline';
 
 export default function LoginScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -107,192 +109,142 @@ export default function LoginScreen() {
   };
 
   return (
-    <div className="helix-page flex min-h-screen items-center justify-center p-4 sm:p-8">
-      <div className="grid w-full max-w-6xl gap-7 lg:grid-cols-[0.85fr_1fr]">
+    <div className="helix-page lo-tekst flex min-h-screen! items-center justify-center p-4 sm:p-8">
+      <Kaart as="div" className="mx-auto w-full max-w-[480px] gap-5">
+        <img src={helixLogo} alt="HELIX" className="h-16 w-auto self-start object-contain" />
 
-        <div className="relative hidden overflow-hidden rounded-[var(--helix-radius-xl)] bg-[var(--helix-purple)] p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -bottom-24 right-10 h-52 w-52 rounded-full bg-[var(--helix-pink)]/45" />
+        <PaginaKop
+          titel={isSignUp ? 'Maak je account' : 'Hoi! Log in'}
+          uitleg={isSignUp ? 'Daarna kun je meteen aan de slag.' : 'Ga verder met je lessen.'}
+        />
 
-          <div className="relative flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-[var(--helix-radius-sm)] bg-white">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--helix-purple)" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                <path d="M6 3c0 6 12 12 12 18" />
-                <path d="M18 3c0 6-12 12-12 18" />
-              </svg>
-            </span>
-            <span className="font-display text-2xl font-extrabold tracking-tight">HELIX</span>
+        {error && (
+          <div className="lo-melding lo-melding--fout animate-shake">
+            {error}
           </div>
+        )}
 
-          <div className="relative">
-            <h2 className="ds-display text-5xl leading-[1.05] text-balance">
-              Jouw lessen.<br />Jouw tempo.
-            </h2>
-            <p className="mt-5 max-w-sm text-lg leading-relaxed text-white/85">
-              Stap voor stap door de les, met hulp wanneer je vastloopt en tokens als je iets goed doet.
-            </p>
+        {notice && (
+          <div className="lo-melding lo-melding--info">
+            {notice}
           </div>
+        )}
 
-          <div className="relative flex flex-wrap gap-2.5">
-            {MERKPUNTEN.map((punt) => (
-              <span key={punt} className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
-                {punt}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="helix-surface flex items-center justify-center p-7 sm:p-12">
-          <div className="w-full max-w-md">
-            <div className="mb-8 flex items-center gap-3 lg:hidden">
-              <span className="flex h-10 w-10 items-center justify-center rounded-[var(--helix-radius-sm)] bg-[var(--helix-purple)]">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M6 3c0 6 12 12 12 18" />
-                  <path d="M18 3c0 6-12 12-12 18" />
-                </svg>
-              </span>
-              <span className="font-display text-xl font-extrabold text-[var(--helix-navy)]">HELIX</span>
-            </div>
-
-            <h1 className="ds-display text-4xl text-[var(--helix-navy)]">
-              {isSignUp ? 'Maak je account' : 'Hoi! Log in'}
-            </h1>
-            <p className="mt-2.5 mb-8 text-[var(--helix-muted)]">
-              {isSignUp ? 'Daarna kun je meteen aan de slag.' : 'Ga verder met je lessen.'}
-            </p>
-
-            {error && (
-              <div className="animate-shake mb-5 rounded-[var(--helix-radius-md)] border border-[var(--helix-danger)]/35 bg-[var(--helix-soft-pink)] p-4 text-sm font-semibold text-[var(--helix-danger)]">
-                {error}
-              </div>
-            )}
-
-            {notice && (
-              <div className="mb-5 rounded-[var(--helix-radius-md)] border border-[var(--helix-success)]/35 bg-[var(--helix-success)]/10 p-4 text-sm font-semibold text-[var(--helix-success)]">
-                {notice}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {isSignUp && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">Voornaam</label>
-                    <input
-                      type="text"
-                      required
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="input-auth"
-                      placeholder="Bijv. Jan"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">Achternaam</label>
-                    <input
-                      type="text"
-                      required
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="input-auth"
-                      placeholder="Bijv. Jansen"
-                    />
-                  </div>
-                </div>
-              )}
-
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {isSignUp && (
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">
-                  Leerlingnummer
-                </label>
+                <label className="lo-veldlabel">Voornaam</label>
                 <input
                   type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input-auth"
-                  placeholder="Bijv. 50122920"
-                  inputMode="numeric"
-                  autoComplete="username"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  aria-describedby="inlog-adres-uitleg"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="lo-invoer"
+                  placeholder="Bijv. Jan"
                 />
-                <p id="inlog-adres-uitleg" className="mt-2 text-sm text-[var(--helix-muted)]">
-                  {volledigAdres
-                    ? `Je ${isSignUp ? 'maakt een account op' : 'logt in als'} ${volledigAdres}`
-                    : 'Alleen je nummer, de rest van je schoolmail vullen wij aan. Geen leerlingnummer? Typ dan je hele mailadres.'}
-                </p>
               </div>
-
               <div>
-                <label className="mb-2 block text-sm font-semibold text-[var(--helix-navy)]">Wachtwoord</label>
-                <div className="relative">
-                  <input
-                    type={toonWachtwoord ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-auth pr-14"
-                    placeholder="Je wachtwoord"
-                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setToonWachtwoord((zichtbaar) => !zichtbaar)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[var(--helix-radius-sm)] p-2 text-[var(--helix-muted)] transition-colors hover:bg-[var(--helix-surface-soft)] hover:text-[var(--helix-purple)]"
-                    aria-label={toonWachtwoord ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
-                  >
-                    {toonWachtwoord ? <EyeOff size={19} /> : <Eye size={19} />}
-                  </button>
-                </div>
+                <label className="lo-veldlabel">Achternaam</label>
+                <input
+                  type="text"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="lo-invoer"
+                  placeholder="Bijv. Jansen"
+                />
               </div>
+            </div>
+          )}
 
-              <button type="submit" className="btn-primary-lg" disabled={bezig}>
-                {isSignUp ? <UserPlus size={19} /> : <LogIn size={19} />}
-                {bezig ? 'Bezig...' : isSignUp ? 'Account maken' : 'Inloggen'}
-              </button>
-            </form>
+          <div>
+            <label className="lo-veldlabel">Leerlingnummer</label>
+            <input
+              type="text"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="lo-invoer"
+              placeholder="Bijv. 50122920"
+              inputMode="numeric"
+              autoComplete="username"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-describedby="inlog-adres-uitleg"
+            />
+            <p id="inlog-adres-uitleg" className="mt-2 text-sm text-[var(--lo-grijs)]">
+              {volledigAdres
+                ? `Je ${isSignUp ? 'maakt een account op' : 'logt in als'} ${volledigAdres}`
+                : 'Alleen je nummer, de rest van je schoolmail vullen wij aan. Geen leerlingnummer? Typ dan je hele mailadres.'}
+            </p>
+          </div>
 
-            <div className="mt-4 flex items-center justify-between gap-4">
+          <div>
+            <label className="lo-veldlabel">Wachtwoord</label>
+            <div className="relative">
+              <input
+                type={toonWachtwoord ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="lo-invoer pr-14"
+                placeholder="Je wachtwoord"
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
+              />
               <button
                 type="button"
-                onClick={handleWachtwoordVergeten}
-                className="text-sm font-semibold text-[var(--helix-purple)] transition-colors hover:text-[var(--helix-purple-dark)]"
+                onClick={() => setToonWachtwoord((zichtbaar) => !zichtbaar)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[var(--lo-hoek-s)] p-2 text-[var(--lo-grijs)] transition-colors hover:bg-[var(--lo-papier-2)] hover:text-[var(--lo-blauw-inkt)]"
+                aria-label={toonWachtwoord ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'}
               >
-                Wachtwoord vergeten?
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignUp((aan) => !aan);
-                  setError('');
-                  setNotice('');
-                }}
-                className="text-sm font-semibold text-[var(--helix-purple)] transition-colors hover:text-[var(--helix-purple-dark)]"
-              >
-                {isSignUp ? 'Terug naar inloggen' : 'Account aanmaken'}
+                {toonWachtwoord ? <EyeOff size={19} /> : <Eye size={19} />}
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={() => navigate('/login/beheer')}
-              className="mt-9 flex w-full items-center gap-3.5 rounded-[var(--helix-radius-lg)] bg-[var(--helix-surface-soft)] p-4 text-left transition-colors hover:bg-[var(--helix-soft-lavender)]"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--helix-radius-sm)] bg-white text-[var(--helix-purple)]">
-                <GraduationCap size={20} />
-              </span>
-              <span>
-                <span className="block text-sm font-bold text-[var(--helix-navy)]">Docent of beheerder?</span>
-                <span className="block text-sm text-[var(--helix-muted)]">Je logt in op een eigen scherm.</span>
-              </span>
-            </button>
           </div>
+
+          <button type="submit" className="lo-knop w-full justify-center" disabled={bezig}>
+            {isSignUp ? <UserPlus size={19} /> : <LogIn size={19} />}
+            {bezig ? 'Bezig...' : isSignUp ? 'Account maken' : 'Inloggen'}
+          </button>
+        </form>
+
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={handleWachtwoordVergeten}
+            className={LINKKNOP}
+          >
+            Wachtwoord vergeten?
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsSignUp((aan) => !aan);
+              setError('');
+              setNotice('');
+            }}
+            className={LINKKNOP}
+          >
+            {isSignUp ? 'Terug naar inloggen' : 'Account aanmaken'}
+          </button>
         </div>
 
-      </div>
+        <button
+          type="button"
+          onClick={() => navigate('/login/beheer')}
+          className="flex w-full items-center gap-3.5 rounded-[var(--lo-hoek-l)] bg-[var(--lo-papier-2)] p-4 text-left transition-colors hover:bg-[var(--lo-blauw-zacht)]"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--lo-hoek-s)] bg-white text-[var(--lo-blauw-inkt)]">
+            <GraduationCap size={20} />
+          </span>
+          <span>
+            <span className="block text-sm font-bold text-[var(--lo-inkt)]">Docent of beheerder?</span>
+            <span className="block text-sm text-[var(--lo-grijs)]">Je logt in op een eigen scherm.</span>
+          </span>
+        </button>
+      </Kaart>
     </div>
   );
 }
