@@ -11,6 +11,8 @@ import {
 import { countStudentPhotos } from '../lib/studentPhotoImportUtils';
 import { beschikbareTalen } from '../lib/lesTaal';
 import { useAuth } from '../components/auth/AuthProvider';
+import { HelixLaden } from '../components/merk/HelixLogo';
+import { Label, PaginaKop } from '../components/leeromgeving';
 import StudentAvatar from '../components/common/StudentAvatar';
 import StudentPhotoImportWizard from '../components/admin/StudentPhotoImportWizard';
 import StudentNumberImportPanel from '../components/admin/StudentNumberImportPanel';
@@ -214,86 +216,84 @@ export default function AdminLeerlingenPage() {
   };
 
   return (
-    <div className="helix-page">
+    <div className="helix-page lo-tekst beheer-stijl">
       <div className="helix-container py-10 md:py-12">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="helix-eyebrow">Werkplek</p>
-            <h1 className="helix-heading-xl mt-2">Leerlingen</h1>
-            <p className="helix-muted mt-3 max-w-2xl text-lg leading-8">
-              Bekijk leerlingaccounts, gekoppelde klassen, accountstatus en wachtwoordbeheer.
-            </p>
-          </div>
+        <PaginaKop
+          eyebrow="Werkplek"
+          titel="Leerlingen"
+          uitleg="Bekijk leerlingaccounts, gekoppelde klassen, accountstatus en wachtwoordbeheer."
+          acties={(
+            <div className="lo-knoppenbalk">
+              <Link
+                to="/admin/klassen"
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                <Users2 size={16} aria-hidden="true" />
+                Klassen beheren
+              </Link>
+              <Link
+                to="/admin/tokenbeheer"
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                <Coins size={16} aria-hidden="true" />
+                Tokenbeheer
+              </Link>
+              <Link
+                to="/admin/testen"
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                <FlaskConical size={16} aria-hidden="true" />
+                Testen als leerling
+              </Link>
+              <button
+                type="button"
+                onClick={handleSyncAuthAccounts}
+                disabled={syncingAuthAccounts}
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                {syncingAuthAccounts ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} aria-hidden="true" />}
+                Auth synchroniseren
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNumberImport((value) => !value);
+                  setShowPhotoImport(false);
+                }}
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                <FileSpreadsheet size={16} aria-hidden="true" />
+                Leerlingnummers koppelen
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPhotoImport((value) => !value);
+                  setShowNumberImport(false);
+                }}
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                <Camera size={16} aria-hidden="true" />
+                Foto's importeren
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowArchive((value) => !value)}
+                className="lo-knop-tweede lo-knop--klein"
+              >
+                <Archive size={16} aria-hidden="true" />
+                {showArchive ? 'Terug naar leerlingen' : `Archief (${archivedStudents.length})`}
+              </button>
+            </div>
+          )}
+        />
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {error && (
-              <div className="helix-alert flex max-w-md items-start gap-3 border-[var(--helix-warning)]/25 bg-orange-50 px-4 py-3 text-sm text-orange-800">
-                <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
-            <Link
-              to="/admin/klassen"
-              className="btn-tool min-h-12 px-5 text-sm"
-            >
-              <Users2 size={18} />
-              Klassen beheren
-            </Link>
-            <Link
-              to="/admin/tokenbeheer"
-              className="btn-tool min-h-12 px-5 text-sm"
-            >
-              <Coins size={18} />
-              Tokenbeheer
-            </Link>
-            <Link
-              to="/admin/testen"
-              className="btn-tool min-h-12 px-5 text-sm"
-            >
-              <FlaskConical size={18} />
-              Testen als leerling
-            </Link>
-            <button
-              type="button"
-              onClick={handleSyncAuthAccounts}
-              disabled={syncingAuthAccounts}
-              className="btn-tool min-h-12 px-5 text-sm"
-            >
-              {syncingAuthAccounts ? <Loader2 size={18} className="animate-spin" /> : <KeyRound size={18} />}
-              Auth synchroniseren
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowNumberImport((value) => !value);
-                setShowPhotoImport(false);
-              }}
-              className="btn-tool min-h-12 px-5 text-sm"
-            >
-              <FileSpreadsheet size={18} />
-              Leerlingnummers koppelen
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowPhotoImport((value) => !value);
-                setShowNumberImport(false);
-              }}
-              className="btn-tool min-h-12 px-5 text-sm"
-            >
-              <Camera size={18} />
-              Foto's importeren
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowArchive((value) => !value)}
-              className="btn-tool min-h-12 px-5 text-sm"
-            >
-              <Archive size={18} />
-              {showArchive ? 'Terug naar leerlingen' : `Archief (${archivedStudents.length})`}
-            </button>
+        {error && (
+          <div className="lo-melding lo-melding--fout mt-6">
+            <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+            <span>{error}</span>
           </div>
-        </div>
+        )}
 
         <section className="mt-8 grid gap-4 md:grid-cols-5">
           <StatCard label="Leerlingen" value={activeStudents.length} description="Accounts met leerlingrol" />
@@ -325,25 +325,25 @@ export default function AdminLeerlingenPage() {
           />
         ) : null}
 
-        <section className="helix-surface mt-8">
-          <div className="border-b border-[var(--helix-border)] px-5 py-4">
-            <div className="flex items-center gap-3 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-[var(--helix-surface-soft)] px-3 py-2 focus-within:border-[var(--helix-purple)] focus-within:ring-4 focus-within:ring-[var(--helix-focus)]">
-              <Search size={18} className="text-slate-400" />
+        <section className="lo-kaart mt-8 gap-0 p-0">
+          <div className="border-b border-[var(--lo-lijn)] px-5 py-4">
+            <div className="relative">
+              <Search size={18} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--lo-grijs)]" />
               <input
                 value={queryText}
                 onChange={(event) => setQueryText(event.target.value)}
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--helix-navy)] outline-none placeholder:text-slate-400"
+                className="lo-invoer pl-11"
                 placeholder="Zoek op naam, e-mail of klas..."
               />
             </div>
           </div>
 
           {loading ? (
-            <div className="helix-muted p-6 text-sm">Leerlingen laden...</div>
+            <HelixLaden tekst="Leerlingen laden..." className="min-h-0 py-10" />
           ) : filteredStudents.length === 0 ? (
             <div className="p-10 text-center">
-              <Users size={36} className="mx-auto text-[var(--helix-purple)]/40" />
-              <p className="mt-3 font-black text-[var(--helix-navy)]">
+              <Users size={36} className="mx-auto text-[var(--lo-grijs)]" />
+              <p className="mt-3 font-extrabold text-[var(--lo-inkt)]">
                 {showArchive ? 'Het archief is leeg' : 'Geen leerlingen gevonden'}
               </p>
               <p className="helix-muted mt-1 text-sm">
@@ -353,13 +353,13 @@ export default function AdminLeerlingenPage() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[var(--lo-lijn)]">
               {filteredStudents.map((student) => (
                 <div key={student.uid} className="grid gap-4 px-5 py-4 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto_auto] md:items-center">
                   <div className="flex items-center gap-3">
                     <StudentAvatar student={student} showPreview />
                     <div>
-                      <p className="font-black text-[var(--helix-navy)]">{student.displayName || 'Naam ontbreekt'}</p>
+                      <p className="font-extrabold text-[var(--lo-inkt)]">{student.displayName || 'Naam ontbreekt'}</p>
                       <p className="helix-muted text-sm">{student.email || 'Geen e-mail'}</p>
                       <p className="helix-muted text-xs">
                         {student.studentNumber || student.leerlingnummer
@@ -369,16 +369,16 @@ export default function AdminLeerlingenPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">Klas</p>
+                    <p className="lo-onderregel font-bold">Klas</p>
                     {showArchive ? (
-                      <p className="mt-1 text-sm font-bold text-[var(--helix-navy)]">{student.klasName}</p>
+                      <p className="mt-1 text-sm font-bold text-[var(--lo-inkt)]">{student.klasName}</p>
                     ) : (
                       <select
                         value={student.klasId || ''}
                         onChange={(event) => handleMoveStudent(student, event.target.value)}
                         disabled={busyStudentUid === student.uid}
                         aria-label={`Klas van ${student.displayName || student.email || 'leerling'}`}
-                        className="mt-1 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-2 py-1.5 text-sm font-bold text-[var(--helix-navy)] focus:border-[var(--helix-purple)] focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)] disabled:opacity-50"
+                        className="lo-invoer mt-1 px-3 py-2 text-sm font-bold disabled:opacity-50"
                       >
                         <option value="">Geen klas</option>
                         {klassen.map((klas) => (
@@ -388,9 +388,9 @@ export default function AdminLeerlingenPage() {
                     )}
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">Taal</p>
+                    <p className="lo-onderregel font-bold">Taal</p>
                     {showArchive ? (
-                      <p className="mt-1 text-sm font-bold text-[var(--helix-navy)]">
+                      <p className="mt-1 text-sm font-bold text-[var(--lo-inkt)]">
                         {beschikbareTalen().find((taal) => taal.code === student.lesTaal)?.nederlands || 'Nederlands'}
                       </p>
                     ) : (
@@ -399,7 +399,7 @@ export default function AdminLeerlingenPage() {
                         onChange={(event) => handleSetLesTaal(student, event.target.value)}
                         disabled={busyStudentUid === student.uid}
                         aria-label={`Taal van ${student.displayName || student.email || 'leerling'}`}
-                        className="mt-1 w-full rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-2 py-1.5 text-sm font-bold text-[var(--helix-navy)] focus:border-[var(--helix-purple)] focus:outline-none focus:ring-4 focus:ring-[var(--helix-focus)] disabled:opacity-50"
+                        className="lo-invoer mt-1 px-3 py-2 text-sm font-bold disabled:opacity-50"
                       >
                         <option value="">Nederlands</option>
                         {beschikbareTalen().map((taal) => (
@@ -409,8 +409,8 @@ export default function AdminLeerlingenPage() {
                     )}
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase tracking-wide text-slate-400">Laatst actief</p>
-                    <p className="mt-1 text-sm font-bold text-[var(--helix-navy)]">{formatLastActive(student.lastActive)}</p>
+                    <p className="lo-onderregel font-bold">Laatst actief</p>
+                    <p className="mt-1 text-sm font-bold text-[var(--lo-inkt)]">{formatLastActive(student.lastActive)}</p>
                   </div>
                   {showArchive ? (
                     <div className="flex items-center gap-2">
@@ -418,7 +418,7 @@ export default function AdminLeerlingenPage() {
                         type="button"
                         onClick={() => handleRestoreStudent(student)}
                         disabled={busyStudentUid === student.uid}
-                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] disabled:opacity-50"
+                        className="lo-knop-start"
                       >
                         {busyStudentUid === student.uid ? <Loader2 size={15} className="animate-spin" /> : <ArchiveRestore size={15} />}
                         Terugzetten
@@ -427,7 +427,7 @@ export default function AdminLeerlingenPage() {
                         type="button"
                         onClick={() => handleDeleteStudent(student)}
                         disabled={busyStudentUid === student.uid}
-                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-red-200 bg-white px-3 text-xs font-black text-red-700 hover:border-red-400 hover:bg-red-50 disabled:opacity-50"
+                        className="lo-knop-tweede lo-knop--klein lo-knop-tweede--gevaar"
                       >
                         <Trash2 size={15} />
                         Definitief verwijderen
@@ -441,7 +441,7 @@ export default function AdminLeerlingenPage() {
                           setPasswordMessage('');
                           setPasswordStudent(student);
                         }}
-                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)]"
+                        className="lo-knop-start"
                       >
                         <KeyRound size={15} />
                         Wachtwoord
@@ -450,16 +450,16 @@ export default function AdminLeerlingenPage() {
                         type="button"
                         onClick={() => handleArchiveStudent(student)}
                         disabled={busyStudentUid === student.uid}
-                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-3 text-xs font-black text-[var(--helix-navy)] hover:border-[var(--helix-purple)] hover:text-[var(--helix-purple)] disabled:opacity-50"
+                        className="lo-knop-start"
                       >
                         {busyStudentUid === student.uid ? <Loader2 size={15} className="animate-spin" /> : <Archive size={15} />}
                         Archiveren
                       </button>
                     </div>
                   )}
-                  <span className="helix-badge">
+                  <Label kleur="blauw" className="justify-self-start">
                     {showArchive ? 'Archief' : 'Leerling'}
-                  </span>
+                  </Label>
                 </div>
               ))}
             </div>
@@ -467,7 +467,7 @@ export default function AdminLeerlingenPage() {
         </section>
 
         {passwordMessage ? (
-          <div className="mt-4 rounded-[var(--helix-radius-md)] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
+          <div className="lo-melding lo-melding--goed mt-4">
             {passwordMessage}
           </div>
         ) : null}
@@ -489,10 +489,10 @@ export default function AdminLeerlingenPage() {
 }
 
 const StatCard = ({ label, value, description }) => (
-  <div className="helix-card p-5">
-    <p className="text-sm font-bold text-[var(--helix-muted)]">{label}</p>
-    <p className="mt-2 text-3xl font-black text-[var(--helix-navy)]">{value}</p>
-    <p className="helix-muted mt-4 text-sm leading-5">{description}</p>
+  <div className="lo-kaart gap-1">
+    <p className="text-sm font-bold text-[var(--lo-grijs)]">{label}</p>
+    <p className="text-3xl font-extrabold tabular-nums text-[var(--lo-inkt)]">{value}</p>
+    <p className="lo-onderregel mt-3">{description}</p>
   </div>
 );
 
@@ -527,43 +527,43 @@ const PasswordResetModal = ({ student, onClose, onSaved }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4">
-      <section className="w-full max-w-lg rounded-[var(--helix-radius-xl)] border border-[var(--helix-border)] bg-white p-6 shadow-2xl">
+      <section className="lo-kaart w-full max-w-lg gap-0 p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="helix-eyebrow">Wachtwoordbeheer</p>
-            <h2 className="mt-1 text-2xl font-black text-[var(--helix-navy)]">Wachtwoord instellen</h2>
-            <p className="helix-muted mt-2 text-sm">
+            <p className="lo-eyebrow">Wachtwoordbeheer</p>
+            <h2 className="lo-kaart-titel mt-1">Wachtwoord instellen</h2>
+            <p className="lo-kaart-uitleg">
               Deze leerling moet bij de volgende login direct een eigen wachtwoord kiezen.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--helix-border)] text-[var(--helix-navy)] hover:bg-[var(--helix-surface-soft)]"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--lo-lijn)] text-[var(--lo-inkt)] hover:border-[var(--lo-blauw)]"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="mt-5 rounded-[var(--helix-radius-lg)] bg-[var(--helix-surface-soft)] px-4 py-3">
-          <p className="font-black text-[var(--helix-navy)]">{student.displayName || 'Naam ontbreekt'}</p>
+        <div className="mt-5 rounded-[var(--lo-hoek-m)] bg-[var(--lo-papier)] px-4 py-3">
+          <p className="font-extrabold text-[var(--lo-inkt)]">{student.displayName || 'Naam ontbreekt'}</p>
           <p className="helix-muted text-sm">{student.email || 'Geen e-mail'}</p>
         </div>
 
         {error ? (
-          <div className="mt-4 rounded-[var(--helix-radius-md)] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+          <div className="lo-melding lo-melding--fout mt-4">
             {error}
           </div>
         ) : null}
 
         <form onSubmit={handleSubmit} className="mt-5">
           <label className="block">
-            <span className="text-sm font-black text-[var(--helix-navy)]">Nieuw tijdelijk wachtwoord</span>
+            <span className="lo-veldlabel">Nieuw tijdelijk wachtwoord</span>
             <input
               type="text"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="input-auth mt-1"
+              className="lo-invoer"
               required
             />
           </label>
@@ -572,14 +572,14 @@ const PasswordResetModal = ({ student, onClose, onSaved }) => {
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex min-h-11 items-center justify-center rounded-[var(--helix-radius-md)] border border-[var(--helix-border)] bg-white px-4 text-sm font-black text-[var(--helix-navy)]"
+              className="lo-knop-tweede justify-center"
             >
               Annuleren
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--helix-radius-md)] bg-[var(--helix-navy)] px-4 text-sm font-black text-white disabled:opacity-50"
+              className="lo-knop justify-center"
             >
               {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
               Opslaan
