@@ -10,21 +10,21 @@ export default function TaalSchakelaar({ taal, actief, bezig, onWissel }) {
   if (!taal) return null;
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-[var(--helix-border)] bg-white p-1">
-      <Languages size={16} aria-hidden="true" className="ml-2 text-[var(--helix-muted)]" />
+    <div className="lo-keuzes" style={{ alignItems: 'center' }}>
+      <Languages size={16} aria-hidden="true" style={{ color: 'var(--lo-grijs)' }} />
       <button
         type="button"
+        className="lo-keuze"
         onClick={() => onWissel(false)}
         aria-pressed={!actief}
-        className={`rounded-xl px-3 py-1.5 text-sm font-black ${!actief ? 'bg-[var(--helix-purple)] text-white' : 'text-[var(--helix-muted)]'}`}
       >
         Nederlands
       </button>
       <button
         type="button"
+        className="lo-keuze"
         onClick={() => onWissel(true)}
         aria-pressed={actief}
-        className={`inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-black ${actief ? 'bg-[var(--helix-purple)] text-white' : 'text-[var(--helix-muted)]'}`}
       >
         {bezig && <Loader2 size={14} className="animate-spin" aria-hidden="true" />}
         {taalLabel(taal)}
