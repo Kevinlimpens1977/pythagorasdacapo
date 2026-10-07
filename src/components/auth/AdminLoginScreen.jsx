@@ -146,7 +146,7 @@ export default function AdminLoginScreen() {
   return (
     <div className="helix-page lo-tekst flex min-h-screen! items-center justify-center p-4 sm:p-8">
       <Kaart as="div" className="mx-auto w-full max-w-[480px] gap-5">
-        <img src={helixLogo} alt="HELIX" className="h-16 w-auto self-start object-contain" />
+        <img src={helixLogo} alt="HELIX" className="h-20 w-auto self-start object-contain" />
 
         <div>
           <span className="lo-label lo-label--blauw">
@@ -157,13 +157,13 @@ export default function AdminLoginScreen() {
         </div>
 
         {error && (
-          <div className="lo-melding lo-melding--fout animate-shake">
+          <div className="lo-melding lo-melding--fout animate-shake" role="alert">
             {error}
           </div>
         )}
 
         {notice && (
-          <div className="lo-melding lo-melding--info">
+          <div className="lo-melding lo-melding--info" role="status">
             {notice}
           </div>
         )}
@@ -198,6 +198,7 @@ export default function AdminLoginScreen() {
             onChange={(e) => setEmail(e.target.value)}
             className="lo-invoer"
             placeholder="E-mailadres"
+            aria-label="E-mailadres"
             autoComplete="username"
           />
           <input
@@ -206,6 +207,7 @@ export default function AdminLoginScreen() {
             onChange={(e) => setPassword(e.target.value)}
             className="lo-invoer"
             placeholder="Wachtwoord"
+            aria-label="Wachtwoord"
             autoComplete="current-password"
           />
           <button type="submit" className="lo-knop-tweede w-full justify-center" disabled={bezig}>

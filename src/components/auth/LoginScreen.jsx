@@ -111,7 +111,7 @@ export default function LoginScreen() {
   return (
     <div className="helix-page lo-tekst flex min-h-screen! items-center justify-center p-4 sm:p-8">
       <Kaart as="div" className="mx-auto w-full max-w-[480px] gap-5">
-        <img src={helixLogo} alt="HELIX" className="h-16 w-auto self-start object-contain" />
+        <img src={helixLogo} alt="HELIX" className="h-20 w-auto self-start object-contain" />
 
         <PaginaKop
           titel={isSignUp ? 'Maak je account' : 'Hoi! Log in'}
@@ -119,13 +119,13 @@ export default function LoginScreen() {
         />
 
         {error && (
-          <div className="lo-melding lo-melding--fout animate-shake">
+          <div className="lo-melding lo-melding--fout animate-shake" role="alert">
             {error}
           </div>
         )}
 
         {notice && (
-          <div className="lo-melding lo-melding--info">
+          <div className="lo-melding lo-melding--info" role="status">
             {notice}
           </div>
         )}
@@ -134,8 +134,9 @@ export default function LoginScreen() {
           {isSignUp && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="lo-veldlabel">Voornaam</label>
+                <label className="lo-veldlabel" htmlFor="inlog-voornaam">Voornaam</label>
                 <input
+                  id="inlog-voornaam"
                   type="text"
                   required
                   value={firstName}
@@ -145,8 +146,9 @@ export default function LoginScreen() {
                 />
               </div>
               <div>
-                <label className="lo-veldlabel">Achternaam</label>
+                <label className="lo-veldlabel" htmlFor="inlog-achternaam">Achternaam</label>
                 <input
+                  id="inlog-achternaam"
                   type="text"
                   required
                   value={lastName}
@@ -159,8 +161,9 @@ export default function LoginScreen() {
           )}
 
           <div>
-            <label className="lo-veldlabel">Leerlingnummer</label>
+            <label className="lo-veldlabel" htmlFor="inlog-leerlingnummer">Leerlingnummer</label>
             <input
+              id="inlog-leerlingnummer"
               type="text"
               required
               value={email}
@@ -182,9 +185,10 @@ export default function LoginScreen() {
           </div>
 
           <div>
-            <label className="lo-veldlabel">Wachtwoord</label>
+            <label className="lo-veldlabel" htmlFor="inlog-wachtwoord">Wachtwoord</label>
             <div className="relative">
               <input
+                id="inlog-wachtwoord"
                 type={toonWachtwoord ? 'text' : 'password'}
                 required
                 value={password}
