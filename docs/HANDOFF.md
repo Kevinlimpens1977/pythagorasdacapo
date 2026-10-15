@@ -702,8 +702,8 @@ In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij
    upgraden voordat je een functie uitrolt.
    Lukt de uitrol niet ("User code failed to load ... Timeout"), zet dan
    `FUNCTIONS_DISCOVERY_TIMEOUT=60` ervoor.
-2. **Het losse werk van 8 tot en met 15 oktober committen** (zie paragraaf 7,
-   "Los in de werkmap"). Het staat live, maar niet in git. Kevin beslist wanneer.
+2. **Gedaan op 15 oktober:** het losse werk van 8 tot en met 15 oktober staat
+   in git (745d4cb, d2a1370, 3b20b54) en op GitHub.
 3. **Binask H2 afronden.** Mogelijke volgende stappen, alleen op Kevins vraag:
    uitwerkingen van de oefentoets voor
    de leerling (de antwoorden staan al in `docs/seeds/binask-oefentoets-h2.json`,
@@ -817,7 +817,7 @@ Kevin bepaalt wanneer dat gebeurt. Het staat wel live: gedeployd met
 | `.claude/skills/helix-hoofdstuk-bouwen/SKILL.md`, `references/vakken.md` (gewijzigd) | paragraaf "Een inclusieversie"; ook gekopieerd naar `~/.claude/skills/` |
 | `docs/HANDOFF.md` (gewijzigd) | dit bestand |
 
-**Stand 15 oktober 2026: niet gecommit, wel live** (site gedeployd met
+**Stand 15 oktober 2026: gecommit en gepusht in 745d4cb, d2a1370 en 3b20b54, ook live** (site gedeployd met
 `npx vercel --prod --yes`, lesstof met de scripts hieronder). Laatste commit is
 `a79cb09` van 7 oktober.
 
@@ -840,7 +840,7 @@ Kevin bepaalt wanneer dat gebeurt. Het staat wel live: gedeployd met
 | `.claude/skills/helix-hoofdstuk-bouwen/SKILL.md` (gewijzigd) | paragraaf "Antwoorden en oefentoets achteraan"; ook gekopieerd naar `~/.claude/skills/` |
 | `docs/HANDOFF.md` (gewijzigd) | dit bestand |
 
-Ook van 15 oktober (Diff rekenen, niet gecommit, wel live):
+Ook van 15 oktober (Diff rekenen, gecommit in 745d4cb):
 `docs/seeds/diff-rekenen.seed.json`, `docs/seeds/diff-rekenen-start-nulmeting.json`,
 `scripts/maak-klas.mjs`, `scripts/zet-vraagvolgorde-per-leerling.mjs`,
 `scripts/diff-rekenen-nulmeting-overzicht.mjs`, `scripts/maak-leerlingaccounts.mjs`, `scripts/lib/diffRekenenNulmeting.mjs`
