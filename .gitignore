@@ -40,3 +40,9 @@ video/public/hoofdstukken/*/shots/
 video/out/
 # Python-cache van de Blender-scripts (video/blender/).
 __pycache__/
+# Rondleidingsvideo: gegenereerde stemmen, muziek, schermafdrukken en
+# conceptportretten blijven buiten git (zoals bij de explainers).
+video/public/rondleiding/audio/
+video/public/rondleiding/muziek.mp3
+video/public/rondleiding/schermen/
+video/public/klasgenoten/concept/
