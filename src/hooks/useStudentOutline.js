@@ -6,6 +6,7 @@ import * as voortgangService from '../services/voortgangService';
 import { getEffectiveContentBlocks } from '../lib/assignmentUtils';
 import { buildChapterOutline, buildChapterOutlines } from '../lib/chapterOutline';
 import { aangekondigdeHoofdstukIds, markeerVergrendeldeHoofdstukken } from '../lib/hoofdstukSlot';
+import { markeerParagraafSloten } from '../lib/antwoordenSlot';
 import { filterLesstofOpKlasRoute, getKlasNiveauId } from '../lib/klasRoute';
 import { getEffectiveKlasId } from '../lib/classIdUtils';
 import { useAuth } from '../components/auth/AuthProvider';
@@ -21,15 +22,22 @@ import { useAuth } from '../components/auth/AuthProvider';
  * Dat was eerder een lus met een losse query per paragraaf; met elf paragrafen
  * stonden er zo ruim twintig rondreizen tussen het openen van de pagina en de
  * eerste letter op het scherm, en dat groeide mee met elk nieuw hoofdstuk.
+ *
+ * `verversSleutel` laadt alles opnieuw zodra hij verandert. De lespagina geeft
+ * de paragraaf-id mee: wie van 1.5 doorklikt naar 1.A, moet het slot van de
+ * antwoorden zien met de voortgang van nu, niet met die van het openen van de
+ * les. `actueel` zegt of de getoonde stand bij die sleutel hoort.
  */
-export const useStudentOutline = () => {
-  const { klasData, currentUser, userData, klasId: authKlasId } = useAuth();
+export const useStudentOutline = ({ verversSleutel = '' } = {}) => {
+  const { klasData, currentUser, userData, klasId: authKlasId, isAdmin } = useAuth();
   const [paragrafen, setParagrafen] = useState([]);
   const [hoofdstukkenMap, setHoofdstukkenMap] = useState({});
   // Hoofdstukken op slot zonder toegewezen paragrafen: alleen een kaart.
   const [aangekondigd, setAangekondigd] = useState([]);
   const [voortgangMap, setVoortgangMap] = useState({});
   const [loading, setLoading] = useState(true);
+  // Voor welke verversSleutel de huidige stand geladen is.
+  const [geladenVoor, setGeladenVoor] = useState(null);
   const [herlaadTeller, setHerlaadTeller] = useState(0);
 
   const herlaad = useCallback(() => setHerlaadTeller((teller) => teller + 1), []);
@@ -51,6 +59,7 @@ export const useStudentOutline = () => {
             setHoofdstukkenMap({});
             setAangekondigd([]);
             setVoortgangMap({});
+            setGeladenVoor(verversSleutel);
             setLoading(false);
           }
           return;
@@ -132,6 +141,7 @@ export const useStudentOutline = () => {
         setParagrafen(paragraafWithContent);
         setHoofdstukkenMap(hoofdstukMap);
         setVoortgangMap(progressMap);
+        setGeladenVoor(verversSleutel);
       } catch (laadFout) {
         console.error('Lesstof laden mislukt:', laadFout);
         if (!gestopt) {
@@ -139,6 +149,7 @@ export const useStudentOutline = () => {
           setHoofdstukkenMap({});
           setAangekondigd([]);
           setVoortgangMap({});
+          setGeladenVoor(verversSleutel);
         }
       } finally {
         if (!gestopt) setLoading(false);
@@ -147,23 +158,32 @@ export const useStudentOutline = () => {
 
     laden();
     return () => { gestopt = true; };
-  }, [authKlasId, currentUser, klasData, userData, herlaadTeller]);
+  }, [authKlasId, currentUser, klasData, userData, herlaadTeller, verversSleutel]);
 
   // Het slot per hoofdstuk staat op de klas. Het hoort hier thuis en niet in
   // buildChapterOutlines: die functie kent alleen lesstof en voortgang, geen
-  // klas.
+  // klas. De paragraafsloten (antwoordenSlot.js: de antwoorden en de
+  // oefentoets achteraan) komen daarna: het klasslot gaat voor, en een
+  // beheerder ziet alles open. Een testaccount ook (Kevin, 15 okt 2026): via
+  // "Testen als leerling" wil hij elke paragraaf kunnen bekijken zonder eerst
+  // alles te maken. Het klasslot van de docent blijft wel gelden.
   const chapters = useMemo(
-    () => markeerVergrendeldeHoofdstukken(
-      [
-        ...buildChapterOutlines({ hoofdstukken: hoofdstukkenMap, paragrafen, voortgangMap }),
-        ...aangekondigd.map((hoofdstuk) => ({ ...buildChapterOutline({ hoofdstuk }), aangekondigd: true }))
-      ].sort((a, b) => (a.number ?? 999) - (b.number ?? 999)),
-      klasData
+    () => markeerParagraafSloten(
+      markeerVergrendeldeHoofdstukken(
+        [
+          ...buildChapterOutlines({ hoofdstukken: hoofdstukkenMap, paragrafen, voortgangMap }),
+          ...aangekondigd.map((hoofdstuk) => ({ ...buildChapterOutline({ hoofdstuk }), aangekondigd: true }))
+        ].sort((a, b) => (a.number ?? 999) - (b.number ?? 999)),
+        klasData
+      ),
+      { beheerder: isAdmin === true || userData?.isTestaccount === true }
     ),
-    [aangekondigd, hoofdstukkenMap, paragrafen, voortgangMap, klasData]
+    [aangekondigd, hoofdstukkenMap, paragrafen, voortgangMap, klasData, isAdmin, userData?.isTestaccount]
   );
 
-  return { chapters, paragrafen, loading, herlaad };
+  const actueel = !loading && geladenVoor === verversSleutel;
+
+  return { chapters, paragrafen, loading, actueel, herlaad };
 };
 
 export default useStudentOutline;

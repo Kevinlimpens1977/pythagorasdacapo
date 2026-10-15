@@ -8,7 +8,8 @@ import {
   seededShuffle,
   shuffleAnswerOptions,
   withStableOptionIds,
-  SHUFFLE_EXEMPT_QUESTION_TYPES
+  SHUFFLE_EXEMPT_QUESTION_TYPES,
+  schudVraagVolgordePerNiveau
 } from './answerOptionShuffle.js';
 import {
   buildAssessmentItemExplanationFeedback,
@@ -360,4 +361,25 @@ test('een toetsitem geeft na het schudden de uitleg van de aangeklikte optie', (
 
     assert.deepEqual(feedback.chosen, [bron.correct ? bron.explanation : bron.misconception]);
   });
+});
+
+const niveauItems = ['basis', 'basis', 'basis', 'basis', 'plus', 'plus', 'plus', 'plus', 'verdieping', 'verdieping', 'verdieping', 'verdieping']
+  .map((niveau, index) => ({ id: `quiz-${index + 1}`, taxonomy: { masteryLevel: niveau } }));
+
+test('schudVraagVolgordePerNiveau schudt alleen binnen een niveau en houdt alle vragen', () => {
+  const geschud = schudVraagVolgordePerNiveau(niveauItems, { studentId: 'leerling-aisha', blockId: 'blok-1' });
+  assert.equal(geschud.length, 12);
+  assert.deepEqual(new Set(geschud.map((item) => item.id)), new Set(niveauItems.map((item) => item.id)));
+  assert.deepEqual(geschud.map((item) => item.taxonomy.masteryLevel), niveauItems.map((item) => item.taxonomy.masteryLevel));
+});
+
+test('schudVraagVolgordePerNiveau is vast per leerling en verschilt tussen leerlingen', () => {
+  const volgorde = (uid) => schudVraagVolgordePerNiveau(niveauItems, { studentId: uid, blockId: 'blok-1' }).map((item) => item.id).join('|');
+  assert.equal(volgorde('leerling-aisha'), volgorde('leerling-aisha'));
+  const eersten = new Set(Array.from({ length: 20 }, (_, index) => volgorde(`leerling-${index}`).split('|')[0]));
+  assert.ok(eersten.size > 1);
+});
+
+test('schudVraagVolgordePerNiveau laat de auteursvolgorde staan zonder leerling', () => {
+  assert.deepEqual(schudVraagVolgordePerNiveau(niveauItems, { studentId: '', blockId: 'blok-1' }), niveauItems);
 });

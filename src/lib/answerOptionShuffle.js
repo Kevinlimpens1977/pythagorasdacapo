@@ -125,6 +125,34 @@ export const seededShuffle = (items = [], seed = '') => {
 };
 
 /**
+ * Vraagvolgorde per leerling, voor een blok met `content.vraagVolgordePerLeerling`.
+ *
+ * Bedoeld voor de startles van Diff rekenen (15 oktober 2026): leerlingen naast
+ * elkaar beginnen met een andere vraag, zodat samenwerken niet helpt. De vragen
+ * schudden alleen BINNEN hun niveau (taxonomy.masteryLevel), in de volgorde
+ * waarin de niveaus in het blok staan. Zo begint iedereen nog steeds met een
+ * basisvraag en loopt de quiz van makkelijk naar moeilijk.
+ *
+ * Deterministisch (uid + blok), dus na verversen staat alles op dezelfde plek.
+ * Zonder leerling (docentpreview) blijft de volgorde van de auteur staan.
+ * Nakijken en voortgang gaan op item-id, nooit op positie.
+ */
+export const schudVraagVolgordePerNiveau = (items = [], { studentId = '', blockId = '' } = {}) => {
+  const lijst = asArray(items);
+  const student = cleanText(studentId);
+  if (!student || lijst.length < 2) return lijst;
+  const groepen = new Map();
+  lijst.forEach((item) => {
+    const niveau = cleanText(item?.taxonomy?.masteryLevel) || 'basis';
+    if (!groepen.has(niveau)) groepen.set(niveau, []);
+    groepen.get(niveau).push(item);
+  });
+  return [...groepen.entries()].flatMap(([niveau, groep]) =>
+    seededShuffle(groep, `vraagvolgorde|${student}|${cleanText(blockId)}|${niveau}`)
+  );
+};
+
+/**
  * De seed voor een vraag bij een leerling.
  *
  * Leeg zodra de leerling onbekend is. Dat is bewust: in de docentpreview, de

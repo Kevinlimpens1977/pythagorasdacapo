@@ -1,0 +1,216 @@
+{
+  "meta": {
+    "vakId": "vak-binask-eoa",
+    "leerjaarId": "leerjaar-binask-eoa-1",
+    "niveauId": "niveau-binask-eoa-1-lr3",
+    "bron": "Uitwerkingen bij de schriftvragen van H1 en H2 (Kevin, 8 okt 2026). Antwoorden berekend uit de vragen zelf; dichtheden zoals in het boekje van de les (aluminium 2,7, ijzer 7,9, koper 8,9, goud 19,3, zilver 10,5 g/cm3).",
+    "minimaleTijdSeconden": 60,
+    "bevestigLabel": "Ik heb mijn werk nagekeken"
+  },
+  "hoofdstukken": [
+    {
+      "hoofdstukId": "hoofdstuk-binask-eoa-1-h1",
+      "paragraafId": "paragraaf-binask-eoa-1-1-a",
+      "blokId": "block-binask-eoa-1-1a-uitwerkingen",
+      "code": "1.A",
+      "titel": "Uitwerkingen en antwoorden",
+      "order": 90,
+      "intro": "Kijk je schriftvragen van hoofdstuk 1 na. Zet een vinkje bij elk goed antwoord. Verbeter een fout antwoord met een andere kleur pen. Bij vragen met je eigen voorbeelden zijn er meer goede antwoorden mogelijk.",
+      "opdrachten": [
+        {
+          "titel": "1.4 Vragenopdracht",
+          "vragen": [
+            { "nr": "1", "vraag": "Vul de juiste woorden in.", "antwoord": "Scheikundigen onderzoeken hoe ze nieuwe stoffen kunnen <strong>maken</strong> en hoe ze bestaande stoffen kunnen <strong>gebruiken</strong> (of verbeteren)." },
+            { "nr": "2a", "vraag": "Noteer twee stoffen die scheikundigen hebben ontdekt.", "antwoord": "Bijvoorbeeld: plastic (kunststoffen) en medicijnen, zoals medicijnen tegen kanker." },
+            { "nr": "2b", "vraag": "Wat hebben scheikundigen veranderd aan enkele plastics?", "antwoord": "Ze hebben plastics gemaakt die wel afbreken in het milieu. Een voorbeeld zijn de plastic bekers op festivals." },
+            { "nr": "3a", "vraag": "Stofeigenschappen zijn eigenschappen waaraan je een stof kunt ...", "antwoord": "<strong>herkennen</strong>." },
+            { "nr": "3b", "vraag": "Noem zeven stofeigenschappen.", "antwoord": "Zeven van deze: smaak, geur, fase (vast, vloeibaar of gas), kleur, oplosbaarheid in water, elektrische geleiding, kookpunt, smeltpunt en dichtheid." },
+            { "nr": "3c", "vraag": "Leg uit wat de dichtheid van een stof is.", "antwoord": "De dichtheid is de massa van een bepaalde hoeveelheid van een stof: hoeveel gram 1 cm³ van die stof weegt. Elke stof heeft zijn eigen dichtheid, dus je kunt er stoffen mee herkennen." },
+            { "nr": "3d", "vraag": "Noteer de formule voor de dichtheid met de symbolen en eenheden.", "antwoord": "ρ = m / V. Hierin is ρ (rho) de dichtheid in g/cm³, m de massa in g en V het volume in cm³." },
+            { "nr": "4a", "vraag": "Geef een ander woord voor gevarensymbool.", "antwoord": "Veiligheidspictogram (of gevaarsymbool)." },
+            { "nr": "4b", "vraag": "Teken de gevarensymbolen die horen bij de betekenissen.", "antwoord": "Ontvlambaar: een vlam. Schadelijk: een uitroepteken. Explosief: een ontploffende bom. Corrosief (bijtend): vloeistof die op een hand en op een stuk materiaal druppelt. Giftig: een doodshoofd met gekruiste botten. Alle symbolen staan in een rode ruit op een witte achtergrond.", "afbeelding": "gevarensymbolen" },
+            { "nr": "6a", "vraag": "Geef twee toepassingen van scheikunde in een ziekenhuis.", "antwoord": "Bijvoorbeeld: medicijnen maken, ontsmettingsmiddelen om handen en instrumenten schoon te maken, bloed en DNA onderzoeken." },
+            { "nr": "6b", "vraag": "Geef twee toepassingen van scheikunde bij de kapper.", "antwoord": "Bijvoorbeeld: haarverf, shampoo, blondeermiddel, gel of haarlak." },
+            { "nr": "7a", "vraag": "Noem twee witte, vaste stoffen uit de keuken.", "antwoord": "Bijvoorbeeld: suiker en zout (ook goed: bloem, bakpoeder)." },
+            { "nr": "7b", "vraag": "Noteer een verschil in stofeigenschappen tussen deze stoffen.", "antwoord": "Bijvoorbeeld bij suiker en zout: een ander smeltpunt (suiker smelt veel eerder dan zout) of een andere smaak (zoet en zout). Let op: bij scheikunde proef je nooit." },
+            { "nr": "8", "vraag": "Vijf voorwerpen, het materiaal en de stofeigenschap.", "antwoord": "Je eigen voorbeelden zijn goed als de stofeigenschap past bij het gebruik. Voorbeelden: pan - metaal - geleidt warmte goed. Raam - glas - doorzichtig. Stoel - hout - stevig. T-shirt - katoen - zacht en neemt zweet op. Stroomdraad - koper - geleidt elektrische stroom." }
+          ]
+        }
+      ]
+    },
+    {
+      "hoofdstukId": "hoofdstuk-binask-eoa-1-h2",
+      "paragraafId": "paragraaf-binask-eoa-1-2-a",
+      "blokId": "block-binask-eoa-1-2a-uitwerkingen",
+      "code": "2.A",
+      "titel": "Uitwerkingen en antwoorden",
+      "order": 90,
+      "intro": "Kijk je schriftvragen van hoofdstuk 2 na. Zet een vinkje bij elk goed antwoord. Verbeter een fout antwoord met een andere kleur pen. Bij een rekenvraag kijk je ook of je alle stappen hebt: gegeven, gevraagd, formule, berekening en antwoord met de juiste eenheid.",
+      "opdrachten": [
+        {
+          "titel": "Schriftopdracht 2.1",
+          "vragen": [
+            { "nr": "1", "vraag": "Wat meet je met een weegschaal?", "antwoord": "De massa." },
+            { "nr": "2", "vraag": "Welke letter gebruiken we voor massa?", "antwoord": "m" },
+            { "nr": "3", "vraag": "Welke twee eenheden gebruiken we vaak voor massa?", "antwoord": "Gram (g) en kilogram (kg)." },
+            { "nr": "4", "vraag": "Hoeveel gram is 1 kilogram?", "antwoord": "1 kg = 1000 g." },
+            { "nr": "5", "vraag": "Een appel heeft een massa van 180 g. Wat is de grootheid en wat is de eenheid?", "antwoord": "De grootheid is massa (m). De eenheid is gram (g)." },
+            { "nr": "6", "vraag": "Een schooltas heeft een massa van 3 kg. Hoeveel gram is dit?", "reken": { "gegeven": "m = 3 kg", "gevraagd": "m in g", "formule": "1 kg = 1000 g, dus keer 1000", "berekening": "3 × 1000 = 3000", "antwoord": "m = 3000 g" } },
+            { "nr": "7", "vraag": "Een fiets heeft een massa van 12 kg. Hoeveel gram is dit?", "reken": { "gegeven": "m = 12 kg", "gevraagd": "m in g", "formule": "1 kg = 1000 g, dus keer 1000", "berekening": "12 × 1000 = 12 000", "antwoord": "m = 12 000 g" } },
+            { "nr": "8", "vraag": "Een metalen blok heeft een massa van 7500 g. Hoeveel kilogram is dit?", "reken": { "gegeven": "m = 7500 g", "gevraagd": "m in kg", "formule": "1000 g = 1 kg, dus delen door 1000", "berekening": "7500 : 1000 = 7,5", "antwoord": "m = 7,5 kg" } },
+            { "nr": "9", "vraag": "Een pak suiker is 1 kg en een ander pak is 500 g. Hoeveel gram is dit samen?", "reken": { "gegeven": "m₁ = 1 kg = 1000 g en m₂ = 500 g", "gevraagd": "m totaal in g", "formule": "m totaal = m₁ + m₂", "berekening": "1000 + 500 = 1500", "antwoord": "m totaal = 1500 g" } },
+            { "nr": "10", "vraag": "Drie blokjes hebben elk een massa van 250 g. Bereken de totale massa.", "reken": { "gegeven": "3 blokjes van elk m = 250 g", "gevraagd": "m totaal in g", "formule": "m totaal = aantal × m", "berekening": "3 × 250 = 750", "antwoord": "m totaal = 750 g" } }
+          ]
+        },
+        {
+          "titel": "10-minutencheck 2.1 - waar of niet waar?",
+          "vragen": [
+            { "nr": "1", "vraag": "Massa meet je met een weegschaal.", "antwoord": "Waar." },
+            { "nr": "2", "vraag": "De letter voor massa is V.", "antwoord": "Niet waar. De letter voor massa is m. V is de letter voor volume." },
+            { "nr": "3", "vraag": "1000 g is hetzelfde als 1 kg.", "antwoord": "Waar." },
+            { "nr": "4", "vraag": "2 kg is 2000 g.", "antwoord": "Waar." },
+            { "nr": "5", "vraag": "500 g is 5 kg.", "antwoord": "Niet waar. 500 g is 0,5 kg (500 : 1000 = 0,5)." },
+            { "nr": "6", "vraag": "Een appel van 160 g heeft een massa van 160 g.", "antwoord": "Waar." },
+            { "nr": "7", "vraag": "Bij BiNaSk gebruiken we in deze lessen het woord massa.", "antwoord": "Waar." },
+            { "nr": "8", "vraag": "Van gram naar kilogram deel je door 1000.", "antwoord": "Waar." }
+          ]
+        },
+        {
+          "titel": "Schriftopdracht 2.2",
+          "vragen": [
+            { "nr": "1", "vraag": "Wat vertelt het volume van een voorwerp?", "antwoord": "Hoeveel ruimte het voorwerp inneemt." },
+            { "nr": "2", "vraag": "Welke letter gebruiken we voor volume?", "antwoord": "V" },
+            { "nr": "3", "vraag": "Wat is hetzelfde: 1 ml of 1 cm³?", "antwoord": "Ze zijn even groot: 1 ml = 1 cm³." },
+            { "nr": "4", "vraag": "Welke formule gebruik je voor het volume van een rechthoekig blok?", "antwoord": "V = lengte × breedte × hoogte (V = l × b × h)." },
+            { "nr": "5", "vraag": "Een maatcilinder bevat 35 ml water. Hoeveel cm³ is dit?", "reken": { "gegeven": "V = 35 ml", "gevraagd": "V in cm³", "formule": "1 ml = 1 cm³", "berekening": "35 ml = 35 cm³", "antwoord": "V = 35 cm³" } },
+            { "nr": "6", "vraag": "Een fles bevat 1 liter water. Hoeveel dm³ is dit?", "reken": { "gegeven": "V = 1 L", "gevraagd": "V in dm³", "formule": "1 L = 1 dm³", "berekening": "1 L = 1 dm³", "antwoord": "V = 1 dm³" } },
+            { "nr": "7", "vraag": "Een blokje is 5 cm lang, 3 cm breed en 2 cm hoog. Bereken het volume.", "reken": { "gegeven": "l = 5 cm, b = 3 cm, h = 2 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 5 × 3 × 2 = 30", "antwoord": "V = 30 cm³" } },
+            { "nr": "8", "vraag": "Een doosje is 8 cm lang, 4 cm breed en 3 cm hoog. Bereken het volume.", "reken": { "gegeven": "l = 8 cm, b = 4 cm, h = 3 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 8 × 4 × 3 = 96", "antwoord": "V = 96 cm³" } },
+            { "nr": "9", "vraag": "Eerst 20 ml water, met een steen erin 32 ml. Bereken het volume van de steen.", "reken": { "gegeven": "V begin = 20 ml, V eind = 32 ml", "gevraagd": "V steen", "formule": "V = V eind - V begin", "berekening": "V = 32 - 20 = 12", "antwoord": "V = 12 ml = 12 cm³" } },
+            { "nr": "10", "vraag": "Beginvolume 45 ml, eindvolume 61 ml. Bereken het volume in ml en in cm³.", "reken": { "gegeven": "V begin = 45 ml, V eind = 61 ml", "gevraagd": "V voorwerp in ml en in cm³", "formule": "V = V eind - V begin en 1 ml = 1 cm³", "berekening": "V = 61 - 45 = 16", "antwoord": "V = 16 ml = 16 cm³" } }
+          ]
+        },
+        {
+          "titel": "10-minutencheck 2.2 - korte vragen",
+          "vragen": [
+            { "nr": "1", "vraag": "Schrijf 40 ml om naar cm³.", "reken": { "gegeven": "V = 40 ml", "gevraagd": "V in cm³", "formule": "1 ml = 1 cm³", "berekening": "40 ml = 40 cm³", "antwoord": "V = 40 cm³" } },
+            { "nr": "2", "vraag": "Schrijf 1 liter om naar dm³.", "reken": { "gegeven": "V = 1 L", "gevraagd": "V in dm³", "formule": "1 L = 1 dm³", "berekening": "1 L = 1 dm³", "antwoord": "V = 1 dm³" } },
+            { "nr": "3", "vraag": "Bereken het volume van een blok van 4 cm × 3 cm × 2 cm.", "reken": { "gegeven": "l = 4 cm, b = 3 cm, h = 2 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 4 × 3 × 2 = 24", "antwoord": "V = 24 cm³" } },
+            { "nr": "4", "vraag": "Eerst 18 ml en daarna 30 ml. Bereken het volume van het voorwerp.", "reken": { "gegeven": "V begin = 18 ml, V eind = 30 ml", "gevraagd": "V voorwerp", "formule": "V = V eind - V begin", "berekening": "V = 30 - 18 = 12", "antwoord": "V = 12 ml = 12 cm³" } },
+            { "nr": "5", "vraag": "Welke grootheid heeft de letter V?", "antwoord": "Volume." },
+            { "nr": "6", "vraag": "Welk meetinstrument gebruik je voor het volume van water?", "antwoord": "Een maatcilinder." },
+            { "nr": "7", "vraag": "Een blok is 10 cm lang, 2 cm breed en 1 cm hoog. Bereken het volume.", "reken": { "gegeven": "l = 10 cm, b = 2 cm, h = 1 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 10 × 2 × 1 = 20", "antwoord": "V = 20 cm³" } },
+            { "nr": "8", "vraag": "Waar of niet waar: 1 ml is hetzelfde als 1 cm³.", "antwoord": "Waar." }
+          ]
+        },
+        {
+          "titel": "Schriftopdracht 2.3",
+          "vragen": [
+            { "nr": "1", "vraag": "Wat vertelt de dichtheid van een stof?", "antwoord": "Hoeveel gram 1 cm³ van die stof weegt. De dichtheid hoort bij de stof, niet bij de grootte van het voorwerp." },
+            { "nr": "2", "vraag": "Welke letter gebruiken we voor dichtheid?", "antwoord": "ρ (rho, je zegt 'roo')." },
+            { "nr": "3", "vraag": "Welke eenheid gebruiken we in dit hoofdstuk voor dichtheid?", "antwoord": "g/cm³ (gram per kubieke centimeter)." },
+            { "nr": "4", "vraag": "Schrijf de drie formules op.", "antwoord": "ρ = m / V, m = ρ × V en V = m / ρ." },
+            { "nr": "5", "vraag": "Massa 40 g, volume 20 cm³. Bereken de dichtheid.", "reken": { "gegeven": "m = 40 g, V = 20 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 40 / 20 = 2,0", "antwoord": "ρ = 2,0 g/cm³" } },
+            { "nr": "6", "vraag": "Massa 144,7 g, volume 7,5 cm³. Bereken de dichtheid.", "reken": { "gegeven": "m = 144,7 g, V = 7,5 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 144,7 / 7,5 = 19,29... (afgerond 19,3)", "antwoord": "ρ = 19,3 g/cm³ (dat past bij goud)" } },
+            { "nr": "7", "vraag": "Massa 21 g, volume 2,0 cm³. Bereken de dichtheid.", "reken": { "gegeven": "m = 21 g, V = 2,0 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 21 / 2,0 = 10,5", "antwoord": "ρ = 10,5 g/cm³ (dat past bij zilver)" } },
+            { "nr": "8", "vraag": "Aluminium: volume 20 cm³, dichtheid 2,7 g/cm³. Bereken de massa.", "reken": { "gegeven": "V = 20 cm³, ρ = 2,7 g/cm³", "gevraagd": "m in g", "formule": "m = ρ × V", "berekening": "m = 2,7 × 20 = 54", "antwoord": "m = 54 g" } },
+            { "nr": "9", "vraag": "IJzer: massa 158 g, dichtheid 7,9 g/cm³. Bereken het volume.", "reken": { "gegeven": "m = 158 g, ρ = 7,9 g/cm³", "gevraagd": "V in cm³", "formule": "V = m / ρ", "berekening": "V = 158 / 7,9 = 20", "antwoord": "V = 20 cm³" } },
+            { "nr": "10", "vraag": "Blokje 6 cm × 2 cm × 3 cm, massa 21 g. Bereken eerst het volume en daarna de dichtheid.", "stappen": [
+              { "kop": "Stap 1: het volume", "gegeven": "l = 6 cm, b = 2 cm, h = 3 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 6 × 2 × 3 = 36", "antwoord": "V = 36 cm³" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 21 g, V = 36 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 21 / 36 = 0,58... (afgerond 0,6)", "antwoord": "ρ = 0,6 g/cm³" }
+            ] }
+          ]
+        },
+        {
+          "titel": "10-minutencheck 2.3 - dichtheid",
+          "vragen": [
+            { "nr": "1", "vraag": "Waar of niet waar: dichtheid is een stofeigenschap.", "antwoord": "Waar." },
+            { "nr": "2", "vraag": "Waar of niet waar: ρ spreek je uit als 'roo'.", "antwoord": "Waar." },
+            { "nr": "3", "vraag": "Schrijf de formule op voor dichtheid.", "antwoord": "ρ = m / V" },
+            { "nr": "4", "vraag": "Schrijf de formule op voor massa.", "antwoord": "m = ρ × V" },
+            { "nr": "5", "vraag": "Schrijf de formule op voor volume.", "antwoord": "V = m / ρ" },
+            { "nr": "6", "vraag": "Bereken ρ bij m = 54 g en V = 20 cm³.", "reken": { "gegeven": "m = 54 g, V = 20 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 54 / 20 = 2,7", "antwoord": "ρ = 2,7 g/cm³" } },
+            { "nr": "7", "vraag": "Bereken m bij ρ = 2,7 g/cm³ en V = 15 cm³.", "reken": { "gegeven": "ρ = 2,7 g/cm³, V = 15 cm³", "gevraagd": "m in g", "formule": "m = ρ × V", "berekening": "m = 2,7 × 15 = 40,5", "antwoord": "m = 40,5 g" } },
+            { "nr": "8", "vraag": "Bereken V bij m = 89 g en ρ = 8,9 g/cm³.", "reken": { "gegeven": "m = 89 g, ρ = 8,9 g/cm³", "gevraagd": "V in cm³", "formule": "V = m / ρ", "berekening": "V = 89 / 8,9 = 10", "antwoord": "V = 10 cm³" } }
+          ]
+        },
+        {
+          "titel": "Herhalingsopdrachten 2.4",
+          "vragen": [
+            { "nr": "1", "vraag": "Een zak heeft een massa van 4 kg. Bereken de massa in gram.", "reken": { "gegeven": "m = 4 kg", "gevraagd": "m in g", "formule": "1 kg = 1000 g, dus keer 1000", "berekening": "4 × 1000 = 4000", "antwoord": "m = 4000 g" } },
+            { "nr": "2", "vraag": "Een voorwerp heeft een massa van 2650 g. Bereken de massa in kilogram.", "reken": { "gegeven": "m = 2650 g", "gevraagd": "m in kg", "formule": "1000 g = 1 kg, dus delen door 1000", "berekening": "2650 : 1000 = 2,65", "antwoord": "m = 2,65 kg" } },
+            { "nr": "3", "vraag": "Een maatcilinder bevat 48 ml water. Hoeveel cm³ is dit?", "reken": { "gegeven": "V = 48 ml", "gevraagd": "V in cm³", "formule": "1 ml = 1 cm³", "berekening": "48 ml = 48 cm³", "antwoord": "V = 48 cm³" } },
+            { "nr": "4", "vraag": "Blokje 4 cm × 3 cm × 5 cm. Bereken het volume.", "reken": { "gegeven": "l = 4 cm, b = 3 cm, h = 5 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 4 × 3 × 5 = 60", "antwoord": "V = 60 cm³" } },
+            { "nr": "5", "vraag": "Eerst 30 ml, met een steen erin 44 ml. Bereken het volume van de steen.", "reken": { "gegeven": "V begin = 30 ml, V eind = 44 ml", "gevraagd": "V steen", "formule": "V = V eind - V begin", "berekening": "V = 44 - 30 = 14", "antwoord": "V = 14 ml = 14 cm³" } },
+            { "nr": "6", "vraag": "Massa 54 g, volume 20 cm³. Bereken de dichtheid.", "reken": { "gegeven": "m = 54 g, V = 20 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 54 / 20 = 2,7", "antwoord": "ρ = 2,7 g/cm³" } },
+            { "nr": "7", "vraag": "Dichtheid 7,9 g/cm³, volume 15 cm³. Bereken de massa.", "reken": { "gegeven": "ρ = 7,9 g/cm³, V = 15 cm³", "gevraagd": "m in g", "formule": "m = ρ × V", "berekening": "m = 7,9 × 15 = 118,5", "antwoord": "m = 118,5 g" } },
+            { "nr": "8", "vraag": "Massa 89 g, dichtheid 8,9 g/cm³. Bereken het volume.", "reken": { "gegeven": "m = 89 g, ρ = 8,9 g/cm³", "gevraagd": "V in cm³", "formule": "V = m / ρ", "berekening": "V = 89 / 8,9 = 10", "antwoord": "V = 10 cm³" } },
+            { "nr": "9", "vraag": "Metalen blokje 5 cm × 2 cm × 2 cm, massa 54 g. Bereken eerst het volume en daarna de dichtheid.", "stappen": [
+              { "kop": "Stap 1: het volume", "gegeven": "l = 5 cm, b = 2 cm, h = 2 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 5 × 2 × 2 = 20", "antwoord": "V = 20 cm³" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 54 g, V = 20 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 54 / 20 = 2,7", "antwoord": "ρ = 2,7 g/cm³" }
+            ] },
+            { "nr": "10", "vraag": "Eerst 50 ml, met het voorwerp 60 ml. Massa 79 g. Bereken het volume en de dichtheid. Welke stof?", "stappen": [
+              { "kop": "Stap 1: het volume", "gegeven": "V begin = 50 ml, V eind = 60 ml", "gevraagd": "V voorwerp", "formule": "V = V eind - V begin", "berekening": "V = 60 - 50 = 10", "antwoord": "V = 10 ml = 10 cm³" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 79 g, V = 10 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 79 / 10 = 7,9", "antwoord": "ρ = 7,9 g/cm³" }
+            ], "slot": "In <a href=\"#binas\" class=\"binas-link\" title=\"Open het boekje met dichtheden\">Binas</a> hoort 7,9 g/cm³ bij ijzer. Het voorwerp kan van ijzer zijn." },
+            { "nr": "11", "vraag": "Blokje A: V = 10 cm³, m = 27 g. Blokje B: V = 10 cm³, m = 79 g. Bereken beide dichtheden en vergelijk.", "stappen": [
+              { "kop": "Blokje A", "gegeven": "m = 27 g, V = 10 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 27 / 10 = 2,7", "antwoord": "ρ = 2,7 g/cm³" },
+              { "kop": "Blokje B", "gegeven": "m = 79 g, V = 10 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 79 / 10 = 7,9", "antwoord": "ρ = 7,9 g/cm³" }
+            ], "slot": "Ze zijn even groot, maar blokje B heeft een veel grotere dichtheid. Ze zijn dus van een andere stof: A kan aluminium zijn, B kan ijzer zijn." },
+            { "nr": "12", "vraag": "Leg uit waarom 'een groter voorwerp heeft altijd een grotere dichtheid' niet klopt.", "antwoord": "De dichtheid hangt af van de <strong>stof</strong>, niet van de grootte. Een groter voorwerp van dezelfde stof heeft meer <strong>massa</strong>, maar ook meer <strong>volume</strong>. Massa gedeeld door volume blijft dan gelijk. Een groot stuk hout heeft zelfs een kleinere dichtheid dan een klein stukje ijzer." }
+          ]
+        },
+        {
+          "titel": "10-minutencheck 2.4 - gemengd",
+          "vragen": [
+            { "nr": "1", "vraag": "2,5 kg = ... g", "reken": { "gegeven": "m = 2,5 kg", "gevraagd": "m in g", "formule": "1 kg = 1000 g, dus keer 1000", "berekening": "2,5 × 1000 = 2500", "antwoord": "m = 2500 g" } },
+            { "nr": "2", "vraag": "75 ml = ... cm³", "reken": { "gegeven": "V = 75 ml", "gevraagd": "V in cm³", "formule": "1 ml = 1 cm³", "berekening": "75 ml = 75 cm³", "antwoord": "V = 75 cm³" } },
+            { "nr": "3", "vraag": "Volume van een blok van 3 cm × 4 cm × 5 cm.", "reken": { "gegeven": "l = 3 cm, b = 4 cm, h = 5 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 3 × 4 × 5 = 60", "antwoord": "V = 60 cm³" } },
+            { "nr": "4", "vraag": "Beginvolume 22 ml, eindvolume 37 ml. Volume voorwerp.", "reken": { "gegeven": "V begin = 22 ml, V eind = 37 ml", "gevraagd": "V voorwerp in cm³", "formule": "V = V eind - V begin", "berekening": "V = 37 - 22 = 15", "antwoord": "V = 15 cm³" } },
+            { "nr": "5", "vraag": "m = 60 g en V = 20 cm³. Bereken ρ.", "reken": { "gegeven": "m = 60 g, V = 20 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 60 / 20 = 3,0", "antwoord": "ρ = 3,0 g/cm³" } },
+            { "nr": "6", "vraag": "ρ = 2,7 g/cm³ en V = 30 cm³. Bereken m.", "reken": { "gegeven": "ρ = 2,7 g/cm³, V = 30 cm³", "gevraagd": "m in g", "formule": "m = ρ × V", "berekening": "m = 2,7 × 30 = 81", "antwoord": "m = 81 g" } },
+            { "nr": "7", "vraag": "m = 158 g en ρ = 7,9 g/cm³. Bereken V.", "reken": { "gegeven": "m = 158 g, ρ = 7,9 g/cm³", "gevraagd": "V in cm³", "formule": "V = m / ρ", "berekening": "V = 158 / 7,9 = 20", "antwoord": "V = 20 cm³" } },
+            { "nr": "8", "vraag": "Waar of niet waar: dichtheid hangt alleen af van hoe groot een voorwerp is.", "antwoord": "Niet waar. De dichtheid hangt af van de stof, niet van de grootte van het voorwerp." }
+          ]
+        },
+        {
+          "titel": "Plusopdrachten 2.5",
+          "vragen": [
+            { "nr": "1", "vraag": "Metalen blok 12 cm × 5 cm × 2 cm, massa 324 g. Bereken volume en dichtheid. Welke stof?", "stappen": [
+              { "kop": "Stap 1: het volume", "gegeven": "l = 12 cm, b = 5 cm, h = 2 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 12 × 5 × 2 = 120", "antwoord": "V = 120 cm³" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 324 g, V = 120 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 324 / 120 = 2,7", "antwoord": "ρ = 2,7 g/cm³" }
+            ], "slot": "In <a href=\"#binas\" class=\"binas-link\" title=\"Open het boekje met dichtheden\">Binas</a> hoort 2,7 g/cm³ bij aluminium." },
+            { "nr": "2", "vraag": "Massa 237 g, dichtheid 7,9 g/cm³. Bereken het volume. Beginvolume 50 ml: wat wordt het eindvolume?", "stappen": [
+              { "kop": "Stap 1: het volume", "gegeven": "m = 237 g, ρ = 7,9 g/cm³", "gevraagd": "V in cm³", "formule": "V = m / ρ", "berekening": "V = 237 / 7,9 = 30", "antwoord": "V = 30 cm³ = 30 ml" },
+              { "kop": "Stap 2: het eindvolume", "gegeven": "V begin = 50 ml, V voorwerp = 30 ml", "gevraagd": "V eind in ml", "formule": "V eind = V begin + V voorwerp", "berekening": "V eind = 50 + 30 = 80", "antwoord": "V eind = 80 ml" }
+            ] },
+            { "nr": "3", "vraag": "Aluminium: volume 250 cm³, dichtheid 2,7 g/cm³. Bereken de massa in gram en in kilogram.", "stappen": [
+              { "kop": "Stap 1: de massa in gram", "gegeven": "V = 250 cm³, ρ = 2,7 g/cm³", "gevraagd": "m in g", "formule": "m = ρ × V", "berekening": "m = 2,7 × 250 = 675", "antwoord": "m = 675 g" },
+              { "kop": "Stap 2: omrekenen naar kilogram", "gegeven": "m = 675 g", "gevraagd": "m in kg", "formule": "1000 g = 1 kg, dus delen door 1000", "berekening": "675 : 1000 = 0,675", "antwoord": "m = 0,675 kg" }
+            ] },
+            { "nr": "4", "vraag": "Massa 178 g. Water eerst 60 ml, met het voorwerp 80 ml. Bereken volume en dichtheid. Welke stof?", "stappen": [
+              { "kop": "Stap 1: het volume", "gegeven": "V begin = 60 ml, V eind = 80 ml", "gevraagd": "V voorwerp", "formule": "V = V eind - V begin", "berekening": "V = 80 - 60 = 20", "antwoord": "V = 20 ml = 20 cm³" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 178 g, V = 20 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 178 / 20 = 8,9", "antwoord": "ρ = 8,9 g/cm³" }
+            ], "slot": "In <a href=\"#binas\" class=\"binas-link\" title=\"Open het boekje met dichtheden\">Binas</a> hoort 8,9 g/cm³ bij koper." },
+            { "nr": "5", "vraag": "Blok A en B zijn van dezelfde stof. A: V = 10 cm³, m = 27 g. B: V = 40 cm³. Bereken ρ van A en de massa van B.", "stappen": [
+              { "kop": "Stap 1: de dichtheid van A", "gegeven": "m = 27 g, V = 10 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 27 / 10 = 2,7", "antwoord": "ρ = 2,7 g/cm³" },
+              { "kop": "Stap 2: de massa van B (zelfde stof, zelfde dichtheid)", "gegeven": "ρ = 2,7 g/cm³, V = 40 cm³", "gevraagd": "m in g", "formule": "m = ρ × V", "berekening": "m = 2,7 × 40 = 108", "antwoord": "m = 108 g" }
+            ] },
+            { "nr": "6", "vraag": "Blokje 4 cm × 2,5 cm × 2 cm, massa 54 g. Bereken volume en dichtheid. Is het aluminium?", "stappen": [
+              { "kop": "Stap 1: het volume", "gegeven": "l = 4 cm, b = 2,5 cm, h = 2 cm", "gevraagd": "V in cm³", "formule": "V = l × b × h", "berekening": "V = 4 × 2,5 × 2 = 20", "antwoord": "V = 20 cm³" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 54 g, V = 20 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 54 / 20 = 2,7", "antwoord": "ρ = 2,7 g/cm³" }
+            ], "slot": "Aluminium heeft een dichtheid van 2,7 g/cm³. De uitspraak klopt: het blokje kan van aluminium zijn." },
+            { "nr": "7", "vraag": "Leeg flesje 80 g, met 200 ml vloeistof 280 g. Bereken de massa van de vloeistof en de dichtheid.", "stappen": [
+              { "kop": "Stap 1: de massa van de vloeistof", "gegeven": "m vol = 280 g, m leeg = 80 g", "gevraagd": "m vloeistof in g", "formule": "m vloeistof = m vol - m leeg", "berekening": "m = 280 - 80 = 200", "antwoord": "m = 200 g" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 200 g, V = 200 ml = 200 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 200 / 200 = 1,0", "antwoord": "ρ = 1,0 g/cm³" }
+            ], "slot": "1,0 g/cm³ is de dichtheid van water." },
+            { "nr": "8", "vraag": "Massa 1,78 kg, volume 200 cm³. Reken om naar gram, bereken de dichtheid. Welke stof?", "stappen": [
+              { "kop": "Stap 1: omrekenen naar gram", "gegeven": "m = 1,78 kg", "gevraagd": "m in g", "formule": "1 kg = 1000 g, dus keer 1000", "berekening": "1,78 × 1000 = 1780", "antwoord": "m = 1780 g" },
+              { "kop": "Stap 2: de dichtheid", "gegeven": "m = 1780 g, V = 200 cm³", "gevraagd": "ρ in g/cm³", "formule": "ρ = m / V", "berekening": "ρ = 1780 / 200 = 8,9", "antwoord": "ρ = 8,9 g/cm³" }
+            ], "slot": "In <a href=\"#binas\" class=\"binas-link\" title=\"Open het boekje met dichtheden\">Binas</a> hoort 8,9 g/cm³ bij koper." }
+          ]
+        }
+      ]
+    }
+  ]
+}

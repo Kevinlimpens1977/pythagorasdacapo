@@ -6,6 +6,50 @@ export const getCompletedBlockIds = (progressRecords = []) =>
       .filter(Boolean)
   );
 
+/**
+ * Hoeveel vragen heeft dit blok NU? Een quiz of toets telt de vragen in
+ * `content.items` (de publieke snapshot die de leerling-app al laadt), een los
+ * vraagblok is één vraag. Elk ander blok heeft geen vragen.
+ */
+export const aantalVragenInBlok = (block = null) => {
+  if (block?.type === 'quiz' || block?.type === 'toets') {
+    return Array.isArray(block.content?.items) ? block.content.items.length : 0;
+  }
+  return block?.type === 'question' ? 1 : 0;
+};
+
+const heeftAntwoord = (record = {}) =>
+  Number(record.attempts) > 0 || (record.lastAnswer !== null && record.lastAnswer !== undefined);
+
+/**
+ * Hoeveel vragen van dit blok zijn volgens het blokrecord beantwoord? Een quiz
+ * of toets houdt dat bij in `itemsCompleted`. Een los vraagblok niet: daar is
+ * het ingeleverde antwoord zelf de ene vraag.
+ */
+const beantwoordeVragen = (record = {}, block = null) => {
+  const geteld = Math.max(0, Number(record.itemsCompleted) || 0);
+  if (block?.type === 'question') return heeftAntwoord(record) ? Math.max(1, geteld) : geteld;
+  return geteld;
+};
+
+/**
+ * Is dit blok strikt af? Strenger dan `getCompletedBlockIds`: het record moet
+ * afgerond zijn ÉN alle vragen van het blok zoals het nu is moeten beantwoord
+ * zijn. Zo telt een oud record van een blok dat later een quiz werd
+ * (completed, maar itemsCompleted 0) niet meer als af. Een blok zonder vragen
+ * is af als zijn record afgerond is, net als overal.
+ */
+export const isBlokStriktAf = (block = null, progressRecords = []) => {
+  const id = block?.id;
+  if (!id) return false;
+  const afgerond = (Array.isArray(progressRecords) ? progressRecords : [])
+    .filter((record) => (record?.blockId || record?.vraagId) === id && record?.completed === true);
+  if (!afgerond.length) return false;
+  const nodig = aantalVragenInBlok(block);
+  if (nodig === 0) return true;
+  return afgerond.some((record) => beantwoordeVragen(record, block) >= nodig);
+};
+
 export const calculateLessonProgress = (blocks = [], progressRecords = []) => {
   const completedIds = getCompletedBlockIds(progressRecords);
   const totalBlocks = blocks.length;

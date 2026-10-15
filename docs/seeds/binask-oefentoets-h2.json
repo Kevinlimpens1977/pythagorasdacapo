@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "vakId": "vak-binask-eoa",
+    "leerjaarId": "leerjaar-binask-eoa-1",
+    "niveauId": "niveau-binask-eoa-1-lr3",
+    "hoofdstukId": "hoofdstuk-binask-eoa-1-h2",
+    "paragraafId": "paragraaf-binask-eoa-1-2-t",
+    "blokId": "block-binask-eoa-1-2t-oefentoets",
+    "code": "2.T",
+    "titel": "Oefentoets",
+    "order": 95,
+    "minimaleTijdSeconden": 300,
+    "bevestigLabel": "Ik heb de oefentoets in mijn schrift gemaakt",
+    "bron": "Oefentoets hoofdstuk 1 en 2 voor in het schrift (Kevin, 15 okt 2026). Alle leerdoelen van H1 en H2, nadruk op dichtheid. Didactiek zoals in de les: gegeven, gevraagd, formule, invullen, antwoord met eenheid; formuledriehoek; onderdompelmethode; dichtheden uit het boekje."
+  },
+  "intro": "Maak deze oefentoets in je schrift. Je bent er ongeveer een uur mee bezig. Je mag een rekenmachine gebruiken. Schrijf bij elke rekenvraag de vaste stappen op: <strong>gegeven, gevraagd, formule, invullen</strong> en het <strong>antwoord met de juiste eenheid</strong>. De tabel met dichtheden staat onderaan.",
+  "delen": [
+    {
+      "titel": "Deel A · Stoffen (hoofdstuk 1)",
+      "vragen": [
+        { "nr": 1, "vraag": "Welk vak hoort erbij: biologie, natuurkunde of scheikunde?", "sub": ["Een plant groeit naar het licht.", "Een bal rolt van een helling naar beneden.", "Een ijzeren fiets gaat roesten."], "antwoord": "a biologie, b natuurkunde, c scheikunde" },
+        { "nr": 2, "vraag": "Stofeigenschappen.", "sub": ["Wat zijn stofeigenschappen?", "Noem vier stofeigenschappen.", "Water en alcohol zijn allebei kleurloos. Noem een stofeigenschap waarmee je ze uit elkaar houdt."], "antwoord": "a Eigenschappen waaraan je een stof kunt herkennen. b Vier van: smaak, geur, fase, kleur, oplosbaarheid in water, elektrische geleiding, kookpunt, smeltpunt, dichtheid. c Bijvoorbeeld het kookpunt (water 100 °C, alcohol 78 °C), de geur of de dichtheid." },
+        { "nr": 3, "vraag": "Gevarensymbolen en veilig werken.", "sub": ["Waarom staan er gevarensymbolen op flessen met chemicaliën?", "Op een fles staat een doodshoofd met gekruiste botten. Wat betekent dit symbool?", "Waarom mag je bij scheikunde nooit proeven aan een stof?"], "antwoord": "a Ze waarschuwen voor gevaarlijke eigenschappen van de stof. b Giftig. c Je weet niet of de stof gevaarlijk is." }
+      ]
+    },
+    {
+      "titel": "Deel B · Massa en volume (2.1 en 2.2)",
+      "vragen": [
+        { "nr": 4, "vraag": "Reken om. Schrijf op hoe je rekent.", "sub": ["3,5 kg = ... g", "750 g = ... kg", "45 ml = ... cm³", "2 L = ... dm³"], "antwoord": "a 3500 g, b 0,75 kg, c 45 cm³, d 2 dm³" },
+        { "nr": 5, "vraag": "Meten.", "sub": ["Met welk meetinstrument meet je de massa?", "Met welk meetinstrument meet je het volume van water?", "Welke letter hoort bij massa en welke bij volume?"], "antwoord": "a weegschaal (balans), b maatcilinder, c m en V" },
+        { "nr": 6, "vraag": "Een doos is 10 cm lang, 6 cm breed en 4 cm hoog. Bereken het volume.", "antwoord": "V = l × b × h = 10 × 6 × 4 = 240 cm³" }
+      ]
+    },
+    {
+      "titel": "Deel C · Dichtheid (2.3 tot en met 2.5)",
+      "vragen": [
+        { "nr": 7, "vraag": "De formuledriehoek.", "sub": ["Teken de formuledriehoek.", "Schrijf de drie formules op: voor ρ, voor m en voor V.", "Schrijf bij ρ, m en V wat ze betekenen en welke eenheid je gebruikt."], "antwoord": "b ρ = m / V, m = ρ × V, V = m / ρ. c ρ dichtheid in g/cm³, m massa in g, V volume in cm³." },
+        { "nr": 8, "vraag": "<strong>Het aluminium blokje.</strong> Je ziet een blokje van aluminium met de maten erbij. De dichtheid van aluminium is 2,7 g/cm³.", "afbeelding": "blokje", "sub": ["Bereken het volume van het blokje.", "Bereken de massa van het blokje.", "Hoeveel kilogram is die massa?"], "antwoord": "a V = 5 × 4 × 2 = 40 cm³. b m = ρ × V = 2,7 × 40 = 108 g. c 108 g = 0,108 kg." },
+        { "nr": 9, "vraag": "<strong>Het schaakstuk.</strong> Je wilt weten van welk materiaal een schaakstuk is gemaakt. In een maatcilinder staat eerst water tot <strong>40 ml</strong> (V begin). Je laat het schaakstuk helemaal onder water zakken. Nu staat het water op <strong>52 ml</strong> (V eind). Daarna leg je het droge schaakstuk op de weegschaal.", "afbeelding": "cilinders", "afbeelding2": "weegschaal", "sub": ["Bereken het volume van het schaakstuk in cm³.", "Schrijf de massa van het schaakstuk op. Kijk op het scherm van de weegschaal.", "Bereken de dichtheid van het schaakstuk.", "Zoek in de tabel onderaan van welk materiaal het schaakstuk is gemaakt.", "Waarom weeg je het schaakstuk als het droog is?"], "antwoord": "a V = 52 - 40 = 12 ml = 12 cm³. b m = 102,0 g. c ρ = m / V = 102 / 12 = 8,5 g/cm³. d messing. e Water aan het stuk zou de massa groter maken." },
+        { "nr": 10, "vraag": "Reken uit met de formuledriehoek.", "sub": ["Een blokje heeft een massa van 64 g en een volume van 8 cm³. Bereken de dichtheid.", "Een stuk ijzer heeft een volume van 25 cm³. De dichtheid is 7,9 g/cm³. Bereken de massa.", "Een stuk koper heeft een massa van 89 g. De dichtheid is 8,9 g/cm³. Bereken het volume."], "antwoord": "a ρ = 64 / 8 = 8,0 g/cm³. b m = 7,9 × 25 = 197,5 g. c V = 89 / 8,9 = 10 cm³." },
+        { "nr": 11, "vraag": "Een stuk metaal heeft een massa van 0,316 kg. In een maatcilinder staat het water eerst op 30 ml. Met het metaal erin staat het water op 70 ml.", "sub": ["Zet de massa om naar gram.", "Bereken het volume van het metaal.", "Bereken de dichtheid.", "Van welk metaal kan het zijn? Gebruik de tabel."], "antwoord": "a 316 g. b V = 70 - 30 = 40 cm³. c ρ = 316 / 40 = 7,9 g/cm³. d ijzer." },
+        { "nr": 12, "vraag": "Een leerling zegt: 'Een groot blok hout heeft een grotere dichtheid dan een klein blokje ijzer, want het is groter.' Klopt dat? Leg uit. Gebruik de woorden massa, volume en stof.", "antwoord": "Nee. De dichtheid hangt af van de stof, niet van de grootte. Een groot blok heeft meer massa en meer volume; massa gedeeld door volume blijft voor dezelfde stof gelijk. IJzer (7,9 g/cm³) heeft een veel grotere dichtheid dan hout (0,7 g/cm³)." }
+      ]
+    },
+    {
+      "titel": "Bonus · Drijven en zinken (2.6, mag je overslaan)",
+      "vragen": [
+        { "nr": 13, "vraag": "Water heeft een dichtheid van 1,0 g/cm³.", "sub": ["Drijft het schaakstuk uit vraag 9 in water, of zinkt het? Leg uit met de dichtheid.", "Een blokje heeft een dichtheid van 0,7 g/cm³. Drijft het of zinkt het in water?"], "antwoord": "a Het zinkt: 8,5 g/cm³ is groter dan 1,0 g/cm³. b Het drijft: 0,7 g/cm³ is kleiner dan 1,0 g/cm³." }
+      ]
+    }
+  ],
+  "tabel": [
+    ["kurk", "0,2"], ["eikenhout", "0,7"], ["water", "1,0"], ["pvc (kunststof)", "1,4"], ["glas", "2,5"], ["aluminium", "2,7"],
+    ["zink", "7,1"], ["ijzer", "7,9"], ["messing", "8,5"], ["koper", "8,9"], ["zilver", "10,5"], ["lood", "11,3"], ["goud", "19,3"]
+  ]
+}

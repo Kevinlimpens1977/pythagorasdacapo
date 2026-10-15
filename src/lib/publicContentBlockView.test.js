@@ -286,3 +286,32 @@ test('buildPublicContentBlockSnapshot houdt ondertitels bij een videoblok', () =
   ]);
   assert.equal(snapshot.content.fileName, undefined);
 });
+
+test('buildPublicContentBlockSnapshot neemt minimale leestijd en knoptekst mee', () => {
+  const snapshot = buildPublicContentBlockSnapshot({
+    id: 'antwoorden',
+    type: 'theory',
+    content: { html: '<p>Antwoorden</p>', minimaleTijdSeconden: 90, bevestigLabel: ' Ik heb mijn werk nagekeken ' }
+  });
+  assert.equal(snapshot.content.minimaleTijdSeconden, 90);
+  assert.equal(snapshot.content.bevestigLabel, 'Ik heb mijn werk nagekeken');
+
+  const zonder = buildPublicContentBlockSnapshot({ id: 'gewoon', type: 'theory', content: { html: '<p>x</p>' } });
+  assert.equal('minimaleTijdSeconden' in zonder.content, false);
+  assert.equal('bevestigLabel' in zonder.content, false);
+});
+
+test('buildPublicContentBlockSnapshot neemt de rekenmachineknop alleen mee als hij aan staat', () => {
+  const met = buildPublicContentBlockSnapshot({ id: 'toets', type: 'theory', content: { html: '<p>x</p>', rekenmachine: true } });
+  assert.equal(met.content.rekenmachine, true);
+
+  const tekst = buildPublicContentBlockSnapshot({ id: 'toets2', type: 'theory', content: { html: '<p>x</p>', rekenmachine: 'ja' } });
+  assert.equal('rekenmachine' in tekst.content, false);
+});
+
+test('buildPublicContentBlockSnapshot neemt vraagVolgordePerLeerling alleen mee als hij aan staat', () => {
+  const met = buildPublicContentBlockSnapshot({ id: 'quiz', type: 'quiz', content: { html: '<p>x</p>', items: [], vraagVolgordePerLeerling: true } });
+  assert.equal(met.content.vraagVolgordePerLeerling, true);
+  const zonder = buildPublicContentBlockSnapshot({ id: 'quiz', type: 'quiz', content: { html: '<p>x</p>', items: [] } });
+  assert.equal('vraagVolgordePerLeerling' in zonder.content, false);
+});

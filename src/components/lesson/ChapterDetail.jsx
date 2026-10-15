@@ -17,6 +17,7 @@ import {
   Target
 } from 'lucide-react';
 import { getVisibleParagraphRows, shouldOfferShowAll } from '../../lib/chapterOutline';
+import { paragraafSlotTekst } from '../../lib/antwoordenSlot';
 import { nederlandseTaalhulp } from '../../hooks/useLesstofTaal';
 import { HBlok, Kaart, Label, StartKnop } from '../leeromgeving';
 
@@ -99,7 +100,9 @@ export function ChapterDetailView({
       blok={blok}
       title={paragraafInfo(row.id)?.titel || row.title}
       icon={Lock}
-      meta={`${tekst('slot.label')} · ${tekst('slot.uitleg')}`}
+      // De antwoorden en de oefentoets gaan vanzelf open; dat zegt de rij
+      // erbij, met hoeveel er nog te gaan is.
+      meta={paragraafSlotTekst(row, taal) || `${tekst('slot.label')} · ${tekst('slot.uitleg')}`}
       vergrendeld
       taal={taal}
     />

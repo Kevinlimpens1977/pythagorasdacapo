@@ -45,7 +45,8 @@ const KLASSEN = [
   { naam: 'H1TL2', id: 'klas_1787768387289_5' },
   { naam: 'H1TL3', id: 'klas_1787768387366_6' },
   { naam: 'ER3L1A', id: 'klas_1787768387441_7' },
-  { naam: 'ER3L2A', id: 'klas_1787768387528_8' }
+  { naam: 'ER3L2A', id: 'klas_1787768387528_8' },
+  { naam: 'Diff_kader2', id: 'klas_1792053696147' }
 ];
 
 const argumenten = process.argv.slice(2);

@@ -23,6 +23,18 @@
       "port": 8124
     },
     {
+      "name": "explainer-bekijken",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8130",
+        "--directory",
+        "exports/video/hoofdstuk-binask-eoa-1-h2"
+      ],
+      "port": 8130
+    },
+    {
       "name": "helix-preview",
       "runtimeExecutable": "npm",
       "runtimeArgs": [

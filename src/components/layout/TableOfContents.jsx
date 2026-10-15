@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, CheckCircle2, PlayCircle } from 'lucide-react';
+import { ArrowRight, Check, CheckCircle2, Lock, PlayCircle } from 'lucide-react';
 
 import { useStudentOutline } from '../../hooks/useStudentOutline';
 import { useLesstofTaal } from '../../hooks/useLesstofTaal';
 import { buildLessonPath, buildResumePointer } from '../../lib/chapterOutline';
 import { zonderVergrendeldeHoofdstukken } from '../../lib/hoofdstukSlot';
+import { paragraafSlotTekst } from '../../lib/antwoordenSlot';
 import { hoofdstukKnopSleutel, paragraafKnopSleutel } from '../../lib/leeromgeving';
 import { HoofdstukRij, Kaart, KaartKop, Label, PaginaKop, ParagraafRij } from '../leeromgeving';
 import TaalSchakelaar from '../lesson/TaalSchakelaar';
@@ -104,8 +105,10 @@ export default function TableOfContents() {
                     key={row.id}
                     code={row.number || row.code}
                     naam={paragraafInfo(row.id)?.titel || row.title}
-                    onderregel={row.vergrendeld ? tekst('slot.label') : tekst('onderdeel.af', { done: row.progress.done, total: row.progress.total })}
-                    labels={row.optioneel ? <Label kleur="blauw">{tekst('plus.label')}</Label> : null}
+                    onderregel={slotOnderregel(row, taal) || tekst('onderdeel.af', { done: row.progress.done, total: row.progress.total })}
+                    labels={row.vergrendeld
+                      ? <Lock size={15} aria-hidden="true" className="shrink-0 text-[var(--lo-grijs)]" />
+                      : (row.optioneel ? <Label kleur="blauw">{tekst('plus.label')}</Label> : null)}
                     onStart={() => navigate(buildLessonPath(row.id, row.resumeOnderdeelId))}
                     startTekst={tekst(paragraafKnopSleutel(row.progress))}
                     startUit={row.vergrendeld === true}
@@ -126,6 +129,16 @@ export default function TableOfContents() {
       )}
     </PageShell>
   );
+}
+
+/**
+ * De onderregel van een paragraaf op slot. De antwoorden en de oefentoets
+ * zeggen wat er nog moet gebeuren (antwoordenSlot.js); een klasslot zegt alleen
+ * dat hij dicht staat. Een open rij krijgt niets terug.
+ */
+function slotOnderregel(row, taal) {
+  if (row?.vergrendeld !== true) return '';
+  return paragraafSlotTekst(row, taal) || taal.tekst('slot.label');
 }
 
 function PageShell({ children }) {

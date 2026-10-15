@@ -8,6 +8,7 @@
  *   node scripts/zet-klas-lesstof-klaar.mjs --vak binask
  *   node scripts/zet-klas-lesstof-klaar.mjs --vak binask --apply
  *   node scripts/zet-klas-lesstof-klaar.mjs --vak dv --apply
+ *   node scripts/zet-klas-lesstof-klaar.mjs --vak rekenen --apply
  *
  * Per klas gebeurt er dit:
  *   1. alle gepubliceerde paragrafen van haar lesstofniveaus toewijzen;
@@ -107,6 +108,17 @@ const VAKKEN = {
       { id: 'klas_1787768387289_5', naam: 'H1TL2', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
       { id: 'klas_1787768387366_6', naam: 'H1TL3', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-tl', lesstofNiveaus: ['niveau-dv-vmbo1-kb'], lesstofHoofdstukken: H2_EN_VERDER },
       { id: 'klas_1787768387105_3', naam: 'H1i1', routeNa: '', eigenNiveau: 'niveau-dv-vmbo1-bb', lesstofNiveaus: [] }
+    ]
+  },
+
+  rekenen: {
+    omschrijving: 'Diff rekenen voor Diff_kader2 (vmbo kader leerjaar 2)',
+    backupNaam: 'diff-rekenen',
+    // Sinds 15 oktober 2026 (Kevin): één niveau, hoofdstukken per domein. De
+    // klas heeft geen route; per leerling openzetten gaat later via
+    // studentOverrides.
+    klassen: [
+      { id: 'klas_1792053696147', naam: 'Diff_kader2', routeNa: '', eigenNiveau: 'niveau-diff-rekenen-2-kader', lesstofNiveaus: ['niveau-diff-rekenen-2-kader'] }
     ]
   }
 };

@@ -14,7 +14,7 @@ Firestore in plaats van het over te schrijven; klassen en routes veranderen.
 | blokPrefix | `binask-eoa-1` |
 | deckPrefix | `binask-eoa` |
 | importeren | `node scripts/import-binask-eoa-seed-to-firestore.mjs --apply` |
-| toewijzen | `node scripts/zet-binask-klaar-eoa.mjs --apply` |
+| toewijzen | `node scripts/zet-klas-lesstof-klaar.mjs --vak binask --apply` |
 
 De klassen:
 
@@ -29,7 +29,7 @@ wat aan haar is toegewezen. Zet daarom nooit een route op ER3L2A, en gebruik
 `--koppel-klassen` niet: de importer zou de route uit de seed terugzetten en
 twaalf leerlingen zouden hun lesstof kwijt zijn.
 
-`zet-binask-klaar-eoa.mjs` kent per klas een `eigenNiveau`. Dat veld beschermt
+`zet-klas-lesstof-klaar.mjs` kent per klas een `eigenNiveau`. Dat veld beschermt
 "Ga van start..." van ER3L2A, de paragraaf van haar oorspronkelijke leerroute
 waar 57 voortgangsrecords in zitten. Zonder dat veld zou een tweede run die
 paragraaf als overbodig wegstrepen. Haal het er niet uit.
@@ -117,6 +117,38 @@ hun eigen nulmeting toegewezen. Een nieuw hoofdstuk wordt pas zichtbaar als je
 het toewijst, en dat is een lesbesluit: vraag of het vrijgegeven mag worden voor
 je `--vak dv --apply` draait met gevulde `lesstofNiveaus`. Staat die lijst leeg,
 dan werkt het script alleen de route bij en verandert er voor de leerling niets.
+
+## Diff rekenen (klas Diff_kader2) - sinds 15 oktober 2026
+
+| Wat | Waarde |
+| --- | --- |
+| vakId | `vak-diff-rekenen` |
+| leerjaarId | `leerjaar-diff-rekenen-2` |
+| niveauId | `niveau-diff-rekenen-2-kader` (één niveau voor alles) |
+| seedBestand | `docs/seeds/diff-rekenen.seed.json` |
+| blokPrefix | `diff-rekenen-2` |
+| importeren | `node scripts/import-digitale-vaardigheden-seed-to-firestore.mjs --seed docs/seeds/diff-rekenen.seed.json --apply` |
+| toewijzen | `node scripts/zet-klas-lesstof-klaar.mjs --vak rekenen --apply` |
+
+| Klas | Id | Leerroute |
+| --- | --- | --- |
+| Diff_kader2 | `klas_1792053696147` | geen route, met opzet |
+
+Vmbo kader, leerjaar 2, leerlingen met een rekenachterstand. Vier domeinen:
+Getallen, Verhoudingen, Meten en meetkunde, Verbanden. Elk domein wordt later
+een eigen hoofdstuk onder hetzelfde niveau; per leerling openzetten gaat via
+`studentOverrides.extraParagrafen` (vinkjes op `/admin/klassen`). Maak de
+domeinen dus **geen** HELIX-routes: een route is één per klas.
+
+Hoofdstuk 1 is de startles `hoofdstuk-diff-rekenen-2-start` (digitale
+nulmeting, bron `docs/seeds/diff-rekenen-start-nulmeting.json`): per domein
+uitleg, voorbeeld en een quiz van 12 vragen (4 basis, 4 plus, 4 verdieping,
+meerkeuze en getal invullen), één poging, Digidocent uit. Geen
+schriftopdrachten. Het overzicht per leerling:
+`node scripts/diff-rekenen-nulmeting-overzicht.mjs`.
+
+Getalvragen in de bron: `{ "prompt": "...", "antwoord": 63, "marge": 0, "eenheid": "cm", "feedback": "..." }`
+(type numeriek; komma of punt mag bij het invullen).
 
 ## Wat je opzoekt in plaats van overschrijft
 

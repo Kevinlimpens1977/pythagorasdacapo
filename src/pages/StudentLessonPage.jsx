@@ -1,4 +1,5 @@
 import BinasLink from '../games/dichtheid/componenten/BinasLink';
+import Rekenmachine from '../games/dichtheid/componenten/Rekenmachine';
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -11,6 +12,7 @@ import {
   ChevronLeft,
   ChevronUp,
   ChevronRight,
+  Clock,
   FileText,
   Gamepad2,
   GripVertical,
@@ -122,6 +124,22 @@ import { haalVertaling } from '../services/vertaalService';
 import { antwoordInstructie, isVertaalbaarBlok, voegVertalingSamen } from '../lib/lesTaal';
 import { useLesstofTaal } from '../hooks/useLesstofTaal';
 import { blokSlotTekst, isBlokVergrendeld, isParagraafVergrendeld } from '../lib/hoofdstukSlot';
+import {
+  antwoordenSlotTekst,
+  antwoordenSlotVoorParagraaf,
+  isAntwoordenParagraaf,
+  isNaVoorgaandeParagraaf,
+  voorgaandeSlotTekst,
+  voorgaandeSlotVoorParagraaf
+} from '../lib/antwoordenSlot';
+import {
+  aftelTekst,
+  getBevestigLabel,
+  getMinimaleTijdSeconden,
+  leesOfZetStarttijd,
+  resterendeSeconden,
+  starttijdSleutel
+} from '../lib/minimaleLeestijd';
 import { registreerSpelRonde } from '../services/cijferService';
 import { spelSlotStatus } from '../lib/spelSlot';
 import { nulmetingDeelLetter, nulmetingDeelOnaf, nulmetingDeelSlot } from '../lib/nulmetingVolgorde';
@@ -179,6 +197,7 @@ import {
 } from '../lib/answerExplanationFeedback';
 import {
   buildOptionShuffleSeed,
+  schudVraagVolgordePerNiveau,
   shuffleAnswerOptions
 } from '../lib/answerOptionShuffle';
 import {
@@ -256,10 +275,16 @@ export default function StudentLessonPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { currentUser, userData, isAdmin, klasData, klasId: authKlasId, isDevBypass } = useAuth();
+  // De paragraafsloten (antwoorden, oefentoets) gelden niet voor de beheerder en
+  // niet voor een testaccount van "Testen als leerling" (Kevin, 15 okt 2026).
+  const zietParagraafSlotenOpen = isAdmin || userData?.isTestaccount === true;
   const { setContext: setStudentBugReportContext } = useStudentBugReportContext();
   // Alleen voor de wegwijzers om de les heen: het kruimelpad, de buren in de
-  // balk en de knop op het afrondscherm. De les zelf wacht hier niet op.
-  const { chapters: outlineChapters } = useStudentOutline();
+  // balk en de knop op het afrondscherm. De les zelf wacht hier niet op,
+  // behalve bij een antwoordenparagraaf: die gaat pas open als de rest van het
+  // hoofdstuk af is, en dat staat in deze overzichten. Per paragraaf opnieuw
+  // geladen, zodat doorklikken van 1.5 naar 1.A de voortgang van nu gebruikt.
+  const { chapters: outlineChapters, actueel: outlineActueel } = useStudentOutline({ verversSleutel: paragraafId || '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [paragraaf, setParagraaf] = useState(null);
@@ -296,6 +321,8 @@ export default function StudentLessonPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeSlidedeck, setActiveSlidedeck] = useState(null);
   const [showParagraphEnd, setShowParagraphEnd] = useState(false);
+  // Rekenmachine rechtsboven, alleen bij een blok met content.rekenmachine (2.T).
+  const [rekenmachineOpen, setRekenmachineOpen] = useState(false);
   // Het blok waarvoor de leerling om een bevestiging is gevraagd. Een id in
   // plaats van een ja/nee, zodat van stap wisselen de vraag vanzelf sluit.
   const [bevestigVerlatenBlokId, setBevestigVerlatenBlokId] = useState('');
@@ -490,6 +517,7 @@ export default function StudentLessonPage() {
     [localCompletedIds, progressRecords]
   );
   const currentBlock = blocks[currentIndex] || null;
+  const blokMetRekenmachine = currentBlock?.content?.rekenmachine === true && !showParagraphEnd;
 
   // Vertaalknop: welke taal een leerling heeft staat op zijn gebruikersdocument
   // (userData.lesTaal). De keuze zelf komt uit useLesstofTaal, dezelfde hook die
@@ -1107,6 +1135,50 @@ export default function StudentLessonPage() {
     );
   }
 
+  // Uitwerkingen en antwoorden: pas open als de rest van het hoofdstuk af is
+  // (antwoordenSlot.js). Ook hier, want een leerling kan via een directe link
+  // of de adresbalk binnenkomen. Een beheerder ziet alles open.
+  if (!zietParagraafSlotenOpen && isAntwoordenParagraaf(paragraaf)) {
+    if (!outlineActueel) {
+      return <HelixLaden schermvullend tekst="Les laden" />;
+    }
+    const antwoordenSlot = antwoordenSlotVoorParagraaf(outlineChapters, paragraafId);
+    if (antwoordenSlot.vergrendeld) {
+      const slotHoofdstukId = antwoordenSlot.hoofdstukId || paragraaf?.hoofdstukId || '';
+      return (
+        <CenteredState
+          icon={Lock}
+          title={taalHulp.tekst('slot.naHoofdstuk.titel')}
+          description={antwoordenSlotTekst(antwoordenSlot.nogTeGaan, taalHulp)}
+          actionLabel={taalHulp.tekst(slotHoofdstukId ? 'les.terugNaarHoofdstuk' : 'knop.terugNaarOverzicht')}
+          onAction={() => navigate(slotHoofdstukId ? `/hoofdstuk/${slotHoofdstukId}` : '/')}
+        />
+      );
+    }
+  }
+
+  // De oefentoets achteraan: pas open als alles erboven strikt af is, ook alle
+  // toetsvragen (antwoordenSlot.js). Zelfde reden als hierboven: ook een
+  // directe link moet dicht blijven.
+  if (!zietParagraafSlotenOpen && isNaVoorgaandeParagraaf(paragraaf)) {
+    if (!outlineActueel) {
+      return <HelixLaden schermvullend tekst="Les laden" />;
+    }
+    const voorgaandeSlot = voorgaandeSlotVoorParagraaf(outlineChapters, paragraafId);
+    if (voorgaandeSlot.vergrendeld) {
+      const slotHoofdstukId = voorgaandeSlot.hoofdstukId || paragraaf?.hoofdstukId || '';
+      return (
+        <CenteredState
+          icon={Lock}
+          title={taalHulp.tekst('slot.naVoorgaande.titel')}
+          description={voorgaandeSlotTekst(voorgaandeSlot.nogTeGaan, taalHulp)}
+          actionLabel={taalHulp.tekst(slotHoofdstukId ? 'les.terugNaarHoofdstuk' : 'knop.terugNaarOverzicht')}
+          onAction={() => navigate(slotHoofdstukId ? `/hoofdstuk/${slotHoofdstukId}` : '/')}
+        />
+      );
+    }
+  }
+
   if (!blocks.length) {
     return (
       <CenteredState
@@ -1276,6 +1348,20 @@ export default function StudentLessonPage() {
               </span>
             )}
 
+            {blokMetRekenmachine && (
+              <button
+                type="button"
+                onClick={() => setRekenmachineOpen((open) => !open)}
+                aria-pressed={rekenmachineOpen}
+                title={rekenmachineOpen ? 'Rekenmachine sluiten' : 'Rekenmachine openen'}
+                className={`lo-knop-tweede h-11 shrink-0 justify-center gap-2 px-3 ${rekenmachineOpen ? 'bg-[var(--lo-geel)]' : ''}`}
+              >
+                <Calculator size={18} aria-hidden="true" />
+                <span className="hidden text-sm sm:inline">Rekenmachine</span>
+                <span className="sr-only sm:hidden">Rekenmachine</span>
+              </button>
+            )}
+
             {hasLearningGoals && (
               <button
                 type="button"
@@ -1298,6 +1384,15 @@ export default function StudentLessonPage() {
               <span className="sr-only">{isFullscreen ? 'Verlaat volledig scherm' : taalHulp.tekst('les.volledigScherm')}</span>
             </button>
           </div>
+
+          {/* De rekenmachine blijft staan terwijl de leerling door de toets
+              scrolt. Hij blijft gemonteerd zodat een som niet verdwijnt als hij
+              hem even dichtdoet. */}
+          {blokMetRekenmachine && (
+            <div className={`absolute right-4 top-[76px] z-40 w-[260px] sm:right-6 ${rekenmachineOpen ? '' : 'hidden'}`}>
+              <Rekenmachine beginOpen onSluit={() => setRekenmachineOpen(false)} />
+            </div>
+          )}
 
           {/* Mislukt het vertalen, dan blijft de Nederlandse tekst staan - maar
               nooit stil. Deze regel staat direct onder de schakelaar, zodat de
@@ -1674,9 +1769,15 @@ function LessonBlockContent({
 
       {isReadingBlock && (
         <ReadingBlockCompletion
+          key={block?.id || 'leesstap'}
           isCompleted={isCompleted}
-          actionLabel={confirmLabels.action}
+          // Het blok kan een eigen knoptekst en een minimale leestijd hebben
+          // (minimaleLeestijd.js). Die staan in de Nederlandse bron, niet in de
+          // vertaling. Zonder leerling (docentpreview) telt er niets af.
+          actionLabel={getBevestigLabel(origineelBlok || block, confirmLabels.action)}
           hintLabel={confirmLabels.hint}
+          minimaleTijdSeconden={studentId ? getMinimaleTijdSeconden(origineelBlok || block) : 0}
+          opslagSleutel={starttijdSleutel(studentId, block?.id)}
           onConfirm={onConfirmRead}
         />
       )}
@@ -1686,8 +1787,43 @@ function LessonBlockContent({
 
 // Een leesstap rondt de leerling zelf af. Dat is de enige plek waar theorie,
 // voorbeeld, samenvatting en media op afgerond komen te staan.
-function ReadingBlockCompletion({ isCompleted, actionLabel, hintLabel, onConfirm }) {
+function ReadingBlockCompletion({
+  isCompleted,
+  actionLabel,
+  hintLabel,
+  minimaleTijdSeconden = 0,
+  opslagSleutel = '',
+  onConfirm
+}) {
   const [saving, setSaving] = useState(false);
+  // Minimale leestijd: de klok start bij het eerste openen van dit blok in deze
+  // sessie. De starttijd staat in sessionStorage, dus verversen zet hem niet
+  // terug. Een afgerond blok telt niet af.
+  const telt = minimaleTijdSeconden > 0 && !isCompleted;
+  const [startMs] = useState(() => {
+    if (!telt) return 0;
+    // Al het lezen van window.sessionStorage kan gooien (geblokkeerde
+    // site-data); leesOfZetStarttijd vangt dat op en telt dan vanaf nu.
+    const opslag = (() => {
+      try {
+        return window.sessionStorage;
+      } catch {
+        return null;
+      }
+    })();
+    return leesOfZetStarttijd(opslag, opslagSleutel, Date.now());
+  });
+  const [nuMs, setNuMs] = useState(() => Date.now());
+  const resterend = telt
+    ? resterendeSeconden({ minimaleTijdSeconden, startMs: startMs || nuMs, nuMs })
+    : 0;
+  const moetWachten = resterend > 0;
+
+  useEffect(() => {
+    if (!moetWachten) return undefined;
+    const timer = window.setInterval(() => setNuMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [moetWachten]);
 
   const handleConfirm = async () => {
     if (saving) return;
@@ -1714,14 +1850,19 @@ function ReadingBlockCompletion({ isCompleted, actionLabel, hintLabel, onConfirm
 
   return (
     <div className="flex flex-col gap-3 border-t border-[var(--lo-lijn)] pt-5 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm leading-6 text-[var(--lo-grijs)]">
-        {hintLabel}
+      <p className="text-sm leading-6 text-[var(--lo-grijs)]" aria-live="polite">
+        {moetWachten ? (
+          <span className="inline-flex items-center gap-2 font-bold text-[var(--lo-inkt)]">
+            <Clock size={16} aria-hidden="true" className="shrink-0" />
+            {aftelTekst(resterend)}
+          </span>
+        ) : hintLabel}
       </p>
       <button
         type="button"
         onClick={handleConfirm}
-        disabled={saving}
-        className="helix-btn-solid shrink-0 px-5 py-3 text-sm"
+        disabled={saving || moetWachten}
+        className="helix-btn-solid shrink-0 px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Check size={18} strokeWidth={3.2} />
         {saving ? 'Bezig...' : actionLabel}
@@ -3512,7 +3653,12 @@ function AssessmentLearningBlock({
   onSaveItemConcept = null
 }) {
   const content = block.content || {};
-  const rawItems = Array.isArray(content.items) ? content.items : [];
+  const bronItems = Array.isArray(content.items) ? content.items : [];
+  // Startles Diff rekenen: buren beginnen met een andere vraag. Alles hieronder
+  // werkt op item-id, dus schudden vooraf houdt rawItems en items gelijk.
+  const rawItems = content.vraagVolgordePerLeerling === true
+    ? schudVraagVolgordePerNiveau(bronItems, { studentId, blockId: block.id || '' })
+    : bronItems;
   const items = normalizeAssessmentItems(rawItems).map((item, index) => {
     const rawItem = rawItems[index] || {};
     if (rawItem.publicSnapshotVersion !== 1 && rawItem.answerKeyAvailable !== false) return item;
@@ -3980,6 +4126,36 @@ function AssessmentStepper({ block, items = [], origineelItems = [], records = {
  *   - lukt nakijken niet, dan is het zichtbaar "docent kijkt na" en loopt de
  *     leerling nooit vast.
  */
+/**
+ * Rekenhulp (verhoudingstabel, rekenmachine) als kladwerk bij een getalvraag in
+ * een quiz, aan te zetten met `settings.allowMathToolbox` op het blok. Alleen
+ * het getal in het invulveld wordt nagekeken; het kladwerk blijft in de kaart
+ * en wordt niet opgeslagen. Sinds 15 oktober 2026 voor de startles Diff rekenen.
+ */
+function KladRekenhulp({ disabled = false }) {
+  const [tools, setTools] = useState([]);
+  const zet = (volgende) => setTools(normalizeMathToolWork(volgende));
+  return (
+    <div className="mt-4">
+      <MathToolboxPanel
+        tools={tools}
+        disabled={disabled}
+        onInsertTool={(type) => zet([...tools, createMathToolWork(type)])}
+      />
+      <MathWorksheetList
+        tools={tools}
+        disabled={disabled}
+        onChangeTool={(toolId, nextTool) => zet(tools.map((tool) => (tool.id === toolId ? nextTool : tool)))}
+        onRemoveTool={(toolId) => zet(tools.filter((tool) => tool.id !== toolId))}
+        onResetTool={(toolId) => zet(tools.map((tool) => (tool.id === toolId ? resetMathTool(tool) : tool)))}
+      />
+      <p className="mt-2 text-xs font-semibold text-[var(--helix-muted)]">
+        Dit is kladwerk. Alleen het getal in het invulvak wordt nagekeken.
+      </p>
+    </div>
+  );
+}
+
 function AssessmentItemLearningCard({
   block,
   // Het Nederlandse origineel van `block`/`item`. Gelijk aan block/item als er
@@ -4389,6 +4565,10 @@ function AssessmentItemLearningCard({
           answerKeyAvailable={answerKeyAvailable}
         />
       </div>
+
+      {Boolean(bronBlok?.settings?.allowMathToolbox) && item.type === 'numeriek' && (
+        <KladRekenhulp disabled={locked} />
+      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button

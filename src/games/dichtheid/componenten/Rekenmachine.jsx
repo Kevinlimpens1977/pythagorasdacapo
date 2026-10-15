@@ -16,7 +16,9 @@ function rekenUit(som) {
   }
 }
 
-export default function Rekenmachine({ onGebruik = null, beginOpen = false }) {
+// `onSluit`: de lespagina opent en sluit hem met een eigen knop in de balk; dan
+// sluit het pijltje hem helemaal in plaats van hem tot een knop in te klappen.
+export default function Rekenmachine({ onGebruik = null, beginOpen = false, onSluit = null }) {
   const [open, setOpen] = useState(beginOpen);
   // Eén toestand, zodat ook snel achter elkaar tikken goed gaat.
   const [staat, setStaat] = useState({ som: '', uitkomst: null });
@@ -44,7 +46,7 @@ export default function Rekenmachine({ onGebruik = null, beginOpen = false }) {
     <div className="w-full max-w-[260px] self-start rounded-2xl border-[3px] border-[#0B0D0F] bg-[#2B3036] p-2 shadow-[3px_3px_0_#0B0D0F]">
       <div className="mb-2 flex items-center justify-between">
         <span className="flex items-center gap-1 text-xs font-extrabold uppercase tracking-wide text-[#FFD33D]"><Calculator size={14} aria-hidden="true" /> Rekenmachine</span>
-        <button type="button" onClick={() => setOpen(false)} className="rounded-md p-1 text-white" aria-label="Rekenmachine inklappen"><ChevronDown size={18} /></button>
+        <button type="button" onClick={() => (onSluit ? onSluit() : setOpen(false))} className="rounded-md p-1 text-white" aria-label="Rekenmachine inklappen"><ChevronDown size={18} /></button>
       </div>
       <div className="mb-2 rounded-lg border-2 border-[#0B0D0F] bg-[#C9E4C5] px-2 py-1 text-right font-mono" aria-live="polite">
         <div className="min-h-[18px] truncate text-sm text-[#2B3036]">{uitkomst !== null ? som : ' '}</div>

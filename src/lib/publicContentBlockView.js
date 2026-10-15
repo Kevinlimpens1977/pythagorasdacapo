@@ -178,7 +178,18 @@ const sanitizeContent = (block = {}) => {
     altText: content.altText || '',
     crops: Array.isArray(content.crops) ? content.crops : [],
     // Ondertitelsporen van een video; zonder deze regel ziet de leerling ze nooit.
-    ondertitels: normalizeOndertitels(content.ondertitels)
+    ondertitels: normalizeOndertitels(content.ondertitels),
+    // Minimale leestijd en eigen knoptekst voor het afvinken (minimaleLeestijd.js),
+    // bijvoorbeeld bij "Uitwerkingen en antwoorden". Alleen als ze er zijn.
+    ...(Number(content.minimaleTijdSeconden) > 0
+      ? { minimaleTijdSeconden: Math.round(Number(content.minimaleTijdSeconden)) }
+      : {}),
+    ...(cleanText(content.bevestigLabel) ? { bevestigLabel: cleanText(content.bevestigLabel) } : {}),
+    // Knop rechtsboven in de les die een rekenmachine opent, bijvoorbeeld bij de
+    // oefentoets 2.T van Binask. Alleen als hij aan staat.
+    ...(content.rekenmachine === true ? { rekenmachine: true } : {}),
+    // Vraagvolgorde per leerling geschud binnen elk niveau (startles Diff rekenen).
+    ...(content.vraagVolgordePerLeerling === true ? { vraagVolgordePerLeerling: true } : {})
   };
 
   if (block.type === 'quiz' || block.type === 'toets') {
@@ -186,6 +197,7 @@ const sanitizeContent = (block = {}) => {
       html: content.html || '',
       assessmentType: content.assessmentType || block.type,
       items: sanitizeAssessmentItems(content.items),
+      ...(content.vraagVolgordePerLeerling === true ? { vraagVolgordePerLeerling: true } : {}),
       attemptPolicy: {
         maxAttempts: content.attemptPolicy?.maxAttempts ?? (block.type === 'toets' ? 2 : null),
         scoring: content.attemptPolicy?.scoring || 'best',

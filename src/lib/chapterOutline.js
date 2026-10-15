@@ -1,6 +1,6 @@
 import { CONTENT_BLOCK_LABELS } from './contentBlockUtils.js';
 import { normalizeParagraphMetadata } from './paragraphMetadata.js';
-import { getCompletedBlockIds } from './studentLessonProgress.js';
+import { getCompletedBlockIds, isBlokStriktAf } from './studentLessonProgress.js';
 
 // De lesstofpagina heeft per hoofdstuk één vaste ruggengraat: Introductie,
 // Voorkennis, de genummerde paragrafen, Oefentoetsen en Toetsen. Dit bestand
@@ -81,7 +81,7 @@ export const buildParagraphNumber = ({ code = '', chapterNumber = null, position
   return chapter === null ? String(position + 1) : `${chapter}.${position + 1}`;
 };
 
-const buildOnderdeel = (block = {}, index = 0, completedIds = new Set()) => {
+const buildOnderdeel = (block = {}, index = 0, completedIds = new Set(), voortgang = []) => {
   const type = cleanText(block.type) || 'theory';
   const typeLabel = CONTENT_BLOCK_LABELS[type] || 'Lesblok';
 
@@ -92,14 +92,18 @@ const buildOnderdeel = (block = {}, index = 0, completedIds = new Set()) => {
     type,
     typeLabel,
     title: cleanText(block.title) || typeLabel,
-    isDone: Boolean(block.id && completedIds.has(block.id))
+    isDone: Boolean(block.id && completedIds.has(block.id)),
+    // Strenger dan isDone: ook alle vragen van het blok zoals het nu is
+    // beantwoord. Alleen het slot op "alles hierboven af" kijkt hiernaar
+    // (antwoordenSlot.js); de tellingen op het scherm blijven isDone volgen.
+    isStriktAf: isBlokStriktAf(block, voortgang)
   };
 };
 
 const buildParagraphRow = ({ paragraaf = {}, kind = 'paragraaf', voortgang = [] } = {}) => {
   const completedIds = getCompletedBlockIds(voortgang);
   const blocks = Array.isArray(paragraaf.contentBlocks) ? paragraaf.contentBlocks : [];
-  const onderdelen = blocks.map((block, index) => buildOnderdeel(block, index, completedIds));
+  const onderdelen = blocks.map((block, index) => buildOnderdeel(block, index, completedIds, voortgang));
   const metadata = normalizeParagraphMetadata(paragraaf);
   const done = onderdelen.filter((onderdeel) => onderdeel.isDone).length;
   const total = onderdelen.length;
@@ -121,6 +125,13 @@ const buildParagraphRow = ({ paragraaf = {}, kind = 'paragraaf', voortgang = [] 
     // mee in het percentage van het hoofdstuk.
     optioneel: metadata.optioneel,
     verplicht: metadata.verplicht,
+    // "Uitwerkingen en antwoorden": pas open als de rest van het hoofdstuk af
+    // is. Het slot zelf zit in antwoordenSlot.js; hier reist alleen het veld mee.
+    ontgrendelNaHoofdstuk: paragraaf.ontgrendelNaHoofdstuk === true,
+    // Oefentoets achteraan: pas open als alles ervoor strikt af is. Ook dat
+    // slot zit in antwoordenSlot.js.
+    ontgrendelNaVoorgaande: paragraaf.ontgrendelNaVoorgaande === true,
+    gearchiveerd: paragraaf.isArchived === true,
     onderdelen,
     resumeOnderdeelId: firstOpen?.id || '',
     progress: {
@@ -355,7 +366,9 @@ export const buildParagraphNavigation = ({ outlines = [], paragraafId = '' } = {
       chapter: { id: outline.id, title: outline.title, number: outline.number ?? null },
       vorige: rijen[index - 1] || null,
       volgende: verderop[0] || null,
-      volgendeOpen: verderop.find((row) => !row.progress.isCompleted && row.optioneel !== true) || null
+      // Een paragraaf op slot is geen werk dat er nu ligt: daar sturen we de
+      // leerling niet heen.
+      volgendeOpen: verderop.find((row) => !row.progress.isCompleted && row.optioneel !== true && row.vergrendeld !== true) || null
     };
   }
 

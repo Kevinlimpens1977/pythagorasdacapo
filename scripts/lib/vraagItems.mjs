@@ -13,7 +13,10 @@
  *
  *   {
  *     prompt:   'De vraag of stelling zoals de leerling hem leest.'  (verplicht)
- *     type:     'meerkeuze' | 'waar-niet-waar' | 'open'              (optioneel)
+ *     type:     'meerkeuze' | 'waar-niet-waar' | 'open' | 'numeriek'  (optioneel)
+ *     antwoord: 42        het goede getal                           (numeriek)
+ *     marge:    0         toegestane afwijking, standaard 0         (numeriek)
+ *     eenheid:  'cm'      eenheid naast het invulveld               (numeriek)
  *     options:  [ { text, correct, explanation?, misconception? } ]  (gesloten)
  *     waar:     true | false        korte vorm voor een waar-niet-waar-stelling
  *     feedback: 'Wat de leerling na het antwoorden leest.'           (verplicht)
@@ -40,6 +43,7 @@ export const inferItemType = (vraag, label) => {
   if (vraag.type) return String(vraag.type);
   if (typeof vraag.waar === 'boolean') return 'waar-niet-waar';
   if (Array.isArray(vraag.options) && vraag.options.length > 0) return 'meerkeuze';
+  if (vraag.antwoord !== undefined) return 'numeriek';
   if (vraag.modelAnswer || vraag.nakijkpunten) return 'open';
   throw new Error(`${label}: vraagtype niet af te leiden; zet type, options, waar of modelAnswer`);
 };
@@ -185,6 +189,22 @@ export const bouwVraagItems = ({ vragen = [], type = 'quiz', label = 'vragenblok
       masteryLevel: vraag.niveau || 'basis',
       scaffoldingRole: vraag.rol || 'zelf_proberen'
     };
+
+    if (itemType === 'numeriek') {
+      const expected = Number(vraag.antwoord);
+      if (!Number.isFinite(expected)) throw new Error(`${vraagLabel}: numeriek heeft een getal in antwoord nodig`);
+      return {
+        id: `${idPrefix}-${index + 1}`,
+        type: 'numeriek',
+        vraagtype: 'numeriek',
+        prompt,
+        answer: { type: 'numeriek', expected, tolerance: Number(vraag.marge ?? 0), unit: String(vraag.eenheid || '').trim() },
+        options: [],
+        feedback,
+        tokens: itemTokens,
+        taxonomy
+      };
+    }
 
     if (itemType === 'open') {
       return {

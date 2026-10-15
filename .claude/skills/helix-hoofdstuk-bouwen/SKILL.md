@@ -400,6 +400,26 @@ klassen, een eigen eenvoudig deck of geen), en of er ook een invulvraag van
 - **Waar/niet waar is een stelling.** Begint de zin met een vraagwoord (ook "Wat
   in de opslag staat ...") of eindigt hij op een vraagteken, dan stopt de bouwer.
 
+## Antwoorden en oefentoets achteraan (Binask)
+
+Bij Binask H1 en H2 staan achteraan nog twee soorten paragrafen. Vraag bij een
+nieuw hoofdstuk of Kevin die ook wil; ze horen niet standaard bij de bouw.
+
+- **"x.A Uitwerkingen en antwoorden"** (volgnummer 90): de antwoorden op de
+  schriftvragen, met gegeven, gevraagd, formule, berekening en antwoord met
+  eenheid. Paragraafveld `ontgrendelNaHoofdstuk: true` (slot tot de rest af
+  is), op het blok `content.minimaleTijdSeconden: 60` en een `bevestigLabel`.
+- **"x.T Oefentoets"** (volgnummer 95): vragen voor in het schrift.
+  Paragraafveld `ontgrendelNaVoorgaande: true` (slot tot alles ervoor strikt af
+  is, ook alle quizvragen), op het blok `minimaleTijdSeconden: 300` en
+  `rekenmachine: true` (knop rechtsboven).
+
+Voorbeelden: `scripts/plaats-uitwerkingen-binask.mjs` en
+`scripts/plaats-oefentoets-binask-h2.mjs`, met hun bron in `docs/seeds/`. Uitleg
+van de velden in `docs/HANDOFF.md`, "Paragraafsloten, wachttijd en
+rekenmachine". Een nieuw veld in `content` moet ook in
+`src/lib/publicContentBlockView.js`, anders ziet de leerling het niet.
+
 ## Een hoofdstuk opnieuw bouwen
 
 Wil Kevin een bestaand hoofdstuk vervangen, haal het oude dan eerst weg:

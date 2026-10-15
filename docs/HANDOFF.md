@@ -88,11 +88,40 @@ Werk je zonder de skill, dan is dit de volgorde, en die ligt vast:
 | `controleer-hoofdstuk.mjs` | leest alles terug en vergelijkt met de bron |
 | `vul-slidedeck-paginatellingen.mjs` | diatelling bij decks van vóór 16 sep 2026 |
 | `zet-storage-cors.mjs` | de bucket laten weten welke site de PDF's mag lezen |
+| `maak-klas.mjs` | nieuwe klas aanmaken, zoals "Nieuwe klas aanmaken" in het beheer |
+| `zet-vraagvolgorde-per-leerling.mjs` | quizvragen per leerling schudden binnen hun niveau (vlag op de blokken van één hoofdstuk) |
 | `handoff-stand.mjs` | de stand van nu, alleen lezend |
 
 **Geen tweede importweg.** Maak geen vakspecifieke kopie van een script dat er
 al is; dan ontstaan twee wegen naar dezelfde collectie die stil uit elkaar
 lopen. Daarom zijn de Binask-specifieke varianten opgegaan in de generieke.
+
+### Een nieuw vak of een nieuwe klas
+
+Vak, leerjaar en niveau gaan mee in een eigen seedbestand (zie Diff rekenen); de klas maak je met `node scripts/maak-klas.mjs --naam <naam>` (dry run, dan `--apply`) of via het beheer:
+
+1. **Vak, leerjaar en niveau (leerroute)** maak je in de lesstofeditor
+   (`/admin/lesstof`, knop "Nieuw vak"; `createVak`, `createLeerjaar` en
+   `createNiveau` in `src/services/cmsService.js`). Het kan ook via een
+   seedbestand: de importscripts schrijven ook `vakken`, `leerjaren` en
+   `niveaus` uit de seed. Lees daarna de id's terug uit Firestore; verzin ze
+   niet.
+2. **De klas** maak je op `/admin/klassen` ("Nieuwe klas aanmaken",
+   `createKlas` in `src/services/klasService.js`). Leerlingen komen erin met het
+   leerlingnummer bij aanmelden of via de import op Leerlingen.
+3. **Route of geen route.** Een klas met een `niveauId` ziet alleen lesstof van
+   dat niveau. Kies bewust; zie Binask (ER3L2A zonder route).
+4. **Toewijzen**: voeg het vak met zijn klassen toe aan de tabel `VAKKEN`
+   bovenin `scripts/zet-klas-lesstof-klaar.mjs`, en het vak aan
+   `.claude/skills/helix-hoofdstuk-bouwen/references/vakken.md`. Maak geen
+   kopie van het script.
+5. **Een testleerling** voor de nieuwe klas: zet de klas in `KLASSEN` van
+   `scripts/maak-testleerlingen.mjs` en draai hem (dry run, dan `--apply`).
+6. De hoofdstukken bouw je daarna met de skill, zoals hierboven. Voor de import
+   is er per vak een seedscript (`import-binask-eoa-seed-to-firestore.mjs`,
+   `import-digitale-vaardigheden-seed-to-firestore.mjs --seed`); kijk eerst of
+   een van die twee met `--seed` het nieuwe vak aankan voordat je iets nieuws
+   schrijft.
 
 ### Valkuilen die geld kosten
 
@@ -115,6 +144,17 @@ lopen. Daarom zijn de Binask-specifieke varianten opgegaan in de generieke.
 - Een nieuw DV-hoofdstuk **eerst in `H2_EN_VERDER`** van
   `zet-klas-lesstof-klaar.mjs` zetten. Wat er niet in staat, haalt dat script
   bij de klassen weg. Lees in de dry run altijd de regels "gaat eraf".
+- **Een nieuw veld in `content` bereikt de leerling niet vanzelf.** Leerlingen
+  lezen `publicContentBlocks`, en `buildPublicContentBlockSnapshot` in
+  `src/lib/publicContentBlockView.js` neemt alleen velden over die daar
+  genoemd staan. Voeg een nieuw veld daar toe (met een test), anders werkt het
+  bij de beheerder en niet bij de leerling.
+- **Draai `bouw-hoofdstuk-seed.mjs` niet opnieuw op de bron van Binask H2.**
+  Live loopt voor op de seed (eindcheck-quiz, Binas-links, spelblokken in 2.2,
+  2.6, 1.A, 2.A, 2.T). Die zijn met eigen scripts geplaatst
+  (`voeg-volume-spelblokken-toe.mjs`, `plaats-paragraaf-2-6-uitdaging.mjs`,
+  `plaats-uitwerkingen-binask.mjs`, `plaats-oefentoets-binask-h2.mjs`); pas
+  één onderdeel aan met zijn eigen script.
 - **Een presentatie nooit opnieuw plaatsen** met `plaats-hoofdstuk-slidedecks.mjs`
   om hem te hergebruiken. Het script zet een nieuw downloadtoken op de PDF,
   waarna het bestaande deckblok niet meer laadt. Hergebruik voor een
@@ -124,19 +164,89 @@ lopen. Daarom zijn de Binask-specifieke varianten opgegaan in de generieke.
 
 Bijwerken zodra het verandert. Datum erbij.
 
-### Binask (EOA) - 16 september 2026
+### Binask (EOA) - bijgewerkt 15 oktober 2026
 
-Hoofdstuk 1 ("h1 Stoffen") en hoofdstuk 2 ("Massa, volume en dichtheid", 5
-paragrafen, 33 lesblokken, 3 presentaties) staan live en zijn toegewezen aan
-ER3L1A (`klas_1787768387441_7`) en ER3L2A (`klas_1787768387528_8`). Eén gedeelde
-kopie onder `niveau-binask-eoa-1-lr3`: ER3L1A ziet die via haar route, ER3L2A
-doordat zij bewust **geen** route heeft. Eerstvolgende vrije hoofdstuknummer: 3.
+Hoofdstuk 1 ("Stoffen") en hoofdstuk 2 ("Massa, volume en dichtheid") staan live
+en zijn toegewezen aan ER3L1A (`klas_1787768387441_7`) en ER3L2A
+(`klas_1787768387528_8`). Eén gedeelde kopie onder `niveau-binask-eoa-1-lr3`:
+ER3L1A ziet die via haar route, ER3L2A doordat zij bewust **geen** route heeft
+(ze houdt daarnaast haar eigen "Ga van start...", `paragraaf-binask-eoa-2-1-1`).
+Eerstvolgende vrije hoofdstuknummer: 3.
 
-### Digitale vaardigheden - bijgewerkt 21 september 2026
+De paragrafen nu, in leesvolgorde:
+
+| Hoofdstuk | Paragrafen |
+| --- | --- |
+| H1 `hoofdstuk-binask-eoa-1-h1` | 1.1 Natuurwetenschappen, 1.2 Stofeigenschappen, 1.3 Gevarensymbolen, 1.4 Vragen en quiz, **1.A Uitwerkingen en antwoorden** |
+| H2 `hoofdstuk-binask-eoa-1-h2` | 2.1 Massa, 2.2 Volume, 2.3 Dichtheid, 2.4 Herhalingsopdrachten, 2.5 Plusopdrachten, 2.6 Uitdaging: drijven en zinken (plus, telt niet mee), **2.A Uitwerkingen en antwoorden**, **2.T Oefentoets** |
+
+Wat er sinds 16 september bij kwam (alles live; wat nog niet gecommit is, staat
+in paragraaf 7):
+
+- **23 september: spel Volume berekenen** in 2.2 (blokken 9-11, drie gameIds
+  `binask-volume-maatcilinder|balk|onderdompelen`, code in
+  `src/games/volumeBerekenen/`). Geplaatst met
+  `scripts/voeg-volume-spelblokken-toe.mjs`, niet via de seed.
+- **30 september: 2.6 Uitdaging** (plusparagraaf, ster) met het spel
+  Vloeistoffenlab. Geplaatst met `scripts/plaats-paragraaf-2-6-uitdaging.mjs`.
+- **5 oktober: explainervideo** in 2.4 (zie "Explainervideo's").
+- **8 oktober: 1.A en 2.A Uitwerkingen en antwoorden.** Per hoofdstuk één
+  tekstblok met de antwoorden op alle schriftvragen; bij elke rekenvraag
+  gegeven, gevraagd, formule, berekening en antwoord met eenheid. De leerling
+  ziet de paragraaf met een slotje tot alle andere paragrafen van dat hoofdstuk
+  af zijn (plusparagraaf 2.6 en de oefentoets tellen niet mee). Afvinken kan pas
+  na 60 seconden ("Ik heb mijn werk nagekeken"). Bron
+  `docs/seeds/binask-uitwerkingen.json`, script
+  `scripts/plaats-uitwerkingen-binask.mjs`, voorbeeld als PDF in
+  `exports/uitwerkingen-binask/`.
+- **15 oktober: 2.T Oefentoets** achteraan H2. Dertien vragen in vier delen
+  (H1, massa en volume, dichtheid met het aluminium blokje en het messing
+  schaakstuk, bonus drijven en zinken) plus een tabel met dichtheden, voor in
+  het schrift, ongeveer een uur. Drie tekeningen in Storage onder
+  `pythagoras/oefentoetsen/block-binask-eoa-1-2t-oefentoets/`. Gaat pas open als
+  alle paragrafen ervoor **strikt** af zijn (ook 2.A; plusstof niet). Afvinken
+  na 5 minuten. Rechtsboven in de les staat een knop Rekenmachine. Bron met de
+  docentantwoorden: `docs/seeds/binask-oefentoets-h2.json`, script
+  `scripts/plaats-oefentoets-binask-h2.mjs`, tekeningen in `exports/oefentoets-h2/`.
+- Toewijzen van 1.A, 2.A en 2.T ging gewoon met
+  `zet-klas-lesstof-klaar.mjs --vak binask --apply`. Back-ups van de klassen:
+  `exports/reset-backups/klassen-voor-binask-eoa-2026-10-08.json` en `-2026-10-15.json`.
+
+**Groen, paars en strikt af.** Een blok is "af" als het voortgangsrecord op
+afgerond staat; dat is wat de leerling als groen ziet. Maar een leerling kan een
+quiz hebben afgevinkt zonder alle vragen te maken (bijvoorbeeld omdat het blok
+eerst een tekstblok was en later een quiz werd). Kevin noemt dat **paars**. Het
+slot van 2.T telt paars als niet af (`isBlokStriktAf` in
+`src/lib/studentLessonProgress.js`). Bekend geval: Hasan (ER3L2A), "Eindcheck
+hoofdstuk 2" in 2.5 (`block-binask-eoa-1-25-theory-5`, nu een quiz van tien
+vragen), afgevinkt toen het nog een tekstblok was. Hij heeft die quiz op
+15 oktober alsnog gemaakt; het bolletje is nu groen.
+
+**15 oktober: één vraagronde gereset.** Soraya (ER3L1A) mocht de Vragenronde
+van 1.1 opnieuw maken (eerst gemaakt zonder vertaling). Back-up:
+`exports/reset-backups/reset-E7LnYFEfsuei9p3CqhzaDe9EH772-block-binask-eoa-1-11-quiz-4-*.json`,
+script `.tmp-diag/reset-soraya-vragenronde.mjs`.
+
+**Klasborden voor Kevin (artifacts op claude.ai).** Kevin volgt de EOA-klassen
+in een artifact: leerlingen in rijen, paragrafen of onderdelen als groene, rode
+of paarse bolletjes. "Update" betekent: data opnieuw ophalen en het artifact
+opnieuw publiceren.
+
+| Artifact | Data ophalen |
+| --- | --- |
+| Klasbord Binask, ER3L2A en ER3L1A met een klaswissel (per lesblok, met paars): https://claude.ai/artifact/EJRNPZ7E51kfXwMmA7DFbY | `node .tmp-diag/klasbord-data.mjs ER3L2A` en `... ER3L1A` (schrijven `.tmp-diag/klasbord-<KLAS>.json`), daarna sjabloon plus data samenvoegen tot één pagina met `{ klassen: [ER3L2A, ER3L1A] }` in `<script id="data">` |
+| ER3L1A voortgang (per paragraaf, H1 en H2): https://claude.ai/artifact/U9qNHtLMXuKPJpaq3tzwDm | `node .tmp-diag/klas-hoofdstuk-monitor.mjs --eenmaal` |
+| ER3L2A live (8 oktober): https://claude.ai/artifact/TWURKgvpFkykwZy2Q15nQg | `node .tmp-diag/klas-eenmaal.mjs` |
+
+Die scripts staan in `.tmp-diag/` en dus **buiten git**; gooi die map niet weg.
+Het klasbord toont ook 1.A, 2.A en 2.T als eigen kolom.
+
+### Digitale vaardigheden - bijgewerkt 15 oktober 2026
 
 Negen H1-klassen, allemaal zonder leerroute (routes zijn er op 16 september
 afgehaald, back-up in `exports/reset-backups/klassen-voor-dv-h1-2026-09-16.json`).
-Alleen de nulmeting is toegewezen.
+Toegewezen per klas: de nulmeting, hoofdstuk 2 en hoofdstuk 3 (H3 op slot).
+H1i1 krijgt van H2 en H3 de inclusieversie.
 
 Hoofdstuk 2 is verwijderd in alle drie de leerroutes: 473 documenten, back-up in
 `exports/reset-backups/verwijderd-hoofdstuk-dv-*-2026-09-16.json`, en de inhoud
@@ -180,6 +290,18 @@ daarna `bouw-hoofdstuk-seed.mjs`, het nieuwe
 `scripts/werk-blok-bij-uit-seed.mjs` (werkt één blok bij zonder het hoofdstuk
 opnieuw te importeren) en `backfill-public-content-snapshots.mjs`. Back-up van
 het oude blok in `exports/reset-backups/blok-block-dv-klas1-23-quiz-4-2026-09-21.json`.
+
+**Eind september: DV hoofdstuk 3 klaar, maar op slot.** `hoofdstuk-dv-klas1-h3`
+("Hoe reist jouw bericht over internet?"), paragrafen 3.1 tot en met 3.3, plus
+een inclusieversie (`paragraaf-dv-klas1-incl-31` tot en met `-33`) voor H1i1.
+Toegewezen aan alle negen H1-klassen, maar het hoofdstuk staat in
+`vergrendeldeHoofdstukken` van elke klas: leerlingen zien het met een slot tot
+Kevin het opent op `/admin/vrijgeven`. Bron `docs/seeds/dv-h3-internet.json` en
+`dv-h3-internet-inclusie.json`, klaarzetten met `scripts/zet-dv-h3-klaar.mjs`
+(commit `c1bee94`). **H4 tot en met H23** bestaan als hoofdstuk met drie
+ongepubliceerde paragrafen zonder blokken, ook op slot. De lesideeën staan in
+`docs/curriculum/lesideeen-h4-h23.md`. Een volgend hoofdstuk vul je dus in een
+bestaand hoofdstuk-id; maak geen tweede hoofdstuk met hetzelfde nummer.
 
 **7 oktober: inclusieversie van hoofdstuk 2 voor H1i1, live en open.** Drie
 paragrafen `paragraaf-dv-klas1-incl-21` tot en met `-23` in hetzelfde
@@ -308,6 +430,78 @@ uit `genereer-fase2.mjs` en `genereer-fase3.mjs`. Het MT-rapport (fase 5) bouw j
 Er is niets gebouwd in HELIX. Fase 6 (technisch plan) volgt; bouwen pas na
 Kevins akkoord op het plan van fase 6.
 
+### Diff rekenen - 15 oktober 2026
+
+Nieuw vak voor de nieuwe klas **Diff_kader2** (`klas_1792053696147`, geen
+route, vmbo kader leerjaar 2, rekenachterstand). Id's en commando's staan in
+`references/vakken.md` van de skill. Vier domeinen: Getallen, Verhoudingen,
+Meten en meetkunde, Verbanden. Die worden later elk een hoofdstuk onder het ene
+niveau `niveau-diff-rekenen-2-kader`; per leerling openzetten gaat via
+`studentOverrides.extraParagrafen`. Een HELIX-route is één per klas, dus de
+domeinen zijn geen routes.
+
+**Hoofdstuk 1, startles digitale nulmeting** (`hoofdstuk-diff-rekenen-2-start`),
+live en toegewezen: 1.1 tot en met 1.4, één per domein, elk uitleg, voorbeeld en
+een quiz van 12 vragen (4 basis, 4 plus, 4 verdieping in `taxonomy.masteryLevel`;
+meerkeuze en getal invullen), één poging, Digidocent uit, 24 tokens. Bron
+`docs/seeds/diff-rekenen-start-nulmeting.json`, seed `docs/seeds/diff-rekenen.seed.json`.
+`controleer-hoofdstuk.mjs`: alles in orde. In de klas start elke groep bij een
+ander domein (dat zegt Kevin; de paragrafen staan open).
+
+Nieuw in de code: de seedbouwer kent getalvragen (`antwoord`, `marge`,
+`eenheid` in `scripts/lib/vraagItems.mjs`), en een quizblok met
+`content.vraagVolgordePerLeerling: true` toont de vragen per leerling in een
+eigen volgorde, geschud binnen elk niveau (`schudVraagVolgordePerNiveau` in
+`src/lib/answerOptionShuffle.js`, doorgegeven in `publicContentBlockView.js`).
+Staat aan op de vier quizzen van de startles; live met `npx vercel --prod --yes`
+(`helix-9kwz0jelu`). Nakijken en voortgang gaan op item-id, dus de volgorde
+raakt het nakijken niet.
+
+**Rekenhulp als kladwerk (15 oktober, live, `helix-btbt14j6z`):** bij
+getalvragen in een quiz staat de rekenhulp (verhoudingstabel, rekenmachine)
+als kladwerk (`KladRekenhulp` in `StudentLessonPage.jsx`, aan met
+`settings.allowMathToolbox` op het blok, gezet met
+`zet-vraagvolgorde-per-leerling.mjs --rekenhulp`). Alleen het getal wordt
+nagekeken; het kladwerk wordt niet bewaard. Een nagekeken verhoudingstabel als
+eigen vraagtype bestaat niet; dat vraagt een nieuw type op client en server.
+
+**Leerlingen (15 oktober):** 20 accounts aangemaakt met
+`scripts/maak-leerlingaccounts.mjs` (tijdelijk wachtwoord, `mustChangePassword`,
+lijst in `exports/leerlingen/`). 8 leerlingen maakten zelf een account en kozen
+Diff_kader2. De 12 die niet inlogden zitten in een andere klas en zijn op
+Kevins verzoek verwijderd met `ruim-leeg-dubbelaccount-op.mjs` (back-up
+`exports/reset-backups/lege-dubbelaccounts-2026-10-15.json`). Nu 16 leerlingen
+plus de testleerling.
+
+Overzicht voor de docent (per leerling antwoorden, percentage en niveau per
+domein, volgorde sterk naar zwak): `node scripts/diff-rekenen-nulmeting-overzicht.mjs`
+(alleen lezen, `--met-test` neemt de testleerling mee), JSON in
+`.tmp-diag/diff-kader2-nulmeting.json`. Rekenregels in
+`scripts/lib/diffRekenenNulmeting.mjs` met test. Een overzicht in HELIX zelf
+bestaat nog niet. Testleerling `testleerling-diff_kader2` is aangemaakt.
+Back-up van de klas: `exports/reset-backups/klassen-voor-diff-rekenen-2026-10-15.json`.
+
+### Klasborden - 15 oktober 2026
+
+Nieuwe beheerpagina `/admin/klasborden` (knop "Klasborden" tussen Voortgang en
+Leerlingen): per klas een kaart met een verkleind klasbord, zoals het
+klasbord-artifact, live bijgewerkt. Elke kaart toont het hoofdstuk met de
+laatste activiteit van de klas. Klik voor het hele scherm (portal naar body,
+boven de menubalk), met klas- en hoofdstukknoppen; Esc of het kruisje sluit.
+Kleuren (Kevin, 15 okt): donkergroen alles goed, groen af, lichtgroen af
+met veel fouten (minder dan 70% goed in de eerste ronde, `eersteScore`;
+`ZWAK_GRENS` in `klasbord.js`), rood afgevinkt zonder alle vragen
+(`isBlokStriktAf`), lichtgeel nog te maken, lichtgeel met slotje op slot
+(klasslot op hoofdstuk, paragraaf of blok, en de paragraafsloten van 2.A en
+2.T per leerling). Alles uit het blokrecord, geen items-subcollectie.
+
+Kolommen zijn de `enabledParagrafen` van de klas, gefilterd op haar route.
+Extra paragrafen per leerling tellen niet mee. Testaccounts en Kevins eigen
+leerlingaccount ("Kevin Limpens" in ER3L1A) staan er niet op.
+Code: `src/lib/klasbord.js` (+ test), `src/components/klasbord/`,
+`src/pages/AdminKlasbordenPage.jsx`. Leest live de hele `voortgang`-collectie,
+net als Voortgang. Lokaal bekeken met echte data; live sinds 15 okt (`helix-8f2do2cra`).
+
 ### Testen als leerling - 21 september 2026
 
 Elf testleerlingaccounts, één per klas, uid `testleerling-<klas>`, e-mail
@@ -327,12 +521,18 @@ klasoverzicht, leerlingbeheer, tokenbeheer en de klaslijsten, en
 `buildNulmetingProfielCore` slaat ze over bij een klasberekening.
 `firestore.rules` laat een leerling zijn eigen `isTestaccount` niet zetten.
 
-**Wat nog moet gebeuren:** de functie draait nu nog als het standaard
-compute-account en kan daardoor geen inlogtoken ondertekenen. De regel
-`serviceAccount: "firebase-adminsdk-fbsvc@..."` staat in `functions/index.js`,
-maar de deploy daarvan staat nog open:
-`npx firebase deploy --only functions:startTestleerlingSessie --project pythagoras-eoa`.
-Tot dat moment geeft de startknop een foutmelding.
+De functie draait als `firebase-adminsdk-fbsvc@pythagoras-eoa.iam.gserviceaccount.com`
+(regel `serviceAccount` in `functions/index.js`); alleen dat account mag een
+inlogtoken ondertekenen. Haal die regel niet weg. Het werkt: Kevin logt zo in
+als testleerling.
+
+**15 oktober: een testaccount ziet de paragraafsloten open.** Kevin wil als
+testleerling elke paragraaf kunnen bekijken, ook 1.A, 2.A en 2.T, zonder eerst
+alles te maken. Een testaccount (`isTestaccount: true`) slaat daarom de
+paragraafsloten over, net als de beheerder (`useStudentOutline.js` en
+`StudentLessonPage.jsx`, `zietParagraafSlotenOpen`). Er wordt niets afgevinkt;
+het slot telt gewoon niet. Het klasslot van de docent (hoofdstukken op slot)
+geldt wél, en de wachttijd voor het afvinken ook.
 
 ### Taalknop in de hele leerroute - 21 september 2026
 
@@ -449,6 +649,41 @@ Per hoofdstuk één uitlegvideo van max 3:00, gemaakt met de skill
   after 10000"; met `FUNCTIONS_DISCOVERY_TIMEOUT=60` ervoor lukte het. Node.js
   20 voor functions verloopt op 30 oktober 2026: daarna eerst upgraden.
 
+### Paragraafsloten, wachttijd en rekenmachine - 15 oktober 2026
+
+Drie instellingen die je op een paragraaf of lesblok zet en die de app
+algemeen leest, dus ook bruikbaar voor een ander vak of hoofdstuk:
+
+| Waar | Veld | Wat het doet |
+| --- | --- | --- |
+| paragraaf | `ontgrendelNaHoofdstuk: true` | slot tot de rest van het hoofdstuk af is (de antwoorden 1.A, 2.A) |
+| paragraaf | `ontgrendelNaVoorgaande: true` | slot tot alles ervoor **strikt** af is, dus ook alle quizvragen gemaakt (de oefentoets 2.T) |
+| lesblok | `content.minimaleTijdSeconden`, `content.bevestigLabel` | afvinkknop pas na zoveel seconden, met eigen tekst |
+| lesblok | `content.rekenmachine: true` | knop Rekenmachine rechtsboven in de les |
+
+De regels staan in `src/lib/antwoordenSlot.js` (beide sloten, met uitleg
+bovenin), `src/lib/minimaleLeestijd.js` en `src/lib/studentLessonProgress.js`
+(`isBlokStriktAf`). Plusparagrafen tellen nergens mee. Geen kringslot: de
+antwoorden wachten niet op de oefentoets. De wachttijd is een duwtje en geen
+beveiliging: de starttijd staat in sessionStorage, een nieuw tabblad begint
+opnieuw. De rekenmachine is dezelfde als in het dichtheidsspel
+(`src/games/dichtheid/componenten/Rekenmachine.jsx`).
+
+De beheerder en testaccounts zien de paragraafsloten open (zie "Testen als
+leerling").
+
+### Rondleidingsvideo - 8 oktober 2026
+
+"HELIX: zo bied ik elke dag maatwerk" (2:55), voor collega's en het MT. Thomas
+spreekt als Kevin; Sami en een Oekraïense, Arabische en Turkse klasgenoot spreken in
+hun moedertaal met Nederlandse ondertitels; muziek uit Suno. Compositie
+`HelixRondleiding` in `video/src/Rondleiding.tsx` (aangemeld in
+`video/src/Root.tsx`), script en stemmen in `video/public/rondleiding/`,
+portretten in `video/public/klasgenoten/`. Schermen en render buiten git:
+`exports/video/rondleiding/helix-rondleiding-v1.mp4`. Schermafdrukken zijn
+geanonimiseerd met `video/scripts/anoniem.js`; echte namen en klascodes horen
+er niet in. Wacht op Kevins oordeel.
+
 ### Presentaties - 16 september 2026
 
 De trage presentaties kwamen niet door de bestanden maar door de bucket: die
@@ -462,7 +697,21 @@ deck van 3 MB in tienden van seconden, als echte dia's met een kloppende teller.
 
 In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij.
 
-1. **Leeromgeving-stijl fase 4 (opruimen).** Fase 0 t/m 3 staan live. Fase 4
+1. **Functions upgraden vóór 30 oktober 2026.** `functions/package.json` staat op
+   Node.js 20, en die versie verloopt dan voor Cloud Functions. Daarna eerst
+   upgraden voordat je een functie uitrolt.
+   Lukt de uitrol niet ("User code failed to load ... Timeout"), zet dan
+   `FUNCTIONS_DISCOVERY_TIMEOUT=60` ervoor.
+2. **Het losse werk van 8 tot en met 15 oktober committen** (zie paragraaf 7,
+   "Los in de werkmap"). Het staat live, maar niet in git. Kevin beslist wanneer.
+3. **Binask H2 afronden.** Mogelijke volgende stappen, alleen op Kevins vraag:
+   uitwerkingen van de oefentoets voor
+   de leerling (de antwoorden staan al in `docs/seeds/binask-oefentoets-h2.json`,
+   alleen voor de docent); de eindopdracht met cijfer wordt
+   2.7. Wil Kevin de wachttijd voor testaccounts weg, dan is dat één regel in
+   `StudentLessonPage.jsx` bij de minimale leestijd.
+4. **Rondleidingsvideo**: wacht op Kevins oordeel over v1.
+5. **Leeromgeving-stijl fase 4 (opruimen).** Fase 0 t/m 3 staan live. Fase 4
    volgens de spec, paragraaf 3.4. Bekende restpunten uit de reviews (logboeken in
    `exports/leeromgeving/fase-*-logboek.md`): rekenbladen en `InleveringVak` op de
    lespagina, `MediaRenderer`, de oude `--helix-*`-tokens en dode CSS
@@ -472,42 +721,42 @@ In volgorde van wat Kevin het eerst wil. Wie eraan begint, werkt dit lijstje bij
    CmsShell), rode foutvakken in ContentBlockBuilder, GamePlayer-beheerkop,
    een eslint-fout die al bestond in `ExistingCropsManager`. Kevin test de
    leerlingkant en de docentkant (alle beheerpagina's), ook op een telefoon.
-   Fase 3 (docentomgeving) neemt Kevins vraag van 7 oktober mee: de
-   knoppenbalken van beheer (menubalk en de knoppen onder de paginakop) op één
-   regel, gelijk van hoogte, in de nieuwe stijl. Inventaris en voorstel:
+   Inventaris van de knoppenbalken:
    `exports/leeromgeving/fase-3-knoppenbalken-inventaris.md`.
-
-2. **Infographic storingsplan (7 oktober 2026).** Gemaakt via de Helix
+6. **Infographic storingsplan (7 oktober 2026).** Gemaakt via de Helix
    Lesstudio (NotebookLM, Helix-opmaak), voor de gewone klassen en voor H1i1.
    Versie 2 wacht op Kevins akkoord: `exports/infographics/dv-h2-storingsplan-v2-verbeterd.png`
    ("bewaard" met de hand verbeterd; versie 1 had drie fouten). Daarna plaatsen
    in 2.3 van beide versies, als lichte afbeelding (geen PNG van 6 MB). Kevin
    wil hem eerst zien voordat er iets wordt vervangen.
-
-3. **Testen als leerling afmaken.** Alles is gebouwd en gedeployd behalve de
-   laatste stap: `startTestleerlingSessie` opnieuw uitrollen zodat hij als het
-   serviceaccount `firebase-adminsdk-fbsvc` draait. Zonder dat kan hij geen
-   inlogtoken ondertekenen. Zie paragraaf 5, "Testen als leerling".
-4. **Het losse werk committen** (zie paragraaf 7, "Los in de werkmap"). Kevin
-   beslist wanneer.
-5. **Curriculum DV, fase 6.** Fase 1 tot en met 5 liggen er (zie paragraaf 5).
+7. **DV hoofdstuk 3 openzetten**: staat klaar maar op slot bij alle klassen.
+   Dat is een lesbesluit van Kevin (`/admin/vrijgeven`).
+8. **Curriculum DV, fase 6.** Fase 1 tot en met 5 liggen er (zie paragraaf 5).
    Fase 6 is het technische plan: SLO-koppeling per les in HELIX, de
    startscore uit de nulmeting bij elke les, en het dashboardconcept. Pas
    bouwen na Kevins akkoord op dat plan.
-6. **Hoofdstuk 3 en verder van DV.** Les 2 van het curriculum is "Hoe reist
-   jouw bericht over internet?". Bouwen gaat met `/helix-hoofdstuk-bouwen`;
+9. **Hoofdstuk 4 en verder van DV.** De hoofdstukken bestaan al als lege
+   huls (zie Digitale vaardigheden). Bouwen gaat met `/helix-hoofdstuk-bouwen`;
    het deck volgt verplicht het design system.
-7. **Vrijgeven van DV hoofdstuk 1**: de lesparagrafen 1.1 tot en met 1.5
+10. **Vrijgeven van DV hoofdstuk 1**: de lesparagrafen 1.1 tot en met 1.5
    bestaan wel maar zijn aan niemand toegewezen. Dat is een lesbesluit; vraag
    het voordat je toewijst.
-8. Uit de navigatie-audit: het dubbele voortgangsoverzicht op het profiel, een
+11. Nog te controleren als testleerling: de explainervideo in Binask 2.4 (ook op
+   iPad/iOS Safari) en KlimBit (handmatige test in
+   `docs/OVERDRACHT-KLIMBIT-2026-10-02.md`).
+12. Uit de navigatie-audit: het dubbele voortgangsoverzicht op het profiel, een
    woord bij het tokenmuntje, onthouden welk hoofdstuk het laatst open stond,
    en toetsenbordbediening van de stappenbalk.
-9. Vertaalknop: een blok publiceren vóór "Vertaling nu maken", de
+13. Vertaalknop: een blok publiceren vóór "Vertaling nu maken", de
    `vertalingen`-regel kent geen publicatiestatus, en vertalingen worden niet
    verwijderd als een blok wordt teruggetrokken.
-10. Paragraaf 1.2 van Binask heeft een deck van 7,1 MB; dat kan naar ongeveer
+14. Paragraaf 1.2 van Binask heeft een deck van 7,1 MB; dat kan naar ongeveer
    5,9 MB. Niet dringend.
+
+15. **Diff rekenen**: het overzicht van de nulmeting in HELIX zelf (nu een
+   script), de vier domeinhoofdstukken bouwen met de skill, en per leerling
+   domeinen openzetten. Het oude losse vak "BiNaSk" (`vak-binask`, één
+   hoofdstuk) staat nog in Firestore; vraag Kevin of het weg mag.
 
 ## 7. Bij het afsluiten van een sessie
 
@@ -568,9 +817,48 @@ Kevin bepaalt wanneer dat gebeurt. Het staat wel live: gedeployd met
 | `.claude/skills/helix-hoofdstuk-bouwen/SKILL.md`, `references/vakken.md` (gewijzigd) | paragraaf "Een inclusieversie"; ook gekopieerd naar `~/.claude/skills/` |
 | `docs/HANDOFF.md` (gewijzigd) | dit bestand |
 
+**Stand 15 oktober 2026: niet gecommit, wel live** (site gedeployd met
+`npx vercel --prod --yes`, lesstof met de scripts hieronder). Laatste commit is
+`a79cb09` van 7 oktober.
+
+| Pad | Wat het is |
+| --- | --- |
+| `src/lib/antwoordenSlot.js` + test (nieuw) | de paragraafsloten van 1.A/2.A en 2.T |
+| `src/lib/minimaleLeestijd.js` + test (nieuw) | afvinken pas na een minimale tijd |
+| `src/lib/studentLessonProgress.js`, `src/lib/chapterOutline.js` (gewijzigd) | strikt af (`isBlokStriktAf`, `isStriktAf`) per onderdeel |
+| `src/hooks/useStudentOutline.js` (gewijzigd) | sloten toepassen; beheerder en testaccount zien ze open |
+| `src/components/lesson/ChapterDetail.jsx`, `src/components/layout/TableOfContents.jsx` (gewijzigd) | slotje en uitleg bij de rij |
+| `src/pages/StudentLessonPage.jsx` (gewijzigd) | slot bij een directe link, wachttijd op de afvinkknop, knop Rekenmachine |
+| `src/games/dichtheid/componenten/Rekenmachine.jsx` (gewijzigd) | `onSluit`, zodat de lespagina hem helemaal sluit |
+| `src/lib/publicContentBlockView.js` + test (gewijzigd) | `minimaleTijdSeconden`, `bevestigLabel` en `rekenmachine` naar de leerling |
+| `src/lib/uiTaal.js` (gewijzigd) | slotteksten in alle talen |
+| `docs/seeds/binask-uitwerkingen.json`, `scripts/plaats-uitwerkingen-binask.mjs` (nieuw) | 1.A en 2.A |
+| `docs/seeds/binask-oefentoets-h2.json`, `scripts/plaats-oefentoets-binask-h2.mjs` (nieuw) | 2.T, met de docentantwoorden |
+| `video/src/Rondleiding.tsx`, `video/src/Root.tsx`, `video/public/rondleiding/`, `video/public/klasgenoten/`, `video/scripts/anoniem.js`, `video/scripts/opname-browser.mjs` | de rondleidingsvideo |
+| `.claude/launch.json` (gewijzigd) | server `explainer-bekijken` op poort 8130 |
+| `docs/superpowers/plans/2026-10-07-leeromgeving-stijl-fase-2a.md` (nieuw) | plan van fase 2a, bleef liggen |
+| `.claude/skills/helix-hoofdstuk-bouwen/SKILL.md` (gewijzigd) | paragraaf "Antwoorden en oefentoets achteraan"; ook gekopieerd naar `~/.claude/skills/` |
+| `docs/HANDOFF.md` (gewijzigd) | dit bestand |
+
+Ook van 15 oktober (Diff rekenen, niet gecommit, wel live):
+`docs/seeds/diff-rekenen.seed.json`, `docs/seeds/diff-rekenen-start-nulmeting.json`,
+`scripts/maak-klas.mjs`, `scripts/zet-vraagvolgorde-per-leerling.mjs`,
+`scripts/diff-rekenen-nulmeting-overzicht.mjs`, `scripts/maak-leerlingaccounts.mjs`, `scripts/lib/diffRekenenNulmeting.mjs`
++ test (nieuw); `scripts/lib/vraagItems.mjs`, `scripts/zet-klas-lesstof-klaar.mjs`,
+`scripts/maak-testleerlingen.mjs`, `src/lib/answerOptionShuffle.js` + test,
+`src/lib/publicContentBlockView.js` + test, `src/pages/StudentLessonPage.jsx`,
+`references/vakken.md` (gewijzigd).
+
+Niet committen: `Gele Helix-tegel met blauwe stip.png` in de hoofdmap (een
+logobestand van Kevin; vraag waar het heen moet).
+
 Buiten git (genegeerd, maar wel nodig): `sources/dv-jpeg/dv-h2-device.pdf` (het
 deck van H2), `sources/designsysteem/` (het design system en de uitgelezen
-tekst) en `exports/curriculum/` (het MT-rapport als PDF en HTML).
+tekst) en `exports/curriculum/` (het MT-rapport als PDF en HTML). Sinds
+oktober ook: `.tmp-diag/` (de klasborden, zie Binask), `exports/oefentoets-h2/`
+(de tekeningen van 2.T), `exports/uitwerkingen-binask/`,
+`exports/video/rondleiding/` en `exports/werkblad-design/` (het werkblad in
+HELIX-stijl dat Kevin als ontwerpvoorbeeld gebruikt).
 
 ## Archief
 

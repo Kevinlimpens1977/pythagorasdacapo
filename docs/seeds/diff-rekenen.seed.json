@@ -1,0 +1,2325 @@
+{
+  "meta": {
+    "seedId": "diff-rekenen",
+    "generatedAt": "2026-10-15T12:00:00.000Z",
+    "status": "published",
+    "beschrijving": "Diff rekenen voor vmbo kader leerjaar 2 (klas Diff_kader2). Eén niveau, hoofdstukken per domein: Getallen, Verhoudingen, Meten en meetkunde, Verbanden."
+  },
+  "vakken": [
+    {
+      "id": "vak-diff-rekenen",
+      "name": "Diff rekenen",
+      "code": "DIFFREK",
+      "description": "Gedifferentieerd rekenen in vier domeinen: Getallen, Verhoudingen, Meten en meetkunde, Verbanden.",
+      "order": 97,
+      "isActive": true,
+      "color": "#2563eb",
+      "emoji": "RK"
+    }
+  ],
+  "leerjaren": [
+    {
+      "id": "leerjaar-diff-rekenen-2",
+      "vakId": "vak-diff-rekenen",
+      "year": 2,
+      "label": "Leerjaar 2",
+      "order": 1,
+      "isActive": true
+    }
+  ],
+  "niveaus": [
+    {
+      "id": "niveau-diff-rekenen-2-kader",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "leerweg": "kader",
+      "label": "Kader",
+      "name": "Kader - leerjaar 2",
+      "description": "Diff rekenen, vmbo kader leerjaar 2.",
+      "order": 1,
+      "isActive": true
+    }
+  ],
+  "hoofdstukken": [
+    {
+      "id": "hoofdstuk-diff-rekenen-2-start",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "number": 1,
+      "title": "Startles: digitale nulmeting",
+      "description": "Vier domeinen van rekenen in één les: Getallen, Verhoudingen, Meten en meetkunde en Verbanden. Per domein lees je een korte uitleg en maak je twaalf vragen. Je docent zegt bij welk domein jij begint.",
+      "order": 1,
+      "published": true,
+      "isArchived": false
+    }
+  ],
+  "paragrafen": [
+    {
+      "id": "paragraaf-diff-rekenen-2-11",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "code": "1.1",
+      "title": "1.1 Getallen",
+      "beschrijving": "Rekenen met hele getallen en kommagetallen, de volgorde van bewerkingen en afronden.",
+      "order": 1,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt optellen, aftrekken, vermenigvuldigen en delen met hele getallen en kommagetallen.",
+        "Je kunt de volgorde van bewerkingen gebruiken.",
+        "Je kunt een getal afronden."
+      ],
+      "leerdoelen": [
+        "Je kunt optellen, aftrekken, vermenigvuldigen en delen met hele getallen en kommagetallen.",
+        "Je kunt de volgorde van bewerkingen gebruiken.",
+        "Je kunt een getal afronden."
+      ]
+    },
+    {
+      "id": "paragraaf-diff-rekenen-2-12",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "code": "1.2",
+      "title": "1.2 Verhoudingen",
+      "beschrijving": "Rekenen met een verhoudingstabel, procenten en schaal.",
+      "order": 2,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt een verhoudingstabel gebruiken.",
+        "Je kunt een percentage van een bedrag uitrekenen.",
+        "Je kunt rekenen met korting en schaal."
+      ],
+      "leerdoelen": [
+        "Je kunt een verhoudingstabel gebruiken.",
+        "Je kunt een percentage van een bedrag uitrekenen.",
+        "Je kunt rekenen met korting en schaal."
+      ]
+    },
+    {
+      "id": "paragraaf-diff-rekenen-2-13",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "code": "1.3",
+      "title": "1.3 Meten en meetkunde",
+      "beschrijving": "Eenheden omrekenen, omtrek, oppervlakte en inhoud.",
+      "order": 3,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt lengte, gewicht en tijd omrekenen naar een andere eenheid.",
+        "Je kunt de omtrek en de oppervlakte van een rechthoek uitrekenen.",
+        "Je kunt de inhoud van een balk uitrekenen."
+      ],
+      "leerdoelen": [
+        "Je kunt lengte, gewicht en tijd omrekenen naar een andere eenheid.",
+        "Je kunt de omtrek en de oppervlakte van een rechthoek uitrekenen.",
+        "Je kunt de inhoud van een balk uitrekenen."
+      ]
+    },
+    {
+      "id": "paragraaf-diff-rekenen-2-14",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "code": "1.4",
+      "title": "1.4 Verbanden",
+      "beschrijving": "Tabellen, grafieken en formules in woorden.",
+      "order": 4,
+      "published": true,
+      "aiCompanionEnabled": true,
+      "cropCount": 0,
+      "isArchived": false,
+      "optioneel": false,
+      "verplicht": true,
+      "learningGoals": [
+        "Je kunt een tabel lezen en aanvullen.",
+        "Je kunt rekenen met een formule in woorden.",
+        "Je kunt een verhaal bij een grafiek herkennen."
+      ],
+      "leerdoelen": [
+        "Je kunt een tabel lezen en aanvullen.",
+        "Je kunt rekenen met een formule in woorden.",
+        "Je kunt een verhaal bij een grafiek herkennen."
+      ]
+    }
+  ],
+  "contentBlocks": [
+    {
+      "id": "block-diff-rekenen-2-11-theory-1",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-11",
+      "type": "theory",
+      "order": 1,
+      "title": "Uitleg - rekenen met getallen",
+      "status": "published",
+      "content": {
+        "html": "<p>Je rekent elke dag met getallen: bij de kassa, met je zakgeld of met de tijd. In deze uitleg zie je drie dingen die je nodig hebt.</p><h3>1. De volgorde van bewerkingen</h3><p>Staan er meer bewerkingen in een som, dan reken je in deze volgorde:</p><ol><li>eerst wat tussen haakjes staat;</li><li>dan keer (×) en delen (:) van links naar rechts;</li><li>dan plus (+) en min (−) van links naar rechts.</li></ol><h3>2. Kommagetallen</h3><p>Bij kommagetallen kijk je eerst naar het getal voor de komma. Is dat gelijk, dan kijk je naar het eerste cijfer na de komma. 0,8 is dus groter dan 0,75, want 8 tienden is meer dan 7 tienden.</p><h3>3. Afronden</h3><p>Kijk naar het cijfer direct na de plek waar je afrondt. Is dat 5 of meer, dan rond je naar boven af. Is het 4 of minder, dan rond je naar beneden af.</p><h3>Kernbegrippen</h3><dl><dt>bewerking</dt><dd>Een rekenstap: plus, min, keer of delen.</dd><dt>afronden</dt><dd>Een getal korter maken, zodat het makkelijker te gebruiken is.</dd></dl>",
+        "keyTerms": [
+          "bewerking",
+          "afronden"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-11-example-2",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-11",
+      "type": "example",
+      "order": 2,
+      "title": "Voorbeeld - volgorde en afronden",
+      "status": "published",
+      "content": {
+        "html": "<p><strong>Som:</strong> 4 + 3 × 5</p><ol><li>Stap 1: Zijn er haakjes? Nee.</li><li>Stap 2: Eerst keer: 3 × 5 = 15.</li><li>Stap 3: Dan plus: 4 + 15 = 19.</li></ol><p><strong>Let op:</strong> wie van links naar rechts rekent, krijgt 7 × 5 = 35. Dat is fout.</p><p><strong>Afronden:</strong> rond 12,46 af op één cijfer na de komma.</p><ol><li>Stap 1: Je rondt af op de 4. Kijk naar het cijfer erna: dat is een 6.</li><li>Stap 2: 6 is 5 of meer, dus naar boven.</li><li>Stap 3: 12,46 wordt 12,5.</li></ol>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-11-quiz-3",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-11",
+      "type": "quiz",
+      "order": 3,
+      "title": "Vragen Getallen",
+      "status": "published",
+      "tokenTotal": 24,
+      "content": {
+        "html": "<p>Twaalf vragen. Ze worden steeds iets moeilijker. Reken op een kladblaadje. Bij een kommagetal typ je een komma, bijvoorbeeld 5,4.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Reken uit: 25 + 38",
+            "answer": {
+              "type": "numeriek",
+              "expected": 63,
+              "tolerance": 0,
+              "unit": "",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Eerst 20 + 30 = 50, dan 5 + 8 = 13. Samen 50 + 13 = 63.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welk getal is het grootst?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "0,8",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "0,75",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "0,089",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "0,8",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "0,75",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "0,089",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Kijk naar het eerste cijfer na de komma: 8 tienden is meer dan 7 tienden en meer dan 0 tienden.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Reken uit: 7 × 8",
+            "answer": {
+              "type": "numeriek",
+              "expected": 56,
+              "tolerance": 0,
+              "unit": "",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "7 × 8 = 56. Ken je hem niet uit je hoofd, reken dan 7 × 10 = 70 en haal er 7 × 2 = 14 af.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Rond 4,67 af op een heel getal.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "4",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "5",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "4,7",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "4",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "5",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "4,7",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Het cijfer na de komma is een 6. Dat is 5 of meer, dus je rondt naar boven af: 5.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Reken uit: 4 + 3 × 5",
+            "answer": {
+              "type": "numeriek",
+              "expected": 19,
+              "tolerance": 0,
+              "unit": "",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Eerst keer: 3 × 5 = 15. Daarna plus: 4 + 15 = 19.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-6",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een pak sap kost € 1,35. Je koopt 4 pakken. Hoeveel euro betaal je?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 5.4,
+              "tolerance": 0.001,
+              "unit": "euro",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "4 × 1,35 = 4 × 1 + 4 × 0,35 = 4 + 1,40 = 5,40 euro.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-7",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Hoeveel is 3/4 van 20?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "12",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "16",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "15",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "12",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "16",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "15",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Eerst 1/4 van 20: 20 : 4 = 5. Dan 3/4 is 3 × 5 = 15.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-8",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Het is 's nachts −3 °C. Overdag wordt het 8 graden warmer. Hoeveel graden is het overdag?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 5,
+              "tolerance": 0,
+              "unit": "°C",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Van −3 naar 0 is 3 graden. Er blijven 5 graden over, dus het wordt 5 °C.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-9",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Reken uit: (12 − 4) × 3 + 6 : 2",
+            "answer": {
+              "type": "numeriek",
+              "expected": 27,
+              "tolerance": 0,
+              "unit": "",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Haakjes: 12 − 4 = 8. Keer en delen: 8 × 3 = 24 en 6 : 2 = 3. Plus: 24 + 3 = 27.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-10",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Zes vrienden delen € 250 eerlijk. Hoeveel krijgt ieder ongeveer?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "ongeveer € 36",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "ongeveer € 42",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "ongeveer € 50",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "ongeveer € 36",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "ongeveer € 42",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "ongeveer € 50",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "250 : 6 is ongeveer 41,67. Dat is ongeveer 42 euro. Controle: 6 × 42 = 252, dat ligt dicht bij 250.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-11",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Rond 2,348 af op twee cijfers na de komma.",
+            "answer": {
+              "type": "numeriek",
+              "expected": 2.35,
+              "tolerance": 0.001,
+              "unit": "",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Je rondt af op de 4. Het cijfer erna is een 8, dus naar boven: 2,348 wordt 2,35.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-12",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een school gaat op schoolreis met 1248 leerlingen. In een bus passen 52 leerlingen. Hoeveel bussen zijn er nodig?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 24,
+              "tolerance": 0,
+              "unit": "bussen",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "1248 : 52 = 24. Controle: 24 × 52 = 1040 + 208 = 1248. Er zijn precies 24 bussen nodig.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": 1,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 24
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-12-theory-1",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-12",
+      "type": "theory",
+      "order": 1,
+      "title": "Uitleg - verhoudingen en procenten",
+      "status": "published",
+      "content": {
+        "html": "<p>Twee keer zoveel broodjes kost twee keer zoveel geld. Dat is een verhouding: als het ene groter wordt, wordt het andere op dezelfde manier groter.</p><h3>De verhoudingstabel</h3><p>In een verhoudingstabel zet je twee dingen boven elkaar. Wat je met de bovenste rij doet, doe je ook met de onderste rij: keer 2, delen door 3, enzovoort.</p><h3>Procenten</h3><p>Procent betekent: per honderd. 100% is het hele bedrag.</p><ul><li>50% is de helft.</li><li>25% is een kwart.</li><li>10% vind je door het bedrag te delen door 10.</li></ul><p>Met 10% kun je veel andere procenten maken. 20% is twee keer 10%. 5% is de helft van 10%.</p><h3>Schaal</h3><p>Schaal 1 : 100 betekent: 1 cm op de kaart is 100 cm in het echt.</p><h3>Kernbegrippen</h3><dl><dt>verhoudingstabel</dt><dd>Een tabel met twee rijen waarin je met beide rijen hetzelfde doet.</dd><dt>procent</dt><dd>Per honderd. 100% is het geheel.</dd></dl>",
+        "keyTerms": [
+          "verhoudingstabel",
+          "procent"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-12-example-2",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-12",
+      "type": "example",
+      "order": 2,
+      "title": "Voorbeeld - broodjes en korting",
+      "status": "published",
+      "content": {
+        "html": "<p><strong>Vraag 1:</strong> 3 broodjes kosten € 4,50. Wat kosten 5 broodjes?</p><table><tr><th>broodjes</th><td>3</td><td>1</td><td>5</td></tr><tr><th>euro</th><td>4,50</td><td>1,50</td><td>7,50</td></tr></table><ol><li>Stap 1: Deel beide rijen door 3. Eén broodje kost € 1,50.</li><li>Stap 2: Doe beide rijen keer 5. Vijf broodjes kosten € 7,50.</li></ol><p><strong>Vraag 2:</strong> Een broek kost € 40. Je krijgt 20% korting. Wat betaal je?</p><ol><li>Stap 1: 10% van 40 = 40 : 10 = 4.</li><li>Stap 2: 20% = 2 × 4 = 8 euro korting.</li><li>Stap 3: Je betaalt 40 − 8 = € 32.</li></ol>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-12-quiz-3",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-12",
+      "type": "quiz",
+      "order": 3,
+      "title": "Vragen Verhoudingen",
+      "status": "published",
+      "tokenTotal": 24,
+      "content": {
+        "html": "<p>Twaalf vragen. Ze worden steeds iets moeilijker. Maak op je kladblaadje een verhoudingstabel als dat helpt.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "2 kilo appels kost € 3. Hoeveel euro kost 6 kilo?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 9,
+              "tolerance": 0,
+              "unit": "euro",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "6 kilo is 3 keer zoveel als 2 kilo. Dus ook 3 keer zoveel geld: 3 × 3 = 9 euro.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "50% is hetzelfde als ...",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "de helft",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "een kwart",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "een tiende",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "de helft",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "een kwart",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "een tiende",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "50 van de 100 is de helft. Een kwart is 25% en een tiende is 10%.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Hoeveel is 10% van 60?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 6,
+              "tolerance": 0,
+              "unit": "",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "10% vind je door te delen door 10: 60 : 10 = 6.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "In een recept staan 2 eieren voor 4 personen. Hoeveel eieren heb je nodig voor 8 personen?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "6",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "4",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "2",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "6",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "4",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "2",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "8 personen is 2 keer zoveel als 4 personen. Dan heb je ook 2 keer zoveel eieren nodig: 4.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Hoeveel is 25% van 48?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 12,
+              "tolerance": 0,
+              "unit": "",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "25% is een kwart. Een kwart van 48 is 48 : 4 = 12.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-6",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een jas kost € 80. Je krijgt 20% korting. Hoeveel euro betaal je?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 64,
+              "tolerance": 0,
+              "unit": "euro",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "10% van 80 is 8, dus 20% is 16 euro korting. Je betaalt 80 − 16 = 64 euro.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-7",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Op een kaart met schaal 1 : 100 000 is een weg 3 cm lang. Hoe lang is de weg in het echt?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "300 m",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "30 km",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "3 km",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "300 m",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "30 km",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "3 km",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "1 cm is 100 000 cm = 1000 m = 1 km. Dus 3 cm op de kaart is 3 km in het echt.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-8",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een scooter rijdt 30 km in een half uur. Hoeveel km rijdt hij in 2 uur bij dezelfde snelheid?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 120,
+              "tolerance": 0,
+              "unit": "km",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "In een uur rijdt hij 2 × 30 = 60 km. In 2 uur is dat 2 × 60 = 120 km.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-9",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Van de 25 leerlingen in een klas komen er 8 op de fiets. Hoeveel procent is dat?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 32,
+              "tolerance": 0,
+              "unit": "%",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Maak er per honderd van: 25 keer 4 is 100, dus ook 8 keer 4 = 32. Dat is 32%.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-10",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke aanbieding is per fles het goedkoopst?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "3 flessen voor € 2,40",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "5 flessen voor € 3,75",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "2 flessen voor € 1,70",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "3 flessen voor € 2,40",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "5 flessen voor € 3,75",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "2 flessen voor € 1,70",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Reken de prijs per fles uit: 2,40 : 3 = 0,80, 3,75 : 5 = 0,75 en 1,70 : 2 = 0,85. De 5 flessen zijn per fles het goedkoopst.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-11",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een telefoon kostte € 250. Nu kost hij € 200. Met hoeveel procent is de prijs gedaald?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 20,
+              "tolerance": 0,
+              "unit": "%",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "De prijs daalt 250 − 200 = 50 euro. 50 van de 250 is 1/5 deel, en dat is 20%.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-12",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Twee vrienden verdelen 45 snoepjes in de verhouding 2 : 3. Hoeveel snoepjes krijgt de vriend met het grootste deel?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 27,
+              "tolerance": 0,
+              "unit": "snoepjes",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "2 + 3 = 5 delen. Eén deel is 45 : 5 = 9 snoepjes. Het grootste deel is 3 × 9 = 27 snoepjes.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": 1,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 24
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-13-theory-1",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-13",
+      "type": "theory",
+      "order": 1,
+      "title": "Uitleg - meten, omtrek en oppervlakte",
+      "status": "published",
+      "content": {
+        "html": "<p>Een vloer leggen, een hek om de tuin zetten of een aquarium vullen: daarvoor moet je meten en rekenen.</p><h3>Eenheden omrekenen</h3><p>Bij lengte gaat het steeds keer 10: 1 cm = 10 mm, 1 dm = 10 cm, 1 m = 10 dm. Dus 1 m = 100 cm en 1 km = 1000 m. Bij gewicht is 1 kg = 1000 gram. Bij tijd is 1 uur = 60 minuten.</p><h3>Omtrek</h3><p>De omtrek is de lengte van de rand. Je telt alle zijden bij elkaar op. Een hek om een tuin heeft de lengte van de omtrek.</p><h3>Oppervlakte</h3><p>De oppervlakte is hoeveel ruimte een vlak inneemt. Bij een rechthoek geldt: oppervlakte = lengte × breedte. De eenheid is in het kwadraat, bijvoorbeeld cm² of m².</p><h3>Inhoud</h3><p>Bij een balk geldt: inhoud = lengte × breedte × hoogte. De eenheid is bijvoorbeeld cm³. 1 liter = 1000 cm³.</p><h3>Kernbegrippen</h3><dl><dt>omtrek</dt><dd>De lengte van de hele rand van een figuur.</dd><dt>oppervlakte</dt><dd>Hoeveel ruimte een plat vlak inneemt, in cm² of m².</dd><dt>inhoud</dt><dd>Hoeveel er in een ruimte past, in cm³ of liter.</dd></dl>",
+        "keyTerms": [
+          "omtrek",
+          "oppervlakte",
+          "inhoud"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-13-example-2",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-13",
+      "type": "example",
+      "order": 2,
+      "title": "Voorbeeld - een tuin van 8 m bij 5 m",
+      "status": "published",
+      "content": {
+        "html": "<p>Een rechthoekige tuin is 8 m lang en 5 m breed.</p><ol><li>Stap 1, omtrek: 8 + 5 + 8 + 5 = 26 m. Zoveel hek heb je nodig.</li><li>Stap 2, oppervlakte: 8 × 5 = 40 m². Zoveel gras leg je neer.</li><li>Stap 3, omrekenen: de tuin is 8 m lang, dat is 8 × 100 = 800 cm.</li></ol><p><strong>Let op:</strong> omtrek is een lengte (m), oppervlakte is een vlak (m²). Haal ze niet door elkaar.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-13-quiz-3",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-13",
+      "type": "quiz",
+      "order": 3,
+      "title": "Vragen Meten en meetkunde",
+      "status": "published",
+      "tokenTotal": 24,
+      "content": {
+        "html": "<p>Twaalf vragen. Ze worden steeds iets moeilijker. Maak een schets op je kladblaadje als dat helpt.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Hoeveel cm is 3 m?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 300,
+              "tolerance": 0,
+              "unit": "cm",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "1 m = 100 cm, dus 3 m = 3 × 100 = 300 cm.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Welke eenheid past het best bij de lengte van een potlood?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "cm",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "km",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "m²",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "cm",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "km",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "m²",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een potlood is ongeveer 15 cm. Een km is veel te groot en m² is een eenheid voor oppervlakte.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een rechthoek is 6 cm lang en 4 cm breed. Hoe groot is de omtrek?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 20,
+              "tolerance": 0,
+              "unit": "cm",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Tel alle zijden op: 6 + 4 + 6 + 4 = 20 cm.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Hoeveel minuten is anderhalf uur?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "150",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "130",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "90",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "150",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "130",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "90",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een uur is 60 minuten en een half uur is 30 minuten. Samen 90 minuten.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een kamer is 7 m lang en 5 m breed. Hoe groot is de oppervlakte?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 35,
+              "tolerance": 0,
+              "unit": "m²",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Oppervlakte = lengte × breedte = 7 × 5 = 35 m².",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-6",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Hoeveel gram is 2,5 kg?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 2500,
+              "tolerance": 0,
+              "unit": "gram",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "1 kg = 1000 gram, dus 2,5 kg = 2,5 × 1000 = 2500 gram.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-7",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Een vierkant heeft een omtrek van 24 cm. Hoe lang is één zijde?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "4 cm",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "6 cm",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "12 cm",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "4 cm",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "6 cm",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "12 cm",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Een vierkant heeft vier gelijke zijden. 24 : 4 = 6 cm.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-8",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een kamer is 4 m lang en 3 m breed. Laminaat kost € 15 per m². Hoeveel euro kost het laminaat voor de hele vloer?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 180,
+              "tolerance": 0,
+              "unit": "euro",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Eerst de oppervlakte: 4 × 3 = 12 m². Dan de prijs: 12 × 15 = 180 euro.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-9",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een doos heeft de vorm van een balk: 5 cm lang, 4 cm breed en 3 cm hoog. Hoe groot is de inhoud?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 60,
+              "tolerance": 0,
+              "unit": "cm³",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Inhoud = lengte × breedte × hoogte = 5 × 4 × 3 = 60 cm³.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-10",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Hoeveel cm² is 1 m²?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "100",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "1000",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "10 000",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "100",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "1000",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "10 000",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "1 m² is een vierkant van 100 cm bij 100 cm. Dat is 100 × 100 = 10 000 cm².",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-11",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een aquarium is 50 cm lang, 30 cm breed en 40 cm hoog. Hoeveel liter water past erin?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 60,
+              "tolerance": 0,
+              "unit": "liter",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Inhoud: 50 × 30 × 40 = 60 000 cm³. Omdat 1 liter = 1000 cm³, is dat 60 000 : 1000 = 60 liter.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-12",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een rechthoekige tuin heeft een oppervlakte van 48 m². De tuin is 8 m lang. Hoe breed is de tuin?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 6,
+              "tolerance": 0,
+              "unit": "m",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Lengte × breedte = 48, dus 8 × ? = 48. De breedte is 48 : 8 = 6 m.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": 1,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 24
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-14-theory-1",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-14",
+      "type": "theory",
+      "order": 1,
+      "title": "Uitleg - tabellen, grafieken en formules",
+      "status": "published",
+      "content": {
+        "html": "<p>Hoe langer je een fiets huurt, hoe meer je betaalt. Tussen de tijd en de prijs is een verband. Een verband kun je op drie manieren laten zien.</p><h3>1. Een tabel</h3><p>In een tabel zie je bij elke waarde wat erbij hoort. Kijk hoeveel het steeds groter of kleiner wordt. Gaat het steeds met hetzelfde getal omhoog, dan kun je de tabel verder invullen.</p><h3>2. Een grafiek</h3><p>Een grafiek is een tekening van de tabel. Gaat de lijn omhoog, dan wordt het meer: de grafiek stijgt. Gaat hij omlaag, dan daalt hij. Loopt hij plat, dan blijft het gelijk.</p><h3>3. Een formule in woorden</h3><p>Een formule is een rekenregel, bijvoorbeeld: kosten = 5 + 3 × aantal uur. Je vult een getal in en rekent uit. Denk aan de volgorde: eerst keer, dan plus.</p><h3>Kernbegrippen</h3><dl><dt>verband</dt><dd>Hoe twee dingen met elkaar samenhangen, zoals tijd en prijs.</dd><dt>formule</dt><dd>Een rekenregel waarmee je bij elke waarde de uitkomst kunt uitrekenen.</dd></dl>",
+        "keyTerms": [
+          "verband",
+          "formule"
+        ],
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-14-example-2",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-14",
+      "type": "example",
+      "order": 2,
+      "title": "Voorbeeld - een fiets huren",
+      "status": "published",
+      "content": {
+        "html": "<p>Bij de fietsverhuur geldt: kosten = 5 + 3 × aantal uur. Je huurt een fiets voor 4 uur.</p><ol><li>Stap 1: Vul het aantal uur in: kosten = 5 + 3 × 4.</li><li>Stap 2: Eerst keer: 3 × 4 = 12.</li><li>Stap 3: Dan plus: 5 + 12 = 17. Je betaalt € 17.</li></ol><table><tr><th>aantal uur</th><td>1</td><td>2</td><td>3</td><td>4</td></tr><tr><th>kosten in euro</th><td>8</td><td>11</td><td>14</td><td>17</td></tr></table><p>In de tabel zie je dat de kosten elk uur 3 euro hoger worden. De 5 euro betaal je één keer.</p>",
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    },
+    {
+      "id": "block-diff-rekenen-2-14-quiz-3",
+      "vakId": "vak-diff-rekenen",
+      "leerjaarId": "leerjaar-diff-rekenen-2",
+      "niveauId": "niveau-diff-rekenen-2-kader",
+      "hoofdstukId": "hoofdstuk-diff-rekenen-2-start",
+      "paragraafId": "paragraaf-diff-rekenen-2-14",
+      "type": "quiz",
+      "order": 3,
+      "title": "Vragen Verbanden",
+      "status": "published",
+      "tokenTotal": 24,
+      "content": {
+        "html": "<p>Twaalf vragen. Ze worden steeds iets moeilijker. Maak een tabel op je kladblaadje als dat helpt.</p>",
+        "assessmentType": "quiz",
+        "items": [
+          {
+            "id": "quiz-1",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Formule: kosten = 2 × aantal kilo. Hoeveel euro kost 4 kilo?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 8,
+              "tolerance": 0,
+              "unit": "euro",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Vul 4 in voor het aantal kilo: 2 × 4 = 8 euro.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-2",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Een fietser rijdt na 1 uur 10 km, na 2 uur 20 km en na 3 uur 30 km. Hoeveel km heeft hij na 4 uur gereden?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "40 km",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "35 km",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "50 km",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "40 km",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "35 km",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "50 km",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Elk uur komt er 10 km bij. Na 4 uur is het 30 + 10 = 40 km.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-3",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een kaars is 20 cm lang. Elk uur brandt er 2 cm af. Hoe lang is de kaars na 3 uur?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 14,
+              "tolerance": 0,
+              "unit": "cm",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "In 3 uur brandt er 3 × 2 = 6 cm af. Er blijft 20 − 6 = 14 cm over.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-4",
+            "type": "waar-niet-waar",
+            "vraagtype": "waar-niet-waar",
+            "prompt": "Bij een stijgende grafiek wordt de waarde steeds groter.",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "waar",
+                  "text": "Waar",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "niet-waar",
+                  "text": "Niet waar",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "waar",
+                "text": "Waar",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "niet-waar",
+                "text": "Niet waar",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Stijgen betekent dat de lijn omhoog gaat. De waarde wordt dan groter.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "basis",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-5",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Formule: kosten = 5 + 3 × aantal uur. Hoeveel euro kost 6 uur?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 23,
+              "tolerance": 0,
+              "unit": "euro",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Eerst keer: 3 × 6 = 18. Dan plus: 5 + 18 = 23 euro.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-6",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Een plant is op dag 1 2 cm, op dag 2 4 cm, op dag 3 6 cm en op dag 4 8 cm. Welke formule past bij de lengte?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "lengte = dag + 2",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "lengte = 2 × dag",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "lengte = 4 × dag",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "lengte = dag + 2",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "lengte = 2 × dag",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "lengte = 4 × dag",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Controleer met dag 3: 2 × 3 = 6 klopt, 3 + 2 = 5 klopt niet en 4 × 3 = 12 klopt niet.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-7",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een taxi rekent € 4 om in te stappen plus € 2 per km. Je betaalt € 20. Hoeveel km heb je gereden?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 8,
+              "tolerance": 0,
+              "unit": "km",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Haal eerst de instapprijs eraf: 20 − 4 = 16 euro. Dat is voor de kilometers: 16 : 2 = 8 km.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-8",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Een grafiek gaat eerst omhoog en loopt daarna plat. Welk verhaal past erbij?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Je fietst steeds sneller.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Een bad loopt leeg.",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Je loopt een berg op en rust daarna boven uit.",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Je fietst steeds sneller.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Een bad loopt leeg.",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Je loopt een berg op en rust daarna boven uit.",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Eerst omhoog is de berg op. Plat betekent dat er niets verandert: je blijft boven op dezelfde hoogte.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "plus",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-9",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Abonnement A kost € 10 per maand plus € 0,10 per belminuut. Hoeveel euro betaal je bij 150 minuten?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 25,
+              "tolerance": 0,
+              "unit": "euro",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Eerst de minuten: 150 × 0,10 = 15 euro. Dan plus de vaste 10 euro: 15 + 10 = 25 euro.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-10",
+            "type": "meerkeuze",
+            "vraagtype": "meerkeuze",
+            "prompt": "Abonnement A kost € 10 plus € 0,10 per minuut. Abonnement B kost altijd € 20. Vanaf hoeveel minuten is B goedkoper?",
+            "answer": {
+              "type": "meerkeuze",
+              "options": [
+                {
+                  "id": "optie-1",
+                  "text": "Bij meer dan 50 minuten",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-2",
+                  "text": "Bij meer dan 200 minuten",
+                  "correct": false,
+                  "explanation": "",
+                  "misconception": ""
+                },
+                {
+                  "id": "optie-3",
+                  "text": "Bij meer dan 100 minuten",
+                  "correct": true,
+                  "explanation": "",
+                  "misconception": ""
+                }
+              ]
+            },
+            "options": [
+              {
+                "id": "optie-1",
+                "text": "Bij meer dan 50 minuten",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-2",
+                "text": "Bij meer dan 200 minuten",
+                "correct": false,
+                "explanation": "",
+                "misconception": ""
+              },
+              {
+                "id": "optie-3",
+                "text": "Bij meer dan 100 minuten",
+                "correct": true,
+                "explanation": "",
+                "misconception": ""
+              }
+            ],
+            "feedback": "Bij 100 minuten kost A 10 + 10 = 20 euro, net zoveel als B. Bij meer minuten wordt A duurder, dus dan is B goedkoper.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-11",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Een bak met 60 liter water loopt leeg. Er stroomt elke minuut 4 liter uit. Na hoeveel minuten is de bak leeg?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 15,
+              "tolerance": 0,
+              "unit": "minuten",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Elke minuut gaat er 4 liter uit. 60 : 4 = 15, dus na 15 minuten is de bak leeg.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          },
+          {
+            "id": "quiz-12",
+            "type": "numeriek",
+            "vraagtype": "numeriek",
+            "prompt": "Water wordt verwarmd. Na 0 minuten is het 20 °C, na 5 minuten 35 °C en na 10 minuten 50 °C. Hoe warm is het na 15 minuten als het zo doorgaat?",
+            "answer": {
+              "type": "numeriek",
+              "expected": 65,
+              "tolerance": 0,
+              "unit": "°C",
+              "hintBijFout": ""
+            },
+            "options": [],
+            "feedback": "Elke 5 minuten wordt het water 15 graden warmer. Na 15 minuten is het 50 + 15 = 65 °C.",
+            "tokens": 2,
+            "taxonomy": {
+              "learningGoal": "",
+              "cognitiveSkill": "begrijpen",
+              "masteryLevel": "verdieping",
+              "scaffoldingRole": "zelf_proberen"
+            }
+          }
+        ],
+        "attemptPolicy": {
+          "maxAttempts": 1,
+          "scoring": "best",
+          "allowTeacherReset": true
+        },
+        "tokenConfig": {
+          "enabled": true,
+          "totalTokens": 24
+        },
+        "crops": [],
+        "sourceBasis": [
+          "docent-bron"
+        ],
+        "sourceNotes": "Bron: Startles digitale nulmeting Diff rekenen, opgesteld met Kevin op 15 oktober 2026 (vmbo kader, didactiek in de lijn van Moderne Wiskunde: situatie, uitleg, voorbeeld met stappen, oefenen op drie niveaus)."
+      },
+      "settings": {
+        "allowAiHelp": false,
+        "allowMathToolbox": false,
+        "differentiationLevel": "basis",
+        "scaffoldingRole": "zelf_proberen"
+      },
+      "linkedVraagId": null,
+      "createdBy": "scripts/bouw-hoofdstuk-seed.mjs",
+      "isArchived": false
+    }
+  ]
+}
