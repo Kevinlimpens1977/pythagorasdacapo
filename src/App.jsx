@@ -30,6 +30,7 @@ import { EigenCertificaatPage, KlasCertificatenPage } from './pages/CertificaatP
 import AdminTokenManagementPage from './pages/AdminTokenManagementPage';
 import AdminTestenPage from './pages/AdminTestenPage';
 import AdminVrijgevenPage from './pages/AdminVrijgevenPage';
+import AdminKlasbordenPage from './pages/AdminKlasbordenPage';
 import AdminStijlgidsPage from './pages/AdminStijlgidsPage';
 import NieuweVersieMelding from './components/layout/NieuweVersieMelding';
 
@@ -77,6 +78,11 @@ function AppRoutes() {
         <Route path="admin/leerlingen" element={
           <PrivateRoute requireAdmin={true}>
             <AdminLeerlingenPage />
+          </PrivateRoute>
+        } />
+        <Route path="admin/klasborden" element={
+          <PrivateRoute requireAdmin={true}>
+            <AdminKlasbordenPage />
           </PrivateRoute>
         } />
         <Route path="admin/vrijgeven" element={

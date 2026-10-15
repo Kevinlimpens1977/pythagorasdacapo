@@ -56,3 +56,9 @@ test('instellingen workspace is active only for settings routes', () => {
   assert.equal(isAdminWorkspaceActive(instellingen, '/admin/meldingen'), true);
   assert.equal(isAdminWorkspaceActive(instellingen, '/admin/klassen'), false);
 });
+
+test('klasborden is een eigen werkplek tussen voortgang en leerlingen', () => {
+  assert.equal(getAdminWorkspaceForPath('/admin/klasborden'), 'klasborden');
+  const ids = ADMIN_WORKSPACES.map((workspace) => workspace.id);
+  assert.equal(ids.indexOf('klasborden'), ids.indexOf('voortgang') + 1);
+});
